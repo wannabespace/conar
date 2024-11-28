@@ -3,14 +3,17 @@
   "version": "1.0.0",
   "packageManager": "pnpm@9.14.2",
   "scripts": {
+    "prepare": "husky",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "typecheck": "cd ui && pnpm typecheck && cd ../app && pnpm typecheck",
     "dev:app": "cd app && pnpm dev",
     "dev:ui": "cd ui && pnpm dev"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.11.2",
     "@electron-toolkit/preload": "^3.0.1",
-    "eslint": "^9.15.0"
+    "eslint": "^9.15.0",
+    "husky": "^9.1.7"
   }
 }
