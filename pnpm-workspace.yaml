@@ -1,0 +1,5 @@
+packages:
+  - shared
+  - app
+  - ui
+  - api
