@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.11.2",
+    "@electron-toolkit/preload": "^3.0.1",
     "eslint": "^9.15.0"
   }
 }

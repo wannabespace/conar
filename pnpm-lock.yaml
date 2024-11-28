@@ -11,6 +11,9 @@ importers:
       '@antfu/eslint-config':
         specifier: ^3.11.2
         version: 3.11.2(@typescript-eslint/utils@8.16.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.7.2))(@vue/compiler-sfc@3.5.13)(eslint@9.15.0(jiti@1.21.6))(typescript@5.7.2)
+      '@electron-toolkit/preload':
+        specifier: ^3.0.1
+        version: 3.0.1(electron@33.2.1)
       eslint:
         specifier: ^9.15.0
         version: 9.15.0(jiti@1.21.6)
