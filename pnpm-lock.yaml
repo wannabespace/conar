@@ -20,9 +20,6 @@ importers:
 
   app:
     dependencies:
-      '@electron-toolkit/preload':
-        specifier: ^3.0.1
-        version: 3.0.1(electron@33.2.1)
       '@electron-toolkit/utils':
         specifier: ^3.0.0
         version: 3.0.0(electron@33.2.1)
