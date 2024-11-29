@@ -1,7 +1,7 @@
 {
   "name": "connnect",
   "version": "1.0.0",
-  "packageManager": "pnpm@9.14.2",
+  "packageManager": "pnpm@9.14.4",
   "scripts": {
     "prepare": "husky",
     "lint": "eslint .",
@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.11.2",
-    "eslint": "^9.15.0",
+    "eslint": "^9.16.0",
     "husky": "^9.1.7",
     "npm-run-all2": "^7.0.1"
   }
