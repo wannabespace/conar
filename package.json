@@ -10,12 +10,10 @@
     "typecheck:web": "cd web && pnpm typecheck",
     "typecheck:app": "cd app && pnpm typecheck"
   },
-  "dependencies": {
-    "npm-run-all2": "^7.0.1"
-  },
   "devDependencies": {
     "@antfu/eslint-config": "^3.11.2",
     "eslint": "^9.15.0",
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "npm-run-all2": "^7.0.1"
   }
 }
