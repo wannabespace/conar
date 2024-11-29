@@ -1,9 +1,6 @@
 {
   "name": "app",
   "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
   "main": "./out/main/index.js",
   "scripts": {
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
@@ -19,6 +16,7 @@
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
+    "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "@tanstack/react-query": "^5.61.5",
     "electron-updater": "^6.3.9"

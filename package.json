@@ -6,13 +6,15 @@
     "prepare": "husky",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "cd ui && pnpm typecheck && cd ../app && pnpm typecheck",
-    "dev:app": "cd app && pnpm dev",
-    "dev:ui": "cd ui && pnpm dev"
+    "typecheck": "run-p typecheck:web typecheck:app",
+    "typecheck:web": "cd web && pnpm typecheck",
+    "typecheck:app": "cd app && pnpm typecheck"
+  },
+  "dependencies": {
+    "npm-run-all2": "^7.0.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.11.2",
-    "@electron-toolkit/preload": "^3.0.1",
     "eslint": "^9.15.0",
     "husky": "^9.1.7"
   }

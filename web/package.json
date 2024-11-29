@@ -1,6 +1,5 @@
 {
-  "name": "connnect",
-  "version": "0.1.0",
+  "name": "web",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
