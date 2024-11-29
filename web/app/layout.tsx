@@ -1,16 +1,13 @@
 import type { Metadata } from 'next'
-import localFont from 'next/font/local'
+import { MuseoModerno, Nunito_Sans } from 'next/font/google'
 import './globals.css'
 
-const geistSans = localFont({
-  src: './fonts/GeistVF.woff',
-  variable: '--font-geist-sans',
-  weight: '100 900',
+const nunitoSans = Nunito_Sans({
+  variable: '--font-nunito-sans',
 })
-const geistMono = localFont({
-  src: './fonts/GeistMonoVF.woff',
-  variable: '--font-geist-mono',
-  weight: '100 900',
+
+const museoModerno = MuseoModerno({
+  variable: '--font-museo-moderno',
 })
 
 export const metadata: Metadata = {
@@ -26,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`font-sans ${nunitoSans.variable} ${museoModerno.variable} antialiased`}
       >
         {children}
       </body>
