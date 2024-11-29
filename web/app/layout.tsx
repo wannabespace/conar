@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
 import { MuseoModerno, Nunito_Sans } from 'next/font/google'
-import './globals.css'
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-nunito-sans',
+  subsets: ['latin'],
 })
 
 const museoModerno = MuseoModerno({
   variable: '--font-museo-moderno',
+  subsets: ['latin'],
 })
 
 export const metadata: Metadata = {
