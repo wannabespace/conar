@@ -6,10 +6,9 @@
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+      content="default-src 'self' https://*.clerk.accounts.dev https://clerk.clerk.dev; script-src 'self' https://*.clerk.accounts.dev https://clerk.clerk.dev; style-src 'self' 'unsafe-inline' https://*.clerk.accounts.dev https://clerk.clerk.dev; img-src 'self' data: https://*.clerk.accounts.dev https://clerk.clerk.dev https://img.clerk.com; connect-src 'self' https://*.clerk.accounts.dev https://clerk.clerk.dev;"
     />
   </head>
-
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

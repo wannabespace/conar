@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: connnect
+appId: com.connnect.app
+productName: Connnect
 directories:
   buildResources: build
 files:
