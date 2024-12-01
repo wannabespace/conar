@@ -16,6 +16,7 @@
     "@clerk/themes": "^2.1.48",
     "@remixicon/react": "^4.5.0",
     "@t3-oss/env-nextjs": "^0.11.1",
+    "babel-plugin-react-compiler": "19.0.0-beta-df7b47d-20241124",
     "consola": "^3.2.3",
     "drizzle-orm": "^0.36.4",
     "next": "15.0.3",
