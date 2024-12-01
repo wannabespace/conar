@@ -4,10 +4,9 @@ export default antfu(
   {
     rules: {
       'node/prefer-global/process': 'off',
+      'ts/no-explicit-any': 'error',
       'no-console': 'warn',
     },
-  },
-  {
-    ignores: ['out'],
+    ignores: ['app/src-tauri/{target,gen}/**/*', '**/*.toml'],
   },
 )
