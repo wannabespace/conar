@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const { userId, sessionId } = await auth()
 
   if (userId) {
-    return redirect(`connnect://session_id=${sessionId}`)
+    return redirect(`connnect://sign-in?session_id=${sessionId}`)
   }
 
   // if (!userId) {
