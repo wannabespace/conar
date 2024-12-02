@@ -12,14 +12,14 @@
     "drizzle:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@clerk/themes": "^2.1.48",
+    "@clerk/themes": "^2.1.49",
     "@radix-ui/react-checkbox": "^1.1.2",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@remixicon/react": "^4.5.0",
     "@t3-oss/env-nextjs": "^0.11.1",
     "babel-plugin-react-compiler": "19.0.0-beta-df7b47d-20241124",
-    "better-auth": "^1.0.7",
+    "better-auth": "^1.0.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "consola": "^3.2.3",

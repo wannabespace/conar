@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { bearer } from 'better-auth/plugins'
 import { v7 } from 'uuid'
 import { db } from '~/drizzle'
 import { env } from '~/env'
@@ -7,6 +8,8 @@ import { env } from '~/env'
 export const auth = betterAuth({
   appName: 'Connnect',
   secret: env.BETTER_AUTH_SECRET,
+  baseURL: env.NEXT_PUBLIC_URL,
+  plugins: [bearer()],
   advanced: {
     generateId: () => v7(),
     cookiePrefix: 'connnect',

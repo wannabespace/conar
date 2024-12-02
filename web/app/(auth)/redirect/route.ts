@@ -1,17 +1,18 @@
-// import { redirect } from 'next/navigation'
-// import { isSubscriptionActive } from '~/trpc/utils/subscription'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 export async function GET(request: Request) {
-  // if (userId) {
-  //   const token = sessionId
-  //   return redirect(`connnect://session?session_token=${token}`)
-  // }
+  const cookieStore = await cookies()
 
-  // if (!userId) {
-  //   return Response.redirect(new URL('/sign-up', request.url))
-  // }
+  const token = cookieStore.get('connnect.bearer_token')
 
-  // const isActive = await isSubscriptionActive(userId)
+  if (token) {
+    return redirect(`connnect://session?token=${token}`)
+  }
+
+  if (!token) {
+    return Response.redirect(new URL('/sign-up', request.url))
+  }
 
   return Response.redirect(new URL('/', request.url))
 }
