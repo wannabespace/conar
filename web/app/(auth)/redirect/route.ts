@@ -1,18 +1,14 @@
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
+import { auth } from '~/lib/auth'
 
 export async function GET(request: Request) {
-  const cookieStore = await cookies()
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
 
-  const token = cookieStore.get('connnect.bearer_token')
-
-  if (token) {
-    return redirect(`connnect://session?token=${token}`)
+  if (session) {
+    return Response.redirect(`connnect://session?token=${session.session.token}`)
   }
 
-  if (!token) {
-    return Response.redirect(new URL('/sign-up', request.url))
-  }
-
-  return Response.redirect(new URL('/', request.url))
+  return Response.redirect(new URL('/sign-up', request.url))
 }
