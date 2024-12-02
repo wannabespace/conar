@@ -1,0 +1,16 @@
+{
+  "name": "api",
+  "scripts": {
+    "start": "vercel dev",
+    "deploy": "vercel"
+  },
+  "dependencies": {
+    "drizzle-kit": "^0.28.1",
+    "drizzle-orm": "^0.36.4",
+    "hono": "^4.6.12",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "vercel": "^32.4.1"
+  }
+}

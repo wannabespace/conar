@@ -6,7 +6,6 @@ import { env } from '~/env'
 
 export const auth = betterAuth({
   appName: 'Connnect',
-  baseURL: env.NEXT_PUBLIC_URL,
   secret: env.BETTER_AUTH_SECRET,
   advanced: {
     generateId: () => v7(),

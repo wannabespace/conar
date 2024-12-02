@@ -25,7 +25,6 @@
         "height": 720,
         "minWidth": 500,
         "minHeight": 300,
-        "contentProtected": true,
         "hiddenTitle": true
       }
     ],

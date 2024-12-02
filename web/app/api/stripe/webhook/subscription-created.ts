@@ -1,5 +1,5 @@
 import type Stripe from 'stripe'
-// @ts-expect-error subscription not exists
+// @ts-expect-error subs
 import { db, subscriptions } from '~/drizzle'
 import { createLogger } from '~/lib/logger'
 import { stripe } from '~/lib/stripe'
