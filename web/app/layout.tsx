@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { MuseoModerno, Nunito_Sans } from 'next/font/google'
-import { ClerkProvider } from './clerk-provider'
+import './index.css'
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-nunito-sans',
@@ -27,9 +27,7 @@ export default function RootLayout({
       <body
         className={`font-sans ${nunitoSans.variable} ${museoModerno.variable} antialiased`}
       >
-        <ClerkProvider>
-          {children}
-        </ClerkProvider>
+        {children}
       </body>
     </html>
   )

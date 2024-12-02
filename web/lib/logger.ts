@@ -1,5 +1,4 @@
 import type { AnyType } from './types'
-import { auth } from '@clerk/nextjs/server'
 import { type ConsolaInstance, createConsola, type LogType } from 'consola'
 import { colorize } from 'consola/utils'
 
@@ -11,17 +10,6 @@ async function _log(type: LogType, ...messages: Messages) {
   loggerInstance ||= createConsola()
 
   const method = loggerInstance[type]
-
-  try {
-    const { userId } = await auth()
-
-    if (userId) {
-      messages.unshift(colorize('dim', `${userId}`))
-    }
-  }
-  catch {
-    // ignore
-  }
 
   method(...messages)
 }

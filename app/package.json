@@ -1,7 +1,6 @@
 {
   "name": "connnect",
   "type": "module",
-  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -11,13 +10,15 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@clerk/clerk-js": "^5.35.1",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-deep-link": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "^2.0.1",
     "@tauri-apps/plugin-shell": "^2",
     "@tauri-apps/plugin-updater": "^2.0.0",
+    "better-auth": "^1.0.7",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-use": "^17.5.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",

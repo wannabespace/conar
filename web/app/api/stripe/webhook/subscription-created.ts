@@ -1,6 +1,6 @@
 import type Stripe from 'stripe'
+// @ts-expect-error subscription not exists
 import { db, subscriptions } from '~/drizzle'
-import { clerkClient } from '~/lib/clerk'
 import { createLogger } from '~/lib/logger'
 import { stripe } from '~/lib/stripe'
 
@@ -22,19 +22,17 @@ export async function subscriptionCreated(event: Stripe.Event) {
     return
   }
 
-  const customers = await clerkClient.users.getUserList({
-    emailAddress: [stripeResponse.email],
+  const user = await db.query.users.findFirst({
+    where: (users, { eq }) => eq(users.email, stripeResponse.email!),
   })
 
-  if (!customers.data[0] || !customers.data[0].id) {
+  if (!user) {
     logger.error('User not found', stripeResponse)
     return
   }
 
-  const userId = customers.data[0].id
-
   await db.insert(subscriptions).values({
-    userId,
+    userId: user.id,
     stripeCustomerId: event.data.object.customer as string,
     stripeSubscriptionId: event.data.object.id as string,
     data: event.data.object,

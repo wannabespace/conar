@@ -1,25 +1,28 @@
-import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
-import { useEffect, useState } from 'react'
-import { clerk } from './clerk'
+// import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
+import { useEffect } from 'react'
+import { useCookie } from 'react-use'
+import { authClient } from './auth'
 
 export default function App() {
-  const [user, setUser] = useState<string>()
+  const session = authClient.useSession()
+  const [, setToken] = useCookie('connnect.session')
 
   useEffect(() => {
-    clerk.load()
-    clerk.addListener((event) => {
-      setUser(JSON.stringify(event.user))
-    })
-  }, [])
+    // onOpenUrl(async (urls) => {
+    //   const token = urls[0]?.split('session?session_token=')[1]
+    // })
 
-  useEffect(() => {
-    onOpenUrl((urls) => {
-      const session = urls[0]?.split('?session_id=')[1]
+    setToken('dILsyDUnBVWNcJRBudQuFHWKpJdfzbrU.GKTZ5TDq3pbKrbiUkVyBJyny2bM7hJIvhaG%2B6I2XFi4%3D')
 
-      if (session) {
-        clerk.setActive({ session })
-      }
-    })
+    ;(async () => {
+      // const session = await authClient.getSession({
+      //   query: {
+      //     disableCookieCache: true,
+      //   },
+      // })
+
+      // console.log(session)
+    })()
   }, [])
 
   return (
@@ -29,7 +32,7 @@ export default function App() {
         <a href="https://google.com" target="_blank">
           Google
         </a>
-        {user}
+        {session.data?.user.email || 'No user'}
       </header>
     </div>
   )

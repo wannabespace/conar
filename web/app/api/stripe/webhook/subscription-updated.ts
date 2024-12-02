@@ -1,5 +1,6 @@
 import type Stripe from 'stripe'
 import { eq } from 'drizzle-orm'
+// @ts-expect-error subscription not exists
 import { db, subscriptions } from '~/drizzle'
 
 export async function subscriptionUpdated(event: Stripe.Event) {

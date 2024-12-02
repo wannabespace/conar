@@ -7,6 +7,10 @@ export default antfu(
       'ts/no-explicit-any': 'error',
       'no-console': 'warn',
     },
-    ignores: ['app/src-tauri/{target,gen}/**/*', '**/*.toml'],
+    ignores: [
+      'app/src-tauri/{target,gen}/**/*',
+      'web/drizzle/migrations/meta/*.json',
+      '**/*.toml',
+    ],
   },
 )
