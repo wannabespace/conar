@@ -7,7 +7,9 @@ export async function GET(request: Request) {
   })
 
   if (session) {
-    return Response.redirect(`connnect://session?token=${session.session.token}`)
+    return Response.redirect(
+      `connnect://session?token=${session.session.token}`,
+    )
   }
 
   return Response.redirect(new URL('/sign-up', request.url))

@@ -1,13 +1,18 @@
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { useEffect } from 'react'
 import { authClient } from './auth'
+// import { getRecord } from './stronghold'
+
+// setTimeout(async () => {
+//   console.log(await getRecord('connnect.bearer_token'))
+// }, 2000)
 
 export default function App() {
   const { isPending, data } = authClient.useSession()
 
   useEffect(() => {
-    onOpenUrl(async (urls) => {
-      const token = urls[0]?.split('session?token=')[1]
+    onOpenUrl(async ([url]) => {
+      const [, token] = url?.split('session?token=')
 
       if (token) {
         localStorage.setItem('connnect.bearer_token', token)
@@ -20,11 +25,15 @@ export default function App() {
     <div>
       <div data-tauri-drag-region className="titlebar"></div>
       <header>
-        <a href="https://google.com" target="_blank">
-          Google
-        </a>
         {isPending ? 'Loading...' : data?.user.email || 'No user'}
       </header>
+      <button onClick={() => {
+        localStorage.removeItem('connnect.bearer_token')
+        location.reload()
+      }}
+      >
+        Remove
+      </button>
     </div>
   )
 }
