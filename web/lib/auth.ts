@@ -1,4 +1,5 @@
 import { betterAuth } from 'better-auth'
+import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { bearer } from 'better-auth/plugins'
 import { v7 } from 'uuid'
@@ -9,7 +10,8 @@ export const auth = betterAuth({
   appName: 'Connnect',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.NEXT_PUBLIC_URL,
-  plugins: [bearer()],
+  plugins: [bearer(), emailHarmony()],
+  trustedOrigins: process.env.NODE_ENV === 'production' ? ['connnect://localhost'] : ['http://localhost:1420'],
   advanced: {
     generateId: () => v7(),
     cookiePrefix: 'connnect',

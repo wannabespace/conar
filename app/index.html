@@ -6,17 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Connnect</title>
     <style>
-      .titlebar {
-        height: 30px;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
+      html {
+        font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      }
+
+      body {
+        @apply bg-white text-black dark:bg-black dark:text-white;
       }
     </style>
+    <script>
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      document.documentElement.classList.toggle('dark', isDark)
+    </script>
   </head>
   <body>
-
+    <div
+      data-tauri-drag-region
+      style="
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        width: 100%;
+        height: 1.75rem;
+      "
+    >
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

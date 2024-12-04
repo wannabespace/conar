@@ -1,0 +1,8 @@
+{
+  "name": "shared",
+  "private": true,
+  "main": "index.ts",
+  "devDependencies": {
+    "tailwindcss": "^3.4.16"
+  }
+}

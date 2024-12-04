@@ -1,8 +1,3 @@
-use argon2::{
-    password_hash::{rand_core::OsRng, SaltString},
-    Argon2, PasswordHasher,
-};
-
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -14,14 +9,23 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(
             tauri_plugin_stronghold::Builder::new(|password| {
-                let salt = SaltString::generate(&mut OsRng);
-                let argon2 = Argon2::default();
-                argon2
-                    .hash_password(password.as_bytes(), &salt)
-                    .unwrap()
-                    .to_string()
-                    .as_bytes()
-                    .to_vec()
+                // Hash the password here with e.g. argon2, blake2b or any other secure algorithm
+                // Here is an example implementation using the `rust-argon2` crate for hashing the password
+                use argon2::{hash_raw, Config, Variant, Version};
+
+                let config = Config {
+                    lanes: 4,
+                    mem_cost: 10_000,
+                    time_cost: 10,
+                    variant: Variant::Argon2id,
+                    version: Version::Version13,
+                    ..Default::default()
+                };
+                let salt = "5d41402abc4b2a76b9719d911017c592".as_bytes();
+                let key =
+                    hash_raw(password.as_ref(), salt, &config).expect("failed to hash password");
+
+                key.to_vec()
             })
             .build(),
         )

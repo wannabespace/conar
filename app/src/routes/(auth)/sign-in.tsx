@@ -1,19 +1,36 @@
-'use client'
-
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
-import Link from 'next/link'
 import { useState } from 'react'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card'
+import { Checkbox } from '~/components/ui/checkbox'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
-import { authClient } from '~/lib/client'
+import { authClient } from '~/lib/auth'
+import { BEARER_TOKEN_KEY } from '~/lib/constants'
 import { cn } from '~/lib/utils'
 
-export default function SignIn() {
+export const Route = createFileRoute('/(auth)/sign-in')({
+  component: RouteComponent,
+})
+
+function RouteComponent() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
+
+  async function signIn() {
+    setLoading(true)
+    const { data } = await authClient.signIn.email({
+      email,
+      password,
+    })
+    if (data?.session.token) {
+      localStorage.setItem(BEARER_TOKEN_KEY, data.session.token)
+    }
+    setLoading(false)
+  }
 
   return (
     <Card className="max-w-md">
@@ -30,7 +47,7 @@ export default function SignIn() {
             <Input
               id="email"
               type="email"
-              placeholder="m@example.com"
+              placeholder="m~example.com"
               required
               onChange={(e) => {
                 setEmail(e.target.value)
@@ -60,15 +77,21 @@ export default function SignIn() {
             />
           </div>
 
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="remember"
+              onClick={() => {
+                setRememberMe(!rememberMe)
+              }}
+            />
+            <Label htmlFor="remember">Remember me</Label>
+          </div>
+
           <Button
             type="submit"
             className="w-full"
             disabled={loading}
-            onClick={async () => {
-              setLoading(true)
-              await authClient.signIn.email({ email, password })
-              setLoading(false)
-            }}
+            onClick={signIn}
           >
             {loading
               ? (

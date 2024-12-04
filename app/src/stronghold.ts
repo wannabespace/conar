@@ -14,7 +14,7 @@ async function initStronghold() {
   }
 
   const vaultPath = `${await appDataDir()}/vault.hold`
-  const vaultPassword = 'fdkdkfjfkjd'
+  const vaultPassword = import.meta.env.VITE_STRONGHOLD_PASSWORD
 
   stronghold = await Stronghold.load(vaultPath, vaultPassword)
 

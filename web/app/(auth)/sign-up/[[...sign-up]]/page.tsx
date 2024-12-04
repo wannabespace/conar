@@ -25,7 +25,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false)
 
   return (
-    <Card className="z-50 rounded-md rounded-t-none max-w-md">
+    <Card className="z-50 max-w-md rounded-md rounded-t-none">
       <CardHeader>
         <CardTitle className="text-lg md:text-xl">Sign Up</CardTitle>
         <CardDescription className="text-xs md:text-sm">
@@ -107,7 +107,7 @@ export default function SignUp() {
         </div>
       </CardContent>
       <CardFooter>
-        <div className="flex justify-center w-full border-t py-4">
+        <div className="flex w-full justify-center border-t py-4">
           <p className="text-center text-xs text-neutral-500">
             Secured by
             {' '}

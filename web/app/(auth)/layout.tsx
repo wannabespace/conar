@@ -8,7 +8,7 @@ export default async function AuthLayout({
 }) {
   return (
     <div className="grid min-h-screen w-full grid-cols-1 overflow-hidden rounded-3xl p-4 lg:grid-cols-2 lg:p-6">
-      <div className="flex flex-col items-center justify-between rounded-2xl border border-black/10 bg-white p-4  dark:border-white/10 dark:bg-zinc-900 lg:rounded-none lg:rounded-l-3xl lg:border-r-0 lg:p-6">
+      <div className="flex flex-col items-center justify-between rounded-2xl border border-black/10 bg-white p-4  lg:rounded-none lg:rounded-l-3xl lg:border-r-0 lg:p-6 dark:border-white/10 dark:bg-zinc-900">
         <div />
         {children}
         <Link
