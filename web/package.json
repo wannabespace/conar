@@ -24,7 +24,7 @@
     "clsx": "^2.1.1",
     "consola": "^3.2.3",
     "drizzle-orm": "^0.37.0",
-    "lucide-react": "^0.464.0",
+    "lucide-react": "^0.465.0",
     "next": "15.0.3",
     "next-themes": "^0.4.3",
     "postgres": "^3.4.5",
@@ -45,7 +45,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.20",
-    "drizzle-kit": "^0.29.0",
+    "drizzle-kit": "^0.29.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
     "typescript": "^5"

@@ -1,13 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/_authenticated/dashboard')({
+export const Route = createFileRoute('/_protected/')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
   return (
-    <div>
-      <h1>Dashboard</h1>
+    <div className="p-2">
+      <h3>Welcome Home!</h3>
     </div>
   )
 }

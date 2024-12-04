@@ -11,150 +11,196 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as AuthenticatedImport } from './routes/_authenticated'
-import { Route as AuthenticatedIndexImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedDashboardImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedAboutImport } from './routes/_authenticated/about'
-import { Route as authSignInImport } from './routes/(auth)/sign-in'
+import { Route as ProtectedImport } from './routes/_protected'
+import { Route as AuthImport } from './routes/_auth'
+import { Route as ProtectedIndexImport } from './routes/_protected/index'
+import { Route as ProtectedDashboardImport } from './routes/_protected/dashboard'
+import { Route as ProtectedAboutImport } from './routes/_protected/about'
+import { Route as AuthSignInIndexImport } from './routes/_auth/sign-in/index'
+import { Route as AuthSignInEmailImport } from './routes/_auth/sign-in/email'
 
 // Create/Update Routes
 
-const AuthenticatedRoute = AuthenticatedImport.update({
-  id: '/_authenticated',
+const ProtectedRoute = ProtectedImport.update({
+  id: '/_protected',
   getParentRoute: () => rootRoute,
 } as any)
 
-const AuthenticatedIndexRoute = AuthenticatedIndexImport.update({
+const AuthRoute = AuthImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProtectedIndexRoute = ProtectedIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => ProtectedRoute,
 } as any)
 
-const AuthenticatedDashboardRoute = AuthenticatedDashboardImport.update({
+const ProtectedDashboardRoute = ProtectedDashboardImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => ProtectedRoute,
 } as any)
 
-const AuthenticatedAboutRoute = AuthenticatedAboutImport.update({
+const ProtectedAboutRoute = ProtectedAboutImport.update({
   id: '/about',
   path: '/about',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => ProtectedRoute,
 } as any)
 
-const authSignInRoute = authSignInImport.update({
-  id: '/(auth)/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => rootRoute,
+const AuthSignInIndexRoute = AuthSignInIndexImport.update({
+  id: '/sign-in/',
+  path: '/sign-in/',
+  getParentRoute: () => AuthRoute,
+} as any)
+
+const AuthSignInEmailRoute = AuthSignInEmailImport.update({
+  id: '/sign-in/email',
+  path: '/sign-in/email',
+  getParentRoute: () => AuthRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_authenticated': {
-      id: '/_authenticated'
+    '/_auth': {
+      id: '/_auth'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof AuthenticatedImport
+      preLoaderRoute: typeof AuthImport
       parentRoute: typeof rootRoute
     }
-    '/(auth)/sign-in': {
-      id: '/(auth)/sign-in'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof authSignInImport
+    '/_protected': {
+      id: '/_protected'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof ProtectedImport
       parentRoute: typeof rootRoute
     }
-    '/_authenticated/about': {
-      id: '/_authenticated/about'
+    '/_protected/about': {
+      id: '/_protected/about'
       path: '/about'
       fullPath: '/about'
-      preLoaderRoute: typeof AuthenticatedAboutImport
-      parentRoute: typeof AuthenticatedImport
+      preLoaderRoute: typeof ProtectedAboutImport
+      parentRoute: typeof ProtectedImport
     }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
+    '/_protected/dashboard': {
+      id: '/_protected/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardImport
-      parentRoute: typeof AuthenticatedImport
+      preLoaderRoute: typeof ProtectedDashboardImport
+      parentRoute: typeof ProtectedImport
     }
-    '/_authenticated/': {
-      id: '/_authenticated/'
+    '/_protected/': {
+      id: '/_protected/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexImport
-      parentRoute: typeof AuthenticatedImport
+      preLoaderRoute: typeof ProtectedIndexImport
+      parentRoute: typeof ProtectedImport
+    }
+    '/_auth/sign-in/email': {
+      id: '/_auth/sign-in/email'
+      path: '/sign-in/email'
+      fullPath: '/sign-in/email'
+      preLoaderRoute: typeof AuthSignInEmailImport
+      parentRoute: typeof AuthImport
+    }
+    '/_auth/sign-in/': {
+      id: '/_auth/sign-in/'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof AuthSignInIndexImport
+      parentRoute: typeof AuthImport
     }
   }
 }
 
 // Create and export the route tree
 
-interface AuthenticatedRouteChildren {
-  AuthenticatedAboutRoute: typeof AuthenticatedAboutRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+interface AuthRouteChildren {
+  AuthSignInEmailRoute: typeof AuthSignInEmailRoute
+  AuthSignInIndexRoute: typeof AuthSignInIndexRoute
 }
 
-const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAboutRoute: AuthenticatedAboutRoute,
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthSignInEmailRoute: AuthSignInEmailRoute,
+  AuthSignInIndexRoute: AuthSignInIndexRoute,
 }
 
-const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
-  AuthenticatedRouteChildren,
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
+interface ProtectedRouteChildren {
+  ProtectedAboutRoute: typeof ProtectedAboutRoute
+  ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+  ProtectedIndexRoute: typeof ProtectedIndexRoute
+}
+
+const ProtectedRouteChildren: ProtectedRouteChildren = {
+  ProtectedAboutRoute: ProtectedAboutRoute,
+  ProtectedDashboardRoute: ProtectedDashboardRoute,
+  ProtectedIndexRoute: ProtectedIndexRoute,
+}
+
+const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
+  ProtectedRouteChildren,
 )
 
 export interface FileRoutesByFullPath {
-  '': typeof AuthenticatedRouteWithChildren
-  '/sign-in': typeof authSignInRoute
-  '/about': typeof AuthenticatedAboutRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/': typeof AuthenticatedIndexRoute
+  '': typeof ProtectedRouteWithChildren
+  '/about': typeof ProtectedAboutRoute
+  '/dashboard': typeof ProtectedDashboardRoute
+  '/': typeof ProtectedIndexRoute
+  '/sign-in/email': typeof AuthSignInEmailRoute
+  '/sign-in': typeof AuthSignInIndexRoute
 }
 
 export interface FileRoutesByTo {
-  '/sign-in': typeof authSignInRoute
-  '/about': typeof AuthenticatedAboutRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/': typeof AuthenticatedIndexRoute
+  '': typeof AuthRouteWithChildren
+  '/about': typeof ProtectedAboutRoute
+  '/dashboard': typeof ProtectedDashboardRoute
+  '/': typeof ProtectedIndexRoute
+  '/sign-in/email': typeof AuthSignInEmailRoute
+  '/sign-in': typeof AuthSignInIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/(auth)/sign-in': typeof authSignInRoute
-  '/_authenticated/about': typeof AuthenticatedAboutRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_auth': typeof AuthRouteWithChildren
+  '/_protected': typeof ProtectedRouteWithChildren
+  '/_protected/about': typeof ProtectedAboutRoute
+  '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/_protected/': typeof ProtectedIndexRoute
+  '/_auth/sign-in/email': typeof AuthSignInEmailRoute
+  '/_auth/sign-in/': typeof AuthSignInIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/sign-in' | '/about' | '/dashboard' | '/'
+  fullPaths: '' | '/about' | '/dashboard' | '/' | '/sign-in/email' | '/sign-in'
   fileRoutesByTo: FileRoutesByTo
-  to: '/sign-in' | '/about' | '/dashboard' | '/'
+  to: '' | '/about' | '/dashboard' | '/' | '/sign-in/email' | '/sign-in'
   id:
     | '__root__'
-    | '/_authenticated'
-    | '/(auth)/sign-in'
-    | '/_authenticated/about'
-    | '/_authenticated/dashboard'
-    | '/_authenticated/'
+    | '/_auth'
+    | '/_protected'
+    | '/_protected/about'
+    | '/_protected/dashboard'
+    | '/_protected/'
+    | '/_auth/sign-in/email'
+    | '/_auth/sign-in/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  authSignInRoute: typeof authSignInRoute
+  AuthRoute: typeof AuthRouteWithChildren
+  ProtectedRoute: typeof ProtectedRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  authSignInRoute: authSignInRoute,
+  AuthRoute: AuthRouteWithChildren,
+  ProtectedRoute: ProtectedRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -167,32 +213,44 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/_authenticated",
-        "/(auth)/sign-in"
+        "/_auth",
+        "/_protected"
       ]
     },
-    "/_authenticated": {
-      "filePath": "_authenticated.tsx",
+    "/_auth": {
+      "filePath": "_auth.tsx",
       "children": [
-        "/_authenticated/about",
-        "/_authenticated/dashboard",
-        "/_authenticated/"
+        "/_auth/sign-in/email",
+        "/_auth/sign-in/"
       ]
     },
-    "/(auth)/sign-in": {
-      "filePath": "(auth)/sign-in.tsx"
+    "/_protected": {
+      "filePath": "_protected.tsx",
+      "children": [
+        "/_protected/about",
+        "/_protected/dashboard",
+        "/_protected/"
+      ]
     },
-    "/_authenticated/about": {
-      "filePath": "_authenticated/about.tsx",
-      "parent": "/_authenticated"
+    "/_protected/about": {
+      "filePath": "_protected/about.tsx",
+      "parent": "/_protected"
     },
-    "/_authenticated/dashboard": {
-      "filePath": "_authenticated/dashboard.tsx",
-      "parent": "/_authenticated"
+    "/_protected/dashboard": {
+      "filePath": "_protected/dashboard.tsx",
+      "parent": "/_protected"
     },
-    "/_authenticated/": {
-      "filePath": "_authenticated/index.tsx",
-      "parent": "/_authenticated"
+    "/_protected/": {
+      "filePath": "_protected/index.tsx",
+      "parent": "/_protected"
+    },
+    "/_auth/sign-in/email": {
+      "filePath": "_auth/sign-in/email.tsx",
+      "parent": "/_auth"
+    },
+    "/_auth/sign-in/": {
+      "filePath": "_auth/sign-in/index.tsx",
+      "parent": "/_auth"
     }
   }
 }

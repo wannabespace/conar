@@ -2,10 +2,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { sessionQuery } from './query/auth'
 import { routeTree } from './routeTree.gen'
 import './assets/styles/index.css'
 
 export const queryClient = new QueryClient()
+
+queryClient.prefetchQuery(sessionQuery())
 
 const router = createRouter({
   routeTree,

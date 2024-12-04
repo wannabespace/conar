@@ -1,8 +1,22 @@
 {
   "name": "shared",
   "private": true,
+  "exports": {
+    ".": "./index.ts",
+    "./ui": "./ui/index.ts",
+    "./components": "./components/index.ts"
+  },
   "main": "index.ts",
+  "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.1.2",
+    "@radix-ui/react-label": "^2.1.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "sonner": "^1.7.0",
+    "tailwind-merge": "^2.5.5"
+  },
   "devDependencies": {
-    "tailwindcss": "^3.4.16"
+    "tailwindcss": "^3.4.16",
+    "tailwindcss-animate": "^1.0.7"
   }
 }

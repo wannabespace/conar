@@ -3,18 +3,18 @@
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { toast } from 'sonner'
-import { Button } from '~/components/ui/button'
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card'
-import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
+  Input,
+  Label,
+} from 'shared/ui'
+import { toast } from 'sonner'
 import { authClient } from '~/lib/client'
 
 export default function SignUp() {

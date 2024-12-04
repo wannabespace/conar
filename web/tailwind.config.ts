@@ -1,13 +1,11 @@
 import type { Config } from 'tailwindcss'
-import { tailwindTheme } from 'shared'
-import animate from 'tailwindcss-animate'
+import { tailwindConfig } from 'shared'
 
 export default <Config>{
-  darkMode: ['class'],
+  ...tailwindConfig,
   content: [
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    '../shared/**/*.tsx',
   ],
-  theme: tailwindTheme,
-  plugins: [animate],
 }

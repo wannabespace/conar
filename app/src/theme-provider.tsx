@@ -1,24 +1,16 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useMedia } from 'react-use'
+import { SharedContext } from 'shared'
 import { THEME_KEY } from './lib/constants'
 
 type Theme = 'dark' | 'light' | 'system'
-
-interface ThemeProviderProps {
-  children: React.ReactNode
-  defaultTheme?: Theme
-  storageKey?: string
-}
 
 const ThemeProviderContext = createContext<{
   theme: Theme
   setTheme: (theme: Theme) => void
 }>(null!)
 
-export function ThemeProvider({
-  children,
-  ...props
-}: ThemeProviderProps) {
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(THEME_KEY) as Theme | null) || 'system',
   )
@@ -41,7 +33,6 @@ export function ThemeProvider({
 
   return (
     <ThemeProviderContext.Provider
-      {...props}
       value={{
         theme,
         setTheme: (theme: Theme) => {
@@ -50,7 +41,9 @@ export function ThemeProvider({
         },
       }}
     >
-      {children}
+      <SharedContext.Provider value={{ theme, setTheme }}>
+        {children}
+      </SharedContext.Provider>
     </ThemeProviderContext.Provider>
   )
 }
