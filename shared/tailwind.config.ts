@@ -1,8 +1,9 @@
 import type { Config } from 'tailwindcss'
 import animate from 'tailwindcss-animate'
 
-export default <Omit<Config, 'content'>>{
+export default {
   darkMode: ['class'],
+  content: ['./**/*.{ts,tsx}'],
   theme: {
     extend: {
       borderRadius: {
@@ -12,8 +13,12 @@ export default <Omit<Config, 'content'>>{
       },
       colors: {
         primary: '#7942F1',
+        background: {
+          primary: 'var(--primary-bg)',
+          secondary: 'var(--secondary-bg)',
+        },
       },
     },
   },
   plugins: [animate],
-}
+} satisfies Config

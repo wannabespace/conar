@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { MuseoModerno, Nunito_Sans } from 'next/font/google'
-import './index.css'
+import 'shared/index.css'
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-nunito-sans',

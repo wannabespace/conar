@@ -15,9 +15,9 @@ export default antfu(
       'react-compiler/react-compiler': 'error',
     },
     ignores: [
-      'app/src-tauri/{target,gen}/**/*',
-      'app/src-tauri/capabilities/default.json',
-      'app/src/routeTree.gen.ts',
+      'desktop/src-tauri/{target,gen}/**/*',
+      'desktop/src-tauri/capabilities/default.json',
+      'desktop/src/routeTree.gen.ts',
       'web/drizzle/migrations/meta/*.json',
       '**/*.toml',
     ],

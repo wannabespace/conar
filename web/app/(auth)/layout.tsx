@@ -1,4 +1,3 @@
-import { RiArrowLeftLine } from '@remixicon/react'
 import Link from 'next/link'
 
 export default async function AuthLayout({
@@ -15,7 +14,7 @@ export default async function AuthLayout({
           href="/"
           className="group mt-6 flex items-center gap-2 text-sm text-zinc-500"
         >
-          <RiArrowLeftLine className="size-3 duration-150 group-hover:-translate-x-1" />
+          {/* <RiArrowLeftLine className="size-3 duration-150 group-hover:-translate-x-1" /> */}
           Home
         </Link>
       </div>

@@ -1,19 +1,36 @@
 {
   "name": "connnect",
   "version": "1.0.0",
-  "packageManager": "pnpm@9.14.4",
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "prepare": "husky",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "run-p typecheck:web typecheck:app",
+    "typecheck": "run-p typecheck:web typecheck:desktop",
     "typecheck:web": "cd web && pnpm typecheck",
-    "typecheck:app": "cd app && pnpm typecheck"
+    "typecheck:desktop": "cd desktop && pnpm typecheck"
+  },
+  "dependencies": {
+    "better-auth": "^1.0.14",
+    "clsx": "^2.1.1",
+    "motion": "^11.13.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "sonner": "^1.7.1",
+    "tailwind-merge": "^2.5.5",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.11.2",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.1",
     "eslint": "^9.16.0",
+    "eslint-plugin-react-compiler": "19.0.0-beta-df7b47d-20241124",
+    "eslint-plugin-tailwindcss": "^3.17.5",
     "husky": "^9.1.7",
-    "npm-run-all2": "^7.0.1"
+    "npm-run-all2": "^7.0.1",
+    "tailwindcss": "^3.4.16",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.7.2"
   }
 }

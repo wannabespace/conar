@@ -4,7 +4,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { sessionQuery } from './query/auth'
 import { routeTree } from './routeTree.gen'
-import './assets/styles/index.css'
+import 'shared/index.css'
 
 export const queryClient = new QueryClient()
 

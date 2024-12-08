@@ -5,7 +5,7 @@ import 'server-only'
 export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-11-20.acacia',
   appInfo: {
-    name: 'Fresi',
+    name: 'Connnect',
     url: env.NEXT_PUBLIC_URL,
   },
 })

@@ -1,4 +1,4 @@
-import { createAuthClient } from 'better-auth/react'
+import { createAuthClient } from 'better-auth/client'
 import { BEARER_TOKEN_KEY } from '~/lib/constants'
 
 export const authClient = createAuthClient({
