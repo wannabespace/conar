@@ -10,6 +10,7 @@ export const auth = betterAuth({
   appName: 'Connnect',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.NEXT_PUBLIC_URL,
+  // @ts-expect-error better-auth@1.0.10
   plugins: [bearer(), emailHarmony()],
   trustedOrigins: process.env.NODE_ENV === 'production' ? ['connnect://localhost'] : ['http://localhost:1420'],
   advanced: {

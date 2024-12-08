@@ -21,9 +21,7 @@ function RouteComponent() {
       email,
       password,
     })
-    // @ts-expect-error temp bug
     if (data?.session) {
-      // @ts-expect-error temp bug
       localStorage.setItem(BEARER_TOKEN_KEY, data.session.token)
     }
     setLoading(false)
