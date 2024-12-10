@@ -10,7 +10,7 @@ export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.NEXT_PUBLIC_URL,
   plugins: [emailHarmony()],
-  trustedOrigins: process.env.NODE_ENV === 'production' ? ['connnect://localhost'] : ['http://localhost:1420'],
+  trustedOrigins: process.env.NODE_ENV === 'production' ? ['tauri://localhost'] : ['http://localhost:1420'],
   advanced: {
     generateId: () => v7(),
     cookiePrefix: 'connnect',
