@@ -8,7 +8,7 @@ import * as auth from './schema/auth'
 
 // export * from './schema/subscriptions'
 
-const client = postgres(env.DATABASE_URL!)
+const client = postgres(env.DATABASE_URL)
 
 const logger = createConsola({
   formatOptions: {

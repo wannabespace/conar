@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
-            value: '*',
+            value: process.env.NODE_ENV === 'production' ? 'connnect://localhost' : 'http://localhost:1420',
           },
           {
             key: 'Access-Control-Allow-Credentials',
@@ -24,10 +24,6 @@ const nextConfig: NextConfig = {
           {
             key: 'Access-Control-Allow-Headers',
             value: 'Content-Type, Authorization',
-          },
-          {
-            key: 'Access-Control-Expose-Headers',
-            value: 'Content-Length, X-Requested-With',
           },
         ],
       },

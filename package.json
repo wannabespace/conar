@@ -11,7 +11,7 @@
     "typecheck:desktop": "cd desktop && pnpm typecheck"
   },
   "dependencies": {
-    "better-auth": "^1.0.10",
+    "better-auth": "^1.0.14",
     "clsx": "^2.1.1",
     "motion": "^11.13.1",
     "react": "19.0.0",

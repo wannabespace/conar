@@ -1,4 +1,5 @@
 packages:
   - shared
+  - server
   - desktop
   - web

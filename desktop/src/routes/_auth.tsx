@@ -1,8 +1,19 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { AppLogo } from 'shared/components'
 import { Card, CardContent, CardHeader, CardTitle } from 'shared/ui'
+import { queryClient } from '~/main'
+import { sessionQuery } from '~/query/auth'
 
 export const Route = createFileRoute('/_auth')({
+  beforeLoad: async () => {
+    const { data } = await queryClient.ensureQueryData(sessionQuery())
+
+    if (data?.session) {
+      throw redirect({
+        to: '/dashboard',
+      })
+    }
+  },
   component: RouteComponent,
 })
 

@@ -1,4 +1,4 @@
-import type { AnyType } from './types'
+import type { AnyType } from '~/types'
 import { type ConsolaInstance, createConsola, type LogType } from 'consola'
 import { colorize } from 'consola/utils'
 

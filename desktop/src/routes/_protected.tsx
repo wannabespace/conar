@@ -1,7 +1,6 @@
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 import { useSession } from '~/hooks/use-session'
 import { authClient } from '~/lib/auth'
-import { BEARER_TOKEN_KEY } from '~/lib/constants'
 import { queryClient } from '~/main'
 import { sessionQuery } from '~/query/auth'
 
@@ -42,7 +41,6 @@ function RouteComponent() {
       <button
         onClick={async () => {
           await authClient.signOut()
-          localStorage.removeItem(BEARER_TOKEN_KEY)
           await refetch()
         }}
       >

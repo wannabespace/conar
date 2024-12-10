@@ -1,9 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button, Input, Label } from 'shared/ui'
+import { toast } from 'sonner'
+import { useSession } from '~/hooks/use-session'
 import { authClient } from '~/lib/auth'
-import { BEARER_TOKEN_KEY } from '~/lib/constants'
 import { cn } from '~/lib/utils'
 
 export const Route = createFileRoute('/_auth/sign-in/')({
@@ -11,19 +12,29 @@ export const Route = createFileRoute('/_auth/sign-in/')({
 })
 
 function RouteComponent() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const { refetch } = useSession()
+  const [email, setEmail] = useState('valerii.strilets@gmail.com')
+  const [password, setPassword] = useState('12345678')
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   async function signIn() {
     setLoading(true)
-    const { data } = await authClient.signIn.email({
+    const { error } = await authClient.signIn.email({
       email,
       password,
     })
-    if (data?.session) {
-      localStorage.setItem(BEARER_TOKEN_KEY, data.session.token)
+
+    if (error) {
+      toast.error(error.message)
     }
+    else {
+      await refetch()
+      await router.navigate({
+        to: '/dashboard',
+      })
+    }
+
     setLoading(false)
   }
 
@@ -34,7 +45,8 @@ function RouteComponent() {
         <Input
           id="email"
           type="email"
-          placeholder="m~example.com"
+          placeholder="email@example.com"
+          spellCheck="false"
           required
           onChange={(e) => {
             setEmail(e.target.value)
@@ -70,10 +82,20 @@ function RouteComponent() {
           variant="outline"
           className={cn('w-full gap-2')}
           onClick={async () => {
-            await authClient.signIn.social({
+            const { data, error } = await authClient.signIn.social({
               provider: 'google',
+              disableRedirect: true,
               callbackURL: '/dashboard',
             })
+
+            if (error) {
+              toast.error(error.message)
+              return
+            }
+
+            if (data.url) {
+              window.open(data.url, '_blank')
+            }
           }}
         >
           <svg
@@ -94,10 +116,20 @@ function RouteComponent() {
           variant="outline"
           className={cn('w-full gap-2')}
           onClick={async () => {
-            await authClient.signIn.social({
+            const { data, error } = await authClient.signIn.social({
               provider: 'github',
-              callbackURL: '/dashboard',
+              disableRedirect: true,
+              callbackURL: 'http://localhost:1420/sign-in/callback',
             })
+
+            if (error) {
+              toast.error(error.message)
+              return
+            }
+
+            if (data.url) {
+              window.open(data.url, '_blank')
+            }
           }}
         >
           <svg
