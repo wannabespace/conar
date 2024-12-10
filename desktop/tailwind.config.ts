@@ -6,6 +6,6 @@ export default <Config>{
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
-    '../shared/**/*.{ts,tsx}',
+    '../shared/{components,ui}/**/*.{ts,tsx}',
   ],
 }

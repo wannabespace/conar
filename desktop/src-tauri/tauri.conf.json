@@ -21,20 +21,22 @@
       {
         "title": "Connnect",
         "titleBarStyle": "Overlay",
+        "transparent": true,
         "width": 1280,
         "height": 720,
         "minWidth": 500,
-        "minHeight": 300,
-        "maximized": true
+        "minHeight": 300
       }
-    ],
-    "security": {
-      "csp": null
-    }
+    ]
   },
+  "mainBinaryName": "connnect",
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": "dmg",
+    "category": "Developer Tools",
+    "macOS": {
+      "minimumSystemVersion": "13.0"
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

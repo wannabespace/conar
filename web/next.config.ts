@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
-            value: process.env.NODE_ENV === 'production' ? 'connnect://localhost' : 'http://localhost:1420',
+            value: process.env.NODE_ENV === 'production' ? 'tauri://localhost' : 'http://localhost:1420',
           },
           {
             key: 'Access-Control-Allow-Credentials',

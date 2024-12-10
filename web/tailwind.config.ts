@@ -6,6 +6,6 @@ export default <Config>{
   content: [
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
-    '../shared/**/*.{ts,tsx}',
+    '../shared/{components,ui}/**/*.{ts,tsx}',
   ],
 }
