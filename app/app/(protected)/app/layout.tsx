@@ -19,14 +19,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   return (
     <>
       <div className="flex gap-2 p-2">
-        <Link href="/" className="[&.active]:font-bold">
-          Home
-        </Link>
-        {' '}
-        <Link href="/about" className="[&.active]:font-bold">
-          About
-        </Link>
-        <Link href="/dashboard" className="[&.active]:font-bold">
+        <Link href="/app" className="[&.active]:font-bold">
           Dashboard
         </Link>
       </div>
