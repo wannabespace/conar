@@ -29,9 +29,7 @@
       }
     ]
   },
-  "mainBinaryName": "connnect",
   "bundle": {
-    "active": true,
     "targets": "dmg",
     "category": "Developer Tools",
     "macOS": {

@@ -14,6 +14,7 @@ export const auth = betterAuth({
   advanced: {
     generateId: () => v7(),
     cookiePrefix: 'connnect',
+    useSecureCookies: false,
   },
   database: drizzleAdapter(db, {
     provider: 'pg',
