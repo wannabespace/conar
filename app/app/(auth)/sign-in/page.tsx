@@ -30,7 +30,7 @@ export default function SignInPage() {
     }
     else {
       await refetch()
-      router.push('/')
+      router.push('/app')
     }
 
     setLoading(false)

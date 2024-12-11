@@ -88,7 +88,7 @@ export default function SignIn() {
               }
               else {
                 await refetch()
-                router.push('/')
+                router.push('/app')
               }
 
               setLoading(false)
