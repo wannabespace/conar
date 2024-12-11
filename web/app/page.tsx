@@ -1,13 +1,13 @@
 'use client'
 
-import { authClient } from '@/lib/client'
+import { useSession } from '~/hooks/use-session'
 
 export default function Page() {
-  const { data } = authClient.useSession()
+  const { session } = useSession()
 
   return (
     <div>
-      {data?.user.email || 'No user'}
+      {session?.user.email || 'No user'}
     </div>
   )
 }
