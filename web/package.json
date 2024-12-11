@@ -18,7 +18,6 @@
     "@t3-oss/env-nextjs": "^0.11.1",
     "babel-plugin-react-compiler": "19.0.0-beta-df7b47d-20241124",
     "better-auth-harmony": "^1.1.1",
-    "class-variance-authority": "^0.7.1",
     "consola": "^3.2.3",
     "drizzle-orm": "^0.38.0",
     "lucide-react": "^0.468.0",

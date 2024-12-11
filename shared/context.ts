@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext, use } from 'react'
 
 export const SharedContext = createContext<{
   theme: 'light' | 'dark' | 'system'
@@ -6,5 +6,5 @@ export const SharedContext = createContext<{
 }>(null!)
 
 export function useSharedContext() {
-  return useContext(SharedContext)
+  return use(SharedContext)
 }

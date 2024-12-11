@@ -11,6 +11,9 @@ importers:
       better-auth:
         specifier: ^1.0.15
         version: 1.0.15
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -93,9 +96,6 @@ importers:
       '@tauri-apps/plugin-updater':
         specifier: ^2.3.0
         version: 2.3.0
-      class-variance-authority:
-        specifier: ^0.7.1
-        version: 0.7.1
       lucide-react:
         specifier: ^0.468.0
         version: 0.468.0(react@19.0.0)
@@ -148,25 +148,6 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.1.0
         version: 1.1.0(@types/react@19.0.1)(react@19.0.0)
-      class-variance-authority:
-        specifier: ^0.7.1
-        version: 0.7.1
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
-      sonner:
-        specifier: ^1.7.1
-        version: 1.7.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      tailwind-merge:
-        specifier: ^2.5.5
-        version: 2.5.5
-    devDependencies:
-      tailwindcss:
-        specifier: ^3.4.16
-        version: 3.4.16(ts-node@10.9.1(@types/node@22.10.1)(typescript@5.7.2))
-      tailwindcss-animate:
-        specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.4.16(ts-node@10.9.1(@types/node@22.10.1)(typescript@5.7.2)))
 
   web:
     dependencies:
@@ -188,9 +169,6 @@ importers:
       better-auth-harmony:
         specifier: ^1.1.1
         version: 1.1.1(better-auth@1.0.15)
-      class-variance-authority:
-        specifier: ^0.7.1
-        version: 0.7.1
       consola:
         specifier: ^3.2.3
         version: 3.2.3

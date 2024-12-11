@@ -30,7 +30,8 @@
     ]
   },
   "bundle": {
-    "targets": "dmg",
+    "active": true,
+    "targets": "all",
     "category": "Developer Tools",
     "macOS": {
       "minimumSystemVersion": "13.0"
