@@ -7,14 +7,14 @@ import { useSession } from '~/hooks/use-session'
 import { authClient } from '~/lib/auth'
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  const { isLoading, session, refetch } = useSession()
+  const { isLoading, data, refetch } = useSession()
   const router = useRouter()
 
   useEffect(() => {
-    if (!session && !isLoading) {
+    if (!data && !isLoading) {
       router.push('/sign-in')
     }
-  }, [session, isLoading])
+  }, [data, isLoading])
 
   return (
     <>
@@ -25,7 +25,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       </div>
       <hr />
       <header>
-        {isLoading ? 'Loading...' : session?.user.email || 'No user'}
+        {isLoading ? 'Loading...' : data?.user.email || 'No user'}
       </header>
       <button
         onClick={async () => {

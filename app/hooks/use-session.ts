@@ -10,7 +10,7 @@ export function useSession() {
 
   return {
     isLoading: query.isLoading,
-    session: query.data?.data ?? null,
+    data: query.data?.data ?? null,
     isAuthenticated: !!query.data?.data?.user,
     refetch,
   }

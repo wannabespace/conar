@@ -7,14 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { useSession } from '~/hooks/use-session'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  const { session } = useSession()
+  const { data, isLoading } = useSession()
   const router = useRouter()
 
   useEffect(() => {
-    if (session) {
-      router.push('/')
+    if (data && !isLoading) {
+      router.push('/app')
     }
-  }, [session])
+  }, [data, isLoading])
 
   return (
     <div className="flex min-h-screen py-10">

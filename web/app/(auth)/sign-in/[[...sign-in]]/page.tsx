@@ -3,7 +3,6 @@
 import { authClient } from '@/lib/client'
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/button'
@@ -25,7 +24,6 @@ export default function SignIn() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const { refetch } = useSession()
-  const router = useRouter()
 
   return (
     <Card className="max-w-md">
@@ -88,7 +86,6 @@ export default function SignIn() {
               }
               else {
                 await refetch()
-                router.push('/app')
               }
 
               setLoading(false)
