@@ -1,6 +1,5 @@
 {
   "name": "web",
-  "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -12,20 +11,11 @@
     "drizzle:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@radix-ui/react-checkbox": "^1.1.2",
-    "@radix-ui/react-label": "^2.1.0",
-    "@radix-ui/react-slot": "^1.1.0",
-    "@t3-oss/env-nextjs": "^0.11.1",
-    "babel-plugin-react-compiler": "19.0.0-beta-df7b47d-20241124",
+    "app": "workspace:*",
     "better-auth-harmony": "^1.1.1",
     "consola": "^3.2.3",
     "drizzle-orm": "^0.38.0",
-    "lucide-react": "^0.468.0",
-    "next": "15.1.0",
-    "next-themes": "^0.4.4",
     "postgres": "^3.4.5",
-    "server-only": "^0.0.1",
-    "shared": "workspace:*",
     "stripe": "^17.4.0",
     "svix": "^1.43.0",
     "uuid": "^11.0.3"

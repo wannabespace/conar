@@ -1,7 +1,7 @@
 import type Stripe from 'stripe'
+import { env } from '@/env'
+import { stripe } from '@/lib/stripe'
 import { headers } from 'next/headers'
-import { env } from '~/env'
-import { stripe } from '~/lib/stripe'
 
 const PRICE_IDS = [env.STRIPE_MONTHLY_PRICE_ID, env.STRIPE_YEARLY_PRICE_ID]
 

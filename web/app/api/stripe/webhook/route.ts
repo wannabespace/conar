@@ -1,5 +1,5 @@
 import type Stripe from 'stripe'
-import { createLogger } from '~/lib/logger'
+import { createLogger } from '@/lib/logger'
 import { subscriptionCreated } from './subscription-created'
 import { subscriptionDeleted } from './subscription-deleted'
 import { subscriptionUpdated } from './subscription-updated'

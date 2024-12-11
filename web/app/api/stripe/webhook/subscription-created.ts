@@ -1,8 +1,8 @@
 import type Stripe from 'stripe'
 // @ts-expect-error subs
-import { db, subscriptions } from '~/drizzle'
-import { createLogger } from '~/lib/logger'
-import { stripe } from '~/lib/stripe'
+import { db, subscriptions } from '@/drizzle'
+import { createLogger } from '@/lib/logger'
+import { stripe } from '@/lib/stripe'
 
 const logger = createLogger('stripe.webhook.subscription-created')
 

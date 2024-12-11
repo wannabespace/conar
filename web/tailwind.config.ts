@@ -1,11 +1,10 @@
-import type { Config } from 'tailwindcss'
-import tailwindConfig from 'shared/tailwind.config'
+import tailwindConfig from 'app/tailwind.config'
 
-export default <Config>{
+export default {
   ...tailwindConfig,
   content: [
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
-    '../shared/{components,ui}/**/*.{ts,tsx}',
+    ...tailwindConfig.content.map(p => p.replace('./', '../app/')),
   ],
 }

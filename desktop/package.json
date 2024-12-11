@@ -1,36 +1,10 @@
 {
   "name": "desktop",
   "type": "module",
-  "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
     "tauri": "tauri"
   },
-  "dependencies": {
-    "@tanstack/react-query": "^5.62.7",
-    "@tanstack/react-router": "^1.87.7",
-    "@tauri-apps/api": "^2.1.1",
-    "@tauri-apps/plugin-deep-link": "^2.2.0",
-    "@tauri-apps/plugin-dialog": "^2.2.0",
-    "@tauri-apps/plugin-shell": "^2",
-    "@tauri-apps/plugin-stronghold": "^2.2.0",
-    "@tauri-apps/plugin-updater": "^2.3.0",
-    "lucide-react": "^0.468.0",
-    "react-use": "^17.6.0",
-    "shared": "workspace:*"
-  },
   "devDependencies": {
-    "@tanstack/eslint-plugin-router": "^1.87.6",
-    "@tanstack/react-query-devtools": "^5.62.7",
-    "@tanstack/router-devtools": "^1.87.7",
-    "@tanstack/router-plugin": "^1.87.7",
-    "@tauri-apps/cli": "^2",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "vite": "^6.0.3"
+    "@tauri-apps/cli": "^2"
   }
 }

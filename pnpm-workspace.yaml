@@ -2,3 +2,4 @@ packages:
   - shared
   - desktop
   - web
+  - app

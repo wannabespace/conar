@@ -1,21 +1,21 @@
 'use client'
 
+import { authClient } from '@/lib/client'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
+import { Button } from '~/components/ui/button'
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-  Input,
-  Label,
-} from 'shared/ui'
-import { toast } from 'sonner'
-import { authClient } from '~/lib/client'
+} from '~/components/ui/card'
+import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
 
 export default function SignUp() {
   const [email, setEmail] = useState('')

@@ -1,6 +1,6 @@
 'use client'
 
-import { authClient } from '~/lib/client'
+import { authClient } from '@/lib/client'
 
 export default function Page() {
   const { data } = authClient.useSession()

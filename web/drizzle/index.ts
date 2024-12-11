@@ -1,8 +1,8 @@
+import { env } from '@/env'
 import { createConsola } from 'consola'
 import { colorize } from 'consola/utils'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { env } from '~/env'
 import * as auth from './schema/auth'
 // import * as subscriptions from './schema/subscriptions'
 

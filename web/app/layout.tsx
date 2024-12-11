@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
+import { AppLayout } from 'app/core'
+import { ThemeProvider } from 'next-themes'
 import { MuseoModerno, Nunito_Sans } from 'next/font/google'
-import 'shared/index.css'
+import '~/app/index.css'
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-nunito-sans',
@@ -23,11 +25,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`font-sans ${nunitoSans.variable} ${museoModerno.variable} antialiased`}
       >
-        {children}
+        <AppLayout>
+          <ThemeProvider attribute="class">
+            {children}
+          </ThemeProvider>
+        </AppLayout>
       </body>
     </html>
   )

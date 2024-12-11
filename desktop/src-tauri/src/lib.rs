@@ -1,7 +1,14 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+use std::env;
+
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
+}
+
+#[tauri::command]
+fn get_stronghold_password() -> String {
+    env::var("STRONGHOLD_PASSWORD").unwrap_or_default()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -21,7 +28,8 @@ pub fn run() {
                     version: Version::Version13,
                     ..Default::default()
                 };
-                let salt = "5d41402abc4b2a76b9719d911017c592".as_bytes();
+                let stronghold_salt = env::var("STRONGHOLD_SALT").unwrap_or_default();
+                let salt = stronghold_salt.as_bytes();
                 let key =
                     hash_raw(password.as_ref(), salt, &config).expect("failed to hash password");
 
@@ -34,6 +42,7 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![get_stronghold_password])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

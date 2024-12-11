@@ -1,10 +1,10 @@
+import { db } from '@/drizzle'
+import { env } from '@/env'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { bearer } from 'better-auth/plugins'
 import { v7 } from 'uuid'
-import { db } from '~/drizzle'
-import { env } from '~/env'
 
 export const auth = betterAuth({
   appName: 'Connnect',
@@ -22,7 +22,6 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    autoSignIn: true,
   },
   socialProviders: {
     google: {
