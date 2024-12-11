@@ -126,9 +126,9 @@ importers:
       '@tauri-apps/plugin-updater':
         specifier: ^2.3.0
         version: 2.3.0
-      lucide-react:
-        specifier: ^0.468.0
-        version: 0.468.0(react@19.0.0)
+      better-auth:
+        specifier: ^1.0.15
+        version: 1.0.15
       react-use:
         specifier: ^17.6.0
         version: 17.6.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
