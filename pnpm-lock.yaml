@@ -151,6 +151,9 @@ importers:
 
   web:
     dependencies:
+      app:
+        specifier: workspace:*
+        version: link:../app
       better-auth-harmony:
         specifier: ^1.1.1
         version: 1.1.1(better-auth@1.0.15)
