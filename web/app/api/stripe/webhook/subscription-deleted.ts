@@ -1,7 +1,7 @@
 import type Stripe from 'stripe'
-import { eq } from 'drizzle-orm'
 // @ts-expect-error subs
-import { db, subscriptions } from '~/drizzle'
+import { db, subscriptions } from '@/drizzle'
+import { eq } from 'drizzle-orm'
 
 export async function subscriptionDeleted(event: Stripe.Event) {
   if (event.type !== 'customer.subscription.deleted')
