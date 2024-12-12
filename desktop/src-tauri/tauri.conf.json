@@ -19,6 +19,7 @@
     "windows": [
       {
         "title": "Connnect",
+        "hiddenTitle": true,
         "titleBarStyle": "Overlay",
         "width": 1280,
         "height": 720,
