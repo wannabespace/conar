@@ -10,7 +10,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { refetch } = useSession()
 
   useEffect(() => {
-    authClient.$store.listen('$sessionSignal', refetch)
+    authClient.$store.listen('$sessionSignal', () => refetch())
   }, [])
 
   useEffect(() => {

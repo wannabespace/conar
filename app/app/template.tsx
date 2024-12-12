@@ -1,5 +1,3 @@
-'use client'
-
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthProvider } from './auth-provider'
 import { QueryProvider } from './query-provider'

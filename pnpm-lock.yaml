@@ -29,9 +29,6 @@ importers:
       babel-plugin-react-compiler:
         specifier: 19.0.0-beta-37ed2a7-20241206
         version: 19.0.0-beta-37ed2a7-20241206
-      better-auth:
-        specifier: ^1.0.15
-        version: 1.0.15
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -42,8 +39,8 @@ importers:
         specifier: ^0.468.0
         version: 0.468.0(react@19.0.0)
       motion:
-        specifier: ^11.13.5
-        version: 11.13.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        specifier: ^11.14.1
+        version: 11.14.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       next:
         specifier: 15.1.0
         version: 15.1.0(babel-plugin-react-compiler@19.0.0-beta-37ed2a7-20241206)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -127,8 +124,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       better-auth:
-        specifier: ^1.0.15
-        version: 1.0.15
+        specifier: ^1.0.18
+        version: 1.0.18
       react-use:
         specifier: ^17.6.0
         version: 17.6.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -154,15 +151,18 @@ importers:
       app:
         specifier: workspace:*
         version: link:../app
+      better-auth:
+        specifier: ^1.0.18
+        version: 1.0.18
       better-auth-harmony:
         specifier: ^1.1.1
-        version: 1.1.1(better-auth@1.0.15)
+        version: 1.1.1(better-auth@1.0.18)
       consola:
         specifier: ^3.2.3
         version: 3.2.3
       drizzle-orm:
-        specifier: ^0.38.0
-        version: 0.38.0(@types/react@19.0.1)(kysely@0.27.5)(postgres@3.4.5)(react@19.0.0)
+        specifier: ^0.38.1
+        version: 0.38.1(@types/react@19.0.1)(kysely@0.27.5)(postgres@3.4.5)(react@19.0.0)
       postgres:
         specifier: ^3.4.5
         version: 3.4.5
@@ -1846,8 +1846,8 @@ packages:
     peerDependencies:
       better-auth: ^1.0.3
 
-  better-auth@1.0.15:
-    resolution: {integrity: sha512-hBP4huYOZWrKQsb7PId9a/bvNPJhTDaZWT7Q9gBFEwbHVvqhs7WBy4GT2+oELFOPClUP7fYtGDUut07lDtNG9Q==}
+  better-auth@1.0.18:
+    resolution: {integrity: sha512-5zn34/cB+1/F2lzULImTMBAdlC0AGETSRun/RX+CCl2SVXF+V47IQkQ8jm2G0ilZ3W6YHVoi6G6MDqY7+7PQ1Q==}
 
   better-call@0.3.3-beta.4:
     resolution: {integrity: sha512-txigUTFsjOlE4dfkfhDhu6Gk0I1Xo3S4Nye+nfMKJXknb+WsymcWtqoRUSUGdhOMumM3LT9R3QttTUxwny9lWQ==}
@@ -2062,8 +2062,8 @@ packages:
     resolution: {integrity: sha512-zAf0qg/BX2lV/Xip4igXrtbDv+Ub8S39U6qSOEGNvqcHrnmaQjS4mkkFZOUsgXRbuH56QUeWZxfnLHefrKCV5g==}
     hasBin: true
 
-  drizzle-orm@0.38.0:
-    resolution: {integrity: sha512-Ev1UYKOUxiVwLZZfos4hoNDMDkp313FqF0CHelhR+BeOdb76z/a6pKF6SgYQSrmj6EXH4cy6QIkmuxl2KIFW0A==}
+  drizzle-orm@0.38.1:
+    resolution: {integrity: sha512-TpOzNrPGy7dl0/uP9vKD6ATzp9noJaRYhOYqtOCKxxwSmZqrPxN4SW5kWawVUIcbSd2lkbDCdZue+gtVNLmQsg==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -2489,8 +2489,8 @@ packages:
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
 
-  framer-motion@11.13.5:
-    resolution: {integrity: sha512-rArI0zPU9VkpS3Wt0J7dmRxAFUWtzPWoSofNQAP0UO276CmJ+Xlf5xN19GMw3w2QsdrS2sU+0+Q2vtuz4IEZaw==}
+  framer-motion@11.14.1:
+    resolution: {integrity: sha512-6B7jC54zgnefmUSa2l4gkc/2CrqclHL9AUbDxxRfbFyWKLd+4guUYtEabzoYMU8G5ICZ6CdJdydOLy74Ekd7ag==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0 || ^19.0.0
@@ -2944,18 +2944,18 @@ packages:
   mlly@1.7.3:
     resolution: {integrity: sha512-xUsx5n/mN0uQf4V548PKQ+YShA4/IW0KI1dZhrNrPCLG+xizETbHTkOa1f8/xut9JRPp8kQuMnz0oqwkTiLo/A==}
 
-  motion-dom@11.13.0:
-    resolution: {integrity: sha512-Oc1MLGJQ6nrvXccXA89lXtOqFyBmvHtaDcTRGT66o8Czl7nuA8BeHAd9MQV1pQKX0d2RHFBFaw5g3k23hQJt0w==}
+  motion-dom@11.14.1:
+    resolution: {integrity: sha512-Y68tHWR0d2HxHDskNxpeY3pzUdz7L/m5A8TV7VSE6Sq4XUNJdZV8zXco1aeAQ44o48u0i8UKjt8TGIqkZSQ8ew==}
 
-  motion-utils@11.13.0:
-    resolution: {integrity: sha512-lq6TzXkH5c/ysJQBxgLXgM01qwBH1b4goTPh57VvZWJbVJZF/0SB31UWEn4EIqbVPf3au88n2rvK17SpDTja1A==}
+  motion-utils@11.14.1:
+    resolution: {integrity: sha512-R6SsehArpkEBUHydkcwQ/8ij8k2PyKWAJ7Y8PN3ztnFwq5RBU3zIamYH6esTp09OgsbwB57mBEZ9DORaN1WTxQ==}
 
-  motion@11.13.5:
-    resolution: {integrity: sha512-zmX/dz60w1ZtQB5NP9xYkLcCKwX9gc+pnHp4/mFhD9YW8wUe2ZmT8OPOtrTtq26/huxElSDu3hB7BMTSJa5iIQ==}
+  motion@11.14.1:
+    resolution: {integrity: sha512-dOZnRp9+YKI2ZfZWX7mfkDXzt/C0Kyw6b8OGpBgBhYrIDTjMtzbM9KhklgZT751PwmIsgqxxZFa3XmB3Sg5m9A==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
-      react: ^18.0.0
-      react-dom: ^18.0.0
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
     peerDependenciesMeta:
       '@emotion/is-prop-valid':
         optional: true
@@ -5176,14 +5176,14 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  better-auth-harmony@1.1.1(better-auth@1.0.15):
+  better-auth-harmony@1.1.1(better-auth@1.0.18):
     dependencies:
-      better-auth: 1.0.15
+      better-auth: 1.0.18
       libphonenumber-js: 1.11.16
       mailchecker: 6.0.13
       validator: 13.12.0
 
-  better-auth@1.0.15:
+  better-auth@1.0.18:
     dependencies:
       '@better-fetch/fetch': 1.1.12
       '@noble/ciphers': 0.6.0
@@ -5418,7 +5418,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.38.0(@types/react@19.0.1)(kysely@0.27.5)(postgres@3.4.5)(react@19.0.0):
+  drizzle-orm@0.38.1(@types/react@19.0.1)(kysely@0.27.5)(postgres@3.4.5)(react@19.0.0):
     optionalDependencies:
       '@types/react': 19.0.1
       kysely: 0.27.5
@@ -5907,10 +5907,10 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
-  framer-motion@11.13.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  framer-motion@11.14.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
-      motion-dom: 11.13.0
-      motion-utils: 11.13.0
+      motion-dom: 11.14.1
+      motion-utils: 11.14.1
       tslib: 2.8.1
     optionalDependencies:
       react: 19.0.0
@@ -6497,13 +6497,13 @@ snapshots:
       pkg-types: 1.2.1
       ufo: 1.5.4
 
-  motion-dom@11.13.0: {}
+  motion-dom@11.14.1: {}
 
-  motion-utils@11.13.0: {}
+  motion-utils@11.14.1: {}
 
-  motion@11.13.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  motion@11.14.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
-      framer-motion: 11.13.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      framer-motion: 11.14.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       tslib: 2.8.1
     optionalDependencies:
       react: 19.0.0

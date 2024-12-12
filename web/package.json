@@ -12,9 +12,10 @@
   },
   "dependencies": {
     "app": "workspace:*",
+    "better-auth": "^1.0.18",
     "better-auth-harmony": "^1.1.1",
     "consola": "^3.2.3",
-    "drizzle-orm": "^0.38.0",
+    "drizzle-orm": "^0.38.1",
     "postgres": "^3.4.5",
     "stripe": "^17.4.0",
     "svix": "^1.43.0",

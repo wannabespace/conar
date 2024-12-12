@@ -1,7 +1,6 @@
 'use client'
 
 import { Loader2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/button'
@@ -16,7 +15,6 @@ export default function SignInPage() {
   const [email, setEmail] = useState('valerii.strilets@gmail.com')
   const [password, setPassword] = useState('12345678')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   async function signIn() {
     setLoading(true)
@@ -30,7 +28,6 @@ export default function SignInPage() {
     }
     else {
       await refetch()
-      router.push('/app')
     }
 
     setLoading(false)

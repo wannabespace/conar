@@ -4,14 +4,11 @@ import { sessionQuery } from '~/query/auth'
 export function useSession() {
   const query = useQuery(sessionQuery())
 
-  async function refetch() {
-    await query.refetch()
-  }
-
   return {
     isLoading: query.isLoading,
+    isRefetching: query.isRefetching,
     data: query.data?.data ?? null,
     isAuthenticated: !!query.data?.data?.user,
-    refetch,
+    refetch: query.refetch,
   }
 }

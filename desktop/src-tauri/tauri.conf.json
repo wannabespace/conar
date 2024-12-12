@@ -20,7 +20,6 @@
       {
         "title": "Connnect",
         "titleBarStyle": "Overlay",
-        "transparent": true,
         "width": 1280,
         "height": 720,
         "minWidth": 500,

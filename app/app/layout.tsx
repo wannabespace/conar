@@ -11,7 +11,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {env.NEXT_PUBLIC_IS_DESKTOP && (
           <div
             data-tauri-drag-region
-            className="h-7 w-full"
+            className="fixed inset-x-0 top-0 h-7 w-full"
           />
         )}
         <ThemeProvider attribute="class">
