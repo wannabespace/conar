@@ -23,12 +23,7 @@ export const db = drizzle(client, {
 
       if (params.length) {
         params.forEach((p, i) => {
-          if (typeof p === 'string') {
-            q = q.replace(`$${i + 1}`, `'${p}'`)
-          }
-          else {
-            q = q.replace(`$${i + 1}`, String(p))
-          }
+          q = q.replace(`$${i + 1}`, typeof p === 'string' ? `'${p}'` : String(p))
         })
       }
 
