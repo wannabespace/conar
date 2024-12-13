@@ -1,10 +1,11 @@
 'use client'
 
-import { isTauri } from '@tauri-apps/api/core'
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { useEffect } from 'react'
+import { env } from '~/env'
 import { useSession } from '~/hooks/use-session'
 import { authClient } from '~/lib/auth'
+import { BEARER_TOKEN_KEY } from '~/lib/constants'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { refetch } = useSession()
@@ -14,12 +15,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (isTauri()) {
+    if (env.NEXT_PUBLIC_IS_DESKTOP) {
       onOpenUrl(async ([url]) => {
         const [, token] = (url || '').split('session?token=')
 
         if (token) {
-          // TODO: set token in session
+          // eslint-disable-next-line no-alert
+          alert(token)
+          localStorage.setItem(BEARER_TOKEN_KEY, token)
           await refetch()
         }
       })
