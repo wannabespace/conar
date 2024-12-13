@@ -20,8 +20,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const [, token] = (url || '').split('session?token=')
 
         if (token) {
-          // eslint-disable-next-line no-alert
-          alert(token)
           localStorage.setItem(BEARER_TOKEN_KEY, token)
           await refetch()
         }

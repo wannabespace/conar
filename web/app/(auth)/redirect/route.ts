@@ -2,13 +2,15 @@ import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 
 export async function GET(request: Request) {
-  const session = await auth.api.getSession({
+  const response = await auth.api.getSession({
     headers: await headers(),
+    asResponse: true,
   })
+  const token = response.headers.get('set-auth-token')
 
-  if (session) {
+  if (token) {
     return Response.redirect(
-      `connnect://session?token=${session.session.token}`,
+      `connnect://session?token=${token}`,
     )
   }
 

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS "accounts" (
+CREATE TABLE "accounts" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -15,7 +15,16 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 );
 --> statement-breakpoint
 ALTER TABLE "accounts" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "sessions" (
+CREATE TABLE "jwks" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"publicKey" text NOT NULL,
+	"privateKey" text NOT NULL
+);
+--> statement-breakpoint
+ALTER TABLE "jwks" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+CREATE TABLE "sessions" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -28,7 +37,7 @@ CREATE TABLE IF NOT EXISTS "sessions" (
 );
 --> statement-breakpoint
 ALTER TABLE "sessions" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "users" (
+CREATE TABLE "users" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -40,7 +49,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 );
 --> statement-breakpoint
 ALTER TABLE "users" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "verifications" (
+CREATE TABLE "verifications" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
@@ -50,14 +59,5 @@ CREATE TABLE IF NOT EXISTS "verifications" (
 );
 --> statement-breakpoint
 ALTER TABLE "verifications" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
+ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;

@@ -27,8 +27,6 @@ export default function SignInPage() {
         const authToken = response.headers.get('set-auth-token')
 
         if (authToken) {
-          // eslint-disable-next-line no-alert
-          alert(authToken)
           localStorage.setItem(BEARER_TOKEN_KEY, authToken)
         }
       },

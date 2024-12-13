@@ -43,3 +43,9 @@ export const verifications = pgTable('verifications', {
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }),
 }).enableRLS()
+
+export const jwkss = pgTable('jwks', {
+  ...baseTable,
+  publicKey: text('publicKey').notNull(),
+  privateKey: text('privateKey').notNull(),
+}).enableRLS()
