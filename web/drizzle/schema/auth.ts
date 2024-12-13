@@ -7,6 +7,7 @@ export const users = pgTable('users', {
   email: text().notNull().unique(),
   emailVerified: boolean('email_verified').notNull(),
   image: text(),
+  normalizedEmail: text('normalized_email').unique(),
 }).enableRLS()
 
 export const sessions = pgTable('sessions', {
