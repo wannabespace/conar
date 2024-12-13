@@ -8,6 +8,7 @@ import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { useSession } from '~/hooks/use-session'
 import { authClient } from '~/lib/auth'
+import { BEARER_TOKEN_KEY } from '~/lib/constants'
 import { cn } from '~/lib/utils'
 
 export default function SignInPage() {
@@ -21,6 +22,16 @@ export default function SignInPage() {
     const { error } = await authClient.signIn.email({
       email,
       password,
+    }, {
+      onSuccess: ({ response }) => {
+        const authToken = response.headers.get('set-auth-token')
+
+        if (authToken) {
+          // eslint-disable-next-line no-alert
+          alert(authToken)
+          localStorage.setItem(BEARER_TOKEN_KEY, authToken)
+        }
+      },
     })
 
     if (error) {
