@@ -15,6 +15,13 @@
       "when": 1734130565425,
       "tag": "0001_light_black_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1734131135889,
+      "tag": "0002_lowly_mac_gargan",
+      "breakpoints": true
     }
   ]
 }
