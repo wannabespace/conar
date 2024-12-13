@@ -3,6 +3,7 @@
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { useEffect } from 'react'
 import { env } from '~/env'
+import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { useSession } from '~/hooks/use-session'
 import { authClient } from '~/lib/auth'
 import { BEARER_TOKEN_KEY } from '~/lib/constants'
@@ -14,17 +15,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     authClient.$store.listen('$sessionSignal', () => refetch())
   }, [])
 
-  useEffect(() => {
+  async function listenDeepLinks() {
     if (env.NEXT_PUBLIC_IS_DESKTOP) {
-      onOpenUrl(async ([url]) => {
-        const [, token] = (url || '').split('session?token=')
+      try {
+        return await onOpenUrl(async ([url]) => {
+          const [, token] = (url || '').split('session?token=')
 
-        if (token) {
-          localStorage.setItem(BEARER_TOKEN_KEY, token)
-          await refetch()
-        }
-      })
+          if (token) {
+            localStorage.setItem(BEARER_TOKEN_KEY, token)
+            await refetch()
+          }
+        })
+      }
+      catch {
+        // Nothing to do - error can only occur if app is opened in browser
+      }
     }
+  }
+
+  useAsyncEffect(() => {
+    return listenDeepLinks()
   }, [])
 
   return (
