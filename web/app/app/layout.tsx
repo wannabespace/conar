@@ -1,3 +1,3 @@
-import { ProtectedLayout } from 'app/core'
+import { ProtectedLayout } from '~/core'
 
 export default ProtectedLayout

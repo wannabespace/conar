@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import { AppLayout } from 'app/core'
 import { ThemeProvider } from 'next-themes'
 import { MuseoModerno, Nunito_Sans } from 'next/font/google'
+import { AppLayout } from '~/core'
 import '~/app/index.css'
 
 const nunitoSans = Nunito_Sans({

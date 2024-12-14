@@ -1,3 +1,3 @@
-import { AuthLayout } from 'app/core'
+import { AuthLayout } from '~/core'
 
 export default AuthLayout

@@ -1,3 +1,3 @@
-import { DashboardPage } from 'app/core'
+import { DashboardPage } from '~/core'
 
 export default DashboardPage
