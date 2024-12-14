@@ -19,7 +19,7 @@ function getActiveToken() {
         const token = ctx.getCookie(
           ctx.context.authCookies.sessionToken.name,
         )
-        return ctx.json(token)
+        return ctx.json(token ? encodeURIComponent(token) : null)
       }),
     },
   } satisfies BetterAuthPlugin
