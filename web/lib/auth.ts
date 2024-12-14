@@ -8,11 +8,11 @@ import { createAuthEndpoint } from 'better-auth/api'
 import { bearer } from 'better-auth/plugins'
 import { v7 } from 'uuid'
 
-function getActiveToken() {
+function token() {
   return {
-    id: 'get-token',
+    id: 'get-session-token',
     endpoints: {
-      getActiveToken: createAuthEndpoint('/session/token', {
+      getSessionToken: createAuthEndpoint('/session/token', {
         method: 'GET',
         requireHeaders: true,
       }, async (ctx) => {
@@ -29,7 +29,7 @@ export const auth = betterAuth({
   appName: 'Connnect',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.NEXT_PUBLIC_URL,
-  plugins: [getActiveToken(), bearer(), emailHarmony()],
+  plugins: [token(), bearer(), emailHarmony()],
   trustedOrigins: process.env.NODE_ENV === 'production' ? ['tauri://localhost'] : ['http://localhost:1420'],
   advanced: {
     generateId: () => v7(),

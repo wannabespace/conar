@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 
 export async function GET(request: Request) {
-  const token = await auth.api.getActiveToken({
+  const token = await auth.api.getSessionToken({
     headers: await headers(),
   })
 
