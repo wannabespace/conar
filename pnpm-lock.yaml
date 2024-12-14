@@ -29,6 +29,9 @@ importers:
       babel-plugin-react-compiler:
         specifier: 19.0.0-beta-37ed2a7-20241206
         version: 19.0.0-beta-37ed2a7-20241206
+      better-auth:
+        specifier: ^1.0.19
+        version: 1.0.19
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -123,9 +126,6 @@ importers:
       '@tauri-apps/plugin-updater':
         specifier: ^2.3.0
         version: 2.3.0
-      better-auth:
-        specifier: ^1.0.19
-        version: 1.0.19
       react-use:
         specifier: ^17.6.0
         version: 17.6.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -151,9 +151,6 @@ importers:
       app:
         specifier: workspace:*
         version: link:../app
-      better-auth:
-        specifier: ^1.0.19
-        version: 1.0.19
       better-auth-harmony:
         specifier: ^1.1.1
         version: 1.1.1(better-auth@1.0.19)
