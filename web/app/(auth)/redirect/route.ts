@@ -8,7 +8,7 @@ export async function GET(request: Request) {
 
   if (token) {
     return Response.redirect(
-      `connnect://session?token=${token}`,
+      `connnect://session?token=${encodeURIComponent(token)}`,
     )
   }
 

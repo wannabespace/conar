@@ -6,6 +6,7 @@
     "prepare": "husky",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "test": "vitest run",
     "typecheck": "run-p typecheck:web typecheck:app",
     "typecheck:web": "cd web && pnpm typecheck",
     "typecheck:app": "cd app && pnpm typecheck"
@@ -18,7 +19,7 @@
     "@t3-oss/env-nextjs": "^0.11.1",
     "@tanstack/react-query": "^5.62.7",
     "babel-plugin-react-compiler": "19.0.0-beta-37ed2a7-20241206",
-    "better-auth": "^1.0.19",
+    "better-auth": "^1.0.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
@@ -37,13 +38,14 @@
     "@tanstack/react-query-devtools": "^5.62.7",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
-    "eslint": "^9.16.0",
+    "eslint": "^9.17.0",
     "eslint-plugin-tailwindcss": "^3.17.5",
     "husky": "^9.1.7",
     "npm-run-all2": "^7.0.1",
     "tailwindcss": "^3.4.16",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   }
 }

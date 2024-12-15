@@ -13,7 +13,7 @@
   "dependencies": {
     "better-auth-harmony": "^1.1.1",
     "consola": "^3.2.3",
-    "drizzle-orm": "^0.38.1",
+    "drizzle-orm": "^0.38.2",
     "postgres": "^3.4.5",
     "stripe": "^17.4.0",
     "svix": "^1.44.0",

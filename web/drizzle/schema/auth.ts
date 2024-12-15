@@ -44,3 +44,35 @@ export const verifications = pgTable('verifications', {
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }),
 }).enableRLS()
+
+export const twoFactors = pgTable('two_factors', {
+  ...baseTable,
+  secret: text('secret').notNull(),
+  backupCodes: text('backup_codes').notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+}).enableRLS()
+
+export const organizations = pgTable('organizations', {
+  ...baseTable,
+  name: text('name').notNull(),
+  slug: text('slug').unique(),
+  logo: text('logo'),
+  metadata: text('metadata'),
+}).enableRLS()
+
+export const members = pgTable('members', {
+  ...baseTable,
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  role: text('role').notNull(),
+}).enableRLS()
+
+export const invitations = pgTable('invitations', {
+  ...baseTable,
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  email: text('email').notNull(),
+  role: text('role'),
+  status: text('status').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  inviterId: uuid('inviter_id').notNull().references(() => users.id),
+}).enableRLS()

@@ -5,7 +5,7 @@ import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { createAuthEndpoint } from 'better-auth/api'
-import { bearer } from 'better-auth/plugins'
+import { bearer, organization, twoFactor } from 'better-auth/plugins'
 import { v7 } from 'uuid'
 
 function token() {
@@ -19,7 +19,7 @@ function token() {
         const token = ctx.getCookie(
           ctx.context.authCookies.sessionToken.name,
         )
-        return ctx.json(token ? encodeURIComponent(token) : null)
+        return ctx.json(token || null)
       }),
     },
   } satisfies BetterAuthPlugin
@@ -29,8 +29,29 @@ export const auth = betterAuth({
   appName: 'Connnect',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.NEXT_PUBLIC_URL,
-  plugins: [token(), bearer(), emailHarmony()],
+  plugins: [
+    token(),
+    twoFactor(),
+    bearer(),
+    organization(),
+    emailHarmony(),
+  ],
   trustedOrigins: process.env.NODE_ENV === 'production' ? ['tauri://localhost'] : ['http://localhost:1420'],
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          // const organization = await getActiveOrganization(session.userId)
+          return {
+            data: {
+              ...session,
+              // activeOrganizationId: organization.id,
+            },
+          }
+        },
+      },
+    },
+  },
   advanced: {
     generateId: () => v7(),
     cookiePrefix: 'connnect',

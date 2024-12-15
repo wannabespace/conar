@@ -1,4 +1,5 @@
 export { default as AuthLayout } from './app/(auth)/layout'
-export { default as ProtectedLayout } from './app/(protected)/app/layout'
-export { default as DashboardPage } from './app/(protected)/app/page'
+export { default as SignInPage } from './app/(auth)/sign-in/page'
+export { default as ProtectedLayout } from './app/(protected)/layout'
+export { default as DashboardPage } from './app/(protected)/workspace/[workspace]/page'
 export { default as AppLayout } from './app/template'

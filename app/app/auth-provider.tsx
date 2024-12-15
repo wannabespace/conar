@@ -5,8 +5,7 @@ import { useEffect } from 'react'
 import { env } from '~/env'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { useSession } from '~/hooks/use-session'
-import { authClient } from '~/lib/auth'
-import { BEARER_TOKEN_KEY } from '~/lib/constants'
+import { authClient, setBearerToken } from '~/lib/auth'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { refetch } = useSession()
@@ -22,7 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const [, token] = (url || '').split('session?token=')
 
           if (token) {
-            localStorage.setItem(BEARER_TOKEN_KEY, token)
+            await setBearerToken(token)
             await refetch()
           }
         })

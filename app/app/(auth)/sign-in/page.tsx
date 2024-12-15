@@ -6,9 +6,9 @@ import { toast } from 'sonner'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
+import { env } from '~/env'
 import { useSession } from '~/hooks/use-session'
-import { authClient } from '~/lib/auth'
-import { BEARER_TOKEN_KEY } from '~/lib/constants'
+import { authClient, setBearerToken } from '~/lib/auth'
 import { cn } from '~/lib/utils'
 
 export default function SignInPage() {
@@ -23,23 +23,24 @@ export default function SignInPage() {
       email,
       password,
     }, {
-      onSuccess: ({ response }) => {
-        const authToken = response.headers.get('set-auth-token')
+      onSuccess: async ({ response }) => {
+        if (env.NEXT_PUBLIC_IS_DESKTOP) {
+          const authToken = response.headers.get('set-auth-token')
 
-        if (authToken) {
-          localStorage.setItem(BEARER_TOKEN_KEY, authToken)
+          if (authToken) {
+            await setBearerToken(authToken)
+          }
         }
       },
     })
 
     if (error) {
       toast.error(error.message)
+      setLoading(false)
     }
     else {
       await refetch()
     }
-
-    setLoading(false)
   }
 
   return (
