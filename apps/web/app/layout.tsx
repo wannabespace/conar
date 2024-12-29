@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { ThemeProvider } from 'next-themes'
 import { MuseoModerno, Nunito_Sans } from 'next/font/google'
-import '~/app/index.css'
+import '@connnect/ui/globals.css'
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-nunito-sans',
