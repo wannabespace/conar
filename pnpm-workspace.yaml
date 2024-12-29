@@ -1,4 +1,3 @@
 packages:
-  - desktop
-  - web
-  - app
+  - packages/*
+  - apps/*

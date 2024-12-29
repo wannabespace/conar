@@ -1,0 +1,3 @@
+{
+  "extends": "@connnect/typescript-config/base.json"
+}

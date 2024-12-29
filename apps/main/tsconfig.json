@@ -1,0 +1,10 @@
+{
+  "extends": "@connnect/typescript-config/react.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"],
+      "@connnect/ui/*": ["../../packages/ui/src/*"]
+    }
+  }
+}

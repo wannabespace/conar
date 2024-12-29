@@ -1,0 +1,12 @@
+{
+  "name": "@connnect/app",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@connnect/typescript-config": "workspace:*",
+    "@connnect/ui": "workspace:*"
+  }
+}

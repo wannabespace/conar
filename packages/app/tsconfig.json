@@ -1,0 +1,9 @@
+{
+  "extends": "@connnect/typescript-config/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@connnect/ui/*": ["../ui/src/*"]
+    }
+  }
+}
