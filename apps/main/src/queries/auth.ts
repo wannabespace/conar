@@ -4,6 +4,7 @@ import { authClient } from '~/lib/auth'
 export const sessionQuery = ({
   queryKey: ['session'],
   queryFn: () => authClient.getSession(),
+  gcTime: 100,
 } satisfies QueryOptions)
 
 export const signOutMutation = ({

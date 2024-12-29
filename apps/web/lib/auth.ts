@@ -36,21 +36,21 @@ export const auth = betterAuth({
     emailHarmony(),
   ],
   trustedOrigins: process.env.NODE_ENV === 'production' ? ['tauri://localhost'] : ['http://localhost:1420'],
-  databaseHooks: {
-    session: {
-      create: {
-        before: async (session) => {
-          // const organization = await getActiveOrganization(session.userId)
-          return {
-            data: {
-              ...session,
-              // activeOrganizationId: organization.id,
-            },
-          }
-        },
-      },
-    },
-  },
+  // databaseHooks: {
+  //   session: {
+  //     create: {
+  //       before: async (session) => {
+  //         // const organization = await getActiveOrganization(session.userId)
+  //         return {
+  //           data: {
+  //             ...session,
+  //             // activeOrganizationId: organization.id,
+  //           },
+  //         }
+  //       },
+  //     },
+  //   },
+  // },
   advanced: {
     generateId: () => v7(),
     cookiePrefix: 'connnect',

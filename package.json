@@ -7,7 +7,8 @@
     "test": "vitest run",
     "dev:main": "cd apps/main && pnpm dev",
     "dev:web": "cd apps/web && pnpm dev",
-    "dev:app": "cd apps/app && pnpm tauri dev",
+    "dev:desktop": "cd apps/desktop && pnpm tauri dev",
+    "build:desktop": "cd apps/desktop && pnpm tauri build",
     "typecheck": "run-p typecheck:web typecheck:main",
     "typecheck:main": "cd apps/main && pnpm typecheck",
     "typecheck:web": "cd apps/web && pnpm typecheck"
