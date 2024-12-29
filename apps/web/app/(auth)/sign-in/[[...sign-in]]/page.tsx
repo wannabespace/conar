@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@connnect/ui/components/button'
 import { Input } from '@connnect/ui/components/input'
 import { Label } from '@connnect/ui/components/label'
