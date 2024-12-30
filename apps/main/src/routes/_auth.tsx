@@ -1,10 +1,15 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@connnect/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@connnect/ui/components/card'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { AppLogo } from '~/components/app-logo'
 import { queryClient } from '~/main'
 import { sessionQuery } from '~/queries/auth'
 
-export const Route = createFileRoute('/_layout/_auth')({
+export const Route = createFileRoute('/_auth')({
   component: LayoutComponent,
   beforeLoad: async () => {
     const data = await queryClient.ensureQueryData(sessionQuery)

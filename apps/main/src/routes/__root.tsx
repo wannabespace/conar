@@ -16,8 +16,8 @@ function RootDocument() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Outlet />
-          <ReactQueryDevtools />
           <TanStackRouterDevtools />
+          <ReactQueryDevtools initialIsOpen={false} />
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

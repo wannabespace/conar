@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import { env } from '~/env'
 import { authClient, setBearerToken } from '~/lib/auth'
 
-export const Route = createFileRoute('/_layout/_auth/sign-in')({
+export const Route = createFileRoute('/_auth/sign-in')({
   component: SignInPage,
 })
 

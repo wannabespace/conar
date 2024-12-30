@@ -4,7 +4,7 @@ import { authClient } from '~/lib/auth'
 import { queryClient } from '~/main'
 import { sessionQuery } from '~/queries/auth'
 
-export const Route = createFileRoute('/_layout/_protected')({
+export const Route = createFileRoute('/_protected')({
   component: LayoutComponent,
   beforeLoad: async () => {
     const data = await queryClient.ensureQueryData(sessionQuery)

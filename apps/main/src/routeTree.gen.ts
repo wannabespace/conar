@@ -11,141 +11,112 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as LayoutImport } from './routes/_layout'
-import { Route as LayoutProtectedImport } from './routes/_layout/_protected'
-import { Route as LayoutAuthImport } from './routes/_layout/_auth'
-import { Route as LayoutProtectedIndexImport } from './routes/_layout/_protected/index'
-import { Route as LayoutAuthSignInImport } from './routes/_layout/_auth/sign-in'
+import { Route as ProtectedImport } from './routes/_protected'
+import { Route as AuthImport } from './routes/_auth'
+import { Route as ProtectedIndexImport } from './routes/_protected/index'
+import { Route as AuthSignInImport } from './routes/_auth/sign-in'
 
 // Create/Update Routes
 
-const LayoutRoute = LayoutImport.update({
-  id: '/_layout',
+const ProtectedRoute = ProtectedImport.update({
+  id: '/_protected',
   getParentRoute: () => rootRoute,
 } as any)
 
-const LayoutProtectedRoute = LayoutProtectedImport.update({
-  id: '/_protected',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
-const LayoutAuthRoute = LayoutAuthImport.update({
+const AuthRoute = AuthImport.update({
   id: '/_auth',
-  getParentRoute: () => LayoutRoute,
+  getParentRoute: () => rootRoute,
 } as any)
 
-const LayoutProtectedIndexRoute = LayoutProtectedIndexImport.update({
+const ProtectedIndexRoute = ProtectedIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => LayoutProtectedRoute,
+  getParentRoute: () => ProtectedRoute,
 } as any)
 
-const LayoutAuthSignInRoute = LayoutAuthSignInImport.update({
+const AuthSignInRoute = AuthSignInImport.update({
   id: '/sign-in',
   path: '/sign-in',
-  getParentRoute: () => LayoutAuthRoute,
+  getParentRoute: () => AuthRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_layout': {
-      id: '/_layout'
+    '/_auth': {
+      id: '/_auth'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof LayoutImport
+      preLoaderRoute: typeof AuthImport
       parentRoute: typeof rootRoute
     }
-    '/_layout/_auth': {
-      id: '/_layout/_auth'
+    '/_protected': {
+      id: '/_protected'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof LayoutAuthImport
-      parentRoute: typeof LayoutImport
+      preLoaderRoute: typeof ProtectedImport
+      parentRoute: typeof rootRoute
     }
-    '/_layout/_protected': {
-      id: '/_layout/_protected'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof LayoutProtectedImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/_auth/sign-in': {
-      id: '/_layout/_auth/sign-in'
+    '/_auth/sign-in': {
+      id: '/_auth/sign-in'
       path: '/sign-in'
       fullPath: '/sign-in'
-      preLoaderRoute: typeof LayoutAuthSignInImport
-      parentRoute: typeof LayoutAuthImport
+      preLoaderRoute: typeof AuthSignInImport
+      parentRoute: typeof AuthImport
     }
-    '/_layout/_protected/': {
-      id: '/_layout/_protected/'
+    '/_protected/': {
+      id: '/_protected/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof LayoutProtectedIndexImport
-      parentRoute: typeof LayoutProtectedImport
+      preLoaderRoute: typeof ProtectedIndexImport
+      parentRoute: typeof ProtectedImport
     }
   }
 }
 
 // Create and export the route tree
 
-interface LayoutAuthRouteChildren {
-  LayoutAuthSignInRoute: typeof LayoutAuthSignInRoute
+interface AuthRouteChildren {
+  AuthSignInRoute: typeof AuthSignInRoute
 }
 
-const LayoutAuthRouteChildren: LayoutAuthRouteChildren = {
-  LayoutAuthSignInRoute: LayoutAuthSignInRoute,
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthSignInRoute: AuthSignInRoute,
 }
 
-const LayoutAuthRouteWithChildren = LayoutAuthRoute._addFileChildren(
-  LayoutAuthRouteChildren,
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
+interface ProtectedRouteChildren {
+  ProtectedIndexRoute: typeof ProtectedIndexRoute
+}
+
+const ProtectedRouteChildren: ProtectedRouteChildren = {
+  ProtectedIndexRoute: ProtectedIndexRoute,
+}
+
+const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
+  ProtectedRouteChildren,
 )
-
-interface LayoutProtectedRouteChildren {
-  LayoutProtectedIndexRoute: typeof LayoutProtectedIndexRoute
-}
-
-const LayoutProtectedRouteChildren: LayoutProtectedRouteChildren = {
-  LayoutProtectedIndexRoute: LayoutProtectedIndexRoute,
-}
-
-const LayoutProtectedRouteWithChildren = LayoutProtectedRoute._addFileChildren(
-  LayoutProtectedRouteChildren,
-)
-
-interface LayoutRouteChildren {
-  LayoutAuthRoute: typeof LayoutAuthRouteWithChildren
-  LayoutProtectedRoute: typeof LayoutProtectedRouteWithChildren
-}
-
-const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutAuthRoute: LayoutAuthRouteWithChildren,
-  LayoutProtectedRoute: LayoutProtectedRouteWithChildren,
-}
-
-const LayoutRouteWithChildren =
-  LayoutRoute._addFileChildren(LayoutRouteChildren)
 
 export interface FileRoutesByFullPath {
-  '': typeof LayoutProtectedRouteWithChildren
-  '/sign-in': typeof LayoutAuthSignInRoute
-  '/': typeof LayoutProtectedIndexRoute
+  '': typeof ProtectedRouteWithChildren
+  '/sign-in': typeof AuthSignInRoute
+  '/': typeof ProtectedIndexRoute
 }
 
 export interface FileRoutesByTo {
-  '': typeof LayoutAuthRouteWithChildren
-  '/sign-in': typeof LayoutAuthSignInRoute
-  '/': typeof LayoutProtectedIndexRoute
+  '': typeof AuthRouteWithChildren
+  '/sign-in': typeof AuthSignInRoute
+  '/': typeof ProtectedIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/_layout': typeof LayoutRouteWithChildren
-  '/_layout/_auth': typeof LayoutAuthRouteWithChildren
-  '/_layout/_protected': typeof LayoutProtectedRouteWithChildren
-  '/_layout/_auth/sign-in': typeof LayoutAuthSignInRoute
-  '/_layout/_protected/': typeof LayoutProtectedIndexRoute
+  '/_auth': typeof AuthRouteWithChildren
+  '/_protected': typeof ProtectedRouteWithChildren
+  '/_auth/sign-in': typeof AuthSignInRoute
+  '/_protected/': typeof ProtectedIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -153,22 +124,18 @@ export interface FileRouteTypes {
   fullPaths: '' | '/sign-in' | '/'
   fileRoutesByTo: FileRoutesByTo
   to: '' | '/sign-in' | '/'
-  id:
-    | '__root__'
-    | '/_layout'
-    | '/_layout/_auth'
-    | '/_layout/_protected'
-    | '/_layout/_auth/sign-in'
-    | '/_layout/_protected/'
+  id: '__root__' | '/_auth' | '/_protected' | '/_auth/sign-in' | '/_protected/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  LayoutRoute: typeof LayoutRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
+  ProtectedRoute: typeof ProtectedRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  LayoutRoute: LayoutRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
+  ProtectedRoute: ProtectedRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -181,37 +148,29 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/_layout"
+        "/_auth",
+        "/_protected"
       ]
     },
-    "/_layout": {
-      "filePath": "_layout.tsx",
+    "/_auth": {
+      "filePath": "_auth.tsx",
       "children": [
-        "/_layout/_auth",
-        "/_layout/_protected"
+        "/_auth/sign-in"
       ]
     },
-    "/_layout/_auth": {
-      "filePath": "_layout/_auth.tsx",
-      "parent": "/_layout",
+    "/_protected": {
+      "filePath": "_protected.tsx",
       "children": [
-        "/_layout/_auth/sign-in"
+        "/_protected/"
       ]
     },
-    "/_layout/_protected": {
-      "filePath": "_layout/_protected.tsx",
-      "parent": "/_layout",
-      "children": [
-        "/_layout/_protected/"
-      ]
+    "/_auth/sign-in": {
+      "filePath": "_auth/sign-in.tsx",
+      "parent": "/_auth"
     },
-    "/_layout/_auth/sign-in": {
-      "filePath": "_layout/_auth/sign-in.tsx",
-      "parent": "/_layout/_auth"
-    },
-    "/_layout/_protected/": {
-      "filePath": "_layout/_protected/index.tsx",
-      "parent": "/_layout/_protected"
+    "/_protected/": {
+      "filePath": "_protected/index.tsx",
+      "parent": "/_protected"
     }
   }
 }
