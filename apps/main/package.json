@@ -1,6 +1,7 @@
 {
   "name": "app",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

@@ -1,6 +1,7 @@
 {
   "name": "desktop",
   "type": "module",
+  "private": true,
   "scripts": {
     "tauri": "tauri"
   },
