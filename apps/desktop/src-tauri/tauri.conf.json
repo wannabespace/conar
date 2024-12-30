@@ -4,8 +4,9 @@
   "version": "0.1.0",
   "identifier": "com.connnect.app",
   "build": {
+    "beforeDevCommand": "pnpm run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "cd ../app && pnpm build",
+    "beforeBuildCommand": "pnpm run build",
     "frontendDist": "../dist"
   },
   "plugins": {

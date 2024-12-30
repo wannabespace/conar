@@ -24,8 +24,3 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri-plugin-deep-link = "2"
 tauri-plugin-dialog = "2"
-tauri-plugin-stronghold = "2"
-rust-argon2 = "2.1.0"
-
-[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-updater = "2"

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 import { useSession } from '~/hooks/use-session'
-import { authClient } from '~/lib/auth'
+import { authClient, removeBearerToken } from '~/lib/auth'
 import { queryClient } from '~/main'
 import { sessionQuery } from '~/queries/auth'
 
@@ -32,7 +32,7 @@ function LayoutComponent() {
       <button
         type="button"
         onClick={async () => {
-          await authClient.signOut()
+          await Promise.all([authClient.signOut(), removeBearerToken()])
           await refetch()
         }}
       >

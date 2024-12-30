@@ -89,12 +89,6 @@ importers:
         version: 2.1.8(@types/node@22.10.2)(terser@5.37.0)
 
   apps/desktop:
-    devDependencies:
-      '@tauri-apps/cli':
-        specifier: ^2
-        version: 2.1.0
-
-  apps/main:
     dependencies:
       '@connnect/ui':
         specifier: workspace:*
@@ -111,12 +105,6 @@ importers:
       '@tauri-apps/plugin-shell':
         specifier: ^2
         version: 2.2.0
-      '@tauri-apps/plugin-stronghold':
-        specifier: ^2.2.0
-        version: 2.2.0
-      '@tauri-apps/plugin-updater':
-        specifier: ^2.3.0
-        version: 2.3.0
       react-use:
         specifier: ^17.6.0
         version: 17.6.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -2057,12 +2045,6 @@ packages:
 
   '@tauri-apps/plugin-shell@2.2.0':
     resolution: {integrity: sha512-iC3Ic1hLmasoboG7BO+7p+AriSoqAwKrIk+Hpk+S/bjTQdXqbl2GbdclghI4gM32X0bls7xHzIFqhRdrlvJeaA==}
-
-  '@tauri-apps/plugin-stronghold@2.2.0':
-    resolution: {integrity: sha512-N0SxfcNifvlXQ3ZHGxx9ecWNZGXtYJ6PBL0Ac8bGs90I2e2a0+JJcsAnMxQA5XQcIQfpYIXPgf0hNCliz828fw==}
-
-  '@tauri-apps/plugin-updater@2.3.0':
-    resolution: {integrity: sha512-qdzyZEUN69FZQ/nRx51fBub10tT6wffJl3DLVo9q922Gvw8Wk++rZhoD9eethPlZYbog/7RGgT8JkrfLh5BKAg==}
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -6131,14 +6113,6 @@ snapshots:
       '@tauri-apps/api': 2.1.1
 
   '@tauri-apps/plugin-shell@2.2.0':
-    dependencies:
-      '@tauri-apps/api': 2.1.1
-
-  '@tauri-apps/plugin-stronghold@2.2.0':
-    dependencies:
-      '@tauri-apps/api': 2.1.1
-
-  '@tauri-apps/plugin-updater@2.3.0':
     dependencies:
       '@tauri-apps/api': 2.1.1
 

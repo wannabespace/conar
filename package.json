@@ -6,14 +6,13 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "dev:main": "cd apps/main && pnpm dev",
     "dev:web": "cd apps/web && pnpm dev",
     "dev:desktop": "cd apps/desktop && pnpm tauri dev",
     "build:web": "cd apps/web && pnpm build",
     "build:desktop": "cd apps/desktop && pnpm tauri build",
-    "typecheck": "run-p typecheck:web typecheck:main",
-    "typecheck:main": "cd apps/main && pnpm typecheck",
-    "typecheck:web": "cd apps/web && pnpm typecheck"
+    "typecheck": "run-p typecheck:web typecheck:desktop",
+    "typecheck:web": "cd apps/web && pnpm typecheck",
+    "typecheck:desktop": "cd apps/desktop && pnpm typecheck"
   },
   "dependencies": {
     "@connnect/typescript-config": "workspace:*",
