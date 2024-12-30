@@ -3,6 +3,7 @@ import tailwind from 'eslint-plugin-tailwindcss'
 
 export default antfu(
   {
+    react: true,
     rules: {
       'node/prefer-global/process': 'off',
       'ts/no-explicit-any': 'error',
