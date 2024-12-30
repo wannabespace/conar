@@ -1,21 +1,22 @@
-import { createFileRoute, Link, Outlet, useRouter } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 import { useSession } from '~/hooks/use-session'
 import { authClient } from '~/lib/auth'
+import { queryClient } from '~/main'
+import { sessionQuery } from '~/queries/auth'
 
 export const Route = createFileRoute('/_layout/_protected')({
   component: LayoutComponent,
+  beforeLoad: async () => {
+    const data = await queryClient.ensureQueryData(sessionQuery)
+
+    if (!data.data?.session) {
+      throw redirect({ to: '/sign-in' })
+    }
+  },
 })
 
 function LayoutComponent() {
   const { isLoading, data, refetch } = useSession()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!data && !isLoading) {
-      router.navigate({ to: '/sign-in' })
-    }
-  }, [data, isLoading])
 
   return (
     <>
@@ -29,6 +30,7 @@ function LayoutComponent() {
         {isLoading ? 'Loading...' : data?.user.email || 'No user'}
       </header>
       <button
+        type="button"
         onClick={async () => {
           await authClient.signOut()
           await refetch()

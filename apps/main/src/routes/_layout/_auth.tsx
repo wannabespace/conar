@@ -1,23 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@connnect/ui/components/card'
-import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { AppLogo } from '~/components/app-logo'
-import { useSession } from '~/hooks/use-session'
+import { queryClient } from '~/main'
+import { sessionQuery } from '~/queries/auth'
 
 export const Route = createFileRoute('/_layout/_auth')({
   component: LayoutComponent,
+  beforeLoad: async () => {
+    const data = await queryClient.ensureQueryData(sessionQuery)
+
+    if (data.data?.session) {
+      throw redirect({ to: '/' })
+    }
+  },
 })
 
 function LayoutComponent() {
-  const { data, isLoading } = useSession()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (data && !isLoading) {
-      router.navigate({ to: '/' })
-    }
-  }, [data, isLoading])
-
   return (
     <div className="flex min-h-screen py-10">
       <Card className="m-auto w-full max-w-lg">

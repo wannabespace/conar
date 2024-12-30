@@ -20,23 +20,14 @@ export async function setBearerToken(token: string) {
 
 export const authClient = createAuthClient({
   baseURL: env.VITE_PUBLIC_URL,
-  fetchOptions: env.VITE_PUBLIC_IS_DESKTOP
-    ? {
-        async onRequest(context) {
-          const token = await getBearerToken()
+  fetchOptions: {
+    async onRequest(context) {
+      const token = await getBearerToken()
 
-          if (!token)
-            return context
-
-          return {
-            ...context,
-            headers: {
-              ...context.headers,
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        },
+      if (token) {
+        context.headers.set('Authorization', `Bearer ${token}`)
       }
-    : undefined,
+    },
+  },
   plugins: [organizationClient(), twoFactorClient()],
 })

@@ -8,8 +8,6 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
@@ -17,10 +15,7 @@ import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutProtectedImport } from './routes/_layout/_protected'
 import { Route as LayoutAuthImport } from './routes/_layout/_auth'
 import { Route as LayoutProtectedIndexImport } from './routes/_layout/_protected/index'
-
-// Create Virtual Routes
-
-const LayoutAuthSignInLazyImport = createFileRoute('/_layout/_auth/sign-in')()
+import { Route as LayoutAuthSignInImport } from './routes/_layout/_auth/sign-in'
 
 // Create/Update Routes
 
@@ -45,13 +40,11 @@ const LayoutProtectedIndexRoute = LayoutProtectedIndexImport.update({
   getParentRoute: () => LayoutProtectedRoute,
 } as any)
 
-const LayoutAuthSignInLazyRoute = LayoutAuthSignInLazyImport.update({
+const LayoutAuthSignInRoute = LayoutAuthSignInImport.update({
   id: '/sign-in',
   path: '/sign-in',
   getParentRoute: () => LayoutAuthRoute,
-} as any).lazy(() =>
-  import('./routes/_layout/_auth/sign-in.lazy').then((d) => d.Route),
-)
+} as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -82,7 +75,7 @@ declare module '@tanstack/react-router' {
       id: '/_layout/_auth/sign-in'
       path: '/sign-in'
       fullPath: '/sign-in'
-      preLoaderRoute: typeof LayoutAuthSignInLazyImport
+      preLoaderRoute: typeof LayoutAuthSignInImport
       parentRoute: typeof LayoutAuthImport
     }
     '/_layout/_protected/': {
@@ -98,11 +91,11 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface LayoutAuthRouteChildren {
-  LayoutAuthSignInLazyRoute: typeof LayoutAuthSignInLazyRoute
+  LayoutAuthSignInRoute: typeof LayoutAuthSignInRoute
 }
 
 const LayoutAuthRouteChildren: LayoutAuthRouteChildren = {
-  LayoutAuthSignInLazyRoute: LayoutAuthSignInLazyRoute,
+  LayoutAuthSignInRoute: LayoutAuthSignInRoute,
 }
 
 const LayoutAuthRouteWithChildren = LayoutAuthRoute._addFileChildren(
@@ -136,13 +129,13 @@ const LayoutRouteWithChildren =
 
 export interface FileRoutesByFullPath {
   '': typeof LayoutProtectedRouteWithChildren
-  '/sign-in': typeof LayoutAuthSignInLazyRoute
+  '/sign-in': typeof LayoutAuthSignInRoute
   '/': typeof LayoutProtectedIndexRoute
 }
 
 export interface FileRoutesByTo {
   '': typeof LayoutAuthRouteWithChildren
-  '/sign-in': typeof LayoutAuthSignInLazyRoute
+  '/sign-in': typeof LayoutAuthSignInRoute
   '/': typeof LayoutProtectedIndexRoute
 }
 
@@ -151,7 +144,7 @@ export interface FileRoutesById {
   '/_layout': typeof LayoutRouteWithChildren
   '/_layout/_auth': typeof LayoutAuthRouteWithChildren
   '/_layout/_protected': typeof LayoutProtectedRouteWithChildren
-  '/_layout/_auth/sign-in': typeof LayoutAuthSignInLazyRoute
+  '/_layout/_auth/sign-in': typeof LayoutAuthSignInRoute
   '/_layout/_protected/': typeof LayoutProtectedIndexRoute
 }
 
@@ -213,7 +206,7 @@ export const routeTree = rootRoute
       ]
     },
     "/_layout/_auth/sign-in": {
-      "filePath": "_layout/_auth/sign-in.lazy.tsx",
+      "filePath": "_layout/_auth/sign-in.tsx",
       "parent": "/_layout/_auth"
     },
     "/_layout/_protected/": {

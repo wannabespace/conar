@@ -1,29 +1,10 @@
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-// import { createAuthEndpoint } from 'better-auth/api'
 import { bearer, organization, twoFactor } from 'better-auth/plugins'
 import { v7 } from 'uuid'
-// import type { BetterAuthPlugin } from 'better-auth'
 import { db } from '~/drizzle'
 import { env } from '~/env'
-
-// function token() {
-//   return {
-//     id: 'get-session-token',
-//     endpoints: {
-//       getSessionToken: createAuthEndpoint('/session/token', {
-//         method: 'GET',
-//         requireHeaders: true,
-//       }, async (ctx) => {
-//         const token = ctx.getCookie(
-//           ctx.context.authCookies.sessionToken.name,
-//         )
-//         return ctx.json(token || null)
-//       }),
-//     },
-//   } satisfies BetterAuthPlugin
-// }
 
 export const auth = betterAuth({
   appName: 'Connnect',

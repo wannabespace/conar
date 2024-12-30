@@ -1,3 +1,4 @@
+import { useRouter } from '@tanstack/react-router'
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { useEffect } from 'react'
 import { env } from '~/env'
@@ -6,11 +7,18 @@ import { useSession } from '~/hooks/use-session'
 import { authClient, setBearerToken } from '~/lib/auth'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { refetch } = useSession()
+  const { refetch, isAuthenticated, isLoading } = useSession()
+  const router = useRouter()
 
   useEffect(() => {
     authClient.$store.listen('$sessionSignal', () => refetch())
   }, [])
+
+  useEffect(() => {
+    if (!isLoading) {
+      router.navigate({ to: isAuthenticated ? '/' : '/sign-in' })
+    }
+  }, [isLoading, isAuthenticated])
 
   async function listenDeepLinks() {
     if (env.VITE_PUBLIC_IS_DESKTOP) {
