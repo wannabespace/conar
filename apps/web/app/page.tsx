@@ -1,13 +1,9 @@
 'use client'
 
-import { authClient } from '~/lib/client'
-
 export default function Page() {
-  const { data } = authClient.useSession()
-
   return (
-    <div>
-      {data?.user.email || 'No user'}
+    <div className="flex min-h-screen items-center justify-center">
+      <h1 className="text-4xl font-bold">Coming Soon</h1>
     </div>
   )
 }
