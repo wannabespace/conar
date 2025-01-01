@@ -15,7 +15,7 @@
     "typecheck:desktop": "cd apps/desktop && pnpm typecheck"
   },
   "dependencies": {
-    "@trpc/client": "^10.45.2",
+    "@trpc/react-query": "^10.45.2",
     "babel-plugin-react-compiler": "19.0.0-beta-b2e8e9c-20241220",
     "better-auth": "^1.1.8",
     "lucide-react": "^0.469.0",
