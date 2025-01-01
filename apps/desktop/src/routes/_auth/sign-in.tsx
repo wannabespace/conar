@@ -6,7 +6,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { env } from '~/env'
 import { authClient, setBearerToken } from '~/lib/auth'
 
 export const Route = createFileRoute('/_auth/sign-in')({
@@ -27,12 +26,10 @@ function SignInPage() {
       },
       {
         onSuccess: async ({ response }) => {
-          if (env.VITE_PUBLIC_IS_DESKTOP) {
-            const authToken = response.headers.get('set-auth-token')
+          const authToken = response.headers.get('set-auth-token')
 
-            if (authToken) {
-              await setBearerToken(authToken)
-            }
+          if (authToken) {
+            await setBearerToken(authToken)
           }
         },
       },

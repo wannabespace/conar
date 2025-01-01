@@ -3,24 +3,26 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import { useEffect } from 'react'
+import { AnimatePresence } from 'motion/react'
 import { AuthProvider } from '~/auth-provider'
 import { queryClient } from '~/main'
+import { sessionQuery } from '~/queries/auth'
 
 export const Route = createRootRoute({
   component: RootDocument,
+  beforeLoad: async () => {
+    await queryClient.ensureQueryData(sessionQuery)
+  },
 })
 
 function RootDocument() {
-  useEffect(() => {
-
-  }, [])
-
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <Outlet />
+          <AnimatePresence>
+            <Outlet />
+          </AnimatePresence>
           {import.meta.env.DEV && (
             <>
               <TanStackRouterDevtools />

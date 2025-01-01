@@ -11,11 +11,13 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@connnect/shared": "workspace:*",
     "@connnect/ui": "workspace:*",
     "@tauri-apps/api": "^2.1.1",
     "@tauri-apps/plugin-deep-link": "^2.2.0",
     "@tauri-apps/plugin-dialog": "^2.2.0",
     "@tauri-apps/plugin-shell": "^2",
+    "@tauri-apps/plugin-store": "^2.2.0",
     "react-use": "^17.6.0"
   },
   "devDependencies": {

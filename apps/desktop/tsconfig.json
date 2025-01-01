@@ -4,7 +4,8 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"],
-      "@connnect/ui/*": ["../../packages/ui/src/*"]
+      "@connnect/ui/*": ["../../packages/ui/src/*"],
+      "@connnect/shared/*": ["../../packages/shared/*"]
     }
   }
 }

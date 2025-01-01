@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 // eslint-disable-next-line ts/no-explicit-any
-let state: any
+let destroy: any
 // eslint-disable-next-line ts/no-explicit-any
 let promise: any
 
@@ -13,21 +13,18 @@ export function useAsyncEffect(
     if (promise)
       return
 
-    (async () => {
-      promise = effect()
-
-      const res = await promise
-
+    Promise.resolve(effect()).then((res) => {
       promise = undefined
-      state = res
-    })()
+      destroy = res
+    })
 
     return () => {
-      if (typeof state === 'function')
-        state()
-
-      state = undefined
       promise = undefined
+
+      if (typeof destroy === 'function')
+        destroy()
+
+      destroy = undefined
     }
   }, deps)
 }

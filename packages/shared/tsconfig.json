@@ -1,0 +1,11 @@
+{
+  "extends": "@connnect/typescript-config/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@connnect/shared/*": ["./*"]
+    }
+  },
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
+}

@@ -4,25 +4,23 @@ import {
   CardHeader,
   CardTitle,
 } from '@connnect/ui/components/card'
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { motion } from 'motion/react'
 import { AppLogo } from '~/components/app-logo'
-import { queryClient } from '~/main'
-import { sessionQuery } from '~/queries/auth'
 
 export const Route = createFileRoute('/_auth')({
   component: LayoutComponent,
-  beforeLoad: async () => {
-    const data = await queryClient.ensureQueryData(sessionQuery)
-
-    if (data.data?.session) {
-      throw redirect({ to: '/' })
-    }
-  },
 })
 
 function LayoutComponent() {
   return (
-    <div className="flex min-h-screen py-10">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex min-h-screen items-center justify-center"
+    >
       <Card className="m-auto w-full max-w-lg">
         <CardHeader>
           <CardTitle className="flex flex-col items-center gap-5">
@@ -34,6 +32,6 @@ function LayoutComponent() {
           <Outlet />
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   )
 }

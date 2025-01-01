@@ -11,6 +11,7 @@
     "deep-link:default",
     "core:window:default",
     "core:window:allow-start-dragging",
-    "dialog:default"
+    "dialog:default",
+    "store:default"
   ]
 }

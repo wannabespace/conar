@@ -1,25 +1,23 @@
-import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
+import { motion } from 'motion/react'
 import { useSession } from '~/hooks/use-session'
 import { authClient, removeBearerToken } from '~/lib/auth'
-import { queryClient } from '~/main'
-import { sessionQuery } from '~/queries/auth'
 
 export const Route = createFileRoute('/_protected')({
   component: LayoutComponent,
-  beforeLoad: async () => {
-    const data = await queryClient.ensureQueryData(sessionQuery)
-
-    if (!data.data?.session) {
-      throw redirect({ to: '/sign-in' })
-    }
-  },
 })
 
 function LayoutComponent() {
   const { isLoading, data, refetch } = useSession()
 
   return (
-    <>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen"
+    >
       <div className="flex gap-2 p-2">
         <Link to="/" className="[&.active]:font-bold">
           Dashboard
@@ -39,6 +37,6 @@ function LayoutComponent() {
         Sign Out
       </button>
       <Outlet />
-    </>
+    </motion.div>
   )
 }
