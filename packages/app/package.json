@@ -6,7 +6,6 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@connnect/typescript-config": "workspace:*",
     "@connnect/ui": "workspace:*"
   }
 }

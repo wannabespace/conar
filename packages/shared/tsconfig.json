@@ -1,6 +1,6 @@
 {
-  "extends": "@connnect/typescript-config/base.json",
   "compilerOptions": {
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@connnect/shared/*": ["./*"]

@@ -1,6 +1,6 @@
 {
-  "extends": "@connnect/typescript-config/react.json",
   "compilerOptions": {
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@connnect/ui/*": ["./src/*"]

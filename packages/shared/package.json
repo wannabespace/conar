@@ -1,8 +1,5 @@
 {
   "name": "@connnect/shared",
   "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@connnect/typescript-config": "workspace:*"
-  }
+  "private": true
 }
