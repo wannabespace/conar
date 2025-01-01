@@ -8,6 +8,9 @@
     "moduleResolution": "Bundler",
     "allowJs": true,
     "jsx": "preserve",
-    "noEmit": true
+    "noEmit": true,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   }
 }
