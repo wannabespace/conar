@@ -13,6 +13,7 @@
   "dependencies": {
     "@connnect/shared": "workspace:*",
     "@connnect/ui": "workspace:*",
+    "@connnect/web": "workspace:*",
     "@tauri-apps/api": "^2.1.1",
     "@tauri-apps/plugin-deep-link": "^2.2.0",
     "@tauri-apps/plugin-dialog": "^2.2.0",

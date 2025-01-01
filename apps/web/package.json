@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "@connnect/web",
   "type": "module",
   "private": true,
   "scripts": {

@@ -1,5 +1,6 @@
+import type { auth } from '@connnect/web/lib/auth'
 import { createAuthClient } from 'better-auth/client'
-import { organizationClient, twoFactorClient } from 'better-auth/client/plugins'
+import { inferAdditionalFields, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { env } from '~/env'
 
 export const BEARER_TOKEN_KEY = 'connnect.bearer_token'
@@ -35,5 +36,9 @@ export const authClient = createAuthClient({
       }
     },
   },
-  plugins: [organizationClient(), twoFactorClient()],
+  plugins: [
+    organizationClient(),
+    twoFactorClient(),
+    inferAdditionalFields<typeof auth>(),
+  ],
 })

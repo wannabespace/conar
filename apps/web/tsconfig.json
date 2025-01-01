@@ -3,6 +3,7 @@
   "compilerOptions": {
     "paths": {
       "~/*": ["./*"],
+      "@connnect/web/*": ["./*"],
       "@connnect/ui/*": ["../../packages/ui/src/*"],
       "@connnect/shared/*": ["../../packages/shared/*"]
     }

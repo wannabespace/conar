@@ -1,10 +1,10 @@
+import { db } from '@connnect/web/drizzle'
+import { env } from '@connnect/web/env'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { bearer, organization, twoFactor } from 'better-auth/plugins'
 import { v7 } from 'uuid'
-import { db } from '~/drizzle'
-import { env } from '~/env'
 
 export const auth = betterAuth({
   appName: 'Connnect',
@@ -16,6 +16,14 @@ export const auth = betterAuth({
     organization(),
     emailHarmony(),
   ],
+  user: {
+    additionalFields: {
+      secret: {
+        type: 'string',
+        required: false,
+      },
+    },
+  },
   trustedOrigins: process.env.NODE_ENV === 'production' ? ['tauri://localhost'] : ['http://localhost:1420'],
   // databaseHooks: {
   //   session: {
