@@ -10,6 +10,7 @@ export default antfu(
       'no-console': 'warn',
     },
     ignores: [
+      '**/web/types/**/*',
       '**/routeTree.gen.ts',
       '**/src-tauri/{target,gen}/**/*',
       '**/src-tauri/capabilities/default.json',

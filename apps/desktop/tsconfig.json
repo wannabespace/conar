@@ -5,8 +5,7 @@
     "paths": {
       "~/*": ["./src/*"],
       "@connnect/ui/*": ["../../packages/ui/src/*"],
-      "@connnect/shared/*": ["../../packages/shared/*"],
-      "#web-types/*": ["../web/types/*"]
+      "@connnect/shared/*": ["../../packages/shared/*"]
     }
   },
   "include": ["."]

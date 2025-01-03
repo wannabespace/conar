@@ -1,10 +1,10 @@
-import { db } from '@connnect/web/drizzle'
-import { env } from '@connnect/web/env'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { bearer, organization, twoFactor } from 'better-auth/plugins'
 import { v7 } from 'uuid'
+import { db } from '~/drizzle'
+import { env } from '~/env'
 import 'server-only'
 
 export const auth = betterAuth({

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "declaration": true,
     "emitDeclarationOnly": true,
-    "outDir": "../desktop/types",
-    "isolatedModules": true
+    "noEmit": false,
+    "outDir": "./types"
   }
 }

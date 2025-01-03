@@ -2,11 +2,15 @@
   "name": "@connnect/web",
   "type": "module",
   "private": true,
+  "exports": {
+    "./auth-type": "./types/apps/web/lib/auth.d.ts",
+    "./trpc-type": "./types/apps/web/trpc/routers/index.d.ts"
+  },
   "scripts": {
     "dev": "run-p dev:tsc dev:next",
     "dev:next": "next dev --turbopack",
-    "dev:tsc": "tsc --watch --project tsconfig.app.json",
-    "build": "tsc && pnpm run drizzle:migrate && next build",
+    "dev:tsc": "rimraf types && tsc --watch --project tsconfig.app.json",
+    "build": "rimraf types && tsc --project tsconfig.app.json && pnpm run drizzle:migrate && next build",
     "start": "next start",
     "check-types": "tsc --noEmit",
     "drizzle:generate": "drizzle-kit generate",
@@ -28,7 +32,7 @@
     "server-only": "^0.0.1",
     "stripe": "^17.5.0",
     "superjson": "^2.2.2",
-    "svix": "^1.44.0"
+    "svix": "^1.45.1"
   },
   "devDependencies": {
     "@connnect/tsconfig": "workspace:*",

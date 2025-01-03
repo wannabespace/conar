@@ -26,9 +26,10 @@
   },
   "devDependencies": {
     "@connnect/tsconfig": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.62.11",
-    "@tanstack/router-devtools": "^1.94.0",
-    "@tanstack/router-plugin": "^1.94.0",
+    "@connnect/web": "workspace:*",
+    "@tanstack/react-query-devtools": "^5.62.14",
+    "@tanstack/router-devtools": "^1.95.0",
+    "@tanstack/router-plugin": "^1.95.0",
     "@tauri-apps/cli": "^2",
     "vite-tsconfig-paths": "^5.1.4"
   }

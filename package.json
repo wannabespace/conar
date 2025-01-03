@@ -7,17 +7,19 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "dev": "turbo dev",
+    "build": "turbo build",
     "check-types": "turbo check-types"
   },
   "dependencies": {
     "@trpc/react-query": "^10.45.2",
     "babel-plugin-react-compiler": "19.0.0-beta-b2e8e9c-20241220",
-    "better-auth": "^1.1.8",
+    "better-auth": "^1.1.9",
     "lucide-react": "^0.469.0",
     "motion": "^11.15.0",
     "nanoid": "^5.0.9",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "rimraf": "^6.0.1",
     "sonner": "^1.7.1",
     "uuid": "^11.0.3",
     "zod": "^3.24.1"
