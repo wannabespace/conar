@@ -1,5 +1,5 @@
 import type Stripe from 'stripe'
-import { db } from '~/drizzle'
+import { db, subscriptions } from '~/drizzle'
 import { createLogger } from '~/lib/logger'
 import { stripe } from '~/lib/stripe'
 
@@ -30,12 +30,13 @@ export async function subscriptionCreated(event: Stripe.Event) {
     return undefined
   }
 
-  // await db.insert(subscriptions).values({
-  //   userId: user.id,
-  //   stripeCustomerId: event.data.object.customer as string,
-  //   stripeSubscriptionId: event.data.object.id as string,
-  //   data: event.data.object,
-  //   createdAt: new Date(event.data.object.created * 1000).toISOString(),
-  //   type: event.data.object.items.data[0].plan.interval === 'month' ? 'monthly' : 'yearly',
-  // })
+  await db.insert(subscriptions).values({
+    status: event.data.object.status,
+    userId: user.id,
+    stripeCustomerId: event.data.object.customer as string,
+    stripeSubscriptionId: event.data.object.id as string,
+    data: event.data.object,
+    createdAt: new Date(event.data.object.created * 1000),
+    period: event.data.object.items.data[0].plan.interval === 'month' ? 'monthly' : 'yearly',
+  })
 }

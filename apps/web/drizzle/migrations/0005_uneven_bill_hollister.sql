@@ -1,1 +1,0 @@
-ALTER TABLE "subscriptions" ENABLE ROW LEVEL SECURITY;

@@ -1,4 +1,13 @@
 {
-  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
-  "files": []
+  "extends": "@connnect/tsconfig/react.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"],
+      "@connnect/ui/*": ["../../packages/ui/src/*"],
+      "@connnect/shared/*": ["../../packages/shared/*"],
+      "#web-types/*": ["../web/types/*"]
+    }
+  },
+  "include": ["."]
 }

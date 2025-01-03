@@ -1,0 +1,6 @@
+{
+  "name": "@connnect/tsconfig",
+  "type": "module",
+  "private": true
+}
+

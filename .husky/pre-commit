@@ -1,1 +1,1 @@
-run-p lint typecheck test
+run-p lint check-types test

@@ -1,19 +1,23 @@
 {
-  "name": "app",
+  "name": "@connnect/desktop",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
-    "serve": "vite preview",
-    "tauri": "tauri"
+    "check-types": "tsc --noEmit",
+    "dev": "pnpm run tauri:dev",
+    "build": "pnpm run tauri:build",
+    "build:debug": "pnpm run tauri:build:debug",
+    "vite:dev": "vite",
+    "vite:build": "tsc --noEmit && vite build",
+    "vite:preview": "vite preview",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "tauri:build:debug": "tauri build --debug"
   },
   "dependencies": {
     "@connnect/shared": "workspace:*",
     "@connnect/ui": "workspace:*",
-    "@tauri-apps/api": "^2.1.1",
+    "@tauri-apps/api": "^2.2.0",
     "@tauri-apps/plugin-deep-link": "^2.2.0",
     "@tauri-apps/plugin-dialog": "^2.2.0",
     "@tauri-apps/plugin-shell": "^2",
@@ -21,9 +25,10 @@
     "react-use": "^17.6.0"
   },
   "devDependencies": {
+    "@connnect/tsconfig": "workspace:*",
     "@tanstack/react-query-devtools": "^5.62.11",
-    "@tanstack/router-devtools": "^1.93.0",
-    "@tanstack/router-plugin": "^1.93.0",
+    "@tanstack/router-devtools": "^1.94.0",
+    "@tanstack/router-plugin": "^1.94.0",
     "@tauri-apps/cli": "^2",
     "vite-tsconfig-paths": "^5.1.4"
   }

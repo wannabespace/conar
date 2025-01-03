@@ -3,10 +3,12 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
+    "dev": "run-p dev:tsc dev:next",
+    "dev:next": "next dev --turbopack",
+    "dev:tsc": "tsc --watch --project tsconfig.app.json",
+    "build": "tsc && pnpm run drizzle:migrate && next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit",
+    "check-types": "tsc --noEmit",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:generate-custom": "drizzle-kit generate --custom",
     "drizzle:migrate": "drizzle-kit migrate",
@@ -29,6 +31,7 @@
     "svix": "^1.44.0"
   },
   "devDependencies": {
+    "@connnect/tsconfig": "workspace:*",
     "@types/node": "^22",
     "autoprefixer": "^10.4.20",
     "drizzle-kit": "^0.30.1",

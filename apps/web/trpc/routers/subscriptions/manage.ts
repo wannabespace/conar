@@ -1,10 +1,10 @@
-import type { subscriptionType } from '~/drizzle'
+import type { subscriptionPeriod } from '~/drizzle'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { env } from '~/env'
 import { getStripeCustomerIdByEmail, stripe } from '~/lib/stripe'
 import { protectedProcedure } from '~/trpc'
-import { isSubscriptionActive } from '~/trpc/utils/subscription'
+import { getSubscriptionStatus } from '~/trpc/utils/subscription'
 
 const plans = {
   monthly: env.STRIPE_MONTHLY_PRICE_ID,
@@ -13,17 +13,17 @@ const plans = {
 
 export const manage = protectedProcedure
   .input(z.object({
-    type: z.enum(['monthly'] satisfies typeof subscriptionType.enumValues),
+    type: z.enum(['monthly', 'yearly'] satisfies typeof subscriptionPeriod.enumValues),
   }))
   .mutation(async ({ ctx, input }) => {
-    const [isActive, customerId] = await Promise.all([
-      isSubscriptionActive(ctx.user.id),
+    const [{ active }, customerId] = await Promise.all([
+      getSubscriptionStatus(ctx.user.id),
       getStripeCustomerIdByEmail(ctx.user.email),
     ])
 
     let url: string | null
 
-    if (isActive) {
+    if (active) {
       if (!customerId) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'User does not have a Stripe customer ID' })
       }

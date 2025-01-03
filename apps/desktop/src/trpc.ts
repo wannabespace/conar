@@ -1,4 +1,4 @@
-import type { AppRouter } from '../../web/trpc/routers'
+import type { AppRouter } from '#types/apps/web/trpc/routers'
 import { createTRPCProxyClient, httpBatchLink } from '@trpc/react-query'
 import SuperJSON from 'superjson'
 import { env } from '~/env'

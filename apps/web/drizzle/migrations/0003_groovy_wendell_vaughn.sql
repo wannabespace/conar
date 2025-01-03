@@ -1,1 +1,0 @@
-ALTER TABLE "users" ADD COLUMN "secret" text NOT NULL;

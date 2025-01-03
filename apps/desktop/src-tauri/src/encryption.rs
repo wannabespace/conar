@@ -6,10 +6,8 @@ use base64::{engine::general_purpose::STANDARD, Engine};
 use rand::{rngs::OsRng, RngCore};
 
 pub fn encrypt(text: &str, secret: &[u8; 32]) -> String {
-    // Create cipher instance
     let cipher = Aes256Gcm::new_from_slice(secret).unwrap();
 
-    // Generate random 96-bits nonce
     let mut nonce_bytes = [0u8; 12];
     OsRng.fill_bytes(&mut nonce_bytes);
     let nonce = Nonce::from_slice(&nonce_bytes);
