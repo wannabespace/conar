@@ -7,7 +7,7 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "dev": "turbo dev",
-    "build": "turbo build",
+    "build": "turbo build --env-mode=loose",
     "check-types": "turbo check-types"
   },
   "dependencies": {
