@@ -26,7 +26,7 @@ tauri-plugin-deep-link = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-store = "2.2.0"
 base64 = "0.21.7"
-dotenv = "0.15.0"
 rand = "0.8.5"
 aes-gcm = "0.10.3"
+dotenvs = "0.1.0"
 

@@ -1,14 +1,11 @@
-use dotenv::dotenv;
 use base64::{Engine as _, engine::general_purpose};
-use tauri::command;
 mod encryption;
 
-#[command]
+#[tauri::command]
 fn prepare_secret(secret: &str) -> String {
-    dotenv().ok();
-
     let local_secret = std::env::var("TAURI_LOCAL_SECRET")
         .expect("TAURI_LOCAL_SECRET environment variable not set");
+
     let combined = format!("{}{}", local_secret, secret);
     let mut key = vec![0u8; 32];
 
@@ -19,14 +16,14 @@ fn prepare_secret(secret: &str) -> String {
     general_purpose::STANDARD.encode(key)
 }
 
-#[command]
+#[tauri::command]
 fn encrypt_text(text: &str, secret: &str) -> String {
     let key_bytes = general_purpose::STANDARD.decode(secret).expect("Invalid secret");
     let key_array: [u8; 32] = key_bytes.try_into().expect("Invalid key length");
     encryption::encrypt(text, &key_array)
 }
 
-#[command]
+#[tauri::command]
 fn decrypt_text(encrypted_text: &str, secret: &str) -> String {
     let key_bytes = general_purpose::STANDARD.decode(secret).expect("Invalid secret");
     let key_array: [u8; 32] = key_bytes.try_into().expect("Invalid secret length");
@@ -35,6 +32,14 @@ fn decrypt_text(encrypted_text: &str, secret: &str) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    if cfg!(debug_assertions) {
+        dotenv::from_filename(".env.development.local").unwrap().load();
+    } else {
+        let prod_env = include_str!("../../.env.production.local");
+        let result = dotenv::from_read(prod_env.as_bytes()).unwrap();
+        result.load();
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_dialog::init())

@@ -30,7 +30,7 @@ function SignInPage() {
     const { data, error } = await authClient.signIn.social({
       provider: 'google',
       disableRedirect: true,
-      callbackURL: `${env.VITE_PUBLIC_APP_URL}/desktop-open?key=${await secretStringify(codeChallenge, env.VITE_PUBLIC_AUTH_SECRET)}`,
+      callbackURL: `${env.VITE_PUBLIC_APP_URL}/open?key=${await secretStringify(codeChallenge, env.VITE_PUBLIC_AUTH_SECRET)}`,
     })
 
     if (error) {
