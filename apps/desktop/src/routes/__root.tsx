@@ -26,7 +26,7 @@ function RootDocument() {
       transformer: SuperJSON,
       links: [
         httpBatchLink({
-          url: `${env.VITE_PUBLIC_API_URL}/api/trpc`,
+          url: `${env.VITE_PUBLIC_APP_URL}/api/trpc`,
         }),
       ],
     }),

@@ -12,6 +12,9 @@
       "desktop": {
         "schemes": ["connnect"]
       }
+    },
+    "shell": {
+      "open": true
     }
   },
   "app": {
@@ -20,6 +23,8 @@
         "title": "Connnect",
         "width": 1280,
         "height": 720,
+        "acceptFirstMouse": true,
+        "maximized": true,
         "minWidth": 500,
         "minHeight": 300
       }

@@ -56,6 +56,7 @@ export const auth = betterAuth({
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      redirectURI: `${env.NEXT_PUBLIC_URL}/api/redirect`,
     },
     github: {
       clientId: env.GITHUB_CLIENT_ID,

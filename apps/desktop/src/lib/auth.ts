@@ -18,7 +18,7 @@ export async function setBearerToken(token: string) {
 }
 
 export const authClient = createAuthClient({
-  baseURL: env.VITE_PUBLIC_API_URL,
+  baseURL: env.VITE_PUBLIC_APP_URL,
   fetchOptions: {
     async onRequest(context) {
       const token = await getBearerToken()

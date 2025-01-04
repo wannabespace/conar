@@ -4,7 +4,9 @@ import { Label } from '@connnect/ui/components/label'
 import { cn } from '@connnect/ui/lib/utils'
 import { createFileRoute } from '@tanstack/react-router'
 import { isTauri } from '@tauri-apps/api/core'
+import { open } from '@tauri-apps/plugin-shell'
 import { Loader2 } from 'lucide-react'
+// import { nanoid } from 'nanoid'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { authClient, setBearerToken } from '~/lib/auth'
@@ -17,6 +19,23 @@ function SignInPage() {
   const [email, setEmail] = useState('valerii.strilets@gmail.com')
   const [password, setPassword] = useState('12345678')
   const [loading, setLoading] = useState(false)
+
+  const googleSignIn = async () => {
+    const { data, error } = await authClient.signIn.social({
+      provider: 'google',
+      disableRedirect: true,
+      callbackURL: '/?test=123',
+    })
+
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+
+    await open(data.url!)
+
+    // await open(`${env.VITE_PUBLIC_APP_URL}/auth/redirect?id=${id}`, '_blank')
+  }
 
   async function signIn() {
     setLoading(true)
@@ -87,22 +106,7 @@ function SignInPage() {
         <Button
           variant="outline"
           className={cn('w-full gap-2')}
-          onClick={async () => {
-            const { data, error } = await authClient.signIn.social({
-              provider: 'google',
-              disableRedirect: true,
-              callbackURL: '/dashboard',
-            })
-
-            if (error) {
-              toast.error(error.message)
-              return
-            }
-
-            if (data.url) {
-              window.open(data.url, '_blank')
-            }
-          }}
+          onClick={googleSignIn}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

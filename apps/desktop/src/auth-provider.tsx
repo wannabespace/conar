@@ -24,11 +24,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isTauri()) {
       try {
         return await onOpenUrl(async ([url]) => {
-          const [, token] = (url || '').split('session?token=')
+          const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
 
-          if (token) {
-            await setBearerToken(token)
-            await refetch()
+          if (pathname === '/auth') {
+            const token = searchParams.get('token')
+
+            if (token) {
+              await setBearerToken(token)
+              await refetch()
+            }
           }
         })
       }
