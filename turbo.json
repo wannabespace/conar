@@ -31,7 +31,10 @@
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET"
       ],
-      "dependsOn": ["^build", "^build:types"]
+      "dependsOn": ["^build"]
+    },
+    "@connnect/desktop": {
+      "dependsOn": ["^build:types"]
     },
     "build:tauri": {
       "dependsOn": ["^build"]
