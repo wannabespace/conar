@@ -38,7 +38,8 @@
       "dependsOn": ["^build:types"]
     },
     "build:types": {
-      "cache": false
+      "cache": false,
+      "dependsOn": ["^build"]
     },
     "build:tauri": {
       "dependsOn": ["^build"]
