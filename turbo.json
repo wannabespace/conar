@@ -33,7 +33,7 @@
       ],
       "dependsOn": ["^build"]
     },
-    "@connnect/desktop": {
+    "@connnect/desktop#build": {
       "dependsOn": ["^build:types"]
     },
     "build:tauri": {
