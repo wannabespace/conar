@@ -28,7 +28,7 @@ export const db = drizzle(client, {
         })
       }
 
-      logger.log(`${colorize('cyan', 'DB')} ${colorize('dim', q)}`)
+      logger.log(`${colorize('cyan', 'DB')} ${colorize('gray', q)}`)
     },
   },
   schema: {
