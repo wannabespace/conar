@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:types": "rimraf types && tsc --watch --project tsconfig.app.json",
-    "build": "pnpm run drizzle:migrate && next build",
+    "build": "pnpm run drizzle:migrate && next build && pnpm run build:types",
     "build:types": "rimraf types && tsc --project tsconfig.app.json",
     "start": "next start",
     "check-types": "tsc --noEmit",
