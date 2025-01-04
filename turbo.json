@@ -36,6 +36,9 @@
     "@connnect/desktop#build": {
       "dependsOn": ["^build:types"]
     },
+    "build:types": {
+      "cache": false
+    },
     "build:tauri": {
       "dependsOn": ["^build"]
     },

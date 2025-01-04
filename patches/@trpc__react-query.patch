@@ -1,0 +1,22 @@
+diff --git a/dist/createHooksInternal-063195fc.mjs b/dist/createHooksInternal-063195fc.mjs
+index 667b33f1b5227aa0e5784d91b9bae4b2b02479ab..2ba73a764a68857852eef1dec6cc0bfabf7e1abd 100644
+--- a/dist/createHooksInternal-063195fc.mjs
++++ b/dist/createHooksInternal-063195fc.mjs
+@@ -1,7 +1,7 @@
+ import { createRecursiveProxy, createFlatProxy } from '@trpc/server/shared';
+ import { g as getArrayQueryKey } from './getArrayQueryKey-86134f8b.mjs';
+ import { createTRPCClientProxy, createTRPCClient } from '@trpc/client';
+-import { useQuery, useQueryClient, useMutation, hashQueryKey, useInfiniteQuery, useQueries } from '@tanstack/react-query';
++import { useQuery, useQueryClient, useMutation, hashKey, useInfiniteQuery, useQueries } from '@tanstack/react-query';
+ import React, { createContext, useMemo, useState, useEffect, useCallback, useRef } from 'react';
+ 
+ /**
+@@ -430,7 +430,7 @@ function getClientArgs(pathAndInput, opts) {
+     }
+     /* istanbul ignore next -- @preserve */ function useSubscription(pathAndInput, opts) {
+         const enabled = opts?.enabled ?? true;
+-        const queryKey = hashQueryKey(pathAndInput);
++        const queryKey = hashKey(pathAndInput);
+         const { client  } = useContext();
+         const optsRef = useRef(opts);
+         optsRef.current = opts;
