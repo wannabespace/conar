@@ -4,15 +4,10 @@
   "private": true,
   "scripts": {
     "check-types": "tsc --noEmit",
-    "dev": "pnpm run tauri:dev",
-    "build": "pnpm run tauri:build",
-    "build:debug": "pnpm run tauri:build:debug",
-    "vite:dev": "vite",
-    "vite:build": "tsc --noEmit && vite build",
-    "vite:preview": "vite preview",
-    "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
-    "tauri:build:debug": "tauri build --debug"
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "dev:tauri": "tauri dev",
+    "build:tauri": "tauri build"
   },
   "dependencies": {
     "@connnect/shared": "workspace:*",
@@ -27,7 +22,7 @@
   "devDependencies": {
     "@connnect/tsconfig": "workspace:*",
     "@connnect/web": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.62.14",
+    "@tanstack/react-query-devtools": "^5.62.15",
     "@tanstack/router-devtools": "^1.95.0",
     "@tanstack/router-plugin": "^1.95.0",
     "@tauri-apps/cli": "^2",

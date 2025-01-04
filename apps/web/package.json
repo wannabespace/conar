@@ -7,10 +7,10 @@
     "./trpc-type": "./types/apps/web/trpc/routers/index.d.ts"
   },
   "scripts": {
-    "dev": "run-p dev:tsc dev:next",
-    "dev:next": "next dev --turbopack",
-    "dev:tsc": "rimraf types && tsc --watch --project tsconfig.app.json",
-    "build": "rimraf types && tsc --project tsconfig.app.json && pnpm run drizzle:migrate && next build",
+    "dev": "next dev --turbopack",
+    "dev:types": "rimraf types && tsc --watch --project tsconfig.app.json",
+    "build": "pnpm run drizzle:migrate && next build",
+    "build:types": "rimraf types && tsc --project tsconfig.app.json",
     "start": "next start",
     "check-types": "tsc --noEmit",
     "drizzle:generate": "drizzle-kit generate",

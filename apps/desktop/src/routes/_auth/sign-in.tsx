@@ -3,10 +3,10 @@ import { Input } from '@connnect/ui/components/input'
 import { Label } from '@connnect/ui/components/label'
 import { cn } from '@connnect/ui/lib/utils'
 import { createFileRoute } from '@tanstack/react-router'
+import { isTauri } from '@tauri-apps/api/core'
 import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { env } from '~/env'
 import { authClient, setBearerToken } from '~/lib/auth'
 
 export const Route = createFileRoute('/_auth/sign-in')({
@@ -27,7 +27,7 @@ function SignInPage() {
       },
       {
         async onSuccess({ response }) {
-          if (env.VITE_PUBLIC_IS_DESKTOP) {
+          if (isTauri()) {
             const authToken = response.headers.get('set-auth-token')
 
             if (authToken) {

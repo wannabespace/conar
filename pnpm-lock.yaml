@@ -134,8 +134,8 @@ importers:
         specifier: workspace:*
         version: link:../web
       '@tanstack/react-query-devtools':
-        specifier: ^5.62.14
-        version: 5.62.14(@tanstack/react-query@5.62.11(react@19.0.0))(react@19.0.0)
+        specifier: ^5.62.15
+        version: 5.62.15(@tanstack/react-query@5.62.11(react@19.0.0))(react@19.0.0)
       '@tanstack/router-devtools':
         specifier: ^1.95.0
         version: 1.95.0(@tanstack/react-router@1.90.0)(csstype@3.1.3)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -1929,10 +1929,10 @@ packages:
   '@tanstack/query-devtools@5.62.9':
     resolution: {integrity: sha512-b1NZzDLVf6laJsB1Cfm3ieuYzM+WqoO8qpm9v+3Etwd+Ph4zkhUMiT+wcWj5AhEPsXiRodKYiiW048VDNdBxNg==}
 
-  '@tanstack/react-query-devtools@5.62.14':
-    resolution: {integrity: sha512-5OEOWzO9gLovbKozIaSRHXXPd30dooa+MZTG0gfMMTKXhH5lct6SLozQ5ngRvzrbYpfL4c9i2+6bX8Hwu8sT0w==}
+  '@tanstack/react-query-devtools@5.62.15':
+    resolution: {integrity: sha512-8aE7uD45NHZgNtHMVQC7PvM9f72mKK4bqcpHr9La8TsTRX7x8dy2Kdu2ReFNLCrdlEWkxdP5843tc/lHg+Q/rg==}
     peerDependencies:
-      '@tanstack/react-query': ^5.62.14
+      '@tanstack/react-query': ^5.62.15
       react: ^18 || ^19
 
   '@tanstack/react-query@5.62.11':
@@ -6130,7 +6130,7 @@ snapshots:
 
   '@tanstack/query-devtools@5.62.9': {}
 
-  '@tanstack/react-query-devtools@5.62.14(@tanstack/react-query@5.62.11(react@19.0.0))(react@19.0.0)':
+  '@tanstack/react-query-devtools@5.62.15(@tanstack/react-query@5.62.11(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@tanstack/query-devtools': 5.62.9
       '@tanstack/react-query': 5.62.11(react@19.0.0)

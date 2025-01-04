@@ -1,7 +1,7 @@
 import { useRouter } from '@tanstack/react-router'
+import { isTauri } from '@tauri-apps/api/core'
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { useEffect } from 'react'
-import { env } from '~/env'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { useSession } from '~/hooks/use-session'
 import { authClient, setBearerToken } from '~/lib/auth'
@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isLoading, isAuthenticated])
 
   async function listenDeepLinks() {
-    if (env.VITE_PUBLIC_IS_DESKTOP) {
+    if (isTauri()) {
       try {
         return await onOpenUrl(async ([url]) => {
           const [, token] = (url || '').split('session?token=')

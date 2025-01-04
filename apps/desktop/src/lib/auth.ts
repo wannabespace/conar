@@ -6,23 +6,15 @@ import { env } from '~/env'
 export const BEARER_TOKEN_KEY = 'connnect.bearer_token'
 
 export async function removeBearerToken() {
-  if (env.VITE_PUBLIC_IS_DESKTOP) {
-    localStorage.removeItem(BEARER_TOKEN_KEY)
-  }
+  localStorage.removeItem(BEARER_TOKEN_KEY)
 }
 
 export async function getBearerToken() {
-  if (env.VITE_PUBLIC_IS_DESKTOP) {
-    return localStorage.getItem(BEARER_TOKEN_KEY)
-  }
-
-  return null
+  return localStorage.getItem(BEARER_TOKEN_KEY)
 }
 
 export async function setBearerToken(token: string) {
-  if (env.VITE_PUBLIC_IS_DESKTOP) {
-    localStorage.setItem(BEARER_TOKEN_KEY, token)
-  }
+  localStorage.setItem(BEARER_TOKEN_KEY, token)
 }
 
 export const authClient = createAuthClient({

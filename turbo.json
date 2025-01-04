@@ -6,8 +6,18 @@
       "persistent": true,
       "cache": false
     },
+    "dev:types": {
+      "persistent": true,
+      "cache": false
+    },
+    "dev:tauri": {
+      "persistent": true,
+      "cache": false
+    },
     "build": {
       "env": [
+        "VITE_API_URL",
+        "TAURI_LOCAL_SECRET",
         "STRIPE_SECRET_KEY",
         "DATABASE_URL",
         "STRIPE_WEBHOOK_SECRET",
@@ -21,6 +31,9 @@
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET"
       ],
+      "dependsOn": ["^build", "^build:types"]
+    },
+    "build:tauri": {
       "dependsOn": ["^build"]
     },
     "check-types": {}

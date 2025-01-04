@@ -6,8 +6,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "dev": "turbo dev",
-    "build": "turbo build --env-mode=loose",
+    "dev": "turbo run dev dev:types dev:tauri",
+    "build": "turbo run build build:tauri",
     "check-types": "turbo check-types"
   },
   "dependencies": {
