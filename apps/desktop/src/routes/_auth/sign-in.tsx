@@ -6,10 +6,12 @@ import { createFileRoute } from '@tanstack/react-router'
 import { isTauri } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-shell'
 import { Loader2 } from 'lucide-react'
-// import { nanoid } from 'nanoid'
+import { nanoid } from 'nanoid'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { authClient, setBearerToken } from '~/lib/auth'
+import { env } from '~/env'
+import { authClient, setBearerToken, setCodeChallenge } from '~/lib/auth'
+import { secretStringify } from '~/lib/secrets'
 
 export const Route = createFileRoute('/_auth/sign-in')({
   component: SignInPage,
@@ -21,10 +23,14 @@ function SignInPage() {
   const [loading, setLoading] = useState(false)
 
   const googleSignIn = async () => {
+    const codeChallenge = nanoid()
+
+    setCodeChallenge(codeChallenge)
+
     const { data, error } = await authClient.signIn.social({
       provider: 'google',
       disableRedirect: true,
-      callbackURL: '/?test=123',
+      callbackURL: `${env.VITE_PUBLIC_APP_URL}/desktop-open?key=${await secretStringify(codeChallenge, env.VITE_PUBLIC_AUTH_SECRET)}`,
     })
 
     if (error) {
@@ -33,8 +39,6 @@ function SignInPage() {
     }
 
     await open(data.url!)
-
-    // await open(`${env.VITE_PUBLIC_APP_URL}/auth/redirect?id=${id}`, '_blank')
   }
 
   async function signIn() {

@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm'
 import { boolean, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { nanoid } from 'nanoid'
 import { baseTable } from '../base-table'
@@ -21,6 +22,13 @@ export const sessions = pgTable('sessions', {
   userId: uuid('user_id').notNull().references(() => users.id),
 }).enableRLS()
 
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
+}))
+
 export const accounts = pgTable('accounts', {
   ...baseTable,
   accountId: text('account_id').notNull(),
@@ -39,6 +47,13 @@ export const accounts = pgTable('accounts', {
   password: text(),
 }).enableRLS()
 
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, {
+    fields: [accounts.userId],
+    references: [users.id],
+  }),
+}))
+
 export const verifications = pgTable('verifications', {
   ...baseTable,
   identifier: text().notNull(),
@@ -53,6 +68,13 @@ export const twoFactors = pgTable('two_factors', {
   backupCodes: text('backup_codes').notNull(),
   userId: uuid('user_id').notNull().references(() => users.id),
 }).enableRLS()
+
+export const twoFactorsRelations = relations(twoFactors, ({ one }) => ({
+  user: one(users, {
+    fields: [twoFactors.userId],
+    references: [users.id],
+  }),
+}))
 
 export const organizations = pgTable('organizations', {
   ...baseTable,
@@ -69,6 +91,17 @@ export const members = pgTable('members', {
   role: text('role').notNull(),
 }).enableRLS()
 
+export const membersRelations = relations(members, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [members.organizationId],
+    references: [organizations.id],
+  }),
+  user: one(users, {
+    fields: [members.userId],
+    references: [users.id],
+  }),
+}))
+
 export const invitations = pgTable('invitations', {
   ...baseTable,
   organizationId: uuid('organization_id').notNull().references(() => organizations.id),
@@ -78,3 +111,14 @@ export const invitations = pgTable('invitations', {
   expiresAt: timestamp('expires_at').notNull(),
   inviterId: uuid('inviter_id').notNull().references(() => users.id),
 }).enableRLS()
+
+export const invitationsRelations = relations(invitations, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [invitations.organizationId],
+    references: [organizations.id],
+  }),
+  inviter: one(users, {
+    fields: [invitations.inviterId],
+    references: [users.id],
+  }),
+}))

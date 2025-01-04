@@ -2,9 +2,12 @@ import { useRouter } from '@tanstack/react-router'
 import { isTauri } from '@tauri-apps/api/core'
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { useEffect } from 'react'
+import { toast } from 'sonner'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { useSession } from '~/hooks/use-session'
-import { authClient, setBearerToken } from '~/lib/auth'
+import { authClient, getCodeChallenge, removeCodeChallenge, setBearerToken } from '~/lib/auth'
+import { env } from './env'
+import { secretParse } from './lib/secrets'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { refetch, isAuthenticated, isLoading } = useSession()
@@ -26,12 +29,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return await onOpenUrl(async ([url]) => {
           const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
 
-          if (pathname === '/auth') {
+          if (pathname === '/session') {
             const token = searchParams.get('token')
+            const key = searchParams.get('key')
+
+            if (!key) {
+              return
+            }
+
+            const codeChallenge = await secretParse(key, env.VITE_PUBLIC_AUTH_SECRET)
+
+            if (codeChallenge !== getCodeChallenge()) {
+              toast.error('Invalid code challenge')
+              return
+            }
 
             if (token) {
               await setBearerToken(token)
               await refetch()
+              removeCodeChallenge()
             }
           }
         })

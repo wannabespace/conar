@@ -26,21 +26,6 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: process.env.NODE_ENV === 'production' ? ['tauri://localhost'] : ['http://localhost:1420'],
-  // databaseHooks: {
-  //   session: {
-  //     create: {
-  //       before: async (session) => {
-  //         // const organization = await getActiveOrganization(session.userId)
-  //         return {
-  //           data: {
-  //             ...session,
-  //             // activeOrganizationId: organization.id,
-  //           },
-  //         }
-  //       },
-  //     },
-  //   },
-  // },
   advanced: {
     generateId: () => v7(),
     cookiePrefix: 'connnect',
@@ -56,7 +41,6 @@ export const auth = betterAuth({
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
-      redirectURI: `${env.NEXT_PUBLIC_URL}/api/redirect`,
     },
     github: {
       clientId: env.GITHUB_CLIENT_ID,

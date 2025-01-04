@@ -4,6 +4,7 @@ import { inferAdditionalFields, organizationClient, twoFactorClient } from 'bett
 import { env } from '~/env'
 
 export const BEARER_TOKEN_KEY = 'connnect.bearer_token'
+export const CODE_CHALLENGE_KEY = 'connnect.code_challenge'
 
 export async function removeBearerToken() {
   localStorage.removeItem(BEARER_TOKEN_KEY)
@@ -15,6 +16,18 @@ export async function getBearerToken() {
 
 export async function setBearerToken(token: string) {
   localStorage.setItem(BEARER_TOKEN_KEY, token)
+}
+
+export function getCodeChallenge() {
+  return localStorage.getItem(CODE_CHALLENGE_KEY)
+}
+
+export function setCodeChallenge(codeChallenge: string) {
+  localStorage.setItem(CODE_CHALLENGE_KEY, codeChallenge)
+}
+
+export function removeCodeChallenge() {
+  localStorage.removeItem(CODE_CHALLENGE_KEY)
 }
 
 export const authClient = createAuthClient({
