@@ -31,7 +31,8 @@
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET"
       ],
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "cache": false
     },
     "@connnect/desktop#build": {
       "dependsOn": ["^build:types"]
