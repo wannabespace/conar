@@ -20,16 +20,16 @@ fn prepare_secret(secret: &str) -> String {
 }
 
 #[command]
-fn encrypt_text(text: &str, key: &str) -> String {
-    let key_bytes = general_purpose::STANDARD.decode(key).expect("Invalid key");
+fn encrypt_text(text: &str, secret: &str) -> String {
+    let key_bytes = general_purpose::STANDARD.decode(secret).expect("Invalid secret");
     let key_array: [u8; 32] = key_bytes.try_into().expect("Invalid key length");
     encryption::encrypt(text, &key_array)
 }
 
 #[command]
-fn decrypt_text(encrypted_text: &str, key: &str) -> String {
-    let key_bytes = general_purpose::STANDARD.decode(key).expect("Invalid key");
-    let key_array: [u8; 32] = key_bytes.try_into().expect("Invalid key length");
+fn decrypt_text(encrypted_text: &str, secret: &str) -> String {
+    let key_bytes = general_purpose::STANDARD.decode(secret).expect("Invalid secret");
+    let key_array: [u8; 32] = key_bytes.try_into().expect("Invalid secret length");
     encryption::decrypt(encrypted_text, &key_array)
 }
 

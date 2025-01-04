@@ -29,9 +29,9 @@ vi.mock('@tauri-apps/api/core', () => ({
     }
 
     if (name === 'decrypt_text') {
-      const _args = args as { encryptedText: string, secret: string }
+      const _args = args as { encrypted_text: string, secret: string }
 
-      return Promise.resolve(decryptTextMock(_args.encryptedText, _args.secret))
+      return Promise.resolve(decryptTextMock(_args.encrypted_text, _args.secret))
     }
 
     return Promise.reject(new Error('Unknown method'))

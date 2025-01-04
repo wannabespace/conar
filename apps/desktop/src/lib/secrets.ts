@@ -13,9 +13,9 @@ function encryptText(text: string, secret: string) {
   })
 }
 
-function decryptText(encryptedText: string, secret: string) {
+function decryptText(encrypted_text: string, secret: string) {
   return invoke<string>('decrypt_text', {
-    encryptedText,
+    encrypted_text,
     secret,
   })
 }
