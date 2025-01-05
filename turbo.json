@@ -22,6 +22,7 @@
       "env": [
         "VITE_API_URL",
         "ENCRYPTION_SECRET",
+        "UPDATES_TOKEN",
         "TAURI_LOCAL_SECRET",
         "STRIPE_SECRET_KEY",
         "DATABASE_URL",
