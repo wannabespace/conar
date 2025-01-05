@@ -30,6 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
 
           if (pathname === '/session') {
+            const persistedCodeChallenge = getCodeChallenge()
+
+            if (!persistedCodeChallenge) {
+              toast.error('No code challenge found')
+              return
+            }
+
             const token = searchParams.get('token')
             const key = searchParams.get('key')
 
@@ -39,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             const codeChallenge = await secretParse(key, env.VITE_PUBLIC_AUTH_SECRET)
 
-            if (codeChallenge !== getCodeChallenge()) {
+            if (codeChallenge !== persistedCodeChallenge) {
               toast.error('Invalid code challenge')
               return
             }

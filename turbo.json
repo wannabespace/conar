@@ -35,7 +35,8 @@
       "cache": false
     },
     "build:tauri": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["build"],
+      "cache": false
     },
     "check-types": {}
   }

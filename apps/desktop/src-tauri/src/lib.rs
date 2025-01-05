@@ -32,7 +32,7 @@ fn decrypt_text(encrypted_text: &str, secret: &str) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    if cfg!(debug_assertions) {
+    if cfg!(dev) {
         dotenv::from_filename(".env.development.local").unwrap().load();
     } else {
         let prod_env = include_str!("../../.env.production.local");
