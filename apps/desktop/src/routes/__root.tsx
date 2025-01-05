@@ -1,3 +1,4 @@
+import { Toaster } from '@connnect/ui/components/sonner'
 import { ThemeProvider } from '@connnect/ui/theme-provider'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -48,6 +49,7 @@ function RootDocument() {
               </>
             )}
           </AuthProvider>
+          <Toaster />
         </QueryClientProvider>
       </TRPCClientProvider>
     </ThemeProvider>

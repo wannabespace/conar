@@ -20,14 +20,11 @@ function decryptText(encryptedText: string, secret: string) {
   })
 }
 
-export async function secretStringify<T>(data: T, secret: string) {
+export async function createEncryptor(secret: string) {
   const preparedSecret = await prepareSecret(secret)
-  const encrypted = await encryptText(JSON.stringify(data), preparedSecret)
-  return encrypted
-}
 
-export async function secretParse<T>(encrypted: string, secret: string) {
-  const preparedSecret = await prepareSecret(secret)
-  const decrypted = await decryptText(encrypted, preparedSecret)
-  return JSON.parse(decrypted) as T
+  return {
+    encrypt: <T>(data: T) => encryptText(JSON.stringify(data), preparedSecret),
+    decrypt: async <T>(encryptedText: string) => JSON.parse(await decryptText(encryptedText, preparedSecret)) as T,
+  }
 }

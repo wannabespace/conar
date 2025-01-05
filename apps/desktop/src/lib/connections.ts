@@ -1,5 +1,5 @@
 import { load } from '@tauri-apps/plugin-store'
-import { secretParse, secretStringify } from './secrets'
+import { createEncryptor } from './secrets'
 
 interface Connection {
   id: string
@@ -21,8 +21,9 @@ export async function getConnectionsIds() {
 }
 
 export async function saveConnection(connection: Connection, secret: string) {
+  const encryptor = await createEncryptor(secret)
   const store = await loadStore()
-  const encrypted = await secretStringify(connection, secret)
+  const encrypted = await encryptor.encrypt(connection)
 
   await store.set(connection.id, encrypted)
 }
@@ -41,5 +42,7 @@ export async function getConnection(id: string, secret: string) {
     return null
   }
 
-  return secretParse<Connection>(encrypted, secret)
+  const encryptor = await createEncryptor(secret)
+
+  return encryptor.decrypt(encrypted)
 }

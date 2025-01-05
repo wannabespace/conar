@@ -7,7 +7,7 @@ import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { useSession } from '~/hooks/use-session'
 import { authClient, getCodeChallenge, removeCodeChallenge, setBearerToken } from '~/lib/auth'
 import { env } from './env'
-import { secretParse } from './lib/secrets'
+import { createEncryptor } from './lib/secrets'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { refetch, isAuthenticated, isLoading } = useSession()
@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isLoading, isAuthenticated])
 
   async function handleSession(token: string, codeChallenge: string) {
+    const encryptor = await createEncryptor(env.VITE_PUBLIC_AUTH_SECRET)
     const persistedCodeChallenge = getCodeChallenge()
 
     if (!persistedCodeChallenge) {
@@ -31,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    const decryptedCodeChallenge = await secretParse(codeChallenge, env.VITE_PUBLIC_AUTH_SECRET)
+    const decryptedCodeChallenge = await encryptor.decrypt(codeChallenge)
 
     if (decryptedCodeChallenge !== persistedCodeChallenge) {
       toast.error('Invalid code challenge')
@@ -50,6 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         return await onOpenUrl(async ([url]) => {
           const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
+
+          console.log(pathname, searchParams.get('token'), searchParams.get('key'))
 
           if (pathname === '/session') {
             const token = searchParams.get('token')

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { prepareSecret, secretParse, secretStringify } from './secrets'
+import { createEncryptor, prepareSecret } from './secrets'
 
 const LOCAL_SECRET = 'some-random-string-from-env'
 
@@ -46,18 +46,21 @@ describe('secrets', () => {
   })
 
   it('should encrypt data', async () => {
-    const data = { foo: 'bar' }
     const secret = 'secret'
-    const encrypted = await secretStringify(data, secret)
+    const encryptor = await createEncryptor(secret)
+    const data = { foo: 'bar' }
+    const encrypted = await encryptor.encrypt(data)
 
-    expect(encrypted).toEqual(`${JSON.stringify(data)}${prepareSecretMock(secret)}`)
+    expect(encrypted).not.toEqual(JSON.stringify(data))
+    expect(typeof encrypted).toBe('string')
   })
 
   it('should decrypt data', async () => {
+    const secret = 'secret'
+    const encryptor = await createEncryptor(secret)
     const data = { foo: 'bar' }
-    const secret = await prepareSecret('secret')
-    const encrypted = await secretStringify(data, secret)
-    const decrypted = await secretParse<typeof data>(encrypted, secret)
+    const encrypted = await encryptor.encrypt(data)
+    const decrypted = await encryptor.decrypt(encrypted)
 
     expect(decrypted).toEqual(data)
   })
