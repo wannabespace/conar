@@ -62,8 +62,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isTauri()) {
       try {
         return await onOpenUrl(async ([url]) => {
-          url = 'connnect://session?key=t3CFZS7rNrBLvVnTG1425krevh/uxk/1aqQq0xHuBGkFBif%20IIMSM3YAbSEVf/w9/0is&token=CnttBp1orZxY3U5ejRSRc4co3clk9Il0'
-
           const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
 
           if (pathname === '/session') {
