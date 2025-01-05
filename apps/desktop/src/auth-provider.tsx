@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isAuthenticated])
 
-  async function handleSession(token: string, codeChallenge: string) {
+  async function handleSession(token: string, codeChallenge: string, isNewUser: boolean) {
     const encryptor = await createEncryptor(env.VITE_PUBLIC_AUTH_SECRET)
     const persistedCodeChallenge = getCodeChallenge()
 
@@ -39,11 +39,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    if (token) {
-      await setBearerToken(token)
-      await refetch()
-      removeCodeChallenge()
-    }
+    await setBearerToken(token)
+    await refetch()
+    removeCodeChallenge()
+
+    toast.success(
+      isNewUser
+        ? 'Welcome to Connnect! We\'re excited to help you manage your databases with ease. Get started by creating your first connection.'
+        : 'Welcome back! Your database connections are ready for you.',
+    )
   }
 
   async function listenDeepLinks() {
@@ -52,17 +56,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return await onOpenUrl(async ([url]) => {
           const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
 
-          console.log(pathname, searchParams.get('token'), searchParams.get('key'))
-
           if (pathname === '/session') {
             const token = searchParams.get('token')
             const codeChallenge = searchParams.get('key')
+            const newUser = searchParams.get('newUser')
 
             if (!codeChallenge || !token) {
               return
             }
 
-            await handleSession(token, codeChallenge)
+            await handleSession(token, codeChallenge, !!newUser)
           }
         })
       }

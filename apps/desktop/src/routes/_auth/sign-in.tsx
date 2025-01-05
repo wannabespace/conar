@@ -27,10 +27,13 @@ function SignInPage() {
 
     setCodeChallenge(codeChallenge)
 
+    const encryptedCodeChallenge = await encryptor.encrypt(codeChallenge)
+
     const { data, error } = await authClient.signIn.social({
       provider: 'google',
       disableRedirect: true,
-      callbackURL: `${env.VITE_PUBLIC_APP_URL}/open?key=${await encryptor.encrypt(codeChallenge)}`,
+      callbackURL: `${env.VITE_PUBLIC_APP_URL}/open?key=${encryptedCodeChallenge}`,
+      newUserCallbackURL: `${env.VITE_PUBLIC_APP_URL}/open?newUser=true&key=${encryptedCodeChallenge}`,
     })
 
     if (error) {
