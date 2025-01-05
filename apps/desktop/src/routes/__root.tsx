@@ -5,8 +5,9 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { AnimatePresence } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AppProvider } from '~/app-provider'
+import { checkUpdates } from '~/check-updates'
 import { queryClient } from '~/main'
 import { sessionQuery } from '~/queries/auth'
 import { clientConfig, trpcReact } from '~/trpc'
@@ -21,6 +22,12 @@ export const Route = createRootRoute({
 function RootDocument() {
   const [trpcClient] = useState(() => trpcReact.createClient(clientConfig))
   const { Provider: TRPCClientProvider } = trpcReact
+
+  useEffect(() => {
+    if (import.meta.env.PROD) {
+      checkUpdates()
+    }
+  }, [])
 
   return (
     <ThemeProvider>
