@@ -18,7 +18,7 @@
     },
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhCNTQ3NDI4MDVCQ0MzNDUKUldSRnc3d0ZLSFJVaXlvVUdmdjhHRCt1SFJuaTB2Z1BqSk5kNlV4UHlDUExRM1pldXdkS0I2bXoK",
-      "endpoints": ["https://connnect.app/releases/latest.json"],
+      "endpoints": ["https://connnect.app/api/releases/latest"],
       "windows": {
         "installMode": "passive"
       }

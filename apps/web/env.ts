@@ -6,6 +6,7 @@ export const env = createEnv({
     NEXT_PUBLIC_URL: z.string().min(1),
   },
   server: {
+    UPDATES_TOKEN: z.string().min(1),
     DATABASE_URL: z.string().min(1),
     ENCRYPTION_SECRET: z.string().min(1),
     STRIPE_SECRET_KEY: z.string().min(1),
