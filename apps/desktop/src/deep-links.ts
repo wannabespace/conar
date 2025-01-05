@@ -66,14 +66,14 @@ export function useDeepLinksListener() {
   }
 
   async function listenDeepLinks() {
-    if (isTauri()) {
-      return await onOpenUrl(async ([url]) => {
-        await handleDeepLink(url)
-      })
-    }
+    return onOpenUrl(async ([url]) => {
+      await handleDeepLink(url)
+    })
   }
 
-  useAsyncEffect(() => {
-    return listenDeepLinks()
+  useAsyncEffect(async () => {
+    if (isTauri()) {
+      return listenDeepLinks()
+    }
   }, [])
 }
