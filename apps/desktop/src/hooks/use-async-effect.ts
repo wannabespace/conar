@@ -26,5 +26,6 @@ export function useAsyncEffect(
 
       destroy = undefined
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
 }

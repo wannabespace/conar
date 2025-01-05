@@ -1,4 +1,5 @@
 import type { auth } from '@connnect/web/auth-type'
+import { isTauri } from '@tauri-apps/api/core'
 import { createAuthClient } from 'better-auth/client'
 import { inferAdditionalFields, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { env } from '~/env'
@@ -38,6 +39,15 @@ export const authClient = createAuthClient({
 
       if (token) {
         context.headers.set('Authorization', `Bearer ${token}`)
+      }
+    },
+    async onSuccess({ response }) {
+      if (isTauri()) {
+        const authToken = response.headers.get('set-auth-token')
+
+        if (authToken) {
+          await setBearerToken(authToken)
+        }
       }
     },
   },

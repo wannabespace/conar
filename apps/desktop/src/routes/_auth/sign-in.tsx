@@ -3,14 +3,13 @@ import { Input } from '@connnect/ui/components/input'
 import { Label } from '@connnect/ui/components/label'
 import { cn } from '@connnect/ui/lib/utils'
 import { createFileRoute } from '@tanstack/react-router'
-import { isTauri } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-shell'
 import { Loader2 } from 'lucide-react'
 import { nanoid } from 'nanoid'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { env } from '~/env'
-import { authClient, setBearerToken, setCodeChallenge } from '~/lib/auth'
+import { authClient, setCodeChallenge } from '~/lib/auth'
 import { secretStringify } from '~/lib/secrets'
 
 export const Route = createFileRoute('/_auth/sign-in')({
@@ -43,23 +42,10 @@ function SignInPage() {
 
   async function signIn() {
     setLoading(true)
-    const { error } = await authClient.signIn.email(
-      {
-        email,
-        password,
-      },
-      {
-        async onSuccess({ response }) {
-          if (isTauri()) {
-            const authToken = response.headers.get('set-auth-token')
-
-            if (authToken) {
-              await setBearerToken(authToken)
-            }
-          }
-        },
-      },
-    )
+    const { error } = await authClient.signIn.email({
+      email,
+      password,
+    })
 
     if (error) {
       toast.error(error.message)

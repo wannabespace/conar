@@ -24,13 +24,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isLoading, isAuthenticated])
 
   async function handleSession(token: string, codeChallenge: string) {
-    const decryptedCodeChallenge = await secretParse(codeChallenge, env.VITE_PUBLIC_AUTH_SECRET)
     const persistedCodeChallenge = getCodeChallenge()
 
     if (!persistedCodeChallenge) {
       toast.error('No code challenge found')
       return
     }
+
+    const decryptedCodeChallenge = await secretParse(codeChallenge, env.VITE_PUBLIC_AUTH_SECRET)
 
     if (decryptedCodeChallenge !== persistedCodeChallenge) {
       toast.error('Invalid code challenge')
