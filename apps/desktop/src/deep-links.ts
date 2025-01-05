@@ -66,9 +66,7 @@ export function useDeepLinksListener() {
   }
 
   async function listenDeepLinks() {
-    return onOpenUrl(async ([url]) => {
-      await handleDeepLink(url)
-    })
+    return onOpenUrl(async ([url]) => handleDeepLink(url))
   }
 
   useAsyncEffect(async () => {
