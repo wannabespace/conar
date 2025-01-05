@@ -67,14 +67,9 @@ export function useDeepLinksListener() {
 
   async function listenDeepLinks() {
     if (isTauri()) {
-      try {
-        return await onOpenUrl(async ([url]) => {
-          await handleDeepLink(url)
-        })
-      }
-      catch {
-        // Nothing to do - error can only occur if app is opened in browser
-      }
+      return await onOpenUrl(async ([url]) => {
+        await handleDeepLink(url)
+      })
     }
   }
 
