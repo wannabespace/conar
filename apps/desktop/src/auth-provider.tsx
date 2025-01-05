@@ -1,6 +1,6 @@
 import { useRouter } from '@tanstack/react-router'
 import { isTauri } from '@tauri-apps/api/core'
-import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
+import { getCurrent, onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
@@ -22,6 +22,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.navigate({ to: isAuthenticated ? '/' : '/sign-in' })
     }
   }, [isLoading, isAuthenticated])
+
+  async function handleDeepLink(url: string) {
+    const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
+
+    if (pathname === '/session') {
+      await handleSession(searchParams)
+    }
+  }
+
+  useAsyncEffect(async () => {
+    const urls = await getCurrent()
+
+    if (!urls || urls.length === 0) {
+      return
+    }
+
+    const [url] = urls
+
+    await handleDeepLink(url)
+  }, [])
 
   async function handleSession(searchParams: URLSearchParams) {
     const token = searchParams.get('token')
@@ -62,11 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isTauri()) {
       try {
         return await onOpenUrl(async ([url]) => {
-          const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
-
-          if (pathname === '/session') {
-            await handleSession(searchParams)
-          }
+          await handleDeepLink(url)
         })
       }
       catch {
