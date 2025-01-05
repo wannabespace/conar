@@ -23,6 +23,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isAuthenticated])
 
+  async function handleSession(token: string, codeChallenge: string) {
+    const decryptedCodeChallenge = await secretParse(codeChallenge, env.VITE_PUBLIC_AUTH_SECRET)
+    const persistedCodeChallenge = getCodeChallenge()
+
+    if (!persistedCodeChallenge) {
+      toast.error('No code challenge found')
+      return
+    }
+
+    if (decryptedCodeChallenge !== persistedCodeChallenge) {
+      toast.error('Invalid code challenge')
+      return
+    }
+
+    if (token) {
+      await setBearerToken(token)
+      await refetch()
+      removeCodeChallenge()
+    }
+  }
+
   async function listenDeepLinks() {
     if (isTauri()) {
       try {
@@ -30,32 +51,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
 
           if (pathname === '/session') {
-            const persistedCodeChallenge = getCodeChallenge()
-
-            if (!persistedCodeChallenge) {
-              toast.error('No code challenge found')
-              return
-            }
-
             const token = searchParams.get('token')
-            const key = searchParams.get('key')
+            const codeChallenge = searchParams.get('key')
 
-            if (!key) {
+            if (!codeChallenge || !token) {
               return
             }
 
-            const codeChallenge = await secretParse(key, env.VITE_PUBLIC_AUTH_SECRET)
-
-            if (codeChallenge !== persistedCodeChallenge) {
-              toast.error('Invalid code challenge')
-              return
-            }
-
-            if (token) {
-              await setBearerToken(token)
-              await refetch()
-              removeCodeChallenge()
-            }
+            await handleSession(token, codeChallenge)
           }
         })
       }
