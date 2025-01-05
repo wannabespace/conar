@@ -19,6 +19,7 @@
     "@tauri-apps/plugin-dialog": "^2.2.0",
     "@tauri-apps/plugin-shell": "^2",
     "@tauri-apps/plugin-store": "^2.2.0",
+    "@tauri-apps/plugin-updater": "^2.3.0",
     "@trpc/client": "^10.45.2",
     "@trpc/react-query": "^10.45.2",
     "babel-plugin-react-compiler": "19.0.0-beta-b2e8e9c-20241220",

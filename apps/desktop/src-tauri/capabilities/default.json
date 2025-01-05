@@ -12,6 +12,7 @@
     "core:window:default",
     "core:window:allow-start-dragging",
     "dialog:default",
-    "store:default"
+    "store:default",
+    "updater:default"
   ]
 }
