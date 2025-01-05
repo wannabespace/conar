@@ -38,6 +38,8 @@
       "dependsOn": ["build"],
       "cache": false
     },
-    "check-types": {}
+    "check-types": {},
+    "drizzle:generate": {},
+    "drizzle:migrate": {}
   }
 }

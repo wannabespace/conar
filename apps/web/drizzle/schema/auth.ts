@@ -19,7 +19,7 @@ export const sessions = pgTable('sessions', {
   token: text().notNull().unique(),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
-  userId: uuid('user_id').notNull().references(() => users.id),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
 }).enableRLS()
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -33,7 +33,7 @@ export const accounts = pgTable('accounts', {
   ...baseTable,
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
-  userId: uuid('user_id').notNull().references(() => users.id),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   accessToken: text('access_token'),
   refreshToken: text('refresh_token'),
   idToken: text('id_token'),
@@ -66,7 +66,7 @@ export const twoFactors = pgTable('two_factors', {
   ...baseTable,
   secret: text('secret').notNull(),
   backupCodes: text('backup_codes').notNull(),
-  userId: uuid('user_id').notNull().references(() => users.id),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
 }).enableRLS()
 
 export const twoFactorsRelations = relations(twoFactors, ({ one }) => ({
@@ -86,8 +86,8 @@ export const organizations = pgTable('organizations', {
 
 export const members = pgTable('members', {
   ...baseTable,
-  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
-  userId: uuid('user_id').notNull().references(() => users.id),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   role: text('role').notNull(),
 }).enableRLS()
 
@@ -104,12 +104,12 @@ export const membersRelations = relations(members, ({ one }) => ({
 
 export const invitations = pgTable('invitations', {
   ...baseTable,
-  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
+  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   email: text('email').notNull(),
   role: text('role'),
   status: text('status').notNull(),
   expiresAt: timestamp('expires_at').notNull(),
-  inviterId: uuid('inviter_id').notNull().references(() => users.id),
+  inviterId: uuid('inviter_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
 }).enableRLS()
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({

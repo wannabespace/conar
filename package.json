@@ -8,6 +8,8 @@
     "test": "vitest run",
     "dev": "turbo run dev dev:types dev:tauri",
     "build": "turbo run build build:tauri",
+    "drizzle:generate": "turbo run drizzle:generate",
+    "drizzle:migrate": "turbo run drizzle:migrate",
     "check-types": "turbo check-types"
   },
   "devDependencies": {

@@ -15,6 +15,13 @@
       "when": 1735831620437,
       "tag": "0001_ancient_iron_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1736062760118,
+      "tag": "0002_loose_quentin_quire",
+      "breakpoints": true
     }
   ]
 }
