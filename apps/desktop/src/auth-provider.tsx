@@ -5,9 +5,7 @@ import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { useSession } from '~/hooks/use-session'
-import { authClient, getCodeChallenge, removeCodeChallenge, setBearerToken } from '~/lib/auth'
-import { env } from './env'
-import { secretParse } from './lib/secrets'
+import { authClient, getCodeChallenge, parseCodeChallenge, removeCodeChallenge, setBearerToken } from '~/lib/auth'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { refetch, isAuthenticated, isLoading } = useSession()
@@ -23,6 +21,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isAuthenticated])
 
+  async function sessionHandler(token: string, codeChallenge: string) {
+    const persistedCodeChallenge = await getCodeChallenge()
+
+    if (persistedCodeChallenge !== await parseCodeChallenge(codeChallenge)) {
+      toast.error('Invalid code challenge')
+      return
+    }
+
+    await setBearerToken(token)
+    await refetch()
+    removeCodeChallenge()
+  }
+
   async function listenDeepLinks() {
     if (isTauri()) {
       try {
@@ -30,32 +41,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
 
           if (pathname === '/session') {
-            const persistedCodeChallenge = getCodeChallenge()
-
-            if (!persistedCodeChallenge) {
-              toast.error('No code challenge found')
-              return
-            }
-
+            const codeChallenge = searchParams.get('key')
             const token = searchParams.get('token')
-            const key = searchParams.get('key')
 
-            if (!key) {
+            if (!codeChallenge || !token) {
+              toast.error('No code challenge or token found')
               return
             }
 
-            const codeChallenge = await secretParse(key, env.VITE_PUBLIC_AUTH_SECRET)
-
-            if (codeChallenge !== persistedCodeChallenge) {
-              toast.error('Invalid code challenge')
-              return
-            }
-
-            if (token) {
-              await setBearerToken(token)
-              await refetch()
-              removeCodeChallenge()
-            }
+            await sessionHandler(token, codeChallenge)
           }
         })
       }

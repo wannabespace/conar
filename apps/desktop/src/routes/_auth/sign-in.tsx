@@ -10,8 +10,7 @@ import { nanoid } from 'nanoid'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { env } from '~/env'
-import { authClient, setBearerToken, setCodeChallenge } from '~/lib/auth'
-import { secretStringify } from '~/lib/secrets'
+import { authClient, saveAndReturnCodeChallenge, setBearerToken } from '~/lib/auth'
 
 export const Route = createFileRoute('/_auth/sign-in')({
   component: SignInPage,
@@ -23,14 +22,12 @@ function SignInPage() {
   const [loading, setLoading] = useState(false)
 
   const googleSignIn = async () => {
-    const codeChallenge = nanoid()
-
-    setCodeChallenge(codeChallenge)
+    const codeChallenge = await saveAndReturnCodeChallenge(nanoid())
 
     const { data, error } = await authClient.signIn.social({
       provider: 'google',
       disableRedirect: true,
-      callbackURL: `${env.VITE_PUBLIC_APP_URL}/open?key=${await secretStringify(codeChallenge, env.VITE_PUBLIC_AUTH_SECRET)}`,
+      callbackURL: `${env.VITE_PUBLIC_APP_URL}/open?key=${codeChallenge}`,
     })
 
     if (error) {
