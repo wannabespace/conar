@@ -17,6 +17,7 @@
     "build": {
       "env": [
         "VITE_API_URL",
+        "ENCRYPTION_SECRET",
         "TAURI_LOCAL_SECRET",
         "STRIPE_SECRET_KEY",
         "DATABASE_URL",
