@@ -1,23 +1,20 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
+import { use, useEffect } from 'react'
 import { authClient } from '~/lib/client'
 
-export default function OpenPage() {
-  const searchParams = useSearchParams()
+export default function OpenPage({ searchParams }: { searchParams: Promise<{ key: string }> }) {
+  const { key } = use(searchParams)
   const { data, isPending } = authClient.useSession()
 
   useEffect(() => {
     if (isPending)
       return
 
-    if (data) {
-      const key = searchParams.get('get')
-
+    if (data && key) {
       location.assign(`connnect://session?key=${key}&token=${data.session.token}`)
     }
-  }, [isPending])
+  }, [isPending, key])
 
   return <div>Loading</div>
 }
