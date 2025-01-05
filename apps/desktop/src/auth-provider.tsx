@@ -23,7 +23,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isAuthenticated])
 
-  async function handleSession(token: string, codeChallenge: string, isNewUser: boolean) {
+  async function handleSession(searchParams: URLSearchParams) {
+    const token = searchParams.get('token')
+    const codeChallenge = searchParams.get('key')
+    const newUser = searchParams.get('newUser')
+
+    if (!codeChallenge || !token) {
+      return
+    }
+
     const encryptor = await createEncryptor(env.VITE_PUBLIC_AUTH_SECRET)
     const persistedCodeChallenge = getCodeChallenge()
 
@@ -44,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     removeCodeChallenge()
 
     toast.success(
-      isNewUser
+      newUser
         ? 'Welcome to Connnect! We\'re excited to help you manage your databases with ease. Get started by creating your first connection.'
         : 'Welcome back! Your database connections are ready for you.',
     )
@@ -54,18 +62,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isTauri()) {
       try {
         return await onOpenUrl(async ([url]) => {
+          url = 'connnect://session?key=t3CFZS7rNrBLvVnTG1425krevh/uxk/1aqQq0xHuBGkFBif%20IIMSM3YAbSEVf/w9/0is&token=CnttBp1orZxY3U5ejRSRc4co3clk9Il0'
+
           const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
 
           if (pathname === '/session') {
-            const token = searchParams.get('token')
-            const codeChallenge = searchParams.get('key')
-            const newUser = searchParams.get('newUser')
-
-            if (!codeChallenge || !token) {
-              return
-            }
-
-            await handleSession(token, codeChallenge, !!newUser)
+            await handleSession(searchParams)
           }
         })
       }

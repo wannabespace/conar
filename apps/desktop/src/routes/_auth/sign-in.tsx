@@ -33,7 +33,7 @@ function SignInPage() {
       provider: 'google',
       disableRedirect: true,
       callbackURL: `${env.VITE_PUBLIC_APP_URL}/open?key=${encryptedCodeChallenge}`,
-      newUserCallbackURL: `${env.VITE_PUBLIC_APP_URL}/open?newUser=true&key=${encryptedCodeChallenge}`,
+      newUserCallbackURL: `${env.VITE_PUBLIC_APP_URL}/open?key=${encryptedCodeChallenge}&newUser=true`,
     })
 
     if (error) {
