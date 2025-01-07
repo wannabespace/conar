@@ -2,7 +2,7 @@ import type { AppRouter } from '@connnect/web/trpc-type'
 import { createTRPCProxyClient, httpBatchLink } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
 import SuperJSON from 'superjson'
-import { env } from './env'
+import { env } from '../env'
 
 export const clientConfig = {
   transformer: SuperJSON,

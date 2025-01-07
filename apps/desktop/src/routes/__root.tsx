@@ -5,11 +5,13 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { AnimatePresence } from 'motion/react'
+import posthog from 'posthog-js'
+import { PostHogProvider } from 'posthog-js/react'
 import { useState } from 'react'
 import { AppProvider } from '~/app-provider'
+import { clientConfig, trpcReact } from '~/lib/trpc'
 import { queryClient } from '~/main'
 import { sessionQuery } from '~/queries/auth'
-import { clientConfig, trpcReact } from '~/trpc'
 import { UpdatesProvider } from '~/updates-provider'
 
 export const Route = createRootRoute({
@@ -24,25 +26,27 @@ function RootDocument() {
   const { Provider: TRPCClientProvider } = trpcReact
 
   return (
-    <ThemeProvider>
-      <TRPCClientProvider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          <AppProvider>
-            <UpdatesProvider>
-              <AnimatePresence>
-                <Outlet />
-              </AnimatePresence>
-              <Toaster />
-            </UpdatesProvider>
-          </AppProvider>
-          {import.meta.env.DEV && (
-            <>
-              <TanStackRouterDevtools />
-              <ReactQueryDevtools initialIsOpen={false} />
-            </>
-          )}
-        </QueryClientProvider>
-      </TRPCClientProvider>
-    </ThemeProvider>
+    <PostHogProvider client={posthog}>
+      <ThemeProvider>
+        <TRPCClientProvider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <AppProvider>
+              <UpdatesProvider>
+                <AnimatePresence>
+                  <Outlet />
+                </AnimatePresence>
+                <Toaster />
+              </UpdatesProvider>
+            </AppProvider>
+            {import.meta.env.DEV && (
+              <>
+                <TanStackRouterDevtools />
+                <ReactQueryDevtools initialIsOpen={false} />
+              </>
+            )}
+          </QueryClientProvider>
+        </TRPCClientProvider>
+      </ThemeProvider>
+    </PostHogProvider>
   )
 }
