@@ -1,3 +1,4 @@
+import { isTauri } from '@tauri-apps/api/core'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { check } from '@tauri-apps/plugin-updater'
 import { createContext, use, useState } from 'react'
@@ -5,9 +6,10 @@ import { toast } from 'sonner'
 import { env } from './env'
 import { useAsyncEffect } from './hooks/use-async-effect'
 
+type Status = 'idle' | 'updating' | 'ready'
+
 const UpdatesContext = createContext<{
-  isUpdating: boolean
-  canRelaunch: boolean
+  status: Status
   relaunch: () => Promise<void>
 }>(null!)
 
@@ -15,10 +17,12 @@ const UpdatesContext = createContext<{
 export const useUpdates = () => use(UpdatesContext)
 
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
-  const [isUpdating, setUpdating] = useState(false)
-  const [canRelaunch, setCanRelaunch] = useState(false)
+  const [status, setStatus] = useState<Status>('idle')
 
   useAsyncEffect(async () => {
+    if (!isTauri())
+      return
+
     const update = await check({
       headers: {
         Authorization: `Bearer ${env.VITE_PUBLIC_UPDATES_TOKEN}`,
@@ -32,26 +36,20 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
       `Found new update ${update.version}. We will download it now but install it on relaunch.`,
     )
 
-    await update.download(async (event) => {
+    await update.downloadAndInstall(async (event) => {
       switch (event.event) {
         case 'Started':
-          setUpdating(true)
-          toast.info(`started downloading ${event.data.contentLength} bytes`)
+          setStatus('updating')
           break
         case 'Finished':
-          toast.info('download finished')
-          setUpdating(false)
+          setStatus('ready')
           break
       }
     })
-    await update.install()
-    setCanRelaunch(true)
   }, [])
 
   return (
-    <UpdatesContext
-      value={{ isUpdating, canRelaunch, relaunch }}
-    >
+    <UpdatesContext value={{ status, relaunch }}>
       {children}
     </UpdatesContext>
   )

@@ -12,18 +12,21 @@ html {
   color-scheme: light dark;
 }
 
-body {
-  @apply bg-white text-black dark:bg-black dark:text-white;
-}
-
 * {
   @apply transition-colors duration-150;
 }
 
 ::selection {
-  @apply bg-primary text-white;
+  background-color: theme('colors.primary');
+  color: theme('colors.white');
+}
 
-  .dark ::selection {
-    @apply bg-primary text-black;
-  }
+.dark ::selection {
+  background-color: theme('colors.primary');
+  color: theme('colors.black');
+}
+
+.bg-primary ::selection {
+  background-color: theme('colors.white');
+  color: theme('colors.primary');
 }

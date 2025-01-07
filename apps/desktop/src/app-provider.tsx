@@ -14,7 +14,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading) {
-      router.navigate({ to: isAuthenticated ? '/' : '/sign-in' })
+      router.navigate({ to: isAuthenticated ? '/' : '/sign-up' })
     }
   }, [isLoading, isAuthenticated])
 

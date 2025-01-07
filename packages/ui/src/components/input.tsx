@@ -1,7 +1,7 @@
 import { cn } from '@connnect/ui/lib/utils'
 import * as React from 'react'
 
-function Input({ ref, className, type, ...props }: React.ComponentProps<'input'> & { ref?: React.RefObject<HTMLInputElement> }) {
+function Input({ ref, className, type, ...props }: React.ComponentProps<'input'> & { ref?: React.RefObject<HTMLInputElement> | React.RefCallback<HTMLInputElement> }) {
   return (
     <input
       type={type}
@@ -10,6 +10,7 @@ function Input({ ref, className, type, ...props }: React.ComponentProps<'input'>
         className,
       )}
       ref={ref}
+      autoCorrect="off"
       {...props}
     />
   )

@@ -3,19 +3,26 @@
 import { use, useEffect } from 'react'
 import { authClient } from '~/lib/client'
 
-export default function OpenPage({ searchParams }: { searchParams: Promise<{ key: string, newUser?: string }> }) {
-  const { key, newUser } = use(searchParams)
+export default function OpenPage({ searchParams }: { searchParams: Promise<{ 'code-challenge': string, 'newUser'?: string }> }) {
+  const { 'code-challenge': codeChallenge, newUser } = use(searchParams)
   const { data, isPending } = authClient.useSession()
+
+  function handleOpenSession(codeChallenge: string) {
+    if (!data)
+      return
+
+    location.assign(`connnect://session?code-challenge=${codeChallenge}&token=${data.session.token}${newUser ? '&newUser=true' : ''}`)
+  }
 
   useEffect(() => {
     if (isPending)
       return
 
-    if (data && key) {
-      location.assign(`connnect://session?key=${key}&token=${data.session.token}${newUser ? '&newUser=true' : ''}`)
+    if (codeChallenge) {
+      handleOpenSession(codeChallenge)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPending, key])
+  }, [isPending, codeChallenge])
 
   return <div>Loading</div>
 }

@@ -19,6 +19,9 @@ export function useDeepLinksListener() {
   }
 
   useAsyncEffect(async () => {
+    if (!isTauri())
+      return
+
     const urls = await getCurrent()
 
     if (!urls || urls.length === 0) {
@@ -32,7 +35,7 @@ export function useDeepLinksListener() {
 
   async function handleSession(searchParams: URLSearchParams) {
     const token = searchParams.get('token')
-    const codeChallenge = searchParams.get('key')
+    const codeChallenge = searchParams.get('code-challenge')
     const newUser = searchParams.get('newUser')
 
     if (!codeChallenge || !token) {

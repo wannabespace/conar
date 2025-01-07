@@ -12,19 +12,13 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as ProtectedImport } from './routes/_protected'
-import { Route as AuthImport } from './routes/_auth'
 import { Route as ProtectedIndexImport } from './routes/_protected/index'
-import { Route as AuthSignInImport } from './routes/_auth/sign-in'
+import { Route as authSignUpIndexImport } from './routes/(auth)/sign-up/index'
 
 // Create/Update Routes
 
 const ProtectedRoute = ProtectedImport.update({
   id: '/_protected',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const AuthRoute = AuthImport.update({
-  id: '/_auth',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -34,36 +28,22 @@ const ProtectedIndexRoute = ProtectedIndexImport.update({
   getParentRoute: () => ProtectedRoute,
 } as any)
 
-const AuthSignInRoute = AuthSignInImport.update({
-  id: '/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => AuthRoute,
+const authSignUpIndexRoute = authSignUpIndexImport.update({
+  id: '/(auth)/sign-up/',
+  path: '/sign-up/',
+  getParentRoute: () => rootRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_auth': {
-      id: '/_auth'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof AuthImport
-      parentRoute: typeof rootRoute
-    }
     '/_protected': {
       id: '/_protected'
       path: ''
       fullPath: ''
       preLoaderRoute: typeof ProtectedImport
       parentRoute: typeof rootRoute
-    }
-    '/_auth/sign-in': {
-      id: '/_auth/sign-in'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof AuthSignInImport
-      parentRoute: typeof AuthImport
     }
     '/_protected/': {
       id: '/_protected/'
@@ -72,20 +52,17 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedIndexImport
       parentRoute: typeof ProtectedImport
     }
+    '/(auth)/sign-up/': {
+      id: '/(auth)/sign-up/'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof authSignUpIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
 // Create and export the route tree
-
-interface AuthRouteChildren {
-  AuthSignInRoute: typeof AuthSignInRoute
-}
-
-const AuthRouteChildren: AuthRouteChildren = {
-  AuthSignInRoute: AuthSignInRoute,
-}
-
-const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface ProtectedRouteChildren {
   ProtectedIndexRoute: typeof ProtectedIndexRoute
@@ -101,41 +78,39 @@ const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
 
 export interface FileRoutesByFullPath {
   '': typeof ProtectedRouteWithChildren
-  '/sign-in': typeof AuthSignInRoute
   '/': typeof ProtectedIndexRoute
+  '/sign-up': typeof authSignUpIndexRoute
 }
 
 export interface FileRoutesByTo {
-  '': typeof AuthRouteWithChildren
-  '/sign-in': typeof AuthSignInRoute
   '/': typeof ProtectedIndexRoute
+  '/sign-up': typeof authSignUpIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/_auth': typeof AuthRouteWithChildren
   '/_protected': typeof ProtectedRouteWithChildren
-  '/_auth/sign-in': typeof AuthSignInRoute
   '/_protected/': typeof ProtectedIndexRoute
+  '/(auth)/sign-up/': typeof authSignUpIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/sign-in' | '/'
+  fullPaths: '' | '/' | '/sign-up'
   fileRoutesByTo: FileRoutesByTo
-  to: '' | '/sign-in' | '/'
-  id: '__root__' | '/_auth' | '/_protected' | '/_auth/sign-in' | '/_protected/'
+  to: '/' | '/sign-up'
+  id: '__root__' | '/_protected' | '/_protected/' | '/(auth)/sign-up/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  AuthRoute: typeof AuthRouteWithChildren
   ProtectedRoute: typeof ProtectedRouteWithChildren
+  authSignUpIndexRoute: typeof authSignUpIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  AuthRoute: AuthRouteWithChildren,
   ProtectedRoute: ProtectedRouteWithChildren,
+  authSignUpIndexRoute: authSignUpIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -148,14 +123,8 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/_auth",
-        "/_protected"
-      ]
-    },
-    "/_auth": {
-      "filePath": "_auth.tsx",
-      "children": [
-        "/_auth/sign-in"
+        "/_protected",
+        "/(auth)/sign-up/"
       ]
     },
     "/_protected": {
@@ -164,13 +133,12 @@ export const routeTree = rootRoute
         "/_protected/"
       ]
     },
-    "/_auth/sign-in": {
-      "filePath": "_auth/sign-in.tsx",
-      "parent": "/_auth"
-    },
     "/_protected/": {
       "filePath": "_protected/index.tsx",
       "parent": "/_protected"
+    },
+    "/(auth)/sign-up/": {
+      "filePath": "(auth)/sign-up/index.tsx"
     }
   }
 }
