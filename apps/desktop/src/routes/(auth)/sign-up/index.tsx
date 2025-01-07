@@ -57,7 +57,7 @@ function SignInPage() {
 
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">Getting started</h1>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm">
               Enter your details below to get started using our platform and gain access to
               personalized features, seamless navigation, and a suite of tools tailored to
               meet your needs.
@@ -65,7 +65,7 @@ function SignInPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="text-muted-foreground text-center text-sm">
+            <div className="text-center text-sm">
               Or continue with
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -84,7 +84,7 @@ function SignInPage() {
         </div>
       </div>
       <div className="hidden bg-primary lg:flex lg:flex-col lg:justify-between lg:p-12">
-        <div className="text-primary-foreground mx-auto flex max-w-[420px] flex-col items-center text-center">
+        <div className="mx-auto flex max-w-[420px] flex-col items-center text-center">
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tight">Justd</h2>
             <p className="text-lg">
@@ -107,12 +107,7 @@ function SignInPage() {
           </div>
         </div>
         <div className="flex items-center justify-center space-x-4">
-          <div className="bg-primary-foreground/10 size-6 rounded" />
-          <div className="bg-primary-foreground/10 size-6 rounded" />
-          <div className="bg-primary-foreground/10 size-6 rounded" />
-          <div className="bg-primary-foreground/10 size-6 rounded" />
-          <div className="bg-primary-foreground/10 size-6 rounded" />
-          <div className="bg-primary-foreground/10 size-6 rounded" />
+          123
         </div>
       </div>
     </div>

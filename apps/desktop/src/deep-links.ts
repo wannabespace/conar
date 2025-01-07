@@ -41,7 +41,7 @@ export function useDeepLinksListener() {
     const newUser = searchParams.get('newUser')
 
     if (!codeChallenge || !token) {
-      toast.error('Invalid deep link')
+      toast.error('We cannot sign you in. Please try signing in again.')
       return
     }
 
@@ -58,7 +58,7 @@ export function useDeepLinksListener() {
     const persistedCodeChallenge = getCodeChallenge()
 
     if (!persistedCodeChallenge) {
-      toast.error('No code challenge found')
+      toast.error('We couldn\'t find your code challenge. Please try signing in again.')
       return
     }
 
@@ -68,12 +68,12 @@ export function useDeepLinksListener() {
     })
 
     if (!decryptedCodeChallenge) {
-      toast.error('Failed to decrypt code challenge')
+      toast.error('We couldn\'t decrypt your code challenge. Please try signing in again.')
       return
     }
 
     if (decryptedCodeChallenge !== persistedCodeChallenge) {
-      toast.error('Invalid code challenge')
+      toast.error('We couldn\'t find your code challenge. Please try signing in again.')
       return
     }
 
