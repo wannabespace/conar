@@ -3,6 +3,7 @@ import animate from 'tailwindcss-animate'
 
 export default {
   content: [
+    './index.html',
     '{app,components,src}/**/*.{ts,tsx}',
     '../../packages/ui/src/components/**/*.{ts,tsx}',
   ],

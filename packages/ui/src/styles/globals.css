@@ -12,10 +12,6 @@ html {
   color-scheme: light dark;
 }
 
-* {
-  @apply transition-colors duration-150;
-}
-
 ::selection {
   background-color: theme('colors.primary');
   color: theme('colors.white');

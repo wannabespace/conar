@@ -71,14 +71,12 @@ export async function encrypt({ data, secret }: { data: string, secret: string }
 
 export async function decrypt({ encryptedText, secret }: { encryptedText: string, secret: string }) {
   const encryptedArray = new Uint8Array(str2ab(atob(encryptedText)))
-  const salt = encryptedArray.slice(0, 16) // First 16 bytes are salt
-  const iv = encryptedArray.slice(16, 28) // Next 12 bytes are IV
-  const encryptedContent = encryptedArray.slice(28) // Rest is encrypted content
+  const salt = encryptedArray.slice(0, 16)
+  const iv = encryptedArray.slice(16, 28)
+  const encryptedContent = encryptedArray.slice(28)
 
-  // Get decryption key using the same salt
   const key = await getKeyFromPassword(secret, salt)
 
-  // Decrypt the content
   const decryptedContent = await crypto.subtle.decrypt(
     {
       name: 'AES-GCM',
@@ -88,6 +86,5 @@ export async function decrypt({ encryptedText, secret }: { encryptedText: string
     encryptedContent,
   )
 
-  // Convert back to string
   return new TextDecoder().decode(decryptedContent)
 }

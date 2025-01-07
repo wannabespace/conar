@@ -32,6 +32,7 @@ function RootDocument() {
               <AnimatePresence>
                 <Outlet />
               </AnimatePresence>
+              <Toaster />
             </UpdatesProvider>
           </AppProvider>
           {import.meta.env.DEV && (
@@ -40,7 +41,6 @@ function RootDocument() {
               <ReactQueryDevtools initialIsOpen={false} />
             </>
           )}
-          <Toaster />
         </QueryClientProvider>
       </TRPCClientProvider>
     </ThemeProvider>

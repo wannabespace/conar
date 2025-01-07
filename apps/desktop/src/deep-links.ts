@@ -22,7 +22,9 @@ export function useDeepLinksListener() {
     if (!isTauri())
       return
 
-    const urls = await getCurrent()
+    let urls = await getCurrent()
+
+    urls ||= []
 
     if (!urls || urls.length === 0) {
       return
@@ -35,14 +37,24 @@ export function useDeepLinksListener() {
 
   async function handleSession(searchParams: URLSearchParams) {
     const token = searchParams.get('token')
-    const codeChallenge = searchParams.get('code-challenge')
+    const codeChallenge = decodeURIComponent(searchParams.get('code-challenge') || '')
     const newUser = searchParams.get('newUser')
 
     if (!codeChallenge || !token) {
+      toast.error('Invalid deep link')
       return
     }
 
-    const encryptor = await createEncryptor(env.VITE_PUBLIC_AUTH_SECRET)
+    const encryptor = await createEncryptor(env.VITE_PUBLIC_AUTH_SECRET).catch((e) => {
+      console.error(e)
+      return null
+    })
+
+    if (!encryptor) {
+      toast.error('Failed to create encryptor')
+      return
+    }
+
     const persistedCodeChallenge = getCodeChallenge()
 
     if (!persistedCodeChallenge) {
@@ -50,7 +62,15 @@ export function useDeepLinksListener() {
       return
     }
 
-    const decryptedCodeChallenge = await encryptor.decrypt(codeChallenge)
+    const decryptedCodeChallenge = await encryptor.decrypt(codeChallenge).catch((e) => {
+      console.error(e)
+      return null
+    })
+
+    if (!decryptedCodeChallenge) {
+      toast.error('Failed to decrypt code challenge')
+      return
+    }
 
     if (decryptedCodeChallenge !== persistedCodeChallenge) {
       toast.error('Invalid code challenge')
