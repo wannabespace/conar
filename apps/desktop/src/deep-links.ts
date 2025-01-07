@@ -39,9 +39,10 @@ export function useDeepLinksListener() {
     const token = searchParams.get('token')
     const codeChallenge = decodeURIComponent(searchParams.get('code-challenge') || '')
     const newUser = searchParams.get('newUser')
+    const persistedCodeChallenge = getCodeChallenge()
 
     if (!codeChallenge || !token) {
-      toast.error('We cannot sign you in. Please try signing in again.')
+      toast.error('We couldn\'t find your sign in token. Please try signing in again.')
       return
     }
 
@@ -51,14 +52,7 @@ export function useDeepLinksListener() {
     })
 
     if (!encryptor) {
-      toast.error('Failed to create encryptor')
-      return
-    }
-
-    const persistedCodeChallenge = getCodeChallenge()
-
-    if (!persistedCodeChallenge) {
-      toast.error('We couldn\'t find your code challenge. Please try signing in again.')
+      toast.error('Something went wrong. Please try signing in again.')
       return
     }
 
@@ -72,8 +66,8 @@ export function useDeepLinksListener() {
       return
     }
 
-    if (decryptedCodeChallenge !== persistedCodeChallenge) {
-      toast.error('We couldn\'t find your code challenge. Please try signing in again.')
+    if (!persistedCodeChallenge || decryptedCodeChallenge !== persistedCodeChallenge) {
+      toast.error('Your sign in token has already been used. Please try signing in again.')
       return
     }
 
