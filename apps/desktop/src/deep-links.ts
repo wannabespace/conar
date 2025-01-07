@@ -35,7 +35,7 @@ export function useDeepLinksListener() {
 
   async function handleSession(searchParams: URLSearchParams) {
     const token = searchParams.get('token')
-    const codeChallenge = decodeURIComponent(searchParams.get('code-challenge') || '')
+    const codeChallenge = searchParams.get('code-challenge')
     const newUser = searchParams.get('newUser')
     const persistedCodeChallenge = getCodeChallenge()
 
