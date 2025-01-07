@@ -8,109 +8,197 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as ProtectedImport } from './routes/_protected'
-import { Route as ProtectedIndexImport } from './routes/_protected/index'
-import { Route as authSignUpIndexImport } from './routes/(auth)/sign-up/index'
+import { Route as publicAuthImport } from './routes/(public)/_auth'
+import { Route as protectedDashboardImport } from './routes/(protected)/_dashboard'
+import { Route as protectedDashboardIndexImport } from './routes/(protected)/_dashboard/index'
+import { Route as publicAuthSignUpIndexImport } from './routes/(public)/_auth/sign-up.index'
+
+// Create Virtual Routes
+
+const publicImport = createFileRoute('/(public)')()
+const protectedImport = createFileRoute('/(protected)')()
 
 // Create/Update Routes
 
-const ProtectedRoute = ProtectedImport.update({
-  id: '/_protected',
+const publicRoute = publicImport.update({
+  id: '/(public)',
+  path: '/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const ProtectedIndexRoute = ProtectedIndexImport.update({
+const protectedRoute = protectedImport.update({
+  id: '/(protected)',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const publicAuthRoute = publicAuthImport.update({
+  id: '/_auth',
+  getParentRoute: () => publicRoute,
+} as any)
+
+const protectedDashboardRoute = protectedDashboardImport.update({
+  id: '/_dashboard',
+  getParentRoute: () => protectedRoute,
+} as any)
+
+const protectedDashboardIndexRoute = protectedDashboardIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ProtectedRoute,
+  getParentRoute: () => protectedDashboardRoute,
 } as any)
 
-const authSignUpIndexRoute = authSignUpIndexImport.update({
-  id: '/(auth)/sign-up/',
+const publicAuthSignUpIndexRoute = publicAuthSignUpIndexImport.update({
+  id: '/sign-up/',
   path: '/sign-up/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => publicAuthRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_protected': {
-      id: '/_protected'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof ProtectedImport
-      parentRoute: typeof rootRoute
-    }
-    '/_protected/': {
-      id: '/_protected/'
+    '/(protected)': {
+      id: '/(protected)'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof ProtectedIndexImport
-      parentRoute: typeof ProtectedImport
+      preLoaderRoute: typeof protectedImport
+      parentRoute: typeof rootRoute
     }
-    '/(auth)/sign-up/': {
-      id: '/(auth)/sign-up/'
+    '/(protected)/_dashboard': {
+      id: '/(protected)/_dashboard'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof protectedDashboardImport
+      parentRoute: typeof protectedRoute
+    }
+    '/(public)': {
+      id: '/(public)'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof publicImport
+      parentRoute: typeof rootRoute
+    }
+    '/(public)/_auth': {
+      id: '/(public)/_auth'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof publicAuthImport
+      parentRoute: typeof publicRoute
+    }
+    '/(protected)/_dashboard/': {
+      id: '/(protected)/_dashboard/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof protectedDashboardIndexImport
+      parentRoute: typeof protectedDashboardImport
+    }
+    '/(public)/_auth/sign-up/': {
+      id: '/(public)/_auth/sign-up/'
       path: '/sign-up'
       fullPath: '/sign-up'
-      preLoaderRoute: typeof authSignUpIndexImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof publicAuthSignUpIndexImport
+      parentRoute: typeof publicAuthImport
     }
   }
 }
 
 // Create and export the route tree
 
-interface ProtectedRouteChildren {
-  ProtectedIndexRoute: typeof ProtectedIndexRoute
+interface protectedDashboardRouteChildren {
+  protectedDashboardIndexRoute: typeof protectedDashboardIndexRoute
 }
 
-const ProtectedRouteChildren: ProtectedRouteChildren = {
-  ProtectedIndexRoute: ProtectedIndexRoute,
+const protectedDashboardRouteChildren: protectedDashboardRouteChildren = {
+  protectedDashboardIndexRoute: protectedDashboardIndexRoute,
 }
 
-const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
-  ProtectedRouteChildren,
+const protectedDashboardRouteWithChildren =
+  protectedDashboardRoute._addFileChildren(protectedDashboardRouteChildren)
+
+interface protectedRouteChildren {
+  protectedDashboardRoute: typeof protectedDashboardRouteWithChildren
+}
+
+const protectedRouteChildren: protectedRouteChildren = {
+  protectedDashboardRoute: protectedDashboardRouteWithChildren,
+}
+
+const protectedRouteWithChildren = protectedRoute._addFileChildren(
+  protectedRouteChildren,
 )
 
+interface publicAuthRouteChildren {
+  publicAuthSignUpIndexRoute: typeof publicAuthSignUpIndexRoute
+}
+
+const publicAuthRouteChildren: publicAuthRouteChildren = {
+  publicAuthSignUpIndexRoute: publicAuthSignUpIndexRoute,
+}
+
+const publicAuthRouteWithChildren = publicAuthRoute._addFileChildren(
+  publicAuthRouteChildren,
+)
+
+interface publicRouteChildren {
+  publicAuthRoute: typeof publicAuthRouteWithChildren
+}
+
+const publicRouteChildren: publicRouteChildren = {
+  publicAuthRoute: publicAuthRouteWithChildren,
+}
+
+const publicRouteWithChildren =
+  publicRoute._addFileChildren(publicRouteChildren)
+
 export interface FileRoutesByFullPath {
-  '': typeof ProtectedRouteWithChildren
-  '/': typeof ProtectedIndexRoute
-  '/sign-up': typeof authSignUpIndexRoute
+  '/': typeof protectedDashboardIndexRoute
+  '/sign-up': typeof publicAuthSignUpIndexRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof ProtectedIndexRoute
-  '/sign-up': typeof authSignUpIndexRoute
+  '/': typeof protectedDashboardIndexRoute
+  '/sign-up': typeof publicAuthSignUpIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/_protected': typeof ProtectedRouteWithChildren
-  '/_protected/': typeof ProtectedIndexRoute
-  '/(auth)/sign-up/': typeof authSignUpIndexRoute
+  '/(protected)': typeof protectedRouteWithChildren
+  '/(protected)/_dashboard': typeof protectedDashboardRouteWithChildren
+  '/(public)': typeof publicRouteWithChildren
+  '/(public)/_auth': typeof publicAuthRouteWithChildren
+  '/(protected)/_dashboard/': typeof protectedDashboardIndexRoute
+  '/(public)/_auth/sign-up/': typeof publicAuthSignUpIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/' | '/sign-up'
+  fullPaths: '/' | '/sign-up'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/sign-up'
-  id: '__root__' | '/_protected' | '/_protected/' | '/(auth)/sign-up/'
+  id:
+    | '__root__'
+    | '/(protected)'
+    | '/(protected)/_dashboard'
+    | '/(public)'
+    | '/(public)/_auth'
+    | '/(protected)/_dashboard/'
+    | '/(public)/_auth/sign-up/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  ProtectedRoute: typeof ProtectedRouteWithChildren
-  authSignUpIndexRoute: typeof authSignUpIndexRoute
+  protectedRoute: typeof protectedRouteWithChildren
+  publicRoute: typeof publicRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  ProtectedRoute: ProtectedRouteWithChildren,
-  authSignUpIndexRoute: authSignUpIndexRoute,
+  protectedRoute: protectedRouteWithChildren,
+  publicRoute: publicRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -123,22 +211,43 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/_protected",
-        "/(auth)/sign-up/"
+        "/(protected)",
+        "/(public)"
       ]
     },
-    "/_protected": {
-      "filePath": "_protected.tsx",
+    "/(protected)": {
+      "filePath": "(protected)",
       "children": [
-        "/_protected/"
+        "/(protected)/_dashboard"
       ]
     },
-    "/_protected/": {
-      "filePath": "_protected/index.tsx",
-      "parent": "/_protected"
+    "/(protected)/_dashboard": {
+      "filePath": "(protected)/_dashboard.tsx",
+      "parent": "/(protected)",
+      "children": [
+        "/(protected)/_dashboard/"
+      ]
     },
-    "/(auth)/sign-up/": {
-      "filePath": "(auth)/sign-up/index.tsx"
+    "/(public)": {
+      "filePath": "(public)",
+      "children": [
+        "/(public)/_auth"
+      ]
+    },
+    "/(public)/_auth": {
+      "filePath": "(public)/_auth.tsx",
+      "parent": "/(public)",
+      "children": [
+        "/(public)/_auth/sign-up/"
+      ]
+    },
+    "/(protected)/_dashboard/": {
+      "filePath": "(protected)/_dashboard/index.tsx",
+      "parent": "/(protected)/_dashboard"
+    },
+    "/(public)/_auth/sign-up/": {
+      "filePath": "(public)/_auth/sign-up.index.tsx",
+      "parent": "/(public)/_auth"
     }
   }
 }

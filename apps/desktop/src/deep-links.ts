@@ -34,10 +34,15 @@ export function useDeepLinksListener() {
   }, [])
 
   async function handleSession(searchParams: URLSearchParams) {
+    const persistedCodeChallenge = getCodeChallenge()
+
+    if (!persistedCodeChallenge) {
+      return
+    }
+
     const token = searchParams.get('token')
     const codeChallenge = searchParams.get('code-challenge')
     const newUser = searchParams.get('newUser')
-    const persistedCodeChallenge = getCodeChallenge()
 
     if (!codeChallenge || !token) {
       toast.error('We couldn\'t find your sign in token. Please try signing in again.')
@@ -64,7 +69,7 @@ export function useDeepLinksListener() {
       return
     }
 
-    if (!persistedCodeChallenge || decryptedCodeChallenge !== persistedCodeChallenge) {
+    if (decryptedCodeChallenge !== persistedCodeChallenge) {
       toast.error('Your sign in token has already been used. Please try signing in again.')
       return
     }

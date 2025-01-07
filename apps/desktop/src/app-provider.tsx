@@ -1,6 +1,5 @@
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
-import { toast } from 'sonner'
 import { useDeepLinksListener } from './deep-links'
 import { useSession } from './hooks/use-session'
 import { authClient } from './lib/auth'
@@ -19,8 +18,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
-      toast.info('session signal')
-
       const { data } = await refetch()
 
       identifyUser(data?.data?.user?.id || null)
@@ -34,7 +31,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const targetPath = isAuthenticated ? '/' : '/sign-up'
 
     if (location.pathname !== targetPath) {
-      toast.info('redirect')
       router.navigate({ to: targetPath })
     }
   }, [isLoading, isAuthenticated, location.pathname])

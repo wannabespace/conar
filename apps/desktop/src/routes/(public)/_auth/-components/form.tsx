@@ -1,10 +1,8 @@
 import { Button } from '@connnect/ui/components/button'
-import { Checkbox } from '@connnect/ui/components/checkbox'
 import { Input } from '@connnect/ui/components/input'
 import { Label } from '@connnect/ui/components/label'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
-import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -15,7 +13,7 @@ const schema = z.object({
   password: z.string().min(8),
 })
 
-export function SignUpForm() {
+export function AuthForm() {
   const [showPassword, setShowPassword] = useState(false)
 
   const { handleSubmit, register } = useForm({
@@ -82,27 +80,6 @@ export function SignUpForm() {
           </Button>
         </div>
       </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox id="terms" />
-        <label
-          htmlFor="terms"
-          className="text-muted-foreground text-sm leading-none"
-        >
-          I agree to the
-          {' '}
-          <Link href="#" className="underline">
-            Terms and Conditions
-          </Link>
-          {' '}
-          and
-          {' '}
-          <Link href="#" className="underline">
-            Privacy Policy
-          </Link>
-        </label>
-      </div>
-
       <Button className="w-full" size="lg">
         Get started
       </Button>

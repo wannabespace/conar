@@ -1,9 +1,9 @@
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useSession } from '~/hooks/use-session'
-import { authClient, removeBearerToken } from '~/lib/auth'
+import { removeBearerToken } from '~/lib/auth'
 
-export const Route = createFileRoute('/_protected')({
+export const Route = createFileRoute('/(protected)/_dashboard')({
   component: LayoutComponent,
 })
 
@@ -30,7 +30,7 @@ function LayoutComponent() {
       <button
         type="button"
         onClick={async () => {
-          await Promise.all([authClient.signOut(), removeBearerToken()])
+          await removeBearerToken()
           await refetch()
         }}
       >
