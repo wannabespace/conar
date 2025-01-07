@@ -8,6 +8,12 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
 html {
   color-scheme: light dark;
 }
