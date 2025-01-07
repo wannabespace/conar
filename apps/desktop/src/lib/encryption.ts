@@ -1,3 +1,13 @@
+function hexEncode(str: string): string {
+  return Array.from(str)
+    .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))
+    .join('')
+}
+
+function hexDecode(hex: string): string {
+  return hex.match(/.{1,2}/g)?.map(byte => String.fromCharCode(Number.parseInt(byte, 16))).join('') || ''
+}
+
 function generateSalt(length: number = 16) {
   return crypto.getRandomValues(new Uint8Array(length))
 }
@@ -44,13 +54,12 @@ async function getKeyFromPassword(
   )
 }
 
-export async function encrypt({ data, secret }: { data: string, secret: string }) {
+export async function encrypt({ text, secret }: { text: string, secret: string }) {
   const salt = generateSalt()
   const iv = crypto.getRandomValues(new Uint8Array(12))
-
   const key = await getKeyFromPassword(secret, salt)
 
-  const encodedData = new TextEncoder().encode(data)
+  const encodedData = new TextEncoder().encode(text)
   const encryptedContent = await crypto.subtle.encrypt(
     {
       name: 'AES-GCM',
@@ -62,15 +71,16 @@ export async function encrypt({ data, secret }: { data: string, secret: string }
 
   const encryptedContentArray = new Uint8Array(encryptedContent)
   const resultArray = new Uint8Array(salt.length + iv.length + encryptedContentArray.length)
-  resultArray.set(salt) // First 16 bytes are salt
-  resultArray.set(iv, salt.length) // Next 12 bytes are IV
-  resultArray.set(encryptedContentArray, salt.length + iv.length) // Rest is encrypted content
 
-  return btoa(ab2str(resultArray.buffer))
+  resultArray.set(salt)
+  resultArray.set(iv, salt.length)
+  resultArray.set(encryptedContentArray, salt.length + iv.length)
+
+  return hexEncode(ab2str(resultArray.buffer))
 }
 
 export async function decrypt({ encryptedText, secret }: { encryptedText: string, secret: string }) {
-  const encryptedArray = new Uint8Array(str2ab(atob(encryptedText)))
+  const encryptedArray = new Uint8Array(str2ab(hexDecode(encryptedText)))
   const salt = encryptedArray.slice(0, 16)
   const iv = encryptedArray.slice(16, 28)
   const encryptedContent = encryptedArray.slice(28)

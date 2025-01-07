@@ -23,7 +23,7 @@ function SignInPage() {
 
       setCodeChallenge(codeChallenge)
 
-      const encryptedCodeChallenge = encodeURIComponent(await encryptor.encrypt(codeChallenge))
+      const encryptedCodeChallenge = await encryptor.encrypt(codeChallenge)
 
       const { data, error } = await authClient.signIn.social({
         provider: 'google',

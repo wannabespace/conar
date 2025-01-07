@@ -2,13 +2,12 @@ import { Toaster } from '@connnect/ui/components/sonner'
 import { ThemeProvider } from '@connnect/ui/theme-provider'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { createRootRoute, Outlet, redirect } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { AnimatePresence } from 'motion/react'
-import posthog from 'posthog-js'
-import { PostHogProvider } from 'posthog-js/react'
 import { useState } from 'react'
 import { AppProvider } from '~/app-provider'
+import { EventsProvider } from '~/lib/events'
 import { clientConfig, trpcReact } from '~/lib/trpc'
 import { queryClient } from '~/main'
 import { sessionQuery } from '~/queries/auth'
@@ -16,8 +15,12 @@ import { UpdatesProvider } from '~/updates-provider'
 
 export const Route = createRootRoute({
   component: RootDocument,
-  beforeLoad: async () => {
-    await queryClient.ensureQueryData(sessionQuery)
+  beforeLoad: async ({ location }) => {
+    const { data } = await queryClient.ensureQueryData(sessionQuery)
+
+    if (!data && location.pathname !== '/sign-up') {
+      throw redirect({ to: '/sign-up' })
+    }
   },
 })
 
@@ -26,7 +29,7 @@ function RootDocument() {
   const { Provider: TRPCClientProvider } = trpcReact
 
   return (
-    <PostHogProvider client={posthog}>
+    <EventsProvider>
       <ThemeProvider>
         <TRPCClientProvider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
@@ -47,6 +50,6 @@ function RootDocument() {
           </QueryClientProvider>
         </TRPCClientProvider>
       </ThemeProvider>
-    </PostHogProvider>
+    </EventsProvider>
   )
 }

@@ -11,7 +11,7 @@ export async function createEncryptor(secret: string) {
   const preparedSecret = await prepareSecret(secret)
 
   return {
-    encrypt: <T>(data: T) => encrypt({ data: JSON.stringify(data), secret: preparedSecret }),
-    decrypt: async <T>(encryptedText: string) => JSON.parse(await decrypt({ encryptedText, secret: preparedSecret })) as T,
+    encrypt: (text: string) => encrypt({ text, secret: preparedSecret }),
+    decrypt: (encryptedText: string) => decrypt({ encryptedText, secret: preparedSecret }),
   }
 }

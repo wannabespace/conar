@@ -22,11 +22,9 @@ export function useDeepLinksListener() {
     if (!isTauri())
       return
 
-    let urls = await getCurrent()
+    const urls = (await getCurrent()) || []
 
-    urls ||= []
-
-    if (!urls || urls.length === 0) {
+    if (urls.length === 0) {
       return
     }
 

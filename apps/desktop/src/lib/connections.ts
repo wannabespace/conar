@@ -23,7 +23,7 @@ export async function getConnectionsIds() {
 export async function saveConnection(connection: Connection, secret: string) {
   const encryptor = await createEncryptor(secret)
   const store = await loadStore()
-  const encrypted = await encryptor.encrypt(connection)
+  const encrypted = await encryptor.encrypt(JSON.stringify(connection))
 
   await store.set(connection.id, encrypted)
 }
@@ -44,5 +44,5 @@ export async function getConnection(id: string, secret: string) {
 
   const encryptor = await createEncryptor(secret)
 
-  return encryptor.decrypt(encrypted)
+  return JSON.parse(await encryptor.decrypt(encrypted))
 }

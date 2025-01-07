@@ -5,14 +5,14 @@ const secret = 'supersecret'
 
 describe('encryption', () => {
   it('should encrypt data successfully', async () => {
-    const encrypted = await encrypt({ data: 'Hello, World!', secret })
+    const encrypted = await encrypt({ text: 'Hello, World!', secret })
     expect(encrypted).toBeDefined()
     expect(typeof encrypted).toBe('string')
     expect(encrypted.length).toBeGreaterThan(0)
   })
 
   it('should decrypt encrypted data correctly', async () => {
-    const encrypted = await encrypt({ data: 'Hello, World!', secret })
+    const encrypted = await encrypt({ text: 'Hello, World!', secret })
     const decrypted = await decrypt({
       encryptedText: encrypted,
       secret,
@@ -22,7 +22,7 @@ describe('encryption', () => {
   })
 
   it('should fail decryption with wrong password', async () => {
-    const encrypted = await encrypt({ data: 'Hello, World!', secret })
+    const encrypted = await encrypt({ text: 'Hello, World!', secret })
 
     await expect(decrypt({
       encryptedText: encrypted,
@@ -31,7 +31,7 @@ describe('encryption', () => {
   })
 
   it('should fail decryption with corrupted encrypted text', async () => {
-    const encrypted = await encrypt({ data: 'Hello, World!', secret })
+    const encrypted = await encrypt({ text: 'Hello, World!', secret })
     const corruptedText = encrypted.slice(10)
 
     await expect(decrypt({

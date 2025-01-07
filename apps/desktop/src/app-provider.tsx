@@ -1,14 +1,15 @@
-import { useRouter } from '@tanstack/react-router'
-import posthog from 'posthog-js'
+import { useLocation, useRouter } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { useDeepLinksListener } from './deep-links'
 import { useSession } from './hooks/use-session'
 import { authClient } from './lib/auth'
+import { identifyUser } from './lib/events'
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const { refetch, isAuthenticated, isLoading } = useSession()
   const router = useRouter()
+  const location = useLocation()
   const isFirstRender = useRef(true)
 
   useEffect(() => {
@@ -19,23 +20,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
 
       toast.info('session signal')
+
       const { data } = await refetch()
 
-      if (data?.data) {
-        posthog.identify(data.data.user.id)
-      }
-      else {
-        posthog.reset()
-      }
+      identifyUser(data?.data?.user?.id || null)
     })
   }, [])
 
   useEffect(() => {
-    if (!isLoading) {
+    if (isLoading)
+      return
+
+    const targetPath = isAuthenticated ? '/' : '/sign-up'
+
+    if (location.pathname !== targetPath) {
       toast.info('redirect')
-      router.navigate({ to: isAuthenticated ? '/' : '/sign-up' })
+      router.navigate({ to: targetPath })
     }
-  }, [isLoading, isAuthenticated])
+  }, [isLoading, isAuthenticated, location.pathname])
 
   useDeepLinksListener()
 

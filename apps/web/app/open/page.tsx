@@ -3,7 +3,7 @@
 import { use, useEffect } from 'react'
 import { authClient } from '~/lib/client'
 
-export default function OpenPage({ searchParams }: { searchParams: Promise<{ 'code-challenge': string, 'newUser'?: string }> }) {
+export default function OpenPage({ searchParams }: { searchParams: Promise<Partial<{ 'code-challenge': string, 'newUser': string }>> }) {
   const { 'code-challenge': codeChallenge, newUser } = use(searchParams)
   const { data, isPending } = authClient.useSession()
 
