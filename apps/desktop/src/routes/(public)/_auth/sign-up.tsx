@@ -10,7 +10,7 @@ import { authClient, setCodeChallenge } from '~/lib/auth'
 import { createEncryptor } from '~/lib/secrets'
 import { AuthForm } from './-components/form'
 
-export const Route = createFileRoute('/(public)/_auth/sign-up/')({
+export const Route = createFileRoute('/(public)/_auth/sign-up')({
   component: SignInPage,
 })
 
@@ -48,34 +48,38 @@ function SignInPage() {
 
   return (
     <>
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Getting started
-        </h1>
-        <p className="text-sm">
-          Enter your details below to get started using our platform and
-          gain access to personalized features, seamless navigation, and a
-          suite of tools tailored to meet your needs.
-        </p>
-      </div>
-      <div className="space-y-4">
-        <div className="text-center text-sm">Or continue with</div>
-        <div className="grid grid-cols-2 gap-4">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => googleSignIn()}
-          >
-            <RiGoogleFill className="size-4" />
-            Login with Google
-          </Button>
-          <Button variant="outline" className="w-full">
-            <RiGithubFill className="size-4" />
-            Login with Apple
-          </Button>
+      <div>
+        <div className="space-y-2">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Getting started
+          </h1>
+          <p className="text-sm">
+            access to personalized features, seamless navigation, and a suite of
+            tools tailored to meet your needs.
+          </p>
         </div>
+        <div className="space-y-4">
+          <div className="text-center text-sm">Or continue with</div>
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => googleSignIn()}
+            >
+              <RiGoogleFill className="size-4" />
+              Login with Google
+            </Button>
+            <Button variant="outline" className="w-full">
+              <RiGithubFill className="size-4" />
+              Login with Apple
+            </Button>
+          </div>
+        </div>
+        <AuthForm type="sign-up" />
       </div>
-      <AuthForm />
+      <div>
+        124
+      </div>
     </>
   )
 }

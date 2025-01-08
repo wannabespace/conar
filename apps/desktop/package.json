@@ -6,6 +6,7 @@
     "check-types": "tsc --noEmit",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
     "dev:tauri": "tauri dev",
     "build:tauri": "tauri build"
   },
@@ -28,7 +29,7 @@
     "lucide-react": "^0.469.0",
     "motion": "^11.16.0",
     "nanoid": "^5.0.9",
-    "posthog-js": "^1.204.0",
+    "posthog-js": "^1.205.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-use": "^17.6.0",

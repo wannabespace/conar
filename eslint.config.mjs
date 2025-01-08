@@ -8,6 +8,7 @@ export default antfu(
       'node/prefer-global/process': 'off',
       'ts/no-explicit-any': 'error',
       'no-console': 'warn',
+      'react-hooks/exhaustive-deps': 'off',
     },
     ignores: [
       '**/web/types/**/*',

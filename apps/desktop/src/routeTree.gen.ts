@@ -16,7 +16,8 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as publicAuthImport } from './routes/(public)/_auth'
 import { Route as protectedDashboardImport } from './routes/(protected)/_dashboard'
 import { Route as protectedDashboardIndexImport } from './routes/(protected)/_dashboard/index'
-import { Route as publicAuthSignUpIndexImport } from './routes/(public)/_auth/sign-up.index'
+import { Route as publicAuthTwoFactorImport } from './routes/(public)/_auth/two-factor'
+import { Route as publicAuthSignUpImport } from './routes/(public)/_auth/sign-up'
 
 // Create Virtual Routes
 
@@ -52,9 +53,15 @@ const protectedDashboardIndexRoute = protectedDashboardIndexImport.update({
   getParentRoute: () => protectedDashboardRoute,
 } as any)
 
-const publicAuthSignUpIndexRoute = publicAuthSignUpIndexImport.update({
-  id: '/sign-up/',
-  path: '/sign-up/',
+const publicAuthTwoFactorRoute = publicAuthTwoFactorImport.update({
+  id: '/two-factor',
+  path: '/two-factor',
+  getParentRoute: () => publicAuthRoute,
+} as any)
+
+const publicAuthSignUpRoute = publicAuthSignUpImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
   getParentRoute: () => publicAuthRoute,
 } as any)
 
@@ -90,19 +97,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicAuthImport
       parentRoute: typeof publicRoute
     }
+    '/(public)/_auth/sign-up': {
+      id: '/(public)/_auth/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof publicAuthSignUpImport
+      parentRoute: typeof publicAuthImport
+    }
+    '/(public)/_auth/two-factor': {
+      id: '/(public)/_auth/two-factor'
+      path: '/two-factor'
+      fullPath: '/two-factor'
+      preLoaderRoute: typeof publicAuthTwoFactorImport
+      parentRoute: typeof publicAuthImport
+    }
     '/(protected)/_dashboard/': {
       id: '/(protected)/_dashboard/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof protectedDashboardIndexImport
       parentRoute: typeof protectedDashboardImport
-    }
-    '/(public)/_auth/sign-up/': {
-      id: '/(public)/_auth/sign-up/'
-      path: '/sign-up'
-      fullPath: '/sign-up'
-      preLoaderRoute: typeof publicAuthSignUpIndexImport
-      parentRoute: typeof publicAuthImport
     }
   }
 }
@@ -133,11 +147,13 @@ const protectedRouteWithChildren = protectedRoute._addFileChildren(
 )
 
 interface publicAuthRouteChildren {
-  publicAuthSignUpIndexRoute: typeof publicAuthSignUpIndexRoute
+  publicAuthSignUpRoute: typeof publicAuthSignUpRoute
+  publicAuthTwoFactorRoute: typeof publicAuthTwoFactorRoute
 }
 
 const publicAuthRouteChildren: publicAuthRouteChildren = {
-  publicAuthSignUpIndexRoute: publicAuthSignUpIndexRoute,
+  publicAuthSignUpRoute: publicAuthSignUpRoute,
+  publicAuthTwoFactorRoute: publicAuthTwoFactorRoute,
 }
 
 const publicAuthRouteWithChildren = publicAuthRoute._addFileChildren(
@@ -157,12 +173,14 @@ const publicRouteWithChildren =
 
 export interface FileRoutesByFullPath {
   '/': typeof protectedDashboardIndexRoute
-  '/sign-up': typeof publicAuthSignUpIndexRoute
+  '/sign-up': typeof publicAuthSignUpRoute
+  '/two-factor': typeof publicAuthTwoFactorRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof protectedDashboardIndexRoute
-  '/sign-up': typeof publicAuthSignUpIndexRoute
+  '/sign-up': typeof publicAuthSignUpRoute
+  '/two-factor': typeof publicAuthTwoFactorRoute
 }
 
 export interface FileRoutesById {
@@ -171,23 +189,25 @@ export interface FileRoutesById {
   '/(protected)/_dashboard': typeof protectedDashboardRouteWithChildren
   '/(public)': typeof publicRouteWithChildren
   '/(public)/_auth': typeof publicAuthRouteWithChildren
+  '/(public)/_auth/sign-up': typeof publicAuthSignUpRoute
+  '/(public)/_auth/two-factor': typeof publicAuthTwoFactorRoute
   '/(protected)/_dashboard/': typeof protectedDashboardIndexRoute
-  '/(public)/_auth/sign-up/': typeof publicAuthSignUpIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sign-up'
+  fullPaths: '/' | '/sign-up' | '/two-factor'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sign-up'
+  to: '/' | '/sign-up' | '/two-factor'
   id:
     | '__root__'
     | '/(protected)'
     | '/(protected)/_dashboard'
     | '/(public)'
     | '/(public)/_auth'
+    | '/(public)/_auth/sign-up'
+    | '/(public)/_auth/two-factor'
     | '/(protected)/_dashboard/'
-    | '/(public)/_auth/sign-up/'
   fileRoutesById: FileRoutesById
 }
 
@@ -238,16 +258,21 @@ export const routeTree = rootRoute
       "filePath": "(public)/_auth.tsx",
       "parent": "/(public)",
       "children": [
-        "/(public)/_auth/sign-up/"
+        "/(public)/_auth/sign-up",
+        "/(public)/_auth/two-factor"
       ]
+    },
+    "/(public)/_auth/sign-up": {
+      "filePath": "(public)/_auth/sign-up.tsx",
+      "parent": "/(public)/_auth"
+    },
+    "/(public)/_auth/two-factor": {
+      "filePath": "(public)/_auth/two-factor.tsx",
+      "parent": "/(public)/_auth"
     },
     "/(protected)/_dashboard/": {
       "filePath": "(protected)/_dashboard/index.tsx",
       "parent": "/(protected)/_dashboard"
-    },
-    "/(public)/_auth/sign-up/": {
-      "filePath": "(public)/_auth/sign-up.index.tsx",
-      "parent": "/(public)/_auth"
     }
   }
 }

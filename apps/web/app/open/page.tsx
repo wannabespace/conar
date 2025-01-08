@@ -21,7 +21,6 @@ export default function OpenPage({ searchParams }: { searchParams: Promise<Parti
     if (codeChallenge) {
       handleOpenSession(codeChallenge)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPending, codeChallenge])
 
   return <div>Loading</div>

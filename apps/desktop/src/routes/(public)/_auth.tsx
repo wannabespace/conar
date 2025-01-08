@@ -1,4 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { motion } from 'motion/react'
+import { AppLogo } from '~/components/app-logo'
 
 export const Route = createFileRoute('/(public)/_auth')({
   component: AuthLayout,
@@ -6,12 +8,20 @@ export const Route = createFileRoute('/(public)/_auth')({
 
 function AuthLayout() {
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+    <motion.div
+      initial={{ opacity: 0, scale: 1.1 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.3 }}
+      className="grid min-h-screen grid-cols-1 lg:grid-cols-2"
+    >
       <div className="flex flex-col justify-between p-8 lg:p-12">
-        <div className="space-y-6">
+        <div className="flex h-full flex-col justify-between space-y-6">
           <div className="flex items-center space-x-2">
-            <div className="size-6 rounded bg-primary" />
-            <span className="text-xl font-semibold">Justd</span>
+            <div className="flex size-7 items-center justify-center rounded bg-black">
+              <AppLogo className="size-5 text-white" />
+            </div>
+            <span className="font-logo text-2xl font-semibold leading-none [letter-spacing:-0.02em]">connnect</span>
           </div>
           <Outlet />
         </div>
@@ -41,6 +51,6 @@ function AuthLayout() {
         </div>
         <div className="flex items-center justify-center space-x-4">123</div>
       </div>
-    </div>
+    </motion.div>
   )
 }

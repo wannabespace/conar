@@ -13,22 +13,29 @@ const schema = z.object({
   password: z.string().min(8),
 })
 
-export function AuthForm() {
+export function AuthForm({ type }: { type: 'sign-up' | 'sign-in' }) {
   const [showPassword, setShowPassword] = useState(false)
 
   const { handleSubmit, register } = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(type === 'sign-up' ? schema.extend({ name: z.string() }) : schema),
     defaultValues: {
       email: '',
       password: '',
+      name: '',
     },
   })
 
-  const onSubmit = handleSubmit(async ({ email, password }) => {
-    const { error } = await authClient.signIn.email({
-      email,
-      password,
-    })
+  const onSubmit = handleSubmit(async ({ email, password, name }) => {
+    const { error } = type === 'sign-up'
+      ? await authClient.signUp.email({
+        email,
+        password,
+        name,
+      })
+      : await authClient.signIn.email({
+        email,
+        password,
+      })
 
     if (error) {
       throw error
@@ -50,9 +57,9 @@ export function AuthForm() {
       </Label>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium leading-none" htmlFor="password">
+        <Label className="text-sm font-medium leading-none" htmlFor="password">
           Password
-        </label>
+        </Label>
         <div className="relative">
           <Input
             id="password"
