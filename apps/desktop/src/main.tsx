@@ -31,7 +31,7 @@ const root = createRoot(document.getElementById('app')!)
 const logo = document.getElementById('logo')!
 
 queryClient.ensureQueryData(sessionQuery).then(async ({ data }) => {
-  logo.classList.add('scale-[0.5]')
+  logo.classList.add('scale-[0.5]', 'opacity-0')
   // Waiting animation to start
   await new Promise(resolve => setTimeout(resolve, 50))
   root.render(<RouterProvider router={router} context={{ session: data?.session || null }} />)

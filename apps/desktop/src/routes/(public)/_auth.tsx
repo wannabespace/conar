@@ -18,8 +18,8 @@ function AuthLayout() {
       <div className="flex flex-col justify-between p-8 lg:p-12">
         <div className="flex h-full flex-col justify-between space-y-6">
           <div className="flex items-center space-x-2">
-            <div className="flex size-7 items-center justify-center rounded bg-black">
-              <AppLogo className="size-5 text-white" />
+            <div className="flex size-7 items-center justify-center rounded bg-black dark:bg-white">
+              <AppLogo className="size-5 text-white dark:text-black" />
             </div>
             <span className="font-logo text-2xl font-semibold leading-none [letter-spacing:-0.02em]">connnect</span>
           </div>
