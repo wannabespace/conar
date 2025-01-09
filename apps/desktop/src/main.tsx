@@ -1,5 +1,5 @@
 import type { Session } from 'better-auth'
-import { QueryClient } from '@tanstack/react-query'
+import { MutationCache, QueryClient } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { initEvents } from './lib/events'
@@ -10,7 +10,21 @@ import '@connnect/ui/globals.css'
 
 initEvents()
 
-export const queryClient = new QueryClient()
+export const queryClient = new QueryClient({
+  mutationCache: new MutationCache(),
+  defaultOptions: {
+    queries: {
+      retry: 0,
+      networkMode: 'offlineFirst',
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 30,
+    },
+    mutations: {
+      networkMode: 'offlineFirst',
+      retry: 3,
+    },
+  },
+})
 
 const router = createRouter({
   routeTree,
@@ -32,7 +46,7 @@ const logo = document.getElementById('logo')!
 
 queryClient.ensureQueryData(sessionQuery).then(async ({ data }) => {
   logo.classList.add('scale-[0.5]', 'opacity-0')
-  // Waiting animation to start
-  await new Promise(resolve => setTimeout(resolve, 50))
+  // Waiting animation to smooth transition
+  await new Promise(resolve => setTimeout(resolve, 80))
   root.render(<RouterProvider router={router} context={{ session: data?.session || null }} />)
 })

@@ -16,6 +16,7 @@ const UpdatesContext = createContext<{
 // eslint-disable-next-line react-refresh/only-export-components
 export const useUpdates = () => use(UpdatesContext)
 
+// TODO: refactor this to be a component
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<Status>('idle')
 

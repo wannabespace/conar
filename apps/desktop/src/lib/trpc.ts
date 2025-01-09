@@ -1,4 +1,5 @@
 import type { AppRouter } from '@connnect/web/trpc-type'
+import type { CreateTRPCClientOptions } from '@trpc/client'
 import { createTRPCProxyClient, httpBatchLink } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
 import SuperJSON from 'superjson'
@@ -11,7 +12,7 @@ export const clientConfig = {
       url: `${env.VITE_PUBLIC_APP_URL}/api/trpc`,
     }),
   ],
-}
+} satisfies CreateTRPCClientOptions<AppRouter>
 
 export const trpcReact = createTRPCReact<AppRouter>()
-export const trpc = createTRPCProxyClient<AppRouter>(clientConfig)
+export const trpcClient = createTRPCProxyClient<AppRouter>(clientConfig)

@@ -36,11 +36,12 @@
     "react-hook-form": "^7.54.2",
     "react-resizable-panels": "^2.1.7",
     "tailwind-merge": "^2.6.0",
+    "uuid": "^11.0.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@connnect/tsconfig": "workspace:*",
-    "@types/react": "^19.0.3",
+    "@types/react": "^19.0.4",
     "@types/react-dom": "^19.0.2"
   }
 }

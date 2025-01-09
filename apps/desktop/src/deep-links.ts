@@ -24,9 +24,8 @@ export function useDeepLinksListener() {
 
     const urls = (await getCurrent()) || []
 
-    if (urls.length === 0) {
+    if (urls.length === 0)
       return
-    }
 
     const [url] = urls
 

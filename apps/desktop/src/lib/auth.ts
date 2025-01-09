@@ -42,12 +42,14 @@ export const authClient = createAuthClient({
       }
     },
     async onSuccess({ response }) {
-      if (isTauri()) {
-        const authToken = response.headers.get('set-auth-token')
+      if (!isTauri()) {
+        return
+      }
 
-        if (authToken) {
-          await setBearerToken(authToken)
-        }
+      const authToken = response.headers.get('set-auth-token')
+
+      if (authToken) {
+        await setBearerToken(authToken)
       }
     },
   },
