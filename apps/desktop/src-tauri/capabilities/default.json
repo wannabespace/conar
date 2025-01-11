@@ -11,6 +11,8 @@
     "deep-link:default",
     "core:window:default",
     "core:window:allow-start-dragging",
+    "core:window:allow-set-focus",
+    "core:window:allow-unminimize",
     "store:default",
     "updater:default",
     "process:default"

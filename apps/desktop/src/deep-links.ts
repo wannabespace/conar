@@ -1,4 +1,5 @@
 import { isTauri } from '@tauri-apps/api/core'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import { getCurrent, onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { toast } from 'sonner'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
@@ -85,7 +86,11 @@ export function useDeepLinksListener() {
   }
 
   async function listenDeepLinks() {
-    return onOpenUrl(async ([url]) => handleDeepLink(url))
+    return onOpenUrl(async ([url]) => {
+      await getCurrentWindow().setFocus()
+      await getCurrentWindow().unminimize()
+      await handleDeepLink(url)
+    })
   }
 
   useAsyncEffect(async () => {
