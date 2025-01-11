@@ -12,7 +12,7 @@ function SignUpPage() {
         <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           Sign up to Connnect
         </h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted-foreground">
           Already have an account?
           {' '}
           <Link to="/sign-in">Sign in</Link>
