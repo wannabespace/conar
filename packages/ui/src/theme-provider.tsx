@@ -26,8 +26,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
-  storageKey = 'connnect-ui-theme',
-  ...props
+  storageKey = 'connnect.theme',
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
@@ -36,21 +35,25 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
-    root.classList.remove('light', 'dark')
+    function updateTheme() {
+      root.classList.remove('light', 'dark')
 
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light'
+      if (theme === 'system') {
+        const systemTheme = mediaQuery.matches ? 'dark' : 'light'
+        setResolvedTheme(systemTheme)
+        root.classList.add(systemTheme)
+        return
+      }
 
-      setResolvedTheme(systemTheme)
-      root.classList.add(systemTheme)
-      return
+      root.classList.add(theme)
     }
 
-    root.classList.add(theme)
+    mediaQuery.addEventListener('change', updateTheme)
+    updateTheme()
+
+    return () => mediaQuery.removeEventListener('change', updateTheme)
   }, [theme])
 
   const value = {
@@ -63,7 +66,7 @@ export function ThemeProvider({
   }
 
   return (
-    <ThemeProviderContext {...props} value={value}>
+    <ThemeProviderContext value={value}>
       {children}
     </ThemeProviderContext>
   )

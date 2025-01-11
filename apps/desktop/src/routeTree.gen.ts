@@ -18,6 +18,7 @@ import { Route as protectedDashboardImport } from './routes/(protected)/_dashboa
 import { Route as protectedDashboardIndexImport } from './routes/(protected)/_dashboard/index'
 import { Route as publicAuthTwoFactorImport } from './routes/(public)/_auth/two-factor'
 import { Route as publicAuthSignUpImport } from './routes/(public)/_auth/sign-up'
+import { Route as publicAuthSignInImport } from './routes/(public)/_auth/sign-in'
 import { Route as publicAuthTwoFactorSetupImport } from './routes/(public)/_auth/two-factor.setup'
 
 // Create Virtual Routes
@@ -66,6 +67,12 @@ const publicAuthSignUpRoute = publicAuthSignUpImport.update({
   getParentRoute: () => publicAuthRoute,
 } as any)
 
+const publicAuthSignInRoute = publicAuthSignInImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => publicAuthRoute,
+} as any)
+
 const publicAuthTwoFactorSetupRoute = publicAuthTwoFactorSetupImport.update({
   id: '/setup',
   path: '/setup',
@@ -103,6 +110,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof publicAuthImport
       parentRoute: typeof publicRoute
+    }
+    '/(public)/_auth/sign-in': {
+      id: '/(public)/_auth/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof publicAuthSignInImport
+      parentRoute: typeof publicAuthImport
     }
     '/(public)/_auth/sign-up': {
       id: '/(public)/_auth/sign-up'
@@ -172,11 +186,13 @@ const publicAuthTwoFactorRouteWithChildren =
   publicAuthTwoFactorRoute._addFileChildren(publicAuthTwoFactorRouteChildren)
 
 interface publicAuthRouteChildren {
+  publicAuthSignInRoute: typeof publicAuthSignInRoute
   publicAuthSignUpRoute: typeof publicAuthSignUpRoute
   publicAuthTwoFactorRoute: typeof publicAuthTwoFactorRouteWithChildren
 }
 
 const publicAuthRouteChildren: publicAuthRouteChildren = {
+  publicAuthSignInRoute: publicAuthSignInRoute,
   publicAuthSignUpRoute: publicAuthSignUpRoute,
   publicAuthTwoFactorRoute: publicAuthTwoFactorRouteWithChildren,
 }
@@ -198,6 +214,7 @@ const publicRouteWithChildren =
 
 export interface FileRoutesByFullPath {
   '/': typeof protectedDashboardIndexRoute
+  '/sign-in': typeof publicAuthSignInRoute
   '/sign-up': typeof publicAuthSignUpRoute
   '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
@@ -205,6 +222,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof protectedDashboardIndexRoute
+  '/sign-in': typeof publicAuthSignInRoute
   '/sign-up': typeof publicAuthSignUpRoute
   '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
@@ -216,6 +234,7 @@ export interface FileRoutesById {
   '/(protected)/_dashboard': typeof protectedDashboardRouteWithChildren
   '/(public)': typeof publicRouteWithChildren
   '/(public)/_auth': typeof publicAuthRouteWithChildren
+  '/(public)/_auth/sign-in': typeof publicAuthSignInRoute
   '/(public)/_auth/sign-up': typeof publicAuthSignUpRoute
   '/(public)/_auth/two-factor': typeof publicAuthTwoFactorRouteWithChildren
   '/(protected)/_dashboard/': typeof protectedDashboardIndexRoute
@@ -224,15 +243,16 @@ export interface FileRoutesById {
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sign-up' | '/two-factor' | '/two-factor/setup'
+  fullPaths: '/' | '/sign-in' | '/sign-up' | '/two-factor' | '/two-factor/setup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sign-up' | '/two-factor' | '/two-factor/setup'
+  to: '/' | '/sign-in' | '/sign-up' | '/two-factor' | '/two-factor/setup'
   id:
     | '__root__'
     | '/(protected)'
     | '/(protected)/_dashboard'
     | '/(public)'
     | '/(public)/_auth'
+    | '/(public)/_auth/sign-in'
     | '/(public)/_auth/sign-up'
     | '/(public)/_auth/two-factor'
     | '/(protected)/_dashboard/'
@@ -287,9 +307,14 @@ export const routeTree = rootRoute
       "filePath": "(public)/_auth.tsx",
       "parent": "/(public)",
       "children": [
+        "/(public)/_auth/sign-in",
         "/(public)/_auth/sign-up",
         "/(public)/_auth/two-factor"
       ]
+    },
+    "/(public)/_auth/sign-in": {
+      "filePath": "(public)/_auth/sign-in.tsx",
+      "parent": "/(public)/_auth"
     },
     "/(public)/_auth/sign-up": {
       "filePath": "(public)/_auth/sign-up.tsx",

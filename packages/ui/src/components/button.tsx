@@ -1,24 +1,27 @@
 import { cn } from '@connnect/ui/lib/utils'
 import { Slot } from '@radix-ui/react-slot'
+import { RiLoader4Fill } from '@remixicon/react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import * as React from 'react'
 
+const beforeClasses = 'before:absolute before:block before:rounded-full before:blur-lg before:h-full before:-top-3 before:opacity-40 before:left-1/2 before:-translate-x-1/2 before:h-5 before:w-1/3'
+
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:ring-zinc-300 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'relative overflow-hidden inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
         default:
-          'bg-zinc-900 text-zinc-50 shadow hover:bg-zinc-900/90 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/90',
+          `border-y border-b-black/10 border-t-white/30 bg-primary text-white shadow-sm [text-shadow:0_1px_rgba(0,0,0,0.2)] hover:bg-primary/90 ${beforeClasses} before:bg-white`,
         destructive:
-          'bg-red-500 text-zinc-50 shadow-sm hover:bg-red-500/90 dark:bg-red-900 dark:text-zinc-50 dark:hover:bg-red-900/90',
+          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
         outline:
-          'border border-zinc-200 bg-white shadow-sm hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-800 dark:hover:text-zinc-50',
+          'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
         secondary:
-          'bg-zinc-100 text-zinc-900 shadow-sm hover:bg-zinc-100/80 dark:bg-zinc-800 dark:text-zinc-50 dark:hover:bg-zinc-800/80',
-        ghost: 'hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50',
-        link: 'text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-50',
+          'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-9 px-4 py-2',
@@ -38,16 +41,30 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
   VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  loading?: boolean
 }
 
-function Button({ ref, className, variant, size, asChild = false, ...props }: ButtonProps & { ref?: React.RefObject<HTMLButtonElement> }) {
+function Button({ ref, children, loading, disabled, className, type = 'button', variant, size, asChild = false, ...props }: ButtonProps & { ref?: React.RefObject<HTMLButtonElement> }) {
   const Comp = asChild ? Slot : 'button'
   return (
     <Comp
       className={cn(buttonVariants({ variant, size, className }))}
       ref={ref}
+      type={type}
+      disabled={loading || disabled}
       {...props}
-    />
+    >
+      <span className={cn(loading ? '-translate-y-1/2' : 'translate-y-10', 'duration-150 absolute left-1/2 top-1/2 -translate-x-1/2')}>
+        <RiLoader4Fill
+          className={cn(
+            'animate-spin size-5',
+          )}
+        />
+      </span>
+      <span className={cn('flex items-center duration-150 justify-center gap-2', loading ? '-translate-y-14' : 'translate-y-0')}>
+        {children}
+      </span>
+    </Comp>
   )
 }
 Button.displayName = 'Button'

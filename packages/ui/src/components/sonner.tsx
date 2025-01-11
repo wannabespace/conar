@@ -1,25 +1,26 @@
-import { useTheme } from '@connnect/ui/theme-provider'
 import { Toaster as Sonner } from 'sonner'
+import { cn } from '../lib/utils'
+import { useTheme } from '../theme-provider'
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
-function Toaster({ ...props }: ToasterProps) {
-  const { theme } = useTheme()
+function Toaster({ className, ...props }: ToasterProps) {
+  const { theme = 'system' } = useTheme()
 
   return (
     <Sonner
-      theme={theme as 'light' | 'dark' | 'system'}
-      // eslint-disable-next-line tailwindcss/no-custom-classname
-      className="toaster group"
+      theme={theme as ToasterProps['theme']}
+      className={cn('toaster group', className)}
+      cn={cn}
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:bg-white group-[.toaster]:text-zinc-950 group-[.toaster]:border-zinc-200 group-[.toaster]:shadow-lg dark:group-[.toaster]:bg-zinc-950 dark:group-[.toaster]:text-zinc-50 dark:group-[.toaster]:border-zinc-800',
-          description: 'group-[.toast]:text-zinc-500 dark:group-[.toast]:text-zinc-400',
+            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg data-[type=error]:group-[.toaster]:text-destructive',
+          description: 'group-[.toast]:text-muted-foreground',
           actionButton:
-            'group-[.toast]:bg-zinc-900 group-[.toast]:text-zinc-50 dark:group-[.toast]:bg-zinc-50 dark:group-[.toast]:text-zinc-900',
+            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
           cancelButton:
-            'group-[.toast]:bg-zinc-100 group-[.toast]:text-zinc-500 dark:group-[.toast]:bg-zinc-800 dark:group-[.toast]:text-zinc-400',
+            'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
         },
       }}
       {...props}

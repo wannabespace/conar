@@ -5,7 +5,6 @@ import { createRoot } from 'react-dom/client'
 import { initEvents } from './lib/events'
 import { sessionQuery } from './queries/auth'
 import { routeTree } from './routeTree.gen'
-import './assets/styles/fonts.css'
 import '@connnect/ui/globals.css'
 
 initEvents()

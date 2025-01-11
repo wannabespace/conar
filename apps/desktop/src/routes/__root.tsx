@@ -7,6 +7,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { AnimatePresence } from 'motion/react'
+import { NuqsAdapter } from 'nuqs/adapters/react'
 import { useState } from 'react'
 import { parse, stringify } from 'superjson'
 import { AppProvider } from '~/app-provider'
@@ -38,30 +39,32 @@ function RootDocument() {
   return (
     <EventsProvider>
       <ThemeProvider>
-        <TRPCClientProvider client={trpcClient} queryClient={queryClient}>
-          <PersistQueryClientProvider
-            client={queryClient}
-            persistOptions={{ persister }}
-            onSuccess={() => {
-              queryClient.resumePausedMutations().then(() => {
-                queryClient.invalidateQueries()
-              })
-            }}
-          >
-            <AppProvider>
-              <AnimatePresence>
-                <Outlet />
-              </AnimatePresence>
-              <Toaster />
-            </AppProvider>
-            {import.meta.env.DEV && (
-              <>
-                <TanStackRouterDevtools />
-                <ReactQueryDevtools initialIsOpen={false} />
-              </>
-            )}
-          </PersistQueryClientProvider>
-        </TRPCClientProvider>
+        <NuqsAdapter>
+          <TRPCClientProvider client={trpcClient} queryClient={queryClient}>
+            <PersistQueryClientProvider
+              client={queryClient}
+              persistOptions={{ persister }}
+              onSuccess={() => {
+                queryClient.resumePausedMutations().then(() => {
+                  queryClient.invalidateQueries()
+                })
+              }}
+            >
+              <AppProvider>
+                <AnimatePresence>
+                  <Outlet />
+                </AnimatePresence>
+                <Toaster />
+              </AppProvider>
+              {import.meta.env.DEV && (
+                <>
+                  <TanStackRouterDevtools />
+                  <ReactQueryDevtools initialIsOpen={false} />
+                </>
+              )}
+            </PersistQueryClientProvider>
+          </TRPCClientProvider>
+        </NuqsAdapter>
       </ThemeProvider>
     </EventsProvider>
   )

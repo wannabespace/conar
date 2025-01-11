@@ -1,16 +1,11 @@
 import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from 'next-themes'
-import { MuseoModerno, Nunito_Sans } from 'next/font/google'
+import { Nunito_Sans } from 'next/font/google'
 import '@connnect/ui/globals.css'
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-nunito-sans',
-  subsets: ['latin'],
-})
-
-const museoModerno = MuseoModerno({
-  variable: '--font-museo-moderno',
   subsets: ['latin'],
 })
 
@@ -27,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`font-sans ${nunitoSans.variable} ${museoModerno.variable} antialiased`}
+        className={`font-sans ${nunitoSans.variable} antialiased`}
       >
         <ThemeProvider attribute="class">
           {children}

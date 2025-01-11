@@ -26,17 +26,17 @@ export function AppLogoGradient(props: ComponentProps<'svg'>) {
           <stop offset=".19" stopColor="#423032" />
           <stop offset=".485" stopColor="#181E24" />
           <stop offset=".65" stopColor="#14262B" stopOpacity=".859" />
-          <stop offset="1" stopColor="#468C98" stopOpacity=".8" />
+          <stop offset="1" stopColor="#4FAFBA" stopOpacity=".8" />
         </linearGradient>
         <linearGradient id="d" x1="515" y1="316" x2="692" y2="626" gradientUnits="userSpaceOnUse">
           <stop offset=".065" stopColor="#fff" />
           <stop offset=".44" stopColor="#D2E3E6" />
-          <stop offset="1" stopColor="#468C98" />
+          <stop offset="1" stopColor="#4FAFBA" />
         </linearGradient>
         <linearGradient id="e" x1="515" y1="316" x2="692" y2="626" gradientUnits="userSpaceOnUse">
           <stop offset=".065" stopColor="#fff" />
           <stop offset=".44" stopColor="#D2E3E6" />
-          <stop offset="1" stopColor="#468C98" />
+          <stop offset="1" stopColor="#4FAFBA" />
         </linearGradient>
         <clipPath id="a"><rect width="824" height="824" rx="175" fill="#fff" /></clipPath>
         <filter id="c" x="25" y="25" width="774" height="778" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
