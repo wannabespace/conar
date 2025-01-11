@@ -23,26 +23,37 @@ const schema = z.object({
   name: z.string().optional(),
 })
 
-async function socialSignIn(provider: 'google' | 'github') {
-  const encryptor = await createEncryptor(env.VITE_PUBLIC_AUTH_SECRET)
-  const codeChallenge = nanoid()
+function useSocialMutation(provider: 'google' | 'github') {
+  return useMutation({
+    mutationKey: [provider],
+    mutationFn: async () => {
+      const encryptor = await createEncryptor(env.VITE_PUBLIC_AUTH_SECRET)
+      const codeChallenge = nanoid()
 
-  setCodeChallenge(codeChallenge)
+      setCodeChallenge(codeChallenge)
 
-  const encryptedCodeChallenge = await encryptor.encrypt(codeChallenge)
+      const encryptedCodeChallenge = await encryptor.encrypt(codeChallenge)
 
-  const { data, error } = await authClient.signIn.social({
-    provider,
-    disableRedirect: true,
-    callbackURL: `${env.VITE_PUBLIC_APP_URL}/open?code-challenge=${encryptedCodeChallenge}`,
-    newUserCallbackURL: `${env.VITE_PUBLIC_APP_URL}/open?code-challenge=${encryptedCodeChallenge}&newUser=true`,
+      const { data, error } = await authClient.signIn.social({
+        provider,
+        disableRedirect: true,
+        callbackURL: `${env.VITE_PUBLIC_APP_URL}/open?code-challenge=${encryptedCodeChallenge}`,
+        newUserCallbackURL: `${env.VITE_PUBLIC_APP_URL}/open?code-challenge=${encryptedCodeChallenge}&newUser=true`,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      return data.url!
+    },
+    onSuccess(url) {
+      open(url)
+    },
+    onError(error) {
+      toast.error(error.message)
+    },
   })
-
-  if (error) {
-    throw error
-  }
-
-  return { url: data.url! }
 }
 
 export function AuthForm({ type }: { type: Type }) {
@@ -81,35 +92,8 @@ export function AuthForm({ type }: { type: Type }) {
     }
   }
 
-  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useMutation({
-    mutationKey: ['google'],
-    mutationFn: async () => {
-      const { url } = await socialSignIn('google')
-
-      return url
-    },
-    onSuccess(url) {
-      open(url)
-    },
-    onError(error) {
-      toast.error(error.message)
-    },
-  })
-
-  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useMutation({
-    mutationKey: ['github'],
-    mutationFn: async () => {
-      const { url } = await socialSignIn('github')
-
-      return url
-    },
-    onSuccess(url) {
-      open(url)
-    },
-    onError(error) {
-      toast.error(error.message)
-    },
-  })
+  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google')
+  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github')
 
   return (
     <>

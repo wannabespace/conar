@@ -3,8 +3,8 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./auth-type": "./types/apps/web/lib/auth.d.ts",
-    "./trpc-type": "./types/apps/web/trpc/routers/index.d.ts"
+    "./auth-type": "./types/lib/auth.d.ts",
+    "./trpc-type": "./types/trpc/routers/index.d.ts"
   },
   "scripts": {
     "dev": "next dev --turbopack",
