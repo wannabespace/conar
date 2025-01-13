@@ -38,7 +38,7 @@ function LayoutComponent() {
         </Link>
       </div>
       <hr />
-      <header>
+      <header className="bg-background p-2">
         {isLoading ? 'Loading...' : data?.user.email || 'No user'}
       </header>
       <Button
