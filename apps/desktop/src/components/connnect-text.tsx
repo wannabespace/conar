@@ -5,6 +5,7 @@ export function ConnnectText(props: ComponentProps<'svg'>) {
     <svg
       width="98"
       height="17"
+      viewBox="0 0 98 17"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       {...props}

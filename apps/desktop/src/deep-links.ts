@@ -3,7 +3,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { getCurrent, onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { toast } from 'sonner'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
-import { getCodeChallenge, removeCodeChallenge, setBearerToken } from '~/lib/auth'
+import { getCodeChallenge, removeCodeChallenge, setBearerToken, successToast } from '~/lib/auth'
 import { env } from './env'
 import { useSession } from './hooks/use-session'
 import { createEncryptor } from './lib/secrets'
@@ -77,12 +77,7 @@ export function useDeepLinksListener() {
     await setBearerToken(token)
     await refetch()
     removeCodeChallenge()
-
-    toast.success(
-      newUser
-        ? 'Welcome to Connnect! We\'re excited to help you manage your databases with ease. Get started by creating your first connection.'
-        : 'Welcome back! Your database connections are ready for you.',
-    )
+    successToast(!!newUser)
   }
 
   async function listenDeepLinks() {

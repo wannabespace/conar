@@ -16,6 +16,7 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       colors: {
+        body: 'hsl(var(--body))',
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

@@ -12,7 +12,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { env } from '~/env'
-import { authClient, setCodeChallenge } from '~/lib/auth'
+import { authClient, setCodeChallenge, successToast } from '~/lib/auth'
 import { createEncryptor } from '~/lib/secrets'
 
 type Type = 'sign-up' | 'sign-in'
@@ -88,8 +88,16 @@ export function AuthForm({ type }: { type: Type }) {
       })
 
     if (error) {
-      throw error
+      if (error.code === 'USER_ALREADY_EXISTS') {
+        toast.error('User already exists')
+      }
+      else {
+        toast.error(error.message)
+      }
+      return
     }
+
+    successToast(type === 'sign-up')
   }
 
   const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google')
@@ -125,7 +133,7 @@ export function AuthForm({ type }: { type: Type }) {
       </div>
       <div className="relative">
         <Separator />
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-body px-2 text-xs text-muted-foreground">
           OR
         </span>
       </div>
@@ -216,7 +224,11 @@ export function AuthForm({ type }: { type: Type }) {
             </FormItem>
           )}
         />
-        <Button className="w-full" type="submit">
+        <Button
+          className="w-full"
+          loading={form.formState.isSubmitting}
+          type="submit"
+        >
           {type === 'sign-up' ? 'Get started' : 'Sign in'}
         </Button>
       </Form>

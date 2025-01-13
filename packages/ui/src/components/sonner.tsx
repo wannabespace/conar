@@ -4,18 +4,20 @@ import { useTheme } from '../theme-provider'
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
-function Toaster({ className, ...props }: ToasterProps) {
+function Toaster() {
   const { theme = 'system' } = useTheme()
 
   return (
     <Sonner
       theme={theme as ToasterProps['theme']}
-      className={cn('toaster group', className)}
+      // eslint-disable-next-line tailwindcss/no-custom-classname
+      className="toaster group"
       cn={cn}
+      richColors
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg data-[type=error]:group-[.toaster]:text-destructive',
+            'group toast border border-input group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg data-[type=error]:group-[.toaster]:text-destructive',
           description: 'group-[.toast]:text-muted-foreground',
           actionButton:
             'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
@@ -23,7 +25,6 @@ function Toaster({ className, ...props }: ToasterProps) {
             'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
         },
       }}
-      {...props}
     />
   )
 }

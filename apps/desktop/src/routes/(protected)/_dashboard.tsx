@@ -1,7 +1,10 @@
+import { Button } from '@connnect/ui/components/button'
+import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import { motion } from 'motion/react'
+import { toast } from 'sonner'
 import { useSession } from '~/hooks/use-session'
-import { removeBearerToken } from '~/lib/auth'
+import { authClient, removeBearerToken } from '~/lib/auth'
 
 export const Route = createFileRoute('/(protected)/_dashboard')({
   component: LayoutComponent,
@@ -9,6 +12,17 @@ export const Route = createFileRoute('/(protected)/_dashboard')({
 
 function LayoutComponent() {
   const { isLoading, data, refetch } = useSession()
+
+  const { mutate: signOut, isPending: isSigningOut } = useMutation({
+    mutationKey: ['sign-out'],
+    mutationFn: async () => {
+      await Promise.all([removeBearerToken(), authClient.signOut()])
+      await refetch()
+    },
+    onSuccess: () => {
+      toast.success('Signed out')
+    },
+  })
 
   return (
     <motion.div
@@ -27,15 +41,12 @@ function LayoutComponent() {
       <header>
         {isLoading ? 'Loading...' : data?.user.email || 'No user'}
       </header>
-      <button
-        type="button"
-        onClick={async () => {
-          await removeBearerToken()
-          await refetch()
-        }}
+      <Button
+        loading={isSigningOut}
+        onClick={() => signOut()}
       >
         Sign Out
-      </button>
+      </Button>
       <Outlet />
     </motion.div>
   )

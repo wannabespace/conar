@@ -16,7 +16,7 @@ function AuthLayout() {
       transition={{ duration: 0.3 }}
       className="flex min-h-screen items-center justify-center"
     >
-      <div className="mx-auto flex max-w-md flex-col gap-8 py-10">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-8 py-10">
         <div className="flex items-center gap-3">
           <AppLogoGradient className="hidden size-12 dark:block" />
           <div className="flex size-12 items-center justify-center rounded-lg bg-primary dark:hidden">

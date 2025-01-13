@@ -2,6 +2,7 @@ import type { auth } from '@connnect/web/auth-type'
 import { isTauri } from '@tauri-apps/api/core'
 import { createAuthClient } from 'better-auth/client'
 import { inferAdditionalFields, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
+import { toast } from 'sonner'
 import { env } from '~/env'
 
 export const BEARER_TOKEN_KEY = 'connnect.bearer_token'
@@ -29,6 +30,17 @@ export function setCodeChallenge(codeChallenge: string) {
 
 export function removeCodeChallenge() {
   localStorage.removeItem(CODE_CHALLENGE_KEY)
+}
+
+export function successToast(newUser: boolean) {
+  toast.success(
+    newUser
+      ? 'Welcome to Connnect! We\'re excited to help you manage your databases with ease. Get started by creating your first connection.'
+      : 'Welcome back! Your database connections are ready for you.',
+    {
+      duration: 5000,
+    },
+  )
 }
 
 export const authClient = createAuthClient({

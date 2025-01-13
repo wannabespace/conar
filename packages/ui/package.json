@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@connnect/tsconfig": "workspace:*",
-    "@types/react": "^19.0.4",
-    "@types/react-dom": "^19.0.2"
+    "@types/react": "^19.0.5",
+    "@types/react-dom": "^19.0.3"
   }
 }
