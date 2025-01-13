@@ -12,7 +12,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { env } from '~/env'
-import { authClient, setCodeChallenge, successToast } from '~/lib/auth'
+import { authClient, setCodeChallenge, successAuthToast } from '~/lib/auth'
 import { createEncryptor } from '~/lib/secrets'
 
 type Type = 'sign-up' | 'sign-in'
@@ -101,7 +101,7 @@ export function AuthForm({ type }: { type: Type }) {
       return
     }
 
-    successToast(type === 'sign-up')
+    successAuthToast(type === 'sign-up')
   }
 
   const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google')

@@ -32,7 +32,7 @@ export function removeCodeChallenge() {
   localStorage.removeItem(CODE_CHALLENGE_KEY)
 }
 
-export function successToast(newUser: boolean) {
+export function successAuthToast(newUser: boolean) {
   toast.success(
     newUser
       ? 'Welcome to Connnect! We\'re excited to help you manage your databases with ease. Get started by creating your first connection.'

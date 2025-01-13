@@ -3,7 +3,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { getCurrent, onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { toast } from 'sonner'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
-import { getCodeChallenge, removeCodeChallenge, setBearerToken, successToast } from '~/lib/auth'
+import { getCodeChallenge, removeCodeChallenge, setBearerToken, successAuthToast } from '~/lib/auth'
 import { env } from './env'
 import { useSession } from './hooks/use-session'
 import { createEncryptor } from './lib/secrets'
@@ -77,7 +77,7 @@ export function useDeepLinksListener() {
     await setBearerToken(token)
     await refetch()
     removeCodeChallenge()
-    successToast(!!newUser)
+    successAuthToast(!!newUser)
   }
 
   async function listenDeepLinks() {
