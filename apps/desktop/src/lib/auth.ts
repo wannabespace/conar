@@ -1,7 +1,7 @@
 import type { auth } from '@connnect/web/auth-type'
 import { isTauri } from '@tauri-apps/api/core'
 import { createAuthClient } from 'better-auth/client'
-import { inferAdditionalFields, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
+import { inferAdditionalFields, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { toast } from 'sonner'
 import { env } from '~/env'
 
@@ -68,6 +68,7 @@ export const authClient = createAuthClient({
   plugins: [
     organizationClient(),
     twoFactorClient(),
+    magicLinkClient(),
     inferAdditionalFields<typeof auth>(),
   ],
 })

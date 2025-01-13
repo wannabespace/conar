@@ -16,6 +16,12 @@ export const auth = betterAuth({
     bearer(),
     organization(),
     emailHarmony(),
+    // magicLink({
+    //   disableSignUp: true,
+    //   sendMagicLink: async ({ email, token, url }, request) => {
+    //     console.log('sendMagicLink', email, token, url, request)
+    //   },
+    // }),
   ],
   user: {
     additionalFields: {
