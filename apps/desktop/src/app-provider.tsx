@@ -5,8 +5,8 @@ import { useSession } from './hooks/use-session'
 import { authClient } from './lib/auth'
 import { identifyUser } from './lib/events'
 
-const publicRoutes = ['/sign-up', '/sign-in']
 const authRoutes = ['/sign-in', '/sign-up']
+const publicRoutes = [...authRoutes]
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const { refetch, isAuthenticated, isLoading } = useSession()
@@ -36,7 +36,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!isAuthenticated && !publicRoutes.includes(location.pathname)) {
-      router.navigate({ to: '/sign-up' })
+      router.navigate({ to: '/sign-in' })
     }
   }, [isLoading, isAuthenticated, location.pathname])
 

@@ -25,11 +25,6 @@ const persister = createAsyncStoragePersister({
 
 export const Route = createRootRouteWithContext<{ session: Session | null }>()({
   component: RootDocument,
-  // beforeLoad: ({ location, context }) => {
-  //   if (!context.session && !['/sign-up', '/sign-in', '/two-factor'].includes(location.pathname)) {
-  //     throw redirect({ to: '/sign-up' })
-  //   }
-  // },
 })
 
 function RootDocument() {
