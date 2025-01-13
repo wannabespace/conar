@@ -89,6 +89,10 @@ export function AuthForm({ type }: { type: Type }) {
 
     if (error) {
       if (error.code === 'USER_ALREADY_EXISTS') {
+        // TODO: add button to redirect to sign-in
+        // {
+        //   action: <Button onClick={() => router.navigate({ to: '/sign-in' })}>Sign in</Button>,
+        // }
         toast.error('User already exists')
       }
       else {
