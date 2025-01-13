@@ -1,12 +1,4 @@
-function hexEncode(str: string): string {
-  return Array.from(str)
-    .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))
-    .join('')
-}
-
-function hexDecode(hex: string): string {
-  return hex.match(/.{1,2}/g)?.map(byte => String.fromCharCode(Number.parseInt(byte, 16))).join('') || ''
-}
+import { hexDecode, hexEncode } from './hex'
 
 function generateSalt(length: number = 16) {
   return crypto.getRandomValues(new Uint8Array(length))

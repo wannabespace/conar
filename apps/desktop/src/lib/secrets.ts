@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { decrypt, encrypt } from './encryption'
 
-export function prepareSecret(secret: string) {
+function prepareSecret(secret: string) {
   return invoke<string>('prepare_secret', {
     secret,
   })
