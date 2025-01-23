@@ -46,6 +46,7 @@
   "devDependencies": {
     "@connnect/tsconfig": "workspace:*",
     "@types/react": "^19.0.6",
-    "@types/react-dom": "^19.0.3"
+    "@types/react-dom": "^19.0.3",
+    "tailwindcss": "^3.4.17"
   }
 }
