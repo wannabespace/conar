@@ -1,5 +1,5 @@
 import type { Session } from 'better-auth'
-import { MutationCache, QueryClient } from '@tanstack/react-query'
+import { QueryClient } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { initEvents } from './lib/events'
@@ -11,7 +11,6 @@ import '@connnect/ui/globals.css'
 initEvents()
 
 export const queryClient = new QueryClient({
-  mutationCache: new MutationCache(),
   defaultOptions: {
     queries: {
       retry: 0,

@@ -46,7 +46,18 @@ export function successAuthToast(newUser: boolean) {
 export const authClient = createAuthClient({
   baseURL: env.VITE_PUBLIC_APP_URL,
   fetchOptions: {
+    async onError() {
+      if (!isTauri()) {
+        return
+      }
+
+      await removeBearerToken()
+    },
     async onRequest(context) {
+      if (!isTauri()) {
+        return
+      }
+
       const token = await getBearerToken()
 
       if (token) {
