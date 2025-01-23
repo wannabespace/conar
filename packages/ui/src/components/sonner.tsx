@@ -1,5 +1,4 @@
 import { Toaster as Sonner } from 'sonner'
-import { cn } from '../lib/utils'
 import { useTheme } from '../theme-provider'
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
@@ -12,7 +11,6 @@ function Toaster() {
       theme={theme as ToasterProps['theme']}
       // eslint-disable-next-line tailwindcss/no-custom-classname
       className="toaster group"
-      cn={cn}
       richColors
       toastOptions={{
         classNames: {
