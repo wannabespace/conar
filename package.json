@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@9.15.3",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "prepare": "husky",
     "lint": "eslint .",
@@ -13,17 +13,17 @@
     "check-types": "turbo check-types"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^3.14.0",
-    "@eslint-react/eslint-plugin": "^1.23.2",
+    "@antfu/eslint-config": "^3.16.0",
+    "@eslint-react/eslint-plugin": "^1.24.1",
     "eslint": "^9.18.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.18",
     "husky": "^9.1.7",
     "npm-run-all2": "^7.0.2",
     "tsx": "^4.19.2",
-    "turbo": "^2.3.3",
+    "turbo": "^2.3.4",
     "typescript": "^5.7.3",
-    "vitest": "^2.1.8"
+    "vitest": "^3.0.4"
   },
   "pnpm": {
     "patchedDependencies": {
