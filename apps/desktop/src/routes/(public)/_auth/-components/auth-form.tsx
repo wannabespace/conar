@@ -12,7 +12,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { env } from '~/env'
-import { authClient, setCodeChallenge, successAuthToast } from '~/lib/auth'
+import { authClient, setBearerToken, setCodeChallenge, successAuthToast } from '~/lib/auth'
 import { createEncryptor } from '~/lib/secrets'
 
 type Type = 'sign-up' | 'sign-in'
@@ -75,31 +75,38 @@ export function AuthForm({ type }: { type: Type }) {
     }
   }, [emailRef.current])
 
-  const submit = async (data: z.infer<typeof schema>) => {
-    const { error } = type === 'sign-up'
+  const submit = async (values: z.infer<typeof schema>) => {
+    const { error, data } = type === 'sign-up'
       ? await authClient.signUp.email({
-        email: data.email,
-        password: data.password,
-        name: data.name!,
+        email: values.email,
+        password: values.password,
+        name: values.name!,
       })
       : await authClient.signIn.email({
-        email: data.email,
-        password: data.password,
+        email: values.email,
+        password: values.password,
       })
 
-    if (error) {
-      if (error.code === 'USER_ALREADY_EXISTS') {
+    if (error || !(data && data.token)) {
+      if (data && !data.token) {
+        toast.error('In some reason, we were not able to sign you in. Please try again later.')
+        return
+      }
+
+      if (error!.code === 'USER_ALREADY_EXISTS') {
         // TODO: add button to redirect to sign-in
         // {
         //   action: <Button onClick={() => router.navigate({ to: '/sign-in' })}>Sign in</Button>,
         // }
-        toast.error('User already exists')
+        toast.error('User already exists. Please sign in or use a different email address.')
       }
       else {
-        toast.error(error.message)
+        toast.error(error!.message)
       }
       return
     }
+
+    await setBearerToken(data.token)
 
     successAuthToast(type === 'sign-up')
   }
