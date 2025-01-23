@@ -18,7 +18,6 @@
     "eslint": "^9.18.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.18",
-    "eslint-plugin-tailwindcss": "^3.17.5",
     "husky": "^9.1.7",
     "npm-run-all2": "^7.0.2",
     "tsx": "^4.19.2",

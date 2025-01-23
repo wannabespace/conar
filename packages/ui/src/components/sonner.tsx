@@ -9,13 +9,12 @@ function Toaster() {
   return (
     <Sonner
       theme={theme as ToasterProps['theme']}
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       className="toaster group"
       richColors
       toastOptions={{
         classNames: {
           toast:
-            'group toast border border-input group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg data-[type=error]:group-[.toaster]:text-destructive',
+            'group toast border border-input group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg group-[.toaster]:data-[type=error]:text-destructive',
           description: 'group-[.toast]:text-muted-foreground',
           actionButton:
             'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
