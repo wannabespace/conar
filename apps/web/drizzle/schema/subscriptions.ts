@@ -16,7 +16,7 @@ export const subscriptions = pgTable('subscriptions', {
   period: subscriptionPeriod('period').notNull(),
 }).enableRLS()
 
-export const subscriptionRelations = relations(subscriptions, ({ one }) => ({
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   user: one(users, {
     fields: [subscriptions.userId],
     references: [users.id],

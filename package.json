@@ -13,9 +13,9 @@
     "check-types": "turbo check-types"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^3.16.0",
+    "@antfu/eslint-config": "^4.1.0",
     "@eslint-react/eslint-plugin": "^1.24.1",
-    "eslint": "^9.18.0",
+    "eslint": "^9.19.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.18",
     "husky": "^9.1.7",
@@ -24,10 +24,5 @@
     "turbo": "^2.3.4",
     "typescript": "^5.7.3",
     "vitest": "^3.0.4"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "@trpc/react-query": "patches/@trpc__react-query.patch"
-    }
   }
 }

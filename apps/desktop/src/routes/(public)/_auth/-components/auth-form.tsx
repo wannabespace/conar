@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import { env } from '~/env'
 import { authClient, setBearerToken, setCodeChallenge, successAuthToast } from '~/lib/auth'
+import { handleError } from '~/lib/error'
 import { createEncryptor } from '~/lib/secrets'
 
 type Type = 'sign-up' | 'sign-in'
@@ -50,9 +51,7 @@ function useSocialMutation(provider: 'google' | 'github') {
     onSuccess(url) {
       open(url)
     },
-    onError(error) {
-      toast.error(error.message)
-    },
+    onError: handleError,
   })
 }
 
@@ -101,7 +100,7 @@ export function AuthForm({ type }: { type: Type }) {
         toast.error('User already exists. Please sign in or use a different email address.')
       }
       else {
-        toast.error(error!.message)
+        handleError(error)
       }
       return
     }

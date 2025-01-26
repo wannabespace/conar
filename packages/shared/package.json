@@ -1,0 +1,8 @@
+{
+  "name": "@connnect/shared",
+  "type": "module",
+  "peerDependencies": {
+    "@trpc/client": "^11.0.0-rc.724",
+    "sonner": "^1.7.2"
+  }
+}

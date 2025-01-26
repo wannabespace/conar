@@ -1,11 +1,11 @@
 import type { Session } from 'better-auth'
 import { Toaster } from '@connnect/ui/components/sonner'
 import { ThemeProvider } from '@connnect/ui/theme-provider'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { AnimatePresence } from 'motion/react'
-import { NuqsAdapter } from 'nuqs/adapters/react'
 import { useState } from 'react'
 import { AppProvider } from '~/app-provider'
 import { EventsProvider } from '~/lib/events'
@@ -23,8 +23,8 @@ function RootDocument() {
   return (
     <EventsProvider>
       <ThemeProvider>
-        <NuqsAdapter>
-          <TRPCClientProvider client={trpcClient} queryClient={queryClient}>
+        <TRPCClientProvider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
             <AppProvider>
               <AnimatePresence>
                 <Outlet />
@@ -37,8 +37,8 @@ function RootDocument() {
                 <ReactQueryDevtools initialIsOpen={false} />
               </>
             )}
-          </TRPCClientProvider>
-        </NuqsAdapter>
+          </QueryClientProvider>
+        </TRPCClientProvider>
       </ThemeProvider>
     </EventsProvider>
   )

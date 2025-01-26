@@ -19,7 +19,9 @@ import { Route as protectedDashboardIndexImport } from './routes/(protected)/_da
 import { Route as publicAuthTwoFactorImport } from './routes/(public)/_auth/two-factor'
 import { Route as publicAuthSignUpImport } from './routes/(public)/_auth/sign-up'
 import { Route as publicAuthSignInImport } from './routes/(public)/_auth/sign-in'
+import { Route as protectedDashboardDatabasesIndexImport } from './routes/(protected)/_dashboard/databases/index'
 import { Route as publicAuthTwoFactorSetupImport } from './routes/(public)/_auth/two-factor.setup'
+import { Route as protectedDashboardDatabasesIdImport } from './routes/(protected)/_dashboard/databases/$id'
 
 // Create Virtual Routes
 
@@ -73,11 +75,25 @@ const publicAuthSignInRoute = publicAuthSignInImport.update({
   getParentRoute: () => publicAuthRoute,
 } as any)
 
+const protectedDashboardDatabasesIndexRoute =
+  protectedDashboardDatabasesIndexImport.update({
+    id: '/databases/',
+    path: '/databases/',
+    getParentRoute: () => protectedDashboardRoute,
+  } as any)
+
 const publicAuthTwoFactorSetupRoute = publicAuthTwoFactorSetupImport.update({
   id: '/setup',
   path: '/setup',
   getParentRoute: () => publicAuthTwoFactorRoute,
 } as any)
+
+const protectedDashboardDatabasesIdRoute =
+  protectedDashboardDatabasesIdImport.update({
+    id: '/databases/$id',
+    path: '/databases/$id',
+    getParentRoute: () => protectedDashboardRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -139,12 +155,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof protectedDashboardIndexImport
       parentRoute: typeof protectedDashboardImport
     }
+    '/(protected)/_dashboard/databases/$id': {
+      id: '/(protected)/_dashboard/databases/$id'
+      path: '/databases/$id'
+      fullPath: '/databases/$id'
+      preLoaderRoute: typeof protectedDashboardDatabasesIdImport
+      parentRoute: typeof protectedDashboardImport
+    }
     '/(public)/_auth/two-factor/setup': {
       id: '/(public)/_auth/two-factor/setup'
       path: '/setup'
       fullPath: '/two-factor/setup'
       preLoaderRoute: typeof publicAuthTwoFactorSetupImport
       parentRoute: typeof publicAuthTwoFactorImport
+    }
+    '/(protected)/_dashboard/databases/': {
+      id: '/(protected)/_dashboard/databases/'
+      path: '/databases'
+      fullPath: '/databases'
+      preLoaderRoute: typeof protectedDashboardDatabasesIndexImport
+      parentRoute: typeof protectedDashboardImport
     }
   }
 }
@@ -153,10 +183,14 @@ declare module '@tanstack/react-router' {
 
 interface protectedDashboardRouteChildren {
   protectedDashboardIndexRoute: typeof protectedDashboardIndexRoute
+  protectedDashboardDatabasesIdRoute: typeof protectedDashboardDatabasesIdRoute
+  protectedDashboardDatabasesIndexRoute: typeof protectedDashboardDatabasesIndexRoute
 }
 
 const protectedDashboardRouteChildren: protectedDashboardRouteChildren = {
   protectedDashboardIndexRoute: protectedDashboardIndexRoute,
+  protectedDashboardDatabasesIdRoute: protectedDashboardDatabasesIdRoute,
+  protectedDashboardDatabasesIndexRoute: protectedDashboardDatabasesIndexRoute,
 }
 
 const protectedDashboardRouteWithChildren =
@@ -217,7 +251,9 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof publicAuthSignInRoute
   '/sign-up': typeof publicAuthSignUpRoute
   '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
+  '/databases/$id': typeof protectedDashboardDatabasesIdRoute
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
+  '/databases': typeof protectedDashboardDatabasesIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -225,7 +261,9 @@ export interface FileRoutesByTo {
   '/sign-in': typeof publicAuthSignInRoute
   '/sign-up': typeof publicAuthSignUpRoute
   '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
+  '/databases/$id': typeof protectedDashboardDatabasesIdRoute
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
+  '/databases': typeof protectedDashboardDatabasesIndexRoute
 }
 
 export interface FileRoutesById {
@@ -238,14 +276,30 @@ export interface FileRoutesById {
   '/(public)/_auth/sign-up': typeof publicAuthSignUpRoute
   '/(public)/_auth/two-factor': typeof publicAuthTwoFactorRouteWithChildren
   '/(protected)/_dashboard/': typeof protectedDashboardIndexRoute
+  '/(protected)/_dashboard/databases/$id': typeof protectedDashboardDatabasesIdRoute
   '/(public)/_auth/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
+  '/(protected)/_dashboard/databases/': typeof protectedDashboardDatabasesIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sign-in' | '/sign-up' | '/two-factor' | '/two-factor/setup'
+  fullPaths:
+    | '/'
+    | '/sign-in'
+    | '/sign-up'
+    | '/two-factor'
+    | '/databases/$id'
+    | '/two-factor/setup'
+    | '/databases'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sign-in' | '/sign-up' | '/two-factor' | '/two-factor/setup'
+  to:
+    | '/'
+    | '/sign-in'
+    | '/sign-up'
+    | '/two-factor'
+    | '/databases/$id'
+    | '/two-factor/setup'
+    | '/databases'
   id:
     | '__root__'
     | '/(protected)'
@@ -256,7 +310,9 @@ export interface FileRouteTypes {
     | '/(public)/_auth/sign-up'
     | '/(public)/_auth/two-factor'
     | '/(protected)/_dashboard/'
+    | '/(protected)/_dashboard/databases/$id'
     | '/(public)/_auth/two-factor/setup'
+    | '/(protected)/_dashboard/databases/'
   fileRoutesById: FileRoutesById
 }
 
@@ -294,7 +350,9 @@ export const routeTree = rootRoute
       "filePath": "(protected)/_dashboard.tsx",
       "parent": "/(protected)",
       "children": [
-        "/(protected)/_dashboard/"
+        "/(protected)/_dashboard/",
+        "/(protected)/_dashboard/databases/$id",
+        "/(protected)/_dashboard/databases/"
       ]
     },
     "/(public)": {
@@ -331,9 +389,17 @@ export const routeTree = rootRoute
       "filePath": "(protected)/_dashboard/index.tsx",
       "parent": "/(protected)/_dashboard"
     },
+    "/(protected)/_dashboard/databases/$id": {
+      "filePath": "(protected)/_dashboard/databases/$id.tsx",
+      "parent": "/(protected)/_dashboard"
+    },
     "/(public)/_auth/two-factor/setup": {
       "filePath": "(public)/_auth/two-factor.setup.tsx",
       "parent": "/(public)/_auth/two-factor"
+    },
+    "/(protected)/_dashboard/databases/": {
+      "filePath": "(protected)/_dashboard/databases/index.tsx",
+      "parent": "/(protected)/_dashboard"
     }
   }
 }

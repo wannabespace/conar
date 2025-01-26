@@ -1,14 +1,17 @@
+import type { VariantProps } from 'class-variance-authority'
+import type { HTMLMotionProps } from 'motion/react'
 import { cn } from '@connnect/ui/lib/utils'
-import { Slot } from '@radix-ui/react-slot'
 import { RiLoader4Fill } from '@remixicon/react'
-import { cva, type VariantProps } from 'class-variance-authority'
+// import { Link } from '@tanstack/react-router'
+import { cva } from 'class-variance-authority'
+import { motion } from 'motion/react'
 
 import * as React from 'react'
 
 const beforeClasses = 'before:absolute before:block before:rounded-full before:blur-lg before:h-full before:-top-3 before:opacity-40 before:left-1/2 before:-translate-x-1/2 before:h-5 before:w-1/3'
 
 const buttonVariants = cva(
-  'relative overflow-hidden inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'relative cursor-pointer active:scale-98 overflow-hidden inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -38,14 +41,27 @@ const buttonVariants = cva(
 )
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends Omit<HTMLMotionProps<'button'>, 'children'>,
   VariantProps<typeof buttonVariants> {
-  asChild?: boolean
   loading?: boolean
+  children: React.ReactNode
 }
 
-function Button({ ref, children, loading, disabled, className, type = 'button', variant, size, asChild = false, ...props }: ButtonProps & { ref?: React.RefObject<HTMLButtonElement> }) {
-  const Comp = asChild ? Slot : 'button'
+// const MotionLink = motion.create(Link)
+
+function Button({
+  ref,
+  children,
+  loading,
+  disabled,
+  className,
+  type = 'button',
+  variant,
+  size,
+  ...props
+}: ButtonProps & { ref?: React.RefObject<HTMLButtonElement> }) {
+  const Comp = motion.button
+
   return (
     <Comp
       className={cn(buttonVariants({ variant, size, className }))}

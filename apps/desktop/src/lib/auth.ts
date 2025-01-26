@@ -4,20 +4,21 @@ import { createAuthClient } from 'better-auth/client'
 import { inferAdditionalFields, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { toast } from 'sonner'
 import { env } from '~/env'
+import { kv } from './kv-storage'
 
 export const BEARER_TOKEN_KEY = 'connnect.bearer_token'
 export const CODE_CHALLENGE_KEY = 'connnect.code_challenge'
 
 export async function removeBearerToken() {
-  localStorage.removeItem(BEARER_TOKEN_KEY)
+  await kv.remove(BEARER_TOKEN_KEY)
 }
 
 export async function getBearerToken() {
-  return localStorage.getItem(BEARER_TOKEN_KEY)
+  return kv.get<string>(BEARER_TOKEN_KEY)
 }
 
 export async function setBearerToken(token: string) {
-  localStorage.setItem(BEARER_TOKEN_KEY, token)
+  await kv.set(BEARER_TOKEN_KEY, token)
 }
 
 export function getCodeChallenge() {
@@ -46,13 +47,6 @@ export function successAuthToast(newUser: boolean) {
 export const authClient = createAuthClient({
   baseURL: env.VITE_PUBLIC_APP_URL,
   fetchOptions: {
-    async onError() {
-      if (!isTauri()) {
-        return
-      }
-
-      await removeBearerToken()
-    },
     async onRequest(context) {
       if (!isTauri()) {
         return

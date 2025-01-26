@@ -9,12 +9,14 @@ const authRoutes = ['/sign-in', '/sign-up']
 const publicRoutes = [...authRoutes]
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const { refetch, isAuthenticated, isLoading } = useSession()
+  const { refetch, isAuthenticated, isLoading, data } = useSession()
   const router = useRouter()
   const location = useLocation()
   const isFirstRender = useRef(true)
 
   useEffect(() => {
+    identifyUser(data?.user?.id || null)
+
     authClient.$store.listen('$sessionSignal', async () => {
       if (isFirstRender.current) {
         isFirstRender.current = false

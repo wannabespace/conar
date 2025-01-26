@@ -1,4 +1,5 @@
-import { type ConsolaInstance, createConsola, type LogType } from 'consola'
+import type { ConsolaInstance, LogType } from 'consola'
+import { createConsola } from 'consola'
 import { colorize } from 'consola/utils'
 
 let loggerInstance: ConsolaInstance

@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Access-Control-Allow-Headers',
-            value: 'Content-Type, Authorization',
+            value: 'Content-Type, Authorization, trpc-accept',
           },
           {
             key: 'Access-Control-Expose-Headers',
