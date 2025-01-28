@@ -1,3 +1,4 @@
+import { encrypt } from '@connnect/shared/encryption'
 import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { enumValues } from '@connnect/shared/utils'
 import { Button } from '@connnect/ui/components/button'
@@ -5,12 +6,12 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@connnect/ui/components/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { getQueryKey } from '@trpc/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { handleError } from '~/lib/error'
-import { trpcReact } from '~/lib/trpc'
+import { env } from '~/env'
+import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
 
 export const Route = createFileRoute('/(protected)/_dashboard/databases/')({
@@ -28,13 +29,19 @@ const formSchema = z.object({
 })
 
 function RouteComponent() {
-  const { mutate: createDatabase } = trpcReact.databases.create.useMutation({
+  const { mutate: createDatabase } = useMutation({
+    mutationKey: ['databases', 'create'],
+    mutationFn: (values: z.infer<typeof formSchema>) => trpc.databases.create.mutate(values),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getQueryKey(trpcReact.databases.list) })
+      queryClient.invalidateQueries({ queryKey: ['databases', 'list'] })
     },
   })
-  const { data: databases, error } = trpcReact.databases.list.useQuery()
-  handleError(error)
+  const { data: databases } = useQuery({
+    queryKey: ['databases', 'list'],
+    queryFn: () => trpc.databases.list.query(),
+  })
+
+  const router = useRouter()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,14 +56,24 @@ function RouteComponent() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    createDatabase(values)
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    createDatabase({
+      ...values,
+      password: await encrypt({ text: values.password, secret: env.VITE_PUBLIC_PASSWORDS_SECRET }),
+    })
   }
 
   return (
     <div>
       Hello from databases layout
-      <pre>{JSON.stringify(databases, null, 2)}</pre>
+      {databases?.map(database => (
+        <div key={database.id}>
+          <Button onClick={() => router.navigate({ to: '/databases/$id', params: { id: database.id } })}>
+            Open
+            {database.name}
+          </Button>
+        </div>
+      ))}
       <Form onSubmit={onSubmit} {...form} className="space-y-4">
         <FormField
           control={form.control}

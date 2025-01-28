@@ -27,7 +27,7 @@ describe('encryption', () => {
     await expect(decrypt({
       encryptedText: encrypted,
       secret: 'wrongPassword',
-    })).rejects.toThrow()
+    })).resolves.toBeNull()
   })
 
   it('should fail decryption with corrupted encrypted text', async () => {
@@ -37,6 +37,6 @@ describe('encryption', () => {
     await expect(decrypt({
       encryptedText: corruptedText,
       secret,
-    })).rejects.toThrow()
+    })).resolves.toBeNull()
   })
 })

@@ -1,92 +1,41 @@
 import { hexDecode, hexEncode } from './hex'
 
-function generateSalt(length: number = 16) {
-  return crypto.getRandomValues(new Uint8Array(length))
-}
-
 function str2ab(str: string) {
-  const buf = new ArrayBuffer(str.length)
-  const bufView = new Uint8Array(buf)
-  for (let i = 0; i < str.length; i++) {
-    bufView[i] = str.charCodeAt(i)
-  }
-  return buf
+  return new TextEncoder().encode(str)
 }
 
 function ab2str(buf: ArrayBuffer) {
-  return String.fromCharCode.apply(null, Array.from(new Uint8Array(buf)))
-}
-
-async function getKeyFromPassword(
-  password: string,
-  salt: Uint8Array,
-  iterations: number = 100000,
-): Promise<CryptoKey> {
-  const passwordBuffer = str2ab(password)
-
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    passwordBuffer,
-    { name: 'PBKDF2' },
-    false,
-    ['deriveBits', 'deriveKey'],
-  )
-
-  return await crypto.subtle.deriveKey(
-    {
-      name: 'PBKDF2',
-      salt,
-      iterations,
-      hash: 'SHA-256',
-    },
-    keyMaterial,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt'],
-  )
+  return new TextDecoder().decode(buf)
 }
 
 export async function encrypt({ text, secret }: { text: string, secret: string }) {
-  const salt = generateSalt()
+  const pwHash = await crypto.subtle.digest('SHA-256', str2ab(secret))
   const iv = crypto.getRandomValues(new Uint8Array(12))
-  const key = await getKeyFromPassword(secret, salt)
+  const key = await crypto.subtle.importKey('raw', pwHash, { name: 'AES-GCM' }, false, ['encrypt'])
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, str2ab(text))
 
-  const encodedData = new TextEncoder().encode(text)
-  const encryptedContent = await crypto.subtle.encrypt(
-    {
-      name: 'AES-GCM',
-      iv,
-    },
-    key,
-    encodedData,
-  )
+  const ivHex = Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('')
+  const encryptedBase64 = hexEncode(String.fromCharCode(...new Uint8Array(encrypted)))
 
-  const encryptedContentArray = new Uint8Array(encryptedContent)
-  const resultArray = new Uint8Array(salt.length + iv.length + encryptedContentArray.length)
-
-  resultArray.set(salt)
-  resultArray.set(iv, salt.length)
-  resultArray.set(encryptedContentArray, salt.length + iv.length)
-
-  return hexEncode(ab2str(resultArray.buffer))
+  return ivHex + encryptedBase64
 }
 
 export async function decrypt({ encryptedText, secret }: { encryptedText: string, secret: string }) {
-  const encryptedArray = new Uint8Array(str2ab(hexDecode(encryptedText)))
-  const salt = encryptedArray.slice(0, 16)
-  const iv = encryptedArray.slice(16, 28)
-  const encryptedContent = encryptedArray.slice(28)
+  const pwHash = await crypto.subtle.digest('SHA-256', str2ab(secret))
 
-  const key = await getKeyFromPassword(secret, salt)
+  const iv = new Uint8Array(12)
+  for (let i = 0; i < 24; i += 2) {
+    iv[i / 2] = Number.parseInt(encryptedText.substring(i, i + 2), 16)
+  }
 
-  const decryptedContent = await crypto.subtle.decrypt(
-    {
-      name: 'AES-GCM',
-      iv,
-    },
-    key,
-    encryptedContent,
-  )
+  const key = await crypto.subtle.importKey('raw', pwHash, { name: 'AES-GCM' }, false, ['decrypt'])
+  const encryptedData = Uint8Array.from(hexDecode(encryptedText.slice(24)), c => c.charCodeAt(0))
 
-  return new TextDecoder().decode(decryptedContent)
+  try {
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encryptedData)
+    return ab2str(decrypted)
+  }
+  catch {
+    return null
+  }
 }

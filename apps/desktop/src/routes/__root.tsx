@@ -6,10 +6,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { AnimatePresence } from 'motion/react'
-import { useState } from 'react'
 import { AppProvider } from '~/app-provider'
 import { EventsProvider } from '~/lib/events'
-import { clientConfig, trpcReact } from '~/lib/trpc'
 import { queryClient } from '~/main'
 
 export const Route = createRootRouteWithContext<{ session: Session | null }>()({
@@ -17,28 +15,23 @@ export const Route = createRootRouteWithContext<{ session: Session | null }>()({
 })
 
 function RootDocument() {
-  const [trpcClient] = useState(() => trpcReact.createClient(clientConfig))
-  const { Provider: TRPCClientProvider } = trpcReact
-
   return (
     <EventsProvider>
       <ThemeProvider>
-        <TRPCClientProvider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <AppProvider>
-              <AnimatePresence>
-                <Outlet />
-              </AnimatePresence>
-              <Toaster />
-            </AppProvider>
-            {import.meta.env.DEV && (
-              <>
-                <TanStackRouterDevtools />
-                <ReactQueryDevtools initialIsOpen={false} />
-              </>
-            )}
-          </QueryClientProvider>
-        </TRPCClientProvider>
+        <QueryClientProvider client={queryClient}>
+          <AppProvider>
+            <AnimatePresence>
+              <Outlet />
+            </AnimatePresence>
+            <Toaster />
+          </AppProvider>
+          {import.meta.env.DEV && (
+            <>
+              <TanStackRouterDevtools />
+              <ReactQueryDevtools initialIsOpen={false} />
+            </>
+          )}
+        </QueryClientProvider>
       </ThemeProvider>
     </EventsProvider>
   )

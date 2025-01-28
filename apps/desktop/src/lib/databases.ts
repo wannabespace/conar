@@ -38,5 +38,11 @@ export async function getDatabase(id: string, secret: string) {
 
   const encryptor = await createEncryptor(secret)
 
-  return JSON.parse(await encryptor.decrypt(encrypted)) as Database
+  const decrypted = await encryptor.decrypt(encrypted)
+
+  if (!decrypted) {
+    return null
+  }
+
+  return JSON.parse(decrypted) as Database
 }

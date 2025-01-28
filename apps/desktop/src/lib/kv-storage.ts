@@ -30,7 +30,13 @@ async function get<T>(key: string) {
 
   const encryptor = await createEncryptor(env.VITE_PUBLIC_KV_SECRET)
 
-  return JSON.parse(await encryptor.decrypt(encrypted)) as T
+  const decrypted = await encryptor.decrypt(encrypted)
+
+  if (!decrypted) {
+    return null
+  }
+
+  return JSON.parse(decrypted) as T
 }
 
 export const kv = {

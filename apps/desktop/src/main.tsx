@@ -44,14 +44,9 @@ const logo = document.getElementById('logo')!
 
 queryClient
   .ensureQueryData(sessionQuery)
-  .then(async ({ data }) => {
+  .then(async () => {
     logo.classList.add('scale-[0.5]', 'opacity-0')
     // Waiting animation to smooth transition
     await sleep(80)
-    root.render(
-      <RouterProvider
-        router={router}
-        context={{ session: data?.session || null }}
-      />,
-    )
+    root.render(<RouterProvider router={router} />)
   })

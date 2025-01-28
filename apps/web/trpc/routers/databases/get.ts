@@ -23,10 +23,12 @@ export const get = protectedProcedure.input(z.object({
     throw new TRPCError({ code: 'NOT_FOUND', message: 'Database not found' })
   }
 
+  const { encryptedPassword, ...rest } = database
+
   return {
-    ...database,
-    password: database.encryptedPassword
-      ? decrypt({ encryptedText: database.encryptedPassword, secret: env.ENCRYPTION_SECRET })
+    ...rest,
+    password: encryptedPassword
+      ? await decrypt({ encryptedText: encryptedPassword, secret: env.ENCRYPTION_SECRET })
       : null,
   }
 })

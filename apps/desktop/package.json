@@ -27,7 +27,6 @@
     "@tauri-apps/plugin-store": "^2.2.0",
     "@tauri-apps/plugin-updater": "^2.3.1",
     "@trpc/client": "^11.0.0-rc.724",
-    "@trpc/react-query": "^11.0.0-rc.724",
     "babel-plugin-react-compiler": "19.0.0-beta-e552027-20250112",
     "better-auth": "^1.1.14",
     "lucide-react": "^0.474.0",
