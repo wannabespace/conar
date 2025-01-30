@@ -1,9 +1,9 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-// import * as dotenv from 'dotenv'
+import * as dotenv from 'dotenv'
 import { app, BrowserWindow } from 'electron'
 import started from 'electron-squirrel-startup'
-// import { initElectronEvents } from '../lib/events'
+import { initElectronEvents } from '../lib/events'
 
 const envFiles = {
   development: '.env.development.local',
@@ -14,18 +14,18 @@ if (![...Object.keys(envFiles)].includes(process.env.NODE_ENV as keyof typeof en
   throw new Error(`Invalid NODE_ENV: ${process.env.NODE_ENV}`)
 }
 
-// dotenv.config({
-//   path: path.join(
-//     path.dirname(fileURLToPath(import.meta.url)),
-//     envFiles[process.env.NODE_ENV as keyof typeof envFiles],
-//   ),
-// })
+dotenv.config({
+  path: path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    envFiles[process.env.NODE_ENV as keyof typeof envFiles],
+  ),
+})
 
 if (started) {
   app.quit()
 }
 
-// initElectronEvents()
+initElectronEvents()
 
 export function createWindow() {
   const window = new BrowserWindow({

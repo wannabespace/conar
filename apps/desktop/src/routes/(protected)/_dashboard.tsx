@@ -14,14 +14,17 @@ export const Route = createFileRoute('/(protected)/_dashboard')({
 })
 
 function LayoutComponent() {
-  const { isLoading, data, refetch } = useSession()
+  const { isLoading, data, refetch, isAuthenticated } = useSession()
 
   useEffect(() => {
+    if (!isAuthenticated)
+      return
+
     queryClient.ensureQueryData({
       queryKey: ['databases', 'list'],
       queryFn: () => trpc.databases.list.query(),
     })
-  }, [])
+  }, [isAuthenticated])
 
   const { mutate: signOut, isPending: isSigningOut } = useMutation({
     mutationKey: ['sign-out'],
