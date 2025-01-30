@@ -3,21 +3,20 @@ import { createAuthClient } from 'better-auth/client'
 import { inferAdditionalFields, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { toast } from 'sonner'
 import { env } from '~/env'
-import { kv } from './kv-storage'
 
 export const BEARER_TOKEN_KEY = 'connnect.bearer_token'
 export const CODE_CHALLENGE_KEY = 'connnect.code_challenge'
 
-export async function removeBearerToken() {
-  await kv.remove(BEARER_TOKEN_KEY)
+export function removeBearerToken() {
+  localStorage.removeItem(BEARER_TOKEN_KEY)
 }
 
-export async function getBearerToken() {
-  return kv.get<string>(BEARER_TOKEN_KEY)
+export function getBearerToken() {
+  return localStorage.getItem(BEARER_TOKEN_KEY)
 }
 
-export async function setBearerToken(token: string) {
-  await kv.set(BEARER_TOKEN_KEY, token)
+export function setBearerToken(token: string) {
+  localStorage.setItem(BEARER_TOKEN_KEY, token)
 }
 
 export function getCodeChallenge() {

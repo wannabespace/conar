@@ -37,7 +37,6 @@ export function createWindow() {
       x: 14,
       y: 14,
     },
-    // ...(process.platform !== 'darwin' ? { titleBarOverlay: true } : {}),
     webPreferences: {
       preload: path.join(path.dirname(fileURLToPath(import.meta.url)), '../preload/index.mjs'),
     },

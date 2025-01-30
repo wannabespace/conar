@@ -1,11 +1,21 @@
-import type { events } from '../lib/events'
+import type { electron } from '../lib/events'
 import { contextBridge, ipcRenderer } from 'electron'
 
-contextBridge.exposeInMainWorld('electronAPI', {
-  postgresQuery: arg => ipcRenderer.invoke('postgresQuery', arg),
-  prepareSecret: arg => ipcRenderer.invoke('prepareSecret', arg),
+contextBridge.exposeInMainWorld('electron', {
+  databases: {
+    postgresQuery: arg => ipcRenderer.invoke('postgresQuery', arg),
+  },
+  encryption: {
+    encrypt: arg => ipcRenderer.invoke('encrypt', arg),
+    decrypt: arg => ipcRenderer.invoke('decrypt', arg),
+  },
+  store: {
+    get: arg => ipcRenderer.invoke('get', arg),
+    set: arg => ipcRenderer.invoke('set', arg),
+    delete: arg => ipcRenderer.invoke('delete', arg),
+  },
   // eslint-disable-next-line ts/no-explicit-any
-} satisfies Record<keyof typeof events, (arg: any) => any>)
+} satisfies { [key in keyof typeof electron]: Record<keyof typeof electron[key], (arg: any) => any> })
 
 contextBridge.exposeInMainWorld('versions', {
   node: () => process.versions.node,

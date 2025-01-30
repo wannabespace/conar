@@ -14,7 +14,6 @@ import { z } from 'zod'
 import { env } from '~/env'
 import { authClient, setBearerToken, setCodeChallenge, successAuthToast } from '~/lib/auth'
 import { handleError } from '~/lib/error'
-import { createEncryptor } from '~/lib/secrets'
 
 type Type = 'sign-up' | 'sign-in'
 
@@ -28,12 +27,15 @@ function useSocialMutation(provider: 'google' | 'github') {
   return useMutation({
     mutationKey: [provider],
     mutationFn: async () => {
-      const encryptor = await createEncryptor(env.VITE_PUBLIC_AUTH_SECRET)
+      // const encryptor = await createEncryptor(env.VITE_PUBLIC_AUTH_SECRET)
       const codeChallenge = nanoid()
 
       setCodeChallenge(codeChallenge)
 
-      const encryptedCodeChallenge = await encryptor.encrypt(codeChallenge)
+      const encryptedCodeChallenge = await window.electron.encryption.encrypt({
+        text: codeChallenge,
+        secret: env.VITE_PUBLIC_AUTH_SECRET,
+      })
 
       const { data, error } = await authClient.signIn.social({
         provider,

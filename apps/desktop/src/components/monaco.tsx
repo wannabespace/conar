@@ -1,14 +1,16 @@
-import * as monaco from 'monaco-editor'
+import { editor } from 'monaco-editor'
 import { useEffect, useRef } from 'react'
 
 export function Monaco({
   initialValue,
   language = 'sql',
   onChange,
+  ref,
 }: {
   initialValue: string
   language?: 'sql'
   onChange: (value: string) => void
+  ref?: React.RefObject<editor.IStandaloneCodeEditor | null>
 }) {
   const editorRef = useRef<HTMLDivElement>(null)
 
@@ -16,7 +18,7 @@ export function Monaco({
     if (!editorRef.current)
       return
 
-    const editor = monaco.editor.create(editorRef.current, {
+    const e = editor.create(editorRef.current, {
       value: initialValue,
       language,
       theme: 'vs-dark',
@@ -25,12 +27,15 @@ export function Monaco({
       lineNumbers: 'off',
     })
 
-    editor.onDidChangeModelContent(() => {
-      onChange(editor.getValue())
+    if (ref)
+      ref.current = e
+
+    e.onDidChangeModelContent(() => {
+      onChange(e.getValue())
     })
 
     return () => {
-      editor.dispose()
+      e.dispose()
     }
   }, [editorRef])
 

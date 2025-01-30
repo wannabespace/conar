@@ -46,9 +46,10 @@ function LayoutComponent() {
       transition={{ duration: 0.3 }}
       className="min-h-screen"
     >
-      <div className="[app-region:drag] border-b border-b-border bg-background inset-0 h-10">
+      <div className="[app-region:drag] fixed border-b border-b-border bg-background inset-0 h-10">
         123
       </div>
+      <div className="h-10" />
       <div className="flex gap-2 p-5">
         <Link to="/" className="[&.active]:font-bold">
           Dashboard

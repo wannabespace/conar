@@ -5,7 +5,6 @@ import { toast } from 'sonner'
 import { getCodeChallenge, removeCodeChallenge, setBearerToken, successAuthToast } from '~/lib/auth'
 import { env } from './env'
 import { useSession } from './hooks/use-session'
-import { createEncryptor } from './lib/secrets'
 
 export function useDeepLinksListener() {
   const { refetch } = useSession()
@@ -45,17 +44,7 @@ export function useDeepLinksListener() {
       return
     }
 
-    const encryptor = await createEncryptor(env.VITE_PUBLIC_AUTH_SECRET).catch((e) => {
-      console.error(e)
-      return null
-    })
-
-    if (!encryptor) {
-      toast.error('Something went wrong. Please try signing in again.')
-      return
-    }
-
-    const decryptedCodeChallenge = await encryptor.decrypt(codeChallenge).catch((e) => {
+    const decryptedCodeChallenge = await window.electron.encryption.decrypt({ encryptedText: codeChallenge, secret: env.VITE_PUBLIC_AUTH_SECRET }).catch((e) => {
       console.error(e)
       return null
     })

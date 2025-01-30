@@ -1,7 +1,7 @@
-import type { events } from '../electron/lib/events'
+import type { electron } from '../electron/lib/events'
 
 declare global {
   interface Window {
-    electronAPI: typeof events
+    electron: typeof electron
   }
 }
