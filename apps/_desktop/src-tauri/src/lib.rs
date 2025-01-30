@@ -2,8 +2,8 @@ use base64::{Engine as _, engine::general_purpose};
 
 #[tauri::command]
 fn prepare_secret(secret: &str) -> String {
-    let local_secret = std::env::var("TAURI_LOCAL_SECRET")
-        .expect("TAURI_LOCAL_SECRET environment variable not set");
+    let local_secret = std::env::var("ELECTRON_LOCAL_SECRET")
+        .expect("ELECTRON_LOCAL_SECRET environment variable not set");
 
     let combined = format!("{}{}", local_secret, secret);
     let mut key = vec![0u8; 32];

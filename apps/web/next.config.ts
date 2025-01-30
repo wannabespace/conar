@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     reactCompiler: true,
   },
   async headers() {
-    const origin = process.env.NODE_ENV === 'production' ? 'tauri://localhost' : 'http://localhost:1420'
+    const origin = process.env.NODE_ENV === 'production' ? 'tauri://localhost' : 'http://localhost:3100'
 
     return [
       {

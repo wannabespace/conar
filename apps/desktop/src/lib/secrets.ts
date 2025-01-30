@@ -1,5 +1,4 @@
 import { decrypt, encrypt } from '@connnect/shared/encryption'
-import { invoke } from '@tauri-apps/api/core'
 
 const secrets = new Map<string, string>()
 
@@ -8,9 +7,7 @@ async function prepareSecret(secret: string) {
     return secrets.get(secret)!
   }
 
-  const preparedSecret = await invoke<string>('prepare_secret', {
-    secret,
-  })
+  const preparedSecret = await window.electronAPI.prepareSecret({ secret })
 
   secrets.set(secret, preparedSecret)
 

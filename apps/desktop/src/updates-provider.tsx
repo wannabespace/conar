@@ -1,10 +1,9 @@
-import { isTauri } from '@tauri-apps/api/core'
-import { relaunch } from '@tauri-apps/plugin-process'
-import { check } from '@tauri-apps/plugin-updater'
+// import { relaunch } from '@tauri-apps/plugin-process'
+// import { check } from '@tauri-apps/plugin-updater'
 import { createContext, use, useState } from 'react'
-import { toast } from 'sonner'
-import { env } from './env'
-import { useAsyncEffect } from './hooks/use-async-effect'
+// import { toast } from 'sonner'
+// import { env } from './env'
+// import { useAsyncEffect } from './hooks/use-async-effect'
 
 type Status = 'idle' | 'updating' | 'ready'
 
@@ -20,37 +19,34 @@ export const useUpdates = () => use(UpdatesContext)
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<Status>('idle')
 
-  useAsyncEffect(async () => {
-    if (!isTauri())
-      return
+  // useAsyncEffect(async () => {
+  //   const update = await check({
+  //     headers: {
+  //       Authorization: `Bearer ${env.VITE_PUBLIC_UPDATES_TOKEN}`,
+  //     },
+  //   })
 
-    const update = await check({
-      headers: {
-        Authorization: `Bearer ${env.VITE_PUBLIC_UPDATES_TOKEN}`,
-      },
-    })
+  //   if (!update)
+  //     return
 
-    if (!update)
-      return
+  //   toast.info(
+  //     `Found new update ${update.version}. We will download it now but install it on relaunch.`,
+  //   )
 
-    toast.info(
-      `Found new update ${update.version}. We will download it now but install it on relaunch.`,
-    )
-
-    await update.downloadAndInstall(async (event) => {
-      switch (event.event) {
-        case 'Started':
-          setStatus('updating')
-          break
-        case 'Finished':
-          setStatus('ready')
-          break
-      }
-    })
-  }, [])
+  //   await update.downloadAndInstall(async (event) => {
+  //     switch (event.event) {
+  //       case 'Started':
+  //         setStatus('updating')
+  //         break
+  //       case 'Finished':
+  //         setStatus('ready')
+  //         break
+  //     }
+  //   })
+  // }, [])
 
   return (
-    <UpdatesContext value={{ status, relaunch }}>
+    <UpdatesContext value={{ status, relaunch: async () => {} }}>
       {children}
     </UpdatesContext>
   )

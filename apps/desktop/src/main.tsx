@@ -7,6 +7,7 @@ import { sleep } from './lib/helpers'
 import { sessionQuery } from './queries/auth'
 import { routeTree } from './routeTree.gen'
 import '@connnect/ui/globals.css'
+import './monaco-worker'
 
 initEvents()
 
@@ -14,12 +15,8 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 0,
-      networkMode: 'offlineFirst',
       staleTime: 1000 * 60 * 5,
       gcTime: 1000 * 60 * 30,
-    },
-    mutations: {
-      networkMode: 'offlineFirst',
     },
   },
 })

@@ -1,4 +1,6 @@
-import { load } from '@tauri-apps/plugin-store'
+import Store from 'electron-store'
+
+import { env } from '~/env'
 import { createEncryptor } from './secrets'
 
 interface Database {
@@ -11,26 +13,26 @@ interface Database {
 }
 
 function loadStore() {
-  return load('.databases.dat')
+  return new Store({ name: 'databases', encryptionKey: env.VITE_PUBLIC_STORE_SECRET })
 }
 
 export async function saveDatabase(database: Database, secret: string) {
   const encryptor = await createEncryptor(secret)
-  const store = await loadStore()
+  const store = loadStore()
   const encrypted = await encryptor.encrypt(JSON.stringify(database))
 
-  await store.set(database.id, encrypted)
+  store.set(database.id, encrypted)
 }
 
 export async function deleteDatabase(id: string) {
-  const store = await loadStore()
+  const store = loadStore()
 
-  await store.delete(id)
+  store.delete(id)
 }
 
 export async function getDatabase(id: string, secret: string) {
-  const store = await loadStore()
-  const encrypted = await store.get<string>(id)
+  const store = loadStore()
+  const encrypted = store.get(id) as string
 
   if (!encrypted) {
     return null

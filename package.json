@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "scripts": {
@@ -6,8 +7,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "dev": "turbo run dev dev:types dev:tauri",
-    "build": "turbo run build build:tauri",
+    "dev": "turbo run dev dev:types",
+    "build": "turbo run build",
     "drizzle:generate": "turbo run drizzle:generate",
     "drizzle:migrate": "turbo run drizzle:migrate",
     "check-types": "turbo check-types"
@@ -18,6 +19,7 @@
     "eslint": "^9.19.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.18",
+    "happy-dom": "^16.7.3",
     "husky": "^9.1.7",
     "npm-run-all2": "^7.0.2",
     "tsx": "^4.19.2",

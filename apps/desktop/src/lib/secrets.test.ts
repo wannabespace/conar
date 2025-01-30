@@ -1,10 +1,12 @@
-import { invoke } from '@tauri-apps/api/core'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { events } from '../../electron/lib/events'
 import { createEncryptor } from './secrets'
 
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn((command, args) => `${args.secret}some-random-string`),
-}))
+// @ts-expect-error wrong type
+globalThis.window = {
+  ...globalThis.window,
+  electronAPI: events,
+}
 
 describe('secrets', () => {
   describe('createEncryptor', () => {
@@ -22,7 +24,7 @@ describe('secrets', () => {
       const originalText = 'hello'
 
       const encrypted = await encryptor.encrypt(originalText)
-      expect(invoke).toHaveBeenCalledWith('prepare_secret', { secret: 'test-secret' })
+      // expect(invoke).toHaveBeenCalledWith('prepare_secret', { secret: 'test-secret' })
 
       const decrypted = await encryptor.decrypt(encrypted)
       expect(decrypted).toBe(originalText)

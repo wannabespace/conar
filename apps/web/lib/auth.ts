@@ -31,7 +31,7 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: process.env.NODE_ENV === 'production' ? ['tauri://localhost'] : ['http://localhost:1420'],
+  trustedOrigins: process.env.NODE_ENV === 'production' ? ['tauri://localhost'] : ['http://localhost:3100'],
   advanced: {
     generateId: () => v7(),
     cookiePrefix: 'connnect',

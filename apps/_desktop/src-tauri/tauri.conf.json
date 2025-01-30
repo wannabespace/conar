@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "com.connnect.app",
   "build": {
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://localhost:3100",
     "frontendDist": "../dist"
   },
   "plugins": {
@@ -51,6 +51,9 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "externalBin": [
+      "binaries/app"
     ]
   }
 }

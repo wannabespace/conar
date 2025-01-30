@@ -1,10 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalEnv": [
-    "TAURI_SIGNING_PRIVATE_KEY",
-    "TAURI_SIGNING_PRIVATE_KEY_PASSWORD"
-  ],
   "tasks": {
     "dev": {
       "persistent": true,
@@ -14,16 +10,11 @@
       "persistent": true,
       "cache": false
     },
-    "dev:tauri": {
-      "persistent": true,
-      "cache": false
-    },
     "build": {
       "env": [
         "VITE_API_URL",
         "ENCRYPTION_SECRET",
         "UPDATES_TOKEN",
-        "TAURI_LOCAL_SECRET",
         "STRIPE_SECRET_KEY",
         "DATABASE_URL",
         "STRIPE_WEBHOOK_SECRET",
@@ -38,10 +29,6 @@
         "GOOGLE_CLIENT_SECRET"
       ],
       "dependsOn": ["^build"],
-      "cache": false
-    },
-    "build:tauri": {
-      "dependsOn": ["build"],
       "cache": false
     },
     "check-types": {},

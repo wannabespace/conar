@@ -16,7 +16,6 @@ export const clientConfig = {
           return await fetch(...args)
         }
         catch (error) {
-          console.log('TRPC ERROR', error)
           handleError(error)
           throw error
         }

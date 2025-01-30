@@ -1,8 +1,7 @@
-import { isTauri } from '@tauri-apps/api/core'
-import { getCurrentWindow } from '@tauri-apps/api/window'
-import { getCurrent, onOpenUrl } from '@tauri-apps/plugin-deep-link'
+// import { getCurrentWindow } from '@tauri-apps/api/window'
+// import { getCurrent, onOpenUrl } from '@tauri-apps/plugin-deep-link'
 import { toast } from 'sonner'
-import { useAsyncEffect } from '~/hooks/use-async-effect'
+// import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { getCodeChallenge, removeCodeChallenge, setBearerToken, successAuthToast } from '~/lib/auth'
 import { env } from './env'
 import { useSession } from './hooks/use-session'
@@ -11,29 +10,26 @@ import { createEncryptor } from './lib/secrets'
 export function useDeepLinksListener() {
   const { refetch } = useSession()
 
-  async function handleDeepLink(url: string) {
-    const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
+  // async function handleDeepLink(url: string) {
+  //   const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
 
-    if (pathname === '/session') {
-      await handleSession(searchParams)
-    }
-  }
+  //   if (pathname === '/session') {
+  //     await handleSession(searchParams)
+  //   }
+  // }
 
-  useAsyncEffect(async () => {
-    if (!isTauri())
-      return
+  // useAsyncEffect(async () => {
+  //   const urls = (await getCurrent()) || []
 
-    const urls = (await getCurrent()) || []
+  //   if (urls.length === 0)
+  //     return
 
-    if (urls.length === 0)
-      return
+  //   const [url] = urls
 
-    const [url] = urls
+  //   await handleDeepLink(url)
+  // }, [])
 
-    await handleDeepLink(url)
-  }, [])
-
-  async function handleSession(searchParams: URLSearchParams) {
+  async function _handleSession(searchParams: URLSearchParams) {
     const persistedCodeChallenge = getCodeChallenge()
 
     if (!persistedCodeChallenge) {
@@ -80,17 +76,15 @@ export function useDeepLinksListener() {
     successAuthToast(!!newUser)
   }
 
-  async function listenDeepLinks() {
-    return onOpenUrl(async ([url]) => {
-      await getCurrentWindow().setFocus()
-      await getCurrentWindow().unminimize()
-      await handleDeepLink(url)
-    })
-  }
+  // async function listenDeepLinks() {
+  //   return onOpenUrl(async ([url]) => {
+  //     await getCurrentWindow().setFocus()
+  //     await getCurrentWindow().unminimize()
+  //     await handleDeepLink(url)
+  //   })
+  // }
 
-  useAsyncEffect(async () => {
-    if (isTauri()) {
-      return listenDeepLinks()
-    }
-  }, [])
+  // useAsyncEffect(async () => {
+  //   return listenDeepLinks()
+  // }, [])
 }

@@ -8,6 +8,16 @@
   "permissions": [
     "core:default",
     "shell:allow-open",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "args": true,
+          "name": "binaries/app",
+          "sidecar": true
+        }
+      ]
+    },
     "deep-link:default",
     "core:window:default",
     "core:window:allow-start-dragging",

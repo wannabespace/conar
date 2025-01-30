@@ -11,9 +11,8 @@ export default antfu({
   ignores: [
     '**/web/types/**/*',
     '**/routeTree.gen.ts',
-    '**/src-tauri/{target,gen}/**/*',
-    '**/src-tauri/capabilities/default.json',
-    '**/src-tauri/Cargo.toml',
+    '**/src-tauri/**/*',
+    '**/dist-electron/**/*',
     '**/migrations/meta/*.json',
   ],
 })

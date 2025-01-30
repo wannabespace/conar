@@ -5,7 +5,7 @@ import { Separator } from '@connnect/ui/components/separator'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { RiEyeLine, RiEyeOffLine, RiGithubFill, RiGoogleFill } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { open } from '@tauri-apps/plugin-shell'
+import { shell } from 'electron'
 import { nanoid } from 'nanoid'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -49,7 +49,7 @@ function useSocialMutation(provider: 'google' | 'github') {
       return data.url!
     },
     onSuccess(url) {
-      open(url)
+      shell.openExternal(url)
     },
     onError: handleError,
   })

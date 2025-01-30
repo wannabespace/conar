@@ -1,5 +1,4 @@
 import type { auth } from '@connnect/web/auth-type'
-import { isTauri } from '@tauri-apps/api/core'
 import { createAuthClient } from 'better-auth/client'
 import { inferAdditionalFields, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { toast } from 'sonner'
@@ -48,10 +47,6 @@ export const authClient = createAuthClient({
   baseURL: env.VITE_PUBLIC_APP_URL,
   fetchOptions: {
     async onRequest(context) {
-      if (!isTauri()) {
-        return
-      }
-
       const token = await getBearerToken()
 
       if (token) {
@@ -59,10 +54,6 @@ export const authClient = createAuthClient({
       }
     },
     async onSuccess({ response }) {
-      if (!isTauri()) {
-        return
-      }
-
       const authToken = response.headers.get('set-auth-token')
 
       if (authToken) {
