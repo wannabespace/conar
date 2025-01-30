@@ -17,7 +17,7 @@ export const useUpdates = () => use(UpdatesContext)
 
 // TODO: refactor this to be a component
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
-  const [status, setStatus] = useState<Status>('idle')
+  const [status, _setStatus] = useState<Status>('idle')
 
   // useAsyncEffect(async () => {
   //   const update = await check({
