@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as dotenv from 'dotenv'
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, shell } from 'electron'
 import started from 'electron-squirrel-startup'
 import { initElectronEvents } from '../lib/events'
 
@@ -40,6 +40,14 @@ export function createWindow() {
     webPreferences: {
       preload: path.join(path.dirname(fileURLToPath(import.meta.url)), '../preload/index.mjs'),
     },
+  })
+
+  window.webContents.setWindowOpenHandler(({ url }) => {
+    const { protocol } = new URL(url)
+    if (protocol === 'http:' || protocol === 'https:') {
+      shell.openExternal(url)
+    }
+    return { action: 'deny' }
   })
 
   if (process.env.VITE_DEV_SERVER_URL) {

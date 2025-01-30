@@ -46,7 +46,7 @@ export const authClient = createAuthClient({
   baseURL: env.VITE_PUBLIC_APP_URL,
   fetchOptions: {
     async onRequest(context) {
-      const token = await getBearerToken()
+      const token = getBearerToken()
 
       if (token) {
         context.headers.set('Authorization', `Bearer ${token}`)
@@ -56,7 +56,12 @@ export const authClient = createAuthClient({
       const authToken = response.headers.get('set-auth-token')
 
       if (authToken) {
-        await setBearerToken(authToken)
+        setBearerToken(authToken)
+      }
+    },
+    async onError({ error }) {
+      if (error.status === 401) {
+        removeBearerToken()
       }
     },
   },
