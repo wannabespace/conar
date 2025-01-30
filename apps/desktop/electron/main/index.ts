@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import * as dotenv from 'dotenv'
 import { app, BrowserWindow, shell } from 'electron'
 import started from 'electron-squirrel-startup'
+import { z } from 'zod'
 import { initElectronEvents } from '../lib/events'
 
 const envFiles = {
@@ -10,16 +11,19 @@ const envFiles = {
   production: '.env.production.local',
 }
 
-if (![...Object.keys(envFiles)].includes(process.env.NODE_ENV as keyof typeof envFiles)) {
-  throw new Error(`Invalid NODE_ENV: ${process.env.NODE_ENV}`)
-}
-
 dotenv.config({
   path: path.join(
     path.dirname(fileURLToPath(import.meta.url)),
-    envFiles[process.env.NODE_ENV as keyof typeof envFiles],
+    envFiles[app.isPackaged ? 'production' : 'development'],
   ),
 })
+
+const envSchema = z.object({
+  ELECTRON_STORE_SECRET: z.string().min(1),
+  ELECTRON_LOCAL_SECRET: z.string().min(1),
+})
+
+envSchema.parse(process.env)
 
 if (started) {
   app.quit()

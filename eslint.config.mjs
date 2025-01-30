@@ -13,6 +13,7 @@ export default antfu({
     '**/routeTree.gen.ts',
     '**/src-tauri/**/*',
     '**/dist-electron/**/*',
+    '**/release/**/*',
     '**/migrations/meta/*.json',
   ],
 })
