@@ -27,7 +27,6 @@ function useSocialMutation(provider: 'google' | 'github') {
   return useMutation({
     mutationKey: [provider],
     mutationFn: async () => {
-      // const encryptor = await createEncryptor(env.VITE_PUBLIC_AUTH_SECRET)
       const codeChallenge = nanoid()
 
       setCodeChallenge(codeChallenge)
@@ -50,8 +49,8 @@ function useSocialMutation(provider: 'google' | 'github') {
 
       return data.url!
     },
-    onSuccess(_url) {
-      // shell.openExternal(url)
+    onSuccess(url) {
+      window.open(url, '_blank')
     },
     onError: handleError,
   })
