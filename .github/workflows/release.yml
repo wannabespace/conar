@@ -1,7 +1,9 @@
 name: Build and Release
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   release:
@@ -29,29 +31,12 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Get Version
-        id: package-version
-        run: |
-          echo "version=v$(node -p "require('./apps/desktop/package.json').version")" >> $GITHUB_OUTPUT
-
       - name: Build
         run: pnpm run build:desktop
 
-      - name: Create Draft Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.package-version.outputs.version }}
-          draft: true
-          files: |
-            apps/desktop/release/**/*.exe
-            apps/desktop/release/**/*.dmg
-            apps/desktop/release/**/*.AppImage
-
       - name: Release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           cd apps/desktop
           pnpm run publish
