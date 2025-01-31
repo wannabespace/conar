@@ -2,11 +2,6 @@ name: Build and Release
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g., v1.0.0)'
-        required: true
-        type: string
 
 jobs:
   release:
@@ -34,6 +29,11 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
+      - name: Get Version
+        id: package-version
+        run: |
+          echo "version=v$(node -p "require('./apps/desktop/package.json').version")" >> $GITHUB_OUTPUT
+
       - name: Build
         run: pnpm run build:desktop
 
@@ -42,7 +42,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.event.inputs.version }}
+          tag_name: ${{ steps.package-version.outputs.version }}
           draft: true
           files: |
             apps/desktop/release/**/*.exe
