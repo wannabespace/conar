@@ -1,6 +1,6 @@
-import { autoUpdater } from 'electron-updater'
+// import { autoUpdater } from 'electron-updater'
 import { createContext, use, useState } from 'react'
-import { toast } from 'sonner'
+// import { toast } from 'sonner'
 import { useAsyncEffect } from './hooks/use-async-effect'
 import { useSession } from './hooks/use-session'
 
@@ -23,26 +23,26 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     if (!data)
       return
 
-    autoUpdater.addAuthHeader(`Bearer ${data.session.token}`)
+    // autoUpdater.addAuthHeader(`Bearer ${data.session.token}`)
 
     setStatus('idle')
 
-    const update = await autoUpdater.checkForUpdates()
+    // const update = await autoUpdater.checkForUpdates()
 
-    if (!update)
-      return
+    // if (!update)
+    //   return
 
-    toast.info(
-      `Found new update ${update.updateInfo.version}. We will download it now but install it on relaunch.`,
-    )
+    // toast.info(
+    //   `Found new update ${update.updateInfo.version}. We will download it now but install it on relaunch.`,
+    // )
 
     setStatus('updating')
 
-    await autoUpdater.downloadUpdate()
+    // await autoUpdater.downloadUpdate()
 
     setStatus('ready')
 
-    autoUpdater.quitAndInstall()
+    // autoUpdater.quitAndInstall()
   }, [data])
 
   return (

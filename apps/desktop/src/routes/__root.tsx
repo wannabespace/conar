@@ -19,8 +19,8 @@ function RootDocument() {
   return (
     <EventsProvider>
       <ThemeProvider>
-        <UpdatesProvider>
-          <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <UpdatesProvider>
             <AppProvider>
               <AnimatePresence>
                 <Outlet />
@@ -33,8 +33,8 @@ function RootDocument() {
                 <ReactQueryDevtools initialIsOpen={false} />
               </>
             )}
-          </QueryClientProvider>
-        </UpdatesProvider>
+          </UpdatesProvider>
+        </QueryClientProvider>
       </ThemeProvider>
     </EventsProvider>
   )

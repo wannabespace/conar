@@ -2,7 +2,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, shell } from 'electron'
 import started from 'electron-squirrel-startup'
-import { autoUpdater } from 'electron-updater'
+import updater from 'electron-updater'
 import { initElectronEvents } from '../lib/events'
 
 if (started) {
@@ -46,25 +46,25 @@ export function createWindow() {
     window.webContents.send('updates-status', status)
   }
 
-  autoUpdater.on('checking-for-update', () => {
+  updater.autoUpdater.on('checking-for-update', () => {
     sendUpdatesStatus('Checking for update...')
   })
-  autoUpdater.on('update-available', () => {
+  updater.autoUpdater.on('update-available', () => {
     sendUpdatesStatus('Update available.')
   })
-  autoUpdater.on('update-not-available', () => {
+  updater.autoUpdater.on('update-not-available', () => {
     sendUpdatesStatus('Update not available.')
   })
-  autoUpdater.on('error', (err) => {
+  updater.autoUpdater.on('error', (err) => {
     sendUpdatesStatus(`Error in auto-updater. ${err}`)
   })
-  autoUpdater.on('download-progress', (progressObj) => {
+  updater.autoUpdater.on('download-progress', (progressObj) => {
     let log_message = `Download speed: ${progressObj.bytesPerSecond}`
     log_message = `${log_message} - Downloaded ${progressObj.percent}%`
     log_message = `${log_message} (${progressObj.transferred}/${progressObj.total})`
     sendUpdatesStatus(log_message)
   })
-  autoUpdater.on('update-downloaded', () => {
+  updater.autoUpdater.on('update-downloaded', () => {
     sendUpdatesStatus('Update downloaded')
   })
 }
