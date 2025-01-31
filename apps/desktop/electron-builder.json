@@ -17,6 +17,8 @@
     "dist-electron"
   ],
   "mac": {
+    "category": "public.app-category.developer-tools",
+    "gatekeeperAssess": false,
     "target": [
       "dmg"
     ],

@@ -1,5 +1,5 @@
 import { decrypt, encrypt } from '@connnect/shared/encryption'
-import { ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
 import ElectronStore from 'electron-store'
 import pg from 'pg'
 
@@ -90,10 +90,20 @@ const databases = {
   },
 }
 
+const _app = {
+  relaunch: () => {
+    ipcMain.handle('relaunch', () => {
+      app.relaunch()
+      app.exit()
+    })
+  },
+}
+
 export const electron = {
   databases,
   encryption,
   store,
+  app: _app,
 }
 
 export function initElectronEvents() {

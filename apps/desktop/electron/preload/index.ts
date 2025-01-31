@@ -14,6 +14,9 @@ contextBridge.exposeInMainWorld('electron', {
     set: arg => ipcRenderer.invoke('set', arg),
     delete: arg => ipcRenderer.invoke('delete', arg),
   },
+  app: {
+    relaunch: () => ipcRenderer.invoke('relaunch'),
+  },
   // eslint-disable-next-line ts/no-explicit-any
 } satisfies { [key in keyof typeof electron]: Record<keyof typeof electron[key], (arg: any) => any> })
 
