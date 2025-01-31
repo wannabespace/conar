@@ -33,7 +33,7 @@ jobs:
       - name: Build
         run: pnpm run build:desktop
 
-      - name: Build and Release
+      - name: Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

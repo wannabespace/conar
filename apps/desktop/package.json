@@ -1,15 +1,17 @@
 {
   "name": "@connnect/desktop",
   "type": "module",
+  "productName": "Connnect",
   "version": "0.0.1-alpha.1",
   "private": true,
   "packageManager": "pnpm@9.15.4",
+  "author": "Wannabe Space",
   "main": "dist-electron/main/index.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build && electron-builder",
     "test": "vitest run",
-    "publish": "electron-builder -p always --config electron-builder.json",
+    "publish": "electron-builder -p always",
     "check-types": "tsc --noEmit"
   },
   "peerDependencies": {
