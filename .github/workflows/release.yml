@@ -22,10 +22,19 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.4
+
       - name: Install Dependencies
-        run: npm install
+        run: |
+          cd apps/desktop
+          pnpm install
 
       - name: Build and Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
+        run: |
+          cd apps/desktop
+          pnpm run publish
