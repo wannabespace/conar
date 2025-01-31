@@ -45,6 +45,10 @@ queryClient
   .then(async () => {
     logo.classList.add('scale-[0.5]', 'opacity-0')
     // Waiting animation to smooth transition
-    await sleep(80)
+    await Promise.all([
+      sleep(80),
+      router.loadRouteChunk(router.routesByPath['/']),
+      router.loadRouteChunk(router.routesByPath['/sign-in']),
+    ])
     root.render(<RouterProvider router={router} />)
   })
