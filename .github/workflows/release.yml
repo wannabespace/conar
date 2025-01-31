@@ -1,8 +1,9 @@
 name: Build and Release
 
 on:
-  release:
-    types: [draft]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   release:
