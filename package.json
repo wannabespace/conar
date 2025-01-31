@@ -9,6 +9,7 @@
     "test": "vitest run",
     "dev": "turbo run dev dev:types",
     "build": "turbo run build",
+    "build:desktop": "turbo run @connnect/desktop#build",
     "drizzle:generate": "turbo run drizzle:generate",
     "drizzle:migrate": "turbo run drizzle:migrate",
     "check-types": "turbo check-types"

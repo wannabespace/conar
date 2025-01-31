@@ -10,6 +10,13 @@
       "persistent": true,
       "cache": false
     },
+    "build:types": {
+      "cache": false
+    },
+    "@connnect/desktop#build": {
+      "dependsOn": ["^build:types"],
+      "cache": false
+    },
     "build": {
       "env": [
         "VITE_API_URL",
