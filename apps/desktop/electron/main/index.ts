@@ -1,29 +1,9 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import * as dotenv from 'dotenv'
 import { app, BrowserWindow, shell } from 'electron'
 import started from 'electron-squirrel-startup'
-import { z } from 'zod'
+import { autoUpdater } from 'electron-updater'
 import { initElectronEvents } from '../lib/events'
-
-const envFiles = {
-  development: '.env.development.local',
-  production: '.env.production.local',
-}
-
-dotenv.config({
-  path: path.join(
-    path.dirname(fileURLToPath(import.meta.url)),
-    envFiles[app.isPackaged ? 'production' : 'development'],
-  ),
-})
-
-const envSchema = z.object({
-  ELECTRON_STORE_SECRET: z.string().min(1),
-  ELECTRON_LOCAL_SECRET: z.string().min(1),
-})
-
-envSchema.parse(process.env)
 
 if (started) {
   app.quit()
@@ -61,6 +41,32 @@ export function createWindow() {
   else {
     window.loadFile('dist/index.html')
   }
+
+  function sendUpdatesStatus(status: string) {
+    window.webContents.send('updates-status', status)
+  }
+
+  autoUpdater.on('checking-for-update', () => {
+    sendUpdatesStatus('Checking for update...')
+  })
+  autoUpdater.on('update-available', () => {
+    sendUpdatesStatus('Update available.')
+  })
+  autoUpdater.on('update-not-available', () => {
+    sendUpdatesStatus('Update not available.')
+  })
+  autoUpdater.on('error', (err) => {
+    sendUpdatesStatus(`Error in auto-updater. ${err}`)
+  })
+  autoUpdater.on('download-progress', (progressObj) => {
+    let log_message = `Download speed: ${progressObj.bytesPerSecond}`
+    log_message = `${log_message} - Downloaded ${progressObj.percent}%`
+    log_message = `${log_message} (${progressObj.transferred}/${progressObj.total})`
+    sendUpdatesStatus(log_message)
+  })
+  autoUpdater.on('update-downloaded', () => {
+    sendUpdatesStatus('Update downloaded')
+  })
 }
 
 // This method will be called when Electron has finished

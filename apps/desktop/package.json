@@ -1,7 +1,7 @@
 {
   "name": "@connnect/desktop",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.1-alpha.1",
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "main": "dist-electron/main/index.js",
@@ -9,13 +9,22 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build && electron-builder",
     "test": "vitest run",
+    "publish": "electron-builder -p always --config electron-builder.json",
     "check-types": "tsc --noEmit"
   },
   "peerDependencies": {
     "@trpc/server": "^11.0.0-rc.724"
   },
   "dependencies": {
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^10.0.1",
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "@connnect/shared": "workspace:*",
+    "@connnect/tsconfig": "workspace:*",
     "@connnect/ui": "workspace:*",
+    "@connnect/web": "workspace:*",
     "@monaco-editor/loader": "^1.4.0",
     "@monaco-editor/react": "^4.6.0",
     "@number-flow/react": "^0.5.5",
@@ -23,12 +32,19 @@
     "@t3-oss/env-core": "^0.12.0",
     "@tailwindcss/vite": "^4.0.1",
     "@tanstack/react-query": "^5.65.1",
+    "@tanstack/react-query-devtools": "^5.65.1",
+    "@tanstack/router-devtools": "^1.98.3",
+    "@tanstack/router-plugin": "^1.98.3",
     "@trpc/client": "^11.0.0-rc.724",
+    "@types/electron-squirrel-startup": "^1.0.2",
+    "@types/pg": "^8.11.11",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
     "babel-plugin-react-compiler": "19.0.0-beta-e552027-20250112",
     "better-auth": "^1.1.15",
-    "dotenv": "^16.4.7",
-    "electron-squirrel-startup": "^1.0.1",
-    "electron-store": "^10.0.1",
+    "electron": "34.0.2",
+    "electron-builder": "^25.1.8",
     "lucide-react": "^0.474.0",
     "monaco-editor": "^0.52.2",
     "motion": "^12.0.6",
@@ -41,29 +57,13 @@
     "react-use": "^17.6.0",
     "sonner": "^1.7.3",
     "sql-formatter": "^15.4.10",
-    "uuid": "^11.0.5",
-    "zod": "^3.24.1"
-  },
-  "devDependencies": {
-    "@connnect/shared": "workspace:*",
-    "@connnect/tsconfig": "workspace:*",
-    "@connnect/web": "workspace:*",
-    "@tanstack/react-query-devtools": "^5.65.1",
-    "@tanstack/router-devtools": "^1.98.3",
-    "@tanstack/router-plugin": "^1.98.3",
-    "@types/electron-squirrel-startup": "^1.0.2",
-    "@types/pg": "^8.11.11",
-    "@types/react": "^19.0.8",
-    "@types/react-dom": "^19.0.3",
-    "@vitejs/plugin-react": "^4.3.4",
-    "electron": "34.0.2",
-    "electron-builder": "^25.1.8",
     "tailwindcss": "^4.0.1",
     "tailwindcss-animate": "^1.0.7",
-    "ts-node": "^10.9.2",
     "typescript": "~5.7.3",
+    "uuid": "^11.0.5",
     "vite": "^6.0.11",
     "vite-plugin-electron": "^0.29.0",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "zod": "^3.24.1"
   }
 }

@@ -1,9 +1,8 @@
-// import { relaunch } from '@tauri-apps/plugin-process'
-// import { check } from '@tauri-apps/plugin-updater'
+import { autoUpdater } from 'electron-updater'
 import { createContext, use, useState } from 'react'
-// import { toast } from 'sonner'
-// import { env } from './env'
-// import { useAsyncEffect } from './hooks/use-async-effect'
+import { toast } from 'sonner'
+import { useAsyncEffect } from './hooks/use-async-effect'
+import { useSession } from './hooks/use-session'
 
 type Status = 'idle' | 'updating' | 'ready'
 
@@ -17,33 +16,34 @@ export const useUpdates = () => use(UpdatesContext)
 
 // TODO: refactor this to be a component
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
-  const [status, _setStatus] = useState<Status>('idle')
+  const { data } = useSession()
+  const [status, setStatus] = useState<Status>('idle')
 
-  // useAsyncEffect(async () => {
-  //   const update = await check({
-  //     headers: {
-  //       Authorization: `Bearer ${env.VITE_PUBLIC_UPDATES_TOKEN}`,
-  //     },
-  //   })
+  useAsyncEffect(async () => {
+    if (!data)
+      return
 
-  //   if (!update)
-  //     return
+    autoUpdater.addAuthHeader(`Bearer ${data.session.token}`)
 
-  //   toast.info(
-  //     `Found new update ${update.version}. We will download it now but install it on relaunch.`,
-  //   )
+    setStatus('idle')
 
-  //   await update.downloadAndInstall(async (event) => {
-  //     switch (event.event) {
-  //       case 'Started':
-  //         setStatus('updating')
-  //         break
-  //       case 'Finished':
-  //         setStatus('ready')
-  //         break
-  //     }
-  //   })
-  // }, [])
+    const update = await autoUpdater.checkForUpdates()
+
+    if (!update)
+      return
+
+    toast.info(
+      `Found new update ${update.updateInfo.version}. We will download it now but install it on relaunch.`,
+    )
+
+    setStatus('updating')
+
+    await autoUpdater.downloadUpdate()
+
+    setStatus('ready')
+
+    autoUpdater.quitAndInstall()
+  }, [data])
 
   return (
     <UpdatesContext value={{ status, relaunch: async () => {} }}>

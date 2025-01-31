@@ -6,6 +6,12 @@
   "directories": {
     "output": "release/${version}"
   },
+  "publish": {
+    "private": true,
+    "provider": "github",
+    "owner": "wannabe-space",
+    "repo": "connnect"
+  },
   "files": [
     "dist",
     "dist-electron"

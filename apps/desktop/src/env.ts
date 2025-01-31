@@ -6,7 +6,6 @@ export const env = createEnv({
     VITE_PUBLIC_APP_URL: z.string().min(1),
     VITE_PUBLIC_AUTH_SECRET: z.string().min(1),
     VITE_PUBLIC_PASSWORDS_SECRET: z.string().min(1),
-    VITE_PUBLIC_UPDATES_TOKEN: z.string().min(1),
     VITE_PUBLIC_POSTHOG_API_KEY: z.string().min(1),
   },
   clientPrefix: 'VITE_PUBLIC_',

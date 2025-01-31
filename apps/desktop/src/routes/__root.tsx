@@ -9,6 +9,7 @@ import { AnimatePresence } from 'motion/react'
 import { AppProvider } from '~/app-provider'
 import { EventsProvider } from '~/lib/events'
 import { queryClient } from '~/main'
+import { UpdatesProvider } from '~/updates-provider'
 
 export const Route = createRootRouteWithContext<{ session: Session | null }>()({
   component: RootDocument,
@@ -18,20 +19,22 @@ function RootDocument() {
   return (
     <EventsProvider>
       <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <AppProvider>
-            <AnimatePresence>
-              <Outlet />
-            </AnimatePresence>
-            <Toaster />
-          </AppProvider>
-          {import.meta.env.DEV && (
-            <>
-              <TanStackRouterDevtools />
-              <ReactQueryDevtools initialIsOpen={false} />
-            </>
-          )}
-        </QueryClientProvider>
+        <UpdatesProvider>
+          <QueryClientProvider client={queryClient}>
+            <AppProvider>
+              <AnimatePresence>
+                <Outlet />
+              </AnimatePresence>
+              <Toaster />
+            </AppProvider>
+            {import.meta.env.DEV && (
+              <>
+                <TanStackRouterDevtools />
+                <ReactQueryDevtools initialIsOpen={false} />
+              </>
+            )}
+          </QueryClientProvider>
+        </UpdatesProvider>
       </ThemeProvider>
     </EventsProvider>
   )

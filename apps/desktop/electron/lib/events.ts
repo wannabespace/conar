@@ -10,7 +10,7 @@ const storeMap = new Map<Store, ElectronStore>()
 function createStore(store: Store) {
   return new ElectronStore({
     name: `.${store}`,
-    encryptionKey: process.env.ELECTRON_STORE_SECRET!,
+    encryptionKey: import.meta.env.VITE_PUBLIC_ELECTRON_STORE_SECRET,
     fileExtension: 'json',
   })
 }
@@ -41,12 +41,12 @@ const store = {
 
 const encryption = {
   encrypt: async ({ text, secret }: { text: string, secret: string }) => {
-    const encryptedSecret = await encrypt({ text: secret, secret: process.env.ELECTRON_LOCAL_SECRET! })
+    const encryptedSecret = await encrypt({ text: secret, secret: import.meta.env.VITE_PUBLIC_ELECTRON_LOCAL_SECRET })
 
     return encrypt({ text, secret: encryptedSecret })
   },
   decrypt: async ({ encryptedText, secret }: { encryptedText: string, secret: string }) => {
-    const encryptedSecret = await encrypt({ text: secret, secret: process.env.ELECTRON_LOCAL_SECRET! })
+    const encryptedSecret = await encrypt({ text: secret, secret: import.meta.env.VITE_PUBLIC_ELECTRON_LOCAL_SECRET })
 
     return decrypt({ encryptedText, secret: encryptedSecret })
   },
