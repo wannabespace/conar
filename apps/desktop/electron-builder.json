@@ -2,7 +2,6 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.wannabe-space.connnect",
   "asar": true,
-  "forceCodeSigning": true,
   "productName": "Connnect",
   "directories": {
     "output": "release/${version}"
