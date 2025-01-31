@@ -11,8 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        # os: [macos-latest, ubuntu-latest, windows-latest]
-        os: [macos-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
       - name: Check out Git repository
@@ -29,9 +28,10 @@ jobs:
           version: 9.15.4
 
       - name: Install Dependencies
-        run: |
-          cd apps/desktop
-          pnpm install
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
 
       - name: Build and Release
         env:
