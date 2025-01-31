@@ -1,12 +1,7 @@
-name: Build and Release
+name: Create release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version number (e.g., v1.0.0)'
-        required: true
-        type: string
+  workflow_dispatch: {}
 
 jobs:
   release:
@@ -20,6 +15,12 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
+
+      - name: Get version from package.json
+        id: package-version
+        run: |
+          VERSION=$(node -p "require('./apps/desktop/package.json').version")
+          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Install Node.js
         uses: actions/setup-node@v3
@@ -37,4 +38,5 @@ jobs:
       - name: Build and Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          VERSION: ${{ steps.package-version.outputs.version }}
         run: pnpm run build:desktop
