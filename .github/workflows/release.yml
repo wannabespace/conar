@@ -1,11 +1,13 @@
 name: Build and Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        type: string
 
-# Add these permissions
 permissions:
   contents: write
   packages: write
@@ -38,6 +40,18 @@ jobs:
 
       - name: Build
         run: pnpm run build:desktop
+
+      - name: Create Draft Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          draft: true
+          files: |
+            apps/desktop/release/**/*.exe
+            apps/desktop/release/**/*.dmg
+            apps/desktop/release/**/*.AppImage
 
       - name: Release
         env:
