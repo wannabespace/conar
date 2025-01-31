@@ -49,7 +49,6 @@ export function createWindow() {
   autoUpdater.on('checking-for-update', () => {
     sendUpdatesStatus('Checking for update...')
   })
-
   autoUpdater.on('update-available', () => {
     sendUpdatesStatus('Update available.')
   })
