@@ -31,12 +31,7 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Build
-        run: pnpm run build:desktop
-
-      - name: Release
+      - name: Build and Release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          cd apps/desktop
-          pnpm run publish
+        run: pnpm run build:desktop
