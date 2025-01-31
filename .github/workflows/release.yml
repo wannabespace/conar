@@ -5,13 +5,19 @@ on:
     tags:
       - 'v*'
 
+# Add these permissions
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   release:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        # os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest]
 
     steps:
       - name: Check out Git repository
