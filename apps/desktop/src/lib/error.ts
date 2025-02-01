@@ -5,7 +5,7 @@ import { authClient, removeBearerToken } from '~/lib/auth'
 function getErrorMessage(error: unknown) {
   return (error instanceof TRPCClientError && error.data.zodError)
     || (error as Error)?.message
-    || 'Something went wrong. Please try again.'
+    || 'Our server is practicing its meditation. Please, try again later.'
 }
 
 export async function handleError(error: unknown) {

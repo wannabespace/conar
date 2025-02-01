@@ -16,14 +16,14 @@ function createStore(store: Store) {
 }
 
 const store = {
-  get: <T>({ store, key }: { store: Store, key: string }) => {
+  get: ({ store, key }: { store: Store, key: string }) => {
     if (!storeMap.has(store)) {
       storeMap.set(store, createStore(store))
     }
 
-    return storeMap.get(store)!.get(key) as T | null
+    return storeMap.get(store)!.get(key)
   },
-  set: <T>({ store, key, value }: { store: Store, key: string, value: T }) => {
+  set: ({ store, key, value }: { store: Store, key: string, value: unknown }) => {
     if (!storeMap.has(store)) {
       storeMap.set(store, createStore(store))
     }
@@ -40,15 +40,11 @@ const store = {
 }
 
 const encryption = {
-  encrypt: async ({ text, secret }: { text: string, secret: string }) => {
-    const encryptedSecret = await encrypt({ text: secret, secret: import.meta.env.VITE_PUBLIC_ELECTRON_LOCAL_SECRET })
-
-    return encrypt({ text, secret: encryptedSecret })
+  encrypt: ({ text, secret }: { text: string, secret: string }) => {
+    return encrypt({ text, secret: secret + import.meta.env.VITE_PUBLIC_ELECTRON_LOCAL_SECRET })
   },
-  decrypt: async ({ encryptedText, secret }: { encryptedText: string, secret: string }) => {
-    const encryptedSecret = await encrypt({ text: secret, secret: import.meta.env.VITE_PUBLIC_ELECTRON_LOCAL_SECRET })
-
-    return decrypt({ encryptedText, secret: encryptedSecret })
+  decrypt: ({ encryptedText, secret }: { encryptedText: string, secret: string }) => {
+    return decrypt({ encryptedText, secret: secret + import.meta.env.VITE_PUBLIC_ELECTRON_LOCAL_SECRET })
   },
 }
 

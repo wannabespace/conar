@@ -1,39 +1,37 @@
-import { hexDecode, hexEncode } from './hex'
+import { Buffer } from 'node:buffer'
+import crypto from 'node:crypto'
 
-function str2ab(str: string) {
-  return new TextEncoder().encode(str)
+const ALGORITHM = 'aes-256-cbc'
+const IV_LENGTH = 16
+const SALT = crypto.randomBytes(16)
+
+export function encrypt({ text, secret }: { text: string, secret: string }) {
+  const iv = crypto.randomBytes(IV_LENGTH)
+  const key = crypto.scryptSync(secret, SALT, 32)
+  const cipher = crypto.createCipheriv(ALGORITHM, key, iv)
+
+  let encrypted = cipher.update(text, 'utf8', 'hex')
+  encrypted += cipher.final('hex')
+
+  return `${iv.toString('hex')}.${encrypted}.${SALT.toString('hex')}`
 }
 
-function ab2str(buf: ArrayBuffer) {
-  return new TextDecoder().decode(buf)
-}
-
-export async function encrypt({ text, secret }: { text: string, secret: string }) {
-  const pwHash = await crypto.subtle.digest('SHA-256', str2ab(secret))
-  const iv = crypto.getRandomValues(new Uint8Array(12))
-  const key = await crypto.subtle.importKey('raw', pwHash, { name: 'AES-GCM' }, false, ['encrypt'])
-  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, str2ab(text))
-
-  const ivHex = Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('')
-  const encryptedBase64 = hexEncode(String.fromCharCode(...new Uint8Array(encrypted)))
-
-  return ivHex + encryptedBase64
-}
-
-export async function decrypt({ encryptedText, secret }: { encryptedText: string, secret: string }) {
-  const pwHash = await crypto.subtle.digest('SHA-256', str2ab(secret))
-
-  const iv = new Uint8Array(12)
-  for (let i = 0; i < 24; i += 2) {
-    iv[i / 2] = Number.parseInt(encryptedText.substring(i, i + 2), 16)
-  }
-
-  const key = await crypto.subtle.importKey('raw', pwHash, { name: 'AES-GCM' }, false, ['decrypt'])
-  const encryptedData = Uint8Array.from(hexDecode(encryptedText.slice(24)), c => c.charCodeAt(0))
-
+export function decrypt({ encryptedText, secret }: { encryptedText: string, secret: string }) {
   try {
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encryptedData)
-    return ab2str(decrypted)
+    const [ivHex, text, saltHex] = encryptedText.split('.')
+    if (!ivHex || !text || !saltHex) {
+      return null
+    }
+
+    const iv = Buffer.from(ivHex, 'hex')
+    const salt = Buffer.from(saltHex, 'hex')
+    const key = crypto.scryptSync(secret, salt, 32)
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv)
+
+    let decrypted = decipher.update(text, 'hex', 'utf8')
+    decrypted += decipher.final('utf8')
+
+    return decrypted
   }
   catch {
     return null

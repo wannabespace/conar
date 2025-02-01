@@ -16,5 +16,5 @@ export async function deleteDatabase(id: string) {
 }
 
 export async function getDatabase(id: string) {
-  return window.electron.store.get<Database>({ store: 'databases', key: id })
+  return window.electron.store.get({ store: 'databases', key: id }) as Promise<Database | null>
 }

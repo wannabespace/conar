@@ -24,7 +24,7 @@ const schema = z.object({
 
 function useSocialMutation(provider: 'google' | 'github') {
   return useMutation({
-    mutationKey: [provider],
+    mutationKey: ['social', provider],
     mutationFn: async () => {
       const codeChallenge = nanoid()
 

@@ -2,7 +2,6 @@ import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { bearer, organization, twoFactor } from 'better-auth/plugins'
-import { v7 } from 'uuid'
 import { db } from '~/drizzle'
 import { env } from '~/env'
 import 'server-only'
@@ -28,12 +27,13 @@ export const auth = betterAuth({
       secret: {
         type: 'string',
         required: false,
+        input: false,
       },
     },
   },
   trustedOrigins: process.env.NODE_ENV === 'production' ? ['tauri://localhost'] : ['http://localhost:3100'],
   advanced: {
-    generateId: () => v7(),
+    generateId: false,
     cookiePrefix: 'connnect',
   },
   database: drizzleAdapter(db, {

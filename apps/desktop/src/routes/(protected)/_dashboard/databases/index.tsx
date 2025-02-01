@@ -1,4 +1,3 @@
-import { encrypt } from '@connnect/shared/encryption'
 import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { enumValues } from '@connnect/shared/utils'
 import { Button } from '@connnect/ui/components/button'
@@ -10,7 +9,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { env } from '~/env'
+import { useSession } from '~/hooks/use-session'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
 
@@ -29,6 +28,7 @@ const formSchema = z.object({
 })
 
 function RouteComponent() {
+  const { data } = useSession()
   const { mutate: createDatabase } = useMutation({
     mutationKey: ['databases', 'create'],
     mutationFn: (values: z.infer<typeof formSchema>) => trpc.databases.create.mutate(values),
@@ -59,7 +59,7 @@ function RouteComponent() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     createDatabase({
       ...values,
-      password: await encrypt({ text: values.password, secret: env.VITE_PUBLIC_PASSWORDS_SECRET }),
+      password: await window.electron.encryption.encrypt({ text: values.password, secret: data!.user.secret! }),
     })
   }
 

@@ -31,9 +31,9 @@ export function useDeepLinksListener() {
       return
     }
 
-    const decryptedCodeChallenge = await window.electron.encryption.decrypt({ encryptedText: codeChallenge, secret: env.VITE_PUBLIC_AUTH_SECRET }).catch((e) => {
-      console.error(e)
-      return null
+    const decryptedCodeChallenge = await window.electron.encryption.decrypt({
+      encryptedText: codeChallenge,
+      secret: env.VITE_PUBLIC_AUTH_SECRET,
     })
 
     if (!decryptedCodeChallenge) {

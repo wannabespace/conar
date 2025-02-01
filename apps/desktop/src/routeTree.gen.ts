@@ -32,7 +32,6 @@ const protectedImport = createFileRoute('/(protected)')()
 
 const publicRoute = publicImport.update({
   id: '/(public)',
-  path: '/',
   getParentRoute: () => rootRoute,
 } as any)
 

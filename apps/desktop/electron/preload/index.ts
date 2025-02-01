@@ -1,7 +1,14 @@
 import type { electron } from '../main/events'
 import { contextBridge, ipcRenderer } from 'electron'
 
-export type ElectronPreload = typeof electron & {
+// eslint-disable-next-line ts/no-explicit-any
+export type PromisifyElectron<T extends Record<string, any>> = {
+  [K in keyof T]: {
+    [K2 in keyof T[K]]: (arg: Parameters<T[K][K2]>[0]) => Promise<ReturnType<T[K][K2]>>
+  }
+}
+
+export type ElectronPreload = PromisifyElectron<typeof electron> & {
   app: {
     onDeepLink: (callback: (url: string) => void) => void
   }
@@ -21,7 +28,6 @@ contextBridge.exposeInMainWorld('electron', {
     decrypt: arg => ipcRenderer.invoke('decrypt', arg),
   },
   store: {
-    // @ts-expect-error wrong return type
     get: arg => ipcRenderer.invoke('get', arg),
     set: arg => ipcRenderer.invoke('set', arg),
     delete: arg => ipcRenderer.invoke('delete', arg),
