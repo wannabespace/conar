@@ -1,5 +1,5 @@
 import { decrypt, encrypt } from '@connnect/shared/encryption'
-import { app, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
 import ElectronStore from 'electron-store'
 import pg from 'pg'
 
@@ -11,26 +11,26 @@ function createStore(store: Store) {
   return new ElectronStore({
     name: `.${store}`,
     encryptionKey: import.meta.env.VITE_PUBLIC_ELECTRON_STORE_SECRET,
-    fileExtension: 'json',
+    fileExtension: 'dat',
   })
 }
 
 const store = {
-  get: <T>(store: Store, key: string) => {
+  get: <T>({ store, key }: { store: Store, key: string }) => {
     if (!storeMap.has(store)) {
       storeMap.set(store, createStore(store))
     }
 
     return storeMap.get(store)!.get(key) as T | null
   },
-  set: <T>(store: Store, key: string, value: T) => {
+  set: <T>({ store, key, value }: { store: Store, key: string, value: T }) => {
     if (!storeMap.has(store)) {
       storeMap.set(store, createStore(store))
     }
 
     storeMap.get(store)!.set(key, value)
   },
-  delete: (store: Store, key: string) => {
+  delete: ({ store, key }: { store: Store, key: string }) => {
     if (!storeMap.has(store)) {
       storeMap.set(store, createStore(store))
     }
@@ -91,12 +91,7 @@ const databases = {
 }
 
 const _app = {
-  relaunch: () => {
-    ipcMain.handle('relaunch', () => {
-      app.relaunch()
-      app.exit()
-    })
-  },
+
 }
 
 export const electron = {
