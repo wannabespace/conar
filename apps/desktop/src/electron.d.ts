@@ -1,7 +1,7 @@
-import type { electron } from '../electron/lib/events'
+import type { ElectronPreload } from '../electron/preload'
 
 declare global {
   interface Window {
-    electron: typeof electron
+    electron: ElectronPreload
   }
 }

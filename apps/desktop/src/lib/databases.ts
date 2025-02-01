@@ -8,13 +8,13 @@ interface Database {
 }
 
 export async function saveDatabase(database: Database) {
-  window.electron.store.set('databases', database.id, database)
+  window.electron.store.set({ store: 'databases', key: database.id, value: database })
 }
 
 export async function deleteDatabase(id: string) {
-  window.electron.store.delete('databases', id)
+  window.electron.store.delete({ store: 'databases', key: id })
 }
 
 export async function getDatabase(id: string) {
-  return window.electron.store.get<Database>('databases', id)
+  return window.electron.store.get<Database>({ store: 'databases', key: id })
 }

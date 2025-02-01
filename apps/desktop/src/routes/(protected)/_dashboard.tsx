@@ -1,7 +1,6 @@
 import { Button } from '@connnect/ui/components/button'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
-import { motion } from 'motion/react'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { useSession } from '~/hooks/use-session'
@@ -39,18 +38,12 @@ function LayoutComponent() {
   })
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 1.1 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3 }}
-      className="min-h-screen"
-    >
+    <div className="min-h-screen">
       <div className="[app-region:drag] fixed border-b border-b-border bg-background inset-0 h-10">
 
       </div>
       <div className="h-10" />
-      <div className="flex gap-2 p-5">
+      <div className="flex gap-2 p-3">
         <Link to="/" className="[&.active]:font-bold">
           Dashboard
         </Link>
@@ -66,6 +59,6 @@ function LayoutComponent() {
         Sign Out
       </Button>
       <Outlet />
-    </motion.div>
+    </div>
   )
 }

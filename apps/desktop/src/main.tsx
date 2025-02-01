@@ -37,18 +37,15 @@ declare module '@tanstack/react-router' {
   }
 }
 
-const root = createRoot(document.getElementById('root')!)
-const logo = document.getElementById('logo')!
+const root = document.getElementById('root')!
+const preloader = document.getElementById('preloader')!
 
 queryClient
   .ensureQueryData(sessionQuery)
   .then(async () => {
-    logo.classList.add('scale-[0.5]', 'opacity-0')
+    preloader.classList.add('scale-[0.5]', 'opacity-0')
     // Waiting animation to smooth transition
-    await Promise.all([
-      sleep(80),
-      router.loadRouteChunk(router.routesByPath['/']),
-      router.loadRouteChunk(router.routesByPath['/sign-in']),
-    ])
-    root.render(<RouterProvider router={router} />)
+    await sleep(80)
+    root.classList.remove('scale-110', 'opacity-0')
+    createRoot(root).render(<RouterProvider router={router} />)
   })

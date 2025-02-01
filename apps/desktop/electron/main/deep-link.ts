@@ -22,7 +22,6 @@ function handle(url: string) {
     mainWindow.setAlwaysOnTop(false)
   }
 
-  // Send the URL to the renderer process
   mainWindow.webContents.send('deep-link', url)
 }
 

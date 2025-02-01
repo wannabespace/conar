@@ -12,6 +12,12 @@
     "owner": "wannabe-space",
     "repo": "connnect"
   },
+  "protocols": [
+    {
+      "name": "Connnect",
+      "schemes": ["connnect"]
+    }
+  ],
   "files": [
     "dist",
     "dist-electron"
