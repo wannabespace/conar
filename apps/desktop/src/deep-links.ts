@@ -53,6 +53,11 @@ export function useDeepLinksListener() {
   }
 
   useAsyncEffect(async () => {
+    if (window.initialDeepLink) {
+      handleDeepLink(window.initialDeepLink)
+      window.initialDeepLink = null
+    }
+
     window.electron.app.onDeepLink(async (url) => {
       await handleDeepLink(url)
     })

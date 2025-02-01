@@ -9,6 +9,10 @@ import { routeTree } from './routeTree.gen'
 import '@connnect/ui/globals.css'
 import './monaco-worker'
 
+window.electron.app.onDeepLink(async (url) => {
+  window.initialDeepLink = url
+})
+
 initEvents()
 
 export const queryClient = new QueryClient({
