@@ -1,7 +1,6 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, shell } from 'electron'
-import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer'
 import started from 'electron-squirrel-startup'
 import { handleDeepLink } from './deep-link'
 // import updater from 'electron-updater'
@@ -53,11 +52,6 @@ export function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow)
-
-app.whenReady().then(() => {
-  installExtension(REACT_DEVELOPER_TOOLS)
-    .catch(err => console.error('Failed to install extension:', err))
-})
 
 app.setAsDefaultProtocolClient('connnect')
 
