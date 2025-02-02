@@ -55,7 +55,6 @@ queryClient
     // Waiting animation to smooth transition
     await sleep(80)
     document.body.classList.remove('overflow-hidden')
-    root.classList.remove('scale-110', 'opacity-0')
     createRoot(root).render(<RouterProvider router={router} />)
     await sleep(500)
     preloader.remove()
