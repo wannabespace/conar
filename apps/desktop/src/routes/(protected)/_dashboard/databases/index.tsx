@@ -57,9 +57,12 @@ function RouteComponent() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!data)
+      return
+
     createDatabase({
       ...values,
-      password: await window.electron.encryption.encrypt({ text: values.password, secret: data!.user.secret }),
+      password: await window.electron.encryption.encrypt({ text: values.password, secret: data.user.secret }),
     })
   }
 
