@@ -17,6 +17,7 @@
     "@trpc/server": "^11.0.0-rc.724"
   },
   "dependencies": {
+    "@react-hookz/web": "^25.0.1",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^10.0.1",
     "electron-updater": "^6.3.9",
