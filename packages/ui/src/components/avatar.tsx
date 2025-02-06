@@ -7,7 +7,7 @@ function Avatar({ ref, className, ...props }: React.ComponentPropsWithoutRef<typ
     <AvatarPrimitive.Root
       ref={ref}
       className={cn(
-        'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full',
+        'relative flex size-10 shrink-0 overflow-hidden rounded-md',
         className,
       )}
       {...props}
@@ -20,7 +20,7 @@ function AvatarImage({ ref, className, ...props }: React.ComponentPropsWithoutRe
   return (
     <AvatarPrimitive.Image
       ref={ref}
-      className={cn('aspect-square h-full w-full', className)}
+      className={cn('aspect-square size-full', className)}
       {...props}
     />
   )

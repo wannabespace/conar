@@ -1,60 +1,56 @@
-import { Button } from '@connnect/ui/components/button'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@connnect/ui/components/command'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { useMutation } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { toast } from 'sonner'
-import { useSession } from '~/hooks/use-session'
-import { authClient, removeBearerToken } from '~/lib/auth'
-import { queryClient } from '~/main'
+import { databasesQuery } from '~/queries/databases'
+import { UserButton } from './user-button'
 
 export function Navbar() {
-  const { refetch } = useSession()
   const [open, setOpen] = useState(false)
-
-  const { mutate: signOut, isPending: isSigningOut } = useMutation({
-    mutationFn: async () => {
-      await Promise.all([removeBearerToken(), authClient.signOut()])
-      await refetch()
-      queryClient.invalidateQueries()
-    },
-    onSuccess: () => {
-      toast.success('You have been signed out successfully.')
-    },
-  })
 
   useKeyboardEvent(e => e.key === 'l' && e.metaKey, () => setOpen(open => !open))
 
+  const { data: databases } = useQuery({
+    ...databasesQuery(),
+    select: data => Object.entries(Object.groupBy(data, db => db.type)),
+  })
+
   return (
-    <>
-      <div className="flex items-center h-10 justify-between">
-        <div className="pl-20 [app-region:drag]" />
-        <button
-          type="button"
-          className="flex items-center py-1 gap-2 font-medium rounded-md px-3 text-sm cursor-pointer"
-          onClick={() => setOpen(true)}
-        >
-          Connnect
-          <CommandShortcut>⌘L</CommandShortcut>
-        </button>
-        <Button
-          loading={isSigningOut}
-          onClick={() => signOut()}
-        >
-          Sign Out
-        </Button>
-      </div>
+    <div className="flex items-center h-10 justify-between me-1">
+      <div className="flex-1 h-full [app-region:drag]" />
+      {databases?.length
+        ? (
+            <button
+              type="button"
+              className="flex items-center py-1 gap-2 font-medium rounded-md px-3 text-sm cursor-pointer"
+              onClick={() => setOpen(true)}
+            >
+              Connnect
+              <CommandShortcut>⌘L</CommandShortcut>
+            </button>
+          )
+        : <div />}
+      <div className="flex-1 h-full [app-region:drag]" />
+      <UserButton />
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
+        <CommandInput placeholder="Type a connection name..." />
         <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Suggestions">
-            <CommandItem>Calendar</CommandItem>
-            <CommandItem>Search Emoji</CommandItem>
-            <CommandItem>Calculator</CommandItem>
-          </CommandGroup>
+          {/* <CommandGroup heading="Actions">
+            <CommandItem onSelect={() => setOpen(false)}>
+              <RiAddLine className="size-4 shrink-0 opacity-60" />
+              Add New Connection...
+            </CommandItem>
+          </CommandGroup> */}
+          <CommandEmpty>No connections found.</CommandEmpty>
+          {databases?.map(([type, databases]) => (
+            <CommandGroup key={type} heading={type}>
+              {databases.map(database => (
+                <CommandItem key={database.id}>{database.name}</CommandItem>
+              ))}
+            </CommandGroup>
+          ))}
         </CommandList>
       </CommandDialog>
-    </>
+    </div>
   )
 }

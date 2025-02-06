@@ -6,6 +6,7 @@ import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
 import { sleep } from './lib/helpers'
 import { sessionQuery } from './queries/auth'
+import { databasesQuery } from './queries/databases'
 import { routeTree } from './routeTree.gen'
 import '@connnect/ui/globals.css'
 import './monaco-worker'
@@ -50,7 +51,10 @@ const preloader = document.getElementById('preloader')!
 
 queryClient
   .ensureQueryData(sessionQuery)
-  .then(async () => {
+  .then(async (session) => {
+    if (session.data) {
+      await queryClient.ensureQueryData(databasesQuery())
+    }
     preloader.classList.add('scale-[0.5]', 'opacity-0')
     // Waiting animation to smooth transition
     await sleep(80)

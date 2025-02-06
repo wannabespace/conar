@@ -12,6 +12,7 @@ import { z } from 'zod'
 import { useSession } from '~/hooks/use-session'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
+import { databasesQuery } from '~/queries/databases'
 
 export const Route = createFileRoute('/(protected)/_dashboard/databases/')({
   component: RouteComponent,
@@ -33,13 +34,10 @@ function RouteComponent() {
     mutationKey: ['databases', 'create'],
     mutationFn: (values: z.infer<typeof formSchema>) => trpc.databases.create.mutate(values),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['databases', 'list'] })
+      queryClient.invalidateQueries(databasesQuery())
     },
   })
-  const { data: databases } = useQuery({
-    queryKey: ['databases', 'list'],
-    queryFn: () => trpc.databases.list.query(),
-  })
+  const { data: databases } = useQuery(databasesQuery())
 
   const router = useRouter()
 
