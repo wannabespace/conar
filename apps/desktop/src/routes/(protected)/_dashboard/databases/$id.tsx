@@ -39,7 +39,7 @@ function RouteComponent() {
         port: database.port,
         user: database.username,
         password: 'hXjwbSoyh8UsXhjn',
-        database: database.database,
+        database: database.database ?? undefined,
       },
       query,
     }).then((data) => {

@@ -1,0 +1,1 @@
+ALTER TABLE "databases" ALTER COLUMN "database" DROP NOT NULL;

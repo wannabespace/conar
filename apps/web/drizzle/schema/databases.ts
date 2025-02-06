@@ -16,7 +16,7 @@ export const databases = pgTable('databases', {
   port: integer().notNull(),
   username: text().notNull(),
   encryptedPassword: text(),
-  database: text().notNull(),
+  database: text(),
 }).enableRLS()
 
 export const databasesRelations = relations(databases, ({ one }) => ({

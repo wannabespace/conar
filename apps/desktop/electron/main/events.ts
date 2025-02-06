@@ -59,29 +59,22 @@ const databases = {
       port: number
       user: string
       password: string
-      database: string
-    } | string
+      database?: string
+    }
     query: string
     values?: string[]
   }) => {
-    const client = new pg.Client(connection)
+    const pool = new pg.Pool(connection)
 
     try {
-      await client.connect()
-
-      const result = await client.query(query, values)
+      const result = await pool.query(query, values)
 
       console.log('result', result)
 
-      return {
-        rows: result.rows as T[],
-        columns: result.fields.map(field => ({
-          ...field,
-        })),
-      }
+      return result.rows as T[]
     }
     finally {
-      await client.end()
+      await pool.end()
     }
   },
 }

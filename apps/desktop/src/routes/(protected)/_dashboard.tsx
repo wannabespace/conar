@@ -1,42 +1,29 @@
-import { Button } from '@connnect/ui/components/button'
-import { useMutation } from '@tanstack/react-query'
-import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
-import { toast } from 'sonner'
 import { useSession } from '~/hooks/use-session'
-import { authClient, removeBearerToken } from '~/lib/auth'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
+import { Navbar } from './-components/navbar'
+import { Sidebar } from './-components/sidebar'
 
 export const Route = createFileRoute('/(protected)/_dashboard')({
   component: LayoutComponent,
 })
 
 function LayoutComponent() {
-  const { isLoading, data, refetch, isAuthenticated } = useSession()
+  const { isAuthenticated } = useSession()
 
   useEffect(() => {
     if (!isAuthenticated)
       return
 
-    queryClient.ensureQueryData({
+    queryClient.prefetchQuery({
       queryKey: ['databases', 'list'],
       queryFn: () => trpc.databases.list.query(),
     })
   }, [isAuthenticated])
-
-  const { mutate: signOut, isPending: isSigningOut } = useMutation({
-    mutationKey: ['sign-out'],
-    mutationFn: async () => {
-      await Promise.all([removeBearerToken(), authClient.signOut()])
-      await refetch()
-      queryClient.invalidateQueries()
-    },
-    onSuccess: () => {
-      toast.success('You have been signed out successfully.')
-    },
-  })
 
   return (
     <motion.div
@@ -46,26 +33,25 @@ function LayoutComponent() {
       transition={{ duration: 0.3 }}
       className="min-h-screen"
     >
-      <div className="[app-region:drag] fixed border-b border-b-border bg-background inset-0 h-10">
-
+      <Navbar />
+      <div className="flex h-full">
+        <Select>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a database" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1">1</SelectItem>
+            <SelectItem value="2">2</SelectItem>
+            <SelectItem value="3">3</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="w-20">
+          <Sidebar />
+        </div>
+        <div className="flex-1">
+          <Outlet />
+        </div>
       </div>
-      <div className="h-10" />
-      <div className="flex gap-2 p-3">
-        <Link to="/" className="[&.active]:font-bold">
-          Dashboard
-        </Link>
-      </div>
-      <hr />
-      <header className="bg-background p-2">
-        {isLoading ? 'Loading...' : data?.user.email || 'No user'}
-      </header>
-      <Button
-        loading={isSigningOut}
-        onClick={() => signOut()}
-      >
-        Sign Out
-      </Button>
-      <Outlet />
     </motion.div>
   )
 }
