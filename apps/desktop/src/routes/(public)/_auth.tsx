@@ -15,7 +15,7 @@ function AuthLayout() {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
-      className="flex min-h-screen items-center justify-center"
+      className="flex min-h-screen items-center justify-center bg-background"
     >
       <div className="mx-auto flex w-full max-w-md flex-col gap-8 py-10">
         <div className="flex items-center gap-3">
