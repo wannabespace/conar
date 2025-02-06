@@ -1,7 +1,7 @@
 import { Button } from '@connnect/ui/components/button'
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@connnect/ui/components/command'
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@connnect/ui/components/command'
+import { useKeyboardEvent } from '@react-hookz/web'
 import { useMutation } from '@tanstack/react-query'
-import { Search } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useSession } from '~/hooks/use-session'
@@ -23,16 +23,20 @@ export function Navbar() {
     },
   })
 
+  useKeyboardEvent(e => e.key === 'l' && e.metaKey, () => setOpen(open => !open))
+
   return (
     <>
-      <div className="flex h-10 justify-between">
+      <div className="flex items-center h-10 justify-between">
         <div className="pl-20 [app-region:drag]" />
-        <Button
-          variant="ghost"
+        <button
+          type="button"
+          className="flex items-center py-1 gap-2 font-medium rounded-md px-3 text-sm cursor-pointer"
           onClick={() => setOpen(true)}
         >
-          <Search />
-        </Button>
+          Connnect
+          <CommandShortcut>⌘L</CommandShortcut>
+        </button>
         <Button
           loading={isSigningOut}
           onClick={() => signOut()}

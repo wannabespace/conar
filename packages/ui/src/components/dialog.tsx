@@ -38,7 +38,7 @@ function DialogContent({ ref, className, children, ...props }: React.ComponentPr
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
           <X className="size-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
@@ -80,7 +80,7 @@ function DialogFooter({
 }
 DialogFooter.displayName = 'DialogFooter'
 
-function DialogTitle({ ref, className, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title> & { ref: React.RefObject<React.ComponentRef<typeof DialogPrimitive.Title>> }) {
+function DialogTitle({ ref, className, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title> & { ref?: React.RefObject<React.ComponentRef<typeof DialogPrimitive.Title>> }) {
   return (
     <DialogPrimitive.Title
       ref={ref}
@@ -94,7 +94,7 @@ function DialogTitle({ ref, className, ...props }: React.ComponentPropsWithoutRe
 }
 DialogTitle.displayName = DialogPrimitive.Title.displayName
 
-function DialogDescription({ ref, className, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description> & { ref: React.RefObject<React.ComponentRef<typeof DialogPrimitive.Description>> }) {
+function DialogDescription({ ref, className, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description> & { ref?: React.RefObject<React.ComponentRef<typeof DialogPrimitive.Description>> }) {
   return (
     <DialogPrimitive.Description
       ref={ref}

@@ -56,6 +56,4 @@ queryClient
     await sleep(80)
     document.body.classList.remove('overflow-hidden')
     createRoot(root).render(<RouterProvider router={router} />)
-    await sleep(500)
-    preloader.remove()
   })
