@@ -46,7 +46,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
-const root = document.getElementById('root')!
+const root = createRoot(document.getElementById('root')!)
 const preloader = document.getElementById('preloader')!
 
 queryClient
@@ -59,5 +59,7 @@ queryClient
     // Waiting animation to smooth transition
     await sleep(80)
     document.body.classList.remove('overflow-hidden')
-    createRoot(root).render(<RouterProvider router={router} />)
+    root.render(<RouterProvider router={router} />)
+    await sleep(1000)
+    preloader.remove()
   })

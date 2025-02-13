@@ -1,3 +1,4 @@
+import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { AppLogo } from '~/components/app-logo'
@@ -15,9 +16,17 @@ function AuthLayout() {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
-      className="flex min-h-screen items-center justify-center bg-background"
+      className="flex min-h-screen items-center justify-center px-3"
     >
-      <div className="mx-auto flex w-full max-w-md flex-col gap-8 py-10">
+      <DotPattern
+        width={20}
+        height={20}
+        cx={1}
+        cy={1}
+        cr={1}
+        className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+      />
+      <div className="mx-auto flex w-full max-w-md flex-col gap-8 py-6">
         <div className="flex items-center gap-3">
           <AppLogoGradient className="hidden size-12 dark:block" />
           <SmoothCorner radius={12} className="flex size-12 items-center justify-center bg-primary dark:hidden">

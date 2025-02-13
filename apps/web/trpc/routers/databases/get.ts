@@ -3,32 +3,36 @@ import { TRPCError } from '@trpc/server'
 import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { databases, db } from '~/drizzle'
-import { env } from '~/env'
 import { protectedProcedure } from '~/trpc'
 
-export const get = protectedProcedure.input(z.object({
-  id: z.string().uuid(),
-})).query(async ({ ctx, input }) => {
-  const [database] = await db
-    .select()
-    .from(databases)
-    .where(
-      and(
-        eq(databases.userId, ctx.user.id),
-        eq(databases.id, input.id),
-      ),
-    )
+export const get = protectedProcedure
+  .input(z.object({
+    id: z.string().uuid(),
+  }))
+  .query(async ({ ctx, input }) => {
+    const [database] = await db
+      .select()
+      .from(databases)
+      .where(
+        and(
+          eq(databases.userId, ctx.user.id),
+          eq(databases.id, input.id),
+        ),
+      )
 
-  if (!database) {
-    throw new TRPCError({ code: 'NOT_FOUND', message: 'Database not found' })
-  }
+    if (!database) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Database not found' })
+    }
 
-  const { encryptedPassword, ...rest } = database
+    const decryptedPassword = database.credentials.password
+      ? decrypt({ encryptedText: database.credentials.password, secret: ctx.user.secret })
+      : undefined
 
-  return {
-    ...rest,
-    password: encryptedPassword
-      ? await decrypt({ encryptedText: encryptedPassword, secret: env.ENCRYPTION_SECRET })
-      : null,
-  }
-})
+    return {
+      ...database,
+      credentials: {
+        ...database.credentials,
+        ...(decryptedPassword ? { password: decryptedPassword } : {}),
+      },
+    }
+  })

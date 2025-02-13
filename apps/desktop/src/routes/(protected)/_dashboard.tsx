@@ -13,10 +13,10 @@ function LayoutComponent() {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
-      className="h-screen flex flex-col"
+      className="min-h-screen flex flex-col"
     >
       <Navbar />
-      <div className="flex pb-2 flex-1">
+      <div className="flex pb-2 flex-1 px-3">
         <Outlet />
       </div>
     </motion.div>

@@ -1,5 +1,13 @@
+import { useTheme } from '@connnect/ui/theme-provider'
 import { editor } from 'monaco-editor'
+import ghDark from 'monaco-themes/themes/GitHub Dark.json'
+import ghLight from 'monaco-themes/themes/GitHub Light.json'
 import { useEffect, useRef } from 'react'
+
+// @ts-expect-error wrong type
+editor.defineTheme('github-dark', ghDark)
+// @ts-expect-error wrong type
+editor.defineTheme('github-light', ghLight)
 
 export function Monaco({
   initialValue,
@@ -13,6 +21,11 @@ export function Monaco({
   ref?: React.RefObject<editor.IStandaloneCodeEditor | null>
 }) {
   const editorRef = useRef<HTMLDivElement>(null)
+  const { resolvedTheme } = useTheme()
+
+  useEffect(() => {
+    editor.setTheme(resolvedTheme === 'dark' ? 'github-dark' : 'github-light')
+  }, [resolvedTheme])
 
   useEffect(() => {
     if (!editorRef.current)
@@ -21,7 +34,6 @@ export function Monaco({
     const e = editor.create(editorRef.current, {
       value: initialValue,
       language,
-      theme: 'vs-dark',
       automaticLayout: true,
       minimap: { enabled: false },
       lineNumbers: 'off',

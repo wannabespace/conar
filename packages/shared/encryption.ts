@@ -19,8 +19,9 @@ export function encrypt({ text, secret }: { text: string, secret: string }) {
 export function decrypt({ encryptedText, secret }: { encryptedText: string, secret: string }) {
   try {
     const [ivHex, text, saltHex] = encryptedText.split('.')
+
     if (!ivHex || !text || !saltHex) {
-      return null
+      throw new Error('Failed to decrypt text')
     }
 
     const iv = Buffer.from(ivHex, 'hex')
@@ -34,6 +35,6 @@ export function decrypt({ encryptedText, secret }: { encryptedText: string, secr
     return decrypted
   }
   catch {
-    return null
+    throw new Error('Failed to decrypt text')
   }
 }

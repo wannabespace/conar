@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@connnect/ui/components/avatar'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
 import { RiLogoutCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -23,14 +23,14 @@ export function UserButton() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Avatar className="size-8">
+      <DropdownMenuTrigger className="cursor-pointer">
+        <Avatar className="size-6">
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={5} className="w-70">
-        <DropdownMenuItem className="flex items-center gap-2 h-10">
+        <div className="flex items-center gap-2 h-10 px-2 mt-1 mb-2">
           <Avatar className="size-8">
             <AvatarImage src="https://github.com/shadcn.png" />
             <AvatarFallback>CN</AvatarFallback>
@@ -43,8 +43,8 @@ export function UserButton() {
               {data?.user.email}
             </span>
           </div>
-        </DropdownMenuItem>
-        <DropdownMenuGroup>
+        </div>
+        {/* <DropdownMenuGroup>
           <DropdownMenuItem>Team</DropdownMenuItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>
@@ -61,7 +61,7 @@ export function UserButton() {
             New Team
             <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
           </DropdownMenuItem>
-        </DropdownMenuGroup>
+        </DropdownMenuGroup> */}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           disabled={isSigningOut}

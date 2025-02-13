@@ -10,7 +10,7 @@ export const users = pgTable('users', {
   emailVerified: boolean('email_verified').notNull(),
   image: text(),
   normalizedEmail: text('normalized_email').unique(),
-  secret: text('secret').notNull().$defaultFn(() => nanoid()),
+  secret: text().notNull().$defaultFn(() => nanoid()),
 }).enableRLS()
 
 export const sessions = pgTable('sessions', {
@@ -76,7 +76,7 @@ export const twoFactorsRelations = relations(twoFactors, ({ one }) => ({
   }),
 }))
 
-export const organizations = pgTable('organizations', {
+export const workspaces = pgTable('workspaces', {
   ...baseTable,
   name: text('name').notNull(),
   slug: text('slug').unique(),
@@ -86,15 +86,15 @@ export const organizations = pgTable('organizations', {
 
 export const members = pgTable('members', {
   ...baseTable,
-  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   role: text('role').notNull(),
 }).enableRLS()
 
 export const membersRelations = relations(members, ({ one }) => ({
-  organization: one(organizations, {
-    fields: [members.organizationId],
-    references: [organizations.id],
+  workspace: one(workspaces, {
+    fields: [members.workspaceId],
+    references: [workspaces.id],
   }),
   user: one(users, {
     fields: [members.userId],
@@ -104,7 +104,7 @@ export const membersRelations = relations(members, ({ one }) => ({
 
 export const invitations = pgTable('invitations', {
   ...baseTable,
-  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
   email: text('email').notNull(),
   role: text('role'),
   status: text('status').notNull(),
@@ -113,9 +113,9 @@ export const invitations = pgTable('invitations', {
 }).enableRLS()
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
-  organization: one(organizations, {
-    fields: [invitations.organizationId],
-    references: [organizations.id],
+  workspace: one(workspaces, {
+    fields: [invitations.workspaceId],
+    references: [workspaces.id],
   }),
   inviter: one(users, {
     fields: [invitations.inviterId],

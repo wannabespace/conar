@@ -6,7 +6,7 @@ function Input({ ref, className, type, ...props }: React.ComponentProps<'input'>
     <input
       type={type}
       className={cn(
-        'flex h-9 w-full rounded-md bg-background border border-border px-3 py-1 text-base shadow-md shadow-black/3 transition-colors file:border-0 file:bg-background file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+        'flex h-9 w-full rounded-md bg-element border border-border px-3 py-1 text-base shadow-lg shadow-black/3 transition-colors file:border-0 file:bg-background file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
         className,
       )}
       ref={ref}

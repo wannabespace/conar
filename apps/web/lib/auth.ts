@@ -2,7 +2,6 @@ import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { bearer, organization, twoFactor } from 'better-auth/plugins'
-import { v7 } from 'uuid'
 import { db } from '~/drizzle'
 import { env } from '~/env'
 import 'server-only'
@@ -14,7 +13,13 @@ export const auth = betterAuth({
   plugins: [
     twoFactor(),
     bearer(),
-    organization(),
+    organization({
+      schema: {
+        organization: {
+          modelName: 'workspaces',
+        },
+      },
+    }),
     emailHarmony(),
     // magicLink({
     //   disableSignUp: true,
@@ -28,7 +33,6 @@ export const auth = betterAuth({
       secret: {
         type: 'string',
         required: true,
-        defaultValue: v7,
         input: false,
       },
     },

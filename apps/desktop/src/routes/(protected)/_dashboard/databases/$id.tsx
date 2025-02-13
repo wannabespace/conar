@@ -33,18 +33,13 @@ function RouteComponent() {
     if (!database)
       return
 
-    window.electron.databases.postgresQuery({
-      connection: {
-        host: database.host,
-        port: database.port,
-        user: database.username,
-        password: 'hXjwbSoyh8UsXhjn',
-        database: database.database ?? undefined,
-      },
-      query,
-    }).then((data) => {
-      setResult(data)
-    })
+    window.electron.databases
+      .query({
+        type: database.type,
+        credentials: database.credentials,
+        query,
+      })
+      .then(setResult)
   }
   return (
     <div>

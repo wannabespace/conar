@@ -2,25 +2,23 @@ import type { VariantProps } from 'class-variance-authority'
 import type { HTMLMotionProps } from 'motion/react'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiLoader4Fill } from '@remixicon/react'
-// import { Link } from '@tanstack/react-router'
 import { cva } from 'class-variance-authority'
 import { motion } from 'motion/react'
-
 import * as React from 'react'
 
 const beforeClasses = 'before:absolute before:block before:rounded-full before:blur-lg before:h-full before:-top-3 before:opacity-40 before:left-1/2 before:-translate-x-1/2 before:h-5 before:w-1/3'
 
 const buttonVariants = cva(
-  'relative cursor-pointer overflow-hidden inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'relative cursor-pointer overflow-hidden inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
         default:
-          `border-y border-b-black/10 border-t-white/30 bg-primary text-white shadow-md shadow-black/2 [text-shadow:0_1px_rgba(0,0,0,0.2)] hover:bg-primary/90 ${beforeClasses} before:bg-white`,
+          `border-b border-b-black/10 bg-primary text-white shadow-lg shadow-black/2 [text-shadow:0_1px_rgba(0,0,0,0.2)] hover:bg-primary/90 ${beforeClasses} before:bg-white`,
         destructive:
-          'bg-destructive text-destructive-foreground shadow-md shadow-black/2 hover:bg-destructive/90',
+          'bg-destructive text-destructive-foreground shadow-lg shadow-black/2 hover:bg-destructive/90',
         outline:
-          'bg-background border border-border shadow-md shadow-black/3 hover:bg-accent hover:text-accent-foreground',
+          'bg-element border border-border shadow-lg shadow-black/3 hover:bg-accent hover:text-accent-foreground',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
       },
@@ -38,14 +36,10 @@ const buttonVariants = cva(
   },
 )
 
-export interface ButtonProps
-  extends Omit<HTMLMotionProps<'button'>, 'children'>,
-  VariantProps<typeof buttonVariants> {
+export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'>, VariantProps<typeof buttonVariants> {
   loading?: boolean
   children: React.ReactNode
 }
-
-// const MotionLink = motion.create(Link)
 
 function Button({
   ref,

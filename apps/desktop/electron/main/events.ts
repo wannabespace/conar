@@ -1,7 +1,9 @@
+import type { DatabaseCredentials } from '@connnect/shared/types/database'
 import { decrypt, encrypt } from '@connnect/shared/encryption'
+import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { ipcMain } from 'electron'
 import ElectronStore from 'electron-store'
-import pg from 'pg'
+import { pgQuery, pgTestConnection } from './pg'
 
 type Store = 'databases'
 
@@ -15,27 +17,23 @@ function createStore(store: Store) {
   })
 }
 
+function getStore(store: Store) {
+  if (!storeMap.has(store)) {
+    storeMap.set(store, createStore(store))
+  }
+
+  return storeMap.get(store)!
+}
+
 const store = {
   get: ({ store, key }: { store: Store, key: string }) => {
-    if (!storeMap.has(store)) {
-      storeMap.set(store, createStore(store))
-    }
-
-    return storeMap.get(store)!.get(key)
+    return getStore(store).get(key)
   },
   set: ({ store, key, value }: { store: Store, key: string, value: unknown }) => {
-    if (!storeMap.has(store)) {
-      storeMap.set(store, createStore(store))
-    }
-
-    storeMap.get(store)!.set(key, value)
+    getStore(store).set(key, value)
   },
   delete: ({ store, key }: { store: Store, key: string }) => {
-    if (!storeMap.has(store)) {
-      storeMap.set(store, createStore(store))
-    }
-
-    storeMap.get(store)!.delete(key)
+    getStore(store).delete(key)
   },
 }
 
@@ -49,33 +47,35 @@ const encryption = {
 }
 
 const databases = {
-  postgresQuery: async <T>({
-    connection,
+  query: async <T>({
+    type,
+    credentials,
     query,
     values,
   }: {
-    connection: {
-      host: string
-      port: number
-      user: string
-      password: string
-      database?: string
-    }
+    type: DatabaseType
+    credentials: DatabaseCredentials
     query: string
     values?: string[]
   }) => {
-    const pool = new pg.Pool(connection)
-
-    try {
-      const result = await pool.query(query, values)
-
-      console.log('result', result)
-
-      return result.rows as T[]
+    const queryMap = {
+      [DatabaseType.Postgres]: pgQuery,
     }
-    finally {
-      await pool.end()
+
+    return queryMap[type]({ credentials, query, values }) as Promise<T[]>
+  },
+  testConnection: async ({
+    type,
+    credentials,
+  }: {
+    type: DatabaseType
+    credentials: DatabaseCredentials
+  }) => {
+    const queryMap = {
+      [DatabaseType.Postgres]: pgTestConnection,
     }
+
+    return queryMap[type]({ credentials })
   },
 }
 

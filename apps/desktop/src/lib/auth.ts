@@ -45,11 +45,11 @@ export function successAuthToast(newUser: boolean) {
 export const authClient = createAuthClient({
   baseURL: env.VITE_PUBLIC_APP_URL,
   fetchOptions: {
-    async onRequest(context) {
+    async onRequest({ headers }) {
       const token = getBearerToken()
 
       if (token) {
-        context.headers.set('Authorization', `Bearer ${token}`)
+        headers.set('Authorization', `Bearer ${token}`)
       }
     },
     async onSuccess({ response }) {
@@ -66,9 +66,9 @@ export const authClient = createAuthClient({
     },
   },
   plugins: [
+    inferAdditionalFields<typeof auth>(),
     organizationClient(),
     twoFactorClient(),
     magicLinkClient(),
-    inferAdditionalFields<typeof auth>(),
   ],
 })

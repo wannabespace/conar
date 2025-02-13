@@ -1,14 +1,7 @@
-interface Database {
-  id: string
-  host: string
-  port: number
-  username: string
-  encryptedPassword: string
-  database: string
-}
+import type { DatabaseCredentials } from '@connnect/shared/types/database'
 
-export async function saveDatabase(database: Database) {
-  window.electron.store.set({ store: 'databases', key: database.id, value: database })
+export async function saveDatabase(id: string, database: DatabaseCredentials) {
+  window.electron.store.set({ store: 'databases', key: id, value: database })
 }
 
 export async function deleteDatabase(id: string) {
@@ -16,5 +9,5 @@ export async function deleteDatabase(id: string) {
 }
 
 export async function getDatabase(id: string) {
-  return window.electron.store.get({ store: 'databases', key: id }) as Promise<Database | null>
+  return window.electron.store.get({ store: 'databases', key: id }) as Promise<DatabaseCredentials | null>
 }

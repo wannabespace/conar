@@ -22,7 +22,7 @@ export function createWindow() {
     titleBarStyle: 'hidden',
     trafficLightPosition: {
       x: 13,
-      y: 13,
+      y: 12,
     },
     webPreferences: {
       preload: path.join(path.dirname(fileURLToPath(import.meta.url)), '../preload/index.mjs'),
