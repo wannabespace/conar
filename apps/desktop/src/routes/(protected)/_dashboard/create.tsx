@@ -1,4 +1,5 @@
 import { DatabaseType } from '@connnect/shared/enums/database-type'
+import { getProtocol } from '@connnect/shared/utils/database'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { Checkbox } from '@connnect/ui/components/checkbox'
@@ -91,7 +92,7 @@ function RouteComponent() {
   const type = useWatch({ control: form.control, name: 'type' })
 
   return (
-    <Form onSubmit={onSubmit} {...form} className="flex flex-col py-10 gap-6 w-full max-w-2xl mx-auto">
+    <Form onSubmit={onSubmit} {...form} className="flex py-10 flex-col w-full max-w-2xl mx-auto">
       <DotPattern
         width={20}
         height={20}
@@ -103,7 +104,7 @@ function RouteComponent() {
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Create a connection
       </h1>
-      <div className="text-sm text-muted-foreground">
+      <p className="leading-7 [&:not(:first-child)]:mt-2 mb-10 text-muted-foreground">
         Press
         {' '}
         <CommandShortcut>⌘</CommandShortcut>
@@ -113,7 +114,7 @@ function RouteComponent() {
         <CommandShortcut>V</CommandShortcut>
         {' '}
         to automatically fill the form if you've copied a connection string.
-      </div>
+      </p>
       <Stepper
         steps={[
           {
@@ -160,7 +161,7 @@ function RouteComponent() {
               </ToggleGroup>
             </CardContent>
           </Card>
-          <div className="mt-auto flex justify-end gap-4">
+          <div className="mt-auto flex justify-end gap-4 pt-4">
             <Button
               disabled={!type}
               onClick={() => setStep('details')}
@@ -176,130 +177,166 @@ function RouteComponent() {
               <CardDescription>Enter the connection details for the database you want to connect to.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-4">
-                <div className="flex gap-2">
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="block">
-                          Username
-                        </FormLabel>
-                        <FormControl className="flex items-center gap-1">
-                          <Input
-                            className="field-sizing-content"
-                            placeholder="username"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field: { onChange, ...field } }) => (
-                      <FormItem className="relative">
-                        <FormLabel className="block">
-                          Password
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="field-sizing-content"
-                            placeholder="password"
-                            type={hidePassword ? 'password' : 'text'}
-                            {...field}
-                            onChange={(e) => {
-                              onChange(e)
-                              setHidePassword(true)
-                            }}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <FormField
-                    control={form.control}
-                    name="host"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="block">
-                          Host
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="field-sizing-content"
-                            placeholder="localhost"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="port"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="block">
-                          Port
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="field-sizing-content"
-                            placeholder="5432"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <FormField
-                    control={form.control}
-                    name="database"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="block">
-                          Database
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="field-sizing-content"
-                            placeholder="postgres"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="options"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="block">
-                          Options
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="field-sizing-content"
-                            placeholder="sslmode=require"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
+              <div className="flex gap-x-2 gap-y-4 flex-wrap items-end">
+                <Input
+                  className="field-sizing-content w-auto"
+                  disabled
+                  size="sm"
+                  value={`${getProtocol(type)}://`}
+                />
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="block">
+                        Username
+                      </FormLabel>
+                      <FormControl className="flex items-center gap-1">
+                        <Input
+                          className="field-sizing-content"
+                          placeholder="username"
+                          size="sm"
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Input
+                  className="field-sizing-content w-auto"
+                  disabled
+                  size="sm"
+                  value=":"
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field: { onChange, ...field } }) => (
+                    <FormItem className="relative">
+                      <FormLabel className="block">
+                        Password
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="field-sizing-content"
+                          placeholder="password"
+                          type={hidePassword ? 'password' : 'text'}
+                          size="sm"
+                          {...field}
+                          onChange={(e) => {
+                            onChange(e)
+                            setHidePassword(true)
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Input
+                  className="field-sizing-content w-auto"
+                  size="sm"
+                  disabled
+                  value="@"
+                />
+                <FormField
+                  control={form.control}
+                  name="host"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="block">
+                        Host
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="field-sizing-content"
+                          placeholder="localhost"
+                          size="sm"
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Input
+                  className="field-sizing-content w-auto"
+                  disabled
+                  value=":"
+                  size="sm"
+                />
+                <FormField
+                  control={form.control}
+                  name="port"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="block">
+                        Port
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="field-sizing-content"
+                          placeholder="5432"
+                          size="sm"
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Input
+                  className="field-sizing-content w-auto"
+                  disabled
+                  value="/"
+                  size="sm"
+                />
+                <FormField
+                  control={form.control}
+                  name="database"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="block">
+                        Database
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="field-sizing-content"
+                          placeholder="postgres"
+                          size="sm"
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Input
+                  className="field-sizing-content w-auto"
+                  disabled
+                  value="?"
+                  size="sm"
+                />
+                <FormField
+                  control={form.control}
+                  name="options"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="block">
+                        Options
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="field-sizing-content"
+                          placeholder="sslmode=require"
+                          size="sm"
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>
-          <div className="flex gap-2 justify-between mt-auto">
+          <div className="flex gap-2 justify-between mt-auto pt-4">
             <Button
               variant="outline"
               loading={isConnecting}
@@ -367,7 +404,7 @@ function RouteComponent() {
               </div>
             </CardContent>
           </Card>
-          <div className="mt-auto flex justify-end gap-4">
+          <div className="mt-auto flex justify-end gap-4 pt-4">
             <label className="text-xs flex items-center gap-2">
               <Checkbox
                 checked={saveInCloud}

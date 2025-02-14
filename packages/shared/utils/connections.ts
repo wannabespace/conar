@@ -1,19 +1,19 @@
 export function parseConnectionString(connectionString: string) {
-  // Simplified pattern that matches both with and without protocol
-  const pattern = /^(?:(?<protocol>[^:]+):\/\/)?(?<username>[^:]+):(?<password>[^@]+)@(?<host>[^:]+):(?<port>\d+)\/(?<database>[^?]+)(\?(?<options>.+))?$/
+  const url = new URL(connectionString)
 
-  const match = connectionString.match(pattern)
+  const parsed = {
+    protocol: url.protocol.slice(0, -1) || null,
+    username: url.username,
+    password: url.password || null,
+    host: url.hostname,
+    port: Number.parseInt(url.port),
+    database: url.pathname.slice(1) || null,
+    options: url.searchParams.toString() || null,
+  }
 
-  if (!match || !match.groups) {
+  if (!parsed.protocol || !parsed.host || !parsed.port || !parsed.database) {
     throw new Error('Invalid connection string format')
   }
 
-  return {
-    username: match.groups.username,
-    password: match.groups.password,
-    host: match.groups.host,
-    port: Number.parseInt(match.groups.port),
-    database: match.groups.database,
-    options: match.groups.options || null,
-  }
+  return parsed
 }

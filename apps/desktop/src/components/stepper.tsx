@@ -17,7 +17,7 @@ export function Stepper<T extends string>({
 }) {
   return (
     <StepperContext value={{ active }}>
-      <div className="flex -mx-4 justify-between relative h-10 before:absolute before:-z-10 before:inset-0 before:top-1/2 before:-translate-y-1/2 before:h-0.5 before:w-full before:bg-gradient-to-r before:from-transparent before:via-slate-300 before:to-transparent">
+      <div className="flex mb-6 -mx-4 justify-between relative h-10 before:absolute before:-z-10 before:inset-0 before:top-1/2 before:-translate-y-1/2 before:h-0.5 before:w-full before:bg-gradient-to-r before:from-transparent before:via-slate-300 before:to-transparent">
         {steps.map((step, index) => (
           <div
             key={step.id}
