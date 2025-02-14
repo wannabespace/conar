@@ -7,10 +7,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '@connnect/ui/
 import { Input } from '@connnect/ui/components/input'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ToggleGroup, ToggleGroupItem } from '@connnect/ui/components/toggle-group'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { faker } from '@faker-js/faker'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { RiRefreshLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -25,7 +27,7 @@ import { queryClient } from '~/main'
 import { databasesQuery } from '~/queries/databases'
 
 export const Route = createFileRoute(
-  '/(protected)/_dashboard/databases/create',
+  '/(protected)/_dashboard/create',
 )({
   component: RouteComponent,
 })
@@ -42,10 +44,10 @@ const formSchema = z.object({
 })
 
 const defaultCredentials = {
-  name: faker.word.words(2),
+  name: faker.music.songName(),
   type: null!,
   username: 'postgres.oywnxcvzfsqzhfwvavrd',
-  password: 'hXjwbSoyh8UsXhjn',
+  password: 'JmvmGeTTAcqiwRyk',
   host: 'aws-0-eu-central-1.pooler.supabase.com',
   port: 6543,
   options: '',
@@ -56,11 +58,14 @@ function RouteComponent() {
   const [hidePassword, setHidePassword] = useState(false)
   const [saveInCloud, setSaveInCloud] = useState(true)
   const [step, setStep] = useState<'type' | 'details' | 'save'>('type')
-  const { mutate: createDatabase } = useMutation({
+  const router = useRouter()
+  const { mutateAsync: createDatabase } = useMutation({
     mutationFn: (values: z.infer<typeof formSchema>) =>
       trpc.databases.create.mutate({ ...values, type: DatabaseType.Postgres }),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries(databasesQuery())
+      router.navigate({ to: '/databases/$id', params: { id: data.id } })
+      toast.success('Database created successfully 🎉')
     },
   })
   const { mutate: testConnection, isPending: isConnecting } = useMutation({
@@ -80,7 +85,7 @@ function RouteComponent() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    createDatabase(values)
+    await createDatabase(values)
   }
 
   const type = useWatch({ control: form.control, name: 'type' })
@@ -155,6 +160,14 @@ function RouteComponent() {
               </ToggleGroup>
             </CardContent>
           </Card>
+          <div className="mt-auto flex justify-end gap-4">
+            <Button
+              disabled={!type}
+              onClick={() => setStep('details')}
+            >
+              Next
+            </Button>
+          </div>
         </StepperStep>
         <StepperStep id="details">
           <Card className="w-full">
@@ -286,52 +299,75 @@ function RouteComponent() {
               </div>
             </CardContent>
           </Card>
+          <div className="flex gap-2 justify-between mt-auto">
+            <Button
+              variant="outline"
+              loading={isConnecting}
+              disabled={form.formState.isSubmitting}
+              onClick={() => testConnection(form.getValues())}
+            >
+              Test connection
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setStep('type')}>
+                Back
+              </Button>
+              <Button
+                disabled={!form.formState.isValid}
+                onClick={() => setStep('save')}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </StepperStep>
         <StepperStep id="save">
           <Card className="w-full">
             <CardHeader>
-              <CardTitle>Test connection</CardTitle>
-              <CardDescription>Test the connection to the database. You can skip this step if you want to save the connection.</CardDescription>
+              <CardTitle>Save connection</CardTitle>
+              <CardDescription>Save the connection to the database.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex justify-center py-6">
-                <Button
-                  variant="outline"
-                  loading={isConnecting}
-                  disabled={form.formState.isSubmitting}
-                  onClick={() => testConnection(form.getValues())}
-                >
-                  Test connection
-                </Button>
+              <div className="flex w-full gap-2">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="block">
+                        Database name
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="field-sizing-content"
+                          placeholder="My database"
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => form.setValue('name', faker.music.songName())}
+                      >
+                        <RiRefreshLine className="size-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Generate a random database name from song titles
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </CardContent>
           </Card>
-        </StepperStep>
-      </Stepper>
-      <div className="mt-auto flex justify-end gap-4">
-        {step === 'type' && (
-          <Button
-            disabled={!type}
-            onClick={() => setStep('details')}
-          >
-            Next
-          </Button>
-        )}
-        {step === 'details' && (
-          <>
-            <Button variant="outline" onClick={() => setStep('type')}>
-              Back
-            </Button>
-            <Button
-              disabled={!form.formState.isValid}
-              onClick={() => setStep('save')}
-            >
-              Next
-            </Button>
-          </>
-        )}
-        {step === 'save' && (
-          <>
+          <div className="mt-auto flex justify-end gap-4">
             <label className="text-xs flex items-center gap-2">
               <Checkbox
                 checked={saveInCloud}
@@ -352,9 +388,9 @@ function RouteComponent() {
               <AppLogo className="w-4" />
               Save connection
             </Button>
-          </>
-        )}
-      </div>
+          </div>
+        </StepperStep>
+      </Stepper>
     </Form>
   )
 }

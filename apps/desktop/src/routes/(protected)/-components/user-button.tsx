@@ -25,14 +25,14 @@ export function UserButton() {
     <DropdownMenu>
       <DropdownMenuTrigger className="cursor-pointer">
         <Avatar className="size-6">
-          <AvatarImage src="https://github.com/shadcn.png" />
+          {data?.user.image && <AvatarImage src={data?.user.image} />}
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={5} className="w-70">
         <div className="flex items-center gap-2 h-10 px-2 mt-1 mb-2">
           <Avatar className="size-8">
-            <AvatarImage src="https://github.com/shadcn.png" />
+            {data?.user.image && <AvatarImage src={data?.user.image} />}
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <div className="flex flex-col leading-0">

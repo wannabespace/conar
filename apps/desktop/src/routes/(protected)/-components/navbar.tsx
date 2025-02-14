@@ -52,7 +52,7 @@ export function Navbar() {
   return (
     <>
       <div className="h-10" />
-      <div className="fixed top-0 inset-x-0 backdrop-blur-xs bg-background/10 border-b border-border z-50 flex items-center h-10 justify-between pe-2">
+      <div className="fixed top-0 inset-x-0 z-50 flex items-center h-10 justify-between pe-2">
         <div className="w-22 h-full [app-region:drag]" />
         <div className="flex items-center gap-1">
           <button

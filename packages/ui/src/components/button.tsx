@@ -1,5 +1,4 @@
 import type { VariantProps } from 'class-variance-authority'
-import type { HTMLMotionProps } from 'motion/react'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiLoader4Fill } from '@remixicon/react'
 import { cva } from 'class-variance-authority'
@@ -14,13 +13,12 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          `border-b border-b-black/10 bg-primary text-white shadow-lg shadow-black/2 [text-shadow:0_1px_rgba(0,0,0,0.2)] hover:bg-primary/90 ${beforeClasses} before:bg-white`,
+          `border-b border-b-black/10 bg-primary text-white shadow-md shadow-black/2 [text-shadow:0_1px_rgba(0,0,0,0.2)] hover:bg-primary/90 ${beforeClasses} before:bg-white`,
         destructive:
-          'bg-destructive text-destructive-foreground shadow-lg shadow-black/2 hover:bg-destructive/90',
+          'bg-destructive text-destructive-foreground shadow-md shadow-black/2 hover:bg-destructive/90',
         outline:
-          'bg-element border border-border shadow-lg shadow-black/3 hover:bg-accent hover:text-accent-foreground',
+          'bg-element border border-border shadow-md shadow-black/2 hover:bg-accent hover:text-accent-foreground',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-9 px-4 py-2',
@@ -36,13 +34,13 @@ const buttonVariants = cva(
   },
 )
 
-export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'>, VariantProps<typeof buttonVariants> {
+export interface ButtonProps extends Pick<React.ComponentProps<'button'>, 'type' | 'disabled' | 'className'>, VariantProps<typeof buttonVariants> {
   loading?: boolean
   children: React.ReactNode
+  onClick?: () => void
 }
 
 function Button({
-  ref,
   children,
   loading,
   disabled,
@@ -50,18 +48,19 @@ function Button({
   type = 'button',
   variant,
   size,
+  onClick,
   ...props
-}: ButtonProps & { ref?: React.RefObject<HTMLButtonElement> }) {
+}: ButtonProps) {
   const Comp = motion.button
 
   return (
     <Comp
       className={cn(buttonVariants({ variant, size, className }))}
-      ref={ref}
       type={type}
       whileTap={{ scale: 0.99 }}
       transition={{ type: 'spring', stiffness: 400, damping: 15 }}
       disabled={loading || disabled}
+      onClick={onClick}
       {...props}
     >
       <span className={cn(loading ? '-translate-y-1/2' : 'translate-y-10', 'duration-150 absolute left-1/2 top-1/2 -translate-x-1/2')}>

@@ -3,7 +3,6 @@ import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { cn } from '@connnect/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import React from 'react'
 import { databasesQuery } from '~/queries/databases'
 
 export const Route = createFileRoute('/(protected)/_dashboard/')({
@@ -39,7 +38,7 @@ function DashboardComponent() {
         Create a new connection to get started.
       </p>
       <Button
-        onClick={() => router.navigate({ to: '/databases/create' })}
+        onClick={() => router.navigate({ to: '/create' })}
         className={cn(
           'mt-4',
           'shadow-sm active:shadow-none',

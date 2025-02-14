@@ -18,7 +18,7 @@ export const create = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     const encryptedPassword = encrypt({ text: input.password, secret: ctx.user.secret })
 
-    await db.insert(databases).values({
+    const [database] = await db.insert(databases).values({
       name: input.name,
       type: input.type,
       credentials: {
@@ -30,5 +30,7 @@ export const create = protectedProcedure
         srv: input.srv,
       },
       userId: ctx.user.id,
-    })
+    }).returning({ id: databases.id })
+
+    return database
   })
