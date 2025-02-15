@@ -1,16 +1,17 @@
-import { DatabaseType } from '@connnect/shared/enums/database-type'
-import { getProtocol } from '@connnect/shared/utils/database'
+import { ConnectionType } from '@connnect/shared/enums/connection-type'
+import { getProtocols, parseConnectionString, protocolMap } from '@connnect/shared/utils/connections'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { Checkbox } from '@connnect/ui/components/checkbox'
 import { CommandShortcut } from '@connnect/ui/components/command'
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@connnect/ui/components/form'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@connnect/ui/components/form'
 import { Input } from '@connnect/ui/components/input'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ToggleGroup, ToggleGroupItem } from '@connnect/ui/components/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { faker } from '@faker-js/faker'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useKeyboardEvent } from '@react-hookz/web'
 import { RiRefreshLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
@@ -19,13 +20,14 @@ import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { AppLogo } from '~/components/app-logo'
-import { Stepper, StepperStep } from '~/components/stepper'
+import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
-import { databasesQuery } from '~/queries/databases'
+import { connectionsQuery } from '~/queries/connections'
+import { ConnectionDetails } from './-components/connection-details'
 
 export const Route = createFileRoute(
   '/(protected)/_dashboard/create',
@@ -34,44 +36,75 @@ export const Route = createFileRoute(
 })
 
 const formSchema = z.object({
-  name: z.string().optional(),
-  type: z.nativeEnum(DatabaseType),
-  host: z.string().min(1),
-  port: z.number().min(1),
-  username: z.string().min(1),
-  password: z.string().min(1),
-  database: z.string().min(1),
-  options: z.string().optional(),
+  name: z.string(),
+  type: z.nativeEnum(ConnectionType),
+  connectionString: z.string().refine((value) => {
+    try {
+      parseConnectionString(value)
+      return true
+    }
+    catch {
+      return false
+    }
+  }, 'Invalid connection string format'),
 })
 
+function generateRandomName() {
+  return `${faker.color.human()} ${faker.animal.type()}`
+}
+
 const defaultCredentials = {
-  name: faker.music.songName(),
+  connectionString: '',
+  name: generateRandomName(),
   type: null!,
-  username: 'postgres.oywnxcvzfsqzhfwvavrd',
-  password: 'JmvmGeTTAcqiwRyk',
-  host: 'aws-0-eu-central-1.pooler.supabase.com',
-  port: 6543,
-  options: '',
-  database: 'postgres',
 }
 
 function RouteComponent() {
-  const [hidePassword, setHidePassword] = useState(false)
   const [saveInCloud, setSaveInCloud] = useState(true)
-  const [step, setStep] = useState<'type' | 'details' | 'save'>('type')
+  const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
-  const { mutateAsync: createDatabase } = useMutation({
-    mutationFn: (values: z.infer<typeof formSchema>) =>
-      trpc.databases.create.mutate({ ...values, type: DatabaseType.Postgres }),
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: defaultCredentials,
+  })
+
+  useKeyboardEvent(e => e.key === 'v' && e.metaKey, async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      const parsed = parseConnectionString(text)
+      const protocolsEntries = Object.entries(protocolMap)
+
+      if (!protocolsEntries.some(([_, protocols]) => protocols.includes(parsed.protocol))) {
+        toast.error('Sorry, we currently do not support this protocol')
+        return
+      }
+
+      const type = protocolsEntries.find(([_, protocols]) => protocols.includes(parsed.protocol))?.[0] as ConnectionType
+
+      form.setValue('connectionString', text)
+      form.setValue('type', type)
+      setStep('credentials')
+
+      toast.success('Connection string pasted successfully')
+    }
+    catch {
+      toast.error('Sorry, we couldn\'t parse the connection string')
+    }
+  })
+
+  const [type, connectionString] = useWatch({ control: form.control, name: ['type', 'connectionString'] })
+
+  const { mutateAsync: createConnection } = useMutation({
+    mutationFn: trpc.connections.create.mutate,
     onSuccess: (data) => {
-      queryClient.invalidateQueries(databasesQuery())
-      router.navigate({ to: '/databases/$id', params: { id: data.id } })
-      toast.success('Database created successfully 🎉')
+      queryClient.invalidateQueries(connectionsQuery())
+      toast.success('Connection created successfully 🎉')
+      router.navigate({ to: '/connections/$id', params: { id: data.id } })
     },
   })
   const { mutate: testConnection, isPending: isConnecting } = useMutation({
-    mutationFn: (values: z.infer<typeof formSchema>) =>
-      window.electron.databases.testConnection({ credentials: values, type: DatabaseType.Postgres }),
+    mutationFn: window.electron.connections.testConnection,
     onError: (error) => {
       toast.error(error.message)
     },
@@ -80,19 +113,8 @@ function RouteComponent() {
     },
   })
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: defaultCredentials,
-  })
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    await createDatabase(values)
-  }
-
-  const type = useWatch({ control: form.control, name: 'type' })
-
   return (
-    <Form onSubmit={onSubmit} {...form} className="flex py-10 flex-col w-full max-w-2xl mx-auto">
+    <Form {...form} onSubmit={v => createConnection(v)} className="flex py-10 flex-col w-full max-w-2xl mx-auto">
       <DotPattern
         width={20}
         height={20}
@@ -116,24 +138,21 @@ function RouteComponent() {
         to automatically fill the form if you've copied a connection string.
       </p>
       <Stepper
-        steps={[
-          {
-            id: 'type',
-            label: 'Type',
-          },
-          {
-            id: 'details',
-            label: 'Details',
-          },
-          {
-            id: 'save',
-            label: 'Save',
-          },
-        ]}
         active={step}
         onChange={setStep}
       >
-        <StepperStep id="type">
+        <StepperList>
+          <StepperTrigger value="type" number={1}>
+            Type
+          </StepperTrigger>
+          <StepperTrigger value="credentials" number={2}>
+            Credentials
+          </StepperTrigger>
+          <StepperTrigger value="save" number={3}>
+            Save
+          </StepperTrigger>
+        </StepperList>
+        <StepperContent value="type">
           <Card className="w-full">
             <CardHeader>
               <CardTitle>Type of connection</CardTitle>
@@ -144,9 +163,9 @@ function RouteComponent() {
                 type="single"
                 variant="outline"
                 value={type}
-                onValueChange={value => form.setValue('type', value as DatabaseType)}
+                onValueChange={value => form.setValue('type', value as ConnectionType)}
               >
-                <ToggleGroupItem value={DatabaseType.Postgres} aria-label="Postgres">
+                <ToggleGroupItem value={ConnectionType.Postgres} aria-label="Postgres">
                   <PostgresIcon />
                   Postgres
                 </ToggleGroupItem>
@@ -164,183 +183,45 @@ function RouteComponent() {
           <div className="mt-auto flex justify-end gap-4 pt-4">
             <Button
               disabled={!type}
-              onClick={() => setStep('details')}
+              onClick={() => setStep('credentials')}
             >
               Next
             </Button>
           </div>
-        </StepperStep>
-        <StepperStep id="details">
+        </StepperContent>
+        <StepperContent value="credentials">
           <Card className="w-full">
             <CardHeader>
-              <CardTitle>Connection details</CardTitle>
-              <CardDescription>Enter the connection details for the database you want to connect to.</CardDescription>
+              <CardTitle>Credentials</CardTitle>
+              <CardDescription>Enter the credentials of your connection.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-x-2 gap-y-4 flex-wrap items-end">
-                <Input
-                  className="field-sizing-content w-auto"
-                  disabled
-                  size="sm"
-                  value={`${getProtocol(type)}://`}
-                />
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="block">
-                        Username
-                      </FormLabel>
-                      <FormControl className="flex items-center gap-1">
-                        <Input
-                          className="field-sizing-content"
-                          placeholder="username"
-                          size="sm"
-                          {...field}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Input
-                  className="field-sizing-content w-auto"
-                  disabled
-                  size="sm"
-                  value=":"
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field: { onChange, ...field } }) => (
-                    <FormItem className="relative">
-                      <FormLabel className="block">
-                        Password
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="field-sizing-content"
-                          placeholder="password"
-                          type={hidePassword ? 'password' : 'text'}
-                          size="sm"
-                          {...field}
-                          onChange={(e) => {
-                            onChange(e)
-                            setHidePassword(true)
-                          }}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Input
-                  className="field-sizing-content w-auto"
-                  size="sm"
-                  disabled
-                  value="@"
-                />
-                <FormField
-                  control={form.control}
-                  name="host"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="block">
-                        Host
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="field-sizing-content"
-                          placeholder="localhost"
-                          size="sm"
-                          {...field}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Input
-                  className="field-sizing-content w-auto"
-                  disabled
-                  value=":"
-                  size="sm"
-                />
-                <FormField
-                  control={form.control}
-                  name="port"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="block">
-                        Port
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="field-sizing-content"
-                          placeholder="5432"
-                          size="sm"
-                          {...field}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Input
-                  className="field-sizing-content w-auto"
-                  disabled
-                  value="/"
-                  size="sm"
-                />
-                <FormField
-                  control={form.control}
-                  name="database"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="block">
-                        Database
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="field-sizing-content"
-                          placeholder="postgres"
-                          size="sm"
-                          {...field}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Input
-                  className="field-sizing-content w-auto"
-                  disabled
-                  value="?"
-                  size="sm"
-                />
-                <FormField
-                  control={form.control}
-                  name="options"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="block">
-                        Options
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="field-sizing-content"
-                          placeholder="sslmode=require"
-                          size="sm"
-                          {...field}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="connectionString"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Connection string
+                    </FormLabel>
+                    <FormControl className="flex items-center gap-1">
+                      <Input
+                        placeholder={`${getProtocols(type)[0]}://username:password@host:port/database?options`}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <ConnectionDetails connectionString={connectionString} />
             </CardContent>
           </Card>
           <div className="flex gap-2 justify-between mt-auto pt-4">
             <Button
               variant="outline"
               loading={isConnecting}
-              disabled={form.formState.isSubmitting}
+              disabled={form.formState.isSubmitting || !form.formState.isValid}
               onClick={() => testConnection(form.getValues())}
             >
               Test connection
@@ -357,8 +238,8 @@ function RouteComponent() {
               </Button>
             </div>
           </div>
-        </StepperStep>
-        <StepperStep id="save">
+        </StepperContent>
+        <StepperContent value="save">
           <Card className="w-full">
             <CardHeader>
               <CardTitle>Save connection</CardTitle>
@@ -391,13 +272,13 @@ function RouteComponent() {
                         type="button"
                         variant="outline"
                         size="icon"
-                        onClick={() => form.setValue('name', faker.music.songName())}
+                        onClick={() => form.setValue('name', generateRandomName())}
                       >
                         <RiRefreshLine className="size-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Generate a random database name from song titles
+                      Generate a random database name
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -414,7 +295,7 @@ function RouteComponent() {
                 Save the password in cloud
               </span>
             </label>
-            <Button variant="outline" onClick={() => setStep('details')}>
+            <Button variant="outline" onClick={() => setStep('credentials')}>
               Back
             </Button>
             <Button
@@ -426,7 +307,7 @@ function RouteComponent() {
               Save connection
             </Button>
           </div>
-        </StepperStep>
+        </StepperContent>
       </Stepper>
     </Form>
   )

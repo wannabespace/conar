@@ -5,12 +5,12 @@ import { RiArrowLeftLine, RiArrowRightLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
-import { databasesQuery } from '~/queries/databases'
+import { connectionsQuery } from '~/queries/connections'
 import { UserButton } from './user-button'
 
 function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
-  const { data: databases } = useQuery({
-    ...databasesQuery(),
+  const { data: connections } = useQuery({
+    ...connectionsQuery(),
     select: data => Object.entries(Object.groupBy(data, db => db.type)),
   })
 
@@ -25,10 +25,10 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
         </CommandItem>
       </CommandGroup> */}
         <CommandEmpty>No connections found.</CommandEmpty>
-        {databases?.map(([type, databases]) => (
+        {connections?.map(([type, connections]) => (
           <CommandGroup key={type} heading={type}>
-            {databases.map(database => (
-              <CommandItem key={database.id}>{database.name}</CommandItem>
+            {connections.map(connection => (
+              <CommandItem key={connection.id}>{connection.name}</CommandItem>
             ))}
           </CommandGroup>
         ))}
@@ -39,11 +39,11 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
 
 export function Navbar() {
   const [openConnections, setOpenConnections] = useState(false)
-  const { data: databases } = useQuery(databasesQuery())
+  const { data: connections } = useQuery(connectionsQuery())
   const router = useRouter()
 
   useKeyboardEvent(e => e.key === 'l' && e.metaKey, () => {
-    if (!databases || databases.length === 0)
+    if (!connections || connections.length === 0)
       return
 
     setOpenConnections(open => !open)
@@ -73,7 +73,7 @@ export function Navbar() {
           </button>
         </div>
         <div className="flex-1 h-full [app-region:drag]" />
-        {databases?.length
+        {connections?.length
           ? (
               <button
                 type="button"

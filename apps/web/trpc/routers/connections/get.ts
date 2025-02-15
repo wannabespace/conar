@@ -2,7 +2,7 @@ import { decrypt } from '@connnect/shared/encryption'
 import { TRPCError } from '@trpc/server'
 import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
-import { databases, db } from '~/drizzle'
+import { connections, db } from '~/drizzle'
 import { protectedProcedure } from '~/trpc'
 
 export const get = protectedProcedure
@@ -12,11 +12,11 @@ export const get = protectedProcedure
   .query(async ({ ctx, input }) => {
     const [database] = await db
       .select()
-      .from(databases)
+      .from(connections)
       .where(
         and(
-          eq(databases.userId, ctx.user.id),
-          eq(databases.id, input.id),
+          eq(connections.userId, ctx.user.id),
+          eq(connections.id, input.id),
         ),
       )
 
@@ -24,15 +24,10 @@ export const get = protectedProcedure
       throw new TRPCError({ code: 'NOT_FOUND', message: 'Database not found' })
     }
 
-    const decryptedPassword = database.credentials.password
-      ? decrypt({ encryptedText: database.credentials.password, secret: ctx.user.secret })
-      : undefined
+    const connectionString = decrypt({ encryptedText: database.connectionString, secret: ctx.user.secret })
 
     return {
       ...database,
-      credentials: {
-        ...database.credentials,
-        ...(decryptedPassword ? { password: decryptedPassword } : {}),
-      },
+      connectionString,
     }
   })

@@ -5,19 +5,16 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import { Monaco } from '~/components/monaco'
 import { formatSql } from '~/lib/formatter'
-import { trpc } from '~/lib/trpc'
+import { connectionQuery } from '~/queries/connections'
 
-export const Route = createFileRoute('/(protected)/_dashboard/databases/$id')({
+export const Route = createFileRoute('/(protected)/_dashboard/connections/$id')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const { id } = Route.useParams()
   const [query, setQuery] = useState('')
-  const { data: database } = useQuery({
-    queryKey: ['databases', id],
-    queryFn: () => trpc.databases.get.query({ id }),
-  })
+  const { data: connection } = useQuery(connectionQuery(id))
   // eslint-disable-next-line ts/no-explicit-any
   const [result, setResult] = useState<any>(null)
   const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
@@ -30,13 +27,13 @@ function RouteComponent() {
   }
 
   function send(query: string) {
-    if (!database)
+    if (!connection)
       return
 
-    window.electron.databases
+    window.electron.connections
       .query({
-        type: database.type,
-        credentials: database.credentials,
+        type: connection.type,
+        connectionString: connection.connectionString,
         query,
       })
       .then(setResult)

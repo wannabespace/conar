@@ -1,21 +1,16 @@
-import type { DatabaseCredentials } from '@connnect/shared/types/database'
 import pg from 'pg'
 
 export async function pgQuery({
-  credentials,
+  connectionString,
   query,
   values,
 }: {
-  credentials: DatabaseCredentials
+  connectionString: string
   query: string
   values?: string[]
 }) {
   const pool = new pg.Pool({
-    host: credentials.host,
-    port: credentials.port,
-    user: credentials.username,
-    password: credentials.password,
-    database: credentials.database,
+    connectionString,
   })
 
   try {
@@ -28,14 +23,9 @@ export async function pgQuery({
   }
 }
 
-export async function pgTestConnection({ credentials }: { credentials: DatabaseCredentials }) {
+export async function pgTestConnection({ connectionString }: { connectionString: string }) {
   const client = new pg.Client({
-    host: credentials.host,
-    port: credentials.port,
-    user: credentials.username,
-    password: credentials.password,
-    database: credentials.database,
-    options: credentials.options,
+    connectionString,
   })
 
   try {

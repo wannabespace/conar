@@ -1,13 +1,25 @@
+import { ConnectionType } from '../enums/connection-type'
+
+export interface Connection {
+  protocol: string
+  username: string
+  password: string | null
+  host: string
+  port: number
+  database: string
+  options: string | null
+}
+
 export function parseConnectionString(connectionString: string) {
   const url = new URL(connectionString)
 
-  const parsed = {
-    protocol: url.protocol.slice(0, -1) || null,
+  const parsed: Connection = {
+    protocol: url.protocol.slice(0, -1),
     username: url.username,
     password: url.password || null,
     host: url.hostname,
     port: Number.parseInt(url.port),
-    database: url.pathname.slice(1) || null,
+    database: url.pathname.slice(1),
     options: url.searchParams.toString() || null,
   }
 
@@ -16,4 +28,12 @@ export function parseConnectionString(connectionString: string) {
   }
 
   return parsed
+}
+
+export const protocolMap: Record<ConnectionType, string[]> = {
+  [ConnectionType.Postgres]: ['postgresql', 'postgres'],
+}
+
+export function getProtocols(type: ConnectionType) {
+  return protocolMap[type]
 }

@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, screen, shell } from 'electron'
 import started from 'electron-squirrel-startup'
 import { handleDeepLink } from './deep-link'
 // import updater from 'electron-updater'
@@ -15,9 +15,11 @@ initElectronEvents()
 let mainWindow: BrowserWindow | null = null
 
 export function createWindow() {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize
+
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
+    width,
+    height,
     focusable: true,
     titleBarStyle: 'hidden',
     trafficLightPosition: {

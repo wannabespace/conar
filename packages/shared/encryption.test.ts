@@ -45,6 +45,18 @@ describe('encryption', () => {
     const id = nanoid()
     const encrypted = encrypt({ text: id, secret })
     const decrypted = decrypt({ encryptedText: encrypted, secret })
+
     expect(decrypted).toBe(id)
+  })
+
+  it('should handle double encryption and decryption', () => {
+    const text = 'Hello, World!'
+    const firstEncryption = encrypt({ text, secret })
+    const secondEncryption = encrypt({ text: firstEncryption, secret })
+
+    const firstDecryption = decrypt({ encryptedText: secondEncryption, secret })
+    const finalDecryption = decrypt({ encryptedText: firstDecryption, secret })
+
+    expect(finalDecryption).toBe(text)
   })
 })

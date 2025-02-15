@@ -1,6 +1,11 @@
 import type { auth } from '@connnect/web/auth-type'
 import { createAuthClient } from 'better-auth/client'
-import { inferAdditionalFields, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
+import {
+  inferAdditionalFields,
+  magicLinkClient,
+  organizationClient,
+  twoFactorClient,
+} from 'better-auth/client/plugins'
 import { toast } from 'sonner'
 import { env } from '~/env'
 

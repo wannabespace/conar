@@ -1,11 +1,10 @@
-import type { DatabaseCredentials } from '@connnect/shared/types/database'
 import { decrypt, encrypt } from '@connnect/shared/encryption'
-import { DatabaseType } from '@connnect/shared/enums/database-type'
+import { ConnectionType } from '@connnect/shared/enums/connection-type'
 import { ipcMain } from 'electron'
 import ElectronStore from 'electron-store'
 import { pgQuery, pgTestConnection } from './pg'
 
-type Store = 'databases'
+type Store = 'connections'
 
 const storeMap = new Map<Store, ElectronStore>()
 
@@ -46,36 +45,36 @@ const encryption = {
   },
 }
 
-const databases = {
+const connections = {
   query: async <T>({
     type,
-    credentials,
+    connectionString,
     query,
     values,
   }: {
-    type: DatabaseType
-    credentials: DatabaseCredentials
+    type: ConnectionType
+    connectionString: string
     query: string
     values?: string[]
   }) => {
     const queryMap = {
-      [DatabaseType.Postgres]: pgQuery,
+      [ConnectionType.Postgres]: pgQuery,
     }
 
-    return queryMap[type]({ credentials, query, values }) as Promise<T[]>
+    return queryMap[type]({ connectionString, query, values }) as Promise<T[]>
   },
   testConnection: async ({
     type,
-    credentials,
+    connectionString,
   }: {
-    type: DatabaseType
-    credentials: DatabaseCredentials
+    type: ConnectionType
+    connectionString: string
   }) => {
     const queryMap = {
-      [DatabaseType.Postgres]: pgTestConnection,
+      [ConnectionType.Postgres]: pgTestConnection,
     }
 
-    return queryMap[type]({ credentials })
+    return queryMap[type]({ connectionString })
   },
 }
 
@@ -84,7 +83,7 @@ const _app = {
 }
 
 export const electron = {
-  databases,
+  connections,
   encryption,
   store,
   app: _app,

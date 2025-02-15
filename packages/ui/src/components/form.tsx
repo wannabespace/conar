@@ -192,10 +192,10 @@ function FormMessage({ ref, className, children, ...props }: HTMLMotionProps<'p'
       className={cn('text-xs text-destructive', className)}
       initial={{ height: 0, opacity: 0 }}
       animate={{
-        height: body ? 16 : 0,
+        height: body ? 'auto' : 0,
         opacity: body ? 1 : 0,
       }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.2 }}
       {...props}
     >
       {body}

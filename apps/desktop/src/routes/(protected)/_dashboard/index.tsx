@@ -3,17 +3,17 @@ import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { cn } from '@connnect/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { databasesQuery } from '~/queries/databases'
+import { connectionsQuery } from '~/queries/connections'
 
 export const Route = createFileRoute('/(protected)/_dashboard/')({
   component: DashboardComponent,
 })
 
 function DashboardComponent() {
-  const { data: databases } = useQuery(databasesQuery())
+  const { data: connections } = useQuery(connectionsQuery())
   const router = useRouter()
 
-  if (databases?.length) {
+  if (connections?.length) {
     return (
       <div>
         <h3>Welcome Home!</h3>

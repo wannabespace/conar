@@ -17,11 +17,9 @@
     "@trpc/server": "^11.0.0-rc.724"
   },
   "dependencies": {
-    "@react-hookz/web": "^25.0.1",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^10.0.1",
     "electron-updater": "^6.3.9",
-    "monaco-themes": "^0.4.4",
     "pg": "^8.13.3"
   },
   "devDependencies": {
@@ -30,9 +28,11 @@
     "@connnect/ui": "workspace:*",
     "@connnect/web": "workspace:*",
     "@faker-js/faker": "^9.5.0",
+    "@hookform/devtools": "^4.3.3",
     "@monaco-editor/loader": "^1.5.0",
     "@monaco-editor/react": "^4.7.0",
     "@number-flow/react": "^0.5.5",
+    "@react-hookz/web": "^25.0.1",
     "@remixicon/react": "^4.6.0",
     "@t3-oss/env-core": "^0.12.0",
     "@tailwindcss/vite": "^4.0.6",
@@ -52,9 +52,9 @@
     "electron-builder": "^25.1.8",
     "lucide-react": "^0.475.0",
     "monaco-editor": "^0.52.2",
+    "monaco-themes": "^0.4.4",
     "motion": "^12.4.3",
     "nanoid": "^5.1.0",
-    "permix": "1.0.4",
     "posthog-js": "^1.218.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
