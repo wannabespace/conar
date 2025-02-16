@@ -1,14 +1,5 @@
+import type { Connection } from '../types/connection'
 import { ConnectionType } from '../enums/connection-type'
-
-export interface Connection {
-  protocol: string
-  username: string
-  password: string | null
-  host: string
-  port: number
-  database: string
-  options: string | null
-}
 
 export function parseConnectionString(connectionString: string) {
   const url = new URL(connectionString)

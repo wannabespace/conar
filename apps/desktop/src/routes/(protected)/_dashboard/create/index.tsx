@@ -1,4 +1,4 @@
-import { ConnectionType } from '@connnect/shared/enums/connection-type'
+import { connectionLabels, ConnectionType } from '@connnect/shared/enums/connection-type'
 import { getProtocols, parseConnectionString, protocolMap } from '@connnect/shared/utils/connections'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@connnect/ui/components/card'
@@ -9,13 +9,13 @@ import { Input } from '@connnect/ui/components/input'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ToggleGroup, ToggleGroupItem } from '@connnect/ui/components/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { RefreshIcon } from '@connnect/ui/icons/refresh'
 import { faker } from '@faker-js/faker'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiRefreshLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -30,13 +30,13 @@ import { connectionsQuery } from '~/queries/connections'
 import { ConnectionDetails } from './-components/connection-details'
 
 export const Route = createFileRoute(
-  '/(protected)/_dashboard/create',
+  '/(protected)/_dashboard/create/',
 )({
   component: RouteComponent,
 })
 
 const formSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1, 'Please enter a name for your connection'),
   type: z.nativeEnum(ConnectionType),
   connectionString: z.string().refine((value) => {
     try {
@@ -47,35 +47,43 @@ const formSchema = z.object({
       return false
     }
   }, 'Invalid connection string format'),
+  saveInCloud: z.boolean().default(true),
 })
 
 function generateRandomName() {
-  return `${faker.color.human()} ${faker.animal.type()}`
+  const vehicle = faker.vehicle.model()
+  const color = faker.color.human()
+
+  return `${color.charAt(0).toUpperCase() + color.slice(1)} ${vehicle}`
 }
 
 const defaultCredentials = {
   connectionString: '',
   name: generateRandomName(),
   type: null!,
+  saveInCloud: true,
 }
 
 function RouteComponent() {
-  const [saveInCloud, setSaveInCloud] = useState(true)
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultCredentials,
   })
 
-  useKeyboardEvent(e => e.key === 'v' && e.metaKey, async () => {
+  useKeyboardEvent(e => e.key === 'v' && e.metaKey, async (e) => {
+    if (inputRef.current === e.target)
+      return
+
     try {
       const text = await navigator.clipboard.readText()
       const parsed = parseConnectionString(text)
       const protocolsEntries = Object.entries(protocolMap)
 
-      if (!protocolsEntries.some(([_, protocols]) => protocols.includes(parsed.protocol))) {
+      if (protocolsEntries.every(([, protocols]) => !protocols.includes(parsed.protocol))) {
         toast.error('Sorry, we currently do not support this protocol')
         return
       }
@@ -84,7 +92,7 @@ function RouteComponent() {
 
       form.setValue('connectionString', text)
       form.setValue('type', type)
-      setStep('credentials')
+      setStep('save')
 
       toast.success('Connection string pasted successfully')
     }
@@ -104,7 +112,7 @@ function RouteComponent() {
     },
   })
   const { mutate: testConnection, isPending: isConnecting } = useMutation({
-    mutationFn: window.electron.connections.testConnection,
+    mutationFn: window.electron.connections.test,
     onError: (error) => {
       toast.error(error.message)
     },
@@ -167,7 +175,7 @@ function RouteComponent() {
               >
                 <ToggleGroupItem value={ConnectionType.Postgres} aria-label="Postgres">
                   <PostgresIcon />
-                  Postgres
+                  {connectionLabels[ConnectionType.Postgres]}
                 </ToggleGroupItem>
                 <ToggleGroupItem value="" disabled aria-label="MySQL">
                   <MySQLIcon />
@@ -199,7 +207,7 @@ function RouteComponent() {
               <FormField
                 control={form.control}
                 name="connectionString"
-                render={({ field }) => (
+                render={({ field: { ref, ...field } }) => (
                   <FormItem>
                     <FormLabel>
                       Connection string
@@ -207,6 +215,10 @@ function RouteComponent() {
                     <FormControl className="flex items-center gap-1">
                       <Input
                         placeholder={`${getProtocols(type)[0]}://username:password@host:port/database?options`}
+                        ref={(e) => {
+                          inputRef.current = e
+                          ref(e)
+                        }}
                         {...field}
                       />
                     </FormControl>
@@ -214,7 +226,6 @@ function RouteComponent() {
                   </FormItem>
                 )}
               />
-              <ConnectionDetails connectionString={connectionString} />
             </CardContent>
           </Card>
           <div className="flex gap-2 justify-between mt-auto pt-4">
@@ -243,65 +254,82 @@ function RouteComponent() {
           <Card className="w-full">
             <CardHeader>
               <CardTitle>Save connection</CardTitle>
-              <CardDescription>Save the connection to the database.</CardDescription>
+              <CardDescription>Save the connection to your account.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex w-full gap-2">
+              <ConnectionDetails connectionString={connectionString} />
+              <div className="mt-6 space-y-4">
+                <div className="flex w-full gap-2 items-end">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem className="min-w-50">
+                        <FormLabel className="block">
+                          Connection name
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className="field-sizing-content"
+                            placeholder="My connection"
+                            {...field}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => form.setValue('name', generateRandomName())}
+                        >
+                          <RefreshIcon />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Generate a random connection name
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="saveInCloud"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="block">
-                        Database name
+                        Sync password
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          className="field-sizing-content"
-                          placeholder="My database"
-                          {...field}
-                        />
+                        <label className="text-xs flex items-center gap-2">
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                          <span className="text-muted-foreground">
+                            Do you want to sync the password in our cloud?
+                          </span>
+                        </label>
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => form.setValue('name', generateRandomName())}
-                      >
-                        <RiRefreshLine className="size-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Generate a random database name
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               </div>
             </CardContent>
           </Card>
-          <div className="mt-auto flex justify-end gap-4 pt-4">
-            <label className="text-xs flex items-center gap-2">
-              <Checkbox
-                checked={saveInCloud}
-                onCheckedChange={checked => setSaveInCloud(checked === 'indeterminate' ? false : checked)}
-              />
-              <span className="text-muted-foreground">
-                Save the password in cloud
-              </span>
-            </label>
+          <div className="flex gap-2 justify-end mt-auto pt-4">
             <Button variant="outline" onClick={() => setStep('credentials')}>
               Back
             </Button>
             <Button
               type="submit"
               loading={form.formState.isSubmitting}
-              disabled={isConnecting}
+              disabled={isConnecting || !form.formState.isValid}
             >
               <AppLogo className="w-4" />
               Save connection

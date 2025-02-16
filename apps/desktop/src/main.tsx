@@ -1,6 +1,6 @@
 import type { Session } from 'better-auth'
 import { QueryClient } from '@tanstack/react-query'
-import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
+import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
@@ -32,7 +32,6 @@ export const queryClient = new QueryClient({
 
 const router = createRouter({
   routeTree,
-  history: createHashHistory(),
   defaultPreload: 'intent',
   context: {
     session: null as Session | null,

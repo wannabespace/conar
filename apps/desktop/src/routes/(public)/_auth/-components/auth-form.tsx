@@ -203,7 +203,7 @@ export function AuthForm({ type }: { type: Type }) {
               <FormControl>
                 <div className="relative">
                   <Input
-                    placeholder="super_secret_password"
+                    placeholder="••••••••"
                     type={showPassword ? 'text' : 'password'}
                     autoCapitalize="none"
                     autoComplete="password"

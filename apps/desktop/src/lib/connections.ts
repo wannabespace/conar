@@ -1,4 +1,4 @@
-import type { Connection } from '@connnect/shared/utils/connections'
+import type { Connection } from '@connnect/shared/types/connection'
 
 export async function saveConnection(id: string, connection: Connection) {
   window.electron.store.set({ store: 'connections', key: id, value: connection })

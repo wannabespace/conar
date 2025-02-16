@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@connnect/ui/components/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
-import { RiLogoutCircleLine } from '@remixicon/react'
+import { RiLogoutCircleRLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useSession } from '~/hooks/use-session'
@@ -26,7 +26,7 @@ export function UserButton() {
       <DropdownMenuTrigger className="cursor-pointer">
         <Avatar className="size-6">
           {data?.user.image && <AvatarImage src={data?.user.image} />}
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarFallback className="text-xs">CN</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={5} className="w-70">
@@ -67,7 +67,7 @@ export function UserButton() {
           disabled={isSigningOut}
           onClick={() => signOut()}
         >
-          <RiLogoutCircleLine />
+          <RiLogoutCircleRLine />
           Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>

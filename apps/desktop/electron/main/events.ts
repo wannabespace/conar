@@ -63,7 +63,7 @@ const connections = {
 
     return queryMap[type]({ connectionString, query, values }) as Promise<T[]>
   },
-  testConnection: async ({
+  test: async ({
     type,
     connectionString,
   }: {

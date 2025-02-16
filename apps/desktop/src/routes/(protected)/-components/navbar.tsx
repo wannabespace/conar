@@ -1,10 +1,12 @@
-import { Badge } from '@connnect/ui/components/badge'
+import { ConnectionType } from '@connnect/shared/enums/connection-type'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@connnect/ui/components/command'
+import { ArrowLeftIcon } from '@connnect/ui/icons/arrow-left'
+import { ArrowRightIcon } from '@connnect/ui/icons/arrow-right'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiArrowLeftLine, RiArrowRightLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
+import { ConnectionIcon } from '~/components/connection-icon'
 import { connectionsQuery } from '~/queries/connections'
 import { UserButton } from './user-button'
 
@@ -18,12 +20,12 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput placeholder="Type a connection name..." />
       <CommandList>
-        {/* <CommandGroup heading="Actions">
-        <CommandItem onSelect={() => setOpen(false)}>
-          <RiAddLine className="size-4 shrink-0 opacity-60" />
-          Add New Connection...
-        </CommandItem>
-      </CommandGroup> */}
+        <CommandGroup heading="Actions">
+          <CommandItem onSelect={() => setOpen(false)}>
+            {/* <RiAddLine className="size-4 shrink-0 opacity-60" /> */}
+            Add New Connection...
+          </CommandItem>
+        </CommandGroup>
         <CommandEmpty>No connections found.</CommandEmpty>
         {connections?.map(([type, connections]) => (
           <CommandGroup key={type} heading={type}>
@@ -52,24 +54,22 @@ export function Navbar() {
   return (
     <>
       <div className="h-10" />
-      <div className="fixed top-0 inset-x-0 z-50 flex items-center h-10 justify-between pe-2">
-        <div className="w-22 h-full [app-region:drag]" />
+      <div className="fixed top-0 border-b border-border backdrop-blur-xs bg-background/80 inset-x-0 z-50 flex items-center h-10 justify-between pe-2">
+        <div className="w-20 h-full [app-region:drag]" />
         <div className="flex items-center gap-1">
           <button
             type="button"
-            className="p-1.5 rounded-md hover:bg-accent cursor-pointer"
             disabled={!router.history.canGoBack()}
             onClick={() => router.history.back()}
           >
-            <RiArrowLeftLine className="size-3 opacity-50" />
+            <ArrowLeftIcon className="[&>svg]:size-4 p-1.5 rounded-md hover:bg-accent cursor-pointer opacity-70" />
           </button>
           <button
             type="button"
-            className="p-1.5 rounded-md hover:bg-accent cursor-pointer"
             disabled={router.history.length <= 1}
             onClick={() => router.history.forward()}
           >
-            <RiArrowRightLine className="size-3 opacity-50" />
+            <ArrowRightIcon className="[&>svg]:size-4 p-1.5 rounded-md hover:bg-accent cursor-pointer opacity-70" />
           </button>
         </div>
         <div className="flex-1 h-full [app-region:drag]" />
@@ -80,10 +80,8 @@ export function Navbar() {
                 className="flex items-center py-1 gap-2 font-medium rounded-md text-sm cursor-pointer"
                 onClick={() => setOpenConnections(true)}
               >
+                <ConnectionIcon type={ConnectionType.Postgres} className="size-4" />
                 Connnect
-                <Badge variant="outline" className="ml-2">
-                  Postgres
-                </Badge>
                 <CommandShortcut>⌘L</CommandShortcut>
               </button>
             )

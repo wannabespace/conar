@@ -35,7 +35,7 @@ function CommandDialog({ children, ...props }: DialogProps) {
 
 function CommandInput({ ref, className, ...props }: React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input> & { ref?: React.RefObject<React.ComponentRef<typeof CommandPrimitive.Input>> }) {
   return (
-    <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
+    <div className="flex items-center border-b border-border px-3" cmdk-input-wrapper="">
       <Search className="mr-2 size-4 shrink-0 opacity-50" />
       <CommandPrimitive.Input
         ref={ref}
