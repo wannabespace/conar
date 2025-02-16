@@ -1,11 +1,11 @@
 import type { Connection } from '@connnect/shared/types/connection'
 
 export async function saveConnection(id: string, connection: Connection) {
-  window.electron.store.set({ store: 'connections', key: id, value: connection })
+  await window.electron.store.set({ store: 'connections', key: id, value: connection })
 }
 
 export async function deleteConnection(id: string) {
-  window.electron.store.delete({ store: 'connections', key: id })
+  await window.electron.store.delete({ store: 'connections', key: id })
 }
 
 export async function getConnection(id: string) {
