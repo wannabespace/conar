@@ -25,6 +25,9 @@
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
 
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
 
@@ -70,6 +73,8 @@
     --primary-foreground: 0 0% 98%;
     --muted: 186 5% 96%;
     --muted-foreground: 186 3.8% 46.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 186 10% 3.9%;
     --accent: 186 5% 97%;
     --accent-foreground: 186 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
@@ -91,9 +96,11 @@
     --foreground: 0 0% 98%;
     --primary: 186 44% 52%;
     --primary-foreground: 186 5% 10%;
-    --muted: 186 5% 14%;
+    --muted: 186 5% 15%;
     --muted-foreground: 186 5% 64.9%;
-    --accent: 186 5% 14%;
+    --popover: 186 5% 12%;
+    --popover-foreground: 0 0% 98%;
+    --accent: 186 5% 15%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0, 63%, 50%;
     --destructive-foreground: 0 0% 98%;
@@ -113,7 +120,7 @@
   }
 
   a {
-    @apply focus-visible:outline-ring;
+    @apply focus-visible:outline-ring text-primary;
   }
 
   body {
@@ -129,10 +136,6 @@
 
 html {
   color-scheme: light dark;
-}
-
-a {
-  @apply text-primary hover:underline;
 }
 
 ::selection {

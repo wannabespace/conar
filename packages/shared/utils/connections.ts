@@ -1,10 +1,9 @@
-import type { Connection } from '../types/connection'
 import { ConnectionType } from '../enums/connection-type'
 
 export function parseConnectionString(connectionString: string) {
   const url = new URL(connectionString)
 
-  const parsed: Connection = {
+  const parsed = {
     protocol: url.protocol.slice(0, -1),
     username: url.username,
     password: url.password || null,

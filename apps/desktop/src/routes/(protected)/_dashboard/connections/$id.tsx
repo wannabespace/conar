@@ -1,6 +1,6 @@
 import type { editor } from 'monaco-editor'
 import { Button } from '@connnect/ui/components/button'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import { Monaco } from '~/components/monaco'
@@ -14,36 +14,36 @@ export const Route = createFileRoute('/(protected)/_dashboard/connections/$id')(
 function RouteComponent() {
   const { id } = Route.useParams()
   const [query, setQuery] = useState('')
-  const { data: connection } = useQuery(connectionQuery(id))
-  // eslint-disable-next-line ts/no-explicit-any
-  const [result, setResult] = useState<any>(null)
+  const { data: connection } = useSuspenseQuery(connectionQuery(id))
   const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
-
-  function format() {
-    const formatted = formatSql(query, 'postgresql')
-
-    setQuery(formatted)
-    editorRef.current?.setValue(formatted)
-  }
-
-  function send(query: string) {
-    if (!connection)
-      return
-
-    window.electron.connections
-      .query({
-        type: connection.type,
-        connectionString: connection.connectionString,
+  const { mutate: sendQuery, data: result, isPending } = useMutation({
+    mutationFn: async () => {
+      return await window.electron.connections.query({
+        type: connection!.type,
+        connectionString: connection!.connectionString,
         query,
       })
-      .then(setResult)
+    },
+  })
+
+  function format() {
+    const formatted = formatSql(query, connection!.type)
+
+    setQuery(formatted)
+    editorRef.current!.setValue(formatted)
   }
+
   return (
     <div>
       <Button onClick={() => format()}>Format</Button>
       <Monaco ref={editorRef} initialValue={query} onChange={setQuery} />
-      <Button onClick={() => send(query)}>Query</Button>
-      <pre>{JSON.stringify(result?.rows, null, 2)}</pre>
+      <Button
+        loading={isPending}
+        onClick={() => sendQuery()}
+      >
+        Query
+      </Button>
+      <pre>{JSON.stringify(result, null, 2)}</pre>
     </div>
   )
 }

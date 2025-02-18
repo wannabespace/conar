@@ -24,6 +24,7 @@ import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/componen
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
+import { saveConnection } from '~/lib/connections'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
 import { connectionsQuery } from '~/queries/connections'
@@ -104,11 +105,28 @@ function RouteComponent() {
   const [type, connectionString] = useWatch({ control: form.control, name: ['type', 'connectionString'] })
 
   const { mutateAsync: createConnection } = useMutation({
-    mutationFn: trpc.connections.create.mutate,
-    onSuccess: (data) => {
+    mutationFn: (v: z.infer<typeof formSchema>) => {
+      const url = new URL(v.connectionString)
+
+      if (!v.saveInCloud) {
+        url.password = ''
+      }
+
+      return trpc.connections.create.mutate({
+        ...v,
+        connectionString: url.toString(),
+      })
+    },
+    onSuccess: ({ id }) => {
       queryClient.invalidateQueries(connectionsQuery())
       toast.success('Connection created successfully 🎉')
-      router.navigate({ to: '/connections/$id', params: { id: data.id } })
+      saveConnection(id, {
+        id,
+        name: form.getValues('name'),
+        type: form.getValues('type'),
+        connectionString: form.getValues('connectionString'),
+      })
+      router.navigate({ to: '/connections/$id', params: { id } })
     },
   })
   const { mutate: testConnection, isPending: isConnecting } = useMutation({

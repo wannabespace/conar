@@ -29,7 +29,7 @@ export function UserButton() {
           <AvatarFallback className="text-xs">CN</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={5} className="w-70">
+      <DropdownMenuContent align="end" sideOffset={14} className="w-70">
         <div className="flex items-center gap-2 h-10 px-2 mt-1 mb-2">
           <Avatar className="size-8">
             {data?.user.image && <AvatarImage src={data?.user.image} />}
