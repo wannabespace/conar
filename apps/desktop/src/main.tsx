@@ -1,4 +1,3 @@
-import type { Session } from 'better-auth'
 import { QueryClient } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
@@ -33,10 +32,6 @@ export const queryClient = new QueryClient({
 const router = createRouter({
   routeTree,
   defaultPreload: 'intent',
-  context: {
-    session: null as Session | null,
-  },
-  defaultPreloadStaleTime: 0,
 })
 
 declare module '@tanstack/react-router' {

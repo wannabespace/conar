@@ -3,7 +3,7 @@ import { ArrowLeftIcon } from '@connnect/ui/icons/arrow-left'
 import { ArrowRightIcon } from '@connnect/ui/icons/arrow-right'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine } from '@remixicon/react'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ConnectionIcon } from '~/components/connection-icon'
@@ -39,7 +39,7 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
 
 function ConnectionName({ id }: { id: string }) {
   const [openConnections, setOpenConnections] = useState(false)
-  const { data: connection } = useSuspenseQuery(connectionQuery(id))
+  const { data: connection } = useQuery(connectionQuery(id))
   const { data: connections } = useSuspenseQuery(connectionsQuery())
 
   useKeyboardEvent(e => e.key === 'l' && e.metaKey, () => {
@@ -52,15 +52,17 @@ function ConnectionName({ id }: { id: string }) {
   return (
     <>
       <Connections open={openConnections} setOpen={setOpenConnections} />
-      <button
-        type="button"
-        className="flex items-center py-1 gap-2 font-medium rounded-md text-sm cursor-pointer"
-        onClick={() => setOpenConnections(true)}
-      >
-        <ConnectionIcon type={connection.type} className="size-4" />
-        {connection.name}
-        <CommandShortcut>⌘L</CommandShortcut>
-      </button>
+      {connection && (
+        <button
+          type="button"
+          className="flex items-center py-1 gap-2 font-medium rounded-md text-sm cursor-pointer"
+          onClick={() => setOpenConnections(true)}
+        >
+          <ConnectionIcon type={connection.type} className="size-4" />
+          {connection.name}
+          <CommandShortcut>⌘L</CommandShortcut>
+        </button>
+      )}
     </>
   )
 }
