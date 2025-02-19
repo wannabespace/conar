@@ -23,7 +23,7 @@
     "@connnect/ui": "workspace:*",
     "@remixicon/react": "^4.6.0",
     "@t3-oss/env-nextjs": "^0.12.0",
-    "@tanstack/react-query": "^5.66.6",
+    "@tanstack/react-query": "^5.66.7",
     "@trpc/client": "^11.0.0-rc.724",
     "@trpc/react-query": "^11.0.0-rc.724",
     "@trpc/server": "^11.0.0-rc.724",
@@ -33,7 +33,7 @@
     "consola": "^3.4.0",
     "drizzle-orm": "^0.39.3",
     "lucide-react": "^0.475.0",
-    "motion": "^12.4.3",
+    "motion": "^12.4.4",
     "nanoid": "^5.1.0",
     "next": "^15.1.7",
     "next-themes": "^0.4.4",
@@ -42,7 +42,7 @@
     "react-dom": "19.0.0",
     "react-markdown": "^9.0.3",
     "server-only": "^0.0.1",
-    "sonner": "^1.7.4",
+    "sonner": "^2.0.0",
     "stripe": "^17.6.0",
     "superjson": "^2.2.2",
     "svix": "^1.57.0",
@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@connnect/tsconfig": "workspace:*",
-    "@tailwindcss/postcss": "^4.0.6",
+    "@tailwindcss/postcss": "^4.0.7",
     "@types/node": "^22",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
@@ -60,7 +60,7 @@
     "drizzle-kit": "^0.30.4",
     "postcss": "^8.5.2",
     "rimraf": "^6.0.1",
-    "tailwindcss": "^4.0.6",
+    "tailwindcss": "^4.0.7",
     "tailwindcss-animate": "^1.0.7"
   }
 }

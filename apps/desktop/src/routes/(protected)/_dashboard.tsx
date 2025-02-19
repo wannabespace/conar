@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { motion } from 'motion/react'
-import { Navbar } from './-components/navbar'
+import { Sidebar } from './-components/sidebar'
 
 export const Route = createFileRoute('/(protected)/_dashboard')({
   component: LayoutComponent,
@@ -13,9 +13,9 @@ function LayoutComponent() {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
-      className="min-h-screen flex flex-col"
+      className="min-h-screen flex"
     >
-      <Navbar />
+      <Sidebar />
       <div className="flex pb-2 flex-1 px-3">
         <Outlet />
       </div>

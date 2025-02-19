@@ -30,7 +30,7 @@ function DashboardPage() {
           Connections
         </h1>
         {connections?.length && (
-          <Button disabled onClick={() => router.navigate({ to: '/create' })}>
+          <Button onClick={() => router.navigate({ to: '/create' })}>
             <RiAddLine className="size-4" />
             Add new
           </Button>

@@ -11,7 +11,7 @@ import { connectionQuery } from '~/queries/connections'
 function ConnectionCard({ connection }: { connection: RouterOutputs['connections']['list'][number] }) {
   return (
     <Link
-      className="relative flex items-center justify-between gap-4 rounded-lg border border-border bg-background p-5 transition-all duration-100 hover:border-primary/20 hover:bg-element hover:shadow-lg shadow-black/3"
+      className="relative flex items-center justify-between gap-4 rounded-lg border border-border bg-background p-5 transition-all duration-150 hover:border-primary/20 hover:bg-element hover:shadow-lg shadow-black/3 hover:scale-101"
       to="/connections/$id"
       params={{ id: connection.id }}
       onMouseOver={() => queryClient.prefetchQuery(connectionQuery(connection.id))}

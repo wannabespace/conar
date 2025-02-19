@@ -28,7 +28,7 @@ function RootDocument() {
             </AppProvider>
             {import.meta.env.DEV && (
               <>
-                <TanStackRouterDevtools />
+                <TanStackRouterDevtools position="top-right" />
                 <ReactQueryDevtools initialIsOpen={false} />
               </>
             )}

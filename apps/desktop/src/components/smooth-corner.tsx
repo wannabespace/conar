@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ReactNode, Ref } from 'react'
 import { useMeasure } from '@react-hookz/web'
 import { createElement, useMemo } from 'react'
 
@@ -59,14 +59,18 @@ export function SmoothCorner({
   className,
   radius,
   roundness = iOSPreset.r1 / iOSPreset.r2,
+  onClick,
+  ref,
 }: {
   tag?: string
   children: ReactNode
   className?: string
   radius: number
   roundness?: number
+  onClick?: () => void
+  ref?: Ref<HTMLElement | null>
 }) {
-  const [size, elementRef] = useMeasure<HTMLDivElement>()
+  const [size, elementRef] = useMeasure<HTMLElement>()
   const options = useMemo(() => {
     const smoothRadius = +(radius * 1.5).toFixed()
 
@@ -78,7 +82,7 @@ export function SmoothCorner({
     }
   }, [size, radius, roundness])
   const id = useMemo(() => [options.width, options.height, options.radius, options.roundness].join('-'), [options.width, options.height, options.radius, options.roundness])
-  const canRender = useMemo(() => size?.width && size?.width >= 30 && size?.height && size?.height >= 30 && globalThis.CSS?.supports('mask-image: url()'), [size?.width, size?.height])
+  const canRender = useMemo(() => size?.width && size.width >= 30 && size?.height && size.height >= 30, [size?.width, size?.height])
 
   const path = useMemo(() => canRender
     ? getSquirclePathAsDataUri(
@@ -93,8 +97,15 @@ export function SmoothCorner({
     path ? { maskImage: `url("${path}")` } : { borderRadius: `${radius.toFixed()}px` }, [path, radius])
 
   return createElement(tag, {
-    ref: elementRef,
+    ref: (e: HTMLElement) => {
+      elementRef.current = e
+      if (typeof ref === 'function')
+        ref(e)
+      else if (ref)
+        ref.current = e
+    },
     className,
     style,
+    ...(tag === 'button' && { type: 'button', onClick }),
   }, children)
 }
