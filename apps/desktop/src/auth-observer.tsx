@@ -1,14 +1,14 @@
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
-import { useDeepLinksListener } from './deep-links'
-import { useSession } from './hooks/use-session'
-import { authClient } from './lib/auth'
-import { identifyUser } from './lib/events'
+import { useDeepLinksListener } from '~/deep-links'
+import { useSession } from '~/hooks/use-session'
+import { authClient } from '~/lib/auth'
+import { identifyUser } from '~/lib/events'
 
 const authRoutes = ['/sign-in', '/sign-up']
 const publicRoutes = [...authRoutes]
 
-export function AppProvider({ children }: { children: React.ReactNode }) {
+export function AuthObserver() {
   const { refetch, isAuthenticated, isLoading, data } = useSession()
   const router = useRouter()
   const location = useLocation()
@@ -44,5 +44,5 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useDeepLinksListener()
 
-  return <>{children}</>
+  return <></>
 }

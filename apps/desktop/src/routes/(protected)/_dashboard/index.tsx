@@ -1,10 +1,8 @@
 import { Button } from '@connnect/ui/components/button'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { RiAddLine } from '@remixicon/react'
-import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { connectionsQuery } from '~/queries/connections'
-import { Empty } from './-components/empty'
+import { useConnections } from '~/entities/connection'
 import { List } from './-components/list'
 
 export const Route = createFileRoute('/(protected)/_dashboard/')({
@@ -12,7 +10,7 @@ export const Route = createFileRoute('/(protected)/_dashboard/')({
 })
 
 function DashboardPage() {
-  const { data: connections } = useQuery(connectionsQuery())
+  const { data: connections } = useConnections()
   const router = useRouter()
 
   return (
@@ -28,15 +26,16 @@ function DashboardPage() {
       <div className="flex items-center justify-between mb-10">
         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
           Connections
+          {' '}
         </h1>
-        {connections?.length && (
-          <Button onClick={() => router.navigate({ to: '/create' })}>
+        {!!connections?.length && (
+          <Button disabled onClick={() => router.navigate({ to: '/create' })}>
             <RiAddLine className="size-4" />
             Add new
           </Button>
         )}
       </div>
-      {connections?.length ? <List connections={connections} /> : <Empty />}
+      <List />
     </div>
   )
 }

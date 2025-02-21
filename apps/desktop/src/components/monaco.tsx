@@ -4,6 +4,8 @@ import ghDark from 'monaco-themes/themes/GitHub Dark.json'
 import ghLight from 'monaco-themes/themes/GitHub Light.json'
 import { useEffect, useRef } from 'react'
 
+ghDark.colors['editor.background'] = '#161818'
+
 // @ts-expect-error wrong type
 editor.defineTheme('github-dark', ghDark)
 // @ts-expect-error wrong type

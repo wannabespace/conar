@@ -32,6 +32,7 @@ function useSocialMutation(provider: 'google' | 'github') {
 
       const encryptedCodeChallenge = await window.electron.encryption.encrypt({
         text: codeChallenge,
+        // TODO: move to backend
         secret: env.VITE_PUBLIC_AUTH_SECRET,
       })
 
@@ -143,7 +144,7 @@ export function AuthForm({ type }: { type: Type }) {
       </div>
       <div className="relative">
         <Separator />
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-body px-6 text-xs text-muted-foreground">
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-6 text-xs text-muted-foreground">
           OR
         </span>
       </div>

@@ -5,7 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { AnimatePresence } from 'motion/react'
-import { AppProvider } from '~/app-provider'
+import { AuthObserver } from '~/auth-observer'
 import { EventsProvider } from '~/lib/events'
 import { queryClient } from '~/main'
 import { UpdatesProvider } from '~/updates-provider'
@@ -20,12 +20,11 @@ function RootDocument() {
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           <UpdatesProvider>
-            <AppProvider>
-              <AnimatePresence>
-                <Outlet />
-              </AnimatePresence>
-              <Toaster />
-            </AppProvider>
+            <AuthObserver />
+            <AnimatePresence>
+              <Outlet />
+            </AnimatePresence>
+            <Toaster />
             {import.meta.env.DEV && (
               <>
                 <TanStackRouterDevtools position="top-right" />

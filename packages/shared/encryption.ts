@@ -19,7 +19,7 @@ export function encrypt({ text, secret }: { text: string, secret: string }) {
     cipher.getAuthTag(),
   ])
 
-  return `${iv.toString('base64')}.${encrypted.toString('base64')}.${salt.toString('base64')}`
+  return `${iv.toString('hex')}.${encrypted.toString('hex')}.${salt.toString('hex')}`
 }
 
 export function decrypt({ encryptedText, secret }: { encryptedText: string, secret: string }) {
@@ -30,9 +30,9 @@ export function decrypt({ encryptedText, secret }: { encryptedText: string, secr
       throw new Error('Failed to decrypt text')
     }
 
-    const iv = Buffer.from(ivBase64, 'base64')
-    const encrypted = Buffer.from(encryptedBase64, 'base64')
-    const salt = Buffer.from(saltBase64, 'base64')
+    const iv = Buffer.from(ivBase64, 'hex')
+    const encrypted = Buffer.from(encryptedBase64, 'hex')
+    const salt = Buffer.from(saltBase64, 'hex')
 
     const authTag = encrypted.subarray(encrypted.length - 16)
     const ciphertext = encrypted.subarray(0, encrypted.length - 16)

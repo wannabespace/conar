@@ -217,5 +217,9 @@ If you have any questions about this Privacy Policy, You can contact us:
 `.trim()
 
 export default async function PrivacyPolicyPage() {
-  return <ReactMarkdown className="prose dark:prose-invert">{markdown}</ReactMarkdown>
+  return (
+    <div className="prose dark:prose-invert">
+      <ReactMarkdown>{markdown}</ReactMarkdown>
+    </div>
+  )
 }

@@ -1,7 +1,7 @@
 import { ConnectionType } from '@connnect/shared/enums/connection-type'
 import { enumValues } from '@connnect/shared/utils'
 import { relations } from 'drizzle-orm'
-import { pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core'
+import { boolean, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedText } from '../utils'
 import { users } from './auth'
@@ -14,6 +14,7 @@ export const connections = pgTable('connections', {
   type: connectionType().notNull(),
   name: text().notNull(),
   connectionString: encryptedText().notNull(),
+  isPasswordHidden: boolean('password_hidden').notNull().default(false),
 }).enableRLS()
 
 export const connectionsRelations = relations(connections, ({ one }) => ({

@@ -21,13 +21,10 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import { AppLogo } from '~/components/app-logo'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
+import { createConnection } from '~/entities/connection'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
-import { saveConnection } from '~/lib/connections'
-import { trpc } from '~/lib/trpc'
-import { queryClient } from '~/main'
-import { connectionsQuery } from '~/queries/connections'
 import { ConnectionDetails } from './-components/connection-details'
 
 export const Route = createFileRoute(
@@ -104,28 +101,10 @@ function RouteComponent() {
 
   const [type, connectionString] = useWatch({ control: form.control, name: ['type', 'connectionString'] })
 
-  const { mutateAsync: createConnection } = useMutation({
-    mutationFn: (v: z.infer<typeof formSchema>) => {
-      const url = new URL(v.connectionString)
-
-      if (!v.saveInCloud) {
-        url.password = ''
-      }
-
-      return trpc.connections.create.mutate({
-        ...v,
-        connectionString: url.toString(),
-      })
-    },
-    onSuccess: ({ id }) => {
-      queryClient.invalidateQueries(connectionsQuery())
+  const { mutate } = useMutation({
+    mutationFn: createConnection,
+    onSuccess: async ({ id }) => {
       toast.success('Connection created successfully 🎉')
-      saveConnection(id, {
-        id,
-        name: form.getValues('name'),
-        type: form.getValues('type'),
-        connectionString: form.getValues('connectionString'),
-      })
       router.navigate({ to: '/connections/$id', params: { id } })
     },
   })
@@ -140,7 +119,7 @@ function RouteComponent() {
   })
 
   return (
-    <Form {...form} onSubmit={v => createConnection(v)} className="flex py-10 flex-col w-full max-w-2xl mx-auto">
+    <Form {...form} onSubmit={v => mutate(v)} className="flex py-10 flex-col w-full max-w-2xl mx-auto">
       <DotPattern
         width={20}
         height={20}

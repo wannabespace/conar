@@ -1,13 +1,11 @@
 import { Separator } from '@connnect/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { cn } from '@connnect/ui/lib/utils'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
-import { motion } from 'motion/react'
+import { useLocation, useParams, useRouter } from '@tanstack/react-router'
 import { AppLogo } from '~/components/app-logo'
 import { ConnectionIcon } from '~/components/connection-icon'
+import { connectionQuery, useConnections } from '~/entities/connection'
 import { queryClient } from '~/main'
-import { connectionQuery, connectionsQuery } from '~/queries/connections'
 import { UserButton } from './user-button'
 
 function SidebarButton({
@@ -29,18 +27,16 @@ function SidebarButton({
     <TooltipProvider>
       <Tooltip delayDuration={0}>
         <TooltipTrigger asChild onMouseOver={onMouseOver} onClick={onClick}>
-          <motion.button
-            whileHover={{
-              scale: 1.03,
-            }}
+          <button
+            type="button"
             className={cn(
-              'flex cursor-pointer items-center bg-element rounded-lg duration-150 border border-border justify-center size-10 hover:shadow-md hover:shadow-black/5',
-              active && 'bg-primary hover:bg-primary/90',
+              'flex cursor-pointer items-center bg-element hover:bg-accent rounded-lg duration-150 justify-center size-10',
+              active && 'bg-primary/10 hover:bg-primary/20',
               className,
             )}
           >
             {children}
-          </motion.button>
+          </button>
         </TooltipTrigger>
         <TooltipContent side="right" sideOffset={20}>
           {tooltip}
@@ -52,7 +48,9 @@ function SidebarButton({
 
 export function Sidebar() {
   const router = useRouter()
-  const { data: connections } = useSuspenseQuery(connectionsQuery())
+  const params = useParams({ strict: false })
+  const location = useLocation()
+  const { data: connections } = useConnections()
 
   return (
     <>
@@ -62,16 +60,21 @@ export function Sidebar() {
           <div className="flex flex-col gap-2">
             <SidebarButton
               tooltip="Connections"
-              className="bg-transparent text-primary hover:bg-accent border-0"
+              className={cn(
+                'text-primary',
+                // location.pathname === '/' && 'bg-primary/10',
+              )}
+              active={location.pathname === '/'}
               onClick={() => router.navigate({ to: '/' })}
             >
               <AppLogo className="size-6" />
             </SidebarButton>
             <Separator className="w-full" />
-            {connections.map(connection => (
+            {connections?.map(connection => (
               <SidebarButton
                 key={connection.id}
                 tooltip={connection.name}
+                active={params.id === connection.id}
                 className="rounded-full"
                 onMouseOver={() => queryClient.prefetchQuery(connectionQuery(connection.id))}
                 onClick={() => router.navigate({ to: '/connections/$id', params: { id: connection.id } })}

@@ -10,7 +10,6 @@
   --radius-sm: calc(var(--radius) - 4px);
 
   --color-body: hsl(var(--body));
-  --color-sidebar: hsl(var(--sidebar));
   --color-element: hsl(var(--element));
   --color-border: hsl(var(--border));
   --color-ring: hsl(var(--ring));
@@ -68,20 +67,19 @@
 @layer base {
   :root {
     --body: 186 10% 98%;
-    --sidebar: 186 10% 94%;
-    --background: 0 0% 100%;
+    --background: 186 5% 100%;
     --foreground: 186 10% 3.9%;
     --primary: 186 44% 52%;
     --primary-foreground: 0 0% 98%;
-    --muted: 186 5% 96%;
+    --muted: 186 5% 92%;
     --muted-foreground: 186 3.8% 46.1%;
-    --popover: 0 0% 100%;
+    --popover: 186 5% 100%;
     --popover-foreground: 186 10% 3.9%;
-    --accent: 186 5% 97%;
+    --accent: 186 5% 95%;
     --accent-foreground: 186 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --element: 0 0% 100%;
+    --element: 186 5% 97%;
     --border: 0 0% 92%;
     --ring: 186 44% 52%;
     --chart-1: 12 76% 61%;
@@ -93,22 +91,21 @@
   }
 
   .dark {
-    --body: 186 5% 7%;
-    --sidebar: 186 5% 9%;
-    --background: 186 5% 9%;
+    --body: 186 3% 7%;
+    --background: 186 3% 9%;
     --foreground: 0 0% 98%;
     --primary: 186 44% 52%;
-    --primary-foreground: 186 5% 10%;
-    --muted: 186 5% 15%;
-    --muted-foreground: 186 5% 64.9%;
-    --popover: 186 5% 12%;
+    --primary-foreground: 186 3% 10%;
+    --muted: 186 3% 16%;
+    --muted-foreground: 186 3% 64.9%;
+    --popover: 186 3% 12%;
     --popover-foreground: 0 0% 98%;
-    --accent: 186 5% 15%;
+    --accent: 186 3% 15%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0, 63%, 50%;
     --destructive-foreground: 0 0% 98%;
-    --element: 186 5% 12%;
-    --border: 186 5% 14%;
+    --element: 186 3% 12%;
+    --border: 186 3% 14%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;

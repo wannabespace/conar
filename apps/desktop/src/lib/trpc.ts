@@ -12,16 +12,16 @@ export const clientConfig = {
       url: `${env.VITE_PUBLIC_APP_URL}/api/trpc`,
       transformer: SuperJSON,
       async fetch(...args) {
-        try {
-          return await fetch(...args)
+        const response = await fetch(...args)
+
+        if (response.status === 401) {
+          handleError(response)
         }
-        catch (error) {
-          handleError(error)
-          throw error
-        }
+
+        return response
       },
       headers: async () => {
-        const token = await getBearerToken()
+        const token = getBearerToken()
 
         return {
           cookie: window.document.cookie,

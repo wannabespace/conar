@@ -1,11 +1,11 @@
 import { QueryClient } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
+import { connectionsQuery } from './entities/connection'
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
 import { sleep } from './lib/helpers'
 import { sessionQuery } from './queries/auth'
-import { connectionsQuery } from './queries/connections'
 import { routeTree } from './routeTree.gen'
 import '@connnect/ui/globals.css'
 import './monaco-worker'
@@ -47,7 +47,7 @@ queryClient
   .ensureQueryData(sessionQuery)
   .then(async (session) => {
     if (session.data) {
-      await queryClient.ensureQueryData(connectionsQuery())
+      await queryClient.prefetchQuery(connectionsQuery())
     }
     preloader.classList.add('scale-[0.5]', 'opacity-0')
     // Waiting animation to smooth transition

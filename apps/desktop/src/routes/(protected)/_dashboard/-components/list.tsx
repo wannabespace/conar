@@ -1,17 +1,29 @@
 import type { RouterOutputs } from '@connnect/web/trpc-type'
+import { Button } from '@connnect/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
 import { Input } from '@connnect/ui/components/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
 import { RiDeleteBinLine, RiMoreLine } from '@remixicon/react'
-import { Link } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
+import { useMemo } from 'react'
 import { ConnectionIcon } from '~/components/connection-icon'
+import { connectionQuery, useConnections } from '~/entities/connection'
 import { queryClient } from '~/main'
-import { connectionQuery } from '~/queries/connections'
 
 function ConnectionCard({ connection }: { connection: RouterOutputs['connections']['list'][number] }) {
+  const connectionString = useMemo(() => {
+    const url = new URL(connection.connectionString)
+
+    if (url.password) {
+      url.password = '•'.repeat(url.password.length)
+    }
+
+    return url.toString()
+  }, [connection.connectionString])
+
   return (
     <Link
-      className="relative flex items-center justify-between gap-4 rounded-lg border border-border bg-background p-5 transition-all duration-150 hover:border-primary/20 hover:bg-element hover:shadow-lg shadow-black/3 hover:scale-101"
+      className="relative flex items-center justify-between gap-4 rounded-lg border border-border bg-background p-5 transition-all duration-150 hover:border-primary/20 hover:bg-element hover:shadow-lg shadow-black/3"
       to="/connections/$id"
       params={{ id: connection.id }}
       onMouseOver={() => queryClient.prefetchQuery(connectionQuery(connection.id))}
@@ -21,7 +33,7 @@ function ConnectionCard({ connection }: { connection: RouterOutputs['connections
       </div>
       <div className="flex flex-1 flex-col gap-1 min-w-0">
         <div className="font-medium tracking-tight truncate">{connection.name}</div>
-        <div className="text-sm text-muted-foreground truncate">{connection.connectionString.replaceAll('*', '•')}</div>
+        <div className="text-sm text-muted-foreground truncate">{connectionString}</div>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger className="rounded-md p-2 hover:bg-accent-foreground/5">
@@ -38,7 +50,27 @@ function ConnectionCard({ connection }: { connection: RouterOutputs['connections
   )
 }
 
-export function List({ connections }: { connections: RouterOutputs['connections']['list'] }) {
+export function Empty() {
+  const router = useRouter()
+
+  return (
+    <div className="text-center bg-background border-2 border-dashed border-foreground/10 rounded-xl p-14 w-full m-auto group">
+      <h2 className="text-foreground font-medium mt-6">
+        No connections found
+      </h2>
+      <p className="text-sm text-muted-foreground mt-1 mb-4 whitespace-pre-line">
+        Create a new connection to get started.
+      </p>
+      <Button onClick={() => router.navigate({ to: '/create' })}>
+        Create a new connection
+      </Button>
+    </div>
+  )
+}
+
+export function List() {
+  const { data: connections } = useConnections()
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-6">
@@ -58,9 +90,13 @@ export function List({ connections }: { connections: RouterOutputs['connections'
         <Input disabled className="flex-1" placeholder="Search" />
       </div>
       <div className="flex flex-col gap-2">
-        {connections.map(connection => (
-          <ConnectionCard key={connection.id} connection={connection} />
-        ))}
+        {connections?.length
+          ? (
+              connections?.map(connection => (
+                <ConnectionCard key={connection.id} connection={connection} />
+              ))
+            )
+          : <Empty />}
       </div>
     </div>
   )

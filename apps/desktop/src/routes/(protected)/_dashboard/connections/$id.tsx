@@ -3,20 +3,20 @@ import { Button } from '@connnect/ui/components/button'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@connnect/ui/components/command'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine } from '@remixicon/react'
-import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import { ConnectionIcon } from '~/components/connection-icon'
 import { Monaco } from '~/components/monaco'
+import { useConnection, useConnections } from '~/entities/connection'
 import { formatSql } from '~/lib/formatter'
-import { connectionQuery, connectionsQuery } from '~/queries/connections'
 
 export const Route = createFileRoute('/(protected)/_dashboard/connections/$id')({
   component: RouteComponent,
 })
 
 function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
-  const { data: connections } = useSuspenseQuery(connectionsQuery())
+  const { data: connections } = useConnections()
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
@@ -30,7 +30,7 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
         </CommandGroup>
         <CommandEmpty>No connections found.</CommandEmpty>
         <CommandGroup heading="Connections">
-          {connections.map(connection => (
+          {connections?.map(connection => (
             <CommandItem key={connection.id}>
               <ConnectionIcon type={connection.type} className="size-4 shrink-0 opacity-60" />
               {connection.name}
@@ -44,11 +44,11 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
 
 function ConnectionName({ id }: { id: string }) {
   const [openConnections, setOpenConnections] = useState(false)
-  const { data: connection } = useQuery(connectionQuery(id))
-  const { data: connections } = useSuspenseQuery(connectionsQuery())
+  const { data: connection } = useConnection(id)
+  const { data: connections } = useConnections()
 
   useKeyboardEvent(e => e.key === 'l' && e.metaKey, () => {
-    if (connections.length === 0)
+    if (!connections || connections.length === 0)
       return
 
     setOpenConnections(open => !open)
@@ -75,7 +75,8 @@ function ConnectionName({ id }: { id: string }) {
 function RouteComponent() {
   const { id } = Route.useParams()
   const [query, setQuery] = useState('')
-  const { data: connection } = useQuery(connectionQuery(id))
+  const { data: connection } = useConnection(id)
+
   const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
   const { mutate: sendQuery, data: result, isPending } = useMutation({
     mutationFn: async () => {

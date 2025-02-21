@@ -10,6 +10,7 @@ export const list = protectedProcedure
         id: connections.id,
         name: connections.name,
         type: connections.type,
+        isPasswordHidden: connections.isPasswordHidden,
         connectionString: connections.connectionString,
       })
       .from(connections)
@@ -17,16 +18,9 @@ export const list = protectedProcedure
       .orderBy(desc(connections.createdAt))
 
     return list.map((connection) => {
-      const string = new URL(decrypt({
-        encryptedText: connection.connectionString,
-        secret: ctx.user.secret,
-      }))
-
-      string.password = '********'
-
       return {
         ...connection,
-        connectionString: string.toString(),
+        connectionString: decrypt({ encryptedText: connection.connectionString, secret: ctx.user.secret }),
       }
     })
   })

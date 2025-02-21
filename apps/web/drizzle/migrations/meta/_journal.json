@@ -71,6 +71,13 @@
       "when": 1739662022763,
       "tag": "0009_striped_master_mold",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1740041670035,
+      "tag": "0010_skinny_violations",
+      "breakpoints": true
     }
   ]
 }
