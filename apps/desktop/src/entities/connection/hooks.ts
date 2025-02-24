@@ -4,8 +4,6 @@ import { liveQuery } from 'dexie'
 import { useEffect } from 'react'
 import { indexedDb } from '~/lib/indexeddb'
 
-let subscription: Subscription | null = null
-
 export function connectionsQuery() {
   return queryOptions({
     queryKey: ['connections'],
@@ -19,6 +17,8 @@ export function connectionQuery(id: string) {
     queryFn: () => indexedDb.connections.get(id),
   })
 }
+
+let subscription: Subscription | null = null
 
 export function useConnections() {
   const query = useQuery(connectionsQuery())

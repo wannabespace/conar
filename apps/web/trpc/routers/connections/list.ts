@@ -10,7 +10,7 @@ export const list = protectedProcedure
         id: connections.id,
         name: connections.name,
         type: connections.type,
-        isPasswordHidden: connections.isPasswordHidden,
+        isPasswordExists: connections.isPasswordExists,
         connectionString: connections.connectionString,
       })
       .from(connections)

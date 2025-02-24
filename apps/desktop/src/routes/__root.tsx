@@ -27,7 +27,7 @@ function RootDocument() {
             <Toaster />
             {import.meta.env.DEV && (
               <>
-                <TanStackRouterDevtools position="top-right" />
+                <TanStackRouterDevtools />
                 <ReactQueryDevtools initialIsOpen={false} />
               </>
             )}

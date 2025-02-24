@@ -1,22 +1,28 @@
 import type { ConnectionType } from '@connnect/shared/enums/connection-type'
 import { indexedDb } from '~/lib/indexeddb'
-import { trpc } from '~/lib/trpc'
+import { trpc } from '~/trpc'
 
 export async function fetchConnections() {
-  const fetchedConnections = await trpc.connections.list.query()
-  const existingConnections = await indexedDb.connections.toArray()
+  if (!navigator.onLine)
+    return
+
+  const [fetchedConnections, existingConnections] = await Promise.all([
+    trpc.connections.list.query(),
+    indexedDb.connections.toArray(),
+  ])
   const existingIds = new Set(existingConnections.map(c => c.id))
+  const fetchedIds = new Set(fetchedConnections.map(c => c.id))
 
   await Promise.all([
-    Promise.all(
+    indexedDb.connections.bulkDelete(
       existingConnections
-        .filter(c => !fetchedConnections.find(tc => tc.id === c.id))
-        .map(c => indexedDb.connections.delete(c.id)),
+        .filter(c => !fetchedIds.has(c.id))
+        .map(c => c.id),
     ),
-    Promise.all(
+    indexedDb.connections.bulkAdd(
       fetchedConnections
         .filter(c => !existingIds.has(c.id))
-        .map(c => indexedDb.connections.add({
+        .map(c => ({
           ...c,
           isPasswordPopulated: !!new URL(c.connectionString).password,
         })),
@@ -32,19 +38,19 @@ export async function createConnection(connection: {
 }) {
   const url = new URL(connection.connectionString)
 
-  const isPasswordHidden = !!url.password && !connection.saveInCloud
+  const isPasswordExists = !!url.password
 
-  if (isPasswordHidden) {
+  if (isPasswordExists) {
     url.password = ''
   }
 
   const { id } = await trpc.connections.create.mutate({
     ...connection,
     connectionString: url.toString(),
-    isPasswordHidden,
+    isPasswordExists,
   })
 
-  await indexedDb.connections.add({ id, ...connection, isPasswordHidden, isPasswordPopulated: !isPasswordHidden })
+  await indexedDb.connections.add({ id, ...connection, isPasswordExists, isPasswordPopulated: !isPasswordExists })
 
   return { id }
 }

@@ -24,14 +24,14 @@ export function UserButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="cursor-pointer">
-        <Avatar className="size-8">
+        <Avatar className="size-6">
           {data?.user.image && <AvatarImage src={data?.user.image} />}
           <AvatarFallback className="text-xs">CN</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent side="right" align="end" sideOffset={20} className="w-70">
+      <DropdownMenuContent side="bottom" align="end" className="w-70">
         <div className="flex items-center gap-2 h-10 px-2 mt-1 mb-2">
-          <Avatar className="size-8">
+          <Avatar className="size-6">
             {data?.user.image && <AvatarImage src={data?.user.image} />}
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>

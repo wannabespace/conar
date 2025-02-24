@@ -9,14 +9,14 @@ export const create = protectedProcedure
     name: z.string().min(1),
     type: z.nativeEnum(ConnectionType),
     connectionString: z.string().min(1),
-    isPasswordHidden: z.boolean(),
+    isPasswordExists: z.boolean(),
   }))
   .mutation(async ({ input, ctx }) => {
     const [connection] = await db.insert(connections).values({
       name: input.name,
       type: input.type,
       connectionString: encrypt({ text: input.connectionString, secret: ctx.user.secret }),
-      isPasswordHidden: input.isPasswordHidden,
+      isPasswordExists: input.isPasswordExists,
       userId: ctx.user.id,
     }).returning({ id: connections.id })
 

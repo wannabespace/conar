@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { sessionQuery } from '~/queries/auth'
 
 export function useSession() {
-  const query = useQuery(sessionQuery)
+  const query = useQuery(sessionQuery())
 
   return {
     isLoading: query.isLoading,

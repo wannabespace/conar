@@ -13,6 +13,10 @@ function DashboardPage() {
   const { data: connections } = useConnections()
   const router = useRouter()
 
+  function handleCreateConnection() {
+    router.navigate({ to: '/create' })
+  }
+
   return (
     <div className="w-full mx-auto max-w-2xl py-10">
       <DotPattern
@@ -28,12 +32,14 @@ function DashboardPage() {
           Connections
           {' '}
         </h1>
-        {!!connections?.length && (
-          <Button disabled onClick={() => router.navigate({ to: '/create' })}>
-            <RiAddLine className="size-4" />
-            Add new
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {!!connections?.length && (
+            <Button onClick={handleCreateConnection}>
+              <RiAddLine className="size-4" />
+              Add new
+            </Button>
+          )}
+        </div>
       </div>
       <List />
     </div>

@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
-import { connectionsQuery } from './entities/connection'
+import { connectionsQuery, fetchConnections } from './entities/connection'
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
 import { sleep } from './lib/helpers'
@@ -44,9 +44,10 @@ const root = createRoot(document.getElementById('root')!)
 const preloader = document.getElementById('preloader')!
 
 queryClient
-  .ensureQueryData(sessionQuery)
+  .ensureQueryData(sessionQuery())
   .then(async (session) => {
     if (session.data) {
+      fetchConnections()
       await queryClient.prefetchQuery(connectionsQuery())
     }
     preloader.classList.add('scale-[0.5]', 'opacity-0')

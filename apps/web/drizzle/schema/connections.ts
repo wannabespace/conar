@@ -13,8 +13,8 @@ export const connections = pgTable('connections', {
   userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
   type: connectionType().notNull(),
   name: text().notNull(),
-  connectionString: encryptedText().notNull(),
-  isPasswordHidden: boolean('password_hidden').notNull().default(false),
+  connectionString: encryptedText('connection_string').notNull(),
+  isPasswordExists: boolean('password_exists').notNull(),
 }).enableRLS()
 
 export const connectionsRelations = relations(connections, ({ one }) => ({
