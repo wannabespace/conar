@@ -1,8 +1,8 @@
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@connnect/ui/components/command'
-import { ArrowLeftIcon } from '@connnect/ui/icons/arrow-left'
-import { ArrowRightIcon } from '@connnect/ui/icons/arrow-right'
+import { Separator } from '@connnect/ui/components/separator'
+import { cn } from '@connnect/ui/lib/utils'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAddLine } from '@remixicon/react'
+import { RiAddLine, RiArrowLeftSLine, RiArrowRightSLine, RiHomeLine } from '@remixicon/react'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ConnectionIcon } from '~/components/connection-icon'
@@ -42,23 +42,26 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
   )
 }
 
-function ConnectionName({ id, onClick }: { id: string, onClick: () => void }) {
+function ConnectionName({ className, id }: { className?: string, id: string }) {
   const { data: connection } = useConnection(id)
 
+  if (!connection)
+    return null
+
   return (
-    <>
-      {connection && (
-        <button
-          type="button"
-          className="flex items-center py-1 gap-2 font-medium rounded-md text-sm cursor-pointer"
-          onClick={onClick}
-        >
-          <ConnectionIcon type={connection.type} className="size-4" />
-          {connection.name}
-          <CommandShortcut>⌘L</CommandShortcut>
-        </button>
-      )}
-    </>
+    <div className={cn('flex items-center py-1 gap-2 font-medium rounded-md text-sm cursor-pointer', className)}>
+      <ConnectionIcon type={connection.type} className="size-4" />
+      {connection.name}
+      <CommandShortcut>⌘L</CommandShortcut>
+    </div>
+  )
+}
+
+function NavbarButton({ children, ...props }: React.ComponentPropsWithoutRef<'button'>) {
+  return (
+    <button type="button" className="p-1.5 rounded-md hover:bg-accent cursor-pointer opacity-70" {...props}>
+      {children}
+    </button>
   )
 }
 
@@ -82,23 +85,29 @@ export function Navbar() {
       <div className="fixed top-0 inset-x-0 z-50 flex items-center h-10 justify-between pe-2">
         <div className="w-20 h-full [app-region:drag]" />
         <div className="flex items-center gap-1">
-          <button
-            type="button"
+          <NavbarButton
             disabled={!router.history.canGoBack()}
             onClick={() => router.history.back()}
           >
-            <ArrowLeftIcon className="[&>svg]:size-4 p-1.5 rounded-md hover:bg-accent cursor-pointer opacity-70" />
-          </button>
-          <button
-            type="button"
+            <RiArrowLeftSLine className="size-4" />
+          </NavbarButton>
+          <NavbarButton
             disabled={router.history.length <= 1}
             onClick={() => router.history.forward()}
           >
-            <ArrowRightIcon className="[&>svg]:size-4 p-1.5 rounded-md hover:bg-accent cursor-pointer opacity-70" />
-          </button>
+            <RiArrowRightSLine className="size-4" />
+          </NavbarButton>
+          <Separator orientation="vertical" className="h-4 mx-2" />
+          <NavbarButton onClick={() => router.navigate({ to: '/' })}>
+            <RiHomeLine className="size-4" />
+          </NavbarButton>
         </div>
-        <div className="flex-1 h-full [app-region:drag]" />
-        {params.id ? <ConnectionName id={params.id} onClick={() => setOpenConnections(true)} /> : <div />}
+        {params.id && (
+          <ConnectionName
+            id={params.id}
+            className="absolute z-20 left-1/2 -translate-x-1/2"
+          />
+        )}
         <div className="flex-1 h-full [app-region:drag]" />
         <UserButton />
       </div>

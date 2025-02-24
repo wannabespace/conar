@@ -1,8 +1,6 @@
 import type { Connection } from '~/lib/indexeddb'
 import { Button } from '@connnect/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
-import { Input } from '@connnect/ui/components/input'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
 import { Skeleton } from '@connnect/ui/components/skeleton'
 import { RiDeleteBinLine, RiMoreLine } from '@remixicon/react'
 import { Link, useRouter } from '@tanstack/react-router'
@@ -86,22 +84,6 @@ export function List() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-6">
-        <div className="flex-1">
-          <Select>
-            <SelectTrigger disabled className="w-[150px]">
-              <SelectValue placeholder="Select a type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Fruits</SelectLabel>
-                <SelectItem value="apple">Apple</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-        <Input disabled className="flex-1" placeholder="Search" />
-      </div>
       <div className="flex flex-col gap-2">
         {isPending
           ? (
