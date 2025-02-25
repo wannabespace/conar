@@ -1,7 +1,7 @@
 {
   "name": "@connnect/desktop",
   "type": "module",
-  "version": "0.0.1-alpha.1",
+  "version": "0.0.1",
   "private": true,
   "packageManager": "pnpm@10.4.1",
   "productName": "Connnect",
