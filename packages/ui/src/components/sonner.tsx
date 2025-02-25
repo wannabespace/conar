@@ -16,7 +16,7 @@ function Toaster() {
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:shadow-lg group-[.toaster]:data-[type=error]:text-destructive',
+            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:shadow-xl group-[.toaster]:shadow-black/3 group-[.toaster]:data-[type=error]:text-destructive',
           description: 'group-[.toast]:text-muted-foreground',
           actionButton:
             'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',

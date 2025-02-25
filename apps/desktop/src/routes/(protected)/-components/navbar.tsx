@@ -66,7 +66,7 @@ function ConnectionName({ className, id }: { className?: string, id: string }) {
 
 function NavbarButton({ children, ...props }: React.ComponentPropsWithoutRef<'button'>) {
   return (
-    <button type="button" className="p-1.5 rounded-md hover:bg-accent cursor-pointer opacity-70" {...props}>
+    <button type="button" className="p-1.5 rounded-md hover:bg-muted cursor-pointer opacity-70" {...props}>
       {children}
     </button>
   )
