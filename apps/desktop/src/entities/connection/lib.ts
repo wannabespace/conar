@@ -3,9 +3,6 @@ import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/trpc'
 
 export async function fetchConnections() {
-  if (!navigator.onLine)
-    return
-
   const [fetchedConnections, existingConnections] = await Promise.all([
     trpc.connections.list.query(),
     indexedDb.connections.toArray(),
