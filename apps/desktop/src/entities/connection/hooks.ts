@@ -3,6 +3,7 @@ import { queryOptions, useQuery } from '@tanstack/react-query'
 import { liveQuery } from 'dexie'
 import { useEffect } from 'react'
 import { indexedDb } from '~/lib/indexeddb'
+import { queryClient } from '~/main'
 
 export function connectionsQuery() {
   return queryOptions({
@@ -25,7 +26,7 @@ export function useConnections() {
 
   useEffect(() => {
     subscription ||= liveQuery(() => indexedDb.connections.toArray()).subscribe(() => {
-      query.refetch()
+      queryClient.invalidateQueries({ queryKey: connectionsQuery().queryKey })
     })
 
     return () => subscription?.unsubscribe()
@@ -41,7 +42,7 @@ export function useConnection(id: string) {
 
   useEffect(() => {
     subscriptions[id] ||= liveQuery(() => indexedDb.connections.get(id)).subscribe(() => {
-      query.refetch()
+      queryClient.invalidateQueries({ queryKey: connectionQuery(id).queryKey })
     })
 
     return () => subscriptions[id]?.unsubscribe()

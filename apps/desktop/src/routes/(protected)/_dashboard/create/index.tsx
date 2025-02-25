@@ -21,10 +21,11 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import { AppLogo } from '~/components/app-logo'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { createConnection } from '~/entities/connection'
+import { connectionsQuery, createConnection } from '~/entities/connection'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
+import { queryClient } from '~/main'
 import { ConnectionDetails } from './-components/connection-details'
 
 export const Route = createFileRoute(
@@ -101,10 +102,11 @@ function RouteComponent() {
 
   const [type, connectionString] = useWatch({ control: form.control, name: ['type', 'connectionString'] })
 
-  const { mutate } = useMutation({
+  const { mutate, isPending: isCreating } = useMutation({
     mutationFn: createConnection,
     onSuccess: async ({ id }) => {
       toast.success('Connection created successfully 🎉')
+      await queryClient.invalidateQueries({ queryKey: connectionsQuery().queryKey })
       router.navigate({ to: '/connections/$id', params: { id } })
     },
   })
@@ -325,7 +327,7 @@ function RouteComponent() {
             </Button>
             <Button
               type="submit"
-              loading={form.formState.isSubmitting}
+              loading={isCreating}
               disabled={isConnecting || !form.formState.isValid}
             >
               <AppLogo className="w-4" />

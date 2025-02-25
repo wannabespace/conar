@@ -30,7 +30,7 @@ export async function fetchConnections() {
   ])
 }
 
-export async function createConnection(connection: {
+export async function createConnection({ saveInCloud, ...connection }: {
   name: string
   type: ConnectionType
   connectionString: string
@@ -40,7 +40,7 @@ export async function createConnection(connection: {
 
   const isPasswordExists = !!url.password
 
-  if (isPasswordExists) {
+  if (isPasswordExists && !saveInCloud) {
     url.password = ''
   }
 
@@ -50,7 +50,12 @@ export async function createConnection(connection: {
     isPasswordExists,
   })
 
-  await indexedDb.connections.add({ id, ...connection, isPasswordExists, isPasswordPopulated: !isPasswordExists })
+  await indexedDb.connections.add({ id, ...connection, isPasswordExists, isPasswordPopulated: isPasswordExists })
 
   return { id }
+}
+
+export async function removeConnection(id: string) {
+  await trpc.connections.remove.mutate({ id })
+  await indexedDb.connections.delete(id)
 }

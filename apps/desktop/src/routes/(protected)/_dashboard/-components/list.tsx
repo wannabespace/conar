@@ -1,15 +1,18 @@
 import type { Connection } from '~/lib/indexeddb'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
 import { Skeleton } from '@connnect/ui/components/skeleton'
 import { RiDeleteBinLine, RiMoreLine } from '@remixicon/react'
+import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { ConnectionIcon } from '~/components/connection-icon'
-import { connectionQuery, useConnections } from '~/entities/connection'
+import { connectionQuery, connectionsQuery, removeConnection, useConnections } from '~/entities/connection'
 import { queryClient } from '~/main'
 
-function ConnectionCard({ connection }: { connection: Connection }) {
+function ConnectionCard({ connection, onRemove }: { connection: Connection, onRemove: () => void }) {
   const connectionString = useMemo(() => {
     const url = new URL(connection.connectionString)
 
@@ -39,7 +42,13 @@ function ConnectionCard({ connection }: { connection: Connection }) {
           <RiMoreLine className="size-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem disabled className="text-destructive focus:text-destructive">
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={(e) => {
+              e.preventDefault()
+              onRemove()
+            }}
+          >
             <RiDeleteBinLine className="mr-2 size-4" />
             Remove
           </DropdownMenuItem>
@@ -79,11 +88,59 @@ function ConnectionCardSkeleton() {
   )
 }
 
+function RemoveConnectionDialog({ id, open, onOpenChange }: { id: string | null, open: boolean, onOpenChange: (open: boolean) => void }) {
+  const { mutate: removeConnectionMutation, isPending } = useMutation({
+    mutationFn: async () => {
+      if (!id)
+        return
+
+      await removeConnection(id)
+      await queryClient.invalidateQueries({ queryKey: connectionsQuery().queryKey })
+    },
+    onSuccess: () => {
+      toast.success('Connection removed successfully')
+      onOpenChange(false)
+    },
+  })
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove connection</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete this connection
+            and remove all associated data.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction asChild>
+            <Button
+              loading={isPending}
+              variant="destructive"
+              onClick={(e) => {
+                e.preventDefault()
+                removeConnectionMutation()
+              }}
+            >
+              Remove
+            </Button>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
 export function List() {
   const { data: connections, isPending } = useConnections()
+  const [selected, setSelected] = useState<string | null>(null)
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
 
   return (
     <div className="flex flex-col gap-6">
+      <RemoveConnectionDialog id={selected} open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen} />
       <div className="flex flex-col gap-2">
         {isPending
           ? (
@@ -94,7 +151,16 @@ export function List() {
               </>
             )
           : connections?.length
-            ? connections.map(connection => <ConnectionCard key={connection.id} connection={connection} />)
+            ? connections.map(connection => (
+                <ConnectionCard
+                  key={connection.id}
+                  connection={connection}
+                  onRemove={() => {
+                    setSelected(connection.id)
+                    setIsRemoveDialogOpen(true)
+                  }}
+                />
+              ))
             : <Empty />}
       </div>
     </div>

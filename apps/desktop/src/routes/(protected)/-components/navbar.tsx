@@ -18,21 +18,28 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
     router.navigate({ to: '/connections/$id', params: { id } })
   }
 
+  function onAdd() {
+    setOpen(false)
+    router.navigate({ to: '/create' })
+  }
+
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput placeholder="Type a connection name..." />
       <CommandList>
         <CommandEmpty>No connections found.</CommandEmpty>
-        <CommandGroup heading="Connections">
-          {connections?.map(connection => (
-            <CommandItem key={connection.id} onSelect={() => onSelect(connection.id)}>
-              <ConnectionIcon type={connection.type} className="size-4 shrink-0 opacity-60" />
-              {connection.name}
-            </CommandItem>
-          ))}
-        </CommandGroup>
+        {!!connections?.length && (
+          <CommandGroup heading="Connections">
+            {connections.map(connection => (
+              <CommandItem key={connection.id} onSelect={() => onSelect(connection.id)}>
+                <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
+                {connection.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
         <CommandGroup heading="Actions">
-          <CommandItem onSelect={() => setOpen(false)}>
+          <CommandItem onSelect={onAdd}>
             <RiAddLine className="size-4 shrink-0 opacity-60" />
             Add New Connection...
           </CommandItem>

@@ -13,9 +13,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          `border-b border-b-black/10 bg-primary text-white shadow-md shadow-black/2 [text-shadow:0_1px_rgba(0,0,0,0.2)] hover:bg-primary/90 ${beforeClasses} before:bg-white`,
+          `border-b border-b-black/10 bg-primary text-white shadow-md shadow-black/2 [text-shadow:0_1px_rgba(0,0,0,0.2)] hover:bg-primary/80 ${beforeClasses} before:bg-white`,
         destructive:
-          'bg-destructive text-destructive-foreground shadow-md shadow-black/2 hover:bg-destructive/90',
+          `border-b border-b-black/10 bg-destructive text-destructive-foreground shadow-md shadow-black/2 [text-shadow:0_1px_rgba(0,0,0,0.2)] hover:bg-destructive/80 ${beforeClasses} before:bg-white`,
         outline:
           'bg-element border border-border shadow-md shadow-black/2 hover:bg-accent hover:text-accent-foreground',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
@@ -37,7 +37,7 @@ const buttonVariants = cva(
 export interface ButtonProps extends Pick<React.ComponentProps<'button'>, 'type' | 'disabled' | 'className'>, VariantProps<typeof buttonVariants> {
   loading?: boolean
   children: React.ReactNode
-  onClick?: () => void
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
 }
 
 function Button({
