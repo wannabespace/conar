@@ -78,6 +78,26 @@ export function Navbar() {
   const [openConnections, setOpenConnections] = useState(false)
   const { data: connections } = useConnections()
 
+  useKeyboardEvent(e => e.key === 'd' && e.metaKey, () => {
+    router.navigate({ to: '/' })
+  })
+
+  useKeyboardEvent(e => e.key === 'd' && e.metaKey, () => {
+    router.navigate({ to: '/' })
+  })
+
+  useKeyboardEvent(e => e.key === 'ArrowRight' && e.metaKey, () => {
+    if (router.history.length > 1) {
+      router.history.forward()
+    }
+  })
+
+  useKeyboardEvent(e => e.key === 'ArrowLeft' && e.metaKey, () => {
+    if (router.history.length > 1) {
+      router.history.back()
+    }
+  })
+
   useKeyboardEvent(e => e.key === 'l' && e.metaKey, () => {
     if (!connections || connections.length === 0)
       return

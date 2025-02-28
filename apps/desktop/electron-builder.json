@@ -24,9 +24,7 @@
   ],
   "mac": {
     "category": "public.app-category.developer-tools",
-    "target": [
-      "dmg"
-    ],
+    "target": ["dmg"],
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
   },
   "win": {
