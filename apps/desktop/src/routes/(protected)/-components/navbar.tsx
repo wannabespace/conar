@@ -6,7 +6,8 @@ import { RiAddLine, RiArrowLeftSLine, RiArrowRightSLine, RiHomeLine } from '@rem
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ConnectionIcon } from '~/components/connection-icon'
-import { useConnection, useConnections } from '~/entities/connection'
+import { connectionQuery, useConnection, useConnections } from '~/entities/connection'
+import { queryClient } from '~/main'
 import { UserButton } from './user-button'
 
 function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
@@ -31,7 +32,11 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
         {!!connections?.length && (
           <CommandGroup heading="Connections">
             {connections.map(connection => (
-              <CommandItem key={connection.id} onSelect={() => onSelect(connection.id)}>
+              <CommandItem
+                key={connection.id}
+                onSelect={() => onSelect(connection.id)}
+                onMouseOver={() => queryClient.prefetchQuery(connectionQuery(connection.id))}
+              >
                 <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
                 {connection.name}
               </CommandItem>
