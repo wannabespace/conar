@@ -1,5 +1,6 @@
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@connnect/ui/components/command'
 import { Separator } from '@connnect/ui/components/separator'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { cn } from '@connnect/ui/lib/utils'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine, RiArrowLeftSLine, RiArrowRightSLine, RiHomeLine } from '@remixicon/react'
@@ -69,7 +70,7 @@ function ConnectionName({ className, id }: { className?: string, id: string }) {
   )
 }
 
-function NavbarButton({ children, ...props }: React.ComponentPropsWithoutRef<'button'>) {
+function NavbarButton({ children, ...props }: React.ComponentProps<'button'>) {
   return (
     <button type="button" className="p-1.5 rounded-md hover:bg-muted cursor-pointer opacity-70" {...props}>
       {children}
@@ -117,22 +118,49 @@ export function Navbar() {
       <div className="fixed top-0 inset-x-0 z-50 flex items-center h-10 justify-between pe-2">
         <div className="w-20 h-full [app-region:drag]" />
         <div className="flex items-center gap-1">
-          <NavbarButton
-            disabled={!router.history.canGoBack()}
-            onClick={() => router.history.back()}
-          >
-            <RiArrowLeftSLine className="size-4" />
-          </NavbarButton>
-          <NavbarButton
-            disabled={router.history.length <= 1}
-            onClick={() => router.history.forward()}
-          >
-            <RiArrowRightSLine className="size-4" />
-          </NavbarButton>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <NavbarButton
+                  disabled={!router.history.canGoBack()}
+                  onClick={() => router.history.back()}
+                >
+                  <RiArrowLeftSLine className="size-4" />
+                </NavbarButton>
+              </TooltipTrigger>
+              <TooltipContent>
+                <CommandShortcut>⌘←</CommandShortcut>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <NavbarButton
+                  disabled={router.history.length <= 1}
+                  onClick={() => router.history.forward()}
+                >
+                  <RiArrowRightSLine className="size-4" />
+                </NavbarButton>
+              </TooltipTrigger>
+              <TooltipContent>
+                <CommandShortcut>⌘→</CommandShortcut>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Separator orientation="vertical" className="h-4 mx-2" />
-          <NavbarButton onClick={() => router.navigate({ to: '/' })}>
-            <RiHomeLine className="size-4" />
-          </NavbarButton>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <NavbarButton onClick={() => router.navigate({ to: '/' })}>
+                  <RiHomeLine className="size-4" />
+                </NavbarButton>
+              </TooltipTrigger>
+              <TooltipContent>
+                <CommandShortcut>⌘D</CommandShortcut>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         {params.id && (
           <ConnectionName

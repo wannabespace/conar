@@ -1,5 +1,6 @@
 import { Button } from '@connnect/ui/components/button'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
+import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine } from '@remixicon/react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useConnections } from '~/entities/connection'
@@ -16,6 +17,10 @@ function DashboardPage() {
   function handleCreateConnection() {
     router.navigate({ to: '/create' })
   }
+
+  useKeyboardEvent(e => e.key === 'n' && e.metaKey, () => {
+    router.navigate({ to: '/create' })
+  })
 
   return (
     <div className="w-full mx-auto max-w-2xl py-10">

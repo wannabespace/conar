@@ -6,6 +6,7 @@ import { useRef, useState } from 'react'
 import { Monaco } from '~/components/monaco'
 import { useConnection } from '~/entities/connection'
 import { formatSql } from '~/lib/formatter'
+import { PasswordForm } from './-components/password-form'
 
 export const Route = createFileRoute('/(protected)/_dashboard/connections/$id')({
   component: RouteComponent,
@@ -40,9 +41,21 @@ function RouteComponent() {
     editorRef.current!.setValue(formatted)
   }
 
+  if (!connection) {
+    return (
+      <div className="flex w-full items-center justify-center">
+        <p className="text-lg font-medium text-muted-foreground">Loading connection...</p>
+      </div>
+    )
+  }
+
+  if (connection.isPasswordExists && !connection.isPasswordPopulated) {
+    return <PasswordForm connection={connection} />
+  }
+
   return (
     <div>
-      <Button onClick={() => format()}>Format</Button>
+      <Button variant="outline" onClick={() => format()}>Format</Button>
       <Monaco ref={editorRef} initialValue={query} onChange={setQuery} />
       <Button
         loading={isPending}

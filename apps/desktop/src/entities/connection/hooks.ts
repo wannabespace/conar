@@ -1,9 +1,11 @@
 import type { Subscription } from 'dexie'
-import { queryOptions, useQuery } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import { liveQuery } from 'dexie'
 import { useEffect } from 'react'
+import { toast } from 'sonner'
 import { indexedDb } from '~/lib/indexeddb'
 import { queryClient } from '~/main'
+import { updatePassword } from './lib'
 
 export function connectionsQuery() {
   return queryOptions({
@@ -49,4 +51,27 @@ export function useConnection(id: string) {
   }, [id])
 
   return query
+}
+
+export function useUpdateConnectionPassword(id: string) {
+  return useMutation({
+    mutationFn: async (password: string) => {
+      await updatePassword(id, password)
+    },
+    onSuccess: () => {
+      toast.success('Password successfully saved!')
+    },
+  })
+}
+
+export function useTestConnection() {
+  return useMutation({
+    mutationFn: window.electron.connections.test,
+    onError: (error) => {
+      toast.error(error.message)
+    },
+    onSuccess: () => {
+      toast.success('Connection successful. You can now save the connection.')
+    },
+  })
 }

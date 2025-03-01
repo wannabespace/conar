@@ -1,8 +1,10 @@
 import type { Connection } from '~/lib/indexeddb'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
+import { CommandShortcut } from '@connnect/ui/components/command'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
 import { Skeleton } from '@connnect/ui/components/skeleton'
+import { useKeyboardEvent } from '@react-hookz/web'
 import { RiDeleteBinLine, RiMoreLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
@@ -12,7 +14,8 @@ import { ConnectionIcon } from '~/components/connection-icon'
 import { connectionQuery, connectionsQuery, removeConnection, useConnections } from '~/entities/connection'
 import { queryClient } from '~/main'
 
-function ConnectionCard({ connection, onRemove }: { connection: Connection, onRemove: () => void }) {
+function ConnectionCard({ connection, onRemove, number }: { connection: Connection, onRemove: () => void, number: number }) {
+  const router = useRouter()
   const connectionString = useMemo(() => {
     const url = new URL(connection.connectionString)
 
@@ -23,6 +26,10 @@ function ConnectionCard({ connection, onRemove }: { connection: Connection, onRe
     return url.toString()
   }, [connection.connectionString])
 
+  useKeyboardEvent(e => e.key === number.toString() && e.metaKey, () => {
+    router.navigate({ to: '/connections/$id', params: { id: connection.id } })
+  })
+
   return (
     <Link
       className="relative flex items-center justify-between gap-4 rounded-lg bg-background p-5 border border-border transition-all duration-150 hover:border-primary/50 hover:shadow-xl shadow-black/3"
@@ -30,6 +37,10 @@ function ConnectionCard({ connection, onRemove }: { connection: Connection, onRe
       params={{ id: connection.id }}
       onMouseOver={() => queryClient.prefetchQuery(connectionQuery(connection.id))}
     >
+      <CommandShortcut className="absolute bottom-2 right-2 opacity-50">
+        ⌘
+        {number}
+      </CommandShortcut>
       <div className="size-14 shrink-0 rounded-full bg-element p-3">
         <ConnectionIcon type={connection.type} className="size-full text-primary" />
       </div>
@@ -151,10 +162,11 @@ export function List() {
               </>
             )
           : connections?.length
-            ? connections.map(connection => (
+            ? connections.map((connection, index) => (
                 <ConnectionCard
                   key={connection.id}
                   connection={connection}
+                  number={index + 1}
                   onRemove={() => {
                     setSelected(connection.id)
                     setIsRemoveDialogOpen(true)

@@ -53,6 +53,23 @@ export async function createConnection({ saveInCloud, ...connection }: {
 }
 
 export async function removeConnection(id: string) {
-  await trpc.connections.remove.mutate({ id })
-  await indexedDb.connections.delete(id)
+  await Promise.all([
+    trpc.connections.remove.mutate({ id }),
+    indexedDb.connections.delete(id),
+  ])
+}
+
+export async function updatePassword(id: string, password: string) {
+  const connection = await indexedDb.connections.get(id)
+
+  if (!connection) {
+    throw new Error('Connection not found')
+  }
+
+  const url = new URL(connection.connectionString)
+  url.password = password
+  connection.connectionString = url.toString()
+  connection.isPasswordPopulated = true
+
+  await indexedDb.connections.put(connection)
 }

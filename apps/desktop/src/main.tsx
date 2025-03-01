@@ -47,7 +47,6 @@ queryClient
   .ensureQueryData(sessionQuery())
   .then(async (session) => {
     if (session.data) {
-      fetchConnections()
       await queryClient.prefetchQuery(connectionsQuery())
     }
     preloader.classList.add('scale-[0.5]', 'opacity-0')
@@ -56,5 +55,6 @@ queryClient
     document.body.classList.remove('overflow-hidden')
     root.render(<RouterProvider router={router} />)
     await sleep(1000)
+    fetchConnections()
     preloader.remove()
   })

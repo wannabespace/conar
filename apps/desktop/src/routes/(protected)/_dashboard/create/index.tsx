@@ -21,7 +21,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import { AppLogo } from '~/components/app-logo'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { connectionsQuery, createConnection } from '~/entities/connection'
+import { connectionsQuery, createConnection, useTestConnection } from '~/entities/connection'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
@@ -91,6 +91,7 @@ function RouteComponent() {
 
       form.setValue('connectionString', text)
       form.setValue('type', type)
+
       setStep('save')
 
       toast.success('Connection string pasted successfully')
@@ -110,15 +111,7 @@ function RouteComponent() {
       router.navigate({ to: '/connections/$id', params: { id } })
     },
   })
-  const { mutate: testConnection, isPending: isConnecting } = useMutation({
-    mutationFn: window.electron.connections.test,
-    onError: (error) => {
-      toast.error(error.message)
-    },
-    onSuccess: () => {
-      toast.success('Connection successful. You can now save the connection.')
-    },
-  })
+  const { mutate: testConnection, isPending: isConnecting } = useTestConnection()
 
   return (
     <Form {...form} onSubmit={v => mutate(v)} className="flex py-10 flex-col w-full max-w-2xl mx-auto">
@@ -257,7 +250,7 @@ function RouteComponent() {
             </CardHeader>
             <CardContent>
               <ConnectionDetails connectionString={connectionString} />
-              <div className="mt-6 space-y-4">
+              <div className="mt-6 space-y-6">
                 <div className="flex w-full gap-2 items-end">
                   <FormField
                     control={form.control}
