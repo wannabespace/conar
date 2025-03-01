@@ -1,7 +1,6 @@
 import type { Connection } from '~/lib/indexeddb'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
-import { CommandShortcut } from '@connnect/ui/components/command'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
 import { Skeleton } from '@connnect/ui/components/skeleton'
 import { useKeyboardEvent } from '@react-hookz/web'
@@ -37,10 +36,6 @@ function ConnectionCard({ connection, onRemove, number }: { connection: Connecti
       params={{ id: connection.id }}
       onMouseOver={() => queryClient.prefetchQuery(connectionQuery(connection.id))}
     >
-      <CommandShortcut className="absolute bottom-2 right-2 opacity-50">
-        ⌘
-        {number}
-      </CommandShortcut>
       <div className="size-14 shrink-0 rounded-full bg-element p-3">
         <ConnectionIcon type={connection.type} className="size-full text-primary" />
       </div>
@@ -106,11 +101,11 @@ function RemoveConnectionDialog({ id, open, onOpenChange }: { id: string | null,
         return
 
       await removeConnection(id)
-      await queryClient.invalidateQueries({ queryKey: connectionsQuery().queryKey })
     },
     onSuccess: () => {
       toast.success('Connection removed successfully')
       onOpenChange(false)
+      queryClient.invalidateQueries({ queryKey: connectionsQuery().queryKey })
     },
   })
 
