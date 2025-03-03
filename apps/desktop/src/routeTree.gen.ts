@@ -22,7 +22,6 @@ import { Route as publicAuthSignInImport } from './routes/(public)/_auth/sign-in
 import { Route as protectedDashboardCreateIndexImport } from './routes/(protected)/_dashboard/create/index'
 import { Route as publicAuthTwoFactorSetupImport } from './routes/(public)/_auth/two-factor.setup'
 import { Route as protectedDashboardConnectionIdImport } from './routes/(protected)/_dashboard/connection/$id'
-import { Route as protectedDashboardConnectionIdTablesImport } from './routes/(protected)/_dashboard/connection/$id/tables'
 import { Route as protectedDashboardConnectionIdSqlImport } from './routes/(protected)/_dashboard/connection/$id/sql'
 import { Route as protectedDashboardConnectionIdTablesTableImport } from './routes/(protected)/_dashboard/connection/$id/tables.$table'
 
@@ -97,13 +96,6 @@ const protectedDashboardConnectionIdRoute =
     getParentRoute: () => protectedDashboardRoute,
   } as any)
 
-const protectedDashboardConnectionIdTablesRoute =
-  protectedDashboardConnectionIdTablesImport.update({
-    id: '/tables',
-    path: '/tables',
-    getParentRoute: () => protectedDashboardConnectionIdRoute,
-  } as any)
-
 const protectedDashboardConnectionIdSqlRoute =
   protectedDashboardConnectionIdSqlImport.update({
     id: '/sql',
@@ -113,9 +105,9 @@ const protectedDashboardConnectionIdSqlRoute =
 
 const protectedDashboardConnectionIdTablesTableRoute =
   protectedDashboardConnectionIdTablesTableImport.update({
-    id: '/$table',
-    path: '/$table',
-    getParentRoute: () => protectedDashboardConnectionIdTablesRoute,
+    id: '/tables/$table',
+    path: '/tables/$table',
+    getParentRoute: () => protectedDashboardConnectionIdRoute,
   } as any)
 
 // Populate the FileRoutesByPath interface
@@ -206,51 +198,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof protectedDashboardConnectionIdSqlImport
       parentRoute: typeof protectedDashboardConnectionIdImport
     }
-    '/(protected)/_dashboard/connection/$id/tables': {
-      id: '/(protected)/_dashboard/connection/$id/tables'
-      path: '/tables'
-      fullPath: '/connection/$id/tables'
-      preLoaderRoute: typeof protectedDashboardConnectionIdTablesImport
-      parentRoute: typeof protectedDashboardConnectionIdImport
-    }
     '/(protected)/_dashboard/connection/$id/tables/$table': {
       id: '/(protected)/_dashboard/connection/$id/tables/$table'
-      path: '/$table'
+      path: '/tables/$table'
       fullPath: '/connection/$id/tables/$table'
       preLoaderRoute: typeof protectedDashboardConnectionIdTablesTableImport
-      parentRoute: typeof protectedDashboardConnectionIdTablesImport
+      parentRoute: typeof protectedDashboardConnectionIdImport
     }
   }
 }
 
 // Create and export the route tree
 
-interface protectedDashboardConnectionIdTablesRouteChildren {
-  protectedDashboardConnectionIdTablesTableRoute: typeof protectedDashboardConnectionIdTablesTableRoute
-}
-
-const protectedDashboardConnectionIdTablesRouteChildren: protectedDashboardConnectionIdTablesRouteChildren =
-  {
-    protectedDashboardConnectionIdTablesTableRoute:
-      protectedDashboardConnectionIdTablesTableRoute,
-  }
-
-const protectedDashboardConnectionIdTablesRouteWithChildren =
-  protectedDashboardConnectionIdTablesRoute._addFileChildren(
-    protectedDashboardConnectionIdTablesRouteChildren,
-  )
-
 interface protectedDashboardConnectionIdRouteChildren {
   protectedDashboardConnectionIdSqlRoute: typeof protectedDashboardConnectionIdSqlRoute
-  protectedDashboardConnectionIdTablesRoute: typeof protectedDashboardConnectionIdTablesRouteWithChildren
+  protectedDashboardConnectionIdTablesTableRoute: typeof protectedDashboardConnectionIdTablesTableRoute
 }
 
 const protectedDashboardConnectionIdRouteChildren: protectedDashboardConnectionIdRouteChildren =
   {
     protectedDashboardConnectionIdSqlRoute:
       protectedDashboardConnectionIdSqlRoute,
-    protectedDashboardConnectionIdTablesRoute:
-      protectedDashboardConnectionIdTablesRouteWithChildren,
+    protectedDashboardConnectionIdTablesTableRoute:
+      protectedDashboardConnectionIdTablesTableRoute,
   }
 
 const protectedDashboardConnectionIdRouteWithChildren =
@@ -333,7 +303,6 @@ export interface FileRoutesByFullPath {
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/create': typeof protectedDashboardCreateIndexRoute
   '/connection/$id/sql': typeof protectedDashboardConnectionIdSqlRoute
-  '/connection/$id/tables': typeof protectedDashboardConnectionIdTablesRouteWithChildren
   '/connection/$id/tables/$table': typeof protectedDashboardConnectionIdTablesTableRoute
 }
 
@@ -346,7 +315,6 @@ export interface FileRoutesByTo {
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/create': typeof protectedDashboardCreateIndexRoute
   '/connection/$id/sql': typeof protectedDashboardConnectionIdSqlRoute
-  '/connection/$id/tables': typeof protectedDashboardConnectionIdTablesRouteWithChildren
   '/connection/$id/tables/$table': typeof protectedDashboardConnectionIdTablesTableRoute
 }
 
@@ -364,7 +332,6 @@ export interface FileRoutesById {
   '/(public)/_auth/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/(protected)/_dashboard/create/': typeof protectedDashboardCreateIndexRoute
   '/(protected)/_dashboard/connection/$id/sql': typeof protectedDashboardConnectionIdSqlRoute
-  '/(protected)/_dashboard/connection/$id/tables': typeof protectedDashboardConnectionIdTablesRouteWithChildren
   '/(protected)/_dashboard/connection/$id/tables/$table': typeof protectedDashboardConnectionIdTablesTableRoute
 }
 
@@ -379,7 +346,6 @@ export interface FileRouteTypes {
     | '/two-factor/setup'
     | '/create'
     | '/connection/$id/sql'
-    | '/connection/$id/tables'
     | '/connection/$id/tables/$table'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -391,7 +357,6 @@ export interface FileRouteTypes {
     | '/two-factor/setup'
     | '/create'
     | '/connection/$id/sql'
-    | '/connection/$id/tables'
     | '/connection/$id/tables/$table'
   id:
     | '__root__'
@@ -407,7 +372,6 @@ export interface FileRouteTypes {
     | '/(public)/_auth/two-factor/setup'
     | '/(protected)/_dashboard/create/'
     | '/(protected)/_dashboard/connection/$id/sql'
-    | '/(protected)/_dashboard/connection/$id/tables'
     | '/(protected)/_dashboard/connection/$id/tables/$table'
   fileRoutesById: FileRoutesById
 }
@@ -490,7 +454,7 @@ export const routeTree = rootRoute
       "parent": "/(protected)/_dashboard",
       "children": [
         "/(protected)/_dashboard/connection/$id/sql",
-        "/(protected)/_dashboard/connection/$id/tables"
+        "/(protected)/_dashboard/connection/$id/tables/$table"
       ]
     },
     "/(public)/_auth/two-factor/setup": {
@@ -505,16 +469,9 @@ export const routeTree = rootRoute
       "filePath": "(protected)/_dashboard/connection/$id/sql.tsx",
       "parent": "/(protected)/_dashboard/connection/$id"
     },
-    "/(protected)/_dashboard/connection/$id/tables": {
-      "filePath": "(protected)/_dashboard/connection/$id/tables.tsx",
-      "parent": "/(protected)/_dashboard/connection/$id",
-      "children": [
-        "/(protected)/_dashboard/connection/$id/tables/$table"
-      ]
-    },
     "/(protected)/_dashboard/connection/$id/tables/$table": {
       "filePath": "(protected)/_dashboard/connection/$id/tables.$table.tsx",
-      "parent": "/(protected)/_dashboard/connection/$id/tables"
+      "parent": "/(protected)/_dashboard/connection/$id"
     }
   }
 }
