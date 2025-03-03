@@ -8,7 +8,7 @@ import { useConnection } from '~/entities/connection'
 import { formatSql } from '~/lib/formatter'
 
 export const Route = createFileRoute(
-  '/(protected)/_dashboard/connections/$id/table/$table',
+  '/(protected)/_dashboard/database/$id/table/$table',
 )({
   component: RouteComponent,
 })

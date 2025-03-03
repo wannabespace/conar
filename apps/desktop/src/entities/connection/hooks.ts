@@ -1,4 +1,6 @@
+import type { ConnectionType } from '@connnect/shared/enums/connection-type'
 import type { Subscription } from 'dexie'
+import type { Connection } from '~/lib/indexeddb'
 import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import { liveQuery } from 'dexie'
 import { useEffect } from 'react'
@@ -11,13 +13,6 @@ export function connectionsQuery() {
   return queryOptions({
     queryKey: ['connections'],
     queryFn: () => indexedDb.connections.toArray(),
-  })
-}
-
-export function connectionQuery(id: string) {
-  return queryOptions({
-    queryKey: ['connection', id],
-    queryFn: () => indexedDb.connections.get(id),
   })
 }
 
@@ -35,6 +30,13 @@ export function useConnections() {
   }, [])
 
   return query
+}
+
+export function connectionQuery(id: string) {
+  return queryOptions({
+    queryKey: ['connection', id],
+    queryFn: () => indexedDb.connections.get(id),
+  })
 }
 
 const subscriptions: Record<string, Subscription> = {}
@@ -74,4 +76,25 @@ export function useTestConnection() {
       toast.success('Connection successful. You can now save the connection.')
     },
   })
+}
+
+export function connectionTreeQuery(connection: Connection) {
+  return queryOptions({
+    queryKey: ['connection', 'list', connection.id],
+    queryFn: () => {
+      const queryMap: Record<ConnectionType, string> = {
+        postgres: 'SELECT datname FROM pg_database',
+      }
+
+      return window.electron.connections.query({
+        type: connection.type,
+        connectionString: connection.connectionString,
+        query: queryMap[connection.type],
+      })
+    },
+  })
+}
+
+export function useConnectionTree(connection: Connection) {
+  return useQuery(connectionTreeQuery(connection))
 }

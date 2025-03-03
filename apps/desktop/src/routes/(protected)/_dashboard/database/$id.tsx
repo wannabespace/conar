@@ -1,14 +1,17 @@
+import { Button } from '@connnect/ui/components/button'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { RiDatabase2Line } from '@remixicon/react'
+import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { useConnection } from '~/entities/connection'
-import { PasswordForm } from './-components/password-form'
-import { ConnectionTree } from './-components/tree'
+import { PasswordForm } from './$id/-components/password-form'
+import { ConnectionTree } from './$id/-components/tree'
 
-export const Route = createFileRoute('/(protected)/_dashboard/connections/$id/')({
+export const Route = createFileRoute('/(protected)/_dashboard/database/$id')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const router = useRouter()
   const { id } = Route.useParams()
   const { data: connection } = useConnection(id)
 
@@ -27,7 +30,11 @@ function RouteComponent() {
   return (
     <ResizablePanelGroup className="h-auto!" direction="horizontal">
       <ResizablePanel defaultSize={20} minSize={10}>
-        <ConnectionTree />
+        <Button variant="outline" onClick={() => router.navigate({ to: '/database/$id/sql', params: { id } })}>
+          Run SQL
+          <RiDatabase2Line />
+        </Button>
+        <ConnectionTree connection={connection} />
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel defaultSize={80} minSize={50}>

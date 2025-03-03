@@ -1,3 +1,4 @@
+import type { Connection } from '~/lib/indexeddb'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@connnect/ui/components/command'
 import { Separator } from '@connnect/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
@@ -15,9 +16,10 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
   const { data: connections } = useConnections()
   const router = useRouter()
 
-  function onSelect(id: string) {
+  function onSelect(connection: Connection) {
     setOpen(false)
-    router.navigate({ to: '/connections/$id', params: { id } })
+    if (connection.type === 'postgres')
+      router.navigate({ to: '/database/$id', params: { id: connection.id } })
   }
 
   function onAdd() {
@@ -35,7 +37,7 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
             {connections.map(connection => (
               <CommandItem
                 key={connection.id}
-                onSelect={() => onSelect(connection.id)}
+                onSelect={() => onSelect(connection)}
                 onMouseOver={() => queryClient.prefetchQuery(connectionQuery(connection.id))}
               >
                 <ConnectionIcon type={connection.type} className="size-4 shrink-0" />

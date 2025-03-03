@@ -28,6 +28,7 @@
     "@trpc/react-query": "^11.0.0-rc.724",
     "@trpc/server": "^11.0.0-rc.724",
     "@vercel/analytics": "^1.5.0",
+    "ai": "^4.1.47",
     "better-auth": "^1.1.21",
     "better-auth-harmony": "^1.2.3",
     "consola": "^3.4.0",
