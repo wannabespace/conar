@@ -78,23 +78,98 @@ export function useTestConnection() {
   })
 }
 
-export function connectionTreeQuery(connection: Connection) {
+export function connectionInfoQuery(connection: Connection, schema = 'public') {
   return queryOptions({
-    queryKey: ['connection', 'list', connection.id],
-    queryFn: () => {
+    queryKey: ['connection', 'info', connection.id],
+    queryFn: async () => {
       const queryMap: Record<ConnectionType, string> = {
-        postgres: 'SELECT datname FROM pg_database',
+        postgres: `
+          SELECT table_name
+          FROM information_schema.tables
+          WHERE table_schema = '${schema}'
+          ORDER BY table_name;
+        `,
       }
 
-      return window.electron.connections.query({
+      const response = await window.electron.connections.query({
         type: connection.type,
         connectionString: connection.connectionString,
         query: queryMap[connection.type],
       })
+
+      return response as {
+        table_name: string
+      }[]
     },
   })
 }
 
-export function useConnectionTree(connection: Connection) {
-  return useQuery(connectionTreeQuery(connection))
+export function useConnectionInfo(connection: Connection, schema = 'public') {
+  return useQuery(connectionInfoQuery(connection, schema))
+}
+
+export function columnsInfoQuery(connection: Connection, table: string) {
+  return queryOptions({
+    queryKey: ['table', connection.id, table],
+    queryFn: async () => {
+      if (!connection)
+        return null!
+
+      const result = await window.electron.connections.query({
+        type: connection.type,
+        connectionString: connection.connectionString,
+        query: `SELECT
+          column_name,
+          data_type,
+          character_maximum_length,
+          column_default,
+          is_nullable
+        FROM
+          information_schema.columns
+        WHERE
+          table_name = '${table}'
+        ORDER BY
+          ordinal_position;`,
+      })
+
+      return result as {
+        column_name: string
+        data_type: string
+        character_maximum_length: number
+        column_default: string
+        is_nullable: string
+      }[]
+    },
+  })
+}
+
+export function enumsInfoQuery(connection: Connection, table: string) {
+  return queryOptions({
+    queryKey: ['connection', 'enums', connection.id, table],
+    queryFn: async () => {
+      const response = await window.electron.connections.query({
+        type: connection.type,
+        connectionString: connection.connectionString,
+        query: `
+          SELECT n.nspname AS enum_schema,
+            t.typname AS enum_name,
+            e.enumlabel AS enum_value
+          FROM pg_type t
+          JOIN pg_enum e ON t.oid = e.enumtypid
+          JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+          ORDER BY enum_schema, enum_name, e.enumsortorder;
+        `,
+      })
+
+      return response as {
+        enum_schema: string
+        enum_name: string
+        enum_value: string
+      }[]
+    },
+  })
+}
+
+export function useEnumsInfo(connection: Connection, table: string) {
+  return useQuery(enumsInfoQuery(connection, table))
 }

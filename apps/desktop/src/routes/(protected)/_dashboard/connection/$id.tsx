@@ -1,4 +1,5 @@
 import { Button } from '@connnect/ui/components/button'
+import { Card, CardContent } from '@connnect/ui/components/card'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { RiDatabase2Line } from '@remixicon/react'
 import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
@@ -6,7 +7,7 @@ import { useConnection } from '~/entities/connection'
 import { PasswordForm } from './$id/-components/password-form'
 import { ConnectionTree } from './$id/-components/tree'
 
-export const Route = createFileRoute('/(protected)/_dashboard/database/$id')({
+export const Route = createFileRoute('/(protected)/_dashboard/connection/$id')({
   component: RouteComponent,
 })
 
@@ -30,13 +31,17 @@ function RouteComponent() {
   return (
     <ResizablePanelGroup className="h-auto!" direction="horizontal">
       <ResizablePanel defaultSize={20} minSize={10}>
-        <Button variant="outline" onClick={() => router.navigate({ to: '/database/$id/sql', params: { id } })}>
-          Run SQL
-          <RiDatabase2Line />
-        </Button>
-        <ConnectionTree connection={connection} />
+        <Card className="h-full">
+          <CardContent>
+            <Button variant="outline" onClick={() => router.navigate({ to: '/connection/$id/sql', params: { id } })}>
+              Run SQL
+              <RiDatabase2Line />
+            </Button>
+            <ConnectionTree connection={connection} />
+          </CardContent>
+        </Card>
       </ResizablePanel>
-      <ResizableHandle />
+      <ResizableHandle className="w-2 bg-transparent" />
       <ResizablePanel defaultSize={80} minSize={50}>
         <Outlet />
       </ResizablePanel>

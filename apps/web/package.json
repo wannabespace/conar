@@ -19,6 +19,7 @@
     "drizzle:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^1.1.13",
     "@connnect/shared": "workspace:*",
     "@connnect/ui": "workspace:*",
     "@remixicon/react": "^4.6.0",

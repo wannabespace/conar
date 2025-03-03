@@ -19,7 +19,7 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
   function onSelect(connection: Connection) {
     setOpen(false)
     if (connection.type === 'postgres')
-      router.navigate({ to: '/database/$id', params: { id: connection.id } })
+      router.navigate({ to: '/connection/$id', params: { id: connection.id } })
   }
 
   function onAdd() {
@@ -117,7 +117,7 @@ export function Navbar() {
     <>
       <div className="h-10" />
       <Connections open={openConnections} setOpen={setOpenConnections} />
-      <div className="fixed top-0 inset-x-0 z-50 flex items-center h-10 justify-between pe-2">
+      <div className="fixed top-0 inset-x-0 z-50 flex items-center h-10 justify-between pe-3">
         <div className="w-20 h-full [app-region:drag]" />
         <div className="flex items-center gap-1">
           <TooltipProvider>

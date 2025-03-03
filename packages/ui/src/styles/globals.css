@@ -66,12 +66,12 @@
 
 @layer base {
   :root {
-    --body: 186 10% 95%;
+    --body: 186 10% 94%;
     --background: 186 10% 97%;
     --foreground: 186 10% 3.9%;
     --primary: 186 44% 52%;
     --primary-foreground: 0 0% 98%;
-    --muted: 186 10% 90%;
+    --muted: 186 10% 88%;
     --muted-foreground: 186 3.8% 46.1%;
     --popover: 186 10% 96%;
     --popover-foreground: 186 10% 3.9%;

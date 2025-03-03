@@ -207,6 +207,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@ai-sdk/anthropic':
+        specifier: ^1.1.13
+        version: 1.1.13(zod@3.24.2)
       '@connnect/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -474,6 +477,12 @@ packages:
 
   7zip-bin@5.2.0:
     resolution: {integrity: sha512-ukTPVhqG4jNzMro2qA9HSCSSVJN3aN7tlb+hfqYCt3ER0yWroeA2VR38MNrOHLQ/cVj+DaIMad0kFCtWWowh/A==}
+
+  '@ai-sdk/anthropic@1.1.13':
+    resolution: {integrity: sha512-dBivw7ggokys0c9UmbhxHW36S+EHMQEHk/hVcakGO3sMEe6Vi0dR575xDjXJqs8uZPAmbcZjNb1s89U8cA0Y+Q==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
 
   '@ai-sdk/provider-utils@2.1.10':
     resolution: {integrity: sha512-4GZ8GHjOFxePFzkl3q42AU0DQOtTQ5w09vmaWUf/pKFXJPizlnzKSUkF0f+VkapIUfDugyMqPMT1ge8XQzVI7Q==}
@@ -6561,6 +6570,12 @@ packages:
 snapshots:
 
   7zip-bin@5.2.0: {}
+
+  '@ai-sdk/anthropic@1.1.13(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/provider': 1.0.9
+      '@ai-sdk/provider-utils': 2.1.10(zod@3.24.2)
+      zod: 3.24.2
 
   '@ai-sdk/provider-utils@2.1.10(zod@3.24.2)':
     dependencies:

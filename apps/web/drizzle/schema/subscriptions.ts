@@ -8,12 +8,12 @@ export const subscriptionPeriod = pgEnum('subscription_period', ['monthly', 'yea
 
 export const subscriptions = pgTable('subscriptions', {
   ...baseTable,
-  userId: uuid('user_id').references(() => users.id).notNull(),
-  stripeCustomerId: text('stripe_customer_id').notNull(),
-  stripeSubscriptionId: text('stripe_subscription_id').notNull(),
-  status: text('status').notNull().$type<Stripe.Subscription['status']>(),
+  userId: uuid().references(() => users.id).notNull(),
+  stripeCustomerId: text().notNull(),
+  stripeSubscriptionId: text().notNull(),
+  status: text().notNull().$type<Stripe.Subscription['status']>(),
   data: jsonb().notNull().$type<Stripe.Subscription>(),
-  period: subscriptionPeriod('period').notNull(),
+  period: subscriptionPeriod().notNull(),
 }).enableRLS()
 
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({

@@ -38,4 +38,5 @@ export const db = drizzle(client, {
     ...connections,
     ...subscriptions,
   },
+  casing: 'snake_case',
 })

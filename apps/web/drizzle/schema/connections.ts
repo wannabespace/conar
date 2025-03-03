@@ -10,10 +10,10 @@ export const connectionType = pgEnum('connection_type', enumValues(ConnectionTyp
 
 export const connections = pgTable('connections', t => ({
   ...baseTable,
-  userId: t.uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  userId: t.uuid().references(() => users.id, { onDelete: 'cascade' }),
   type: connectionType().notNull(),
   name: t.text().notNull(),
-  connectionString: encryptedText('connection_string').notNull(),
+  connectionString: encryptedText().notNull(),
   isPasswordExists: t.boolean('password_exists').notNull(),
 })).enableRLS()
 
