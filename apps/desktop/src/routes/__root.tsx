@@ -6,12 +6,14 @@ import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { AnimatePresence } from 'motion/react'
 import { AuthObserver } from '~/auth-observer'
+import { ErrorPage } from '~/error-page'
 import { EventsProvider } from '~/lib/events'
 import { queryClient } from '~/main'
 import { UpdatesProvider } from '~/updates-provider'
 
 export const Route = createRootRoute({
   component: RootDocument,
+  errorComponent: props => <ErrorPage {...props} />,
 })
 
 function RootDocument() {

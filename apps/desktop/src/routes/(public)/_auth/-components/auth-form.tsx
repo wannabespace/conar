@@ -210,6 +210,7 @@ export function AuthForm({ type }: { type: Type }) {
                     autoComplete="password"
                     spellCheck="false"
                     required
+                    className="pe-10"
                     {...field}
                   />
                   <Button

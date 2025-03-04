@@ -10,12 +10,11 @@ interface Failure<E> {
 
 type Result<T, E = Error> = Success<T> | Failure<E>
 
-// Main wrapper function
 export async function tryCatch<T, E = Error>(
-  promise: Promise<T>,
+  func: () => Promise<T>,
 ): Promise<Result<T, E>> {
   try {
-    const data = await promise
+    const data = await func()
     return { data, error: null }
   }
   catch (error) {

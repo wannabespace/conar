@@ -25,9 +25,6 @@
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
 
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
 
@@ -73,8 +70,6 @@
     --primary-foreground: 0 0% 98%;
     --muted: 186 10% 88%;
     --muted-foreground: 186 3.8% 46.1%;
-    --popover: 186 10% 96%;
-    --popover-foreground: 186 10% 3.9%;
     --accent: 186 10% 93%;
     --accent-foreground: 186 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
@@ -98,8 +93,6 @@
     --primary-foreground: 186 3% 10%;
     --muted: 186 3% 16%;
     --muted-foreground: 186 3% 64.9%;
-    --popover: 186 3% 12%;
-    --popover-foreground: 0 0% 98%;
     --accent: 186 3% 15%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0, 63%, 50%;

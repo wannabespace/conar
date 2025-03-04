@@ -108,7 +108,7 @@ function RouteComponent() {
     onSuccess: async ({ id }) => {
       toast.success('Connection created successfully 🎉')
       await queryClient.invalidateQueries({ queryKey: connectionsQuery().queryKey })
-      router.navigate({ to: '/connection/$id', params: { id } })
+      router.navigate({ to: '/database/$id', params: { id } })
     },
   })
   const { mutate: testConnection, isPending: isConnecting } = useTestConnection()

@@ -19,7 +19,7 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
   function onSelect(connection: Connection) {
     setOpen(false)
     if (connection.type === 'postgres')
-      router.navigate({ to: '/connection/$id', params: { id: connection.id } })
+      router.navigate({ to: '/database/$id', params: { id: connection.id } })
   }
 
   function onAdd() {

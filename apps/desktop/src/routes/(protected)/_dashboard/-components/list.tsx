@@ -26,7 +26,7 @@ function ConnectionCard({ connection, onRemove }: { connection: Connection, onRe
   return (
     <Link
       className="relative flex items-center justify-between gap-4 rounded-lg bg-background p-5 border border-border transition-all duration-150 hover:border-primary/50 hover:shadow-xl shadow-black/3"
-      to="/connection/$id"
+      to="/database/$id"
       params={{ id: connection.id }}
       onMouseOver={() => queryClient.prefetchQuery(connectionQuery(connection.id))}
     >

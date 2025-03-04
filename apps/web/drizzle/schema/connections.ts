@@ -1,5 +1,5 @@
 import { ConnectionType } from '@connnect/shared/enums/connection-type'
-import { enumValues } from '@connnect/shared/utils'
+import { enumValues } from '@connnect/shared/utils/helpers'
 import { relations } from 'drizzle-orm'
 import { pgEnum, pgTable } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'

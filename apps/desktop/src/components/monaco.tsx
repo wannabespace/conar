@@ -1,10 +1,14 @@
+import type { ComponentProps } from 'react'
 import { useTheme } from '@connnect/ui/theme-provider'
 import { editor } from 'monaco-editor'
 import ghDark from 'monaco-themes/themes/GitHub Dark.json'
 import ghLight from 'monaco-themes/themes/GitHub Light.json'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 ghDark.colors['editor.background'] = '#1e1f20'
+ghDark.colors['editor.selectionBackground'] = '#4fb0ba50'
+ghDark.colors['editor.lineHighlightBackground'] = '#4fb0ba10'
+ghLight.colors['editor.selectionBackground'] = '#4fb0ba50'
 
 // @ts-expect-error wrong type
 editor.defineTheme('github-dark', ghDark)
@@ -12,17 +16,19 @@ editor.defineTheme('github-dark', ghDark)
 editor.defineTheme('github-light', ghLight)
 
 export function Monaco({
-  initialValue,
+  value,
   language = 'sql',
   onChange,
   ref,
-}: {
-  initialValue: string
+  ...props
+}: Omit<ComponentProps<'div'>, 'onChange' | 'ref'> & {
+  value: string
   language?: 'sql'
   onChange: (value: string) => void
   ref?: React.RefObject<editor.IStandaloneCodeEditor | null>
 }) {
-  const editorRef = useRef<HTMLDivElement>(null)
+  const elementRef = useRef<HTMLDivElement>(null)
+  const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
   const { resolvedTheme } = useTheme()
 
   useEffect(() => {
@@ -30,16 +36,17 @@ export function Monaco({
   }, [resolvedTheme])
 
   useEffect(() => {
-    if (!editorRef.current)
+    if (!elementRef.current)
       return
 
-    const e = editor.create(editorRef.current, {
-      value: initialValue,
+    const e = editor.create(elementRef.current, {
+      value,
       language,
       automaticLayout: true,
       minimap: { enabled: false },
-      lineNumbers: 'off',
     })
+
+    setEditorInstance(e)
 
     if (ref)
       ref.current = e
@@ -51,7 +58,14 @@ export function Monaco({
     return () => {
       e.dispose()
     }
-  }, [editorRef])
+  }, [elementRef])
 
-  return <div ref={editorRef} style={{ height: '300px' }} />
+  useEffect(() => {
+    if (!editorInstance || editorInstance.getValue() === value)
+      return
+
+    editorInstance.setValue(value)
+  }, [value])
+
+  return <div ref={elementRef} {...props} />
 }

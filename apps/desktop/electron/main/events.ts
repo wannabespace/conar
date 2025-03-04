@@ -46,6 +46,22 @@ const encryption = {
 }
 
 const connections = {
+  test: async ({
+    type,
+    connectionString,
+  }: {
+    type: ConnectionType
+    connectionString: string
+  }) => {
+    const queryMap = {
+      [ConnectionType.Postgres]: pgTestConnection,
+    }
+
+    return queryMap[type]({ connectionString })
+  },
+}
+
+const databases = {
   query: async <T>({
     type,
     connectionString,
@@ -63,19 +79,6 @@ const connections = {
 
     return queryMap[type]({ connectionString, query, values }) as Promise<T[]>
   },
-  test: async ({
-    type,
-    connectionString,
-  }: {
-    type: ConnectionType
-    connectionString: string
-  }) => {
-    const queryMap = {
-      [ConnectionType.Postgres]: pgTestConnection,
-    }
-
-    return queryMap[type]({ connectionString })
-  },
 }
 
 const _app = {
@@ -84,6 +87,7 @@ const _app = {
 
 export const electron = {
   connections,
+  databases,
   encryption,
   store,
   app: _app,

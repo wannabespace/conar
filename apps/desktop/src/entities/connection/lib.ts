@@ -47,7 +47,13 @@ export async function createConnection({ saveInCloud, ...connection }: {
     isPasswordExists,
   })
 
-  await indexedDb.connections.add({ id, ...connection, isPasswordExists, isPasswordPopulated: isPasswordExists })
+  await indexedDb.connections.add({
+    ...connection,
+    id,
+    isPasswordExists,
+    isPasswordPopulated: isPasswordExists,
+    createdAt: new Date(),
+  })
 
   return { id }
 }
@@ -59,7 +65,7 @@ export async function removeConnection(id: string) {
   ])
 }
 
-export async function updatePassword(id: string, password: string) {
+export async function updateConnectionPassword(id: string, password: string) {
   const connection = await indexedDb.connections.get(id)
 
   if (!connection) {

@@ -11,6 +11,7 @@ export const list = protectedProcedure
         name: connections.name,
         type: connections.type,
         isPasswordExists: connections.isPasswordExists,
+        createdAt: connections.createdAt,
         connectionString: connections.connectionString,
       })
       .from(connections)
