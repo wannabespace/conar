@@ -3,11 +3,9 @@ import { router } from '..'
 import { aiRouter } from './ai'
 import { connectionsRouter } from './connections'
 import { profileRouter } from './profile'
-import { subscriptionsRouter } from './subscriptions'
 import { workspacesRouter } from './workspaces'
 
 export const appRouter = router({
-  subscriptions: subscriptionsRouter,
   profile: profileRouter,
   connections: connectionsRouter,
   workspaces: workspacesRouter,
