@@ -35,7 +35,7 @@ function RouteComponent() {
               Run SQL
               <RiDatabase2Line />
             </Button>
-            <div className="p-4">
+            <div className="p-3">
               <Select value={schema} onValueChange={setSchema}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select schema" />

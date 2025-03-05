@@ -90,10 +90,6 @@ export function Navbar() {
     router.navigate({ to: '/' })
   })
 
-  useKeyboardEvent(e => e.key === 'd' && e.metaKey, () => {
-    router.navigate({ to: '/' })
-  })
-
   useKeyboardEvent(e => e.key === 'ArrowRight' && e.metaKey, () => {
     if (router.history.length > 1) {
       router.history.forward()

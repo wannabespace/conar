@@ -1,3 +1,4 @@
+import type { editor } from 'monaco-editor'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
@@ -5,11 +6,12 @@ import { useLocalStorageValue } from '@react-hookz/web'
 import { RiShining2Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import { useRef } from 'react'
+import { Monaco } from '~/components/monaco'
 import { PAGE_SCREEN_CLASS } from '~/constants'
 import { DatabaseTable, useConnection } from '~/entities/connection'
 import { formatSql } from '~/lib/formatter'
 import { SqlGenerator } from './-components/sql-generator'
-import { SqlRunner } from './-components/sql-runner'
 
 export const Route = createFileRoute(
   '/(protected)/_dashboard/database/$id/sql',
@@ -23,6 +25,7 @@ function RouteComponent() {
     defaultValue: '',
     initializeWithValue: true,
   })
+  const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const { data: connection } = useConnection(id)
 
   const { mutate: sendQuery, data: result, isPending } = useMutation({
@@ -66,7 +69,10 @@ function RouteComponent() {
             <SqlGenerator
               connection={connection}
               query={query}
-              setQuery={setQuery}
+              setQuery={(value) => {
+                setQuery(value)
+                monacoRef.current?.setValue(value)
+              }}
               onSendQuery={sendQuery}
             />
             <Button
@@ -77,9 +83,12 @@ function RouteComponent() {
               Format
             </Button>
           </div>
-          <SqlRunner
-            query={query}
-            setQuery={setQuery}
+          <Monaco
+            ref={monacoRef}
+            initialValue={query}
+            onChange={setQuery}
+            onEnter={() => sendQuery()}
+            className="h-[300px] border border-border rounded-lg overflow-hidden"
           />
           <div className="flex gap-2 justify-end">
             <Button

@@ -1,24 +1,36 @@
 import type { Connection } from '~/lib/indexeddb'
+import { cn } from '@connnect/ui/lib/utils'
+import { useDebouncedCallback } from '@react-hookz/web'
 import { RiTableLine } from '@remixicon/react'
-import { Link } from '@tanstack/react-router'
+import { Link, useParams } from '@tanstack/react-router'
 import { databaseColumnsQuery, useDatabaseTables } from '~/entities/connection'
 import { queryClient } from '~/main'
 
 export function DatabaseTree({ connection, schema }: { connection: Connection, schema: string }) {
   const { data: tables } = useDatabaseTables(connection, schema)
+  const { table: tableParam } = useParams({ strict: false })
+
+  const debouncedPrefetchColumns = useDebouncedCallback(
+    (tableName: string) => queryClient.prefetchQuery(databaseColumnsQuery(connection, tableName)),
+    [connection.id, schema],
+    150,
+  )
 
   return (
     <div className="space-y-1">
       {tables?.map(table => (
         <Link
-          key={table.table_name}
+          key={table.name}
           to="/database/$id/tables/$table"
-          params={{ id: connection.id, table: table.table_name }}
-          className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-foreground hover:bg-muted text-left"
-          onMouseOver={() => queryClient.prefetchQuery(databaseColumnsQuery(connection, table.table_name))}
+          params={{ id: connection.id, table: table.name }}
+          className={cn(
+            'w-full flex items-center gap-2 px-3 py-1.5 text-sm text-foreground hover:bg-accent text-left',
+            tableParam === table.name && 'bg-muted',
+          )}
+          onMouseOver={() => debouncedPrefetchColumns(table.name)}
         >
           <RiTableLine className="h-4 w-4 text-muted-foreground" />
-          <span className="truncate">{table.table_name}</span>
+          <span className="truncate">{table.name}</span>
         </Link>
       ))}
       {!tables?.length && (

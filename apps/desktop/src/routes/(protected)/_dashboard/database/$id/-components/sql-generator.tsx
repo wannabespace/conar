@@ -37,7 +37,7 @@ export function SqlGenerator({ connection, query, setQuery, onSendQuery }: SqlGe
         prompt: sqlPrompt,
         context: `
           Current query: ${query}
-          Tables: ${JSON.stringify(tables.map(t => t.table_name))}
+          Tables: ${JSON.stringify(tables.map(t => t.name))}
           Enums: ${JSON.stringify(enums)}
         `.trim(),
       }, { signal: abortController.signal })
@@ -52,7 +52,10 @@ export function SqlGenerator({ connection, query, setQuery, onSendQuery }: SqlGe
         toast.info('The main AI model is overloaded, used a fallback model.', { duration: 5000 })
       }
 
-      if (DANGEROUS_SQL_KEYWORDS.some(keyword => text.toLowerCase().includes(keyword.toLowerCase()))) {
+      if (DANGEROUS_SQL_KEYWORDS.some((keyword) => {
+        const regex = new RegExp(`\\b${keyword}\\b`, 'i')
+        return regex.test(text)
+      })) {
         toast.info('The AI generated a SQL query with a dangerous keyword. Review the query before running it.')
         return
       }

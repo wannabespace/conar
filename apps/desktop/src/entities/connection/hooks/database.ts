@@ -1,10 +1,11 @@
 import type { ConnectionType } from '@connnect/shared/enums/connection-type'
 import type { Connection } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
+import { getDatabaseSchema } from '~/routes/(protected)/_dashboard/database/-hooks/schema'
 
-export function databaseTablesQuery(connection: Connection, schema = 'public') {
-  const queryMap: Record<ConnectionType, string> = {
-    postgres: `
+export function databaseTablesQuery(connection: Connection, schema?: string) {
+  const queryMap: Record<ConnectionType, (schema: string) => string> = {
+    postgres: schema => `
       SELECT table_name
       FROM information_schema.tables
       WHERE table_schema = '${schema}'
@@ -15,20 +16,25 @@ export function databaseTablesQuery(connection: Connection, schema = 'public') {
   return queryOptions({
     queryKey: ['database', connection.id, schema, 'tables'],
     queryFn: async () => {
+      const _schema = schema ?? getDatabaseSchema(connection.id)
+
       const response = await window.electron.databases.query({
         type: connection.type,
         connectionString: connection.connectionString,
-        query: queryMap[connection.type],
-      })
-
-      return response as {
+        query: queryMap[connection.type](_schema),
+      }) as {
         table_name: string
       }[]
+
+      return response.map(t => ({
+        name: t.table_name,
+        schema: _schema,
+      }))
     },
   })
 }
 
-export function useDatabaseTables(connection: Connection, schema = 'public') {
+export function useDatabaseTables(connection: Connection, schema?: string) {
   return useQuery(databaseTablesQuery(connection, schema))
 }
 
@@ -109,14 +115,16 @@ export function useDatabaseEnums(connection: Connection) {
   return useQuery(databaseEnumsQuery(connection))
 }
 
-export function databaseRowsQuery(connection: Connection, schema: string, table: string) {
+export function databaseRowsQuery(connection: Connection, table: string, schema?: string) {
+  const _schema = schema ?? getDatabaseSchema(connection.id)
+
   return queryOptions({
-    queryKey: ['database', connection.id, 'schema', schema, 'table', table, 'rows'],
+    queryKey: ['database', connection.id, 'schema', _schema, 'table', table, 'rows'],
     queryFn: async () => {
       const response = await window.electron.databases.query({
         type: connection.type,
         connectionString: connection.connectionString,
-        query: `SELECT * FROM ${schema}.${table}`,
+        query: `SELECT * FROM "${_schema}"."${table}"`,
       })
 
       return response as {
@@ -126,8 +134,8 @@ export function databaseRowsQuery(connection: Connection, schema: string, table:
   })
 }
 
-export function useDatabaseRows(connection: Connection, schema: string, table: string) {
-  return useQuery(databaseRowsQuery(connection, schema, table))
+export function useDatabaseRows(connection: Connection, table: string, schema?: string) {
+  return useQuery(databaseRowsQuery(connection, table, schema))
 }
 
 export function databaseSchemasQuery(connection: Connection) {

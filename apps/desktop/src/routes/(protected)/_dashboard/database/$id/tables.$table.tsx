@@ -4,7 +4,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { createFileRoute } from '@tanstack/react-router'
 import { PAGE_SCREEN_CLASS } from '~/constants'
 import { useConnection, useDatabaseColumns, useDatabaseRows } from '~/entities/connection'
-import { useDatabaseSchema } from '../-hooks/schema'
 
 export const Route = createFileRoute(
   '/(protected)/_dashboard/database/$id/tables/$table',
@@ -15,9 +14,12 @@ export const Route = createFileRoute(
 function RouteComponent() {
   const { id, table } = Route.useParams()
   const { data: connection } = useConnection(id)
-  const [schema] = useDatabaseSchema(id)
   const { data: databaseColumns } = useDatabaseColumns(connection, table)
-  const { data: databaseRows } = useDatabaseRows(connection, schema, table)
+  const { data: databaseRows, error } = useDatabaseRows(connection, table)
+
+  if (error) {
+    return <div>{error.message}</div>
+  }
 
   return (
     <Card className="h-full">

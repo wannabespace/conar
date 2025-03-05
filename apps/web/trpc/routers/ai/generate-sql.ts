@@ -59,7 +59,7 @@ export const generateSql = protectedProcedure
     }))
 
     if (data) {
-      logger.info('Generated SQL', { sql: data.text })
+      logger.info('Generated SQL', data.text)
 
       return {
         text: data.text,
