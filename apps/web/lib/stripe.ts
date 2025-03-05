@@ -8,11 +8,3 @@ export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
     url: env.NEXT_PUBLIC_URL,
   },
 })
-
-export async function getStripeCustomerIdByEmail(email: string) {
-  const existingCustomer = await stripe.customers.search({
-    query: `email: "${email}"`,
-  })
-
-  return existingCustomer.data[0]?.id || null
-}
