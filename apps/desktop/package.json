@@ -1,11 +1,15 @@
 {
   "name": "@connnect/desktop",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "packageManager": "pnpm@10.6.0",
   "productName": "Connnect",
   "author": "Wannabe Space",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wannabe-space/connnect.git"
+  },
   "main": "dist-electron/main/index.js",
   "scripts": {
     "dev": "vite",

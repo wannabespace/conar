@@ -11,6 +11,7 @@ export type PromisifyElectron<T extends Record<string, any>> = {
 export type ElectronPreload = PromisifyElectron<typeof electron> & {
   app: {
     onDeepLink: (callback: (url: string) => void) => void
+    onUpdatesStatus: (callback: (status: string) => void) => void
   }
   versions: {
     node: () => string
@@ -55,6 +56,10 @@ contextBridge.exposeInMainWorld('electron', {
     onDeepLink: (callback) => {
       ipcRenderer.on('deep-link', (_event, url) => callback(url))
     },
+    onUpdatesStatus: (callback) => {
+      ipcRenderer.on('updates-status', (_event, status) => callback(status))
+    },
+    checkForUpdates: () => handleError(() => ipcRenderer.invoke('checkForUpdates')),
   },
   versions: {
     node: () => process.versions.node,

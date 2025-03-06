@@ -2,6 +2,7 @@ import { decrypt, encrypt } from '@connnect/shared/encryption'
 import { ConnectionType } from '@connnect/shared/enums/connection-type'
 import { ipcMain } from 'electron'
 import ElectronStore from 'electron-store'
+import updater from 'electron-updater'
 import { pgQuery, pgTestConnection } from './pg'
 
 type Store = 'connections'
@@ -82,7 +83,9 @@ const databases = {
 }
 
 const _app = {
-
+  checkForUpdates: () => {
+    updater.autoUpdater.checkForUpdates()
+  },
 }
 
 export const electron = {

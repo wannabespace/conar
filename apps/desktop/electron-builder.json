@@ -24,7 +24,12 @@
   ],
   "mac": {
     "category": "public.app-category.developer-tools",
-    "target": ["dmg"],
+    "target": [
+      {
+        "target": "default",
+        "arch": "universal"
+      }
+    ],
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
   },
   "win": {

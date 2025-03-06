@@ -2,13 +2,15 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import started from 'electron-squirrel-startup'
+import updater from 'electron-updater'
 import { handleDeepLink } from './deep-link'
-// import updater from 'electron-updater'
 import { initElectronEvents } from './events'
 
 if (started) {
   app.quit()
 }
+
+updater.autoUpdater.autoInstallOnAppQuit = true
 
 initElectronEvents()
 
@@ -53,7 +55,7 @@ export function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.on('ready', () => createWindow)
 
 app.setAsDefaultProtocolClient('connnect')
 
@@ -74,28 +76,29 @@ app.on('activate', () => {
   }
 })
 
-// function sendUpdatesStatus(status: string) {
-//   mainWindow.webContents.send('updates-status', status)
-// }
+function sendUpdatesStatus(status: string) {
+  mainWindow!.webContents.send('updates-status', status)
+}
 
-// updater.autoUpdater.on('checking-for-update', () => {
-//   sendUpdatesStatus('Checking for update...')
-// })
-// updater.autoUpdater.on('update-available', () => {
-//   sendUpdatesStatus('Update available.')
-// })
-// updater.autoUpdater.on('update-not-available', () => {
-//   sendUpdatesStatus('Update not available.')
-// })
-// updater.autoUpdater.on('error', (err) => {
-//   sendUpdatesStatus(`Error in auto-updater. ${err}`)
-// })
-// updater.autoUpdater.on('download-progress', (progressObj) => {
-//   let log_message = `Download speed: ${progressObj.bytesPerSecond}`
-//   log_message = `${log_message} - Downloaded ${progressObj.percent}%`
-//   log_message = `${log_message} (${progressObj.transferred}/${progressObj.total})`
-//   sendUpdatesStatus(log_message)
-// })
-// updater.autoUpdater.on('update-downloaded', () => {
-//   sendUpdatesStatus('Update downloaded')
-// })
+updater.autoUpdater.on('checking-for-update', () => {
+  sendUpdatesStatus(`Checking for update... ${app.getVersion()}`)
+})
+updater.autoUpdater.on('update-available', () => {
+  sendUpdatesStatus(`Update available. ${app.getVersion()}`)
+  updater.autoUpdater.downloadUpdate()
+})
+updater.autoUpdater.on('update-not-available', () => {
+  sendUpdatesStatus(`Update not available. ${app.getVersion()}`)
+})
+updater.autoUpdater.on('error', (err) => {
+  sendUpdatesStatus(`Error in auto-updater. ${err}`)
+})
+updater.autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = `Download speed: ${progressObj.bytesPerSecond}`
+  log_message = `${log_message} - Downloaded ${progressObj.percent}%`
+  log_message = `${log_message} (${progressObj.transferred}/${progressObj.total})`
+  sendUpdatesStatus(log_message)
+})
+updater.autoUpdater.on('update-downloaded', () => {
+  sendUpdatesStatus(`Update downloaded. ${app.getVersion()}`)
+})
