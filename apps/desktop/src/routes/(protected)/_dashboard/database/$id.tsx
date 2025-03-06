@@ -53,7 +53,7 @@ function RouteComponent() {
           </ScrollArea>
         </Card>
       </ResizablePanel>
-      <ResizableHandle className="w-2 bg-transparent hover:bg-accent/50 rounded-full duration-100" />
+      <ResizableHandle className="w-1 mx-0.5" />
       <ResizablePanel defaultSize={80} minSize={50} maxSize={80}>
         <Outlet />
       </ResizablePanel>
