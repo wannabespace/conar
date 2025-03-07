@@ -32,9 +32,6 @@ export default defineConfig(({ command }) => {
               sourcemap,
               minify: isBuild,
               outDir: 'dist-electron/main',
-              rollupOptions: {
-                external: ['pg'],
-              },
             },
           },
         },
