@@ -49,6 +49,7 @@ queryClient
   .then(async (session) => {
     if (session.data) {
       await queryClient.prefetchQuery(connectionsQuery())
+      fetchConnections()
     }
     preloader.classList.add('scale-[0.5]', 'opacity-0')
     // Waiting animation to smooth transition
@@ -56,6 +57,5 @@ queryClient
     document.body.classList.remove('overflow-hidden')
     root.render(<RouterProvider router={router} />)
     await sleep(1000)
-    fetchConnections()
     preloader.remove()
   })
