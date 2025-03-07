@@ -1,4 +1,6 @@
-import pg from 'pg'
+import { createRequire } from 'node:module'
+
+const pg = createRequire(import.meta.url)('pg') as typeof import('pg')
 
 export async function pgQuery({
   connectionString,

@@ -1,10 +1,12 @@
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
-import started from 'electron-squirrel-startup/index'
-import { autoUpdater } from 'electron-updater'
 import { handleDeepLink } from './deep-link'
 import { initElectronEvents } from './events'
+
+const started = createRequire(import.meta.url)('electron-squirrel-startup') as typeof import('electron-squirrel-startup')
+const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
 if (started) {
   app.quit()
