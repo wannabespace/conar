@@ -72,7 +72,7 @@ jobs:
           security set-keychain-settings -t 3600 -u build.keychain
 
           # Find the app bundle
-          APP_PATH=$(find ./apps/desktop/dist/mac -name "*.app" -type d)
+          APP_PATH=$(find "./apps/desktop/release/${VERSION#v}/mac-universal" -name "*.app" -type d)
           echo "Found app at: $APP_PATH"
 
           # Sign the app with hardened runtime
@@ -86,7 +86,7 @@ jobs:
           PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
         run: |
           # Find the app bundle
-          APP_PATH=$(find ./apps/desktop/dist/mac -name "*.app" -type d)
+          APP_PATH=$(find "./apps/desktop/release/${VERSION#v}/mac-universal" -name "*.app" -type d)
 
           # Store notarization credentials
           xcrun notarytool store-credentials "notarytool-profile" \

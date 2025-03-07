@@ -4,6 +4,7 @@
   "version": "0.0.2",
   "private": true,
   "packageManager": "pnpm@10.6.0",
+  "description": "Connnect.app - Your all-in-one application for managing your connections",
   "productName": "Connnect",
   "author": "Wannabe Space",
   "repository": {
