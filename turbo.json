@@ -16,7 +16,14 @@
     },
     "@connnect/desktop#build": {
       "dependsOn": ["^build:types"],
-      "cache": false
+      "cache": false,
+      "env": [
+        "GH_TOKEN",
+        "CSC_LINK",
+        "CSC_KEY_PASSWORD",
+        "APPLE_ID",
+        "APPLE_APP_SPECIFIC_PASSWORD"
+      ]
     },
     "build": {
       "env": [
