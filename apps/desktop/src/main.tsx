@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
-import { createRouter, RouterProvider } from '@tanstack/react-router'
+import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { connectionsQuery, fetchConnections } from './entities/connection'
 import { handleError } from './lib/error'
@@ -30,6 +30,7 @@ export const queryClient = new QueryClient({
 })
 
 const router = createRouter({
+  history: createHashHistory(),
   routeTree,
   defaultPreload: 'intent',
 })
