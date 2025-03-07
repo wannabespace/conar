@@ -30,7 +30,7 @@
         "arch": ["arm64", "x64"]
       }
     ],
-    "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
+    "artifactName": "${productName}-Mac-${arch}-${version}-Installer.${ext}"
   },
   "win": {
     "target": [
