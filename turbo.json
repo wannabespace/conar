@@ -1,7 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalEnv": ["GH_TOKEN"],
   "tasks": {
     "dev": {
       "persistent": true,
