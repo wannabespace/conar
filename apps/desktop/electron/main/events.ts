@@ -1,41 +1,10 @@
+import { createRequire } from 'node:module'
 import { decrypt, encrypt } from '@connnect/shared/encryption'
 import { ConnectionType } from '@connnect/shared/enums/connection-type'
 import { ipcMain } from 'electron'
-import ElectronStore from 'electron-store'
-import updater from 'electron-updater'
 import { pgQuery, pgTestConnection } from './pg'
 
-type Store = 'connections'
-
-const storeMap = new Map<Store, ElectronStore>()
-
-function createStore(store: Store) {
-  return new ElectronStore({
-    name: `.${store}`,
-    encryptionKey: import.meta.env.VITE_PUBLIC_ELECTRON_STORE_SECRET,
-    fileExtension: 'dat',
-  })
-}
-
-function getStore(store: Store) {
-  if (!storeMap.has(store)) {
-    storeMap.set(store, createStore(store))
-  }
-
-  return storeMap.get(store)!
-}
-
-const store = {
-  get: ({ store, key }: { store: Store, key: string }) => {
-    return getStore(store).get(key)
-  },
-  set: ({ store, key, value }: { store: Store, key: string, value: unknown }) => {
-    getStore(store).set(key, value)
-  },
-  delete: ({ store, key }: { store: Store, key: string }) => {
-    getStore(store).delete(key)
-  },
-}
+const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
 const encryption = {
   encrypt: ({ text, secret }: { text: string, secret: string }) => {
@@ -84,7 +53,7 @@ const databases = {
 
 const _app = {
   checkForUpdates: () => {
-    updater.autoUpdater.checkForUpdates()
+    autoUpdater.checkForUpdates()
   },
 }
 
@@ -92,7 +61,6 @@ export const electron = {
   connections,
   databases,
   encryption,
-  store,
   app: _app,
 }
 

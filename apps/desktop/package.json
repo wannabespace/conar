@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
-    "electron-store": "^10.0.1",
     "electron-updater": "^6.3.9",
     "pg": "^8.13.3"
   },
