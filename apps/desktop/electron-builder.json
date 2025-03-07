@@ -27,7 +27,7 @@
     "target": [
       {
         "target": "default",
-        "arch": "universal"
+        "arch": ["arm64", "x64"]
       }
     ],
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
@@ -36,9 +36,7 @@
     "target": [
       {
         "target": "nsis",
-        "arch": [
-          "x64"
-        ]
+        "arch": ["x64"]
       }
     ],
     "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
