@@ -49,20 +49,34 @@ jobs:
           MACOS_CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
           MACOS_CI_KEYCHAIN_PWD: ${{ secrets.MACOS_CI_KEYCHAIN_PWD }}
         run: |
+          # Clean up any existing keychains
+          security delete-keychain build.keychain || true
+
           # Decode the certificate
-          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+          echo "$MACOS_CERTIFICATE" | base64 --decode > certificate.p12
 
-          # Create keychain
+          # Create keychain with longer timeout
           security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+          security set-keychain-settings -t 3600 -l build.keychain
 
-          # Import certificate to keychain
+          # Unlock keychain and make it default
+          security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+          security list-keychains -d user -s build.keychain
+          security default-keychain -s build.keychain
+
+          # Import certificate with all permissions
           security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
 
-          # Sign the app
-          /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime ./apps/desktop/dist/mac/*.app -v
+          # Allow codesign to access keychain
+          security set-keychain-settings -t 3600 -u build.keychain
+
+          # Find the app bundle
+          APP_PATH=$(find ./apps/desktop/dist/mac -name "*.app" -type d)
+          echo "Found app at: $APP_PATH"
+
+          # Sign the app with hardened runtime
+          /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime --timestamp --deep "$APP_PATH" -v
 
       - name: Notarize MacOS App
         if: matrix.os == 'macos-latest'
@@ -71,6 +85,9 @@ jobs:
           PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
           PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
         run: |
+          # Find the app bundle
+          APP_PATH=$(find ./apps/desktop/dist/mac -name "*.app" -type d)
+
           # Store notarization credentials
           xcrun notarytool store-credentials "notarytool-profile" \
             --apple-id "$PROD_MACOS_NOTARIZATION_APPLE_ID" \
@@ -78,10 +95,10 @@ jobs:
             --password "$PROD_MACOS_NOTARIZATION_PWD"
 
           # Create zip for notarization
-          ditto -c -k --keepParent "./apps/desktop/dist/mac/*.app" "notarization.zip"
+          ditto -c -k --keepParent "$APP_PATH" "notarization.zip"
 
           # Submit for notarization
           xcrun notarytool submit "notarization.zip" --keychain-profile "notarytool-profile" --wait
 
           # Staple the app
-          xcrun stapler staple "./apps/desktop/dist/mac/*.app"
+          xcrun stapler staple "$APP_PATH"
