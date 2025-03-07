@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
-import started from 'electron-squirrel-startup'
+import started from 'electron-squirrel-startup/index'
 import updater from 'electron-updater'
 import { handleDeepLink } from './deep-link'
 import { initElectronEvents } from './events'
