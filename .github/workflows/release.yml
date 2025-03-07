@@ -72,8 +72,14 @@ jobs:
           security set-keychain-settings -t 3600 -u build.keychain
 
           # Find the app bundle
-          APP_PATH=$(find "./apps/desktop/release/${VERSION#v}/mac-universal" -name "*.app" -type d)
+          APP_PATH=$(find "./apps/desktop/release" -name "*.app" -type d)
           echo "Found app at: $APP_PATH"
+
+          # Check if app was found
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: No .app bundle found"
+            exit 1
+          fi
 
           # Sign the app with hardened runtime
           /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime --timestamp --deep "$APP_PATH" -v
@@ -86,7 +92,14 @@ jobs:
           PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
         run: |
           # Find the app bundle
-          APP_PATH=$(find "./apps/desktop/release/${VERSION#v}/mac-universal" -name "*.app" -type d)
+          APP_PATH=$(find "./apps/desktop/release" -name "*.app" -type d)
+          echo "Found app at: $APP_PATH"
+
+          # Check if app was found
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: No .app bundle found"
+            exit 1
+          fi
 
           # Store notarization credentials
           xcrun notarytool store-credentials "notarytool-profile" \
