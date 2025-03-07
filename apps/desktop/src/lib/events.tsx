@@ -4,11 +4,7 @@ import { PostHogProvider } from 'posthog-js/react'
 
 export function initEvents() {
   if (import.meta.env.DEV)
-    return
-
-  posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_API_KEY, {
-    api_host: 'https://eu.i.posthog.com',
-  })
+    return null
 }
 
 export function identifyUser(userId: string | null) {
@@ -25,5 +21,14 @@ export function trackEvent(event: string, properties: Record<string, unknown>) {
 }
 
 export function EventsProvider({ children }: { children: React.ReactNode }) {
-  return <PostHogProvider client={posthog}>{children}</PostHogProvider>
+  return (
+    <PostHogProvider
+      apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_API_KEY}
+      options={{
+        api_host: 'https://eu.i.posthog.com',
+      }}
+    >
+      {children}
+    </PostHogProvider>
+  )
 }
