@@ -4,9 +4,8 @@ import { PostHogProvider } from 'posthog-js/react'
 import { env } from '~/env'
 
 export function initEvents() {
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV)
     return
-  }
 
   posthog.init(env.VITE_PUBLIC_POSTHOG_API_KEY, {
     api_host: 'https://eu.i.posthog.com',
