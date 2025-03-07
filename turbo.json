@@ -1,6 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "envMode": "loose",
   "tasks": {
     "dev": {
       "persistent": true,
@@ -15,34 +16,9 @@
     },
     "@connnect/desktop#build": {
       "dependsOn": ["^build:types"],
-      "cache": false,
-      "env": [
-        "GH_TOKEN",
-        "CSC_LINK",
-        "CSC_KEY_PASSWORD",
-        "APPLE_ID",
-        "APPLE_TEAM_ID",
-        "APPLE_APP_SPECIFIC_PASSWORD",
-        "VITE_PUBLIC_APP_URL",
-        "VITE_PUBLIC_AUTH_SECRET",
-        "VITE_PUBLIC_PASSWORDS_SECRET",
-        "VITE_PUBLIC_POSTHOG_API_KEY",
-        "VITE_PUBLIC_ELECTRON_STORE_SECRET",
-        "VITE_PUBLIC_ELECTRON_LOCAL_SECRET"
-      ]
+      "cache": false
     },
     "build": {
-      "env": [
-        "DATABASE_URL",
-        "ENCRYPTION_SECRET",
-        "BETTER_AUTH_SECRET",
-        "STRIPE_SECRET_KEY",
-        "ANTHROPIC_API_KEY",
-        "GITHUB_CLIENT_ID",
-        "GITHUB_CLIENT_SECRET",
-        "GOOGLE_CLIENT_ID",
-        "GOOGLE_CLIENT_SECRET"
-      ],
       "dependsOn": ["^build"],
       "cache": false
     },
