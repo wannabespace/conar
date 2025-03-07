@@ -22,6 +22,7 @@
         "CSC_LINK",
         "CSC_KEY_PASSWORD",
         "APPLE_ID",
+        "APPLE_TEAM_ID",
         "APPLE_APP_SPECIFIC_PASSWORD"
       ]
     },
