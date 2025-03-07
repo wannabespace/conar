@@ -1,13 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import posthog from 'posthog-js'
 import { PostHogProvider } from 'posthog-js/react'
-import { env } from '~/env'
 
 export function initEvents() {
   if (import.meta.env.DEV)
     return
 
-  posthog.init(env.VITE_PUBLIC_POSTHOG_API_KEY, {
+  posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_API_KEY, {
     api_host: 'https://eu.i.posthog.com',
   })
 }

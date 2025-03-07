@@ -1,7 +1,6 @@
 import { toast } from 'sonner'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { getCodeChallenge, removeCodeChallenge, setBearerToken, successAuthToast } from '~/lib/auth'
-import { env } from './env'
 import { useSession } from './hooks/use-session'
 
 export function useDeepLinksListener() {
@@ -33,7 +32,7 @@ export function useDeepLinksListener() {
 
     const decryptedCodeChallenge = await window.electron.encryption.decrypt({
       encryptedText: codeChallenge,
-      secret: env.VITE_PUBLIC_AUTH_SECRET,
+      secret: import.meta.env.VITE_PUBLIC_AUTH_SECRET,
     })
 
     if (!decryptedCodeChallenge) {

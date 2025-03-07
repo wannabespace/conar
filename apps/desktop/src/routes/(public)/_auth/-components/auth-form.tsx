@@ -10,7 +10,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { env } from '~/env'
 import { authClient, setBearerToken, setCodeChallenge, successAuthToast } from '~/lib/auth'
 import { handleError } from '~/lib/error'
 
@@ -33,14 +32,14 @@ function useSocialMutation(provider: 'google' | 'github') {
       const encryptedCodeChallenge = await window.electron.encryption.encrypt({
         text: codeChallenge,
         // TODO: move to backend
-        secret: env.VITE_PUBLIC_AUTH_SECRET,
+        secret: import.meta.env.VITE_PUBLIC_AUTH_SECRET,
       })
 
       const { data, error } = await authClient.signIn.social({
         provider,
         disableRedirect: true,
-        callbackURL: `${env.VITE_PUBLIC_APP_URL}/open?code-challenge=${encryptedCodeChallenge}`,
-        newUserCallbackURL: `${env.VITE_PUBLIC_APP_URL}/open?code-challenge=${encryptedCodeChallenge}&newUser=true`,
+        callbackURL: `${import.meta.env.VITE_PUBLIC_APP_URL}/open?code-challenge=${encryptedCodeChallenge}`,
+        newUserCallbackURL: `${import.meta.env.VITE_PUBLIC_APP_URL}/open?code-challenge=${encryptedCodeChallenge}&newUser=true`,
       })
 
       if (error) {

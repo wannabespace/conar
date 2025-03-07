@@ -7,7 +7,6 @@ import {
   twoFactorClient,
 } from 'better-auth/client/plugins'
 import { toast } from 'sonner'
-import { env } from '~/env'
 
 export const BEARER_TOKEN_KEY = 'connnect.bearer_token'
 export const CODE_CHALLENGE_KEY = 'connnect.code_challenge'
@@ -48,7 +47,7 @@ export function successAuthToast(newUser: boolean) {
 }
 
 export const authClient = createAuthClient({
-  baseURL: env.VITE_PUBLIC_APP_URL,
+  baseURL: import.meta.env.VITE_PUBLIC_APP_URL,
   fetchOptions: {
     async onRequest({ headers }) {
       const token = getBearerToken()
