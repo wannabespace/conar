@@ -44,6 +44,7 @@ export function DataTable<T extends Record<string, unknown>>({ data, columns, sc
     count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => 37,
+    overscan: 5,
   })
 
   return (
