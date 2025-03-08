@@ -1,52 +1,42 @@
-// import { autoUpdater } from 'electron-updater'
-import { createContext, use, useState } from 'react'
-// import { toast } from 'sonner'
+import { createContext, use, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { useAsyncEffect } from './hooks/use-async-effect'
-import { useSession } from './hooks/use-session'
 
-type Status = 'idle' | 'updating' | 'ready'
+export type UpdatesStatus = 'idle' | 'checking' | 'updating' | 'ready' | 'error'
 
 const UpdatesContext = createContext<{
-  status: Status
+  status: UpdatesStatus
   relaunch: () => Promise<void>
 }>(null!)
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useUpdates = () => use(UpdatesContext)
 
-// TODO: refactor this to be a component
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
-  const { data } = useSession()
-  const [status, setStatus] = useState<Status>('idle')
+  const [status, setStatus] = useState<UpdatesStatus>(window.initialUpdatesStatus ?? 'idle')
+
+  useEffect(() => {
+    window.electron.app.onUpdatesStatus((status) => {
+      setStatus(status)
+    })
+  }, [])
 
   useAsyncEffect(async () => {
-    if (!data)
-      return
+    if (status === 'updating') {
+      toast.info(
+        `Found new update ${await window.electron.app.checkForUpdates().then(r => r!.updateInfo.version)}. We will download it now but install it on relaunch.`,
+      )
+    }
+  }, [status])
 
-    // autoUpdater.addAuthHeader(`Bearer ${data.session.token}`)
+  async function relaunch() {
+    await window.electron.app.quitAndInstall()
+  }
 
-    setStatus('idle')
-
-    // const update = await autoUpdater.checkForUpdates()
-
-    // if (!update)
-    //   return
-
-    // toast.info(
-    //   `Found new update ${update.updateInfo.version}. We will download it now but install it on relaunch.`,
-    // )
-
-    setStatus('updating')
-
-    // await autoUpdater.downloadUpdate()
-
-    setStatus('ready')
-
-    // autoUpdater.quitAndInstall()
-  }, [data])
+  const value = useMemo(() => ({ status, relaunch }), [status])
 
   return (
-    <UpdatesContext value={{ status, relaunch: async () => {} }}>
+    <UpdatesContext value={value}>
       {children}
     </UpdatesContext>
   )

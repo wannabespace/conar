@@ -1,3 +1,4 @@
+import type { UpdatesStatus } from '~/updates-provider'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -13,6 +14,7 @@ if (started) {
 }
 
 autoUpdater.autoInstallOnAppQuit = true
+autoUpdater.autoDownload = true
 
 initElectronEvents()
 
@@ -36,11 +38,16 @@ export function createWindow() {
   })
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // TODO: recheck internal router links
     const { protocol } = new URL(url)
     if (protocol === 'http:' || protocol === 'https:') {
       shell.openExternal(url)
     }
     return { action: 'deny' }
+  })
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow!.show()
   })
 
   if (process.env.VITE_DEV_SERVER_URL) {
@@ -54,9 +61,6 @@ export function createWindow() {
   handleDeepLink(mainWindow)
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.on('ready', () => createWindow)
 
 app.setAsDefaultProtocolClient('connnect')
@@ -78,29 +82,23 @@ app.on('activate', () => {
   }
 })
 
-function sendUpdatesStatus(status: string) {
+function sendUpdatesStatus(status: UpdatesStatus) {
   mainWindow!.webContents.send('updates-status', status)
 }
 
 autoUpdater.on('checking-for-update', () => {
-  sendUpdatesStatus(`Checking for update... ${app.getVersion()}`)
+  sendUpdatesStatus('checking')
 })
 autoUpdater.on('update-available', () => {
-  sendUpdatesStatus(`Update available. ${app.getVersion()}`)
   autoUpdater.downloadUpdate()
+  sendUpdatesStatus('updating')
 })
-autoUpdater.on('update-not-available', () => {
-  sendUpdatesStatus(`Update not available. ${app.getVersion()}`)
+autoUpdater.on('error', () => {
+  sendUpdatesStatus('error')
 })
-autoUpdater.on('error', (err) => {
-  sendUpdatesStatus(`Error in auto-updater. ${err}`)
-})
-autoUpdater.on('download-progress', (progressObj) => {
-  let log_message = `Download speed: ${progressObj.bytesPerSecond}`
-  log_message = `${log_message} - Downloaded ${progressObj.percent}%`
-  log_message = `${log_message} (${progressObj.transferred}/${progressObj.total})`
-  sendUpdatesStatus(log_message)
+autoUpdater.on('download-progress', () => {
+  sendUpdatesStatus('updating')
 })
 autoUpdater.on('update-downloaded', () => {
-  sendUpdatesStatus(`Update downloaded. ${app.getVersion()}`)
+  sendUpdatesStatus('ready')
 })

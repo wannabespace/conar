@@ -21,6 +21,9 @@ export function trackEvent(event: string, properties: Record<string, unknown>) {
 }
 
 export function EventsProvider({ children }: { children: React.ReactNode }) {
+  if (import.meta.env.DEV)
+    return children
+
   return (
     <PostHogProvider
       apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_API_KEY}

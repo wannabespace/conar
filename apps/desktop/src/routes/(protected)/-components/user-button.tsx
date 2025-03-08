@@ -4,7 +4,7 @@ import { RiLogoutCircleRLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useSession } from '~/hooks/use-session'
-import { removeBearerToken } from '~/lib/auth'
+import { authClient, removeBearerToken } from '~/lib/auth'
 import { queryClient } from '~/main'
 
 export function UserButton() {
@@ -13,6 +13,7 @@ export function UserButton() {
   const { mutate: signOut, isPending: isSigningOut } = useMutation({
     mutationFn: async () => {
       removeBearerToken()
+      await authClient.signOut()
       await refetch()
       queryClient.clear()
     },

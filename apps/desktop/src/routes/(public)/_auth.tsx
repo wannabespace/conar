@@ -4,12 +4,15 @@ import { AnimatePresence, motion } from 'motion/react'
 import { AppLogo } from '~/components/app-logo'
 import { AppLogoGradient } from '~/components/app-logo-gradient'
 import { SmoothCorner } from '~/components/smooth-corner'
+import { useUpdates } from '~/updates-provider'
 
 export const Route = createFileRoute('/(public)/_auth')({
   component: AuthLayout,
 })
 
 function AuthLayout() {
+  const { status } = useUpdates()
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 1.1 }}
@@ -26,6 +29,7 @@ function AuthLayout() {
         cr={1}
         className="absolute z-0 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
+      {status}
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-col gap-8 py-6">
         <div className="flex items-center gap-3">
           <AppLogoGradient className="hidden size-12 dark:block" />

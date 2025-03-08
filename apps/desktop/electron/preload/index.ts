@@ -1,5 +1,7 @@
+import type { UpdateCheckResult } from 'electron-updater'
 import type { electron } from '../main/events'
-import { contextBridge, ipcRenderer } from 'electron'
+import type { UpdatesStatus } from '~/updates-provider'
+import { app, contextBridge, ipcRenderer } from 'electron'
 
 // eslint-disable-next-line ts/no-explicit-any
 export type PromisifyElectron<T extends Record<string, any>> = {
@@ -11,12 +13,15 @@ export type PromisifyElectron<T extends Record<string, any>> = {
 export type ElectronPreload = PromisifyElectron<typeof electron> & {
   app: {
     onDeepLink: (callback: (url: string) => void) => void
-    onUpdatesStatus: (callback: (status: string) => void) => void
+    onUpdatesStatus: (callback: (status: UpdatesStatus) => void) => void
+    checkForUpdates: () => Promise<UpdateCheckResult | null>
+    quitAndInstall: () => Promise<void>
   }
   versions: {
     node: () => string
     chrome: () => string
     electron: () => string
+    app: () => string
   }
 }
 
@@ -55,10 +60,12 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.on('updates-status', (_event, status) => callback(status))
     },
     checkForUpdates: () => handleError(() => ipcRenderer.invoke('checkForUpdates')),
+    quitAndInstall: () => handleError(() => ipcRenderer.invoke('quitAndInstall')),
   },
   versions: {
     node: () => process.versions.node,
     chrome: () => process.versions.chrome,
     electron: () => process.versions.electron,
+    app: () => app.getVersion(),
   },
 } satisfies ElectronPreload)

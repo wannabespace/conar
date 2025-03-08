@@ -53,7 +53,10 @@ const databases = {
 
 const _app = {
   checkForUpdates: () => {
-    autoUpdater.checkForUpdates()
+    return autoUpdater.checkForUpdates()
+  },
+  quitAndInstall: () => {
+    autoUpdater.quitAndInstall()
   },
 }
 

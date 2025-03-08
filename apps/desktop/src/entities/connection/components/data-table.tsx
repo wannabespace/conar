@@ -58,6 +58,7 @@ export function DataTable<T extends Record<string, unknown>>({ data, columns, sc
                   key={header.id}
                   colSpan={header.colSpan}
                   style={{ width: header.getSize() }}
+                  className="font-mono"
                 >
                   {header.isPlaceholder
                     ? null
@@ -96,16 +97,17 @@ export function DataTable<T extends Record<string, unknown>>({ data, columns, sc
                   }px)`,
                 }}
               >
-                {row.getVisibleCells().map((cell) => {
-                  return (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  )
-                })}
+                {row.getVisibleCells().map(cell => (
+                  <TableCell
+                    key={cell.id}
+                    className="font-mono"
+                  >
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext(),
+                    )}
+                  </TableCell>
+                ))}
               </TableRow>
             )
           })}
