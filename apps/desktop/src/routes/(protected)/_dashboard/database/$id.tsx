@@ -27,10 +27,10 @@ function RouteComponent() {
   }
 
   return (
-    <ResizablePanelGroup className="h-auto!" direction="horizontal">
+    <ResizablePanelGroup className={PAGE_SCREEN_CLASS} direction="horizontal">
       <ResizablePanel defaultSize={20} minSize={10}>
-        <Card>
-          <ScrollArea className={PAGE_SCREEN_CLASS}>
+        <Card className="h-full">
+          <ScrollArea>
             <Button variant="outline" onClick={() => router.navigate({ to: '/database/$id/sql', params: { id } })}>
               Run SQL
               <RiDatabase2Line />

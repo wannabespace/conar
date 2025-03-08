@@ -9,7 +9,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { Monaco } from '~/components/monaco'
 import { PAGE_SCREEN_CLASS } from '~/constants'
-import { DatabaseTable, useConnection } from '~/entities/connection'
+import { DataTable, useConnection } from '~/entities/connection'
 import { formatSql } from '~/lib/formatter'
 import { SqlGenerator } from './-components/sql-generator'
 
@@ -25,6 +25,7 @@ function RouteComponent() {
     defaultValue: '',
     initializeWithValue: true,
   })
+  const parentRef = useRef<HTMLDivElement>(null)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const { data: connection } = useConnection(id)
 
@@ -60,7 +61,7 @@ function RouteComponent() {
 
   return (
     <Card>
-      <ScrollArea className={PAGE_SCREEN_CLASS}>
+      <ScrollArea scrollRef={parentRef} className={PAGE_SCREEN_CLASS}>
         <CardHeader>
           <CardTitle>SQL Runner</CardTitle>
         </CardHeader>
@@ -101,7 +102,7 @@ function RouteComponent() {
           {Array.isArray(result) && (
             <>
               {result.length > 0
-                ? <DatabaseTable rows={result} columns={columns} />
+                ? <DataTable data={result} columns={columns} scrollRef={parentRef} />
                 : (
                     <div className="p-4 text-sm text-muted-foreground">
                       No results
