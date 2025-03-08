@@ -15,7 +15,7 @@ export function UserButton() {
       removeBearerToken()
       await authClient.signOut()
       await refetch()
-      queryClient.clear()
+      queryClient.invalidateQueries()
     },
     onSuccess: () => {
       toast.success('You have been signed out successfully.')

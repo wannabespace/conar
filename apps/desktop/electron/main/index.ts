@@ -46,7 +46,7 @@ export function createWindow() {
     return { action: 'deny' }
   })
 
-  mainWindow.once('ready-to-show', () => {
+  mainWindow.on('ready-to-show', () => {
     mainWindow!.show()
   })
 
@@ -61,7 +61,7 @@ export function createWindow() {
   handleDeepLink(mainWindow)
 }
 
-app.on('ready', () => createWindow)
+app.on('ready', createWindow)
 
 app.setAsDefaultProtocolClient('connnect')
 

@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 import { decrypt, encrypt } from '@connnect/shared/encryption'
 import { ConnectionType } from '@connnect/shared/enums/connection-type'
-import { ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
 import { pgQuery, pgTestConnection } from './pg'
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
@@ -60,17 +60,22 @@ const _app = {
   },
 }
 
+const versions = {
+  app: () => app.getVersion(),
+}
+
 export const electron = {
   connections,
   databases,
   encryption,
   app: _app,
+  versions,
 }
 
 export function initElectronEvents() {
-  for (const events of Object.values(electron)) {
-    for (const [key, handler] of Object.entries(events)) {
-      ipcMain.handle(key, (event, arg) => handler(arg))
+  for (const [key, events] of Object.entries(electron)) {
+    for (const [key2, handler] of Object.entries(events)) {
+      ipcMain.handle(`${key}.${key2}`, (event, arg) => handler(arg))
     }
   }
 }

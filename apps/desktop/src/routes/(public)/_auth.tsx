@@ -1,6 +1,7 @@
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
+import { useEffect, useState } from 'react'
 import { AppLogo } from '~/components/app-logo'
 import { AppLogoGradient } from '~/components/app-logo-gradient'
 import { SmoothCorner } from '~/components/smooth-corner'
@@ -12,6 +13,13 @@ export const Route = createFileRoute('/(public)/_auth')({
 
 function AuthLayout() {
   const { status } = useUpdates()
+  const [appVersion, setAppVersion] = useState('')
+
+  useEffect(() => {
+    window.electron.versions.app().then((version) => {
+      setAppVersion(version)
+    })
+  }, [])
 
   return (
     <motion.div
@@ -30,6 +38,8 @@ function AuthLayout() {
         className="absolute z-0 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       {status}
+      <br />
+      {appVersion}
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-col gap-8 py-6">
         <div className="flex items-center gap-3">
           <AppLogoGradient className="hidden size-12 dark:block" />
