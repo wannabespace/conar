@@ -1,7 +1,7 @@
 {
   "name": "@connnect/desktop",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "packageManager": "pnpm@10.6.0",
   "description": "Connnect.app - Your all-in-one application for managing your connections",
