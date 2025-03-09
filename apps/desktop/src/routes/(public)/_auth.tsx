@@ -12,7 +12,7 @@ export const Route = createFileRoute('/(public)/_auth')({
 })
 
 function AuthLayout() {
-  const { status, message } = useUpdates()
+  const { status, message, date } = useUpdates()
   const [appVersion, setAppVersion] = useState('')
 
   useEffect(() => {
@@ -37,10 +37,20 @@ function AuthLayout() {
         cr={1}
         className="absolute z-0 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
+      Status:
+      {' '}
       {status}
       <br />
+      Message:
+      {' '}
       {message}
       <br />
+      Date:
+      {' '}
+      {date}
+      <br />
+      Version:
+      {' '}
       {appVersion}
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-col gap-8 py-6">
         <div className="flex items-center gap-3">

@@ -14,6 +14,7 @@ if (started) {
 }
 
 autoUpdater.autoInstallOnAppQuit = true
+autoUpdater.autoDownload = false
 
 initElectronEvents()
 
@@ -82,11 +83,18 @@ app.on('activate', () => {
 })
 
 function sendUpdatesStatus(status: UpdatesStatus, message?: string) {
-  mainWindow!.webContents.send('updates-status', { status, message })
+  mainWindow!.webContents.send('updates-status', { status, message, date: new Date().toISOString() })
 }
 
 autoUpdater.on('checking-for-update', () => {
   sendUpdatesStatus('checking')
+})
+autoUpdater.on('update-available', () => {
+  autoUpdater.downloadUpdate()
+  sendUpdatesStatus('updating')
+})
+autoUpdater.on('update-not-available', () => {
+  sendUpdatesStatus('no-updates')
 })
 autoUpdater.on('error', (e) => {
   sendUpdatesStatus('error', e.message)
