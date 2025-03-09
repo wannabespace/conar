@@ -19,7 +19,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     window.electron.app.onUpdatesStatus((status) => {
       setStatus(status)
     })
-    // window.electron.app.checkForUpdates()
+    window.electron.app.checkForUpdates()
   }, [])
 
   useAsyncEffect(async () => {
