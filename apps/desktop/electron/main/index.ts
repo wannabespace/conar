@@ -14,7 +14,6 @@ if (started) {
 }
 
 autoUpdater.autoInstallOnAppQuit = true
-autoUpdater.autoDownload = false
 
 initElectronEvents()
 
