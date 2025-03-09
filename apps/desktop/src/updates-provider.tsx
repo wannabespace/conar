@@ -14,7 +14,7 @@ const UpdatesContext = createContext<{
 export const useUpdates = () => use(UpdatesContext)
 
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
-  const [status, setStatus] = useState<UpdatesStatus>(window.initialUpdatesStatus ?? 'idle')
+  const [status, setStatus] = useState<UpdatesStatus>('idle')
   const [message, setMessage] = useState<string | undefined>(undefined)
 
   useEffect(() => {
@@ -22,6 +22,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
       setStatus(status)
       setMessage(message)
     })
+    window.electron.app.checkForUpdates()
   }, [])
 
   // useAsyncEffect(async () => {
