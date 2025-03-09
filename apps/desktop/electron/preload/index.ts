@@ -13,7 +13,7 @@ export type PromisifyElectron<T extends Record<string, any>> = {
 export type ElectronPreload = PromisifyElectron<typeof electron> & {
   app: {
     onDeepLink: (callback: (url: string) => void) => void
-    onUpdatesStatus: (callback: (params: { status: UpdatesStatus, message?: string, date?: string }) => void) => void
+    onUpdatesStatus: (callback: (params: { status: UpdatesStatus, message?: string }) => void) => void
   }
   versions: {
     node: () => string

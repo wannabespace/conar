@@ -3,6 +3,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '@connnect/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
 import { Skeleton } from '@connnect/ui/components/skeleton'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiDeleteBinLine, RiMoreLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
@@ -35,7 +36,16 @@ function ConnectionCard({ connection, onRemove }: { connection: Connection, onRe
       </div>
       <div className="flex flex-1 flex-col gap-1 min-w-0">
         <div className="font-medium tracking-tight truncate">{connection.name}</div>
-        <div className="text-sm text-muted-foreground truncate">{connectionString.replaceAll('*', '•')}</div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="text-sm text-muted-foreground truncate">{connectionString.replaceAll('*', '•')}</div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              {connectionString.replaceAll('*', '•')}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger className="rounded-md p-2 hover:bg-accent-foreground/5">

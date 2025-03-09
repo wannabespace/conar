@@ -82,7 +82,7 @@ app.on('activate', () => {
 })
 
 function sendUpdatesStatus(status: UpdatesStatus, message?: string) {
-  mainWindow!.webContents.send('updates-status', { status, message, date: new Date().toISOString() })
+  mainWindow!.webContents.send('updates-status', { status, message })
 }
 
 autoUpdater.on('checking-for-update', () => {

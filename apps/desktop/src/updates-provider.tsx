@@ -1,3 +1,9 @@
+import { Button } from '@connnect/ui/components/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { useLocalStorageValue } from '@react-hookz/web'
+import { RiLoader4Line } from '@remixicon/react'
+import { useQuery } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { useAsyncEffect } from './hooks/use-async-effect'
@@ -7,7 +13,6 @@ export type UpdatesStatus = 'no-updates' | 'checking' | 'updating' | 'ready' | '
 const UpdatesContext = createContext<{
   status: UpdatesStatus
   message?: string
-  date?: string
   relaunch: () => Promise<void>
 }>(null!)
 
@@ -17,15 +22,34 @@ export const useUpdates = () => use(UpdatesContext)
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<UpdatesStatus>('no-updates')
   const [message, setMessage] = useState<string | undefined>(undefined)
-  const [date, setDate] = useState<string | undefined>(undefined)
+  const { value: lastCheck, set: setLastCheck } = useLocalStorageValue<string | undefined>('last-update-check')
 
   useEffect(() => {
-    window.electron.app.onUpdatesStatus(({ status, message, date }) => {
+    window.electron.app.onUpdatesStatus(({ status, message }) => {
       setStatus(status)
       setMessage(message)
-      setDate(date)
     })
-    window.electron.app.checkForUpdates()
+  }, [])
+
+  useAsyncEffect(async () => {
+    const currentAppVersion = await window.electron.versions.app()
+    const interval = setInterval(() => {
+      const checkedAppVersion = lastCheck?.split('/')[0]
+      const lastCheckDate = lastCheck?.split('/')[1]
+
+      if (checkedAppVersion && currentAppVersion !== checkedAppVersion) {
+        setLastCheck(undefined)
+      }
+
+      if (!lastCheckDate || dayjs().diff(dayjs(lastCheckDate), 'minutes') > 30) {
+        if (import.meta.env.PROD) {
+          window.electron.app.checkForUpdates()
+        }
+        setLastCheck(`${currentAppVersion}/${dayjs().toISOString()}`)
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
   }, [])
 
   useAsyncEffect(async () => {
@@ -40,11 +64,55 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     await window.electron.app.quitAndInstall()
   }
 
-  const value = useMemo(() => ({ status, message, date, relaunch }), [status, message, date])
+  const value = useMemo(() => ({ status, message, relaunch }), [status, message])
 
   return (
     <UpdatesContext value={value}>
       {children}
     </UpdatesContext>
+  )
+}
+
+export function UpdatesButton() {
+  const { status, relaunch, message } = useUpdates()
+  const { data: version } = useQuery({
+    queryKey: ['version'],
+    queryFn: () => window.electron.versions.app(),
+  })
+
+  return (
+    <>
+      {status === 'no-updates' && (
+        <span className="text-xs opacity-50">
+          v
+          {version}
+        </span>
+      )}
+      {(status === 'checking' || status === 'updating') && (
+        <div className="flex items-center gap-2 opacity-50">
+          <RiLoader4Line className="size-3 animate-spin" />
+          <span className="text-xs">
+            {status === 'checking' ? 'Checking for updates...' : 'Downloading update...'}
+          </span>
+        </div>
+      )}
+      {status === 'ready' && (
+        <Button variant="outline" size="xs" onClick={relaunch}>
+          Restart to update
+        </Button>
+      )}
+      {status === 'error' && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className="text-xs opacity-50 text-destructive">
+              Update failed
+            </TooltipTrigger>
+            <TooltipContent>
+              {message}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </>
   )
 }

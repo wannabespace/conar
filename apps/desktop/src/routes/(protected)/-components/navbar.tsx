@@ -10,6 +10,7 @@ import { useState } from 'react'
 import { ConnectionIcon } from '~/components/connection-icon'
 import { connectionQuery, useConnection, useConnections } from '~/entities/connection'
 import { queryClient } from '~/main'
+import { UpdatesButton } from '~/updates-provider'
 import { UserButton } from './user-button'
 
 function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
@@ -167,7 +168,11 @@ export function Navbar() {
           />
         )}
         <div className="flex-1 h-full [app-region:drag]" />
-        <UserButton />
+        <div className="flex items-center gap-2">
+          <UpdatesButton />
+          <Separator orientation="vertical" className="h-4 mx-2" />
+          <UserButton />
+        </div>
       </div>
     </>
   )

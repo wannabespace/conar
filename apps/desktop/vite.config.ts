@@ -28,7 +28,6 @@ export default defineConfig(({ command }) => {
         main: {
           entry: 'electron/main/index.ts',
           vite: {
-            plugins: [tsconfigPaths()],
             build: {
               sourcemap,
               minify: isBuild,
