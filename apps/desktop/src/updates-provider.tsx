@@ -1,11 +1,12 @@
 import { createContext, use, useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
-import { useAsyncEffect } from './hooks/use-async-effect'
+// import { toast } from 'sonner'
+// import { useAsyncEffect } from './hooks/use-async-effect'
 
 export type UpdatesStatus = 'idle' | 'checking' | 'updating' | 'ready' | 'error'
 
 const UpdatesContext = createContext<{
   status: UpdatesStatus
+  message?: string
   relaunch: () => Promise<void>
 }>(null!)
 
@@ -14,27 +15,28 @@ export const useUpdates = () => use(UpdatesContext)
 
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<UpdatesStatus>(window.initialUpdatesStatus ?? 'idle')
+  const [message, setMessage] = useState<string | undefined>(undefined)
 
   useEffect(() => {
-    window.electron.app.onUpdatesStatus((status) => {
+    window.electron.app.onUpdatesStatus(({ status, message }) => {
       setStatus(status)
+      setMessage(message)
     })
-    window.electron.app.checkForUpdates()
   }, [])
 
-  useAsyncEffect(async () => {
-    if (status === 'updating') {
-      toast.info(
-        `Found new update ${await window.electron.app.checkForUpdates().then(r => r!.updateInfo.version)}. We will download it now but install it on relaunch.`,
-      )
-    }
-  }, [status])
+  // useAsyncEffect(async () => {
+  //   if (status === 'updating') {
+  //     toast.info(
+  //       `Found new update ${await window.electron.app.checkForUpdates().then(r => r!.updateInfo.version)}. We will download it now but install it on relaunch.`,
+  //     )
+  //   }
+  // }, [status])
 
   async function relaunch() {
     await window.electron.app.quitAndInstall()
   }
 
-  const value = useMemo(() => ({ status, relaunch }), [status])
+  const value = useMemo(() => ({ status, message, relaunch }), [status, message])
 
   return (
     <UpdatesContext value={value}>

@@ -82,8 +82,8 @@ app.on('activate', () => {
   }
 })
 
-function sendUpdatesStatus(status: UpdatesStatus) {
-  mainWindow!.webContents.send('updates-status', status)
+function sendUpdatesStatus(status: UpdatesStatus, message?: string) {
+  mainWindow!.webContents.send('updates-status', { status, message })
 }
 
 autoUpdater.on('checking-for-update', () => {
@@ -93,8 +93,8 @@ autoUpdater.on('update-available', () => {
   autoUpdater.downloadUpdate()
   sendUpdatesStatus('updating')
 })
-autoUpdater.on('error', () => {
-  sendUpdatesStatus('error')
+autoUpdater.on('error', (e) => {
+  sendUpdatesStatus('error', e.message)
 })
 autoUpdater.on('download-progress', () => {
   sendUpdatesStatus('updating')

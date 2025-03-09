@@ -13,7 +13,7 @@ import './monaco-worker'
 window.electron.app.onDeepLink(async (url) => {
   window.initialDeepLink = url
 })
-window.electron.app.onUpdatesStatus(async (status) => {
+window.electron.app.onUpdatesStatus(async ({ status }) => {
   window.initialUpdatesStatus = status
 })
 
