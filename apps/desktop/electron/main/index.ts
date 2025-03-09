@@ -14,7 +14,6 @@ if (started) {
 }
 
 autoUpdater.autoInstallOnAppQuit = true
-autoUpdater.autoDownload = true
 
 initElectronEvents()
 
@@ -88,10 +87,6 @@ function sendUpdatesStatus(status: UpdatesStatus, message?: string) {
 
 autoUpdater.on('checking-for-update', () => {
   sendUpdatesStatus('checking')
-})
-autoUpdater.on('update-available', () => {
-  autoUpdater.downloadUpdate()
-  sendUpdatesStatus('updating')
 })
 autoUpdater.on('error', (e) => {
   sendUpdatesStatus('error', e.message)
