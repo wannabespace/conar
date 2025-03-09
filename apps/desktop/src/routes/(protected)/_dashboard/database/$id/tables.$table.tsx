@@ -30,14 +30,16 @@ function RouteComponent() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <DataTable
-            scrollRef={parentRef}
-            data={databaseRows ?? []}
-            columns={databaseColumns?.map(column => ({
-              name: column.column_name,
-              type: column.data_type,
-            })) ?? []}
-          />
+          {databaseColumns && (
+            <DataTable
+              scrollRef={parentRef}
+              data={databaseRows ?? []}
+              columns={databaseColumns.map(column => ({
+                name: column.column_name,
+                type: column.data_type,
+              }))}
+            />
+          )}
         </CardContent>
       </ScrollArea>
     </Card>
