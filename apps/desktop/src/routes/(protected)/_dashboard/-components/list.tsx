@@ -1,51 +1,43 @@
-import type { Connection } from '~/lib/indexeddb'
+import type { Database } from '~/lib/indexeddb'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
 import { Skeleton } from '@connnect/ui/components/skeleton'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiDeleteBinLine, RiMoreLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { ConnectionIcon } from '~/components/connection-icon'
-import { connectionQuery, connectionsQuery, removeConnection, useConnections } from '~/entities/connection'
+import { DatabaseIcon, databaseQuery, databasesQuery, databaseTablesQuery, removeConnection, useDatabases } from '~/entities/database'
 import { queryClient } from '~/main'
 
-function ConnectionCard({ connection, onRemove }: { connection: Connection, onRemove: () => void }) {
+function DatabaseCard({ database, onRemove }: { database: Database, onRemove: () => void }) {
   const connectionString = useMemo(() => {
-    const url = new URL(connection.connectionString)
+    const url = new URL(database.connectionString)
 
-    if (connection.isPasswordExists || url.password) {
+    if (database.isPasswordExists || url.password) {
       url.password = '*'.repeat(url.password.length || 6)
     }
 
     return url.toString()
-  }, [connection.connectionString])
+  }, [database.connectionString])
 
   return (
     <Link
       className="relative flex items-center justify-between gap-4 rounded-lg bg-background p-5 border border-border transition-all duration-150 hover:border-primary/50 hover:shadow-xl shadow-black/3"
       to="/database/$id"
-      params={{ id: connection.id }}
-      onMouseOver={() => queryClient.prefetchQuery(connectionQuery(connection.id))}
+      params={{ id: database.id }}
+      onMouseOver={() => {
+        queryClient.prefetchQuery(databaseQuery(database.id))
+        queryClient.prefetchQuery(databaseTablesQuery(database))
+      }}
     >
       <div className="size-14 shrink-0 rounded-full bg-element p-3">
-        <ConnectionIcon type={connection.type} className="size-full text-primary" />
+        <DatabaseIcon type={database.type} className="size-full text-primary" />
       </div>
       <div className="flex flex-1 flex-col gap-1 min-w-0">
-        <div className="font-medium tracking-tight truncate">{connection.name}</div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="text-sm text-muted-foreground truncate">{connectionString.replaceAll('*', '•')}</div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              {connectionString.replaceAll('*', '•')}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div className="font-medium tracking-tight truncate">{database.name}</div>
+        <div className="text-sm text-muted-foreground truncate">{connectionString.replaceAll('*', '•')}</div>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger className="rounded-md p-2 hover:bg-accent-foreground/5">
@@ -86,7 +78,7 @@ export function Empty() {
   )
 }
 
-function ConnectionCardSkeleton() {
+function DatabaseCardSkeleton() {
   return (
     <div className="relative flex items-center justify-between gap-4 rounded-lg border border-border bg-background p-5">
       <Skeleton className="size-14 shrink-0 rounded-full" />
@@ -107,9 +99,9 @@ function RemoveConnectionDialog({ id, open, onOpenChange }: { id: string | null,
       await removeConnection(id)
     },
     onSuccess: () => {
-      toast.success('Connection removed successfully')
+      toast.success('Database removed successfully')
       onOpenChange(false)
-      queryClient.invalidateQueries({ queryKey: connectionsQuery().queryKey })
+      queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
     },
   })
 
@@ -117,9 +109,9 @@ function RemoveConnectionDialog({ id, open, onOpenChange }: { id: string | null,
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Remove connection</AlertDialogTitle>
+          <AlertDialogTitle>Remove database</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this connection
+            This action cannot be undone. This will permanently delete this database
             and remove all associated data.
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -144,7 +136,7 @@ function RemoveConnectionDialog({ id, open, onOpenChange }: { id: string | null,
 }
 
 export function List() {
-  const { data: connections, isPending } = useConnections()
+  const { data: databases, isPending } = useDatabases()
   const [selected, setSelected] = useState<string | null>(null)
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
 
@@ -155,18 +147,18 @@ export function List() {
         {isPending
           ? (
               <>
-                <ConnectionCardSkeleton />
-                <ConnectionCardSkeleton />
-                <ConnectionCardSkeleton />
+                <DatabaseCardSkeleton />
+                <DatabaseCardSkeleton />
+                <DatabaseCardSkeleton />
               </>
             )
-          : connections?.length
-            ? connections.map(connection => (
-                <ConnectionCard
-                  key={connection.id}
-                  connection={connection}
+          : databases?.length
+            ? databases.map(database => (
+                <DatabaseCard
+                  key={database.id}
+                  database={database}
                   onRemove={() => {
-                    setSelected(connection.id)
+                    setSelected(database.id)
                     setIsRemoveDialogOpen(true)
                   }}
                 />

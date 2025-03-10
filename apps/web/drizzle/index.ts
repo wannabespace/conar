@@ -4,10 +4,10 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { env } from '~/env'
 import * as auth from './schema/auth'
-import * as connections from './schema/connections'
+import * as databases from './schema/databases'
 
 export * from './schema/auth'
-export * from './schema/connections'
+export * from './schema/databases'
 
 const client = postgres(env.DATABASE_URL)
 
@@ -33,7 +33,7 @@ export const db = drizzle(client, {
   },
   schema: {
     ...auth,
-    ...connections,
+    ...databases,
   },
   casing: 'snake_case',
 })

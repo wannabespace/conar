@@ -1,5 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { ConnectionType } from '@connnect/shared/enums/connection-type'
+import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { tryCatch } from '@connnect/shared/utils/try-catch'
 import { TRPCError } from '@trpc/server'
 import { APICallError, generateText } from 'ai'
@@ -11,7 +11,7 @@ const logger = createLogger('ai/generate-sql')
 
 const schema = z.object({
   prompt: z.string().min(1),
-  type: z.nativeEnum(ConnectionType),
+  type: z.nativeEnum(DatabaseType),
   context: z.string(),
 })
 
@@ -55,7 +55,7 @@ export const generateSql = protectedProcedure
     const { data, error } = await tryCatch(() => generateSqlQuery({
       input,
       model: 'claude-3-7-sonnet-20250219',
-      signal: signal ?? AbortSignal.timeout(10000),
+      signal: signal ?? AbortSignal.timeout(30000),
     }))
 
     if (data) {

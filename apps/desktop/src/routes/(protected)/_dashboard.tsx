@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
-import { fetchConnections } from '~/entities/connection'
+import { fetchDatabases } from '~/entities/database'
 import { Navbar } from './-components/navbar'
 
 export const Route = createFileRoute('/(protected)/_dashboard')({
@@ -11,7 +11,7 @@ export const Route = createFileRoute('/(protected)/_dashboard')({
 function LayoutComponent() {
   useEffect(() => {
     const interval = setInterval(() => {
-      fetchConnections()
+      fetchDatabases()
     }, 1000 * 60 * 5)
 
     return () => clearInterval(interval)

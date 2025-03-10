@@ -3,7 +3,7 @@ import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@connnect/ui/components/table'
 import { createFileRoute } from '@tanstack/react-router'
 import { PAGE_SCREEN_CLASS } from '~/constants'
-import { useConnection, useDatabaseColumns } from '~/entities/connection'
+import { useDatabase, useDatabaseColumns } from '~/entities/database'
 
 export const Route = createFileRoute(
   '/(protected)/_dashboard/database/$id/tables/$table/columns',
@@ -13,8 +13,8 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
   const { id, table } = Route.useParams()
-  const { data: connection } = useConnection(id)
-  const { data: tableData } = useDatabaseColumns(connection, table)
+  const { data: database } = useDatabase(id)
+  const { data: tableData } = useDatabaseColumns(database, table)
 
   return (
     <Card className="h-full">

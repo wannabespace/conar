@@ -1,4 +1,4 @@
-import { ConnectionType } from '../enums/connection-type'
+import { DatabaseType } from '../enums/database-type'
 
 export function parseConnectionString(connectionString: string) {
   const url = new URL(connectionString)
@@ -20,10 +20,10 @@ export function parseConnectionString(connectionString: string) {
   return parsed
 }
 
-export const protocolMap: Record<ConnectionType, string[]> = {
-  [ConnectionType.Postgres]: ['postgresql', 'postgres'],
+export const protocolMap: Record<DatabaseType, string[]> = {
+  [DatabaseType.Postgres]: ['postgresql', 'postgres'],
 }
 
-export function getProtocols(type: ConnectionType) {
+export function getProtocols(type: DatabaseType) {
   return protocolMap[type]
 }

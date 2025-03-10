@@ -1,4 +1,4 @@
-import type { Connection } from '~/lib/indexeddb'
+import type { Database } from '~/lib/indexeddb'
 import { Button } from '@connnect/ui/components/button'
 import { Input } from '@connnect/ui/components/input'
 import { RiSendPlaneLine, RiSparklingLine, RiStopLargeLine } from '@remixicon/react'
@@ -6,12 +6,12 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { DANGEROUS_SQL_KEYWORDS } from '~/constants'
-import { databaseEnumsQuery, databaseTablesQuery } from '~/entities/connection'
+import { databaseEnumsQuery, databaseTablesQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { trpc } from '~/trpc'
 
 interface SqlGeneratorProps {
-  connection: Connection
+  database: Database
   query: string
   setQuery: (query: string) => void
   onSendQuery: (query: string) => void
@@ -19,7 +19,7 @@ interface SqlGeneratorProps {
 
 let abortController: AbortController | null = null
 
-export function SqlGenerator({ connection, query, setQuery, onSendQuery }: SqlGeneratorProps) {
+export function SqlGenerator({ database, query, setQuery, onSendQuery }: SqlGeneratorProps) {
   const [sqlPrompt, setSqlPrompt] = useState('')
 
   const { mutate: generateSql, isPending: isGeneratingSql } = useMutation({
@@ -28,12 +28,12 @@ export function SqlGenerator({ connection, query, setQuery, onSendQuery }: SqlGe
       abortController = new AbortController()
 
       const [tables, enums] = await Promise.all([
-        queryClient.ensureQueryData(databaseTablesQuery(connection)) || [],
-        queryClient.ensureQueryData(databaseEnumsQuery(connection)) || [],
+        queryClient.ensureQueryData(databaseTablesQuery(database)) || [],
+        queryClient.ensureQueryData(databaseEnumsQuery(database)) || [],
       ])
 
       return trpc.ai.generateSql.mutate({
-        type: connection.type,
+        type: database.type,
         prompt: sqlPrompt,
         context: `
           Current query: ${query}

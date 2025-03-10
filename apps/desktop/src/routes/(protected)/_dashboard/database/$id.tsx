@@ -7,7 +7,7 @@ import { useWindowSize } from '@react-hookz/web'
 import { RiDatabase2Line } from '@remixicon/react'
 import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { PAGE_SCREEN_CLASS } from '~/constants'
-import { useConnection, useDatabaseSchemas } from '~/entities/connection'
+import { useDatabase, useDatabaseSchemas } from '~/entities/database'
 import { DatabaseTree } from './-components/database-tree'
 import { PasswordForm } from './-components/password-form'
 import { useDatabaseSchema } from './-hooks/schema'
@@ -19,17 +19,17 @@ export const Route = createFileRoute('/(protected)/_dashboard/database/$id')({
 function RouteComponent() {
   const router = useRouter()
   const { id } = Route.useParams()
-  const { data: connection } = useConnection(id)
+  const { data: database } = useDatabase(id)
   const [schema, setSchema] = useDatabaseSchema(id)
-  const { data: schemas } = useDatabaseSchemas(connection)
+  const { data: schemas } = useDatabaseSchemas(database)
   const { width } = useWindowSize()
 
   function px(value: number) {
     return value / width * 100
   }
 
-  if (connection.isPasswordExists && !connection.isPasswordPopulated) {
-    return <PasswordForm connection={connection} />
+  if (database.isPasswordExists && !database.isPasswordPopulated) {
+    return <PasswordForm database={database} />
   }
 
   return (
@@ -58,7 +58,7 @@ function RouteComponent() {
                   ))}
                 </SelectContent>
               </Select>
-              <DatabaseTree connection={connection} schema={schema} />
+              <DatabaseTree database={database} schema={schema} />
             </div>
           </ScrollArea>
         </Card>

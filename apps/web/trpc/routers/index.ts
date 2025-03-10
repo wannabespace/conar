@@ -1,13 +1,13 @@
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
 import { router } from '..'
 import { aiRouter } from './ai'
-import { connectionsRouter } from './connections'
+import { databasesRouter } from './databases'
 import { profileRouter } from './profile'
 import { workspacesRouter } from './workspaces'
 
 export const appRouter = router({
   profile: profileRouter,
-  connections: connectionsRouter,
+  databases: databasesRouter,
   workspaces: workspacesRouter,
   ai: aiRouter,
 })

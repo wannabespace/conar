@@ -1,11 +1,11 @@
-import type { ConnectionType } from '@connnect/shared/enums/connection-type'
+import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { EntityTable } from 'dexie'
 import Dexie from 'dexie'
 
-export interface Connection {
+export interface Database {
   id: string
   name: string
-  type: ConnectionType
+  type: DatabaseType
   createdAt: Date
   connectionString: string
   isPasswordExists: boolean
@@ -13,7 +13,7 @@ export interface Connection {
 }
 
 export const indexedDb = new Dexie('connnect') as Dexie & {
-  connections: EntityTable<Connection, 'id'>
+  databases: EntityTable<Database, 'id'>
 }
 
 indexedDb.version(1).stores({

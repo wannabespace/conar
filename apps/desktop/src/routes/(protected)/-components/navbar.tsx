@@ -1,4 +1,4 @@
-import type { Connection } from '~/lib/indexeddb'
+import type { Database } from '~/lib/indexeddb'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@connnect/ui/components/command'
 import { Separator } from '@connnect/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
@@ -7,20 +7,19 @@ import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine, RiArrowLeftSLine, RiArrowRightSLine, RiHomeLine } from '@remixicon/react'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
-import { ConnectionIcon } from '~/components/connection-icon'
-import { connectionQuery, useConnection, useConnections } from '~/entities/connection'
+import { DatabaseIcon, databaseQuery, useDatabase, useDatabases } from '~/entities/database'
 import { queryClient } from '~/main'
 import { UpdatesButton } from '~/updates-provider'
 import { UserButton } from './user-button'
 
 function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
-  const { data: connections } = useConnections()
+  const { data: databases } = useDatabases()
   const router = useRouter()
 
-  function onSelect(connection: Connection) {
+  function onSelect(databases: Database) {
     setOpen(false)
-    if (connection.type === 'postgres')
-      router.navigate({ to: '/database/$id', params: { id: connection.id } })
+    if (databases.type === 'postgres')
+      router.navigate({ to: '/database/$id', params: { id: databases.id } })
   }
 
   function onAdd() {
@@ -33,16 +32,16 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
       <CommandInput placeholder="Type a connection name..." />
       <CommandList>
         <CommandEmpty>No connections found.</CommandEmpty>
-        {!!connections?.length && (
-          <CommandGroup heading="Connections">
-            {connections.map(connection => (
+        {!!databases?.length && (
+          <CommandGroup heading="Databases">
+            {databases.map(databases => (
               <CommandItem
-                key={connection.id}
-                onSelect={() => onSelect(connection)}
-                onMouseOver={() => queryClient.prefetchQuery(connectionQuery(connection.id))}
+                key={databases.id}
+                onSelect={() => onSelect(databases)}
+                onMouseOver={() => queryClient.prefetchQuery(databaseQuery(databases.id))}
               >
-                <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
-                {connection.name}
+                <DatabaseIcon type={databases.type} className="size-4 shrink-0" />
+                {databases.name}
               </CommandItem>
             ))}
           </CommandGroup>
@@ -58,16 +57,13 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
   )
 }
 
-function ConnectionName({ className, id }: { className?: string, id: string }) {
-  const { data: connection } = useConnection(id)
-
-  if (!connection)
-    return null
+function DatabaseName({ className, id }: { className?: string, id: string }) {
+  const { data: database } = useDatabase(id)
 
   return (
     <div className={cn('flex items-center py-1 gap-2 font-medium rounded-md text-sm cursor-pointer', className)}>
-      <ConnectionIcon type={connection.type} className="size-4" />
-      {connection.name}
+      <DatabaseIcon type={database.type} className="size-4" />
+      {database.name}
       <CommandShortcut>⌘L</CommandShortcut>
     </div>
   )
@@ -85,7 +81,7 @@ export function Navbar() {
   const router = useRouter()
   const params = useParams({ strict: false })
   const [openConnections, setOpenConnections] = useState(false)
-  const { data: connections } = useConnections()
+  const { data: databases } = useDatabases()
 
   useKeyboardEvent(e => e.key === 'd' && e.metaKey, () => {
     router.navigate({ to: '/' })
@@ -104,7 +100,7 @@ export function Navbar() {
   })
 
   useKeyboardEvent(e => e.key === 'l' && e.metaKey, () => {
-    if (!connections || connections.length === 0)
+    if (!databases || databases.length === 0)
       return
 
     setOpenConnections(open => !open)
@@ -162,7 +158,7 @@ export function Navbar() {
           </TooltipProvider>
         </div>
         {params.id && (
-          <ConnectionName
+          <DatabaseName
             id={params.id}
             className="absolute z-20 left-1/2 -translate-x-1/2"
           />

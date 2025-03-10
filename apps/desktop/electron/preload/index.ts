@@ -39,10 +39,8 @@ async function handleError(func: () => any) {
 }
 
 contextBridge.exposeInMainWorld('electron', {
-  connections: {
-    test: arg => handleError(() => ipcRenderer.invoke('connections.test', arg)),
-  },
   databases: {
+    test: arg => handleError(() => ipcRenderer.invoke('connections.test', arg)),
     query: arg => handleError(() => ipcRenderer.invoke('databases.query', arg)),
   },
   encryption: {

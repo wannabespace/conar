@@ -1,18 +1,18 @@
-import type { Connection } from '~/lib/indexeddb'
+import type { Database } from '~/lib/indexeddb'
 import { cn } from '@connnect/ui/lib/utils'
 import { useDebouncedCallback } from '@react-hookz/web'
 import { RiTableLine } from '@remixicon/react'
 import { Link, useParams } from '@tanstack/react-router'
-import { databaseColumnsQuery, useDatabaseTables } from '~/entities/connection'
+import { databaseColumnsQuery, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 
-export function DatabaseTree({ connection, schema }: { connection: Connection, schema: string }) {
-  const { data: tables } = useDatabaseTables(connection, schema)
+export function DatabaseTree({ database, schema }: { database: Database, schema: string }) {
+  const { data: tables } = useDatabaseTables(database, schema)
   const { table: tableParam } = useParams({ strict: false })
 
   const debouncedPrefetchColumns = useDebouncedCallback(
-    (tableName: string) => queryClient.prefetchQuery(databaseColumnsQuery(connection, tableName)),
-    [connection.id, schema],
+    (tableName: string) => queryClient.prefetchQuery(databaseColumnsQuery(database, tableName)),
+    [database.id, schema],
     150,
   )
 
@@ -22,7 +22,7 @@ export function DatabaseTree({ connection, schema }: { connection: Connection, s
         <Link
           key={table.name}
           to="/database/$id/tables/$table"
-          params={{ id: connection.id, table: table.name }}
+          params={{ id: database.id, table: table.name }}
           className={cn(
             'w-full flex items-center gap-2 py-1.5 text-sm text-foreground text-left',
             tableParam === table.name && 'font-medium',

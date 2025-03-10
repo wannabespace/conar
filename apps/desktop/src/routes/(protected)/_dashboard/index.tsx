@@ -2,7 +2,7 @@ import { Button } from '@connnect/ui/components/button'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine } from '@remixicon/react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { useConnections } from '~/entities/connection'
+import { useDatabases } from '~/entities/database'
 import { List } from './-components/list'
 
 export const Route = createFileRoute('/(protected)/_dashboard/')({
@@ -10,7 +10,7 @@ export const Route = createFileRoute('/(protected)/_dashboard/')({
 })
 
 function DashboardPage() {
-  const { data: connections } = useConnections()
+  const { data: connections } = useDatabases()
   const router = useRouter()
 
   function handleCreateConnection() {

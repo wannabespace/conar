@@ -1,4 +1,4 @@
-CREATE TYPE "public"."connection_type" AS ENUM('postgres');--> statement-breakpoint
+CREATE TYPE "public"."database_type" AS ENUM('postgres');--> statement-breakpoint
 CREATE TABLE "accounts" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -99,18 +99,18 @@ CREATE TABLE "workspaces" (
 );
 --> statement-breakpoint
 ALTER TABLE "workspaces" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-CREATE TABLE "connections" (
+CREATE TABLE "databases" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"user_id" uuid,
-	"type" "connection_type" NOT NULL,
+	"type" "database_type" NOT NULL,
 	"name" text NOT NULL,
 	"connection_string" text NOT NULL,
 	"password_exists" boolean NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "connections" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+ALTER TABLE "databases" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_inviter_id_users_id_fk" FOREIGN KEY ("inviter_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -118,4 +118,4 @@ ALTER TABLE "members" ADD CONSTRAINT "members_workspace_id_workspaces_id_fk" FOR
 ALTER TABLE "members" ADD CONSTRAINT "members_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "two_factors" ADD CONSTRAINT "two_factors_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "connections" ADD CONSTRAINT "connections_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
+ALTER TABLE "databases" ADD CONSTRAINT "databases_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;

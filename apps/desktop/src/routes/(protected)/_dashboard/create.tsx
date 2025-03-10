@@ -1,4 +1,4 @@
-import { connectionLabels, ConnectionType } from '@connnect/shared/enums/connection-type'
+import { databaseLabels, DatabaseType } from '@connnect/shared/enums/database-type'
 import { getProtocols, parseConnectionString, protocolMap } from '@connnect/shared/utils/connections'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@connnect/ui/components/card'
@@ -20,23 +20,23 @@ import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { AppLogo } from '~/components/app-logo'
+import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { connectionsQuery, createConnection, useTestConnection } from '~/entities/connection'
+import { createDatabase, databasesQuery, useTestDatabase } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
 import { queryClient } from '~/main'
-import { ConnectionDetails } from './-components/connection-details'
 
 export const Route = createFileRoute(
-  '/(protected)/_dashboard/create/',
+  '/(protected)/_dashboard/create',
 )({
   component: RouteComponent,
 })
 
 const formSchema = z.object({
   name: z.string().min(1, 'Please enter a name for your connection'),
-  type: z.nativeEnum(ConnectionType),
+  type: z.nativeEnum(DatabaseType),
   connectionString: z.string().refine((value) => {
     try {
       parseConnectionString(value)
@@ -87,7 +87,7 @@ function RouteComponent() {
         return
       }
 
-      const type = protocolsEntries.find(([_, protocols]) => protocols.includes(parsed.protocol))?.[0] as ConnectionType
+      const type = protocolsEntries.find(([_, protocols]) => protocols.includes(parsed.protocol))?.[0] as DatabaseType
 
       form.setValue('connectionString', text)
       form.setValue('type', type)
@@ -104,14 +104,14 @@ function RouteComponent() {
   const [type, connectionString] = useWatch({ control: form.control, name: ['type', 'connectionString'] })
 
   const { mutate, isPending: isCreating } = useMutation({
-    mutationFn: createConnection,
+    mutationFn: createDatabase,
     onSuccess: async ({ id }) => {
       toast.success('Connection created successfully 🎉')
-      await queryClient.invalidateQueries({ queryKey: connectionsQuery().queryKey })
+      await queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
       router.navigate({ to: '/database/$id', params: { id } })
     },
   })
-  const { mutate: testConnection, isPending: isConnecting } = useTestConnection()
+  const { mutate: testConnection, isPending: isConnecting } = useTestDatabase()
 
   return (
     <Form {...form} onSubmit={v => mutate(v)} className="flex py-10 flex-col w-full max-w-2xl mx-auto">
@@ -163,11 +163,11 @@ function RouteComponent() {
                 type="single"
                 variant="outline"
                 value={type}
-                onValueChange={value => form.setValue('type', value as ConnectionType)}
+                onValueChange={value => form.setValue('type', value as DatabaseType)}
               >
-                <ToggleGroupItem value={ConnectionType.Postgres} aria-label="Postgres">
+                <ToggleGroupItem value={DatabaseType.Postgres} aria-label="Postgres">
                   <PostgresIcon />
-                  {connectionLabels[ConnectionType.Postgres]}
+                  {databaseLabels[DatabaseType.Postgres]}
                 </ToggleGroupItem>
                 <ToggleGroupItem value="" disabled aria-label="MySQL">
                   <MySQLIcon />

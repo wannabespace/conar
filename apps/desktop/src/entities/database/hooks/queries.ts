@@ -1,12 +1,12 @@
-import type { ConnectionType } from '@connnect/shared/enums/connection-type'
-import type { Connection } from '~/lib/indexeddb'
+import type { DatabaseType } from '@connnect/shared/enums/database-type'
+import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { getSavedDatabaseSchema } from '~/routes/(protected)/_dashboard/database/-hooks/schema'
 
-export function databaseTablesQuery(connection: Connection, schema?: string) {
-  const _schema = schema ?? getSavedDatabaseSchema(connection.id)
+export function databaseTablesQuery(database: Database, schema?: string) {
+  const _schema = schema ?? getSavedDatabaseSchema(database.id)
 
-  const queryMap: Record<ConnectionType, (schema: string) => string> = {
+  const queryMap: Record<DatabaseType, (schema: string) => string> = {
     postgres: schema => `
       SELECT table_name
       FROM information_schema.tables
@@ -16,12 +16,12 @@ export function databaseTablesQuery(connection: Connection, schema?: string) {
   }
 
   return queryOptions({
-    queryKey: ['database', connection.id, _schema, 'tables'],
+    queryKey: ['database', database.id, _schema, 'tables'],
     queryFn: async () => {
       const response = await window.electron.databases.query({
-        type: connection.type,
-        connectionString: connection.connectionString,
-        query: queryMap[connection.type](_schema),
+        type: database.type,
+        connectionString: database.connectionString,
+        query: queryMap[database.type](_schema),
       }) as {
         table_name: string
       }[]
@@ -34,12 +34,12 @@ export function databaseTablesQuery(connection: Connection, schema?: string) {
   })
 }
 
-export function useDatabaseTables(connection: Connection, schema?: string) {
-  return useQuery(databaseTablesQuery(connection, schema))
+export function useDatabaseTables(database: Database, schema?: string) {
+  return useQuery(databaseTablesQuery(database, schema))
 }
 
-export function databaseColumnsQuery(connection: Connection, table: string) {
-  const queryMap: Record<ConnectionType, string> = {
+export function databaseColumnsQuery(database: Database, table: string) {
+  const queryMap: Record<DatabaseType, string> = {
     postgres: `
       SELECT
         column_name,
@@ -57,12 +57,12 @@ export function databaseColumnsQuery(connection: Connection, table: string) {
   }
 
   return queryOptions({
-    queryKey: ['database', connection.id, 'table', table, 'columns'],
+    queryKey: ['database', database.id, 'table', table, 'columns'],
     queryFn: async () => {
       const result = await window.electron.databases.query({
-        type: connection.type,
-        connectionString: connection.connectionString,
-        query: queryMap[connection.type],
+        type: database.type,
+        connectionString: database.connectionString,
+        query: queryMap[database.type],
       })
 
       return result as {
@@ -76,12 +76,12 @@ export function databaseColumnsQuery(connection: Connection, table: string) {
   })
 }
 
-export function useDatabaseColumns(connection: Connection, table: string) {
-  return useQuery(databaseColumnsQuery(connection, table))
+export function useDatabaseColumns(database: Database, table: string) {
+  return useQuery(databaseColumnsQuery(database, table))
 }
 
-export function databaseEnumsQuery(connection: Connection) {
-  const queryMap: Record<ConnectionType, string> = {
+export function databaseEnumsQuery(database: Database) {
+  const queryMap: Record<DatabaseType, string> = {
     postgres: `
       SELECT n.nspname AS enum_schema,
         t.typname AS enum_name,
@@ -94,12 +94,12 @@ export function databaseEnumsQuery(connection: Connection) {
   }
 
   return queryOptions({
-    queryKey: ['database', connection.id, 'enums'],
+    queryKey: ['database', database.id, 'enums'],
     queryFn: async () => {
       const response = await window.electron.databases.query({
-        type: connection.type,
-        connectionString: connection.connectionString,
-        query: queryMap[connection.type],
+        type: database.type,
+        connectionString: database.connectionString,
+        query: queryMap[database.type],
       })
 
       return response as {
@@ -111,19 +111,19 @@ export function databaseEnumsQuery(connection: Connection) {
   })
 }
 
-export function useDatabaseEnums(connection: Connection) {
-  return useQuery(databaseEnumsQuery(connection))
+export function useDatabaseEnums(database: Database) {
+  return useQuery(databaseEnumsQuery(database))
 }
 
-export function databaseRowsQuery(connection: Connection, table: string, query: { schema?: string, limit?: number }) {
-  const _schema = query.schema ?? getSavedDatabaseSchema(connection.id)
+export function databaseRowsQuery(database: Database, table: string, query: { schema?: string, limit?: number }) {
+  const _schema = query.schema ?? getSavedDatabaseSchema(database.id)
 
   return queryOptions({
-    queryKey: ['database', connection.id, 'schema', _schema, 'table', table, 'rows'],
+    queryKey: ['database', database.id, 'schema', _schema, 'table', table, 'rows'],
     queryFn: async () => {
       const response = await window.electron.databases.query({
-        type: connection.type,
-        connectionString: connection.connectionString,
+        type: database.type,
+        connectionString: database.connectionString,
         query: `SELECT * FROM "${_schema}"."${table}" LIMIT ${query.limit ?? 50}`,
       })
 
@@ -134,17 +134,17 @@ export function databaseRowsQuery(connection: Connection, table: string, query: 
   })
 }
 
-export function useDatabaseRows(connection: Connection, table: string, query: { schema?: string, limit?: number } = {}) {
-  return useQuery(databaseRowsQuery(connection, table, query))
+export function useDatabaseRows(database: Database, table: string, query: { schema?: string, limit?: number } = {}) {
+  return useQuery(databaseRowsQuery(database, table, query))
 }
 
-export function databaseSchemasQuery(connection: Connection) {
+export function databaseSchemasQuery(database: Database) {
   return queryOptions({
-    queryKey: ['database', connection.id, 'schemas'],
+    queryKey: ['database', database.id, 'schemas'],
     queryFn: async () => {
       const response = await window.electron.databases.query({
-        type: connection.type,
-        connectionString: connection.connectionString,
+        type: database.type,
+        connectionString: database.connectionString,
         query: 'SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT LIKE \'pg_temp%\' AND schema_name NOT LIKE \'pg_toast_temp%\' AND schema_name NOT LIKE \'temp%\' AND schema_name NOT IN (\'information_schema\', \'performance_schema\')',
       })
 
@@ -155,6 +155,6 @@ export function databaseSchemasQuery(connection: Connection) {
   })
 }
 
-export function useDatabaseSchemas(connection: Connection) {
-  return useQuery(databaseSchemasQuery(connection))
+export function useDatabaseSchemas(database: Database) {
+  return useQuery(databaseSchemasQuery(database))
 }

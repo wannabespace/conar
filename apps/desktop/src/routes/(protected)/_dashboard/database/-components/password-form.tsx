@@ -1,22 +1,22 @@
-import type { Connection } from '~/lib/indexeddb'
+import type { Database } from '~/lib/indexeddb'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { Input } from '@connnect/ui/components/input'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useMemo, useState } from 'react'
-import { useTestConnection, useUpdateConnectionPassword } from '~/entities/connection'
+import { useTestDatabase, useUpdateDatabasePassword } from '~/entities/database'
 
-export function PasswordForm({ connection }: { connection: Connection }) {
+export function PasswordForm({ database }: { database: Database }) {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const { mutate: savePassword, isPending } = useUpdateConnectionPassword(connection.id)
-  const { mutate: testConnection, isPending: isConnecting } = useTestConnection()
+  const { mutate: savePassword, isPending } = useUpdateDatabasePassword(database)
+  const { mutate: testConnection, isPending: isConnecting } = useTestDatabase()
 
   const newConnectionString = useMemo(() => {
-    const url = new URL(connection.connectionString)
+    const url = new URL(database.connectionString)
     url.password = password
     return url.toString()
-  }, [connection.connectionString, password])
+  }, [database.connectionString, password])
 
   return (
     <form
@@ -71,7 +71,7 @@ export function PasswordForm({ connection }: { connection: Connection }) {
               className="shrink-0"
               loading={isConnecting}
               disabled={isPending}
-              onClick={() => testConnection({ type: connection.type, connectionString: newConnectionString })}
+              onClick={() => testConnection({ type: database.type, connectionString: newConnectionString })}
             >
               Test connection
             </Button>

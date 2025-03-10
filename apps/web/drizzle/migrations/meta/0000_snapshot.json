@@ -1,5 +1,5 @@
 {
-  "id": "bb15b3f7-c8b1-4ba9-ab5a-ff3bdd3967d8",
+  "id": "43d6e50e-2ff8-4db9-92cd-55f9c68b81c7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -634,8 +634,8 @@
       "checkConstraints": {},
       "isRLSEnabled": true
     },
-    "public.connections": {
-      "name": "connections",
+    "public.databases": {
+      "name": "databases",
       "schema": "",
       "columns": {
         "id": {
@@ -666,7 +666,7 @@
         },
         "type": {
           "name": "type",
-          "type": "connection_type",
+          "type": "database_type",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
@@ -692,9 +692,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "connections_user_id_users_id_fk": {
-          "name": "connections_user_id_users_id_fk",
-          "tableFrom": "connections",
+        "databases_user_id_users_id_fk": {
+          "name": "databases_user_id_users_id_fk",
+          "tableFrom": "databases",
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
@@ -714,8 +714,8 @@
     }
   },
   "enums": {
-    "public.connection_type": {
-      "name": "connection_type",
+    "public.database_type": {
+      "name": "database_type",
       "schema": "public",
       "values": [
         "postgres"

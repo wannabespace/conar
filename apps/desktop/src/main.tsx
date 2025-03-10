@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query'
 import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
-import { connectionsQuery, fetchConnections } from './entities/connection'
+import { databasesQuery, fetchDatabases } from './entities/database'
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
 import { sleep } from './lib/helpers'
@@ -46,8 +46,8 @@ queryClient
   .ensureQueryData(sessionQuery())
   .then(async (session) => {
     if (session.data) {
-      await queryClient.prefetchQuery(connectionsQuery())
-      fetchConnections()
+      await queryClient.prefetchQuery(databasesQuery())
+      fetchDatabases()
     }
     preloader.classList.add('scale-[0.5]', 'opacity-0')
     // Waiting animation to smooth transition

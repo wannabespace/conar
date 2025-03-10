@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module'
 import { decrypt, encrypt } from '@connnect/shared/encryption'
-import { ConnectionType } from '@connnect/shared/enums/connection-type'
+import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { app, ipcMain } from 'electron'
 import { pgQuery, pgTestConnection } from './pg'
 
@@ -15,36 +15,33 @@ const encryption = {
   },
 }
 
-const connections = {
+const databases = {
   test: async ({
     type,
     connectionString,
   }: {
-    type: ConnectionType
+    type: DatabaseType
     connectionString: string
   }) => {
     const queryMap = {
-      [ConnectionType.Postgres]: pgTestConnection,
+      [DatabaseType.Postgres]: pgTestConnection,
     }
 
     return queryMap[type]({ connectionString })
   },
-}
-
-const databases = {
   query: async <T>({
     type,
     connectionString,
     query,
     values,
   }: {
-    type: ConnectionType
+    type: DatabaseType
     connectionString: string
     query: string
     values?: string[]
   }) => {
     const queryMap = {
-      [ConnectionType.Postgres]: pgQuery,
+      [DatabaseType.Postgres]: pgQuery,
     }
 
     return queryMap[type]({ connectionString, query, values }) as Promise<T[]>
@@ -65,7 +62,6 @@ const versions = {
 }
 
 export const electron = {
-  connections,
   databases,
   encryption,
   app: _app,

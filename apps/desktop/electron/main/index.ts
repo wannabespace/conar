@@ -88,7 +88,7 @@ autoUpdater.on('checking-for-update', () => {
 })
 autoUpdater.on('update-available', () => {
   autoUpdater.downloadUpdate()
-  sendUpdatesStatus('updating')
+  sendUpdatesStatus('downloading')
 })
 autoUpdater.on('update-not-available', () => {
   sendUpdatesStatus('no-updates')
@@ -97,7 +97,7 @@ autoUpdater.on('error', (e) => {
   sendUpdatesStatus('error', e.message)
 })
 autoUpdater.on('download-progress', () => {
-  sendUpdatesStatus('updating')
+  sendUpdatesStatus('downloading')
 })
 autoUpdater.on('update-downloaded', () => {
   sendUpdatesStatus('ready')

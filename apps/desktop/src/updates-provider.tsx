@@ -3,10 +3,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connn
 import { RiLoader4Line } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
-import { useAsyncEffect } from './hooks/use-async-effect'
 
-export type UpdatesStatus = 'no-updates' | 'checking' | 'updating' | 'ready' | 'error'
+export type UpdatesStatus = 'no-updates' | 'checking' | 'downloading' | 'ready' | 'error'
 
 const UpdatesContext = createContext<{
   status: UpdatesStatus
@@ -36,22 +34,15 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (import.meta.env.PROD) {
-      checkForUpdates()
-    }
+    if (import.meta.env.DEV)
+      return
+
+    checkForUpdates()
 
     const interval = setInterval(checkForUpdates, 1000 * 60 * 30)
 
     return () => clearInterval(interval)
   }, [])
-
-  useAsyncEffect(async () => {
-    if (status === 'updating') {
-      toast.info(
-        `Found new update. We will download it now but install it on relaunch.`,
-      )
-    }
-  }, [status])
 
   async function relaunch() {
     await window.electron.app.quitAndInstall()
@@ -96,7 +87,7 @@ export function UpdatesButton() {
           </Tooltip>
         </TooltipProvider>
       )}
-      {status === 'updating' && (
+      {status === 'downloading' && (
         <div className="flex items-center gap-2 opacity-50">
           <RiLoader4Line className="size-3 animate-spin" />
           <span className="text-xs">

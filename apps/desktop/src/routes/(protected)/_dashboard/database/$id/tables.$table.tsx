@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
-import { DataTable, useConnection, useDatabaseColumns, useDatabaseRows } from '~/entities/connection'
+import { DataTable, useDatabase, useDatabaseColumns, useDatabaseRows } from '~/entities/database'
 
 export const Route = createFileRoute(
   '/(protected)/_dashboard/database/$id/tables/$table',
@@ -12,9 +12,9 @@ export const Route = createFileRoute(
 function RouteComponent() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { id, table } = Route.useParams()
-  const { data: connection } = useConnection(id)
-  const { data: databaseColumns } = useDatabaseColumns(connection, table)
-  const { data: databaseRows, error } = useDatabaseRows(connection, table)
+  const { data: database } = useDatabase(id)
+  const { data: databaseColumns } = useDatabaseColumns(database, table)
+  const { data: databaseRows, error } = useDatabaseRows(database, table)
 
   if (error) {
     return <div>{error.message}</div>

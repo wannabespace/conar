@@ -1,13 +1,13 @@
 import type { SqlLanguage } from 'sql-formatter'
-import { ConnectionType } from '@connnect/shared/enums/connection-type'
+import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { format } from 'sql-formatter'
 
 export function formatSql(
   query: string,
-  type: ConnectionType,
+  type: DatabaseType,
 ) {
-  const langMap: Record<ConnectionType, SqlLanguage> = {
-    [ConnectionType.Postgres]: 'postgresql',
+  const langMap: Record<DatabaseType, SqlLanguage> = {
+    [DatabaseType.Postgres]: 'postgresql',
   }
 
   return format(query, {

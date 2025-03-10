@@ -9,7 +9,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { Monaco } from '~/components/monaco'
 import { PAGE_SCREEN_CLASS } from '~/constants'
-import { DataTable, useConnection } from '~/entities/connection'
+import { DataTable, useDatabase } from '~/entities/database'
 import { formatSql } from '~/lib/formatter'
 import { SqlGenerator } from './-components/sql-generator'
 
@@ -27,13 +27,13 @@ function RouteComponent() {
   })
   const parentRef = useRef<HTMLDivElement>(null)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
-  const { data: connection } = useConnection(id)
+  const { data: database } = useDatabase(id)
 
   const { mutate: sendQuery, data: result, isPending } = useMutation({
     mutationFn: async (queryParam?: string | void) => {
       const response = await window.electron.databases.query({
-        type: connection.type,
-        connectionString: connection.connectionString,
+        type: database.type,
+        connectionString: database.connectionString,
         query: queryParam ?? query,
       })
 
@@ -45,10 +45,7 @@ function RouteComponent() {
   })
 
   function format() {
-    if (!connection)
-      return
-
-    const formatted = formatSql(query, connection.type)
+    const formatted = formatSql(query, database.type)
 
     setQuery(formatted)
   }
@@ -68,7 +65,7 @@ function RouteComponent() {
         <CardContent className="space-y-4">
           <div className="flex gap-2 justify-between">
             <SqlGenerator
-              connection={connection}
+              database={database}
               query={query}
               setQuery={(value) => {
                 setQuery(value)

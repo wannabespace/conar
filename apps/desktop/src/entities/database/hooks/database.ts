@@ -1,30 +1,31 @@
 import type { Subscription } from 'dexie'
+import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { liveQuery } from 'dexie'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { indexedDb } from '~/lib/indexeddb'
 import { queryClient } from '~/main'
-import { updateConnectionPassword } from '../lib'
+import { updateDatabasePassword } from '../lib'
 
-export function connectionsQuery() {
+export function databasesQuery() {
   return queryOptions({
-    queryKey: ['connections'],
-    queryFn: () => indexedDb.connections.orderBy('createdAt').reverse().toArray(),
+    queryKey: ['databases'],
+    queryFn: () => indexedDb.databases.orderBy('createdAt').reverse().toArray(),
   })
 }
 
 let subscription: Subscription | null = null
 
-export function useConnections() {
-  const query = useQuery(connectionsQuery())
+export function useDatabases() {
+  const query = useQuery(databasesQuery())
 
   useEffect(() => {
     if (subscription)
       return
 
-    subscription = liveQuery(() => indexedDb.connections.toArray()).subscribe(() => {
-      queryClient.invalidateQueries({ queryKey: connectionsQuery().queryKey })
+    subscription = liveQuery(() => indexedDb.databases.toArray()).subscribe(() => {
+      queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
     })
 
     return () => {
@@ -36,17 +37,17 @@ export function useConnections() {
   return query
 }
 
-export function connectionQuery(id: string) {
+export function databaseQuery(id: string) {
   return queryOptions({
-    queryKey: ['connection', id],
+    queryKey: ['database', id],
     queryFn: async () => {
-      const connection = await indexedDb.connections.get(id)
+      const c = await indexedDb.databases.get(id)
 
-      if (!connection) {
+      if (!c) {
         throw new Error('Connection not found')
       }
 
-      return connection
+      return c
     },
     throwOnError: true,
   })
@@ -54,15 +55,15 @@ export function connectionQuery(id: string) {
 
 const subscriptions: Record<string, Subscription> = {}
 
-export function useConnection(id: string) {
-  const query = useSuspenseQuery(connectionQuery(id))
+export function useDatabase(id: string) {
+  const query = useSuspenseQuery(databaseQuery(id))
 
   useEffect(() => {
     if (subscriptions[id])
       return
 
-    subscriptions[id] = liveQuery(() => indexedDb.connections.get(id)).subscribe(() => {
-      queryClient.invalidateQueries({ queryKey: connectionQuery(id).queryKey })
+    subscriptions[id] = liveQuery(() => indexedDb.databases.get(id)).subscribe(() => {
+      queryClient.invalidateQueries({ queryKey: databaseQuery(id).queryKey })
     })
 
     return () => {
@@ -74,10 +75,10 @@ export function useConnection(id: string) {
   return query
 }
 
-export function useUpdateConnectionPassword(id: string) {
+export function useUpdateDatabasePassword(database: Database) {
   return useMutation({
     mutationFn: async (password: string) => {
-      await updateConnectionPassword(id, password)
+      await updateDatabasePassword(database.id, password)
     },
     onSuccess: () => {
       toast.success('Password successfully saved!')
@@ -85,14 +86,14 @@ export function useUpdateConnectionPassword(id: string) {
   })
 }
 
-export function useTestConnection() {
+export function useTestDatabase() {
   return useMutation({
-    mutationFn: window.electron.connections.test,
+    mutationFn: window.electron.databases.test,
     onError: (error) => {
       toast.error(error.message)
     },
     onSuccess: () => {
-      toast.success('Connection successful. You can now save the connection.')
+      toast.success('Connection successful. You can now save the database.')
     },
   })
 }
