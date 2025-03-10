@@ -1,6 +1,6 @@
 import { cn } from '@connnect/ui/lib/utils'
 
-function Card({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+function Card({ ref, className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       ref={ref}
@@ -14,7 +14,7 @@ function Card({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement>
 }
 Card.displayName = 'Card'
 
-function CardHeader({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+function CardHeader({ ref, className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       ref={ref}
@@ -25,7 +25,7 @@ function CardHeader({ ref, className, ...props }: React.HTMLAttributes<HTMLDivEl
 }
 CardHeader.displayName = 'CardHeader'
 
-function CardTitle({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+function CardTitle({ ref, className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       ref={ref}
@@ -36,7 +36,7 @@ function CardTitle({ ref, className, ...props }: React.HTMLAttributes<HTMLDivEle
 }
 CardTitle.displayName = 'CardTitle'
 
-function CardDescription({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+function CardDescription({ ref, className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       ref={ref}
@@ -47,12 +47,12 @@ function CardDescription({ ref, className, ...props }: React.HTMLAttributes<HTML
 }
 CardDescription.displayName = 'CardDescription'
 
-function CardContent({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+function CardContent({ ref, className, ...props }: React.ComponentProps<'div'>) {
   return <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
 }
 CardContent.displayName = 'CardContent'
 
-function CardFooter({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+function CardFooter({ ref, className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       ref={ref}

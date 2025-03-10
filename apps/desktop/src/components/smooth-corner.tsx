@@ -1,4 +1,3 @@
-import type { ReactNode, Ref } from 'react'
 import { useMeasure } from '@react-hookz/web'
 import { createElement, useMemo } from 'react'
 
@@ -61,14 +60,11 @@ export function SmoothCorner({
   roundness = iOSPreset.r1 / iOSPreset.r2,
   onClick,
   ref,
-}: {
+}: React.ComponentProps<'div'> & {
   tag?: string
-  children: ReactNode
   className?: string
   radius: number
   roundness?: number
-  onClick?: () => void
-  ref?: Ref<HTMLElement | null>
 }) {
   const [size, elementRef] = useMeasure<HTMLElement>()
   const options = useMemo(() => {
@@ -97,7 +93,7 @@ export function SmoothCorner({
     path ? { maskImage: `url("${path}")` } : { borderRadius: `${radius.toFixed()}px` }, [path, radius])
 
   return createElement(tag, {
-    ref: (e: HTMLElement) => {
+    ref: (e: HTMLDivElement) => {
       elementRef.current = e
       if (typeof ref === 'function')
         ref(e)

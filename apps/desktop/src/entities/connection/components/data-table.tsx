@@ -1,5 +1,5 @@
-import type { RefObject } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@connnect/ui/components/table'
+import { cn } from '@connnect/ui/lib/utils'
 import {
   createColumnHelper,
   flexRender,
@@ -7,6 +7,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { useRef } from 'react'
 
 interface DatabaseTableProps<T extends Record<string, unknown>> {
   data: T[]
@@ -14,11 +15,12 @@ interface DatabaseTableProps<T extends Record<string, unknown>> {
     name: string
     type?: string
   }[]
-  scrollRef: RefObject<HTMLDivElement | null>
+  className?: string
 }
 
-export function DataTable<T extends Record<string, unknown>>({ data, scrollRef, columns }: DatabaseTableProps<T>) {
+export function DataTable<T extends Record<string, unknown>>({ data, columns, className }: DatabaseTableProps<T>) {
   const columnHelper = createColumnHelper<T>()
+  const parentRef = useRef<HTMLDivElement>(null)
 
   const tableColumns = columns.map(column =>
     columnHelper.accessor(row => row[column.name], {
@@ -43,77 +45,79 @@ export function DataTable<T extends Record<string, unknown>>({ data, scrollRef, 
 
   const virtualizer = useVirtualizer({
     count: rows.length,
-    getScrollElement: () => scrollRef.current,
+    getScrollElement: () => parentRef.current,
     estimateSize: () => 37,
     overscan: 5,
   })
 
   return (
-    <div style={{ height: `${virtualizer.getTotalSize()}px` }}>
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map(headerGroup => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map(header => (
-                <TableHead
-                  key={header.id}
-                  colSpan={header.colSpan}
-                  style={{ width: header.getSize() }}
-                  className="font-mono text-xs"
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : (
-                        <div
-                          className={header.column.getCanSort()
-                            ? 'cursor-pointer select-none'
-                            : ''}
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                          {{
-                            asc: ' 🔼',
-                            desc: ' 🔽',
-                          }[header.column.getIsSorted() as string] ?? null}
-                        </div>
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {virtualizer.getVirtualItems().map((virtualRow, index) => {
-            const row = rows[virtualRow.index]
-            return (
-              <TableRow
-                key={row.id}
-                style={{
-                  height: `${virtualRow.size}px`,
-                  transform: `translateY(${
-                    virtualRow.start - index * virtualRow.size
-                  }px)`,
-                }}
-              >
-                {row.getVisibleCells().map(cell => (
-                  <TableCell
-                    key={cell.id}
-                    className="font-mono text-xs max-w-52 truncate"
+    <div className={cn('overflow-auto', className)}>
+      <div style={{ height: `${virtualizer.getTotalSize()}px` }}>
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map(headerGroup => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map(header => (
+                  <TableHead
+                    key={header.id}
+                    colSpan={header.colSpan}
+                    style={{ width: header.getSize() }}
+                    className="font-mono text-xs"
                   >
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext(),
-                    )}
-                  </TableCell>
+                    {header.isPlaceholder
+                      ? null
+                      : (
+                          <div
+                            className={header.column.getCanSort()
+                              ? 'cursor-pointer select-none'
+                              : ''}
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                            {{
+                              asc: ' 🔼',
+                              desc: ' 🔽',
+                            }[header.column.getIsSorted() as string] ?? null}
+                          </div>
+                        )}
+                  </TableHead>
                 ))}
               </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {virtualizer.getVirtualItems().map((virtualRow, index) => {
+              const row = rows[virtualRow.index]
+              return (
+                <TableRow
+                  key={row.id}
+                  style={{
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${
+                      virtualRow.start - index * virtualRow.size
+                    }px)`,
+                  }}
+                >
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell
+                      key={cell.id}
+                      className="font-mono text-xs max-w-52 truncate"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }

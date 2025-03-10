@@ -167,7 +167,7 @@ function FormControl({ ref, ...props }: React.ComponentPropsWithoutRef<typeof Sl
 }
 FormControl.displayName = 'FormControl'
 
-function FormDescription({ ref, className, ...props }: React.HTMLAttributes<HTMLParagraphElement> & { ref?: React.RefObject<HTMLParagraphElement> }) {
+function FormDescription({ ref, className, ...props }: React.ComponentProps<'p'>) {
   const { formDescriptionId } = useFormField()
 
   return (
@@ -181,7 +181,7 @@ function FormDescription({ ref, className, ...props }: React.HTMLAttributes<HTML
 }
 FormDescription.displayName = 'FormDescription'
 
-function FormMessage({ ref, className, children, ...props }: HTMLMotionProps<'p'> & { ref?: React.RefObject<HTMLParagraphElement> }) {
+function FormMessage({ ref, className, children, ...props }: HTMLMotionProps<'p'>) {
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message) : children
 

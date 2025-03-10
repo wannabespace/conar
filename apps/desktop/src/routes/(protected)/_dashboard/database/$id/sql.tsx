@@ -102,7 +102,12 @@ function RouteComponent() {
           {Array.isArray(result) && (
             <>
               {result.length > 0
-                ? <DataTable data={result} columns={columns} scrollRef={parentRef} />
+                ? (
+                    <DataTable
+                      data={result}
+                      columns={columns}
+                    />
+                  )
                 : (
                     <div className="p-4 text-sm text-muted-foreground">
                       No results

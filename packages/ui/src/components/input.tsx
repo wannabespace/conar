@@ -19,9 +19,7 @@ const inputVariants = cva(
   },
 )
 
-export interface InputProps extends Omit<React.ComponentProps<'input'>, 'size'>, VariantProps<typeof inputVariants> {
-  ref?: React.RefObject<HTMLInputElement> | React.RefCallback<HTMLInputElement>
-}
+export interface InputProps extends Omit<React.ComponentProps<'input'>, 'size'>, VariantProps<typeof inputVariants> {}
 
 function Input({ ref, className, type, size, ...props }: InputProps) {
   return (
