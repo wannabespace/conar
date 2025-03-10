@@ -29,7 +29,7 @@ export function DatabaseTree({ connection, schema }: { connection: Connection, s
           )}
           onMouseOver={() => debouncedPrefetchColumns(table.name)}
         >
-          <RiTableLine className="h-4 w-4 text-muted-foreground" />
+          <RiTableLine className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="truncate">{table.name}</span>
         </Link>
       ))}

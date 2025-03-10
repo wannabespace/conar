@@ -1,4 +1,5 @@
 import type { BrowserWindow } from 'electron'
+import path from 'node:path'
 import { app } from 'electron'
 
 const DEEPLINK_PROTOCOL = 'connnect'
@@ -6,7 +7,14 @@ const DEEPLINK_PROTOCOL = 'connnect'
 let deepLinkUrl: string | null = null
 let mainWindow: BrowserWindow | null = null
 
-// find tables with data
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL, process.execPath, [path.resolve(process.argv[1])])
+  }
+}
+else {
+  app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL)
+}
 
 function handle(url: string) {
   if (mainWindow === null) {
@@ -30,6 +38,33 @@ function handle(url: string) {
   mainWindow.webContents.send('deep-link', url)
 }
 
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  app.quit()
+}
+else {
+  app.on('second-instance', (_event, commandLine) => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized())
+        mainWindow.restore()
+
+      mainWindow.focus()
+
+      const deeplinkingUrl = commandLine.find(arg => arg.startsWith(`${DEEPLINK_PROTOCOL}://`))
+
+      if (deeplinkingUrl) {
+        handle(deeplinkingUrl)
+      }
+    }
+  })
+}
+
+app.on('open-url', (event, url) => {
+  event.preventDefault()
+  handle(url)
+})
+
 export function handleDeepLink(w: BrowserWindow) {
   mainWindow = w
 
@@ -39,48 +74,4 @@ export function handleDeepLink(w: BrowserWindow) {
       deepLinkUrl = null
     }
   })
-
-  // Handle deep linking for Windows/Linux
-  if (process.platform !== 'darwin') {
-    app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL)
-
-    const gotTheLock = app.requestSingleInstanceLock()
-
-    if (!gotTheLock) {
-      app.quit()
-    }
-    else {
-      app.on('second-instance', (_event, commandLine) => {
-        if (mainWindow) {
-          if (mainWindow.isMinimized())
-            mainWindow.restore()
-
-          mainWindow.focus()
-
-          // On Windows the deep link URL is passed as a command line argument
-          const deeplinkingUrl = commandLine.find(arg => arg.startsWith(`${DEEPLINK_PROTOCOL}://`))
-
-          if (deeplinkingUrl) {
-            handle(deeplinkingUrl)
-          }
-        }
-      })
-    }
-  }
-  // Handle deep linking for macOS
-  else {
-    app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL)
-
-    app.on('open-url', (_event, url) => {
-      if (url.startsWith(`${DEEPLINK_PROTOCOL}://`)) {
-        handle(url)
-      }
-    })
-  }
 }
-
-// Handle URLs when app is launched from URL click
-app.on('open-url', (event, url) => {
-  event.preventDefault()
-  handle(url)
-})
