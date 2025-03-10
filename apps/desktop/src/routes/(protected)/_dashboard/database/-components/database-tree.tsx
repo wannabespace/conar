@@ -25,7 +25,7 @@ export function DatabaseTree({ database, schema }: { database: Database, schema:
           params={{ id: database.id, table: table.name }}
           className={cn(
             'w-full flex items-center gap-2 py-1.5 text-sm text-foreground text-left',
-            tableParam === table.name && 'font-medium',
+            tableParam === table.name && 'font-bold',
           )}
           onMouseOver={() => debouncedPrefetchColumns(table.name)}
         >

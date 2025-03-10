@@ -25,7 +25,6 @@ function RouteComponent() {
     defaultValue: '',
     initializeWithValue: true,
   })
-  const parentRef = useRef<HTMLDivElement>(null)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const { data: database } = useDatabase(id)
 
@@ -39,9 +38,6 @@ function RouteComponent() {
 
       return response as Record<string, unknown>[]
     },
-    // onError() {
-    //   console.log('error')
-    // }
   })
 
   function format() {
@@ -58,7 +54,7 @@ function RouteComponent() {
 
   return (
     <Card>
-      <ScrollArea scrollRef={parentRef} className={PAGE_SCREEN_CLASS}>
+      <ScrollArea className={PAGE_SCREEN_CLASS}>
         <CardHeader>
           <CardTitle>SQL Runner</CardTitle>
         </CardHeader>
@@ -71,7 +67,6 @@ function RouteComponent() {
                 setQuery(value)
                 monacoRef.current?.setValue(value)
               }}
-              onSendQuery={sendQuery}
             />
             <Button
               variant="outline"
@@ -86,7 +81,7 @@ function RouteComponent() {
             initialValue={query}
             onChange={setQuery}
             onEnter={() => sendQuery()}
-            className="h-[300px] border border-border rounded-lg overflow-hidden"
+            className="h-[30vh] border border-border rounded-lg overflow-hidden"
           />
           <div className="flex gap-2 justify-end">
             <Button
@@ -97,21 +92,18 @@ function RouteComponent() {
             </Button>
           </div>
           {Array.isArray(result) && (
-            <>
-              {result.length > 0
-                ? (
-                    <DataTable
-                      data={result}
-                      columns={columns}
-                      scrollRef={parentRef}
-                    />
-                  )
-                : (
-                    <div className="p-4 text-sm text-muted-foreground">
-                      No results
-                    </div>
-                  )}
-            </>
+            <DataTable
+              className="h-[40vh]"
+              data={result}
+              columns={columns}
+            />
+          )}
+          {!result && (
+            <div className="h-[40vh] flex items-center justify-center">
+              <p className="text-muted-foreground">
+                No results
+              </p>
+            </div>
           )}
         </CardContent>
       </ScrollArea>

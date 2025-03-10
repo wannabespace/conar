@@ -5,8 +5,7 @@ import { RiSendPlaneLine, RiSparklingLine, RiStopLargeLine } from '@remixicon/re
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { DANGEROUS_SQL_KEYWORDS } from '~/constants'
-import { databaseEnumsQuery, databaseTablesQuery } from '~/entities/database'
+import { databaseColumnsQuery, databaseEnumsQuery, databaseTablesQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { trpc } from '~/trpc'
 
@@ -14,12 +13,11 @@ interface SqlGeneratorProps {
   database: Database
   query: string
   setQuery: (query: string) => void
-  onSendQuery: (query: string) => void
 }
 
 let abortController: AbortController | null = null
 
-export function SqlGenerator({ database, query, setQuery, onSendQuery }: SqlGeneratorProps) {
+export function SqlGenerator({ database, query, setQuery }: SqlGeneratorProps) {
   const [sqlPrompt, setSqlPrompt] = useState('')
 
   const { mutate: generateSql, isPending: isGeneratingSql } = useMutation({
@@ -27,8 +25,10 @@ export function SqlGenerator({ database, query, setQuery, onSendQuery }: SqlGene
       abortController?.abort()
       abortController = new AbortController()
 
-      const [tables, enums] = await Promise.all([
-        queryClient.ensureQueryData(databaseTablesQuery(database)) || [],
+      const tables = await queryClient.ensureQueryData(databaseTablesQuery(database))
+
+      const [columns, enums] = await Promise.all([
+        Promise.all(tables.map(t => queryClient.ensureQueryData(databaseColumnsQuery(database, t.name)))),
         queryClient.ensureQueryData(databaseEnumsQuery(database)) || [],
       ])
 
@@ -38,6 +38,7 @@ export function SqlGenerator({ database, query, setQuery, onSendQuery }: SqlGene
         context: `
           Current query: ${query}
           Tables: ${JSON.stringify(tables.map(t => t.name))}
+          Columns: ${JSON.stringify(columns.flat())}
           Enums: ${JSON.stringify(enums)}
         `.trim(),
       }, { signal: abortController.signal })
@@ -51,16 +52,6 @@ export function SqlGenerator({ database, query, setQuery, onSendQuery }: SqlGene
       if (status === 'overloaded') {
         toast.info('The main AI model is overloaded, used a fallback model.', { duration: 5000 })
       }
-
-      if (DANGEROUS_SQL_KEYWORDS.some((keyword) => {
-        const regex = new RegExp(`\\b${keyword}\\b`, 'i')
-        return regex.test(text)
-      })) {
-        toast.info('The AI generated a SQL query with a dangerous keyword. Review the query before running it.')
-        return
-      }
-
-      onSendQuery(text)
     },
   })
 

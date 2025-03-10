@@ -24,7 +24,6 @@ import { Route as publicAuthTwoFactorSetupImport } from './routes/(public)/_auth
 import { Route as protectedDashboardDatabaseIdImport } from './routes/(protected)/_dashboard/database/$id'
 import { Route as protectedDashboardDatabaseIdSqlImport } from './routes/(protected)/_dashboard/database/$id/sql'
 import { Route as protectedDashboardDatabaseIdTablesTableImport } from './routes/(protected)/_dashboard/database/$id/tables.$table'
-import { Route as protectedDashboardDatabaseIdTablesTableColumnsImport } from './routes/(protected)/_dashboard/database/$id/tables.$table.columns'
 
 // Create Virtual Routes
 
@@ -108,13 +107,6 @@ const protectedDashboardDatabaseIdTablesTableRoute =
     id: '/tables/$table',
     path: '/tables/$table',
     getParentRoute: () => protectedDashboardDatabaseIdRoute,
-  } as any)
-
-const protectedDashboardDatabaseIdTablesTableColumnsRoute =
-  protectedDashboardDatabaseIdTablesTableColumnsImport.update({
-    id: '/columns',
-    path: '/columns',
-    getParentRoute: () => protectedDashboardDatabaseIdTablesTableRoute,
   } as any)
 
 // Populate the FileRoutesByPath interface
@@ -212,43 +204,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof protectedDashboardDatabaseIdTablesTableImport
       parentRoute: typeof protectedDashboardDatabaseIdImport
     }
-    '/(protected)/_dashboard/database/$id/tables/$table/columns': {
-      id: '/(protected)/_dashboard/database/$id/tables/$table/columns'
-      path: '/columns'
-      fullPath: '/database/$id/tables/$table/columns'
-      preLoaderRoute: typeof protectedDashboardDatabaseIdTablesTableColumnsImport
-      parentRoute: typeof protectedDashboardDatabaseIdTablesTableImport
-    }
   }
 }
 
 // Create and export the route tree
 
-interface protectedDashboardDatabaseIdTablesTableRouteChildren {
-  protectedDashboardDatabaseIdTablesTableColumnsRoute: typeof protectedDashboardDatabaseIdTablesTableColumnsRoute
-}
-
-const protectedDashboardDatabaseIdTablesTableRouteChildren: protectedDashboardDatabaseIdTablesTableRouteChildren =
-  {
-    protectedDashboardDatabaseIdTablesTableColumnsRoute:
-      protectedDashboardDatabaseIdTablesTableColumnsRoute,
-  }
-
-const protectedDashboardDatabaseIdTablesTableRouteWithChildren =
-  protectedDashboardDatabaseIdTablesTableRoute._addFileChildren(
-    protectedDashboardDatabaseIdTablesTableRouteChildren,
-  )
-
 interface protectedDashboardDatabaseIdRouteChildren {
   protectedDashboardDatabaseIdSqlRoute: typeof protectedDashboardDatabaseIdSqlRoute
-  protectedDashboardDatabaseIdTablesTableRoute: typeof protectedDashboardDatabaseIdTablesTableRouteWithChildren
+  protectedDashboardDatabaseIdTablesTableRoute: typeof protectedDashboardDatabaseIdTablesTableRoute
 }
 
 const protectedDashboardDatabaseIdRouteChildren: protectedDashboardDatabaseIdRouteChildren =
   {
     protectedDashboardDatabaseIdSqlRoute: protectedDashboardDatabaseIdSqlRoute,
     protectedDashboardDatabaseIdTablesTableRoute:
-      protectedDashboardDatabaseIdTablesTableRouteWithChildren,
+      protectedDashboardDatabaseIdTablesTableRoute,
   }
 
 const protectedDashboardDatabaseIdRouteWithChildren =
@@ -331,8 +301,7 @@ export interface FileRoutesByFullPath {
   '/database/$id': typeof protectedDashboardDatabaseIdRouteWithChildren
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/database/$id/sql': typeof protectedDashboardDatabaseIdSqlRoute
-  '/database/$id/tables/$table': typeof protectedDashboardDatabaseIdTablesTableRouteWithChildren
-  '/database/$id/tables/$table/columns': typeof protectedDashboardDatabaseIdTablesTableColumnsRoute
+  '/database/$id/tables/$table': typeof protectedDashboardDatabaseIdTablesTableRoute
 }
 
 export interface FileRoutesByTo {
@@ -344,8 +313,7 @@ export interface FileRoutesByTo {
   '/database/$id': typeof protectedDashboardDatabaseIdRouteWithChildren
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/database/$id/sql': typeof protectedDashboardDatabaseIdSqlRoute
-  '/database/$id/tables/$table': typeof protectedDashboardDatabaseIdTablesTableRouteWithChildren
-  '/database/$id/tables/$table/columns': typeof protectedDashboardDatabaseIdTablesTableColumnsRoute
+  '/database/$id/tables/$table': typeof protectedDashboardDatabaseIdTablesTableRoute
 }
 
 export interface FileRoutesById {
@@ -362,8 +330,7 @@ export interface FileRoutesById {
   '/(protected)/_dashboard/database/$id': typeof protectedDashboardDatabaseIdRouteWithChildren
   '/(public)/_auth/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/(protected)/_dashboard/database/$id/sql': typeof protectedDashboardDatabaseIdSqlRoute
-  '/(protected)/_dashboard/database/$id/tables/$table': typeof protectedDashboardDatabaseIdTablesTableRouteWithChildren
-  '/(protected)/_dashboard/database/$id/tables/$table/columns': typeof protectedDashboardDatabaseIdTablesTableColumnsRoute
+  '/(protected)/_dashboard/database/$id/tables/$table': typeof protectedDashboardDatabaseIdTablesTableRoute
 }
 
 export interface FileRouteTypes {
@@ -378,7 +345,6 @@ export interface FileRouteTypes {
     | '/two-factor/setup'
     | '/database/$id/sql'
     | '/database/$id/tables/$table'
-    | '/database/$id/tables/$table/columns'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -390,7 +356,6 @@ export interface FileRouteTypes {
     | '/two-factor/setup'
     | '/database/$id/sql'
     | '/database/$id/tables/$table'
-    | '/database/$id/tables/$table/columns'
   id:
     | '__root__'
     | '/(protected)'
@@ -406,7 +371,6 @@ export interface FileRouteTypes {
     | '/(public)/_auth/two-factor/setup'
     | '/(protected)/_dashboard/database/$id/sql'
     | '/(protected)/_dashboard/database/$id/tables/$table'
-    | '/(protected)/_dashboard/database/$id/tables/$table/columns'
   fileRoutesById: FileRoutesById
 }
 
@@ -505,14 +469,7 @@ export const routeTree = rootRoute
     },
     "/(protected)/_dashboard/database/$id/tables/$table": {
       "filePath": "(protected)/_dashboard/database/$id/tables.$table.tsx",
-      "parent": "/(protected)/_dashboard/database/$id",
-      "children": [
-        "/(protected)/_dashboard/database/$id/tables/$table/columns"
-      ]
-    },
-    "/(protected)/_dashboard/database/$id/tables/$table/columns": {
-      "filePath": "(protected)/_dashboard/database/$id/tables.$table.columns.tsx",
-      "parent": "/(protected)/_dashboard/database/$id/tables/$table"
+      "parent": "/(protected)/_dashboard/database/$id"
     }
   }
 }
