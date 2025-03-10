@@ -29,6 +29,7 @@ function handle(url: string) {
 
 export function handleDeepLink(w: BrowserWindow) {
   mainWindow = w
+
   w.webContents.on('did-finish-load', () => {
     if (deepLinkUrl) {
       handle(deepLinkUrl)
@@ -36,10 +37,10 @@ export function handleDeepLink(w: BrowserWindow) {
     }
   })
 
-  app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL)
+  // Handle deep linking for Windows/Linux
+  if (process.platform !== 'darwin') {
+    app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL)
 
-  // Handle deep linking on Windows
-  if (process.platform === 'win32') {
     const gotTheLock = app.requestSingleInstanceLock()
 
     if (!gotTheLock) {
@@ -50,28 +51,32 @@ export function handleDeepLink(w: BrowserWindow) {
         if (mainWindow) {
           if (mainWindow.isMinimized())
             mainWindow.restore()
+
           mainWindow.focus()
 
-          // Protocol handler for windows
+          // On Windows the deep link URL is passed as a command line argument
           const deeplinkingUrl = commandLine.find(arg => arg.startsWith(`${DEEPLINK_PROTOCOL}://`))
+
           if (deeplinkingUrl) {
-            mainWindow.webContents.send('deep-link', deeplinkingUrl)
+            handle(deeplinkingUrl)
           }
         }
       })
     }
   }
+  // Handle deep linking for macOS
+  else {
+    app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL)
 
-  // Handle deep linking on Linux
-  if (process.platform === 'linux') {
     app.on('open-url', (_event, url) => {
-      if (mainWindow && url.startsWith(`${DEEPLINK_PROTOCOL}://`)) {
-        mainWindow.webContents.send('deep-link', url)
+      if (url.startsWith(`${DEEPLINK_PROTOCOL}://`)) {
+        handle(url)
       }
     })
   }
 }
 
+// Handle URLs when app is launched from URL click
 app.on('open-url', (event, url) => {
   event.preventDefault()
   handle(url)
