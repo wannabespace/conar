@@ -4,7 +4,11 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { bearer, organization, twoFactor } from 'better-auth/plugins'
 import { db } from '~/drizzle'
 import { env } from '~/env'
+import { createLogger } from './logger'
+import { loops } from './loops'
 import 'server-only'
+
+const logger = createLogger('auth')
 
 export const auth = betterAuth({
   appName: 'Connnect',
@@ -36,7 +40,26 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: process.env.NODE_ENV === 'production' ? ['tauri://localhost'] : ['http://localhost:3100'],
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          try {
+            await loops.updateContact(user.email, {
+              name: user.name,
+            })
+          }
+          catch (error) {
+            if (error instanceof Error) {
+              logger.error('Failed to update loops contact', error.message)
+            }
+            throw error
+          }
+        },
+      },
+    },
+  },
+  trustedOrigins: process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3100'],
   advanced: {
     generateId: false,
     cookiePrefix: 'connnect',

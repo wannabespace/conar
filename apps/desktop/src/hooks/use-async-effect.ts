@@ -1,30 +1,24 @@
-import { useEffect } from 'react'
-
-// eslint-disable-next-line ts/no-explicit-any
-let destroy: any
-// eslint-disable-next-line ts/no-explicit-any
-let promise: any
+import type { DependencyList } from 'react'
+import { useEffect, useState } from 'react'
 
 export function useAsyncEffect(
   effect: () => Promise<void | (() => Promise<void> | void)>,
-  deps: React.DependencyList,
+  deps?: DependencyList,
 ) {
-  useEffect(() => {
-    if (promise)
-      return
+  const [destroy, setDestroy] = useState<void | (() => Promise<void> | void) | undefined>(undefined)
 
-    Promise.resolve(effect()).then((res) => {
-      promise = undefined
-      destroy = res
-    })
+  useEffect(() => {
+    const e = effect()
+
+    async function execute() {
+      setDestroy(await e)
+    }
+
+    execute()
 
     return () => {
-      promise = undefined
-
       if (typeof destroy === 'function')
         destroy()
-
-      destroy = undefined
     }
   }, deps)
 }

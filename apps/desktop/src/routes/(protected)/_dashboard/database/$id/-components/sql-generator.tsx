@@ -1,7 +1,7 @@
 import type { Connection } from '~/lib/indexeddb'
 import { Button } from '@connnect/ui/components/button'
 import { Input } from '@connnect/ui/components/input'
-import { RiSendPlaneLine, RiSparklingLine, RiStopLine } from '@remixicon/react'
+import { RiSendPlaneLine, RiSparklingLine, RiStopLargeLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -98,7 +98,7 @@ export function SqlGenerator({ connection, query, setQuery, onSendQuery }: SqlGe
           className="shrink-0"
           onClick={() => abortController?.abort()}
         >
-          <RiStopLine />
+          <RiStopLargeLine />
         </Button>
       )}
     </form>

@@ -255,6 +255,9 @@ importers:
       drizzle-orm:
         specifier: ^0.40.0
         version: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(gel@2.0.0)(kysely@0.27.5)(pg@8.13.3)(postgres@3.4.5)
+      loops:
+        specifier: ^4.0.0
+        version: 4.0.0
       lucide-react:
         specifier: ^0.479.0
         version: 0.479.0(react@19.0.0)
@@ -4639,6 +4642,10 @@ packages:
 
   longest-streak@3.1.0:
     resolution: {integrity: sha512-9Ri+o0JYgehTaVBBDoMqIl8GXtbWg711O3srftcHhZ0dqnETqLaoIK0x17fUw9rFSlK/0NlsKe0Ahhyl5pXE2g==}
+
+  loops@4.0.0:
+    resolution: {integrity: sha512-fLcdqtkAohpOGaYYnzdxs2eswG5wvfFMLn62csz/l8WOu3WznbvVC2Cvdx8kVVU38GQ+RxPXAt43uqY0hWvHSA==}
+    engines: {node: '>=18'}
 
   loupe@3.1.3:
     resolution: {integrity: sha512-kkIp7XSkP78ZxJEsSxW3712C6teJVoeHHwgo9zJ380de7IYyJ2ISlxojcH2pC5OFLewESmnRi/+XCDIEEVyoug==}
@@ -10855,6 +10862,8 @@ snapshots:
       is-unicode-supported: 0.1.0
 
   longest-streak@3.1.0: {}
+
+  loops@4.0.0: {}
 
   loupe@3.1.3: {}
 

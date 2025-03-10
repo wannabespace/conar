@@ -6,6 +6,8 @@ const DEEPLINK_PROTOCOL = 'connnect'
 let deepLinkUrl: string | null = null
 let mainWindow: BrowserWindow | null = null
 
+// find tables with data
+
 function handle(url: string) {
   if (mainWindow === null) {
     deepLinkUrl = url
@@ -17,6 +19,7 @@ function handle(url: string) {
   }
   mainWindow.focus()
 
+  // Show the app on macOS
   if (process.platform === 'darwin') {
     app.dock.show()
     mainWindow.setAlwaysOnTop(true)

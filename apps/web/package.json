@@ -34,6 +34,7 @@
     "better-auth-harmony": "^1.2.3",
     "consola": "^3.4.0",
     "drizzle-orm": "^0.40.0",
+    "loops": "^4.0.0",
     "lucide-react": "^0.479.0",
     "motion": "^12.4.10",
     "nanoid": "^5.1.3",
