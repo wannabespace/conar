@@ -51,6 +51,7 @@
     "target": [
       "AppImage"
     ],
+    "mimeTypes": ["x-scheme-handler/connnect"],
     "artifactName": "${productName}-Linux-${version}.${ext}"
   }
 }

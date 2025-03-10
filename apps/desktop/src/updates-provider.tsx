@@ -1,9 +1,7 @@
 import { Button } from '@connnect/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { useLocalStorageValue } from '@react-hookz/web'
 import { RiLoader4Line } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import dayjs from 'dayjs'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { useAsyncEffect } from './hooks/use-async-effect'
@@ -14,6 +12,7 @@ const UpdatesContext = createContext<{
   status: UpdatesStatus
   message?: string
   relaunch: () => Promise<void>
+  checkForUpdates: () => Promise<void>
 }>(null!)
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -22,7 +21,12 @@ export const useUpdates = () => use(UpdatesContext)
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<UpdatesStatus>('no-updates')
   const [message, setMessage] = useState<string | undefined>(undefined)
-  const { value: lastCheck, set: setLastCheck } = useLocalStorageValue<string | undefined>('last-update-check')
+
+  async function checkForUpdates() {
+    if (import.meta.env.PROD) {
+      await window.electron.app.checkForUpdates()
+    }
+  }
 
   useEffect(() => {
     window.electron.app.onUpdatesStatus(({ status, message }) => {
@@ -32,14 +36,11 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (!lastCheck || dayjs().diff(dayjs(lastCheck), 'minutes') > 30) {
-        if (import.meta.env.PROD) {
-          window.electron.app.checkForUpdates()
-        }
-        setLastCheck(dayjs().toISOString())
-      }
-    }, 1000)
+    if (import.meta.env.PROD) {
+      checkForUpdates()
+    }
+
+    const interval = setInterval(checkForUpdates, 1000 * 60 * 30)
 
     return () => clearInterval(interval)
   }, [])
@@ -56,7 +57,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     await window.electron.app.quitAndInstall()
   }
 
-  const value = useMemo(() => ({ status, message, relaunch }), [status, message])
+  const value = useMemo(() => ({ status, message, checkForUpdates, relaunch }), [status, message])
 
   return (
     <UpdatesContext value={value}>
@@ -66,7 +67,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function UpdatesButton() {
-  const { status, relaunch, message } = useUpdates()
+  const { status, checkForUpdates, relaunch, message } = useUpdates()
   const { data: version } = useQuery({
     queryKey: ['version'],
     queryFn: () => window.electron.versions.app(),
@@ -82,7 +83,7 @@ export function UpdatesButton() {
                 type="button"
                 className="flex items-center gap-2 text-xs opacity-50 cursor-pointer"
                 disabled={status === 'checking'}
-                onClick={() => window.electron.app.checkForUpdates()}
+                onClick={() => checkForUpdates()}
               >
                 {status === 'checking' && <RiLoader4Line className="size-3 animate-spin" />}
                 v

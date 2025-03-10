@@ -34,7 +34,7 @@ export function UserButton() {
         <div className="flex items-center gap-2 h-10 px-2 mt-1 mb-2">
           <Avatar className="size-6">
             {data?.user.image && <AvatarImage src={data?.user.image} />}
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarFallback className="text-xs">CN</AvatarFallback>
           </Avatar>
           <div className="flex flex-col leading-0">
             <span className="text-sm font-medium">
