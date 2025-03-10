@@ -32,7 +32,6 @@ export const auth = betterAuth({
     additionalFields: {
       secret: {
         type: 'string',
-        required: true,
         input: false,
       },
     },
