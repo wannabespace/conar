@@ -17,15 +17,15 @@ export function DatabaseTree({ connection, schema }: { connection: Connection, s
   )
 
   return (
-    <div className="space-y-1">
+    <div>
       {tables?.map(table => (
         <Link
           key={table.name}
           to="/database/$id/tables/$table"
           params={{ id: connection.id, table: table.name }}
           className={cn(
-            'w-full flex items-center gap-2 px-3 py-1.5 text-sm text-foreground hover:bg-accent text-left',
-            tableParam === table.name && 'bg-muted',
+            'w-full flex items-center gap-2 py-1.5 text-sm text-foreground text-left',
+            tableParam === table.name && 'font-medium',
           )}
           onMouseOver={() => debouncedPrefetchColumns(table.name)}
         >

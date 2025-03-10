@@ -31,13 +31,17 @@ function RouteComponent() {
       <ResizablePanel defaultSize={20} minSize={10}>
         <Card className="h-full">
           <ScrollArea>
-            <Button variant="outline" onClick={() => router.navigate({ to: '/database/$id/sql', params: { id } })}>
-              Run SQL
-              <RiDatabase2Line />
-            </Button>
             <div className="p-3">
+              <Button
+                variant="outline"
+                className="w-full mb-4"
+                onClick={() => router.navigate({ to: '/database/$id/sql', params: { id } })}
+              >
+                Run SQL
+                <RiDatabase2Line />
+              </Button>
               <Select value={schema} onValueChange={setSchema}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full mb-4">
                   <SelectValue placeholder="Select schema" />
                 </SelectTrigger>
                 <SelectContent>
@@ -48,12 +52,12 @@ function RouteComponent() {
                   ))}
                 </SelectContent>
               </Select>
+              <DatabaseTree connection={connection} schema={schema} />
             </div>
-            <DatabaseTree connection={connection} schema={schema} />
           </ScrollArea>
         </Card>
       </ResizablePanel>
-      <ResizableHandle className="w-1 mx-0.5" />
+      <ResizableHandle className="w-1" />
       <ResizablePanel defaultSize={80} minSize={50} maxSize={80}>
         <Outlet />
       </ResizablePanel>

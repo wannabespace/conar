@@ -2,7 +2,7 @@ import { useLocalStorageValue } from '@react-hookz/web'
 
 const DATABASES_SCHEMAS_KEY = 'databases-schemas'
 
-export function getDatabaseSchema(id: string) {
+export function getSavedDatabaseSchema(id: string) {
   const value = localStorage.getItem(DATABASES_SCHEMAS_KEY)
 
   if (!value)

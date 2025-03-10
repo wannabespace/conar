@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@connnect/ui/components/table'
 import {
   createColumnHelper,
@@ -13,10 +14,10 @@ interface DatabaseTableProps<T extends Record<string, unknown>> {
     name: string
     type?: string
   }[]
-  scrollRef: React.RefObject<Element | null>
+  scrollRef: RefObject<HTMLDivElement | null>
 }
 
-export function DataTable<T extends Record<string, unknown>>({ data, columns, scrollRef }: DatabaseTableProps<T>) {
+export function DataTable<T extends Record<string, unknown>>({ data, scrollRef, columns }: DatabaseTableProps<T>) {
   const columnHelper = createColumnHelper<T>()
 
   const tableColumns = columns.map(column =>
@@ -58,7 +59,7 @@ export function DataTable<T extends Record<string, unknown>>({ data, columns, sc
                   key={header.id}
                   colSpan={header.colSpan}
                   style={{ width: header.getSize() }}
-                  className="font-mono"
+                  className="font-mono text-xs"
                 >
                   {header.isPlaceholder
                     ? null
@@ -100,7 +101,7 @@ export function DataTable<T extends Record<string, unknown>>({ data, columns, sc
                 {row.getVisibleCells().map(cell => (
                   <TableCell
                     key={cell.id}
-                    className="font-mono"
+                    className="font-mono text-xs max-w-52 truncate"
                   >
                     {flexRender(
                       cell.column.columnDef.cell,

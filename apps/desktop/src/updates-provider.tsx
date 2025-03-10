@@ -82,17 +82,18 @@ export function UpdatesButton() {
 
   return (
     <>
-      {status === 'no-updates' && (
-        <span className="text-xs opacity-50">
+      {(status === 'no-updates' || status === 'checking') && (
+        <span className="flex items-center gap-2 text-xs opacity-50">
+          {status === 'checking' && <RiLoader4Line className="size-3 animate-spin" />}
           v
           {version}
         </span>
       )}
-      {(status === 'checking' || status === 'updating') && (
+      {status === 'updating' && (
         <div className="flex items-center gap-2 opacity-50">
           <RiLoader4Line className="size-3 animate-spin" />
           <span className="text-xs">
-            {status === 'checking' ? 'Checking for updates...' : 'Downloading update...'}
+            Downloading update...
           </span>
         </div>
       )}

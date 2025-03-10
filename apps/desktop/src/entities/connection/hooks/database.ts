@@ -1,9 +1,11 @@
 import type { ConnectionType } from '@connnect/shared/enums/connection-type'
 import type { Connection } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { getDatabaseSchema } from '~/routes/(protected)/_dashboard/database/-hooks/schema'
+import { getSavedDatabaseSchema } from '~/routes/(protected)/_dashboard/database/-hooks/schema'
 
 export function databaseTablesQuery(connection: Connection, schema?: string) {
+  const _schema = schema ?? getSavedDatabaseSchema(connection.id)
+
   const queryMap: Record<ConnectionType, (schema: string) => string> = {
     postgres: schema => `
       SELECT table_name
@@ -14,10 +16,8 @@ export function databaseTablesQuery(connection: Connection, schema?: string) {
   }
 
   return queryOptions({
-    queryKey: ['database', connection.id, schema, 'tables'],
+    queryKey: ['database', connection.id, _schema, 'tables'],
     queryFn: async () => {
-      const _schema = schema ?? getDatabaseSchema(connection.id)
-
       const response = await window.electron.databases.query({
         type: connection.type,
         connectionString: connection.connectionString,
@@ -115,8 +115,8 @@ export function useDatabaseEnums(connection: Connection) {
   return useQuery(databaseEnumsQuery(connection))
 }
 
-export function databaseRowsQuery(connection: Connection, table: string, schema?: string) {
-  const _schema = schema ?? getDatabaseSchema(connection.id)
+export function databaseRowsQuery(connection: Connection, table: string, query: { schema?: string, limit?: number }) {
+  const _schema = query.schema ?? getSavedDatabaseSchema(connection.id)
 
   return queryOptions({
     queryKey: ['database', connection.id, 'schema', _schema, 'table', table, 'rows'],
@@ -124,7 +124,7 @@ export function databaseRowsQuery(connection: Connection, table: string, schema?
       const response = await window.electron.databases.query({
         type: connection.type,
         connectionString: connection.connectionString,
-        query: `SELECT * FROM "${_schema}"."${table}"`,
+        query: `SELECT * FROM "${_schema}"."${table}" LIMIT ${query.limit ?? 50}`,
       })
 
       return response as {
@@ -134,8 +134,8 @@ export function databaseRowsQuery(connection: Connection, table: string, schema?
   })
 }
 
-export function useDatabaseRows(connection: Connection, table: string, schema?: string) {
-  return useQuery(databaseRowsQuery(connection, table, schema))
+export function useDatabaseRows(connection: Connection, table: string, query: { schema?: string, limit?: number } = {}) {
+  return useQuery(databaseRowsQuery(connection, table, query))
 }
 
 export function databaseSchemasQuery(connection: Connection) {

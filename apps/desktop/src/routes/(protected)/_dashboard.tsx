@@ -27,7 +27,7 @@ function LayoutComponent() {
     >
       <Navbar />
       <motion.div
-        className="flex pb-2 flex-1 px-3"
+        className="flex flex-1 px-3"
         initial={{ opacity: 0, scale: 1.1 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
