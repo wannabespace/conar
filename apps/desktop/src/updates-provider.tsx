@@ -31,21 +31,13 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
-  useAsyncEffect(async () => {
-    const currentAppVersion = await window.electron.versions.app()
+  useEffect(() => {
     const interval = setInterval(() => {
-      const checkedAppVersion = lastCheck?.split('/')[0]
-      const lastCheckDate = lastCheck?.split('/')[1]
-
-      if (checkedAppVersion && currentAppVersion !== checkedAppVersion) {
-        setLastCheck(undefined)
-      }
-
-      if (!lastCheckDate || dayjs().diff(dayjs(lastCheckDate), 'minutes') > 30) {
+      if (!lastCheck || dayjs().diff(dayjs(lastCheck), 'minutes') > 30) {
         if (import.meta.env.PROD) {
           window.electron.app.checkForUpdates()
         }
-        setLastCheck(`${currentAppVersion}/${dayjs().toISOString()}`)
+        setLastCheck(dayjs().toISOString())
       }
     }, 1000)
 
@@ -83,11 +75,25 @@ export function UpdatesButton() {
   return (
     <>
       {(status === 'no-updates' || status === 'checking') && (
-        <span className="flex items-center gap-2 text-xs opacity-50">
-          {status === 'checking' && <RiLoader4Line className="size-3 animate-spin" />}
-          v
-          {version}
-        </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger disabled={status === 'checking'} asChild>
+              <button
+                type="button"
+                className="flex items-center gap-2 text-xs opacity-50 cursor-pointer"
+                disabled={status === 'checking'}
+                onClick={() => window.electron.app.checkForUpdates()}
+              >
+                {status === 'checking' && <RiLoader4Line className="size-3 animate-spin" />}
+                v
+                {version}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Click to check for updates
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
       {status === 'updating' && (
         <div className="flex items-center gap-2 opacity-50">
