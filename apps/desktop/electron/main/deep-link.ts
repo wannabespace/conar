@@ -51,7 +51,7 @@ else {
 
       mainWindow.focus()
 
-      const deeplinkingUrl = commandLine.find(arg => arg.startsWith(`${DEEPLINK_PROTOCOL}://`))
+      const deeplinkingUrl = commandLine.pop()
 
       if (deeplinkingUrl) {
         handle(deeplinkingUrl)
