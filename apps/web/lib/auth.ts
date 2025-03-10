@@ -1,3 +1,4 @@
+import type { User } from 'better-auth'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
@@ -9,6 +10,22 @@ import { loops } from './loops'
 import 'server-only'
 
 const logger = createLogger('auth')
+
+async function loopsUpdateUser(user: User) {
+  try {
+    if (process.env.NODE_ENV === 'production') {
+      await loops.updateContact(user.email, {
+        name: user.name,
+      })
+    }
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      logger.error('Failed to update loops contact', error.message)
+    }
+    throw error
+  }
+}
 
 export const auth = betterAuth({
   appName: 'Connnect',
@@ -43,19 +60,10 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        after: async (user) => {
-          try {
-            await loops.updateContact(user.email, {
-              name: user.name,
-            })
-          }
-          catch (error) {
-            if (error instanceof Error) {
-              logger.error('Failed to update loops contact', error.message)
-            }
-            throw error
-          }
-        },
+        after: loopsUpdateUser,
+      },
+      update: {
+        after: loopsUpdateUser,
       },
     },
   },
