@@ -106,6 +106,7 @@ function RouteComponent() {
                     <DataTable
                       data={result}
                       columns={columns}
+                      scrollRef={parentRef}
                     />
                   )
                 : (
