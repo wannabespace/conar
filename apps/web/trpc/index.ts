@@ -38,20 +38,3 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
     },
   })
 })
-
-// export const subscriptionProcedure = protectedProcedure.use(async (opts) => {
-//   const subscription = await db.query.subscriptions.findFirst({
-//     where: (s, { eq }) => eq(s.userId, opts.ctx.userId),
-//   })
-
-//   if (!subscription) {
-//     throw new TRPCError({ code: 'BAD_REQUEST', message: 'User has no subscription' })
-//   }
-
-//   return opts.next({
-//     ctx: {
-//       ...opts.ctx,
-//       subscription,
-//     },
-//   })
-// })
