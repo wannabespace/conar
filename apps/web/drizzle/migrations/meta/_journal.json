@@ -5,85 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1735828842044,
-      "tag": "0000_condemned_dexter_bennett",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1735831620437,
-      "tag": "0001_ancient_iron_patriot",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1736062760118,
-      "tag": "0002_loose_quentin_quire",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1737756693850,
-      "tag": "0003_absurd_stick",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1738783405847,
-      "tag": "0004_low_tony_stark",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1738858006530,
-      "tag": "0005_skinny_rocket_raccoon",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1739457146855,
-      "tag": "0006_boring_inertia",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1739649963727,
-      "tag": "0007_loose_karen_page",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1739659398407,
-      "tag": "0008_workable_quicksilver",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1739662022763,
-      "tag": "0009_striped_master_mold",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1740041670035,
-      "tag": "0010_skinny_violations",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "7",
-      "when": 1740337022791,
-      "tag": "0011_messy_eddie_brock",
+      "when": 1741619805886,
+      "tag": "0000_slimy_pride",
       "breakpoints": true
     }
   ]

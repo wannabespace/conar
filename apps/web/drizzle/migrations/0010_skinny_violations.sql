@@ -1,1 +1,0 @@
-ALTER TABLE "connections" ADD COLUMN "password_hidden" boolean DEFAULT false NOT NULL;
