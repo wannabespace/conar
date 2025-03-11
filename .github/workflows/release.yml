@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for changelog generation
 
       - name: Get version from package.json
         id: package-version
@@ -51,3 +53,9 @@ jobs:
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
           VITE_PUBLIC_ELECTRON_LOCAL_SECRET: ${{ secrets.VITE_PUBLIC_ELECTRON_LOCAL_SECRET }}
         run: pnpm run build:desktop
+
+      - name: Add release notes to release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          pnpm dlx changelogen gh release

@@ -10,7 +10,11 @@
     "private": true,
     "provider": "github",
     "owner": "wannabe-space",
-    "repo": "connnect"
+    "repo": "connnect",
+    "releaseType": "release"
+  },
+  "releaseInfo": {
+    "releaseNotes": "${env.RELEASE_NOTES}"
   },
   "protocols": [
     {
