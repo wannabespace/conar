@@ -4,7 +4,7 @@
   "version": "0.0.4",
   "private": true,
   "packageManager": "pnpm@10.6.2",
-  "description": "Connnect.app - Your all-in-one application for managing your connections",
+  "description": "AI-powered connections management app that makes database operations smarter. A modern alternative to pgAdmin, DBeaver, etc.",
   "productName": "Connnect",
   "author": "Wannabe Space",
   "repository": {
