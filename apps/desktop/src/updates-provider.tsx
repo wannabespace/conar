@@ -103,7 +103,10 @@ export function UpdatesButton() {
       {status === 'error' && (
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="text-xs opacity-50 text-destructive">
+            <TooltipTrigger
+              className="text-xs opacity-50 text-destructive cursor-pointer"
+              onClick={() => checkForUpdates()}
+            >
               Update failed
             </TooltipTrigger>
             <TooltipContent>

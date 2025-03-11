@@ -53,30 +53,3 @@ jobs:
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
           VITE_PUBLIC_ELECTRON_LOCAL_SECRET: ${{ secrets.VITE_PUBLIC_ELECTRON_LOCAL_SECRET }}
         run: pnpm run build:desktop
-
-  changelog:
-    needs: release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 22
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9.15.4
-
-      - name: Install Dependencies
-        run: pnpm install
-
-      - name: Add release notes to release
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: pnpm dlx changelogen gh release

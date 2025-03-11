@@ -94,7 +94,7 @@ autoUpdater.on('update-not-available', () => {
   sendUpdatesStatus('no-updates')
 })
 autoUpdater.on('error', (e) => {
-  sendUpdatesStatus('error', e.message)
+  sendUpdatesStatus('error', e.message.split('\n')[0])
 })
 autoUpdater.on('download-progress', () => {
   sendUpdatesStatus('downloading')
