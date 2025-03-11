@@ -1,6 +1,8 @@
 # Connnect.app
 
-A modern, secure database management application that allows you to connect and manage multiple database instances with ease.
+Connnect is an AI-powered connections management application that improves how you interact with your databases. As a modern alternative to traditional tools like pgAdmin and DBeaver, it brings intelligence to your database operations while maintaining a sleek, user-friendly interface.
+
+Whether you're a developer, database administrator, or data analyst, Connnect provides smart features that make database management more efficient and intuitive than ever before.
 
 ## Features
 
@@ -15,7 +17,7 @@ A modern, secure database management application that allows you to connect and 
   - MongoDB (coming soon)
 
 - 🚀 Modern Features
-  - AI SQL runner 
+  - AI SQL runner
   - Real-time table viewing and management
   - Schema exploration
   - Beautiful and intuitive UI
