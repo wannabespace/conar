@@ -7,6 +7,7 @@ import { RiShining2Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
+import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { PAGE_SCREEN_CLASS } from '~/constants'
 import { DataTable, useDatabase } from '~/entities/database'
@@ -37,6 +38,9 @@ function RouteComponent() {
       })
 
       return response as Record<string, unknown>[]
+    },
+    onSuccess() {
+      toast.success('Query executed successfully')
     },
   })
 
