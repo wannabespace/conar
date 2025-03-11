@@ -39,7 +39,9 @@ Important instructions:
 2. Ensure the SQL is valid for ${input.type} database
 3. Do not include any text before or after the SQL code
 4. The SQL will be executed directly in a database editor
-5. Use 2 spaces for indentation`,
+5. Use 2 spaces for indentation
+6. If in the context there is an query, use it as a reference to generate a new query
+`,
   })
 }
 
