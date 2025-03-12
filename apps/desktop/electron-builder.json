@@ -13,9 +13,6 @@
     "repo": "connnect",
     "releaseType": "release"
   },
-  "releaseInfo": {
-    "releaseNotes": "${env.RELEASE_NOTES}"
-  },
   "protocols": [
     {
       "name": "Connnect",
@@ -52,9 +49,6 @@
     "deleteAppDataOnUninstall": false
   },
   "linux": {
-    "target": [
-      "AppImage"
-    ],
     "mimeTypes": ["x-scheme-handler/connnect"],
     "artifactName": "${productName}-Linux-${version}.${ext}"
   }
