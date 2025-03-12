@@ -4,35 +4,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  changelog:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Fetch all history for changelog generation
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10.6.2
-
-      - name: Install Dependencies
-        run: pnpm install
-
-      - name: Generate changelog
-        run: pnpm run changelog
-
-      - name: Commit changelog
-        run: |
-          git config --global user.email "valerii.strilets@gmail.com"
-          git config --global user.name "Valerii Strilets"
-          git add CHANGELOG.md
-          git commit -m "docs: update changelog"
-
-      - name: Push changes
-        run: git push
-
   release:
     runs-on: ${{ matrix.os }}
 
