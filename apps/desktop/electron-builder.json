@@ -27,7 +27,7 @@
     "category": "public.app-category.developer-tools",
     "target": [
       {
-        "target": "default",
+        "target": "dmg",
         "arch": ["arm64", "x64"]
       }
     ],
