@@ -15,7 +15,10 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 9.15.4
+          version: 10.6.2
+
+      - name: Install Dependencies
+        run: pnpm install
 
       - name: Generate changelog
         run: pnpm run changelog
@@ -58,7 +61,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 9.15.4
+          version: 10.6.2
 
       - name: Install Dependencies
         run: pnpm install
