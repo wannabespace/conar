@@ -12,6 +12,11 @@ jobs:
         with:
           fetch-depth: 0 # Fetch all history for changelog generation
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.15.4
+
       - name: Generate changelog
         run: pnpm run changelog
 
