@@ -56,9 +56,6 @@ importers:
 
   apps/desktop:
     dependencies:
-      '@trpc/server':
-        specifier: ^11.0.0-rc.724
-        version: 11.0.0-rc.768(typescript@5.8.2)
       electron-squirrel-startup:
         specifier: ^1.0.1
         version: 1.0.1
