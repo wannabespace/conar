@@ -1,11 +1,10 @@
-import type { AppRouter } from '@connnect/web/trpc-type'
-import type { CreateTRPCClientOptions } from '@trpc/client'
+import type { AppRouter, RouterInputs, RouterOutputs } from '@connnect/web/trpc-type'
 import { createTRPCClient, httpBatchLink } from '@trpc/client'
 import SuperJSON from 'superjson'
 import { getBearerToken } from '~/lib/auth'
 import { handleError } from '~/lib/error'
 
-export const clientConfig = {
+export const trpc = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
       url: `${import.meta.env.VITE_PUBLIC_APP_URL}/api/trpc`,
@@ -28,6 +27,6 @@ export const clientConfig = {
       },
     }),
   ],
-} satisfies CreateTRPCClientOptions<AppRouter>
+})
 
-export const trpc = createTRPCClient<AppRouter>(clientConfig)
+export type { RouterInputs, RouterOutputs }
