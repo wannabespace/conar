@@ -7,12 +7,8 @@ import { pgQuery, pgTestConnection } from './pg'
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
 const encryption = {
-  encrypt: ({ text, secret }: { text: string, secret: string }) => {
-    return encrypt({ text, secret: secret + import.meta.env.VITE_PUBLIC_ELECTRON_LOCAL_SECRET })
-  },
-  decrypt: ({ encryptedText, secret }: { encryptedText: string, secret: string }) => {
-    return decrypt({ encryptedText, secret: secret + import.meta.env.VITE_PUBLIC_ELECTRON_LOCAL_SECRET })
-  },
+  encrypt,
+  decrypt,
 }
 
 const databases = {

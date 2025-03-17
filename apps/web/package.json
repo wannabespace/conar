@@ -36,7 +36,6 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
-    "redaxios": "^0.5.1",
     "sonner": "^2.0.1",
     "stripe": "^17.7.0",
     "superjson": "^2.2.2",

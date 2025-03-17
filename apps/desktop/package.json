@@ -14,7 +14,7 @@
   "main": "dist-electron/main/index.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && electron-builder -p always",
+    "build": "tsc && vite build && electron-builder -p always",
     "test": "vitest run",
     "check-types": "tsc"
   },
