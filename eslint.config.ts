@@ -9,11 +9,10 @@ export default antfu({
     'react-hooks/exhaustive-deps': 'off',
   },
   ignores: [
-    '**/web/types/**/*',
     '**/routeTree.gen.ts',
-    '**/src-tauri/**/*',
     '**/dist-electron/**/*',
     '**/release/**/*',
+    '**/.types/**/*',
     '**/migrations/meta/*.json',
   ],
 })

@@ -1,27 +1,20 @@
 {
-  "$schema": "https://turbo.build/schema.json",
+  "$schema": "./node_modules/turbo/schema.json",
   "ui": "tui",
   "envMode": "loose",
   "tasks": {
-    "dev": {
-      "persistent": true,
-      "cache": false
-    },
-    "dev:types": {
-      "persistent": true,
-      "cache": false
-    },
-    "build:types": {
-      "cache": false
-    },
-    "@connnect/desktop#build": {
-      "dependsOn": ["^build:types"],
-      "cache": false
-    },
     "build": {
-      "dependsOn": ["^build"],
-      "cache": false
+      "dependsOn": ["^build"]
     },
-    "check-types": {}
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
   }
 }

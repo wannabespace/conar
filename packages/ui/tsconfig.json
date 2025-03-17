@@ -4,7 +4,8 @@
     "baseUrl": ".",
     "paths": {
       "@connnect/ui/*": ["./src/*"]
-    }
+    },
+    "noEmit": true
   },
   "include": ["."],
   "exclude": ["node_modules"]

@@ -1,4 +1,4 @@
-import type { AppRouter, RouterInputs, RouterOutputs } from '@connnect/web/trpc-type'
+import type { AppRouter, RouterInputs, RouterOutputs } from '@connnect/web/src/trpc/routers'
 import { createTRPCClient, httpBatchLink } from '@trpc/client'
 import SuperJSON from 'superjson'
 import { getBearerToken } from '~/lib/auth'
@@ -28,5 +28,4 @@ export const trpc = createTRPCClient<AppRouter>({
     }),
   ],
 })
-
 export type { RouterInputs, RouterOutputs }

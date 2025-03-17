@@ -14,9 +14,9 @@
   "main": "dist-electron/main/index.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build && electron-builder -p always",
+    "build": "tsc -b && vite build && electron-builder -p always",
     "test": "vitest run",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
@@ -49,7 +49,7 @@
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
     "babel-plugin-react-compiler": "19.0.0-beta-e552027-20250112",
-    "better-auth": "^1.1.21",
+    "better-auth": "https://pkg.pr.new/better-auth/better-auth@dac51d3",
     "dayjs": "^1.11.13",
     "dexie": "^4.0.11",
     "electron": "35.0.1",
@@ -62,7 +62,6 @@
     "posthog-js": "^1.231.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-use": "^17.6.0",
     "sonner": "^2.0.1",
     "sql-formatter": "^15.4.11",
     "tailwindcss": "^4.0.7",

@@ -71,7 +71,7 @@ export const electron = {
 export function initElectronEvents() {
   for (const [key, events] of Object.entries(electron)) {
     for (const [key2, handler] of Object.entries(events)) {
-      ipcMain.handle(`${key}.${key2}`, (event, arg) => handler(arg))
+      ipcMain.handle(`${key}.${key2}`, (_event, arg) => handler(arg))
     }
   }
 }

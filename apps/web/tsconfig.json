@@ -1,12 +1,16 @@
 {
-  "extends": "@connnect/tsconfig/next.json",
+  "extends": "@connnect/tsconfig/start.json",
   "compilerOptions": {
+    "composite": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./*"],
+      "~/*": ["./src/*"],
       "@connnect/ui/*": ["../../packages/ui/src/*"]
-    }
+    },
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./.types"
   },
-  "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", ".types"]
 }

@@ -7,7 +7,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "dev": "turbo run dev dev:types",
+    "dev": "turbo run dev",
     "build": "turbo run build && pnpm run drizzle:migrate",
     "build:desktop": "turbo run @connnect/desktop#build",
     "drizzle:generate": "cd apps/web && pnpm run drizzle:generate",

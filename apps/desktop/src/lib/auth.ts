@@ -1,4 +1,4 @@
-import type { auth } from '@connnect/web/auth-type'
+import type { auth } from '@connnect/web/src/lib/auth'
 import { createAuthClient } from 'better-auth/client'
 import {
   inferAdditionalFields,
