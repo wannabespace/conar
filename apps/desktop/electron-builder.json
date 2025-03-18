@@ -11,7 +11,7 @@
     "provider": "github",
     "owner": "wannabespace",
     "repo": "connnect",
-    "releaseType": "release"
+    "releaseType": "draft"
   },
   "protocols": [
     {
