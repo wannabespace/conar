@@ -6,6 +6,9 @@
     "build": {
       "dependsOn": ["^build"]
     },
+    "@connnect/desktop#build": {
+      "dependsOn": ["^check-types"]
+    },
     "lint": {},
     "check-types": {
       "dependsOn": ["^check-types"]
