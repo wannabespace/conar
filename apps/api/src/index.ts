@@ -18,10 +18,6 @@ app.use(cors({
   exposeHeaders: ['Set-Auth-Token'],
 }))
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
-
 app.on(['GET', 'POST'], '/auth/*', (c) => {
   return auth.handler(c.req.raw)
 })

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vinxi dev --port 3001",
-    "build": "pnpm run drizzle:migrate && vinxi build",
+    "build": "vinxi build",
     "start": "vinxi start",
     "check-types": "tsc"
   },
