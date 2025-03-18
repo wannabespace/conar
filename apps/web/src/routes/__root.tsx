@@ -19,8 +19,8 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       ...seo({
-        title: 'Connnect.app - AI-powered connections management app',
-        description: 'AI-powered connections management app that makes database operations smarter. A modern alternative to pgAdmin, DBeaver, etc.',
+        title: 'Connnect.app - AI-powered connections management tool',
+        description: 'AI-powered connections management tool that makes database operations smarter. A modern alternative to pgAdmin, DBeaver, etc.',
       }),
     ],
     links: [
