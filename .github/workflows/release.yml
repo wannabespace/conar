@@ -1,5 +1,8 @@
 name: Build and release
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
 
@@ -36,6 +39,11 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install
+
+      - name: Generate Changelog
+        run: npx changelogithub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Build and Release
         env:
