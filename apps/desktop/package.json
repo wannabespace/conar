@@ -1,7 +1,7 @@
 {
   "name": "@connnect/desktop",
   "type": "module",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "private": true,
   "packageManager": "pnpm@10.6.3",
   "description": "AI-powered connections management app that makes database operations smarter. A modern alternative to pgAdmin, DBeaver, etc.",
@@ -9,14 +9,14 @@
   "author": "Wannabe Space",
   "repository": {
     "type": "git",
-    "url": "https://github.com/wannabe-space/connnect.git"
+    "url": "https://github.com/wannabespace/connnect.git"
   },
   "main": "dist-electron/main/index.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build && electron-builder -p always",
+    "build": "tsc && vite build && electron-builder -p always",
     "test": "vitest run",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
@@ -24,10 +24,10 @@
     "pg": "^8.14.0"
   },
   "devDependencies": {
+    "@connnect/api": "workspace:*",
     "@connnect/shared": "workspace:*",
     "@connnect/tsconfig": "workspace:*",
     "@connnect/ui": "workspace:*",
-    "@connnect/web": "workspace:*",
     "@faker-js/faker": "^9.6.0",
     "@hookform/devtools": "^4.3.3",
     "@monaco-editor/loader": "^1.5.0",
@@ -49,7 +49,7 @@
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
     "babel-plugin-react-compiler": "19.0.0-beta-e552027-20250112",
-    "better-auth": "^1.1.21",
+    "better-auth": "https://pkg.pr.new/better-auth/better-auth@dac51d3",
     "dayjs": "^1.11.13",
     "dexie": "^4.0.11",
     "electron": "35.0.1",
@@ -62,7 +62,6 @@
     "posthog-js": "^1.231.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-use": "^17.6.0",
     "sonner": "^2.0.1",
     "sql-formatter": "^15.4.11",
     "tailwindcss": "^4.0.7",

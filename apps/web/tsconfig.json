@@ -1,12 +1,17 @@
 {
-  "extends": "@connnect/tsconfig/next.json",
+  "extends": "@connnect/tsconfig/react.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./*"],
-      "@connnect/ui/*": ["../../packages/ui/src/*"]
-    }
+      "~/*": ["./src/*"]
+    },
+    "noEmit": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", ".next/types/**/*.ts"],
+  "references": [
+    {
+      "path": "../api"
+    }
+  ],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }

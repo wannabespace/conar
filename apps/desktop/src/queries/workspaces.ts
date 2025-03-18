@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query'
-import { trpc } from '~/trpc'
+import { trpc } from '~/lib/trpc'
 
 export function workspacesQuery() {
   return queryOptions({

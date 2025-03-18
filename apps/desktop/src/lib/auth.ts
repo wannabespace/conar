@@ -1,4 +1,4 @@
-import type { auth } from '@connnect/web/auth-type'
+import type { auth } from '@connnect/api/src/lib/auth'
 import { createAuthClient } from 'better-auth/client'
 import {
   inferAdditionalFields,
@@ -47,7 +47,8 @@ export function successAuthToast(newUser: boolean) {
 }
 
 export const authClient = createAuthClient({
-  baseURL: import.meta.env.VITE_PUBLIC_APP_URL,
+  baseURL: import.meta.env.VITE_PUBLIC_API_URL,
+  basePath: '/auth',
   fetchOptions: {
     async onRequest({ headers }) {
       const token = getBearerToken()

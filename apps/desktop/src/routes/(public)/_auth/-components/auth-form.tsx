@@ -38,8 +38,8 @@ function useSocialMutation(provider: 'google' | 'github') {
       const { data, error } = await authClient.signIn.social({
         provider,
         disableRedirect: true,
-        callbackURL: `${import.meta.env.VITE_PUBLIC_APP_URL}/open?code-challenge=${encryptedCodeChallenge}`,
-        newUserCallbackURL: `${import.meta.env.VITE_PUBLIC_APP_URL}/open?code-challenge=${encryptedCodeChallenge}&newUser=true`,
+        callbackURL: `${import.meta.env.VITE_PUBLIC_WEB_URL}/open?code-challenge=${encryptedCodeChallenge}`,
+        newUserCallbackURL: `${import.meta.env.VITE_PUBLIC_WEB_URL}/open?code-challenge=${encryptedCodeChallenge}&newUser=true`,
       })
 
       if (error) {

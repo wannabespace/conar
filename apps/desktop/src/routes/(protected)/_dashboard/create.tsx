@@ -9,10 +9,10 @@ import { Input } from '@connnect/ui/components/input'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ToggleGroup, ToggleGroupItem } from '@connnect/ui/components/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { RefreshIcon } from '@connnect/ui/icons/refresh'
 import { faker } from '@faker-js/faker'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useKeyboardEvent } from '@react-hookz/web'
+import { RiRefreshLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
@@ -279,7 +279,7 @@ function RouteComponent() {
                           size="icon"
                           onClick={() => form.setValue('name', generateRandomName())}
                         >
-                          <RefreshIcon />
+                          <RiRefreshLine />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>

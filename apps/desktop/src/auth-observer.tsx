@@ -4,6 +4,7 @@ import { useDeepLinksListener } from '~/deep-links'
 import { useSession } from '~/hooks/use-session'
 import { authClient } from '~/lib/auth'
 import { identifyUser } from '~/lib/events'
+import { fetchDatabases } from './entities/database'
 
 const authRoutes = ['/sign-in', '/sign-up']
 const publicRoutes = [...authRoutes]
@@ -41,6 +42,12 @@ export function AuthObserver() {
       router.navigate({ to: '/sign-in' })
     }
   }, [isLoading, isAuthenticated, location.pathname])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchDatabases()
+    }
+  }, [isAuthenticated])
 
   useDeepLinksListener()
 

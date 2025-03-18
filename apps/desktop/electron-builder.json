@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "com.wannabe-space.connnect",
+  "appId": "com.wannabespace.connnect",
   "asar": true,
   "productName": "Connnect",
   "directories": {
@@ -9,7 +9,7 @@
   "publish": {
     "private": true,
     "provider": "github",
-    "owner": "wannabe-space",
+    "owner": "wannabespace",
     "repo": "connnect",
     "releaseType": "release"
   },

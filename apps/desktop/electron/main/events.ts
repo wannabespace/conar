@@ -7,12 +7,8 @@ import { pgQuery, pgTestConnection } from './pg'
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
 const encryption = {
-  encrypt: ({ text, secret }: { text: string, secret: string }) => {
-    return encrypt({ text, secret: secret + import.meta.env.VITE_PUBLIC_ELECTRON_LOCAL_SECRET })
-  },
-  decrypt: ({ encryptedText, secret }: { encryptedText: string, secret: string }) => {
-    return decrypt({ encryptedText, secret: secret + import.meta.env.VITE_PUBLIC_ELECTRON_LOCAL_SECRET })
-  },
+  encrypt,
+  decrypt,
 }
 
 const databases = {
@@ -71,7 +67,7 @@ export const electron = {
 export function initElectronEvents() {
   for (const [key, events] of Object.entries(electron)) {
     for (const [key2, handler] of Object.entries(events)) {
-      ipcMain.handle(`${key}.${key2}`, (event, arg) => handler(arg))
+      ipcMain.handle(`${key}.${key2}`, (_event, arg) => handler(arg))
     }
   }
 }
