@@ -34,10 +34,6 @@ export function AuthObserver() {
     if (isLoading)
       return
 
-    if (isAuthenticated) {
-      fetchDatabases()
-    }
-
     if (isAuthenticated && authRoutes.includes(location.pathname)) {
       router.navigate({ to: '/' })
     }
@@ -46,6 +42,12 @@ export function AuthObserver() {
       router.navigate({ to: '/sign-in' })
     }
   }, [isLoading, isAuthenticated, location.pathname])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchDatabases()
+    }
+  }, [isAuthenticated])
 
   useDeepLinksListener()
 
