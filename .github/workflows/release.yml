@@ -48,8 +48,8 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          VITE_PUBLIC_APP_URL: ${{ secrets.VITE_PUBLIC_APP_URL }}
+          VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
+          VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
           VITE_PUBLIC_AUTH_SECRET: ${{ secrets.VITE_PUBLIC_AUTH_SECRET }}
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
-          VITE_PUBLIC_ELECTRON_LOCAL_SECRET: ${{ secrets.VITE_PUBLIC_ELECTRON_LOCAL_SECRET }}
         run: pnpm run build:desktop
