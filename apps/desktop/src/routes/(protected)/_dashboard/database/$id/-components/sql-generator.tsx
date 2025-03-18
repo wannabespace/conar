@@ -6,8 +6,8 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { databaseColumnsQuery, databaseEnumsQuery, databaseTablesQuery } from '~/entities/database'
+import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
-import { trpc } from '~/trpc'
 
 interface SqlGeneratorProps {
   database: Database

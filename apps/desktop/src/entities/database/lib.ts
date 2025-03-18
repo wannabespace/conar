@@ -1,6 +1,6 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import { indexedDb } from '~/lib/indexeddb'
-import { trpc } from '~/trpc'
+import { trpc } from '~/lib/trpc'
 
 export async function fetchDatabases() {
   const [fetchedDatabases, existingDatabases] = await Promise.all([

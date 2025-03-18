@@ -54,7 +54,7 @@ export default defineConfig(({ command }) => {
       }),
     ],
     server: {
-      port: 3100,
+      port: 3002,
       strictPort: true,
     },
     clearScreen: false,

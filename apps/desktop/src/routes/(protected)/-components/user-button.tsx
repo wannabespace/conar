@@ -12,8 +12,8 @@ export function UserButton() {
 
   const { mutate: signOut, isPending: isSigningOut } = useMutation({
     mutationFn: async () => {
-      removeBearerToken()
       await authClient.signOut()
+      removeBearerToken()
       await refetch()
       queryClient.invalidateQueries()
     },

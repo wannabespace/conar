@@ -4,10 +4,7 @@ import { tryCatch } from '@connnect/shared/utils/try-catch'
 import { TRPCError } from '@trpc/server'
 import { APICallError, generateText } from 'ai'
 import { z } from 'zod'
-import { createLogger } from '~/lib/logger'
 import { protectedProcedure } from '~/trpc'
-
-const logger = createLogger('ai/generate-sql')
 
 const schema = z.object({
   prompt: z.string().min(1),
@@ -48,7 +45,7 @@ Important instructions:
 export const generateSql = protectedProcedure
   .input(schema)
   .mutation(async ({ input, signal }) => {
-    logger.info('Generating SQL', {
+    console.info('Generating SQL', {
       prompt: input.prompt,
       type: input.type,
       context: input.context,
@@ -61,7 +58,7 @@ export const generateSql = protectedProcedure
     }))
 
     if (data) {
-      logger.info('Generated SQL', data.text)
+      console.info('Generated SQL', data.text)
 
       return {
         text: data.text,
@@ -69,7 +66,7 @@ export const generateSql = protectedProcedure
       }
     }
 
-    logger.error('Error generating SQL', { error })
+    console.error('Error generating SQL', { error })
 
     if (APICallError.isInstance(error)) {
       const isOverloaded = error.responseBody
@@ -83,7 +80,7 @@ export const generateSql = protectedProcedure
         }))
 
         if (fallbackResult.data) {
-          logger.info('Generated SQL with fallback model', {
+          console.info('Generated SQL with fallback model', {
             sql: fallbackResult.data.text,
           })
 
@@ -92,10 +89,6 @@ export const generateSql = protectedProcedure
             status: 'overloaded' as const,
           }
         }
-
-        logger.error('Error generating SQL with fallback model', {
-          error: fallbackResult.error,
-        })
       }
     }
 

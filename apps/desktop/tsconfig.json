@@ -9,7 +9,7 @@
   },
   "references": [
     {
-      "path": "../web"
+      "path": "../api"
     }
   ],
   "include": ["."]

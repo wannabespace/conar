@@ -1,16 +1,17 @@
 {
-  "extends": "@connnect/tsconfig/start.json",
+  "extends": "@connnect/tsconfig/react.json",
   "compilerOptions": {
-    "composite": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"],
-      "@connnect/ui/*": ["../../packages/ui/src/*"]
+      "~/*": ["./src/*"]
     },
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "outDir": "./.types"
+    "noEmit": true
   },
+  "references": [
+    {
+      "path": "../api"
+    }
+  ],
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", ".types"]
+  "exclude": ["node_modules"]
 }

@@ -3,12 +3,11 @@
   "ui": "tui",
   "envMode": "loose",
   "tasks": {
+    "start": {},
     "build": {
       "dependsOn": ["^build"]
     },
-    "lint": {
-      "dependsOn": ["^lint"]
-    },
+    "lint": {},
     "check-types": {
       "dependsOn": ["^check-types"]
     },

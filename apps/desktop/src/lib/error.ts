@@ -15,6 +15,8 @@ export async function handleError(error: unknown) {
   toast.error(getErrorMessage(error))
 
   if ((typeof error === 'object' && 'status' in error && error.status === 401) || (error instanceof TRPCClientError && error.data.code === 'UNAUTHORIZED')) {
-    await Promise.all([removeBearerToken(), authClient.signOut()])
+    await authClient.signOut()
+    removeBearerToken()
+    toast.info('Your session has expired. Please, sign in again.')
   }
 }

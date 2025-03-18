@@ -10,9 +10,10 @@
     "dev": "turbo run dev",
     "build:desktop": "turbo run @connnect/desktop#build",
     "build:web": "turbo run @connnect/web#build",
-    "start:web": "cd apps/web && pnpm run start",
-    "drizzle:generate": "cd apps/web && pnpm run drizzle:generate",
-    "drizzle:migrate": "cd apps/web && pnpm run drizzle:migrate",
+    "start:web": "turbo run @connnect/web#start",
+    "start:api": "turbo run @connnect/api#start",
+    "drizzle:generate": "cd apps/api && pnpm run drizzle:generate",
+    "drizzle:migrate": "cd apps/api && pnpm run drizzle:migrate",
     "check-types": "turbo check-types",
     "changelog": "changelogen --output"
   },

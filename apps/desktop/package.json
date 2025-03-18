@@ -24,10 +24,10 @@
     "pg": "^8.14.0"
   },
   "devDependencies": {
+    "@connnect/api": "workspace:*",
     "@connnect/shared": "workspace:*",
     "@connnect/tsconfig": "workspace:*",
     "@connnect/ui": "workspace:*",
-    "@connnect/web": "workspace:*",
     "@faker-js/faker": "^9.6.0",
     "@hookform/devtools": "^4.3.3",
     "@monaco-editor/loader": "^1.5.0",
