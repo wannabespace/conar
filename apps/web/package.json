@@ -2,6 +2,7 @@
   "name": "@connnect/web",
   "type": "module",
   "private": true,
+  "packageManager": "pnpm@10.6.3",
   "scripts": {
     "dev": "vinxi dev",
     "build": "pnpm run drizzle:migrate && vinxi build",
