@@ -1,8 +1,5 @@
 name: Build and release
 
-permissions:
-  contents: write
-
 on:
   workflow_dispatch:
 
@@ -18,8 +15,6 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Fetch all history for changelog generation
 
       - name: Get version from package.json
         id: package-version
