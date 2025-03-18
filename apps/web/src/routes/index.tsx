@@ -13,7 +13,7 @@ function Home() {
         Your all-in-one application for managing your connections
       </p>
       <a
-        href="https://github.com/wannabe-space/connnect"
+        href="https://github.com/wannabespace/connnect"
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-2 text-foreground"

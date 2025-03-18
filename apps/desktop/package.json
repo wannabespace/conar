@@ -9,7 +9,7 @@
   "author": "Wannabe Space",
   "repository": {
     "type": "git",
-    "url": "https://github.com/wannabe-space/connnect.git"
+    "url": "https://github.com/wannabespace/connnect.git"
   },
   "main": "dist-electron/main/index.js",
   "scripts": {
