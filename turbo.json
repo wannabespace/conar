@@ -16,6 +16,16 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "start": {
+      "cache": false,
+      "persistent": true
+    },
+    "drizzle:migrate": {
+      "cache": false
+    },
+    "drizzle:generate": {
+      "cache": false
     }
   }
 }
