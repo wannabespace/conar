@@ -4,12 +4,13 @@ import { Separator } from '@connnect/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { cn } from '@connnect/ui/lib/utils'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAddLine, RiArrowLeftSLine, RiArrowRightSLine, RiHomeLine } from '@remixicon/react'
+import { RiAddLine, RiArrowLeftSLine, RiArrowRightSLine, RiHomeLine, RiMoonLine, RiSunLine } from '@remixicon/react'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { DatabaseIcon, databaseQuery, useDatabase, useDatabases } from '~/entities/database'
 import { queryClient } from '~/main'
 import { UpdatesButton } from '~/updates-provider'
+import { ThemeToggle } from './theme-toggle'
 import { UserButton } from './user-button'
 
 function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
@@ -71,7 +72,7 @@ function DatabaseName({ className, id }: { className?: string, id: string }) {
 
 function NavbarButton({ children, ...props }: React.ComponentProps<'button'>) {
   return (
-    <button type="button" className="p-1.5 rounded-md hover:bg-muted cursor-pointer opacity-70" {...props}>
+    <button type="button" className="p-1.5 rounded-md hover:bg-muted cursor-pointer [&>*]:opacity-70 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" {...props}>
       {children}
     </button>
   )
@@ -166,6 +167,14 @@ export function Navbar() {
         <div className="flex-1 h-full [app-region:drag]" />
         <div className="flex items-center gap-2">
           <UpdatesButton />
+          <Separator orientation="vertical" className="h-4 mx-2" />
+          <ThemeToggle>
+            <NavbarButton>
+              <RiSunLine className="size-4 dark:hidden" />
+              <RiMoonLine className="size-4 hidden dark:block" />
+              <span className="sr-only">Toggle theme</span>
+            </NavbarButton>
+          </ThemeToggle>
           <Separator orientation="vertical" className="h-4 mx-2" />
           <UserButton />
         </div>
