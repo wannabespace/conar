@@ -1,7 +1,7 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
-import { getSavedDatabaseSchema } from '~/routes/(protected)/_dashboard/database/-hooks/schema'
+import { getSavedDatabaseSchema } from '~/routes/(protected)/_protected/database/-hooks/schema'
 
 export function databaseTablesQuery(database: Database, schema?: string) {
   const _schema = schema ?? getSavedDatabaseSchema(database.id)

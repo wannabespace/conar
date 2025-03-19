@@ -29,7 +29,7 @@ import { PostgresIcon } from '~/icons/postgres'
 import { queryClient } from '~/main'
 
 export const Route = createFileRoute(
-  '/(protected)/_dashboard/create',
+  '/(protected)/_protected/create',
 )({
   component: RouteComponent,
 })

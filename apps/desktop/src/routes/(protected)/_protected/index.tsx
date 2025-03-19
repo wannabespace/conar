@@ -5,7 +5,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useDatabases } from '~/entities/database'
 import { List } from './-components/list'
 
-export const Route = createFileRoute('/(protected)/_dashboard/')({
+export const Route = createFileRoute('/(protected)/_protected/')({
   component: DashboardPage,
 })
 

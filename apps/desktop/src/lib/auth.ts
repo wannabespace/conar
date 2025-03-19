@@ -7,6 +7,7 @@ import {
   twoFactorClient,
 } from 'better-auth/client/plugins'
 import { toast } from 'sonner'
+import { identifyUser } from './events'
 
 export const BEARER_TOKEN_KEY = 'connnect.bearer_token'
 export const CODE_CHALLENGE_KEY = 'connnect.code_challenge'
@@ -77,3 +78,9 @@ export const authClient = createAuthClient({
     magicLinkClient(),
   ],
 })
+
+export async function fullSignOut() {
+  await authClient.signOut()
+  removeBearerToken()
+  identifyUser(null)
+}

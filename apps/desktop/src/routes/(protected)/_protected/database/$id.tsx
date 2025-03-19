@@ -14,7 +14,7 @@ import { DatabaseTree } from './-components/database-tree'
 import { PasswordForm } from './-components/password-form'
 import { useDatabaseSchema } from './-hooks/schema'
 
-export const Route = createFileRoute('/(protected)/_dashboard/database/$id')({
+export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: RouteComponent,
 })
 

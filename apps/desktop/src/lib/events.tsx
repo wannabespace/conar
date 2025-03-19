@@ -7,9 +7,16 @@ export function initEvents() {
     return null
 }
 
-export function identifyUser(userId: string | null) {
+interface IdentifyUserProps {
+  email: string
+  name: string
+}
+
+export function identifyUser(userId: string, properties: IdentifyUserProps): void
+export function identifyUser(userId: null, properties?: IdentifyUserProps): void
+export function identifyUser(userId: string | null, properties?: IdentifyUserProps) {
   if (userId) {
-    posthog.identify(userId)
+    posthog.identify(userId, properties)
   }
   else {
     posthog.reset()

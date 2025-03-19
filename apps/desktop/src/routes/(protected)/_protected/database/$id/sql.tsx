@@ -15,7 +15,7 @@ import { formatSql } from '~/lib/formatter'
 import { SqlGenerator } from './-components/sql-generator'
 
 export const Route = createFileRoute(
-  '/(protected)/_dashboard/database/$id/sql',
+  '/(protected)/_protected/database/$id/sql',
 )({
   component: RouteComponent,
 })

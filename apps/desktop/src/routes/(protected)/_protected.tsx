@@ -2,13 +2,16 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
 import { fetchDatabases } from '~/entities/database'
+import { useSession } from '~/hooks/use-session'
 import { Navbar } from './-components/navbar'
 
-export const Route = createFileRoute('/(protected)/_dashboard')({
+export const Route = createFileRoute('/(protected)/_protected')({
   component: LayoutComponent,
 })
 
 function LayoutComponent() {
+  const { isAuthenticated } = useSession()
+
   useEffect(() => {
     const interval = setInterval(() => {
       fetchDatabases()
@@ -16,6 +19,12 @@ function LayoutComponent() {
 
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchDatabases()
+    }
+  }, [isAuthenticated])
 
   return (
     <motion.div

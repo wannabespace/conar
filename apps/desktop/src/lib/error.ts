@@ -1,6 +1,6 @@
 import { TRPCClientError } from '@trpc/client'
 import { toast } from 'sonner'
-import { authClient, removeBearerToken } from '~/lib/auth'
+import { fullSignOut } from '~/lib/auth'
 
 function getErrorMessage(error: unknown) {
   return (error instanceof TRPCClientError && error.data.zodError)
@@ -15,8 +15,7 @@ export async function handleError(error: unknown) {
   toast.error(getErrorMessage(error))
 
   if ((typeof error === 'object' && 'status' in error && error.status === 401) || (error instanceof TRPCClientError && error.data.code === 'UNAUTHORIZED')) {
-    await authClient.signOut()
-    removeBearerToken()
+    await fullSignOut()
     toast.info('Your session has expired. Please, sign in again.')
   }
 }

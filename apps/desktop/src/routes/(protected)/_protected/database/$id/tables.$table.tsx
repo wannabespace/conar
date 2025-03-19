@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { DataTable, useDatabase, useDatabaseColumns, useDatabaseRows } from '~/entities/database'
 
 export const Route = createFileRoute(
-  '/(protected)/_dashboard/database/$id/tables/$table',
+  '/(protected)/_protected/database/$id/tables/$table',
 )({
   component: RouteComponent,
 })
