@@ -8,7 +8,7 @@ import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { DatabaseIcon, databaseQuery, databasesQuery, databaseTablesQuery, removeConnection, useDatabases } from '~/entities/database'
+import { DatabaseIcon, databaseQuery, databasesQuery, databaseTablesQuery, removeDatabase, useDatabases } from '~/entities/database'
 import { queryClient } from '~/main'
 
 function DatabaseCard({ database, onRemove }: { database: Database, onRemove: () => void }) {
@@ -90,13 +90,13 @@ function DatabaseCardSkeleton() {
   )
 }
 
-function RemoveConnectionDialog({ id, open, onOpenChange }: { id: string | null, open: boolean, onOpenChange: (open: boolean) => void }) {
-  const { mutate: removeConnectionMutation, isPending } = useMutation({
+function RemoveDatabaseDialog({ id, open, onOpenChange }: { id: string | null, open: boolean, onOpenChange: (open: boolean) => void }) {
+  const { mutate: removeDatabaseMutation, isPending } = useMutation({
     mutationFn: async () => {
       if (!id)
         return
 
-      await removeConnection(id)
+      await removeDatabase(id)
     },
     onSuccess: () => {
       toast.success('Database removed successfully')
@@ -123,7 +123,7 @@ function RemoveConnectionDialog({ id, open, onOpenChange }: { id: string | null,
               variant="destructive"
               onClick={(e) => {
                 e.preventDefault()
-                removeConnectionMutation()
+                removeDatabaseMutation()
               }}
             >
               Remove
@@ -142,7 +142,7 @@ export function List() {
 
   return (
     <div className="flex flex-col gap-6">
-      <RemoveConnectionDialog id={selected} open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen} />
+      <RemoveDatabaseDialog id={selected} open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen} />
       <div className="flex flex-col gap-2">
         {isPending
           ? (

@@ -73,7 +73,7 @@ export async function createDatabase({ saveInCloud, ...database }: {
   return { id }
 }
 
-export async function removeConnection(id: string) {
+export async function removeDatabase(id: string) {
   await Promise.all([
     trpc.databases.remove.mutate({ id }),
     indexedDb.databases.delete(id),
