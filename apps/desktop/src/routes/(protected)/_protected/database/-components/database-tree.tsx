@@ -11,15 +11,15 @@ export function DatabaseTree({ database, schema }: { database: Database, schema:
   const { table: tableParam } = useParams({ strict: false })
 
   const debouncedPrefetchColumns = useDebouncedCallback(
-    (tableName: string) => queryClient.prefetchQuery(databaseColumnsQuery(database, tableName)),
+    (tableName: string) => queryClient.prefetchQuery(databaseColumnsQuery(database, tableName, schema)),
     [database.id, schema],
-    50,
+    10,
   )
 
   const debouncedPrefetchRows = useDebouncedCallback(
-    (tableName: string) => queryClient.prefetchQuery(databaseRowsQuery(database, tableName)),
+    (tableName: string) => queryClient.prefetchQuery(databaseRowsQuery(database, tableName, { schema })),
     [database.id, schema],
-    150,
+    100,
   )
 
   return (
