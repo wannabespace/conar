@@ -18,9 +18,13 @@ export function UserButton() {
       await refetch()
     },
     onSuccess: () => {
-      clearIndexedDb()
-      queryClient.invalidateQueries()
       toast.success('You have been signed out successfully.')
+
+      // Timeout to wait transition to auth page
+      setTimeout(() => {
+        clearIndexedDb()
+        queryClient.invalidateQueries()
+      }, 1000)
     },
   })
 
@@ -36,7 +40,7 @@ export function UserButton() {
         <div className="flex items-center gap-2 h-10 px-2 mt-1 mb-2">
           <Avatar className="size-6">
             {data?.user.image && <AvatarImage src={data?.user.image} />}
-            <AvatarFallback className="text-xs">CN</AvatarFallback>
+            <AvatarFallback className="text-xs">{data?.user.name ? `${data.user.name.charAt(0)}${data.user.name.charAt(1)}` : data?.user.email.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col leading-0">
             <span className="text-sm font-medium">
