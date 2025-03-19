@@ -2,6 +2,7 @@ import { toast } from 'sonner'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { getCodeChallenge, removeCodeChallenge, setBearerToken, successAuthToast } from '~/lib/auth'
 import { useSession } from './hooks/use-session'
+import { decrypt } from './lib/encryption'
 
 export function useDeepLinksListener() {
   const { refetch } = useSession()
@@ -30,10 +31,7 @@ export function useDeepLinksListener() {
       return
     }
 
-    const decryptedCodeChallenge = await window.electron.encryption.decrypt({
-      encryptedText: codeChallenge,
-      secret: import.meta.env.VITE_PUBLIC_AUTH_SECRET,
-    })
+    const decryptedCodeChallenge = await decrypt(codeChallenge, import.meta.env.VITE_PUBLIC_AUTH_SECRET)
 
     if (!decryptedCodeChallenge) {
       toast.error('We couldn\'t decrypt your code challenge. Please try signing in again.')

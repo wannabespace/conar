@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { authClient, setBearerToken, setCodeChallenge, successAuthToast } from '~/lib/auth'
+import { encrypt } from '~/lib/encryption'
 import { handleError } from '~/lib/error'
 
 type Type = 'sign-up' | 'sign-in'
@@ -29,11 +30,8 @@ function useSocialMutation(provider: 'google' | 'github') {
 
       setCodeChallenge(codeChallenge)
 
-      const encryptedCodeChallenge = await window.electron.encryption.encrypt({
-        text: codeChallenge,
-        // TODO: move to backend
-        secret: import.meta.env.VITE_PUBLIC_AUTH_SECRET,
-      })
+      // TODO: move to backend
+      const encryptedCodeChallenge = await encrypt(codeChallenge, import.meta.env.VITE_PUBLIC_AUTH_SECRET)
 
       const { data, error } = await authClient.signIn.social({
         provider,
