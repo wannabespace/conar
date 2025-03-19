@@ -47,6 +47,7 @@ export function ThemeProvider({
         return
       }
 
+      setResolvedTheme(theme as ResolvedTheme)
       root.classList.add(theme)
     }
 
@@ -66,9 +67,9 @@ export function ThemeProvider({
   }
 
   return (
-    <ThemeProviderContext value={value}>
+    <ThemeProviderContext.Provider value={value}>
       {children}
-    </ThemeProviderContext>
+    </ThemeProviderContext.Provider>
   )
 }
 
