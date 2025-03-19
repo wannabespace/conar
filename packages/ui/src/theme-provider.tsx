@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
-type ResolvedTheme = 'dark' | 'light'
-type Theme = ResolvedTheme | 'system'
+export type ResolvedTheme = 'dark' | 'light'
+export type Theme = ResolvedTheme | 'system'
 
 interface ThemeProviderProps {
   children: React.ReactNode

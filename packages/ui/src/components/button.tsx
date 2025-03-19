@@ -53,10 +53,8 @@ function Button({
   onClick,
   ...props
 }: ButtonProps) {
-  const Comp = motion.button
-
   return (
-    <Comp
+    <motion.button
       className={cn(buttonVariants({ variant, size, className }))}
       type={type}
       whileTap={{ scale: 0.99 }}
@@ -75,7 +73,7 @@ function Button({
       <span className={cn('flex items-center duration-150 justify-center gap-2', loading ? '-translate-y-14' : 'translate-y-0')}>
         {children}
       </span>
-    </Comp>
+    </motion.button>
   )
 }
 Button.displayName = 'Button'
