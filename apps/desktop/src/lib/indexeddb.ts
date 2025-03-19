@@ -19,3 +19,9 @@ export const indexedDb = new Dexie('connnect') as Dexie & {
 indexedDb.version(1).stores({
   databases: '++id, name, type, createdAt, connectionString, isPasswordExists, isPasswordPopulated',
 })
+
+export function clearIndexedDb() {
+  indexedDb.transaction('rw', indexedDb.databases, () => {
+    indexedDb.databases.clear()
+  })
+}

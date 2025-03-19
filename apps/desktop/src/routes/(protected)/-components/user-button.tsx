@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useSession } from '~/hooks/use-session'
 import { authClient, removeBearerToken } from '~/lib/auth'
+import { clearIndexedDb } from '~/lib/indexeddb'
 import { queryClient } from '~/main'
 
 export function UserButton() {
@@ -15,9 +16,10 @@ export function UserButton() {
       await authClient.signOut()
       removeBearerToken()
       await refetch()
-      queryClient.invalidateQueries()
     },
     onSuccess: () => {
+      clearIndexedDb()
+      queryClient.invalidateQueries()
       toast.success('You have been signed out successfully.')
     },
   })
