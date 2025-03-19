@@ -43,7 +43,7 @@ function RouteComponent() {
   }
 
   return (
-    <ResizablePanelGroup autoSaveId="database-sidebar" className={PAGE_SCREEN_CLASS} direction="horizontal">
+    <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} className={PAGE_SCREEN_CLASS} direction="horizontal">
       <ResizablePanel defaultSize={px(300)} minSize={px(150)}>
         <Card className="h-full">
           <ScrollArea className="h-full">
