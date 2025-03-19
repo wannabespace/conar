@@ -7,21 +7,36 @@ export async function fetchDatabases() {
     trpc.databases.list.query(),
     indexedDb.databases.toArray(),
   ])
-  const existingIds = new Set(existingDatabases.map(d => d.id))
-  const fetchedIds = new Set(fetchedDatabases.map(d => d.id))
+  const existingMap = new Map(existingDatabases.map(d => [d.id, d]))
+  const fetchedMap = new Map(fetchedDatabases.map(d => [d.id, d]))
 
   await Promise.all([
     indexedDb.databases.bulkDelete(
       existingDatabases
-        .filter(d => !fetchedIds.has(d.id))
+        .filter(d => !fetchedMap.has(d.id))
         .map(d => d.id),
     ),
     indexedDb.databases.bulkAdd(
       fetchedDatabases
-        .filter(d => !existingIds.has(d.id))
+        .filter(d => !existingMap.has(d.id))
         .map(d => ({
           ...d,
           isPasswordPopulated: !!new URL(d.connectionString).password,
+        })),
+    ),
+    indexedDb.databases.bulkUpdate(
+      fetchedDatabases
+        .filter((d) => {
+          const existing = existingMap.get(d.id)
+
+          return existing && (
+            existing.name !== d.name
+            || existing.connectionString !== d.connectionString
+          )
+        })
+        .map(d => ({
+          key: d.id,
+          changes: d,
         })),
     ),
   ])
