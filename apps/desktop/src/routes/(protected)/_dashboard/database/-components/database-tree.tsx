@@ -3,7 +3,7 @@ import { cn } from '@connnect/ui/lib/utils'
 import { useDebouncedCallback } from '@react-hookz/web'
 import { RiTableLine } from '@remixicon/react'
 import { Link, useParams } from '@tanstack/react-router'
-import { databaseColumnsQuery, useDatabaseTables } from '~/entities/database'
+import { databaseColumnsQuery, databaseRowsQuery, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 
 export function DatabaseTree({ database, schema }: { database: Database, schema: string }) {
@@ -12,6 +12,12 @@ export function DatabaseTree({ database, schema }: { database: Database, schema:
 
   const debouncedPrefetchColumns = useDebouncedCallback(
     (tableName: string) => queryClient.prefetchQuery(databaseColumnsQuery(database, tableName)),
+    [database.id, schema],
+    50,
+  )
+
+  const debouncedPrefetchRows = useDebouncedCallback(
+    (tableName: string) => queryClient.prefetchQuery(databaseRowsQuery(database, tableName)),
     [database.id, schema],
     150,
   )
@@ -27,7 +33,10 @@ export function DatabaseTree({ database, schema }: { database: Database, schema:
             'w-full flex items-center gap-2 py-1.5 text-sm text-foreground text-left',
             tableParam === table.name && 'font-bold',
           )}
-          onMouseOver={() => debouncedPrefetchColumns(table.name)}
+          onMouseOver={() => {
+            debouncedPrefetchColumns(table.name)
+            debouncedPrefetchRows(table.name)
+          }}
         >
           <RiTableLine className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="truncate">{table.name}</span>

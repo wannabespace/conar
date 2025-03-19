@@ -119,8 +119,8 @@ export function useDatabaseEnums(database: Database) {
   return useQuery(databaseEnumsQuery(database))
 }
 
-export function databaseRowsQuery(database: Database, table: string, query: { schema?: string, limit?: number }) {
-  const _schema = query.schema ?? getSavedDatabaseSchema(database.id)
+export function databaseRowsQuery(database: Database, table: string, query?: { schema?: string, limit?: number }) {
+  const _schema = query?.schema ?? getSavedDatabaseSchema(database.id)
 
   return queryOptions({
     queryKey: ['database', database.id, 'schema', _schema, 'table', table, 'rows'],
@@ -128,7 +128,7 @@ export function databaseRowsQuery(database: Database, table: string, query: { sc
       const response = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
-        query: `SELECT * FROM "${_schema}"."${table}" LIMIT ${query.limit ?? 50}`,
+        query: `SELECT * FROM "${_schema}"."${table}" LIMIT ${query?.limit ?? 50}`,
       })
 
       return response as {
