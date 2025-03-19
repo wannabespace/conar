@@ -2,6 +2,9 @@
   "type": "module",
   "private": true,
   "packageManager": "pnpm@10.6.3",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "prepare": "husky",
     "lint": "eslint .",
