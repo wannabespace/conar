@@ -210,7 +210,7 @@ export function DataTable<T extends Record<string, unknown>>({ data, columns, lo
         />
         {data.length === 0 || loading
           ? (
-              <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center justify-center">
+              <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">
                 {loading ? 'Loading...' : 'No data available'}
               </div>
             )

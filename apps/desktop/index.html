@@ -4,12 +4,7 @@
     <title>Connnect</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script type="module">
-      const meta = document.createElement('meta');
-      meta.setAttribute('http-equiv', 'Content-Security-Policy');
-      meta.setAttribute('content',  `script-src 'self' 'unsafe-inline' https://eu.i.posthog.com https://eu-assets.i.posthog.com; ${import.meta.env.DEV ? 'worker-src blob:;' : ''}`);
-      document.head.appendChild(meta);
-    </script>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://eu.i.posthog.com https://eu-assets.i.posthog.com; worker-src blob: http://localhost:*;" />
     <script>
       if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
         document.documentElement.classList.add('dark')
