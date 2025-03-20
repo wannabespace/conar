@@ -1,9 +1,9 @@
 import { Label } from '@connnect/ui/components/label'
 import {
   Pagination,
+  PaginationButton,
   PaginationContent,
   PaginationItem,
-  PaginationLink,
 } from '@connnect/ui/components/pagination'
 import {
   Select,
@@ -12,31 +12,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@connnect/ui/components/select'
-import { ChevronFirstIcon, ChevronLastIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
-import { useId } from 'react'
+import { RiArrowLeftSLine, RiArrowRightSLine, RiSkipLeftLine, RiSkipRightLine } from '@remixicon/react'
+import { useId, useMemo } from 'react'
 
-interface PaginationProps {
+export type PageSize = 50 | 100 | 250 | 500 | 1000
+
+interface DataTableFooterProps {
   currentPage: number
-  totalPages: number
+  onPageChange: (page: number) => void
+  pageSize: PageSize
+  onPageSizeChange: (pageSize: PageSize) => void
+  total: number
+  loading: boolean
 }
 
-export function DataTableFooter({ currentPage, totalPages }: PaginationProps) {
+export function DataTableFooter({
+  currentPage,
+  onPageChange,
+  pageSize,
+  onPageSizeChange,
+  total,
+  loading,
+}: DataTableFooterProps) {
   const id = useId()
+
+  const paginationInfo = useMemo(() => {
+    const start = (currentPage - 1) * pageSize + 1
+    const end = Math.min(currentPage * pageSize, total)
+    const totalPages = Math.max(1, Math.ceil(total / pageSize))
+    return { start, end, totalPages }
+  }, [currentPage, pageSize, total])
 
   return (
     <div className="flex items-center justify-between gap-8">
       {/* Results per page */}
       <div className="flex items-center gap-3">
         <Label className="mb-0" htmlFor={id}>Rows per page</Label>
-        <Select defaultValue="25">
+        <Select
+          defaultValue={String(pageSize)}
+          onValueChange={value => onPageSizeChange(Number(value) as PageSize)}
+        >
           <SelectTrigger id={id} className="w-fit whitespace-nowrap">
             <SelectValue placeholder="Select number of results" />
           </SelectTrigger>
           <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="25">25</SelectItem>
             <SelectItem value="50">50</SelectItem>
             <SelectItem value="100">100</SelectItem>
+            <SelectItem value="250">250</SelectItem>
+            <SelectItem value="500">500</SelectItem>
+            <SelectItem value="1000">1000</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -44,11 +68,27 @@ export function DataTableFooter({ currentPage, totalPages }: PaginationProps) {
       {/* Page number information */}
       <div className="text-muted-foreground flex grow justify-end text-sm whitespace-nowrap">
         <p className="text-muted-foreground text-sm whitespace-nowrap" aria-live="polite">
-          <span className="text-foreground">1-25</span>
-          {' '}
-          of
-          {' '}
-          <span className="text-foreground">100</span>
+          {loading
+            ? (
+                <span className="text-foreground">Loading...</span>
+              )
+            : total > 0
+              ? (
+                  <>
+                    <span className="text-foreground">
+                      {paginationInfo.start}
+                      -
+                      {paginationInfo.end}
+                    </span>
+                    {' '}
+                    of
+                    {' '}
+                    <span className="text-foreground">{total}</span>
+                  </>
+                )
+              : (
+                  <span className="text-foreground">No results</span>
+                )}
         </p>
       </div>
 
@@ -58,54 +98,54 @@ export function DataTableFooter({ currentPage, totalPages }: PaginationProps) {
           <PaginationContent>
             {/* First page button */}
             <PaginationItem>
-              <PaginationLink
+              <PaginationButton
+                onClick={() => onPageChange(1)}
                 className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
-                href={currentPage === 1 ? undefined : `#/page/${currentPage - 1}`}
                 aria-label="Go to first page"
-                aria-disabled={currentPage === 1 ? true : undefined}
-                role={currentPage === 1 ? 'link' : undefined}
+                aria-disabled={currentPage === 1}
+                disabled={currentPage === 1}
               >
-                <ChevronFirstIcon size={16} aria-hidden="true" />
-              </PaginationLink>
+                <RiSkipLeftLine size={16} aria-hidden="true" />
+              </PaginationButton>
             </PaginationItem>
 
             {/* Previous page button */}
             <PaginationItem>
-              <PaginationLink
+              <PaginationButton
+                onClick={() => onPageChange(currentPage - 1)}
                 className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
-                href={currentPage === 1 ? undefined : `#/page/${currentPage - 1}`}
                 aria-label="Go to previous page"
-                aria-disabled={currentPage === 1 ? true : undefined}
-                role={currentPage === 1 ? 'link' : undefined}
+                aria-disabled={currentPage === 1}
+                disabled={currentPage === 1}
               >
-                <ChevronLeftIcon size={16} aria-hidden="true" />
-              </PaginationLink>
+                <RiArrowLeftSLine size={16} aria-hidden="true" />
+              </PaginationButton>
             </PaginationItem>
 
             {/* Next page button */}
             <PaginationItem>
-              <PaginationLink
+              <PaginationButton
+                onClick={() => onPageChange(currentPage + 1)}
                 className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
-                href={currentPage === totalPages ? undefined : `#/page/${currentPage + 1}`}
                 aria-label="Go to next page"
-                aria-disabled={currentPage === totalPages ? true : undefined}
-                role={currentPage === totalPages ? 'link' : undefined}
+                aria-disabled={currentPage === paginationInfo.totalPages}
+                disabled={currentPage === paginationInfo.totalPages}
               >
-                <ChevronRightIcon size={16} aria-hidden="true" />
-              </PaginationLink>
+                <RiArrowRightSLine size={16} aria-hidden="true" />
+              </PaginationButton>
             </PaginationItem>
 
             {/* Last page button */}
             <PaginationItem>
-              <PaginationLink
+              <PaginationButton
+                onClick={() => onPageChange(paginationInfo.totalPages)}
                 className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
-                href={currentPage === totalPages ? undefined : `#/page/${totalPages}`}
                 aria-label="Go to last page"
-                aria-disabled={currentPage === totalPages ? true : undefined}
-                role={currentPage === totalPages ? 'link' : undefined}
+                aria-disabled={currentPage === paginationInfo.totalPages}
+                disabled={currentPage === paginationInfo.totalPages}
               >
-                <ChevronLastIcon size={16} aria-hidden="true" />
-              </PaginationLink>
+                <RiSkipRightLine size={16} aria-hidden="true" />
+              </PaginationButton>
             </PaginationItem>
           </PaginationContent>
         </Pagination>

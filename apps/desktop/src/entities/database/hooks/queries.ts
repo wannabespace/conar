@@ -1,4 +1,5 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
+import type { PageSize } from '../components/table'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { getSavedDatabaseSchema } from '~/routes/(protected)/_protected/database/-hooks/schema'
@@ -119,26 +120,49 @@ export function useDatabaseEnums(database: Database) {
   return useQuery(databaseEnumsQuery(database))
 }
 
-export function databaseRowsQuery(database: Database, table: string, query?: { schema?: string, limit?: number }) {
+export function databaseRowsQuery(database: Database, table: string, query?: { schema?: string, limit?: PageSize, page?: number }) {
   const _schema = query?.schema ?? getSavedDatabaseSchema(database.id)
+  const _limit: PageSize = query?.limit ?? 50
+  const _page = query?.page ?? 1
 
   return queryOptions({
-    queryKey: ['database', database.id, 'schema', _schema, 'table', table, 'rows'],
+    queryKey: [
+      'database',
+      database.id,
+      'schema',
+      _schema,
+      'table',
+      table,
+      'rows',
+      {
+        limit: _limit,
+        page: _page,
+      },
+    ],
     queryFn: async () => {
-      const response = await window.electron.databases.query({
+      const rows = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
-        query: `SELECT * FROM "${_schema}"."${table}" LIMIT ${query?.limit ?? 50}`,
-      })
-
-      return response as {
+        query: `SELECT * FROM "${_schema}"."${table}" LIMIT ${_limit} OFFSET ${(_page - 1) * _limit}`,
+      }) as {
         [key: string]: string | number | boolean | null
       }[]
+
+      const countResponse = await window.electron.databases.query({
+        type: database.type,
+        connectionString: database.connectionString,
+        query: `SELECT COUNT(*) as total FROM "${_schema}"."${table}"`,
+      }) as { total: number }[]
+
+      return {
+        rows,
+        total: Number(countResponse[0]?.total || 0),
+      }
     },
   })
 }
 
-export function useDatabaseRows(database: Database, table: string, query: { schema?: string, limit?: number } = {}) {
+export function useDatabaseRows(database: Database, table: string, query: { schema?: string, limit?: PageSize, page?: number } = {}) {
   return useQuery(databaseRowsQuery(database, table, query))
 }
 

@@ -31,18 +31,19 @@ function PaginationItem({ ...props }: React.ComponentProps<'li'>) {
   return <li data-slot="pagination-item" {...props} />
 }
 
-type PaginationLinkProps = {
+type PaginationButtonProps = {
   isActive?: boolean
   isDisabled?: boolean
-} & Pick<React.ComponentProps<typeof Button>, 'size'> &
-React.ComponentProps<'a'>
+} & Pick<React.ComponentProps<typeof Button>, 'size'> & React.ComponentProps<'button'>
 
-function PaginationLink({ className, isActive, size = 'icon', ...props }: PaginationLinkProps) {
+function PaginationButton({ className, isActive, size = 'icon', ...props }: PaginationButtonProps) {
   return (
-    <a
+    <button
       aria-current={isActive ? 'page' : undefined}
-      data-slot="pagination-link"
+      data-slot="pagination-button"
       data-active={isActive}
+      type="button"
+      disabled={props.isDisabled}
       className={cn(
         buttonVariants({
           variant: isActive ? 'outline' : 'ghost',
@@ -55,9 +56,9 @@ function PaginationLink({ className, isActive, size = 'icon', ...props }: Pagina
   )
 }
 
-function PaginationPrevious({ className, ...props }: React.ComponentProps<typeof PaginationLink>) {
+function PaginationPrevious({ className, ...props }: React.ComponentProps<typeof PaginationButton>) {
   return (
-    <PaginationLink
+    <PaginationButton
       aria-label="Go to previous page"
       size="default"
       className={cn('gap-1 px-2.5 sm:pe-4', className)}
@@ -65,13 +66,13 @@ function PaginationPrevious({ className, ...props }: React.ComponentProps<typeof
     >
       <ChevronLeftIcon size={16} />
       <span>Previous</span>
-    </PaginationLink>
+    </PaginationButton>
   )
 }
 
-function PaginationNext({ className, ...props }: React.ComponentProps<typeof PaginationLink>) {
+function PaginationNext({ className, ...props }: React.ComponentProps<typeof PaginationButton>) {
   return (
-    <PaginationLink
+    <PaginationButton
       aria-label="Go to next page"
       size="default"
       className={cn('gap-1 px-2.5 sm:ps-4', className)}
@@ -79,7 +80,7 @@ function PaginationNext({ className, ...props }: React.ComponentProps<typeof Pag
     >
       <span>Next</span>
       <ChevronRightIcon size={16} />
-    </PaginationLink>
+    </PaginationButton>
   )
 }
 
@@ -99,10 +100,10 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<'span'
 
 export {
   Pagination,
+  PaginationButton,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 }
