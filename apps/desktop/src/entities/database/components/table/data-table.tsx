@@ -70,7 +70,7 @@ export function DataTable<T extends Record<string, unknown>>({ data, columns, lo
     getScrollElement: () => ref.current,
     estimateSize: () => 35,
     scrollMargin: ref.current?.offsetTop ?? 0,
-    overscan: 5,
+    overscan: 10,
   })
 
   return (
@@ -118,7 +118,7 @@ export function DataTable<T extends Record<string, unknown>>({ data, columns, lo
                   return (
                     <div
                       key={row.id}
-                      className="flex absolute w-full border-b last:border-b-0 border-border hover:bg-muted/30"
+                      className="flex absolute w-full will-change-transform border-b last:border-b-0 border-border hover:bg-muted/30"
                       style={{
                         height: `${virtualRow.size}px`,
                         transform: `translateY(${virtualRow.start}px)`,
