@@ -1,7 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
 import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
-import { scan } from 'react-scan'
 import { databasesQuery } from './entities/database'
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
@@ -11,9 +10,13 @@ import { routeTree } from './routeTree.gen'
 import '@connnect/ui/globals.css'
 import './monaco-worker'
 
-scan({
-  enabled: false,
-})
+if (import.meta.env.DEV) {
+  import('react-scan').then(({ scan }) => {
+    scan({
+      enabled: false,
+    })
+  })
+}
 
 window.electron.app.onDeepLink(async (url) => {
   window.initialDeepLink = url
