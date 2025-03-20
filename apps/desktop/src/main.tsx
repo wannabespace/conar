@@ -10,6 +10,14 @@ import { routeTree } from './routeTree.gen'
 import '@connnect/ui/globals.css'
 import './monaco-worker'
 
+if (import.meta.env.DEV) {
+  import('react-scan').then(({ scan }) => {
+    scan({
+      enabled: false,
+    })
+  })
+}
+
 window.electron.app.onDeepLink(async (url) => {
   window.initialDeepLink = url
 })
@@ -20,6 +28,7 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 0,
+      throwOnError: true,
     },
     mutations: {
       onError: handleError,

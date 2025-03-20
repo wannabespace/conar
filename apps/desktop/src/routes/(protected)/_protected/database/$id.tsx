@@ -30,7 +30,7 @@ function RouteComponent() {
     const tables = await queryClient.ensureQueryData(databaseTablesQuery(database))
 
     tables.forEach((table) => {
-      queryClient.prefetchQuery(databaseColumnsQuery(database, table.name, schema))
+      queryClient.ensureQueryData(databaseColumnsQuery(database, table.name, schema))
     })
   }, [schema])
 
@@ -62,7 +62,11 @@ function RouteComponent() {
                 </SelectTrigger>
                 <SelectContent>
                   {schemas?.map(schema => (
-                    <SelectItem key={schema.schema_name} value={schema.schema_name}>
+                    <SelectItem
+                      key={schema.schema_name}
+                      value={schema.schema_name}
+                      onMouseEnter={() => queryClient.ensureQueryData(databaseTablesQuery(database, schema.schema_name))}
+                    >
                       {schema.schema_name}
                     </SelectItem>
                   ))}

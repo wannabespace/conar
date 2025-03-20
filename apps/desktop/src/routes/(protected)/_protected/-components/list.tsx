@@ -28,8 +28,8 @@ function DatabaseCard({ database, onRemove }: { database: Database, onRemove: ()
       to="/database/$id"
       params={{ id: database.id }}
       onMouseOver={() => {
-        queryClient.prefetchQuery(databaseQuery(database.id))
-        queryClient.prefetchQuery(databaseTablesQuery(database))
+        queryClient.ensureQueryData(databaseQuery(database.id))
+        queryClient.ensureQueryData(databaseTablesQuery(database))
       }}
     >
       <div className="size-14 shrink-0 rounded-full bg-element p-3">

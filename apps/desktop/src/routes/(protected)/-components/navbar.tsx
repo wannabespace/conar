@@ -39,7 +39,7 @@ function Connections({ open, setOpen }: { open: boolean, setOpen: (open: boolean
               <CommandItem
                 key={databases.id}
                 onSelect={() => onSelect(databases)}
-                onMouseOver={() => queryClient.prefetchQuery(databaseQuery(databases.id))}
+                onMouseOver={() => queryClient.ensureQueryData(databaseQuery(databases.id))}
               >
                 <DatabaseIcon type={databases.type} className="size-4 shrink-0" />
                 {databases.name}
