@@ -126,9 +126,6 @@ importers:
       pg:
         specifier: ^8.14.0
         version: 8.14.1
-      react-scan:
-        specifier: ^0.3.2
-        version: 0.3.2(@types/react@19.0.11)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(rollup@4.36.0)
     devDependencies:
       '@connnect/api':
         specifier: workspace:*
@@ -244,6 +241,9 @@ importers:
       react-dom:
         specifier: 19.0.0
         version: 19.0.0(react@19.0.0)
+      react-scan:
+        specifier: ^0.3.2
+        version: 0.3.2(@types/react@19.0.11)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(rollup@4.36.0)
       sonner:
         specifier: ^2.0.1
         version: 2.0.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)

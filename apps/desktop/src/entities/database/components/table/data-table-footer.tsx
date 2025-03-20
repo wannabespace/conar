@@ -45,7 +45,6 @@ export function DataTableFooter({
 
   return (
     <div className="flex items-center justify-between gap-8">
-      {/* Results per page */}
       <div className="flex items-center gap-3">
         <Label className="mb-0" htmlFor={id}>Rows per page</Label>
         <Select
@@ -68,7 +67,7 @@ export function DataTableFooter({
         <p className="text-muted-foreground text-sm whitespace-nowrap" aria-live="polite">
           {total > 0
             ? (
-                <p className="text-muted-foreground text-sm" aria-live="polite">
+                <span className="text-muted-foreground text-sm" aria-live="polite">
                   Page
                   {' '}
                   <span className="text-foreground">{currentPage}</span>
@@ -76,7 +75,7 @@ export function DataTableFooter({
                   of
                   {' '}
                   <span className="text-foreground">{paginationInfo.totalPages}</span>
-                </p>
+                </span>
               )
             : (
                 <span className="text-foreground">No results</span>
@@ -142,12 +141,12 @@ export function DataTableFooter({
             className="w-14"
             defaultValue={String(currentPage)}
             onChange={(e) => {
-              const value = e.target.value
+              const value = Number(e.target.value)
 
-              if (value === '' || Number(value) > paginationInfo.totalPages || Number(value) < 1 || Number.isNaN(Number(value)))
+              if (value > paginationInfo.totalPages || value < 1 || Number.isNaN(value))
                 return
 
-              onPageChange(Number(value))
+              onPageChange(value)
             }}
           />
         </div>
