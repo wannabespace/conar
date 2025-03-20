@@ -7,7 +7,7 @@ import { RiRefreshLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { databaseRowsQuery, DataTable, DataTableFooter, useDatabase, useDatabaseColumns } from '~/entities/database'
+import { databaseColumnsQuery, databaseRowsQuery, DataTable, DataTableFooter, useDatabase, useDatabaseColumns } from '~/entities/database'
 import { queryClient } from '~/main'
 
 export const Route = createFileRoute(
@@ -44,6 +44,7 @@ function RouteComponent() {
   const handleRefresh = () => {
     setPage(1)
     queryClient.resetQueries({ queryKey: queryOpts.queryKey.slice(0, -1) })
+    queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table).queryKey })
   }
 
   const rows = data?.rows ?? []
