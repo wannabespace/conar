@@ -48,7 +48,7 @@
     "deleteAppDataOnUninstall": false
   },
   "linux": {
-    "target": "AppImage",
+    "target": ["AppImage", "deb"],
     "category": "Development",
     "mimeTypes": ["x-scheme-handler/connnect"],
     "artifactName": "${productName}-Linux-${version}.${ext}"
