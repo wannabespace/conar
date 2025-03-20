@@ -1,4 +1,4 @@
-import type { HeaderGroup, Row } from '@tanstack/react-table'
+import type { Cell, Header, HeaderGroup, Row } from '@tanstack/react-table'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import { ScrollArea, ScrollBar } from '@connnect/ui/components/scroll-area'
 import {
@@ -10,47 +10,41 @@ import {
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef } from 'react'
 
-interface DatabaseTableProps<T extends Record<string, unknown>> {
-  data: T[]
-  columns: {
-    name: string
-    type?: string
-  }[]
-  loading?: boolean
-  className?: string
+function TableHead<T extends Record<string, unknown>>({ header }: { header: Header<T, unknown> }) {
+  return (
+    <div
+      key={header.id}
+      style={{ width: `${header.getSize()}px` }}
+      className="font-mono shrink-0 text-xs p-2"
+    >
+      {header.isPlaceholder
+        ? null
+        : (
+            <div
+              className={header.column.getCanSort()
+                ? 'cursor-pointer select-none'
+                : ''}
+              onClick={header.column.getToggleSortingHandler()}
+            >
+              {flexRender(
+                header.column.columnDef.header,
+                header.getContext(),
+              )}
+            </div>
+          )}
+    </div>
+  )
 }
 
-interface TableHeaderProps<T extends Record<string, unknown>> {
+function TableHeader<T extends Record<string, unknown>>({ headerGroups }: {
   headerGroups: HeaderGroup<T>[]
-}
-
-function TableHeader<T extends Record<string, unknown>>({ headerGroups }: TableHeaderProps<T>) {
+}) {
   return (
     <div className="sticky top-0 z-10 border-b-2 border-border bg-background">
       {headerGroups.map(headerGroup => (
         <div key={headerGroup.id} className="flex">
           {headerGroup.headers.map(header => (
-            <div
-              key={header.id}
-              style={{ width: `${header.getSize()}px` }}
-              className="font-mono shrink-0 text-xs p-2"
-            >
-              {header.isPlaceholder
-                ? null
-                : (
-                    <div
-                      className={header.column.getCanSort()
-                        ? 'cursor-pointer select-none'
-                        : ''}
-                      onClick={header.column.getToggleSortingHandler()}
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                    </div>
-                  )}
-            </div>
+            <TableHead key={header.id} header={header} />
           ))}
         </div>
       ))}
@@ -58,47 +52,72 @@ function TableHeader<T extends Record<string, unknown>>({ headerGroups }: TableH
   )
 }
 
-interface TableRowsProps<T extends Record<string, unknown>> {
-  virtualItems: VirtualItem[]
-  rows: Row<T>[]
+function TableCell<T extends Record<string, unknown>>({ cell }: {
+  cell: Cell<T, unknown>
+}) {
+  return (
+    <div
+      key={cell.id}
+      className="font-mono shrink-0 text-xs truncate p-2"
+      style={{
+        width: `${cell.column.getSize()}px`,
+      }}
+    >
+      {flexRender(
+        cell.column.columnDef.cell,
+        cell.getContext(),
+      )}
+    </div>
+  )
 }
 
-function TableRows<T extends Record<string, unknown>>({ virtualItems, rows }: TableRowsProps<T>) {
+function TableRow<T extends Record<string, unknown>>({ row, virtualRow }: {
+  row: Row<T>
+  virtualRow: VirtualItem
+}) {
+  return (
+    <div
+      key={row.id}
+      className="flex absolute w-full border-b last:border-b-0 border-border hover:bg-muted/30"
+      style={{
+        height: `${virtualRow.size}px`,
+        transform: `translate3d(0,${virtualRow.start}px,0)`,
+        top: 0,
+        left: 0,
+      }}
+    >
+      {row.getVisibleCells().map(cell => (
+        <TableCell key={cell.id} cell={cell} />
+      ))}
+    </div>
+  )
+}
+
+function TableRows<T extends Record<string, unknown>>({ virtualItems, rows }: {
+  virtualItems: VirtualItem[]
+  rows: Row<T>[]
+}) {
   return (
     <div className="relative flex flex-col">
       {virtualItems.map((virtualRow) => {
         const row = rows[virtualRow.index]
         return (
-          <div
-            key={row.id}
-            className="flex absolute w-full will-change-transform border-b last:border-b-0 border-border hover:bg-muted/30"
-            style={{
-              height: `${virtualRow.size}px`,
-              transform: `translateY(${virtualRow.start}px)`,
-            }}
-          >
-            {row.getVisibleCells().map(cell => (
-              <div
-                key={cell.id}
-                className="font-mono shrink-0 text-xs truncate p-2"
-                style={{
-                  width: `${cell.column.getSize()}px`,
-                }}
-              >
-                {flexRender(
-                  cell.column.columnDef.cell,
-                  cell.getContext(),
-                )}
-              </div>
-            ))}
-          </div>
+          <TableRow key={row.id} row={row} virtualRow={virtualRow} />
         )
       })}
     </div>
   )
 }
 
-export function DataTable<T extends Record<string, unknown>>({ data, columns, loading, className }: DatabaseTableProps<T>) {
+export function DataTable<T extends Record<string, unknown>>({ data, columns, loading, className }: {
+  data: T[]
+  columns: {
+    name: string
+    type?: string
+  }[]
+  loading?: boolean
+  className?: string
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const columnHelper = createColumnHelper<T>()
 
@@ -122,16 +141,15 @@ export function DataTable<T extends Record<string, unknown>>({ data, columns, lo
             {column.name}
           </div>
           {column.type && (
-            <>
-              <span className="text-muted-foreground text-[0.6rem]">
-                {column.type}
-              </span>
-            </>
+            <span className="text-muted-foreground text-[0.6rem]">
+              {column.type}
+            </span>
           )}
         </>
       ),
       size: 200,
-    }))
+    }),
+  )
 
   const table = useReactTable({
     data,
