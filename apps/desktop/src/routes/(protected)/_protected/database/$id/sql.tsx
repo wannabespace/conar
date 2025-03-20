@@ -30,11 +30,11 @@ function RouteComponent() {
   const { data: database } = useDatabase(id)
 
   const { mutate: sendQuery, data: result, isPending } = useMutation({
-    mutationFn: async (queryParam?: string | void) => {
+    mutationFn: async () => {
       const response = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
-        query: queryParam ?? query,
+        query,
       })
 
       return response as Record<string, unknown>[]

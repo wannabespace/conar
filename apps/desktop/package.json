@@ -21,7 +21,8 @@
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
     "electron-updater": "^6.3.9",
-    "pg": "^8.14.0"
+    "pg": "^8.14.0",
+    "react-scan": "^0.3.2"
   },
   "devDependencies": {
     "@connnect/api": "workspace:*",
