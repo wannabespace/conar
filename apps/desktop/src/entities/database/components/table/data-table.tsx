@@ -99,7 +99,7 @@ function TableRow<T extends Record<string, unknown>>({ row, virtualRow, virtualC
 }) {
   return (
     <div
-      className="flex absolute w-full border-b last:border-b-0 border-border hover:bg-muted/30"
+      className="flex absolute w-full border-b last:border-b-0 min-w-full border-border hover:bg-muted/30"
       style={{
         height: `${virtualRow.size}px`,
         transform: `translate3d(0,${virtualRow.start}px,0)`,
