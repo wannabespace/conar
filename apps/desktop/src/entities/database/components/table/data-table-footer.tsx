@@ -1,3 +1,4 @@
+import { Input } from '@connnect/ui/components/input'
 import { Label } from '@connnect/ui/components/label'
 import {
   Pagination,
@@ -23,7 +24,6 @@ interface DataTableFooterProps {
   pageSize: PageSize
   onPageSizeChange: (pageSize: PageSize) => void
   total: number
-  loading: boolean
 }
 
 export function DataTableFooter({
@@ -32,9 +32,9 @@ export function DataTableFooter({
   pageSize,
   onPageSizeChange,
   total,
-  loading,
 }: DataTableFooterProps) {
   const id = useId()
+  const goToPageId = useId()
 
   const paginationInfo = useMemo(() => {
     const start = (currentPage - 1) * pageSize + 1
@@ -64,39 +64,28 @@ export function DataTableFooter({
           </SelectContent>
         </Select>
       </div>
-
-      {/* Page number information */}
       <div className="text-muted-foreground flex grow justify-end text-sm whitespace-nowrap">
         <p className="text-muted-foreground text-sm whitespace-nowrap" aria-live="polite">
-          {loading
+          {total > 0
             ? (
-                <span className="text-foreground">Loading...</span>
+                <p className="text-muted-foreground text-sm" aria-live="polite">
+                  Page
+                  {' '}
+                  <span className="text-foreground">{currentPage}</span>
+                  {' '}
+                  of
+                  {' '}
+                  <span className="text-foreground">{paginationInfo.totalPages}</span>
+                </p>
               )
-            : total > 0
-              ? (
-                  <>
-                    <span className="text-foreground">
-                      {paginationInfo.start}
-                      -
-                      {paginationInfo.end}
-                    </span>
-                    {' '}
-                    of
-                    {' '}
-                    <span className="text-foreground">{total}</span>
-                  </>
-                )
-              : (
-                  <span className="text-foreground">No results</span>
-                )}
+            : (
+                <span className="text-foreground">No results</span>
+              )}
         </p>
       </div>
-
-      {/* Pagination */}
-      <div>
+      <div className="flex items-center gap-8">
         <Pagination>
           <PaginationContent>
-            {/* First page button */}
             <PaginationItem>
               <PaginationButton
                 onClick={() => onPageChange(1)}
@@ -108,8 +97,6 @@ export function DataTableFooter({
                 <RiSkipLeftLine size={16} aria-hidden="true" />
               </PaginationButton>
             </PaginationItem>
-
-            {/* Previous page button */}
             <PaginationItem>
               <PaginationButton
                 onClick={() => onPageChange(currentPage - 1)}
@@ -121,8 +108,6 @@ export function DataTableFooter({
                 <RiArrowLeftSLine size={16} aria-hidden="true" />
               </PaginationButton>
             </PaginationItem>
-
-            {/* Next page button */}
             <PaginationItem>
               <PaginationButton
                 onClick={() => onPageChange(currentPage + 1)}
@@ -134,8 +119,6 @@ export function DataTableFooter({
                 <RiArrowRightSLine size={16} aria-hidden="true" />
               </PaginationButton>
             </PaginationItem>
-
-            {/* Last page button */}
             <PaginationItem>
               <PaginationButton
                 onClick={() => onPageChange(paginationInfo.totalPages)}
@@ -149,6 +132,25 @@ export function DataTableFooter({
             </PaginationItem>
           </PaginationContent>
         </Pagination>
+        <div className="flex items-center gap-3">
+          <Label htmlFor={goToPageId} className="whitespace-nowrap mb-0">
+            Go to page
+          </Label>
+          <Input
+            id={goToPageId}
+            type="text"
+            className="w-14"
+            defaultValue={String(currentPage)}
+            onChange={(e) => {
+              const value = e.target.value
+
+              if (value === '' || Number(value) > paginationInfo.totalPages || Number(value) < 1 || Number.isNaN(Number(value)))
+                return
+
+              onPageChange(Number(value))
+            }}
+          />
+        </div>
       </div>
     </div>
   )

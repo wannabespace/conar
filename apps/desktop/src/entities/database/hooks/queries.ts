@@ -129,12 +129,11 @@ export function databaseRowsQuery(database: Database, table: string, query?: { s
     queryKey: [
       'database',
       database.id,
-      'schema',
-      _schema,
       'table',
       table,
       'rows',
       {
+        schema: _schema,
         limit: _limit,
         page: _page,
       },

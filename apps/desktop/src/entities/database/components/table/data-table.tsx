@@ -36,16 +36,36 @@ function TableHead<T extends Record<string, unknown>>({ header }: { header: Head
   )
 }
 
-function TableHeader<T extends Record<string, unknown>>({ headerGroups }: {
+function TableHeader<T extends Record<string, unknown>>({ headerGroups, virtualColumns, rowWidth }: {
   headerGroups: HeaderGroup<T>[]
+  virtualColumns: VirtualItem[]
+  rowWidth: number
 }) {
   return (
     <div className="sticky top-0 z-10 border-b-2 border-border bg-background">
       {headerGroups.map(headerGroup => (
-        <div key={headerGroup.id} className="flex">
-          {headerGroup.headers.map(header => (
-            <TableHead key={header.id} header={header} />
-          ))}
+        <div
+          key={headerGroup.id}
+          className="flex h-12 relative"
+          style={{ width: `${rowWidth}px` }}
+        >
+          {virtualColumns.map((virtualColumn) => {
+            const header = headerGroup.headers[virtualColumn.index]
+            return (
+              <div
+                key={header.id}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  transform: `translateX(${virtualColumn.start}px)`,
+                  width: `${header.getSize()}px`,
+                }}
+              >
+                <TableHead header={header} />
+              </div>
+            )
+          })}
         </div>
       ))}
     </div>
@@ -71,38 +91,39 @@ function TableCell<T extends Record<string, unknown>>({ cell }: {
   )
 }
 
-function TableRow<T extends Record<string, unknown>>({ row, virtualRow }: {
+function TableRow<T extends Record<string, unknown>>({ row, virtualRow, virtualColumns, rowWidth }: {
   row: Row<T>
   virtualRow: VirtualItem
+  virtualColumns: VirtualItem[]
+  rowWidth: number
 }) {
   return (
     <div
-      key={row.id}
       className="flex absolute w-full border-b last:border-b-0 border-border hover:bg-muted/30"
       style={{
         height: `${virtualRow.size}px`,
         transform: `translate3d(0,${virtualRow.start}px,0)`,
         top: 0,
         left: 0,
+        width: `${rowWidth}px`,
       }}
     >
-      {row.getVisibleCells().map(cell => (
-        <TableCell key={cell.id} cell={cell} />
-      ))}
-    </div>
-  )
-}
-
-function TableRows<T extends Record<string, unknown>>({ virtualItems, rows }: {
-  virtualItems: VirtualItem[]
-  rows: Row<T>[]
-}) {
-  return (
-    <div className="relative flex flex-col">
-      {virtualItems.map((virtualRow) => {
-        const row = rows[virtualRow.index]
+      {virtualColumns.map((virtualColumn) => {
+        const cell = row.getVisibleCells()[virtualColumn.index]
         return (
-          <TableRow key={row.id} row={row} virtualRow={virtualRow} />
+          <div
+            key={virtualColumn.key}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: '100%',
+              transform: `translateX(${virtualColumn.start}px)`,
+              width: `${cell.column.getSize()}px`,
+            }}
+          >
+            <TableCell cell={cell} />
+          </div>
         )
       })}
     </div>
@@ -160,25 +181,52 @@ export function DataTable<T extends Record<string, unknown>>({ data, columns, lo
 
   const { rows } = table.getRowModel()
 
-  const virtualizer = useVirtualizer({
+  const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => ref.current,
     estimateSize: () => 35,
     scrollMargin: ref.current?.offsetTop ?? 0,
-    overscan: 10,
+    overscan: 5,
   })
+
+  const columnVirtualizer = useVirtualizer({
+    horizontal: true,
+    count: table.getAllColumns().length,
+    getScrollElement: () => ref.current,
+    estimateSize: index => table.getAllColumns()[index].getSize(),
+    overscan: 1,
+  })
+
+  const rowWidth = columnVirtualizer.getTotalSize()
+  const virtualColumns = columnVirtualizer.getVirtualItems()
 
   return (
     <ScrollArea scrollRef={ref} className={className}>
-      <div className="w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
-        <TableHeader headerGroups={table.getHeaderGroups()} />
+      <div className="w-full" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+        <TableHeader
+          headerGroups={table.getHeaderGroups()}
+          virtualColumns={virtualColumns}
+          rowWidth={rowWidth}
+        />
         {data.length === 0 || loading
           ? (
               <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center justify-center">
                 {loading ? 'Loading...' : 'No data available'}
               </div>
             )
-          : <TableRows virtualItems={virtualizer.getVirtualItems()} rows={rows} />}
+          : (
+              <div className="relative flex flex-col">
+                {rowVirtualizer.getVirtualItems().map(virtualRow => (
+                  <TableRow
+                    key={virtualRow.key}
+                    row={rows[virtualRow.index]}
+                    virtualRow={virtualRow}
+                    virtualColumns={virtualColumns}
+                    rowWidth={rowWidth}
+                  />
+                ))}
+              </div>
+            )}
       </div>
       <ScrollBar orientation="horizontal" />
     </ScrollArea>
