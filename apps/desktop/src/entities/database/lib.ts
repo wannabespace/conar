@@ -1,6 +1,10 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
+import type { Database } from '~/lib/indexeddb'
 import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/lib/trpc'
+import { queryClient } from '~/main'
+import { databaseQuery } from './hooks/database'
+import { databaseSchemasQuery, databaseTablesQuery } from './hooks/queries'
 
 export async function fetchDatabases() {
   const [fetchedDatabases, existingDatabases] = await Promise.all([
@@ -93,4 +97,10 @@ export async function updateDatabasePassword(id: string, password: string) {
   database.isPasswordPopulated = true
 
   await indexedDb.databases.put(database)
+}
+
+export function prefetchDatabaseCore(database: Database) {
+  queryClient.ensureQueryData(databaseQuery(database.id))
+  queryClient.ensureQueryData(databaseSchemasQuery(database))
+  queryClient.ensureQueryData(databaseTablesQuery(database))
 }

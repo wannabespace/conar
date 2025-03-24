@@ -1,6 +1,7 @@
 import type { Database } from '~/lib/indexeddb'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
+import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
 import { Skeleton } from '@connnect/ui/components/skeleton'
 import { RiDeleteBinLine, RiMoreLine } from '@remixicon/react'
@@ -8,7 +9,7 @@ import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { DatabaseIcon, databaseQuery, databasesQuery, databaseTablesQuery, removeDatabase, useDatabases } from '~/entities/database'
+import { DatabaseIcon, databasesQuery, prefetchDatabaseCore, removeDatabase, useDatabases } from '~/entities/database'
 import { queryClient } from '~/main'
 
 function DatabaseCard({ database, onRemove }: { database: Database, onRemove: () => void }) {
@@ -24,15 +25,12 @@ function DatabaseCard({ database, onRemove }: { database: Database, onRemove: ()
 
   return (
     <Link
-      className="relative flex items-center justify-between gap-4 rounded-lg bg-background p-5 border border-border transition-all duration-150 hover:border-primary/50 hover:shadow-xl shadow-black/3"
-      to="/database/$id"
+      className="relative flex items-center justify-between gap-4 rounded-lg bg-card p-5 border hover:border-primary transition-all duration-150 hover:shadow-lg shadow-black/3"
+      to="/database/$id/tables"
       params={{ id: database.id }}
-      onMouseOver={() => {
-        queryClient.ensureQueryData(databaseQuery(database.id))
-        queryClient.ensureQueryData(databaseTablesQuery(database))
-      }}
+      onMouseOver={() => prefetchDatabaseCore(database)}
     >
-      <div className="size-14 shrink-0 rounded-full bg-element p-3">
+      <div className="size-14 shrink-0 rounded-full bg-muted p-3">
         <DatabaseIcon type={database.type} className="size-full text-primary" />
       </div>
       <div className="flex flex-1 flex-col gap-1 min-w-0">
@@ -64,7 +62,7 @@ export function Empty() {
   const router = useRouter()
 
   return (
-    <div className="text-center bg-background border-2 border-dashed border-foreground/10 rounded-xl p-14 w-full m-auto group">
+    <div className="text-center bg-card border-2 border-dashed border-border/50 rounded-xl p-14 w-full m-auto group">
       <h2 className="text-foreground font-medium mt-6">
         No connections found
       </h2>
@@ -80,7 +78,7 @@ export function Empty() {
 
 function DatabaseCardSkeleton() {
   return (
-    <div className="relative flex items-center justify-between gap-4 rounded-lg border border-border bg-background p-5">
+    <div className="relative flex items-center justify-between gap-4 rounded-lg bg-card p-5">
       <Skeleton className="size-14 shrink-0 rounded-full" />
       <div className="flex flex-1 flex-col gap-2 min-w-0">
         <Skeleton className="h-5 w-1/3" />
@@ -119,14 +117,16 @@ function RemoveDatabaseDialog({ id, open, onOpenChange }: { id: string | null, o
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
-              loading={isPending}
               variant="destructive"
               onClick={(e) => {
                 e.preventDefault()
                 removeDatabaseMutation()
               }}
+              disabled={isPending}
             >
-              Remove
+              <LoadingContent loading={isPending}>
+                Remove
+              </LoadingContent>
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -135,7 +135,7 @@ function RemoveDatabaseDialog({ id, open, onOpenChange }: { id: string | null, o
   )
 }
 
-export function List() {
+export function DatabasesList() {
   const { data: databases, isPending } = useDatabases()
   const [selected, setSelected] = useState<string | null>(null)
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)

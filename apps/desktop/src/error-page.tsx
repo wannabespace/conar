@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { ThemeProvider } from '@connnect/ui/theme-provider'
-import { RiAlertLine, RiArrowGoBackLine, RiRefreshLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowGoBackLine, RiLoopLeftLine } from '@remixicon/react'
 import { useNavigate } from '@tanstack/react-router'
 import { EventsProvider } from './lib/events'
 
@@ -67,7 +67,7 @@ export function ErrorPage({ error, info }: ErrorComponentProps) {
                   className="flex-1"
                   onClick={() => window.location.reload()}
                 >
-                  <RiRefreshLine />
+                  <RiLoopLeftLine />
                   Refresh
                 </Button>
               </CardFooter>

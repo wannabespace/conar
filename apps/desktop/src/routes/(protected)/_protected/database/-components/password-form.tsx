@@ -1,6 +1,7 @@
 import type { Database } from '~/lib/indexeddb'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@connnect/ui/components/card'
+import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useMemo, useState } from 'react'
@@ -69,11 +70,12 @@ export function PasswordForm({ database }: { database: Database }) {
             <Button
               variant="outline"
               className="shrink-0"
-              loading={isConnecting}
-              disabled={isPending}
+              disabled={isConnecting || isPending}
               onClick={() => testConnection({ type: database.type, connectionString: newConnectionString })}
             >
-              Test connection
+              <LoadingContent loading={isConnecting}>
+                Test connection
+              </LoadingContent>
             </Button>
           </div>
         </CardContent>
@@ -81,9 +83,11 @@ export function PasswordForm({ database }: { database: Database }) {
           <Button
             type="submit"
             className="w-full"
-            loading={isPending}
+            disabled={isPending}
           >
-            Save Password
+            <LoadingContent loading={isPending}>
+              Save Password
+            </LoadingContent>
           </Button>
         </CardFooter>
       </Card>

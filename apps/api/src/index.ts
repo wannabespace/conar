@@ -14,8 +14,6 @@ app.use(logger())
 app.use(cors({
   origin: [env.WEB_URL, 'http://localhost:3002'],
   credentials: true,
-  allowHeaders: ['Content-Type', 'Authorization', 'trpc-accept'],
-  exposeHeaders: ['Set-Auth-Token'],
 }))
 
 app.on(['GET', 'POST'], '/auth/*', (c) => {

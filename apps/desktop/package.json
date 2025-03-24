@@ -24,6 +24,7 @@
     "pg": "^8.14.0"
   },
   "devDependencies": {
+    "@ai-sdk/react": "^1.2.0",
     "@connnect/api": "workspace:*",
     "@connnect/shared": "workspace:*",
     "@connnect/tsconfig": "workspace:*",
@@ -66,7 +67,7 @@
     "sonner": "^2.0.1",
     "sql-formatter": "^15.4.11",
     "tailwindcss": "^4.0.7",
-    "tailwindcss-animate": "^1.0.7",
+    "tw-animate-css": "^1.2.4",
     "typescript": "~5.8.2",
     "uuid": "^11.1.0",
     "vite": "^6.2.2",

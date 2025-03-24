@@ -10,17 +10,17 @@ export function ThemeToggle({ children }: { children: React.ReactNode }) {
       <DropdownMenuTrigger asChild>
         {children}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent side="right" className="min-w-32">
         <DropdownMenuItem onClick={() => setTheme('light')}>
-          <RiSunLine className="mr-2" />
+          <RiSunLine aria-hidden="true" />
           Light
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('dark')}>
-          <RiMoonLine className="mr-2" />
+          <RiMoonLine aria-hidden="true" />
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('system')}>
-          <RiComputerLine className="mr-2" />
+          <RiComputerLine aria-hidden="true" />
           System
         </DropdownMenuItem>
       </DropdownMenuContent>

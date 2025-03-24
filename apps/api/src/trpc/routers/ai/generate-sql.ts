@@ -1,15 +1,21 @@
+import type { LanguageModelV1 } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
 import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { tryCatch } from '@connnect/shared/utils/try-catch'
 import { TRPCError } from '@trpc/server'
-import { APICallError, generateText } from 'ai'
+import { generateText } from 'ai'
 import { z } from 'zod'
 import { protectedProcedure } from '~/trpc'
 
 const schema = z.object({
   prompt: z.string().min(1),
   type: z.nativeEnum(DatabaseType),
-  context: z.string(),
+  existingQuery: z.string().optional(),
+  context: z.object({
+    columns: z.string(),
+    tables: z.string(),
+    enums: z.string(),
+  }),
 })
 
 function generateSqlQuery({
@@ -18,26 +24,35 @@ function generateSqlQuery({
   signal,
 }: {
   input: z.infer<typeof schema>
-  model: Parameters<typeof anthropic>[0]
+  model: LanguageModelV1
   signal: AbortSignal
 }) {
   return generateText({
     abortSignal: signal,
-    model: anthropic(model),
+    model,
     prompt: `You are an expert SQL developer. Generate valid SQL code for ${input.type} database based on this request: "${input.prompt}"
 
 ---
-User provides the context:
-${input.context}
+Database Context:
+Existing Query: ${input.existingQuery}
+Tables: ${input.context.tables}
+Columns: ${input.context.columns}
+Enums: ${input.context.enums}
 ---
 
-Important instructions:
-1. Respond ONLY with the SQL code, no explanations or markdown
-2. Ensure the SQL is valid for ${input.type} database
-3. Do not include any text before or after the SQL code
-4. The SQL will be executed directly in a database editor
-5. Use 2 spaces for indentation
-6. If in the context there is an query, use it as a reference to generate a new query
+Your task is to generate a valid SQL query for ${input.type} database based on the user's request: "${input.prompt}"
+
+Requirements:
+1. Output ONLY the SQL code with no explanations, comments, or markdown formatting
+2. Ensure the SQL is 100% valid and optimized for ${input.type} database
+3. Use proper table and column names exactly as provided in the context
+4. Use 2 spaces for indentation and consistent formatting
+5. If there's an existing query in the context, use it as a reference to improve upon
+6. Consider performance implications for complex queries
+7. The SQL will be executed directly in a production database editor
+8. Generate SQL query only for the provided tables, columns and enums
+
+Remember: Return ONLY executable SQL code with no additional text.
 `,
   })
 }
@@ -45,15 +60,11 @@ Important instructions:
 export const generateSql = protectedProcedure
   .input(schema)
   .mutation(async ({ input, signal }) => {
-    console.info('Generating SQL', {
-      prompt: input.prompt,
-      type: input.type,
-      context: input.context,
-    })
+    console.info('Generating SQL', input)
 
     const { data, error } = await tryCatch(() => generateSqlQuery({
       input,
-      model: 'claude-3-7-sonnet-20250219',
+      model: anthropic('claude-3-7-sonnet-20250219'),
       signal: signal ?? AbortSignal.timeout(30000),
     }))
 
@@ -68,14 +79,13 @@ export const generateSql = protectedProcedure
 
     console.error('Error generating SQL', { error })
 
-    if (APICallError.isInstance(error)) {
-      const isOverloaded = error.responseBody
-        && JSON.parse(error.responseBody).detail === 'Overloaded'
+    if (error instanceof Error) {
+      const isOverloaded = error.message.includes('Overloaded')
 
       if (isOverloaded) {
         const fallbackResult = await tryCatch(() => generateSqlQuery({
           input,
-          model: 'claude-3-5-sonnet-latest',
+          model: anthropic('claude-3-5-haiku-latest'),
           signal: signal ?? AbortSignal.timeout(10000),
         }))
 

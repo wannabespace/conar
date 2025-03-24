@@ -29,8 +29,8 @@ export const auth = betterAuth({
   baseURL: env.API_URL,
   basePath: '/auth',
   plugins: [
-    twoFactor(),
     bearer(),
+    twoFactor(),
     organization({
       schema: {
         organization: {

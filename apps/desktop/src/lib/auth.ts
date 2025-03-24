@@ -1,39 +1,28 @@
 import type { auth } from '@connnect/api/src/lib/auth'
-import { createAuthClient } from 'better-auth/client'
 import {
   inferAdditionalFields,
   magicLinkClient,
   organizationClient,
   twoFactorClient,
 } from 'better-auth/client/plugins'
+import { bearer } from 'better-auth/plugins'
+import { createAuthClient } from 'better-auth/react'
 import { toast } from 'sonner'
 import { identifyUser } from './events'
 
-export const BEARER_TOKEN_KEY = 'connnect.bearer_token'
 export const CODE_CHALLENGE_KEY = 'connnect.code_challenge'
+export const BEARER_TOKEN_KEY = 'connnect.bearer_token'
 
-export function removeBearerToken() {
-  localStorage.removeItem(BEARER_TOKEN_KEY)
+export const bearerToken = {
+  get: () => localStorage.getItem(BEARER_TOKEN_KEY),
+  set: (bearerToken: string) => localStorage.setItem(BEARER_TOKEN_KEY, bearerToken),
+  remove: () => localStorage.removeItem(BEARER_TOKEN_KEY),
 }
 
-export function getBearerToken() {
-  return localStorage.getItem(BEARER_TOKEN_KEY)
-}
-
-export function setBearerToken(token: string) {
-  localStorage.setItem(BEARER_TOKEN_KEY, token)
-}
-
-export function getCodeChallenge() {
-  return localStorage.getItem(CODE_CHALLENGE_KEY)
-}
-
-export function setCodeChallenge(codeChallenge: string) {
-  localStorage.setItem(CODE_CHALLENGE_KEY, codeChallenge)
-}
-
-export function removeCodeChallenge() {
-  localStorage.removeItem(CODE_CHALLENGE_KEY)
+export const codeChallenge = {
+  get: () => localStorage.getItem(CODE_CHALLENGE_KEY),
+  set: (codeChallenge: string) => localStorage.setItem(CODE_CHALLENGE_KEY, codeChallenge),
+  remove: () => localStorage.removeItem(CODE_CHALLENGE_KEY),
 }
 
 export function successAuthToast(newUser: boolean) {
@@ -50,37 +39,28 @@ export function successAuthToast(newUser: boolean) {
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_PUBLIC_API_URL,
   basePath: '/auth',
-  fetchOptions: {
-    async onRequest({ headers }) {
-      const token = getBearerToken()
-
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`)
-      }
-    },
-    async onSuccess({ response }) {
-      const authToken = response.headers.get('set-auth-token')
-
-      if (authToken) {
-        setBearerToken(authToken)
-      }
-    },
-    async onError({ error }) {
-      if (error.status === 401) {
-        removeBearerToken()
-      }
-    },
-  },
   plugins: [
     inferAdditionalFields<typeof auth>(),
+    bearer(),
     organizationClient(),
     twoFactorClient(),
     magicLinkClient(),
   ],
+  fetchOptions: {
+    auth: {
+      type: 'Bearer',
+      token: () => bearerToken.get() ?? undefined,
+    },
+    async onError({ error }) {
+      if (error.status === 401) {
+        bearerToken.remove()
+      }
+    },
+  },
 })
 
 export async function fullSignOut() {
   await authClient.signOut()
-  removeBearerToken()
+  bearerToken.remove()
   identifyUser(null)
 }

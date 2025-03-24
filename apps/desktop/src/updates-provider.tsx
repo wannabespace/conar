@@ -96,7 +96,7 @@ export function UpdatesButton() {
         </div>
       )}
       {status === 'ready' && (
-        <Button variant="outline" size="xs" onClick={relaunch}>
+        <Button variant="outline" size="sm" onClick={relaunch}>
           Restart to update
         </Button>
       )}

@@ -1,5 +1,5 @@
+import { AppTextLogo } from '@connnect/ui/components/brand/app-text-logo'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ConnnectText } from '~/components/connnect-text'
 import { AuthForm } from './-components/auth-form'
 
 export const Route = createFileRoute('/(public)/_auth/sign-in')({
@@ -12,7 +12,7 @@ function SignInPage() {
       <div className="space-y-2">
         <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           Sign in to
-          <ConnnectText className="translate-y-px" />
+          <AppTextLogo className="translate-y-px" />
         </h1>
         <p className="text-sm text-muted-foreground">
           Don't have an account?

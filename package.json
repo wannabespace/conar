@@ -17,7 +17,7 @@
     "start:api": "turbo run @connnect/api#start",
     "drizzle:generate": "turbo run drizzle:generate",
     "drizzle:migrate": "turbo run drizzle:migrate",
-    "check-types": "turbo check-types"
+    "check-types": "turbo run check-types"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.1",

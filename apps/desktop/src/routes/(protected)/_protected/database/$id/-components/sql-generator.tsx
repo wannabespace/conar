@@ -1,5 +1,6 @@
 import type { Database } from '~/lib/indexeddb'
 import { Button } from '@connnect/ui/components/button'
+import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
 import { RiSendPlaneLine, RiSparklingLine, RiStopLargeLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -35,12 +36,12 @@ export function SqlGenerator({ database, query, setQuery }: SqlGeneratorProps) {
       return trpc.ai.generateSql.mutate({
         type: database.type,
         prompt: sqlPrompt,
-        context: `
-          Current query: ${query}
-          Tables: ${JSON.stringify(tables.map(t => t.name))}
-          Columns: ${JSON.stringify(columns.flat())}
-          Enums: ${JSON.stringify(enums)}
-        `.trim(),
+        existingQuery: query,
+        context: {
+          tables: JSON.stringify(tables.map(t => t.name)),
+          columns: JSON.stringify(columns.flat()),
+          enums: JSON.stringify(enums),
+        },
       }, { signal: abortController.signal })
     },
     onSettled: () => {
@@ -75,12 +76,13 @@ export function SqlGenerator({ database, query, setQuery }: SqlGeneratorProps) {
       <Button
         variant="outline"
         type="submit"
-        disabled={!sqlPrompt}
+        disabled={isGeneratingSql || !sqlPrompt}
         size="icon"
         className="shrink-0"
-        loading={isGeneratingSql}
       >
-        <RiSendPlaneLine />
+        <LoadingContent loading={isGeneratingSql}>
+          <RiSendPlaneLine />
+        </LoadingContent>
       </Button>
       {isGeneratingSql && (
         <Button

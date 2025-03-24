@@ -20,6 +20,15 @@ export function parseConnectionString(connectionString: string) {
   return parsed
 }
 
+export function isValidConnectionString(connectionString: string) {
+  try {
+    parseConnectionString(connectionString)
+    return true
+  }
+  catch {
+    return false
+  }
+}
 export const protocolMap: Record<DatabaseType, string[]> = {
   [DatabaseType.Postgres]: ['postgresql', 'postgres'],
 }

@@ -15,7 +15,7 @@ function TableHead<T extends Record<string, unknown>>({ header }: { header: Head
     <div
       key={header.id}
       style={{ width: `${header.getSize()}px` }}
-      className="font-mono shrink-0 text-xs p-2"
+      className="shrink-0 text-xs p-2"
     >
       {header.isPlaceholder
         ? null
@@ -42,7 +42,7 @@ function TableHeader<T extends Record<string, unknown>>({ headerGroups, virtualC
   rowWidth: number
 }) {
   return (
-    <div className="sticky top-0 z-10 border-b-2 border-border bg-background">
+    <div className="sticky top-0 z-10 border-t-1 border-b-2 bg-card">
       {headerGroups.map(headerGroup => (
         <div
           key={headerGroup.id}
@@ -54,10 +54,8 @@ function TableHeader<T extends Record<string, unknown>>({ headerGroups, virtualC
             return (
               <div
                 key={header.id}
+                className="absolute top-0 left-0 h-full"
                 style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
                   transform: `translateX(${virtualColumn.start}px)`,
                   width: `${header.getSize()}px`,
                 }}
@@ -78,7 +76,7 @@ function TableCell<T extends Record<string, unknown>>({ cell }: {
   return (
     <div
       key={cell.id}
-      className="font-mono shrink-0 text-xs truncate p-2"
+      className="shrink-0 text-xs truncate p-2"
       style={{
         width: `${cell.column.getSize()}px`,
       }}
@@ -99,12 +97,10 @@ function TableRow<T extends Record<string, unknown>>({ row, virtualRow, virtualC
 }) {
   return (
     <div
-      className="flex absolute w-full border-b last:border-b-0 min-w-full border-border hover:bg-muted/30"
+      className="flex absolute top-0 left-0 w-full border-b last:border-b-0 min-w-full border-border hover:bg-muted/50"
       style={{
         height: `${virtualRow.size}px`,
         transform: `translate3d(0,${virtualRow.start}px,0)`,
-        top: 0,
-        left: 0,
         width: `${rowWidth}px`,
       }}
     >
@@ -113,11 +109,8 @@ function TableRow<T extends Record<string, unknown>>({ row, virtualRow, virtualC
         return (
           <div
             key={virtualColumn.key}
+            className="group absolute top-0 left-0 h-full"
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              height: '100%',
               transform: `translateX(${virtualColumn.start}px)`,
               width: `${cell.column.getSize()}px`,
             }}
@@ -130,7 +123,12 @@ function TableRow<T extends Record<string, unknown>>({ row, virtualRow, virtualC
   )
 }
 
-export function DataTable<T extends Record<string, unknown>>({ data, columns, loading, className }: {
+export function DataTable<T extends Record<string, unknown>>({
+  data,
+  columns,
+  loading,
+  className,
+}: {
   data: T[]
   columns: {
     name: string
@@ -158,7 +156,7 @@ export function DataTable<T extends Record<string, unknown>>({ data, columns, lo
       },
       header: () => (
         <>
-          <div className="truncate">
+          <div className="truncate font-bold">
             {column.name}
           </div>
           {column.type && (

@@ -32,7 +32,7 @@ export function StepperTrigger({ children, value, number }: { children: React.Re
   const { active } = use(StepperContext)
 
   return (
-    <div className="flex items-center gap-4 bg-body px-4">
+    <div className="flex items-center gap-4 bg-background px-4">
       <div
         className={cn(
           'flex size-10 items-center justify-center rounded-full border border-border',

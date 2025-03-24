@@ -8,8 +8,9 @@ export async function createContext(c: HonoContext) {
 
   if (cookie)
     h.set('cookie', cookie)
+
   if (authorization)
-    h.set('authorization', authorization)
+    h.set('Authorization', authorization)
 
   return {
     headers: h,

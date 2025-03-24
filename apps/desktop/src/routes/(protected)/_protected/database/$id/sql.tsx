@@ -1,6 +1,7 @@
 import type { editor } from 'monaco-editor'
 import { Button } from '@connnect/ui/components/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@connnect/ui/components/card'
+import { CardContent, CardHeader, CardTitle } from '@connnect/ui/components/card'
+import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { useLocalStorageValue } from '@react-hookz/web'
 import { RiShining2Line } from '@remixicon/react'
@@ -9,7 +10,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
-import { PAGE_SCREEN_CLASS } from '~/constants'
 import { DataTable, useDatabase } from '~/entities/database'
 import { formatSql } from '~/lib/formatter'
 import { SqlGenerator } from './-components/sql-generator'
@@ -31,6 +31,7 @@ function RouteComponent() {
 
   const { mutate: sendQuery, data: result, isPending } = useMutation({
     mutationFn: async () => {
+      await new Promise(resolve => setTimeout(resolve, 1000))
       const response = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
@@ -48,6 +49,7 @@ function RouteComponent() {
     const formatted = formatSql(query, database.type)
 
     setQuery(formatted)
+    monacoRef.current?.setValue(formatted)
   }
 
   const columns = (result && Array.isArray(result) && result.length > 0
@@ -57,60 +59,56 @@ function RouteComponent() {
   }))
 
   return (
-    <Card>
-      <ScrollArea className={PAGE_SCREEN_CLASS}>
-        <CardHeader>
-          <CardTitle>SQL Runner</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2 justify-between">
-            <SqlGenerator
-              database={database}
-              query={query}
-              setQuery={(value) => {
-                setQuery(value)
-                monacoRef.current?.setValue(value)
-              }}
-            />
-            <Button
-              variant="outline"
-              onClick={() => format()}
-            >
-              <RiShining2Line />
-              Format
-            </Button>
-          </div>
-          <Monaco
-            ref={monacoRef}
-            initialValue={query}
-            onChange={setQuery}
-            onEnter={() => sendQuery()}
-            className="h-[30vh] border border-border rounded-lg overflow-hidden"
+    <ScrollArea className="w-full overflow-hidden">
+      <CardHeader>
+        <CardTitle>SQL Runner</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex gap-2 justify-between">
+          <SqlGenerator
+            database={database}
+            query={query}
+            setQuery={(value) => {
+              setQuery(value)
+              monacoRef.current?.setValue(value)
+            }}
           />
-          <div className="flex gap-2 justify-end">
-            <Button
-              loading={isPending}
-              onClick={() => sendQuery()}
-            >
+          <Button
+            variant="outline"
+            onClick={() => format()}
+          >
+            <RiShining2Line />
+            Format
+          </Button>
+        </div>
+        <Monaco
+          ref={monacoRef}
+          initialValue={query}
+          onChange={setQuery}
+          onEnter={() => sendQuery()}
+          className="border h-[40vh] rounded-lg overflow-hidden"
+        />
+        <div className="flex gap-2 justify-end">
+          <Button onClick={() => sendQuery()}>
+            <LoadingContent loading={isPending}>
               Run
-            </Button>
+            </LoadingContent>
+          </Button>
+        </div>
+        {Array.isArray(result) && (
+          <DataTable
+            data={result}
+            columns={columns}
+          />
+        )}
+        {!result && (
+          <div className="flex items-center justify-center">
+            <p className="text-muted-foreground">
+              No results
+            </p>
           </div>
-          {Array.isArray(result) && (
-            <DataTable
-              className="h-[40vh]"
-              data={result}
-              columns={columns}
-            />
-          )}
-          {!result && (
-            <div className="h-[40vh] flex items-center justify-center">
-              <p className="text-muted-foreground">
-                No results
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </ScrollArea>
-    </Card>
+        )}
+      </CardContent>
+    </ScrollArea>
   )
 }
