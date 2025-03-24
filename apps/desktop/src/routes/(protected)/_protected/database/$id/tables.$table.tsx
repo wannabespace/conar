@@ -5,7 +5,7 @@ import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Separator } from '@connnect/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiLoopLeftLine } from '@remixicon/react'
-import { useQuery } from '@tanstack/react-query'
+import { useIsFetching, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { databaseColumnsQuery, databaseRowsQuery, DataTable, DataTableFooter, useDatabase, useDatabaseColumns } from '~/entities/database'
@@ -24,7 +24,8 @@ function RouteComponent() {
   const [pageSize, setPageSize] = useState<PageSize>(50)
   const { data: databaseColumns } = useDatabaseColumns(database, table)
   const queryOpts = databaseRowsQuery(database, table, { page, limit: pageSize })
-  const { data, isPending, isRefetching } = useQuery(queryOpts)
+  const { data, isPending } = useQuery(queryOpts)
+  const isFetching = useIsFetching(databaseRowsQuery(database, table, { page: 1, limit: pageSize })) > 0
   const [total, setTotal] = useState(data?.total ?? 0)
 
   const [canPrefetch, setCanPrefetch] = useState(false)
@@ -33,6 +34,9 @@ function RouteComponent() {
     if (!canPrefetch)
       return
 
+    if (page - 1 > 0) {
+      queryClient.ensureQueryData(databaseRowsQuery(database, table, { page: page - 1, limit: pageSize }))
+    }
     queryClient.ensureQueryData(databaseRowsQuery(database, table, { page: page + 1, limit: pageSize }))
   }, [page, pageSize, canPrefetch])
 
@@ -79,10 +83,10 @@ function RouteComponent() {
                   variant="outline"
                   size="icon"
                   onClick={handleRefresh}
-                  disabled={isRefetching}
+                  disabled={isFetching}
                   aria-label="Refresh data"
                 >
-                  <LoadingContent loading={isRefetching}>
+                  <LoadingContent loading={isFetching}>
                     <RiLoopLeftLine size={18} />
                   </LoadingContent>
                 </Button>

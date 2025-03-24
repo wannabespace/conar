@@ -15,7 +15,7 @@ function TableHead<T extends Record<string, unknown>>({ header }: { header: Head
     <div
       key={header.id}
       style={{ width: `${header.getSize()}px` }}
-      className="shrink-0 text-xs p-2"
+      className="shrink-0 text-xs py-2 px-4"
     >
       {header.isPlaceholder
         ? null
@@ -76,7 +76,7 @@ function TableCell<T extends Record<string, unknown>>({ cell }: {
   return (
     <div
       key={cell.id}
-      className="shrink-0 text-xs truncate p-2"
+      className="shrink-0 text-xs truncate py-2 px-4"
       style={{
         width: `${cell.column.getSize()}px`,
       }}
