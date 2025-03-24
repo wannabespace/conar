@@ -1,11 +1,12 @@
 import { cn } from '@connnect/ui/lib/utils'
+import * as React from 'react'
 
-function Card({ ref, className, ...props }: React.ComponentProps<'div'>) {
+function Card({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
   return (
     <div
       ref={ref}
       className={cn(
-        'rounded-xl bg-background border border-border text-foreground shadow-md shadow-black/2',
+        'rounded-xl border bg-card text-card-foreground shadow-lg shadow-black/3',
         className,
       )}
       {...props}
@@ -14,7 +15,7 @@ function Card({ ref, className, ...props }: React.ComponentProps<'div'>) {
 }
 Card.displayName = 'Card'
 
-function CardHeader({ ref, className, ...props }: React.ComponentProps<'div'>) {
+function CardHeader({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
   return (
     <div
       ref={ref}
@@ -25,18 +26,18 @@ function CardHeader({ ref, className, ...props }: React.ComponentProps<'div'>) {
 }
 CardHeader.displayName = 'CardHeader'
 
-function CardTitle({ ref, className, ...props }: React.ComponentProps<'div'>) {
+function CardTitle({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
   return (
     <div
       ref={ref}
-      className={cn('font-semibold text-lg leading-none tracking-tight', className)}
+      className={cn('font-semibold leading-none tracking-tight', className)}
       {...props}
     />
   )
 }
 CardTitle.displayName = 'CardTitle'
 
-function CardDescription({ ref, className, ...props }: React.ComponentProps<'div'>) {
+function CardDescription({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
   return (
     <div
       ref={ref}
@@ -47,12 +48,12 @@ function CardDescription({ ref, className, ...props }: React.ComponentProps<'div
 }
 CardDescription.displayName = 'CardDescription'
 
-function CardContent({ ref, className, ...props }: React.ComponentProps<'div'>) {
+function CardContent({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
   return <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
 }
 CardContent.displayName = 'CardContent'
 
-function CardFooter({ ref, className, ...props }: React.ComponentProps<'div'>) {
+function CardFooter({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
   return (
     <div
       ref={ref}

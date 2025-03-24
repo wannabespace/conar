@@ -11,12 +11,23 @@ const ToggleGroupContext = React.createContext<
   variant: 'default',
 })
 
-function ToggleGroup({ ref, className, variant, size, children, ...props }: React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
-  VariantProps<typeof toggleVariants> & { ref?: React.RefObject<React.ComponentRef<typeof ToggleGroupPrimitive.Root> | null> }) {
+function ToggleGroup({
+  className,
+  variant,
+  size,
+  children,
+  ...props
+}: React.ComponentProps<typeof ToggleGroupPrimitive.Root> &
+  VariantProps<typeof toggleVariants>) {
   return (
     <ToggleGroupPrimitive.Root
-      ref={ref}
-      className={cn('inline-flex items-center gap-1', className)}
+      data-slot="toggle-group"
+      data-variant={variant}
+      data-size={size}
+      className={cn(
+        'group/toggle-group flex w-fit items-center rounded-md data-[variant=outline]:shadow-xs',
+        className,
+      )}
       {...props}
     >
       <ToggleGroupContext value={{ variant, size }}>
@@ -26,20 +37,27 @@ function ToggleGroup({ ref, className, variant, size, children, ...props }: Reac
   )
 }
 
-ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName
-
-function ToggleGroupItem({ ref, className, children, variant, size, ...props }: React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
-  VariantProps<typeof toggleVariants> & { ref?: React.RefObject<React.ComponentRef<typeof ToggleGroupPrimitive.Item> | null> }) {
+function ToggleGroupItem({
+  className,
+  children,
+  variant,
+  size,
+  ...props
+}: React.ComponentProps<typeof ToggleGroupPrimitive.Item> &
+  VariantProps<typeof toggleVariants>) {
   const context = React.useContext(ToggleGroupContext)
 
   return (
     <ToggleGroupPrimitive.Item
-      ref={ref}
+      data-slot="toggle-group-item"
+      data-variant={context.variant || variant}
+      data-size={context.size || size}
       className={cn(
         toggleVariants({
           variant: context.variant || variant,
           size: context.size || size,
         }),
+        'min-w-0 shrink-0 rounded-none shadow-none first:rounded-l-md last:rounded-r-md focus:z-10 focus-visible:z-10 data-[variant=outline]:border-l-0 data-[variant=outline]:first:border-l',
         className,
       )}
       {...props}
@@ -48,7 +66,5 @@ function ToggleGroupItem({ ref, className, children, variant, size, ...props }: 
     </ToggleGroupPrimitive.Item>
   )
 }
-
-ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName
 
 export { ToggleGroup, ToggleGroupItem }
