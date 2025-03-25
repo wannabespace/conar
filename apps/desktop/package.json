@@ -5,7 +5,10 @@
   "private": true,
   "description": "AI-powered connections management app that makes database operations smarter. A modern alternative to pgAdmin, DBeaver, etc.",
   "productName": "Connnect",
-  "author": "Wannabe Space",
+  "author": {
+    "name": "Wannabe Space",
+    "email": "wannabespace.llc@gmail.com"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/wannabespace/connnect.git"
