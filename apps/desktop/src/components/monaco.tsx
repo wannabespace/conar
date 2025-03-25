@@ -6,8 +6,8 @@ import ghLight from 'monaco-themes/themes/GitHub Light.json'
 import { useEffect, useRef } from 'react'
 
 ghDark.colors['editor.background'] = '#181919'
+ghDark.colors['editor.lineHighlightBackground'] = '#212222'
 ghDark.colors['editor.selectionBackground'] = '#4fb0ba50'
-ghDark.colors['editor.lineHighlightBackground'] = '#4fb0ba10'
 ghLight.colors['editor.selectionBackground'] = '#4fb0ba50'
 
 // @ts-expect-error wrong type

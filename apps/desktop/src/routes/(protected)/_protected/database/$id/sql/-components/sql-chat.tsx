@@ -148,7 +148,7 @@ export function SqlChat() {
           onChange={handleInputChange}
           placeholder="Generate SQL query using natural language"
         />
-        <Button type="submit" size="icon">
+        <Button disabled={!input || status === 'submitted' || status === 'streaming'} type="submit" size="icon">
           <LoadingContent loading={status === 'submitted' || status === 'streaming'}>
             <RiSendPlane2Line />
           </LoadingContent>
