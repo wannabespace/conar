@@ -35,11 +35,18 @@ function generateStream({
         5. The SQL answer will be executed directly in a production database editor
         6. Generate SQL query only for the provided schemas, tables, columns and enums
 
-        Important: Answer ONLY with executable SQL code with no additional text, comments or markdown formatting.
 
-        Database Context:
         ----------------
+        Database Context:
         ${JSON.stringify(context)}
+        ----------------
+
+        The most important thing:
+        Answer ONLY with executable SQL code with no additional text or markdown formatting.
+        You can use SQL comments for additional information, examples:
+
+        -- This is a comment
+        SELECT * FROM users WHERE id = 1;
       `.trim(),
       },
       ...messages,

@@ -86,7 +86,6 @@ function RouteComponent() {
               ref={monacoRef}
               initialValue={query}
               onChange={setQuery}
-              onEnter={() => sendQuery()}
               className="size-full"
             />
           </ResizablePanel>
@@ -110,7 +109,6 @@ function RouteComponent() {
                 )
               : !result && (
                   <div className="h-full flex flex-col items-center justify-center">
-                    <RiPlayLargeLine className="size-6 text-muted-foreground mb-2" />
                     <p className="text-center">
                       No results to display
                     </p>

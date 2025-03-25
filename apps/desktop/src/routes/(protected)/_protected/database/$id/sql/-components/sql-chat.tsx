@@ -85,15 +85,28 @@ export function SqlChat() {
         </TooltipProvider>
       </div>
       {messages.length === 0 && (
-        <div className="pointer-events-none absolute inset-0 flex justify-center items-center px-6">
-          <div className="text-center text-balance max-w-96">
+        <div className="pointer-events-none absolute z-10 inset-0 flex justify-center items-center px-6">
+          <div className="pointer-events-auto text-center text-balance max-w-96">
             <RiQuestionAnswerLine className="mx-auto mb-2 size-8" />
             <p className="text-sm">Ask AI to generate SQL queries</p>
-            <p className="mt-2 text-xs text-muted-foreground">Try asking for SELECT queries to fetch data, INSERT statements to add records, UPDATE to modify existing data, or complex JOINs across multiple tables.</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Try asking for
+              <span className="font-mono">SELECT</span>
+              {' '}
+              queries to fetch data,
+              <span className="font-mono">INSERT</span>
+              {' '}
+              statements to add records,
+              <span className="font-mono">UPDATE</span>
+              {' '}
+              to modify existing data, or complex
+              <span className="font-mono">JOIN</span>
+              s across multiple tables.
+            </p>
           </div>
         </div>
       )}
-      <ScrollArea className="flex-1 overflow-y-auto">
+      <ScrollArea className="flex-1 overflow-y-auto -mx-4 px-4">
         <div className="flex flex-col gap-4 pb-2">
           {messages.map(message => (
             <div key={message.id} className="flex flex-col gap-2 mb-4">
@@ -113,7 +126,7 @@ export function SqlChat() {
                           <AvatarFallback className="text-xs">AI</AvatarFallback>
                         </Avatar>
                       </div>
-                      <div className="max-h-[100px] overflow-hidden border rounded-md">
+                      <div className="overflow-hidden border rounded-md">
                         <Monaco
                           initialValue={message.content}
                           onChange={() => {}}

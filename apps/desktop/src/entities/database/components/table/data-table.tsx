@@ -202,7 +202,7 @@ export function DataTable<T extends Record<string, unknown>>({
             {column.name}
           </div>
           {column.type && (
-            <span data-type={column.type} className="text-muted-foreground text-xs">
+            <span data-type={column.type} className="text-muted-foreground text-xs font-mono">
               {column.type}
             </span>
           )}

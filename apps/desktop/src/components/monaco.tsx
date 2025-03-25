@@ -19,7 +19,6 @@ export function Monaco({
   initialValue,
   language = 'sql',
   onChange,
-  onEnter,
   ref,
   options,
   ...props
@@ -27,7 +26,6 @@ export function Monaco({
   initialValue: string
   language?: 'sql'
   onChange: (value: string) => void
-  onEnter?: () => void
   ref?: React.RefObject<monaco.editor.IStandaloneCodeEditor | null>
   options?: monaco.editor.IStandaloneEditorConstructionOptions
 }) {
@@ -61,7 +59,7 @@ export function Monaco({
 
     if (!monacoInstance.current?.getValue()) {
       if (language === 'sql') {
-        monacoInstance.current?.setValue(
+        monacoInstance.current.setValue(
           '-- Write your SQL query here'
           + '\n'
           + '\n'
@@ -75,7 +73,7 @@ export function Monaco({
     return () => {
       monacoInstance.current?.dispose()
     }
-  }, [elementRef, language, options, onEnter])
+  }, [elementRef, language, options])
 
   useEffect(() => {
     if (!monacoInstance.current || initialValue === monacoInstance.current.getValue())
