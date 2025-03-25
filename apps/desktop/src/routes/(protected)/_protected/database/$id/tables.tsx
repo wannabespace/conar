@@ -79,9 +79,6 @@ function RouteComponent() {
               <p className="text-muted-foreground text-sm max-w-md mx-auto">
                 Select a schema from the dropdown and choose a table from the sidebar to view and manage your data.
               </p>
-              <div className="text-muted-foreground/60 text-xs">
-                You can resize the panels by dragging the divider
-              </div>
             </div>
           </div>
         )}
