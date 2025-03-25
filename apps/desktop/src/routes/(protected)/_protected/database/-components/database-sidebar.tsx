@@ -23,7 +23,7 @@ export function DatabaseSidebar() {
         className="bg-card flex flex-col border-r gap-4 items-center py-4 px-4 w-16 h-screen fixed left-0 inset-y-0"
         onMouseOver={() => prefetchDatabaseCore(database)}
       >
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -44,7 +44,7 @@ export function DatabaseSidebar() {
         </div>
         <div className="relative flex flex-col items-center flex-1 gap-2 overflow-auto">
           <div className="w-full text-sm">
-            <div className="flex w-full flex-col gap-1">
+            <div className="flex w-full flex-col gap-2">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -80,7 +80,7 @@ export function DatabaseSidebar() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-2">
           <div className="relative">
             <ThemeToggle>
               <Button size="icon" variant="ghost">

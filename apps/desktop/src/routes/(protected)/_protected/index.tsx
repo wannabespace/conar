@@ -1,9 +1,11 @@
 import { Button } from '@connnect/ui/components/button'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
+import { Separator } from '@connnect/ui/components/separator'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAddLine } from '@remixicon/react'
+import { RiAddLine, RiDownloadLine, RiLoader4Line } from '@remixicon/react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useDatabases } from '~/entities/database'
+import { useUpdates } from '~/updates-provider'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
 
@@ -14,6 +16,7 @@ export const Route = createFileRoute('/(protected)/_protected/')({
 function DashboardPage() {
   const { data: databases } = useDatabases()
   const router = useRouter()
+  const { version, status, checkForUpdates } = useUpdates()
 
   function handleCreateConnection() {
     router.navigate({ to: '/create' })
@@ -24,7 +27,7 @@ function DashboardPage() {
   })
 
   return (
-    <div className="w-full mx-auto max-w-2xl py-10">
+    <div className="flex flex-col w-full mx-auto max-w-2xl py-10">
       <DotPattern
         width={20}
         height={20}
@@ -52,6 +55,24 @@ function DashboardPage() {
         </div>
       </div>
       <DatabasesList />
+      <div className="mt-auto pt-6">
+        <Separator />
+        <div className="mt-3 flex gap-2 items-center">
+          <button
+            type="button"
+            onClick={() => checkForUpdates()}
+            className="cursor-pointer text-xs text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors"
+          >
+            Current version
+            {' '}
+            v
+            {version}
+          </button>
+          {' '}
+          {status === 'checking' && <RiLoader4Line className="size-3 animate-spin text-muted-foreground/50" />}
+          {status === 'downloading' && <RiDownloadLine className="size-3 animate-bounce text-muted-foreground/50" />}
+        </div>
+      </div>
     </div>
   )
 }
