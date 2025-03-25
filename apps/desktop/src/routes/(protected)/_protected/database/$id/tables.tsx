@@ -1,14 +1,11 @@
-import { px } from '@connnect/shared/utils/helpers'
 import { CardTitle } from '@connnect/ui/components/card'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
-import { useWindowSize } from '@react-hookz/web'
 import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
-import { databaseColumnsQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas } from '~/entities/database'
+import { databaseColumnsQuery, databaseTablesQuery, useDatabase, useDatabaseSchema, useDatabaseSchemas } from '~/entities/database'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { queryClient } from '~/main'
-import { TablesTree } from '../-components/tables-tree'
-import { useDatabaseSchema } from '../-hooks/schema'
+import { TablesTree } from './-components/tables-tree'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables',
@@ -31,15 +28,13 @@ function RouteComponent() {
     })
   }, [schema])
 
-  const { width } = useWindowSize()
-
   return (
     <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} direction="horizontal" className="flex h-auto!">
       <ResizablePanel
-        defaultSize={px(300, width)}
-        minSize={px(150, width)}
+        defaultSize={20}
+        minSize={10}
         maxSize={50}
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-4 h-screen"
       >
         <div className="flex flex-col gap-4 p-4 pb-0">
           <CardTitle>Tables</CardTitle>
@@ -63,9 +58,7 @@ function RouteComponent() {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex-1 overflow-auto">
-          <TablesTree database={database} schema={schema} />
-        </div>
+        <TablesTree className="flex-1" database={database} schema={schema} />
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel defaultSize={75} className="flex-1">

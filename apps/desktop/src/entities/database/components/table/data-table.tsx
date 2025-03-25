@@ -242,7 +242,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
   return (
     <ScrollArea scrollRef={ref} className={className} tableStyle>
-      <div className="w-full" style={{ height: `${rowVirtualizer.getTotalSize() || 200}px` }}>
+      <div className="w-full" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
         <TableHeader
           headerGroups={table.getHeaderGroups()}
           virtualColumns={virtualColumns}
