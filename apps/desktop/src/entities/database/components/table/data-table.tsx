@@ -76,7 +76,7 @@ function TableCell<T extends Record<string, unknown>>({ cell }: {
   return (
     <div
       key={cell.id}
-      className="shrink-0 text-xs truncate py-2 pl-4"
+      className="shrink-0 text-xs truncate py-2 pl-4 font-mono"
       style={{
         width: `${cell.column.getSize()}px`,
       }}
