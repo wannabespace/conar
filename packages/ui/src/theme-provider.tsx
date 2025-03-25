@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, use, useEffect, useState } from 'react'
 
 export type ResolvedTheme = 'dark' | 'light'
 export type Theme = ResolvedTheme | 'system'
@@ -42,13 +42,17 @@ export function ThemeProvider({
 
       if (theme === 'system') {
         const systemTheme = mediaQuery.matches ? 'dark' : 'light'
-        setResolvedTheme(systemTheme)
         root.classList.add(systemTheme)
+        requestAnimationFrame(() => {
+          setResolvedTheme(systemTheme)
+        })
         return
       }
 
-      setResolvedTheme(theme as ResolvedTheme)
       root.classList.add(theme)
+      requestAnimationFrame(() => {
+        setResolvedTheme(theme as ResolvedTheme)
+      })
     }
 
     mediaQuery.addEventListener('change', updateTheme)
@@ -67,15 +71,15 @@ export function ThemeProvider({
   }
 
   return (
-    <ThemeProviderContext.Provider value={value}>
+    <ThemeProviderContext value={value}>
       {children}
-    </ThemeProviderContext.Provider>
+    </ThemeProviderContext>
   )
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useTheme() {
-  const context = useContext(ThemeProviderContext)
+  const context = use(ThemeProviderContext)
 
   if (context === undefined)
     throw new Error('useTheme must be used within a ThemeProvider')

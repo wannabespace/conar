@@ -29,7 +29,7 @@ function handle(url: string) {
 
   // Show the app on macOS
   if (process.platform === 'darwin') {
-    app.dock.show()
+    app.dock?.show()
     mainWindow.setAlwaysOnTop(true)
     mainWindow.show()
     mainWindow.setAlwaysOnTop(false)
