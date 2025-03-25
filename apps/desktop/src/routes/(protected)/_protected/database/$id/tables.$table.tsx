@@ -46,6 +46,10 @@ function RouteComponent() {
     }
   }, [data?.total])
 
+  useEffect(() => {
+    setPageSize(50)
+  }, [table])
+
   const handleRefresh = () => {
     setPage(1)
     queryClient.invalidateQueries({ queryKey: queryOpts.queryKey.slice(0, -1) })
