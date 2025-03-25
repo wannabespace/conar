@@ -35,6 +35,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
     <PostHogProvider
       apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_API_KEY}
       options={{
+        mask_all_text: true,
         api_host: 'https://eu.i.posthog.com',
       }}
     >
