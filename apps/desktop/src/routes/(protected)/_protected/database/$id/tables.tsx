@@ -35,7 +35,12 @@ function RouteComponent() {
 
   return (
     <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} direction="horizontal" className="flex h-auto!">
-      <ResizablePanel defaultSize={px(300, width)} minSize={px(150, width)} maxSize={50} className="flex flex-col gap-4">
+      <ResizablePanel
+        defaultSize={px(300, width)}
+        minSize={px(150, width)}
+        maxSize={50}
+        className="flex flex-col gap-4"
+      >
         <div className="flex flex-col gap-4 p-4 pb-0">
           <CardTitle>Tables</CardTitle>
           <Select

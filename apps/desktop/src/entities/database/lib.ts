@@ -94,6 +94,7 @@ export async function updateDatabasePassword(id: string, password: string) {
   }
 
   const url = new URL(database.connectionString)
+
   url.password = password
   database.connectionString = url.toString()
   database.isPasswordPopulated = true
@@ -146,7 +147,6 @@ export async function getDatabaseContext(database: Database): Promise<z.infer<ty
           AND schemas.nspname NOT LIKE 'pg_temp%'
       ),
       'enums', (
-        -- Get all enum definitions
         SELECT json_agg(json_build_object(
           'schema', enum_schemas.nspname,
           'name', enum_types.typname,
