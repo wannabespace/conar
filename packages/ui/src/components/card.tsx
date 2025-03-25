@@ -30,7 +30,7 @@ function CardTitle({ ref, className, ...props }: React.HTMLAttributes<HTMLDivEle
   return (
     <div
       ref={ref}
-      className={cn('font-semibold leading-none tracking-tight', className)}
+      className={cn('font-semibold tracking-tight', className)}
       {...props}
     />
   )
@@ -41,7 +41,7 @@ function CardDescription({ ref, className, ...props }: React.HTMLAttributes<HTML
   return (
     <div
       ref={ref}
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-sm text-balance text-muted-foreground', className)}
       {...props}
     />
   )

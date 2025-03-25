@@ -6,8 +6,9 @@ function ScrollArea({
   className,
   children,
   scrollRef,
+  tableStyle = false,
   ...props
-}: React.ComponentProps<typeof ScrollAreaPrimitive.Root> & { scrollRef?: React.RefObject<HTMLDivElement | null> }) {
+}: React.ComponentProps<typeof ScrollAreaPrimitive.Root> & { scrollRef?: React.RefObject<HTMLDivElement | null>, tableStyle?: boolean }) {
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
@@ -17,7 +18,10 @@ function ScrollArea({
       <ScrollAreaPrimitive.Viewport
         ref={scrollRef}
         data-slot="scroll-area-viewport"
-        className="ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] focus-visible:ring-4 focus-visible:outline-1"
+        className={cn(
+          'ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] focus-visible:ring-4 focus-visible:outline-1',
+          !tableStyle && '[&>div]:[display:unset]!',
+        )}
       >
         {children}
       </ScrollAreaPrimitive.Viewport>

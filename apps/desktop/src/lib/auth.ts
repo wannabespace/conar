@@ -53,7 +53,7 @@ export const authClient = createAuthClient({
     },
     async onError({ error }) {
       if (error.status === 401) {
-        bearerToken.remove()
+        fullSignOut()
       }
     },
   },

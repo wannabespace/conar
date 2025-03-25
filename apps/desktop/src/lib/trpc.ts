@@ -16,7 +16,11 @@ export const trpc = createTRPCClient<AppRouter>({
         })
 
         if (response.status === 401) {
-          handleError(response)
+          handleError({
+            status: response.status,
+            code: 'UNAUTHORIZED',
+            message: await response.text(),
+          })
         }
 
         return response

@@ -1,7 +1,9 @@
+import { px } from '@connnect/shared/utils/helpers'
+import { CardTitle } from '@connnect/ui/components/card'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
 import { useWindowSize } from '@react-hookz/web'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
 import { databaseColumnsQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas } from '~/entities/database'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { queryClient } from '~/main'
@@ -16,6 +18,7 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
   const { id } = Route.useParams()
+  const { table: tableParam } = useParams({ strict: false })
   const { data: database } = useDatabase(id)
   const { data: schemas } = useDatabaseSchemas(database)
   const [schema, setSchema] = useDatabaseSchema(id)
@@ -30,14 +33,11 @@ function RouteComponent() {
 
   const { width } = useWindowSize()
 
-  function px(value: number) {
-    return value / width * 100
-  }
-
   return (
     <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} direction="horizontal" className="flex h-auto!">
-      <ResizablePanel defaultSize={px(300)} minSize={px(150)} maxSize={50} className="flex flex-col gap-4">
-        <div className="p-4 pb-0">
+      <ResizablePanel defaultSize={px(300, width)} minSize={px(150, width)} maxSize={50} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 p-4 pb-0">
+          <CardTitle>Tables</CardTitle>
           <Select
             value={schema}
             onValueChange={setSchema}
@@ -65,6 +65,21 @@ function RouteComponent() {
       <ResizableHandle />
       <ResizablePanel defaultSize={75} className="flex-1">
         <Outlet />
+        {!tableParam && (
+          <div className="p-4 flex items-center justify-center h-full">
+            <div className="text-center space-y-4">
+              <div className="text-lg font-medium">
+                No table selected
+              </div>
+              <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                Select a schema from the dropdown and choose a table from the sidebar to view and manage your data.
+              </p>
+              <div className="text-muted-foreground/60 text-xs">
+                You can resize the panels by dragging the divider
+              </div>
+            </div>
+          </div>
+        )}
       </ResizablePanel>
     </ResizablePanelGroup>
   )

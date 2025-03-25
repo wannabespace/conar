@@ -30,8 +30,8 @@ export function TablesTree({ database, schema }: { database: Database, schema: s
           to="/database/$id/tables/$table"
           params={{ id: database.id, table: table.name }}
           className={cn(
-            'w-full flex items-center gap-2 py-1.5 px-4 text-sm text-foreground',
-            tableParam === table.name && 'bg-accent/50',
+            'w-full flex items-center gap-2 py-1.5 px-4 text-sm text-foreground hover:bg-accent/50',
+            tableParam === table.name && 'bg-accent/80 hover:bg-accent',
           )}
           onMouseOver={() => {
             debouncedPrefetchColumns(table.name)

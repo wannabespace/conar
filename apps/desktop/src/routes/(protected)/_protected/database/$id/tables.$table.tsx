@@ -26,7 +26,7 @@ function RouteComponent() {
   const queryOpts = databaseRowsQuery(database, table, { page, limit: pageSize })
   const { data, isPending } = useQuery(queryOpts)
   const isFetching = useIsFetching(databaseRowsQuery(database, table, { page: 1, limit: pageSize })) > 0
-  const [total, setTotal] = useState(data?.total ?? 0)
+  const [total, setTotal] = useState(data?.total ?? null)
 
   const [canPrefetch, setCanPrefetch] = useState(false)
 
@@ -61,7 +61,7 @@ function RouteComponent() {
           <CardTitle>
             {table}
           </CardTitle>
-          <CardDescription className="text-xs mt-2">
+          <CardDescription>
             {databaseColumns?.length || 0}
             {' '}
             column
@@ -69,7 +69,7 @@ function RouteComponent() {
             {' '}
             •
             {' '}
-            {total}
+            {total ?? '...'}
             {' '}
             row
             {total === 1 ? '' : 's'}
@@ -128,7 +128,7 @@ function RouteComponent() {
             setPage(1)
             setPageSize(value)
           }}
-          total={total}
+          total={total ?? 0}
         />
       </div>
     </div>

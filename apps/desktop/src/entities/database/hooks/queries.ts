@@ -41,22 +41,27 @@ export function useDatabaseTables(database: Database, schema?: string) {
 export function databaseColumnsQuery(database: Database, table: string, schema?: string) {
   const _schema = schema ?? getSavedDatabaseSchema(database.id)
 
-  const queryMap: Record<DatabaseType, string> = {
-    postgres: `
+  const queryMap: Record<DatabaseType, (table: string, schema: string) => string> = {
+    postgres: (table, schema) => `
       SELECT
-        table_name,
-        column_name,
-        data_type,
-        character_maximum_length,
-        column_default,
-        is_nullable
+        c.table_name,
+        c.column_name,
+        CASE
+          WHEN c.data_type = 'USER-DEFINED' THEN
+            (SELECT t.typname FROM pg_type t JOIN pg_namespace n ON t.typnamespace = n.oid
+             WHERE t.oid = c.udt_name::regtype)
+          ELSE c.data_type
+        END as data_type,
+        c.character_maximum_length,
+        c.column_default,
+        c.is_nullable
       FROM
-        information_schema.columns
+        information_schema.columns c
       WHERE
-        table_name = '${table}'
-        AND table_schema = '${_schema}'
+        c.table_name = '${table}'
+        AND c.table_schema = '${schema}'
       ORDER BY
-        ordinal_position;
+        c.ordinal_position;
     `,
   }
 
@@ -66,7 +71,7 @@ export function databaseColumnsQuery(database: Database, table: string, schema?:
       const result = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
-        query: queryMap[database.type],
+        query: queryMap[database.type](table, _schema),
       })
 
       return result as {

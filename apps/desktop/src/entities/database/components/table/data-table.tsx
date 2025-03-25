@@ -15,7 +15,7 @@ function TableHead<T extends Record<string, unknown>>({ header }: { header: Head
     <div
       key={header.id}
       style={{ width: `${header.getSize()}px` }}
-      className="shrink-0 text-xs py-2 px-4"
+      className="shrink-0 text-xs py-2 pl-4"
     >
       {header.isPlaceholder
         ? null
@@ -42,11 +42,11 @@ function TableHeader<T extends Record<string, unknown>>({ headerGroups, virtualC
   rowWidth: number
 }) {
   return (
-    <div className="sticky top-0 z-10 border-t-1 border-b-2 bg-card">
+    <div className="sticky top-0 z-10 border-y bg-card">
       {headerGroups.map(headerGroup => (
         <div
           key={headerGroup.id}
-          className="flex h-12 relative"
+          className="flex h-8 has-[[data-type]]:h-12 relative"
           style={{ width: `${rowWidth}px` }}
         >
           {virtualColumns.map((virtualColumn) => {
@@ -76,7 +76,7 @@ function TableCell<T extends Record<string, unknown>>({ cell }: {
   return (
     <div
       key={cell.id}
-      className="shrink-0 text-xs truncate py-2 px-4"
+      className="shrink-0 text-xs truncate py-2 pl-4"
       style={{
         width: `${cell.column.getSize()}px`,
       }}
@@ -123,6 +123,48 @@ function TableRow<T extends Record<string, unknown>>({ row, virtualRow, virtualC
   )
 }
 
+function TableSkeleton({ virtualColumns, rowWidth, count = 5 }: {
+  virtualColumns: VirtualItem[]
+  rowWidth: number
+  count?: number
+}) {
+  return (
+    <div className="relative flex flex-col">
+      {Array.from({ length: count }).map((_, rowIndex) => (
+        <div
+          key={rowIndex}
+          className="flex absolute top-0 left-0 w-full border-b last:border-b-0 min-w-full border-border"
+          style={{
+            height: '35px',
+            transform: `translate3d(0,${rowIndex * 35}px,0)`,
+            width: `${rowWidth}px`,
+          }}
+        >
+          {virtualColumns.map(virtualColumn => (
+            <div
+              key={virtualColumn.key}
+              className="group absolute top-0 left-0 h-full"
+              style={{
+                transform: `translateX(${virtualColumn.start}px)`,
+                width: `${virtualColumn.size}px`,
+              }}
+            >
+              <div
+                className="shrink-0 text-xs truncate py-2 pl-4 h-full"
+                style={{
+                  width: `${virtualColumn.size}px`,
+                }}
+              >
+                <div className="h-4 bg-muted animate-pulse rounded w-4/5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function DataTable<T extends Record<string, unknown>>({
   data,
   columns,
@@ -156,11 +198,11 @@ export function DataTable<T extends Record<string, unknown>>({
       },
       header: () => (
         <>
-          <div className="truncate font-bold">
+          <div className="truncate font-medium">
             {column.name}
           </div>
           {column.type && (
-            <span className="text-muted-foreground text-[0.6rem]">
+            <span data-type={column.type} className="text-muted-foreground text-xs">
               {column.type}
             </span>
           )}
@@ -199,32 +241,39 @@ export function DataTable<T extends Record<string, unknown>>({
   const virtualColumns = columnVirtualizer.getVirtualItems()
 
   return (
-    <ScrollArea scrollRef={ref} className={className}>
-      <div className="w-full" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+    <ScrollArea scrollRef={ref} className={className} tableStyle>
+      <div className="w-full" style={{ height: `${rowVirtualizer.getTotalSize() || 200}px` }}>
         <TableHeader
           headerGroups={table.getHeaderGroups()}
           virtualColumns={virtualColumns}
           rowWidth={rowWidth}
         />
-        {data.length === 0 || loading
+        {loading
           ? (
-              <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">
-                {loading ? 'Loading...' : 'No data available'}
-              </div>
+              <TableSkeleton
+                virtualColumns={virtualColumns}
+                rowWidth={rowWidth}
+              />
             )
-          : (
-              <div className="relative flex flex-col">
-                {rowVirtualizer.getVirtualItems().map(virtualRow => (
-                  <TableRow
-                    key={virtualRow.key}
-                    row={rows[virtualRow.index]}
-                    virtualRow={virtualRow}
-                    virtualColumns={virtualColumns}
-                    rowWidth={rowWidth}
-                  />
-                ))}
-              </div>
-            )}
+          : data.length === 0
+            ? (
+                <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">
+                  No data available
+                </div>
+              )
+            : (
+                <div className="relative flex flex-col">
+                  {rowVirtualizer.getVirtualItems().map(virtualRow => (
+                    <TableRow
+                      key={virtualRow.key}
+                      row={rows[virtualRow.index]}
+                      virtualRow={virtualRow}
+                      virtualColumns={virtualColumns}
+                      rowWidth={rowWidth}
+                    />
+                  ))}
+                </div>
+              )}
       </div>
       <ScrollBar orientation="horizontal" />
     </ScrollArea>

@@ -15,7 +15,13 @@ export async function handleError(error: unknown) {
   toast.error(getErrorMessage(error))
 
   if (
-    (typeof error === 'object' && 'status' in error && 'code' in error && error.status === 401 && error.code !== 'INVALID_EMAIL_OR_PASSWORD')
+    (
+      typeof error === 'object'
+      && 'status' in error
+      && 'code' in error
+      && error.status === 401
+      && error.code !== 'INVALID_EMAIL_OR_PASSWORD'
+    )
     || (error instanceof TRPCClientError && error.data.code === 'UNAUTHORIZED')
   ) {
     await fullSignOut()

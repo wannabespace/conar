@@ -115,19 +115,17 @@ function RemoveDatabaseDialog({ id, open, onOpenChange }: { id: string | null, o
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction asChild>
-            <Button
-              variant="destructive"
-              onClick={(e) => {
-                e.preventDefault()
-                removeDatabaseMutation()
-              }}
-              disabled={isPending}
-            >
-              <LoadingContent loading={isPending}>
-                Remove
-              </LoadingContent>
-            </Button>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={(e) => {
+              e.preventDefault()
+              removeDatabaseMutation()
+            }}
+            disabled={isPending}
+          >
+            <LoadingContent loading={isPending}>
+              Remove
+            </LoadingContent>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
