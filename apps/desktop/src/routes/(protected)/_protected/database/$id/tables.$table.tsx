@@ -8,6 +8,7 @@ import { RiLoopLeftLine } from '@remixicon/react'
 import { useIsFetching, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { databaseColumnsQuery, databaseRowsQuery, DataTable, DataTableFooter, useDatabase, useDatabaseColumns } from '~/entities/database'
 import { queryClient } from '~/main'
 
@@ -50,10 +51,13 @@ function RouteComponent() {
     setPageSize(50)
   }, [table])
 
-  const handleRefresh = () => {
+  async function handleRefresh() {
     setPage(1)
-    queryClient.invalidateQueries({ queryKey: queryOpts.queryKey.slice(0, -1) })
-    queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table).queryKey })
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryOpts.queryKey.slice(0, -1) }),
+      queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table).queryKey }),
+    ])
+    toast.success('Data refreshed')
   }
 
   const rows = data?.rows ?? []
