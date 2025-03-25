@@ -1,125 +1,90 @@
-@import 'tailwindcss';
-
-@source "../../../../packages/ui/src/**/*.{js,ts,jsx,tsx}";
-
-@plugin 'tailwindcss-animate';
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./fonts.css";
+@source "../../../../packages/ui/src/**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
+:root {
+  --radius: 0.6rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.129 0.042 264.695);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.129 0.042 264.695);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.129 0.042 264.695);
+  --primary: oklch(0.65 0.13 205.0);
+  --primary-foreground: oklch(0.984 0.003 255.508);
+  --secondary: oklch(94% 0.003 255.508);
+  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --muted: oklch(96% 0.003 255.508);
+  --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: oklch(96% 0.003 255.508);
+  --accent-foreground: oklch(0.208 0.042 265.755);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(95% 0.003 255.508);
+  --input: oklch(93% 0.003 255.508);
+  --ring: oklch(0.65 0.13 205.0);
+}
+
+.dark {
+  --background: oklch(18% 0.002 204.91);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(20% 0.002 204.91);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(22% 0.002 204.91);
+  --popover-foreground: oklch(0.985 0 0);
+  --secondary: oklch(25% 0.002 204.91);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(25% 0.002 204.91);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(25% 0.002 204.91);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 5%);
+  --input: oklch(1 0 0 / 10%);
+}
+
+
+@theme inline {
+  --font-sans: "Geist", sans-serif;
+  --font-mono: "Geist Mono", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --radius-sm: calc(var(--radius) - 4px);
-
-  --color-body: hsl(var(--body));
-  --color-element: hsl(var(--element));
-  --color-border: hsl(var(--border));
-  --color-ring: hsl(var(--ring));
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-
-  --animate-caret-blink: caret-blink 1.25s ease-out infinite;
-
-  @keyframes caret-blink {
-    0%,
-    70%,
-    100% {
-      opacity: 1;
-    }
-    20%,
-    50% {
-      opacity: 0;
-    }
-  }
-}
-
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
-  }
-}
-
-@layer base {
-  :root {
-    --body: 186 10% 94%;
-    --background: 186 10% 97%;
-    --foreground: 186 10% 3.9%;
-    --primary: 186 44% 52%;
-    --primary-foreground: 0 0% 98%;
-    --muted: 186 10% 88%;
-    --muted-foreground: 186 3.8% 46.1%;
-    --accent: 186 10% 93%;
-    --accent-foreground: 186 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --element: 186 5% 100%;
-    --border: 0 0% 90%;
-    --ring: 186 44% 52%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.6rem;
-  }
-
-  .dark {
-    --body: 186 3% 7%;
-    --background: 186 3% 9%;
-    --foreground: 0 0% 98%;
-    --primary: 186 44% 52%;
-    --primary-foreground: 186 3% 10%;
-    --muted: 186 3% 16%;
-    --muted-foreground: 186 3% 64.9%;
-    --accent: 186 3% 15%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0, 63%, 50%;
-    --destructive-foreground: 0 0% 98%;
-    --element: 186 3% 12%;
-    --border: 186 3% 14%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 @layer base {
   * {
-    @apply outline-ring;
+    @apply border-border outline-ring/50;
   }
 
   a {
-    @apply focus-visible:outline-ring text-primary;
+    @apply focus-visible:outline-ring/50 text-primary;
   }
 
   body {
-    @apply font-sans antialiased bg-body text-foreground;
+    @apply font-sans antialiased bg-background text-foreground;
   }
 }
 
@@ -131,19 +96,4 @@
 
 html {
   color-scheme: light dark;
-}
-
-::selection {
-  background-color: hsl(var(--primary));
-  color: #fff;
-}
-
-.dark ::selection {
-  background-color: hsl(var(--primary));
-  color: #000;
-}
-
-.bg-primary ::selection {
-  background-color: #fff;
-  color: var(--primary);
 }

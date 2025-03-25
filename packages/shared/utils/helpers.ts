@@ -12,3 +12,7 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(fu
 
   return debounced
 }
+
+export function px(value: number, windowWidth: number) {
+  return value / windowWidth * 100
+}

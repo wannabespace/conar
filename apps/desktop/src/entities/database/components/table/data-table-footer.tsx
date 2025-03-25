@@ -5,7 +5,7 @@ import {
   PaginationButton,
   PaginationContent,
   PaginationItem,
-} from '@connnect/ui/components/pagination'
+} from '@connnect/ui/components/originui/pagination'
 import {
   Select,
   SelectContent,
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@connnect/ui/components/select'
+import { cn } from '@connnect/ui/lib/utils'
 import { RiArrowLeftSLine, RiArrowRightSLine, RiSkipLeftLine, RiSkipRightLine } from '@remixicon/react'
 import { useId, useMemo } from 'react'
 
@@ -24,6 +25,7 @@ interface DataTableFooterProps {
   pageSize: PageSize
   onPageSizeChange: (pageSize: PageSize) => void
   total: number
+  className?: string
 }
 
 export function DataTableFooter({
@@ -32,6 +34,7 @@ export function DataTableFooter({
   pageSize,
   onPageSizeChange,
   total,
+  className,
 }: DataTableFooterProps) {
   const id = useId()
   const goToPageId = useId()
@@ -44,7 +47,7 @@ export function DataTableFooter({
   }, [currentPage, pageSize, total])
 
   return (
-    <div className="flex items-center justify-between gap-8">
+    <div className={cn('flex items-center justify-center gap-8', className)}>
       <div className="flex items-center gap-3">
         <Label className="mb-0" htmlFor={id}>Rows per page</Label>
         <Select
@@ -63,7 +66,7 @@ export function DataTableFooter({
           </SelectContent>
         </Select>
       </div>
-      <div className="text-muted-foreground flex grow justify-end text-sm whitespace-nowrap">
+      <div className="text-muted-foreground flex justify-end text-sm whitespace-nowrap">
         <p className="text-muted-foreground text-sm whitespace-nowrap" aria-live="polite">
           {total > 0
             ? (

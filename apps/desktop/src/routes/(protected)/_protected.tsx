@@ -2,29 +2,28 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
 import { fetchDatabases } from '~/entities/database'
-import { useSession } from '~/hooks/use-session'
-import { Navbar } from './-components/navbar'
+import { authClient } from '~/lib/auth'
+import { ActionsCenter } from './-components/actions-center'
 
 export const Route = createFileRoute('/(protected)/_protected')({
   component: LayoutComponent,
 })
 
 function LayoutComponent() {
-  const { isAuthenticated } = useSession()
+  const { data } = authClient.useSession()
 
   useEffect(() => {
+    if (!data?.user)
+      return
+
+    fetchDatabases()
+
     const interval = setInterval(() => {
       fetchDatabases()
     }, 1000 * 60 * 5)
 
     return () => clearInterval(interval)
-  }, [])
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchDatabases()
-    }
-  }, [isAuthenticated])
+  }, [data?.user])
 
   return (
     <motion.div
@@ -34,8 +33,8 @@ function LayoutComponent() {
       transition={{ duration: 0.3 }}
       className="min-h-screen flex flex-col"
     >
-      <Navbar />
-      <div className="flex flex-1 px-3">
+      <ActionsCenter />
+      <div className="flex flex-1">
         <Outlet />
       </div>
     </motion.div>

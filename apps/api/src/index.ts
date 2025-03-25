@@ -5,6 +5,7 @@ import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { env } from './env'
 import { auth } from './lib/auth'
+import { ai } from './routers/ai'
 import { createContext } from './trpc/context'
 import { appRouter } from './trpc/routers'
 
@@ -14,8 +15,6 @@ app.use(logger())
 app.use(cors({
   origin: [env.WEB_URL, 'http://localhost:3002'],
   credentials: true,
-  allowHeaders: ['Content-Type', 'Authorization', 'trpc-accept'],
-  exposeHeaders: ['Set-Auth-Token'],
 }))
 
 app.on(['GET', 'POST'], '/auth/*', (c) => {
@@ -29,6 +28,8 @@ app.use(
     createContext: (_, c) => createContext(c),
   }),
 )
+
+app.route('/ai', ai)
 
 serve({
   fetch: app.fetch,

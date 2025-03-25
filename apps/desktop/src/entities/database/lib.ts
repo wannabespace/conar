@@ -1,6 +1,12 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
+import type { z } from 'zod'
+import type { Database } from '~/lib/indexeddb'
+import { databaseContextSchema } from '@connnect/shared/database'
 import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/lib/trpc'
+import { queryClient } from '~/main'
+import { databaseQuery } from './hooks/database'
+import { databaseSchemasQuery, databaseTablesQuery } from './hooks/queries'
 
 export async function fetchDatabases() {
   const [fetchedDatabases, existingDatabases] = await Promise.all([
@@ -88,9 +94,73 @@ export async function updateDatabasePassword(id: string, password: string) {
   }
 
   const url = new URL(database.connectionString)
+
   url.password = password
   database.connectionString = url.toString()
   database.isPasswordPopulated = true
 
   await indexedDb.databases.put(database)
+}
+
+export function prefetchDatabaseCore(database: Database) {
+  queryClient.ensureQueryData(databaseQuery(database.id))
+  queryClient.ensureQueryData(databaseSchemasQuery(database))
+  queryClient.ensureQueryData(databaseTablesQuery(database))
+}
+
+export async function getDatabaseContext(database: Database): Promise<z.infer<typeof databaseContextSchema>> {
+  // Just vibe code
+  const response = await window.electron.databases.query({
+    type: database.type,
+    connectionString: database.connectionString,
+    query: `
+    SELECT json_build_object(
+      'schemas', (
+        SELECT json_agg(json_build_object(
+          'schema', schemas.nspname,
+          'tables', (
+            SELECT json_agg(json_build_object(
+              'name', tables.relname,
+              'columns', (
+                SELECT json_agg(json_build_object(
+                  'name', columns.attname,
+                  'type', pg_catalog.format_type(columns.atttypid, columns.atttypmod),
+                  'nullable', NOT columns.attnotnull,
+                  'default', pg_get_expr(defaults.adbin, defaults.adrelid)
+                ))
+                FROM pg_catalog.pg_attribute columns
+                LEFT JOIN pg_catalog.pg_attrdef defaults
+                  ON defaults.adrelid = columns.attrelid AND defaults.adnum = columns.attnum
+                WHERE columns.attrelid = tables.oid
+                  AND columns.attnum > 0
+                  AND NOT columns.attisdropped
+              )
+            ))
+            FROM pg_catalog.pg_class tables
+            WHERE tables.relnamespace = schemas.oid
+              AND tables.relkind = 'r'
+          )
+        ))
+        FROM pg_catalog.pg_namespace schemas
+        WHERE schemas.nspname NOT IN ('pg_catalog', 'information_schema')
+          AND schemas.nspname NOT LIKE 'pg_toast%'
+          AND schemas.nspname NOT LIKE 'pg_temp%'
+      ),
+      'enums', (
+        SELECT json_agg(json_build_object(
+          'schema', enum_schemas.nspname,
+          'name', enum_types.typname,
+          'value', enum_labels.enumlabel
+        ))
+        FROM pg_type enum_types
+        JOIN pg_enum enum_labels ON enum_types.oid = enum_labels.enumtypid
+        JOIN pg_catalog.pg_namespace enum_schemas ON enum_schemas.oid = enum_types.typnamespace
+        WHERE enum_schemas.nspname NOT IN ('pg_catalog', 'information_schema')
+      )
+    ) AS database_context;`,
+  })
+
+  const { database_context } = response[0] as { database_context: z.infer<typeof databaseContextSchema> }
+
+  return databaseContextSchema.parseAsync(database_context)
 }

@@ -1,37 +1,20 @@
-import type { VariantProps } from 'class-variance-authority'
 import { cn } from '@connnect/ui/lib/utils'
-import { cva } from 'class-variance-authority'
 import * as React from 'react'
 
-const inputVariants = cva(
-  'flex w-full rounded-md bg-element border border-border py-1 text-base shadow-md shadow-black/2 transition-colors file:border-0 file:bg-background file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
-  {
-    variants: {
-      size: {
-        default: 'h-9 px-3 py-1',
-        sm: 'h-8 px-2 text-xs',
-        lg: 'h-10 px-4',
-      },
-    },
-    defaultVariants: {
-      size: 'default',
-    },
-  },
-)
-
-export interface InputProps extends Omit<React.ComponentProps<'input'>, 'size'>, VariantProps<typeof inputVariants> {}
-
-function Input({ ref, className, type, size, ...props }: InputProps) {
+function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (
     <input
       type={type}
-      className={cn(inputVariants({ size, className }))}
-      ref={ref}
-      autoCorrect="off"
+      data-slot="input"
+      className={cn(
+        'file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+        'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
+        'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
+        className,
+      )}
       {...props}
     />
   )
 }
-Input.displayName = 'Input'
 
 export { Input }

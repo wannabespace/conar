@@ -7,9 +7,10 @@ export async function createContext(c: HonoContext) {
   const h = new Headers()
 
   if (cookie)
-    h.set('cookie', cookie)
+    h.set('Cookie', cookie)
+
   if (authorization)
-    h.set('authorization', authorization)
+    h.set('Authorization', authorization)
 
   return {
     headers: h,

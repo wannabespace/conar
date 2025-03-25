@@ -21,7 +21,5 @@ indexedDb.version(1).stores({
 })
 
 export function clearIndexedDb() {
-  indexedDb.transaction('rw', indexedDb.databases, () => {
-    indexedDb.databases.clear()
-  })
+  indexedDb.databases.clear()
 }

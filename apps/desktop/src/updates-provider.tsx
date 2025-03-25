@@ -1,15 +1,13 @@
-import { Button } from '@connnect/ui/components/button'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { RiLoader4Line } from '@remixicon/react'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 export type UpdatesStatus = 'no-updates' | 'checking' | 'downloading' | 'ready' | 'error'
 
 const UpdatesContext = createContext<{
+  version: string
   status: UpdatesStatus
   message?: string
-  relaunch: () => Promise<void>
   checkForUpdates: () => Promise<void>
 }>(null!)
 
@@ -19,6 +17,10 @@ export const useUpdates = () => use(UpdatesContext)
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<UpdatesStatus>('no-updates')
   const [message, setMessage] = useState<string | undefined>(undefined)
+  const { data: version } = useSuspenseQuery({
+    queryKey: ['version'],
+    queryFn: () => window.electron.versions.app(),
+  })
 
   async function checkForUpdates() {
     if (import.meta.env.PROD) {
@@ -44,77 +46,38 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval)
   }, [])
 
-  async function relaunch() {
+  async function installUpdate() {
     await window.electron.app.quitAndInstall()
   }
 
-  const value = useMemo(() => ({ status, message, checkForUpdates, relaunch }), [status, message])
+  useEffect(() => {
+    if (status === 'downloading') {
+      toast.info('Downloading a new update...')
+    }
+
+    if (status === 'ready') {
+      function showToast() {
+        toast.success('New update successfully downloaded', {
+          action: {
+            label: 'Install',
+            onClick: () => installUpdate(),
+          },
+          duration: 10000,
+        })
+      }
+
+      showToast()
+      const interval = setInterval(showToast, 1000 * 60 * 30)
+
+      return () => clearInterval(interval)
+    }
+  }, [status])
+
+  const value = useMemo(() => ({ status, message, version, checkForUpdates }), [status, message, version])
 
   return (
     <UpdatesContext value={value}>
       {children}
     </UpdatesContext>
-  )
-}
-
-export function UpdatesButton() {
-  const { status, checkForUpdates, relaunch, message } = useUpdates()
-  const { data: version } = useQuery({
-    queryKey: ['version'],
-    queryFn: () => window.electron.versions.app(),
-  })
-
-  return (
-    <>
-      {(status === 'no-updates' || status === 'checking') && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger disabled={status === 'checking'} asChild>
-              <button
-                type="button"
-                className="flex items-center gap-2 text-xs opacity-50 cursor-pointer"
-                disabled={status === 'checking'}
-                onClick={() => checkForUpdates()}
-              >
-                {status === 'checking' && <RiLoader4Line className="size-3 animate-spin" />}
-                v
-                {version}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>
-              Click to check for updates
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-      {status === 'downloading' && (
-        <div className="flex items-center gap-2 opacity-50">
-          <RiLoader4Line className="size-3 animate-spin" />
-          <span className="text-xs">
-            Downloading update...
-          </span>
-        </div>
-      )}
-      {status === 'ready' && (
-        <Button variant="outline" size="xs" onClick={relaunch}>
-          Restart to update
-        </Button>
-      )}
-      {status === 'error' && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger
-              className="text-xs opacity-50 text-destructive cursor-pointer"
-              onClick={() => checkForUpdates()}
-            >
-              Update failed
-            </TooltipTrigger>
-            <TooltipContent>
-              {message}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-    </>
   )
 }

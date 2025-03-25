@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
 
-export function ConnnectText(props: ComponentProps<'svg'>) {
+export function AppTextLogo(props: ComponentProps<'svg'>) {
   return (
     <svg
       width="98"

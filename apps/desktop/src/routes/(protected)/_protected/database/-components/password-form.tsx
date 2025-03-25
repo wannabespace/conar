@@ -1,7 +1,9 @@
 import type { Database } from '~/lib/indexeddb'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@connnect/ui/components/card'
+import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
+import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useMemo, useState } from 'react'
 import { useTestDatabase, useUpdateDatabasePassword } from '~/entities/database'
@@ -20,12 +22,20 @@ export function PasswordForm({ database }: { database: Database }) {
 
   return (
     <form
-      className="flex items-center w-full p-10 justify-center"
+      className="relative flex items-center w-full p-10 justify-center"
       onSubmit={(e) => {
         e.preventDefault()
         savePassword(password)
       }}
     >
+      <DotPattern
+        width={20}
+        height={20}
+        cx={1}
+        cy={1}
+        cr={1}
+        className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+      />
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>Password Required</CardTitle>
@@ -69,11 +79,12 @@ export function PasswordForm({ database }: { database: Database }) {
             <Button
               variant="outline"
               className="shrink-0"
-              loading={isConnecting}
-              disabled={isPending}
+              disabled={isConnecting || isPending}
               onClick={() => testConnection({ type: database.type, connectionString: newConnectionString })}
             >
-              Test connection
+              <LoadingContent loading={isConnecting}>
+                Test connection
+              </LoadingContent>
             </Button>
           </div>
         </CardContent>
@@ -81,9 +92,11 @@ export function PasswordForm({ database }: { database: Database }) {
           <Button
             type="submit"
             className="w-full"
-            loading={isPending}
+            disabled={isPending}
           >
-            Save Password
+            <LoadingContent loading={isPending}>
+              Save Password
+            </LoadingContent>
           </Button>
         </CardFooter>
       </Card>

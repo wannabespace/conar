@@ -6,7 +6,7 @@ import { Link, useParams } from '@tanstack/react-router'
 import { databaseColumnsQuery, databaseRowsQuery, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 
-export function DatabaseTree({ database, schema }: { database: Database, schema: string }) {
+export function TablesTree({ database, schema }: { database: Database, schema: string }) {
   const { data: tables } = useDatabaseTables(database, schema)
   const { table: tableParam } = useParams({ strict: false })
 
@@ -30,8 +30,8 @@ export function DatabaseTree({ database, schema }: { database: Database, schema:
           to="/database/$id/tables/$table"
           params={{ id: database.id, table: table.name }}
           className={cn(
-            'w-full flex items-center gap-2 py-1.5 text-sm text-foreground text-left',
-            tableParam === table.name && 'font-bold',
+            'w-full flex items-center gap-2 py-1.5 px-4 text-sm text-foreground hover:bg-accent/50',
+            tableParam === table.name && 'bg-accent/80 hover:bg-accent',
           )}
           onMouseOver={() => {
             debouncedPrefetchColumns(table.name)

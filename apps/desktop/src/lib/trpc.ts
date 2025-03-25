@@ -1,25 +1,32 @@
 import type { AppRouter, RouterInputs, RouterOutputs } from '@connnect/api/src/trpc/routers'
 import { createTRPCClient, httpBatchLink } from '@trpc/client'
 import SuperJSON from 'superjson'
-import { getBearerToken } from '~/lib/auth'
 import { handleError } from '~/lib/error'
+import { bearerToken } from './auth'
 
 export const trpc = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
       url: `${import.meta.env.VITE_PUBLIC_API_URL}/trpc`,
       transformer: SuperJSON,
-      async fetch(...args) {
-        const response = await fetch(...args)
+      async fetch(input, init) {
+        const response = await fetch(input, {
+          ...init,
+          credentials: 'include',
+        })
 
         if (response.status === 401) {
-          handleError(response)
+          handleError({
+            status: response.status,
+            code: 'UNAUTHORIZED',
+            message: await response.text(),
+          })
         }
 
         return response
       },
-      headers: async () => {
-        const token = getBearerToken()
+      headers() {
+        const token = bearerToken.get()
 
         return {
           Authorization: token ? `Bearer ${token}` : undefined,

@@ -1,76 +1,17 @@
 import type * as LabelPrimitive from '@radix-ui/react-label'
-import type { HTMLMotionProps } from 'motion/react'
-import type {
-  ControllerProps,
-  FieldPath,
-  FieldValues,
-  FormProviderProps,
-  SubmitHandler,
-} from 'react-hook-form'
+import type { ControllerProps, FieldPath, FieldValues } from 'react-hook-form'
+import { Label } from '@connnect/ui/components/label'
 import { cn } from '@connnect/ui/lib/utils'
 import { Slot } from '@radix-ui/react-slot'
-import { motion } from 'motion/react'
 import * as React from 'react'
 import {
   Controller,
   FormProvider,
   useFormContext,
+  useFormState,
 } from 'react-hook-form'
-import { Label } from './label'
 
-// eslint-disable-next-line ts/no-explicit-any
-function Form<TFieldValues extends FieldValues = FieldValues, TContext = any, TTransformedValues extends FieldValues | undefined = undefined>({
-  children,
-  onSubmit,
-  watch,
-  getValues,
-  getFieldState,
-  setError,
-  clearErrors,
-  setValue,
-  trigger,
-  formState,
-  resetField,
-  reset,
-  handleSubmit,
-  unregister,
-  control,
-  register,
-  setFocus,
-  ...props
-}: FormProviderProps<TFieldValues, TContext, TTransformedValues> & {
-  children: React.ReactNode
-  onSubmit: TTransformedValues extends undefined ? SubmitHandler<TFieldValues> : TTransformedValues extends FieldValues ? SubmitHandler<TTransformedValues> : never
-} & Omit<React.ComponentProps<'form'>, 'onSubmit'>) {
-  return (
-    <FormProvider
-      {...{
-        watch,
-        getValues,
-        getFieldState,
-        setError,
-        clearErrors,
-        setValue,
-        trigger,
-        formState,
-        resetField,
-        reset,
-        handleSubmit,
-        unregister,
-        control,
-        register,
-        setFocus,
-      }}
-    >
-      <form
-        {...props}
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        {children}
-      </form>
-    </FormProvider>
-  )
-}
+const Form = FormProvider
 
 interface FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
@@ -79,7 +20,9 @@ interface FormFieldContextValue<
   name: TName
 }
 
-const FormFieldContext = React.createContext<FormFieldContextValue>(null!)
+const FormFieldContext = React.createContext<FormFieldContextValue>(
+  {} as FormFieldContextValue,
+)
 
 function FormField<
   TFieldValues extends FieldValues = FieldValues,
@@ -98,24 +41,15 @@ interface FormItemContextValue {
   id: string
 }
 
-const FormItemContext = React.createContext<FormItemContextValue>(null!)
-
-function FormItem({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement> }) {
-  const id = React.useId()
-
-  return (
-    <FormItemContext value={{ id }}>
-      <div ref={ref} className={cn('space-y-1', className)} {...props} />
-    </FormItemContext>
-  )
-}
-FormItem.displayName = 'FormItem'
+const FormItemContext = React.createContext<FormItemContextValue>(
+  {} as FormItemContextValue,
+)
 
 function useFormField() {
-  const fieldContext = React.useContext(FormFieldContext)
-  const itemContext = React.useContext(FormItemContext)
-  const { getFieldState, formState } = useFormContext()
-
+  const fieldContext = React.use(FormFieldContext)
+  const itemContext = React.use(FormItemContext)
+  const { getFieldState } = useFormContext()
+  const formState = useFormState({ name: fieldContext.name })
   const fieldState = getFieldState(fieldContext.name, formState)
 
   if (!fieldContext) {
@@ -134,26 +68,43 @@ function useFormField() {
   }
 }
 
-function FormLabel({ ref, className, ...props }: React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & { ref?: React.RefObject<React.ComponentRef<typeof LabelPrimitive.Root>> }) {
+function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
+  const id = React.useId()
+
+  return (
+    <FormItemContext value={{ id }}>
+      <div
+        data-slot="form-item"
+        className={cn('grid gap-2', className)}
+        {...props}
+      />
+    </FormItemContext>
+  )
+}
+
+function FormLabel({
+  className,
+  ...props
+}: React.ComponentProps<typeof LabelPrimitive.Root>) {
   const { error, formItemId } = useFormField()
 
   return (
     <Label
-      ref={ref}
-      className={cn(error && 'text-destructive', className)}
+      data-slot="form-label"
+      data-error={!!error}
+      className={cn('data-[error=true]:text-destructive', className)}
       htmlFor={formItemId}
       {...props}
     />
   )
 }
-FormLabel.displayName = 'FormLabel'
 
-function FormControl({ ref, ...props }: React.ComponentPropsWithoutRef<typeof Slot> & { ref?: React.RefObject<React.ComponentRef<typeof Slot>> }) {
+function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
   return (
     <Slot
-      ref={ref}
+      data-slot="form-control"
       id={formItemId}
       aria-describedby={
         !error
@@ -165,44 +116,39 @@ function FormControl({ ref, ...props }: React.ComponentPropsWithoutRef<typeof Sl
     />
   )
 }
-FormControl.displayName = 'FormControl'
 
-function FormDescription({ ref, className, ...props }: React.ComponentProps<'p'>) {
+function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
   const { formDescriptionId } = useFormField()
 
   return (
     <p
-      ref={ref}
+      data-slot="form-description"
       id={formDescriptionId}
-      className={cn('text-xs text-muted-foreground', className)}
+      className={cn('text-muted-foreground text-sm', className)}
       {...props}
     />
   )
 }
-FormDescription.displayName = 'FormDescription'
 
-function FormMessage({ ref, className, children, ...props }: HTMLMotionProps<'p'>) {
+function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message) : children
+  const body = error ? String(error?.message ?? '') : props.children
+
+  if (!body) {
+    return null
+  }
 
   return (
-    <motion.p
-      ref={ref}
+    <p
+      data-slot="form-message"
       id={formMessageId}
-      className={cn('text-xs text-destructive', className)}
-      initial={{ height: 0, opacity: 0 }}
-      animate={{
-        height: body ? 'auto' : 0,
-        opacity: body ? 1 : 0,
-      }}
-      transition={{ duration: 0.2 }}
+      className={cn('text-destructive text-sm', className)}
       {...props}
     >
       {body}
-    </motion.p>
+    </p>
   )
 }
-FormMessage.displayName = 'FormMessage'
 
 export {
   Form,
@@ -212,6 +158,5 @@ export {
   FormItem,
   FormLabel,
   FormMessage,
-  // eslint-disable-next-line react-refresh/only-export-components
   useFormField,
 }

@@ -1,12 +1,18 @@
 import { cn } from '@connnect/ui/lib/utils'
 import { OTPInput, OTPInputContext } from 'input-otp'
-import { Minus } from 'lucide-react'
+import { MinusIcon } from 'lucide-react'
 import * as React from 'react'
 
-function InputOTP({ ref, className, containerClassName, ...props }: React.ComponentPropsWithoutRef<typeof OTPInput> & { ref?: React.RefObject<React.ComponentRef<typeof OTPInput>> }) {
+function InputOTP({
+  className,
+  containerClassName,
+  ...props
+}: React.ComponentProps<typeof OTPInput> & {
+  containerClassName?: string
+}) {
   return (
     <OTPInput
-      ref={ref}
+      data-slot="input-otp"
       containerClassName={cn(
         'flex items-center gap-2 has-disabled:opacity-50',
         containerClassName,
@@ -16,23 +22,33 @@ function InputOTP({ ref, className, containerClassName, ...props }: React.Compon
     />
   )
 }
-InputOTP.displayName = 'InputOTP'
 
-function InputOTPGroup({ ref, className, ...props }: React.ComponentPropsWithoutRef<'div'> & { ref?: React.RefObject<React.ComponentRef<'div'>> }) {
-  return <div ref={ref} className={cn('flex items-center', className)} {...props} />
+function InputOTPGroup({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="input-otp-group"
+      className={cn('flex items-center', className)}
+      {...props}
+    />
+  )
 }
-InputOTPGroup.displayName = 'InputOTPGroup'
 
-function InputOTPSlot({ ref, index, className, ...props }: React.ComponentPropsWithoutRef<'div'> & { index: number } & { ref: React.RefObject<React.ComponentRef<'div'>> }) {
-  const inputOTPContext = React.useContext(OTPInputContext)
-  const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index]
+function InputOTPSlot({
+  index,
+  className,
+  ...props
+}: React.ComponentProps<'div'> & {
+  index: number
+}) {
+  const inputOTPContext = React.use(OTPInputContext)
+  const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[index] ?? {}
 
   return (
     <div
-      ref={ref}
+      data-slot="input-otp-slot"
+      data-active={isActive}
       className={cn(
-        'relative flex h-9 w-9 items-center justify-center border-y border-r border-border text-sm shadow-xs transition-all first:rounded-l-md first:border-l last:rounded-r-md',
-        isActive && 'z-10 ring-1 ring-ring',
+        'data-[active=true]:border-ring data-[active=true]:ring-ring/50 data-[active=true]:aria-invalid:ring-destructive/20 dark:data-[active=true]:aria-invalid:ring-destructive/40 aria-invalid:border-destructive data-[active=true]:aria-invalid:border-destructive dark:bg-input/30 relative flex h-9 w-9 items-center justify-center border-y border-r text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md data-[active=true]:z-10 data-[active=true]:ring-[3px]',
         className,
       )}
       {...props}
@@ -40,21 +56,19 @@ function InputOTPSlot({ ref, index, className, ...props }: React.ComponentPropsW
       {char}
       {hasFakeCaret && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-4 w-px animate-caret-blink bg-foreground duration-1000" />
+          <div className="animate-caret-blink bg-foreground h-4 w-px duration-1000" />
         </div>
       )}
     </div>
   )
 }
-InputOTPSlot.displayName = 'InputOTPSlot'
 
-function InputOTPSeparator({ ref, ...props }: React.ComponentPropsWithoutRef<'div'> & { ref?: React.RefObject<React.ComponentRef<'div'>> }) {
+function InputOTPSeparator({ ...props }: React.ComponentProps<'div'>) {
   return (
-    <div ref={ref} role="separator" {...props}>
-      <Minus />
+    <div data-slot="input-otp-separator" role="separator" {...props}>
+      <MinusIcon />
     </div>
   )
 }
-InputOTPSeparator.displayName = 'InputOTPSeparator'
 
 export { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot }
