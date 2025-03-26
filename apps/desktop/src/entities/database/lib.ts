@@ -2,6 +2,7 @@ import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { z } from 'zod'
 import type { Database } from '~/lib/indexeddb'
 import { databaseContextSchema } from '@connnect/shared/database'
+import { toast } from 'sonner'
 import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
@@ -9,43 +10,48 @@ import { databaseQuery } from './hooks/database'
 import { databaseSchemasQuery, databaseTablesQuery } from './hooks/queries'
 
 export async function fetchDatabases() {
-  const [fetchedDatabases, existingDatabases] = await Promise.all([
-    trpc.databases.list.query(),
-    indexedDb.databases.toArray(),
-  ])
-  const existingMap = new Map(existingDatabases.map(d => [d.id, d]))
-  const fetchedMap = new Map(fetchedDatabases.map(d => [d.id, d]))
+  try {
+    const [fetchedDatabases, existingDatabases] = await Promise.all([
+      trpc.databases.list.query(),
+      indexedDb.databases.toArray(),
+    ])
+    const existingMap = new Map(existingDatabases.map(d => [d.id, d]))
+    const fetchedMap = new Map(fetchedDatabases.map(d => [d.id, d]))
 
-  await Promise.all([
-    indexedDb.databases.bulkDelete(
-      existingDatabases
-        .filter(d => !fetchedMap.has(d.id))
-        .map(d => d.id),
-    ),
-    indexedDb.databases.bulkAdd(
-      fetchedDatabases
-        .filter(d => !existingMap.has(d.id))
-        .map(d => ({
-          ...d,
-          isPasswordPopulated: !!new URL(d.connectionString).password,
-        })),
-    ),
-    indexedDb.databases.bulkUpdate(
-      fetchedDatabases
-        .filter((d) => {
-          const existing = existingMap.get(d.id)
+    await Promise.all([
+      indexedDb.databases.bulkDelete(
+        existingDatabases
+          .filter(d => !fetchedMap.has(d.id))
+          .map(d => d.id),
+      ),
+      indexedDb.databases.bulkAdd(
+        fetchedDatabases
+          .filter(d => !existingMap.has(d.id))
+          .map(d => ({
+            ...d,
+            isPasswordPopulated: !!new URL(d.connectionString).password,
+          })),
+      ),
+      indexedDb.databases.bulkUpdate(
+        fetchedDatabases
+          .filter((d) => {
+            const existing = existingMap.get(d.id)
 
-          return existing && (
-            existing.name !== d.name
-            || existing.connectionString !== d.connectionString
-          )
-        })
-        .map(d => ({
-          key: d.id,
-          changes: d,
-        })),
-    ),
-  ])
+            return existing && (
+              existing.name !== d.name
+              || existing.connectionString !== d.connectionString
+            )
+          })
+          .map(d => ({
+            key: d.id,
+            changes: d,
+          })),
+      ),
+    ])
+  }
+  catch {
+    toast.error('Failed to fetch databases. Please try again later.')
+  }
 }
 
 export async function createDatabase({ saveInCloud, ...database }: {
