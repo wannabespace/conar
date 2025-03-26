@@ -21,6 +21,7 @@
     "check-types": "tsc"
   },
   "dependencies": {
+    "@tanstack/react-form": "^1.1.2",
     "electron-squirrel-startup": "^1.0.1",
     "electron-updater": "^6.3.9",
     "pg": "^8.14.1"

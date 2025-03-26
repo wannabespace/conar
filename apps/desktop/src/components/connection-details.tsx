@@ -1,13 +1,14 @@
 import { parseConnectionString } from '@connnect/shared/utils/connections'
+import { cn } from '@connnect/ui/lib/utils'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useState } from 'react'
 
-export function ConnectionDetails({ connectionString }: { connectionString: string }) {
+export function ConnectionDetails({ className, connectionString }: { className?: string, connectionString: string }) {
   const connection = parseConnectionString(connectionString)
   const [showPassword, setShowPassword] = useState(false)
 
   return (
-    <table className="text-xs font-mono w-full border-collapse">
+    <table className={cn('text-xs font-mono w-full border-collapse', className)}>
       <tbody>
         <tr>
           <td className="py-1 pr-4 text-muted-foreground">Protocol</td>

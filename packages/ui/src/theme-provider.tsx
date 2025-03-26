@@ -42,17 +42,13 @@ export function ThemeProvider({
 
       if (theme === 'system') {
         const systemTheme = mediaQuery.matches ? 'dark' : 'light'
+        setResolvedTheme(systemTheme)
         root.classList.add(systemTheme)
-        requestAnimationFrame(() => {
-          setResolvedTheme(systemTheme)
-        })
         return
       }
 
+      setResolvedTheme(theme as ResolvedTheme)
       root.classList.add(theme)
-      requestAnimationFrame(() => {
-        setResolvedTheme(theme as ResolvedTheme)
-      })
     }
 
     mediaQuery.addEventListener('change', updateTheme)

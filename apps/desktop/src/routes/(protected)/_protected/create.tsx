@@ -13,13 +13,12 @@ import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ToggleGroup, ToggleGroupItem } from '@connnect/ui/components/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { faker } from '@faker-js/faker'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiArrowLeftSLine, RiLoopLeftLine } from '@remixicon/react'
+import { useForm, useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useId, useRef, useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { ConnectionDetails } from '~/components/connection-details'
@@ -36,33 +35,11 @@ export const Route = createFileRoute(
   component: RouteComponent,
 })
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Please enter a name for your connection'),
-  type: z.nativeEnum(DatabaseType),
-  connectionString: z.string().refine((value) => {
-    try {
-      parseConnectionString(value)
-      return true
-    }
-    catch {
-      return false
-    }
-  }, 'Invalid connection string format'),
-  saveInCloud: z.boolean().default(true),
-})
-
 function generateRandomName() {
   const vehicle = faker.vehicle.model()
   const color = faker.color.human()
 
   return `${color.charAt(0).toUpperCase() + color.slice(1)} ${vehicle}`
-}
-
-const defaultCredentials = {
-  connectionString: '',
-  name: generateRandomName(),
-  type: null!,
-  saveInCloud: true,
 }
 
 function StepType({ type, setType }: { type: DatabaseType, setType: (type: DatabaseType) => void }) {
@@ -123,7 +100,8 @@ function StepCredentials({ ref, type, connectionString, setConnectionString }: {
 }
 
 function StepSave({ name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud }: { name: string, connectionString: string, setName: (name: string) => void, onRandomName: () => void, saveInCloud: boolean, setSaveInCloud: (saveInCloud: boolean) => void }) {
-  const id = useId()
+  const nameId = useId()
+  const saveInCloudId = useId()
 
   return (
     <Card className="w-full">
@@ -132,49 +110,54 @@ function StepSave({ name, connectionString, setName, onRandomName, saveInCloud, 
         <CardDescription>Save the connection to your account.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ConnectionDetails connectionString={connectionString} />
-        <div className="mt-6 space-y-6">
-          <div className="flex w-full gap-2 items-end">
-            <Label htmlFor={id} className="block">
+        <ConnectionDetails className="mb-6" connectionString={connectionString} />
+        <div className="flex flex-col gap-6">
+          <div>
+            <Label htmlFor={nameId} className="mb-2">
               Connection name
             </Label>
-            <Input
-              id={id}
-              className="field-sizing-content"
-              placeholder="My connection"
-              value={name}
-              onChange={e => setName(e.target.value)}
-            />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={onRandomName}
-                  >
-                    <RiLoopLeftLine />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Generate a random connection name
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex w-full gap-2 items-end">
+              <Input
+                id={nameId}
+                className="field-sizing-content"
+                placeholder="My connection"
+                value={name}
+                onChange={e => setName(e.target.value)}
+              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={onRandomName}
+                    >
+                      <RiLoopLeftLine />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Generate a random connection name
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
-          <Label className="block">
-            Sync password
-          </Label>
-          <label className="text-xs flex items-center gap-2">
-            <Checkbox
-              checked={saveInCloud}
-              onCheckedChange={() => setSaveInCloud(!saveInCloud)}
-            />
-            <span className="text-muted-foreground">
-              Do you want to sync the password in our cloud?
-            </span>
-          </label>
+          <div>
+            <Label htmlFor={saveInCloudId} className="mb-2">
+              Sync password
+            </Label>
+            <label className="text-xs flex items-center gap-2">
+              <Checkbox
+                id={saveInCloudId}
+                checked={saveInCloud}
+                onCheckedChange={() => setSaveInCloud(!saveInCloud)}
+              />
+              <span className="text-muted-foreground">
+                Do you want to sync the password in our cloud?
+              </span>
+            </label>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -186,9 +169,34 @@ function StepForm() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: defaultCredentials,
+  const { mutate, isPending: isCreating } = useMutation({
+    mutationFn: createDatabase,
+    onSuccess: async ({ id }) => {
+      toast.success('Connection created successfully 🎉')
+      await queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
+      router.navigate({ to: '/database/$id/tables', params: { id } })
+    },
+  })
+  const { mutate: testConnection, isPending: isConnecting } = useTestDatabase()
+
+  const form = useForm({
+    defaultValues: {
+      connectionString: '',
+      name: generateRandomName(),
+      type: null! as DatabaseType,
+      saveInCloud: true,
+    },
+    validators: {
+      onChange: z.object({
+        name: z.string().min(1, 'Please enter a name for your connection'),
+        type: z.nativeEnum(DatabaseType),
+        connectionString: z.string().refine(isValidConnectionString, 'Invalid connection string format'),
+        saveInCloud: z.boolean(),
+      }),
+      onSubmit(e) {
+        mutate(e.value)
+      },
+    },
   })
 
   useKeyboardEvent(e => e.key === 'v' && e.metaKey, async (e) => {
@@ -207,8 +215,8 @@ function StepForm() {
 
       const type = protocolsEntries.find(([_, protocols]) => protocols.includes(parsed.protocol))?.[0] as DatabaseType
 
-      form.setValue('connectionString', text)
-      form.setValue('type', type)
+      form.setFieldValue('connectionString', text)
+      form.setFieldValue('type', type)
 
       setStep('save')
 
@@ -219,20 +227,17 @@ function StepForm() {
     }
   })
 
-  const [type, connectionString, name, saveInCloud] = useWatch({ control: form.control, name: ['type', 'connectionString', 'name', 'saveInCloud'] })
-
-  const { mutate, isPending: isCreating } = useMutation({
-    mutationFn: createDatabase,
-    onSuccess: async ({ id }) => {
-      toast.success('Connection created successfully 🎉')
-      await queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
-      router.navigate({ to: '/database/$id', params: { id } })
-    },
-  })
-  const { mutate: testConnection, isPending: isConnecting } = useTestDatabase()
+  const [type, connectionString, name, saveInCloud] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud])
+  const isConnectionStringValid = useStore(form.store, state => isValidConnectionString(state.values.connectionString))
 
   return (
-    <form onSubmit={form.handleSubmit(v => mutate(v))} className="flex py-10 flex-col w-full max-w-2xl mx-auto">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        form.handleSubmit()
+      }}
+      className="flex py-10 flex-col w-full max-w-2xl mx-auto"
+    >
       <div className="flex items-center gap-2 w-full mb-6">
         <Button
           type="button"
@@ -274,7 +279,7 @@ function StepForm() {
           </StepperTrigger>
         </StepperList>
         <StepperContent value="type">
-          <StepType type={type} setType={type => form.setValue('type', type)} />
+          <StepType type={type} setType={type => form.setFieldValue('type', type)} />
           <div className="mt-auto flex justify-end gap-4 pt-4">
             <Button
               disabled={!type}
@@ -289,13 +294,13 @@ function StepForm() {
             ref={inputRef}
             type={type}
             connectionString={connectionString}
-            setConnectionString={connectionString => form.setValue('connectionString', connectionString)}
+            setConnectionString={connectionString => form.setFieldValue('connectionString', connectionString)}
           />
           <div className="flex gap-2 justify-between mt-auto pt-4">
             <Button
               variant="outline"
-              disabled={isConnecting || form.formState.isSubmitting || !isValidConnectionString(connectionString)}
-              onClick={() => testConnection(form.getValues())}
+              disabled={isConnecting || isCreating || !isConnectionStringValid}
+              onClick={() => testConnection(form.state.values)}
             >
               <LoadingContent loading={isConnecting}>
                 Test connection
@@ -306,7 +311,7 @@ function StepForm() {
                 Back
               </Button>
               <Button
-                disabled={!form.formState.isValid}
+                disabled={!isConnectionStringValid}
                 onClick={() => setStep('save')}
               >
                 Next
@@ -318,10 +323,10 @@ function StepForm() {
           <StepSave
             name={name}
             connectionString={connectionString}
-            setName={name => form.setValue('name', name)}
-            onRandomName={() => form.setValue('name', generateRandomName())}
+            setName={name => form.setFieldValue('name', name)}
+            onRandomName={() => form.setFieldValue('name', generateRandomName())}
             saveInCloud={saveInCloud}
-            setSaveInCloud={saveInCloud => form.setValue('saveInCloud', saveInCloud)}
+            setSaveInCloud={saveInCloud => form.setFieldValue('saveInCloud', saveInCloud)}
           />
           <div className="flex gap-2 justify-end mt-auto pt-4">
             <Button variant="outline" onClick={() => setStep('credentials')}>
@@ -329,7 +334,7 @@ function StepForm() {
             </Button>
             <Button
               type="submit"
-              disabled={isCreating || isConnecting || !form.formState.isValid}
+              disabled={isCreating || isConnecting || !form.state.isValid}
             >
               <LoadingContent loading={isCreating}>
                 <AppLogo className="w-4" />
