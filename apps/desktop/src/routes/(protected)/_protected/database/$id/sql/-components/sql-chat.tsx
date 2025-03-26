@@ -1,4 +1,5 @@
 import type { Message } from '@ai-sdk/react'
+import type { ComponentProps } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { Avatar, AvatarFallback } from '@connnect/ui/components/avatar'
@@ -10,6 +11,7 @@ import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useCopy } from '@connnect/ui/hooks/use-copy'
+import { cn } from '@connnect/ui/lib/utils'
 import { RiDeleteBinLine, RiFileCopyLine, RiQuestionAnswerLine, RiSendPlane2Line, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
@@ -19,25 +21,93 @@ import { Monaco } from '~/components/monaco'
 import { getDatabaseContext, useDatabase } from '~/entities/database'
 import { UserAvatar } from '~/entities/user'
 
-const chatHistory = {
+const chatInput = {
   get(id: string) {
-    return JSON.parse(localStorage.getItem(`sql-chat-history-${id}`) || '[]')
+    return JSON.parse(localStorage.getItem(`sql-chat-input-${id}`) || '[]')
+  },
+  set(id: string, input: string) {
+    localStorage.setItem(`sql-chat-input-${id}`, JSON.stringify(input))
+  },
+}
+
+const chatMessages = {
+  get(id: string) {
+    return JSON.parse(localStorage.getItem(`sql-chat-messages-${id}`) || '[]')
   },
   set(id: string, messages: Message[]) {
-    localStorage.setItem(`sql-chat-history-${id}`, JSON.stringify(messages))
+    localStorage.setItem(`sql-chat-messages-${id}`, JSON.stringify(messages))
   },
+}
+
+function UserMessage({ message }: { message: Message }) {
+  return (
+    <>
+      <UserAvatar />
+      <div className="text-sm">
+        {message.content}
+      </div>
+    </>
+  )
+}
+
+function AssistantMessage({ message, onCopy }: { message: Message, onCopy: (content: string) => void }) {
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <Avatar className="size-6">
+          <AvatarFallback className="text-xs">AI</AvatarFallback>
+        </Avatar>
+      </div>
+      <div className="overflow-hidden border rounded-md">
+        <Monaco
+          initialValue={message.content}
+          onChange={() => {}}
+          options={{
+            readOnly: true,
+            lineNumbers: 'off',
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            folding: false,
+          }}
+          style={{ height: `${Math.min(message.content.split('\n').length * 20, 200)}px` }}
+        />
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button size="sm" variant="outline" onClick={() => onCopy(message.content)}>
+          <RiFileCopyLine className="size-3.5 mr-1" />
+          Copy
+        </Button>
+      </div>
+    </>
+  )
+}
+
+function ChatMessages({ messages, className, ...props }: ComponentProps<'div'> & { messages: Message[] }) {
+  const { copy } = useCopy(() => toast.success('Copied to clipboard'))
+
+  return (
+    <div className={cn('flex flex-col gap-4', className)} {...props}>
+      {messages.map(message => (
+        <div key={message.id} className="flex flex-col gap-2 mb-4">
+          {message.role === 'user'
+            ? <UserMessage message={message} />
+            : <AssistantMessage message={message} onCopy={copy} />}
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export function SqlChat() {
   const { id } = useParams({ from: '/(protected)/_protected/database/$id' })
   const { data: database } = useDatabase(id)
-  const { copy } = useCopy(() => toast.success('Copied to clipboard'))
   const { data: context } = useQuery({
     queryKey: ['database-context', id],
     queryFn: () => getDatabaseContext(database),
   })
   const { messages, stop, input, handleInputChange, handleSubmit, status, setMessages } = useChat({
-    initialMessages: chatHistory.get(id),
+    initialMessages: chatMessages.get(id),
+    initialInput: chatInput.get(id),
     api: `${import.meta.env.VITE_PUBLIC_API_URL}/ai/sql-chat`,
     sendExtraMessageFields: true,
     body: {
@@ -47,8 +117,12 @@ export function SqlChat() {
   })
 
   useEffect(() => {
-    chatHistory.set(id, messages)
+    chatMessages.set(id, messages)
   }, [id, messages])
+
+  useEffect(() => {
+    chatInput.set(id, input)
+  }, [id, input])
 
   return (
     <div className="relative flex h-screen flex-col justify-between gap-2 p-4">
@@ -91,15 +165,19 @@ export function SqlChat() {
             <p className="text-sm">Ask AI to generate SQL queries</p>
             <p className="mt-2 text-xs text-muted-foreground">
               Try asking for
+              {' '}
               <span className="font-mono">SELECT</span>
               {' '}
               queries to fetch data,
+              {' '}
               <span className="font-mono">INSERT</span>
               {' '}
               statements to add records,
+              {' '}
               <span className="font-mono">UPDATE</span>
               {' '}
               to modify existing data, or complex
+              {' '}
               <span className="font-mono">JOIN</span>
               s across multiple tables.
             </p>
@@ -107,50 +185,7 @@ export function SqlChat() {
         </div>
       )}
       <ScrollArea className="flex-1 overflow-y-auto -mx-4 px-4">
-        <div className="flex flex-col gap-4 pb-2">
-          {messages.map(message => (
-            <div key={message.id} className="flex flex-col gap-2 mb-4">
-              {message.role === 'user'
-                ? (
-                    <>
-                      <UserAvatar />
-                      <div className="text-sm">
-                        {message.content}
-                      </div>
-                    </>
-                  )
-                : (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="size-6">
-                          <AvatarFallback className="text-xs">AI</AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <div className="overflow-hidden border rounded-md">
-                        <Monaco
-                          initialValue={message.content}
-                          onChange={() => {}}
-                          options={{
-                            readOnly: true,
-                            lineNumbers: 'off',
-                            minimap: { enabled: false },
-                            scrollBeyondLastLine: false,
-                            folding: false,
-                          }}
-                          style={{ height: `${Math.min(message.content.split('\n').length * 20, 200)}px` }}
-                        />
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" onClick={() => copy(message.content)}>
-                          <RiFileCopyLine className="size-3.5 mr-1" />
-                          Copy
-                        </Button>
-                      </div>
-                    </>
-                  )}
-            </div>
-          ))}
-        </div>
+        <ChatMessages messages={messages} className="pb-2" />
       </ScrollArea>
       <form
         className="flex gap-2"
