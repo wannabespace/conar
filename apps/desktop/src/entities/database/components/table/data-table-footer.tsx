@@ -51,7 +51,7 @@ export function DataTableFooter({
       <div className="flex items-center gap-3">
         <Label className="mb-0" htmlFor={id}>Rows per page</Label>
         <Select
-          defaultValue={String(pageSize)}
+          value={String(pageSize)}
           onValueChange={value => onPageSizeChange(Number(value) as PageSize)}
         >
           <SelectTrigger id={id} className="w-fit whitespace-nowrap">
