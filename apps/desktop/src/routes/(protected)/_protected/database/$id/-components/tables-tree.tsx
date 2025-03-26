@@ -46,10 +46,11 @@ export function TablesTree({ database, schema, className }: { database: Database
             return (
               <Link
                 key={virtualRow.key}
+                data-mask
                 to="/database/$id/tables/$table"
                 params={{ id: database.id, table: table.name }}
                 className={cn(
-                  'w-full flex items-center gap-2 py-1.5 px-4 text-sm text-foreground hover:bg-accent/50',
+                  'absolute top-0 left-0 w-full flex items-center gap-2 py-1.5 px-4 text-sm text-foreground hover:bg-accent/50',
                   tableParam === table.name && 'bg-accent/80 hover:bg-accent',
                 )}
                 onMouseOver={() => {
@@ -57,15 +58,11 @@ export function TablesTree({ database, schema, className }: { database: Database
                   debouncedPrefetchRows(table.name)
                 }}
                 style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
                   height: virtualRow.size,
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
               >
-                <RiTableLine className="h-4 w-4 text-muted-foreground shrink-0" />
+                <RiTableLine className="size-4 text-muted-foreground shrink-0" />
                 <span className="truncate">{table.name}</span>
               </Link>
             )

@@ -76,6 +76,7 @@ function TableCell<T extends Record<string, unknown>>({ cell }: {
   return (
     <div
       key={cell.id}
+      data-mask
       className="shrink-0 text-xs truncate py-2 pl-4 font-mono"
       style={{
         width: `${cell.column.getSize()}px`,
@@ -198,7 +199,7 @@ export function DataTable<T extends Record<string, unknown>>({
       },
       header: () => (
         <>
-          <div className="truncate font-medium">
+          <div data-mask className="truncate font-medium">
             {column.name}
           </div>
           {column.type && (

@@ -35,7 +35,7 @@ function DatabaseCard({ database, onRemove }: { database: Database, onRemove: ()
       </div>
       <div className="flex flex-1 flex-col gap-1 min-w-0">
         <div className="font-medium tracking-tight truncate">{database.name}</div>
-        <div className="text-sm text-muted-foreground truncate">{connectionString.replaceAll('*', '•')}</div>
+        <div data-mask className="text-sm text-muted-foreground truncate">{connectionString.replaceAll('*', '•')}</div>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger className="rounded-md p-2 hover:bg-accent-foreground/5">

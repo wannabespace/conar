@@ -51,10 +51,6 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    if (status === 'downloading') {
-      toast.info('Downloading a new update...')
-    }
-
     if (status === 'ready') {
       function showToast() {
         toast.success('New update successfully downloaded', {
