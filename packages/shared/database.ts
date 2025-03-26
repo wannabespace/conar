@@ -12,10 +12,10 @@ export const databaseContextSchema = z.object({
         default: z.string().nullable(),
       })),
     })).nullable(),
-  })),
+  })).nullable(),
   enums: z.array(z.object({
     schema: z.string(),
     name: z.string(),
     value: z.string(),
-  })),
+  })).nullable(),
 })
