@@ -23,7 +23,7 @@ const schema = z.object({
   name: z.string().optional(),
 })
 
-function useSocialMutation(provider: 'google' | 'github') {
+function useSocialMutation(provider: 'google' | 'github', onSuccess: () => void) {
   return useMutation({
     mutationKey: ['social', provider],
     mutationFn: async () => {
@@ -49,6 +49,7 @@ function useSocialMutation(provider: 'google' | 'github') {
     },
     onSuccess(url) {
       window.open(url, '_blank')
+      onSuccess()
     },
     onError: handleError,
   })
@@ -108,8 +109,10 @@ export function AuthForm({ type }: { type: Type }) {
     successAuthToast(type === 'sign-up')
   }
 
-  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google')
-  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github')
+  const [_, setIsDialogOpen] = useState(false)
+
+  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google', () => setIsDialogOpen(true))
+  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github', () => setIsDialogOpen(true))
 
   return (
     <>

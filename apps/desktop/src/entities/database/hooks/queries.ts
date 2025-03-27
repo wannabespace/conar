@@ -43,24 +43,21 @@ export function databaseColumnsQuery(database: Database, table: string, schema: 
       SELECT
         c.table_name,
         c.column_name,
-        CASE
-          WHEN c.data_type = 'USER-DEFINED' THEN
-            (SELECT n.nspname || '.' || t.typname
-             FROM pg_catalog.pg_type t
-             JOIN pg_catalog.pg_namespace n ON t.typnamespace = n.oid
-             WHERE t.oid = c.udt_name::regtype)
-          ELSE c.data_type
-        END as data_type,
-        c.character_maximum_length,
         c.column_default,
-        c.is_nullable
-      FROM
-        information_schema.columns c
-      WHERE
-        c.table_name = '${table}'
-        AND c.table_schema = '${schema}'
-      ORDER BY
-        c.ordinal_position;
+        c.is_nullable,
+        CASE
+          WHEN c.data_type = 'USER-DEFINED' THEN (
+            SELECT t.typname
+            FROM pg_catalog.pg_type t
+            JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+            WHERE t.typname = c.udt_name
+          )
+          ELSE c.data_type
+        END AS data_type
+      FROM information_schema.columns c
+      WHERE c.table_schema = '${schema}'
+        AND c.table_name = '${table}'
+      ORDER BY c.ordinal_position;
     `,
   }
 
@@ -78,7 +75,6 @@ export function databaseColumnsQuery(database: Database, table: string, schema: 
         table_name: string
         column_name: string
         data_type: string
-        character_maximum_length: number
         column_default: string
         is_nullable: string
       }[]
@@ -144,23 +140,24 @@ export function databaseRowsQuery(database: Database, table: string, schema: str
       },
     ],
     queryFn: async () => {
-      const results = await window.electron.databases.query({
-        type: database.type,
-        connectionString: database.connectionString,
-        query: `SELECT * FROM "${schema}"."${table}" LIMIT ${_limit} OFFSET ${(_page - 1) * _limit}`,
-      })
-      const [result] = results
-      const rows = result.rows as {
+      const [results, countResults] = await Promise.all([
+        window.electron.databases.query({
+          type: database.type,
+          connectionString: database.connectionString,
+          query: `SELECT * FROM "${schema}"."${table}" LIMIT ${_limit} OFFSET ${(_page - 1) * _limit}`,
+        }),
+        window.electron.databases.query({
+          type: database.type,
+          connectionString: database.connectionString,
+          query: `SELECT COUNT(*) as total FROM "${schema}"."${table}"`,
+        }),
+      ])
+
+      const rows = results[0].rows as {
         [key: string]: string | number | boolean | null
       }[]
 
-      const countResults = await window.electron.databases.query({
-        type: database.type,
-        connectionString: database.connectionString,
-        query: `SELECT COUNT(*) as total FROM "${schema}"."${table}"`,
-      })
-      const [countResult] = countResults
-      const tableCount = countResult.rows[0] as { total: number }
+      const tableCount = countResults[0].rows[0] as { total: number }
 
       return {
         rows,
