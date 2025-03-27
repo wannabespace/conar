@@ -3,13 +3,22 @@ import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
+import { Toaster } from '@connnect/ui/components/sonner'
+import { copy } from '@connnect/ui/lib/copy'
 import { ThemeProvider } from '@connnect/ui/theme-provider'
-import { RiAlertLine, RiArrowGoBackLine, RiLoopLeftLine } from '@remixicon/react'
-import { useNavigate } from '@tanstack/react-router'
+import { RiAlertLine, RiArrowGoBackLine, RiClipboardLine, RiLoopLeftLine } from '@remixicon/react'
+import { useRouter } from '@tanstack/react-router'
 import { EventsProvider } from './lib/events'
 
 export function ErrorPage({ error, info }: ErrorComponentProps) {
-  const navigate = useNavigate()
+  const router = useRouter()
+
+  const getErrorText = () => {
+    const errorText = error.stack || error.message
+    const componentStackText = info?.componentStack || ''
+
+    return `Error:\n${errorText}\n\nComponent Stack:\n${componentStackText}`
+  }
 
   return (
     <EventsProvider>
@@ -58,22 +67,31 @@ export function ErrorPage({ error, info }: ErrorComponentProps) {
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => navigate({ to: '/' })}
+                  onClick={() => router.history.back()}
                 >
-                  <RiArrowGoBackLine />
+                  <RiArrowGoBackLine className="mr-1" />
                   Go back
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => copy(getErrorText(), 'Error copied to clipboard')}
+                >
+                  <RiClipboardLine className="mr-1" />
+                  Copy error
                 </Button>
                 <Button
                   className="flex-1"
                   onClick={() => window.location.reload()}
                 >
-                  <RiLoopLeftLine />
+                  <RiLoopLeftLine className="mr-1" />
                   Refresh
                 </Button>
               </CardFooter>
             </Card>
           </div>
         </div>
+        <Toaster />
       </ThemeProvider>
     </EventsProvider>
   )

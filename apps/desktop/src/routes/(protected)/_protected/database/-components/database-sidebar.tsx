@@ -18,7 +18,7 @@ export function DatabaseSidebar() {
 
   return (
     <>
-      <div className="w-16" />
+      <div className="w-[calc(theme(spacing.16)+2px)]" />
       <div
         className="bg-card flex flex-col border-r gap-4 items-center py-4 px-4 w-16 h-screen fixed left-0 inset-y-0"
         onMouseOver={() => prefetchDatabaseCore(database)}
@@ -43,7 +43,7 @@ export function DatabaseSidebar() {
           </TooltipProvider>
         </div>
         <div className="relative flex flex-col items-center flex-1 gap-2 overflow-auto">
-          <div className="w-full text-sm">
+          <div className="w-full">
             <div className="flex w-full flex-col gap-2">
               <TooltipProvider>
                 <Tooltip>

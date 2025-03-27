@@ -9,7 +9,7 @@ import { useRef } from 'react'
 import { databaseColumnsQuery, databaseRowsQuery, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 
-export function TablesTree({ database, schema, className }: { database: Database, schema: string, className?: string }) {
+export function TablesTree({ database, schema, className, search }: { database: Database, schema: string, className?: string, search?: string }) {
   const { data: tables } = useDatabaseTables(database, schema)
   const { table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
@@ -21,13 +21,17 @@ export function TablesTree({ database, schema, className }: { database: Database
   )
 
   const debouncedPrefetchRows = useDebouncedCallback(
-    (tableName: string) => queryClient.ensureQueryData(databaseRowsQuery(database, tableName, { schema })),
+    (tableName: string) => queryClient.ensureQueryData(databaseRowsQuery(database, tableName, schema)),
     [database.id, schema],
     100,
   )
 
+  const filteredTables = tables?.filter(table =>
+    !search || table.name.toLowerCase().includes(search.toLowerCase()),
+  ) || []
+
   const virtualizer = useVirtualizer({
-    count: tables?.length ?? 0,
+    count: filteredTables.length,
     getScrollElement: () => ref.current,
     estimateSize: () => 35,
     scrollMargin: ref.current?.offsetTop ?? 0,
@@ -39,7 +43,8 @@ export function TablesTree({ database, schema, className }: { database: Database
       <div className="size-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
         <div className="relative flex flex-col">
           {virtualizer.getVirtualItems().map((virtualRow) => {
-            const table = tables?.[virtualRow.index]
+            const table = filteredTables?.[virtualRow.index]
+
             if (!table)
               return null
 
@@ -47,11 +52,15 @@ export function TablesTree({ database, schema, className }: { database: Database
               <Link
                 key={virtualRow.key}
                 data-mask
-                to="/database/$id/tables/$table"
-                params={{ id: database.id, table: table.name }}
+                to="/database/$id/tables/$schema/$table"
+                params={{
+                  id: database.id,
+                  schema,
+                  table: table.name,
+                }}
                 className={cn(
-                  'absolute top-0 left-0 w-full flex items-center gap-2 py-1.5 px-4 text-sm text-foreground hover:bg-accent/50',
-                  tableParam === table.name && 'bg-accent/80 hover:bg-accent',
+                  'absolute top-0 left-0 w-full border-l-2 border-transparent flex items-center gap-2 py-1.5 px-4 text-sm text-foreground hover:bg-accent/50',
+                  tableParam === table.name && 'border-primary bg-accent/50 font-medium',
                 )}
                 onMouseOver={() => {
                   debouncedPrefetchColumns(table.name)

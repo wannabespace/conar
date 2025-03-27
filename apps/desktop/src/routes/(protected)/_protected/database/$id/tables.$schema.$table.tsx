@@ -1,6 +1,5 @@
 import type { PageSize } from '~/entities/database'
 import { Button } from '@connnect/ui/components/button'
-import { CardDescription, CardTitle } from '@connnect/ui/components/card'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Separator } from '@connnect/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
@@ -13,20 +12,20 @@ import { databaseColumnsQuery, databaseRowsQuery, DataTable, DataTableFooter, us
 import { queryClient } from '~/main'
 
 export const Route = createFileRoute(
-  '/(protected)/_protected/database/$id/tables/$table',
+  '/(protected)/_protected/database/$id/tables/$schema/$table',
 )({
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { id, table } = Route.useParams()
+  const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState<PageSize>(50)
-  const { data: databaseColumns } = useDatabaseColumns(database, table)
-  const queryOpts = databaseRowsQuery(database, table, { page, limit: pageSize })
+  const { data: databaseColumns } = useDatabaseColumns(database, table, schema)
+  const queryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
   const { data, isPending } = useQuery(queryOpts)
-  const isFetching = useIsFetching(databaseRowsQuery(database, table, { page: 1, limit: pageSize })) > 0
+  const isFetching = useIsFetching(databaseRowsQuery(database, table, schema, { page: 1, limit: pageSize })) > 0
   const [total, setTotal] = useState(data?.total ?? null)
 
   const [canPrefetch, setCanPrefetch] = useState(false)
@@ -36,9 +35,9 @@ function RouteComponent() {
       return
 
     if (page - 1 > 0) {
-      queryClient.ensureQueryData(databaseRowsQuery(database, table, { page: page - 1, limit: pageSize }))
+      queryClient.ensureQueryData(databaseRowsQuery(database, table, schema, { page: page - 1, limit: pageSize }))
     }
-    queryClient.ensureQueryData(databaseRowsQuery(database, table, { page: page + 1, limit: pageSize }))
+    queryClient.ensureQueryData(databaseRowsQuery(database, table, schema, { page: page + 1, limit: pageSize }))
   }, [page, pageSize, canPrefetch])
 
   useEffect(() => {
@@ -55,7 +54,7 @@ function RouteComponent() {
     setPage(1)
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryOpts.queryKey.slice(0, -1) }),
-      queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table).queryKey }),
+      queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table, schema).queryKey }),
     ])
     toast.success('Data refreshed')
   }
@@ -64,12 +63,12 @@ function RouteComponent() {
 
   return (
     <div className="h-screen flex flex-col justify-between">
-      <div className="flex flex-row items-center justify-between p-4">
+      <div className="flex gap-6 flex-row items-center justify-between p-4">
         <div>
-          <CardTitle>
+          <h2 className="font-medium text-sm mb-0.5">
             {table}
-          </CardTitle>
-          <CardDescription>
+          </h2>
+          <p className="text-muted-foreground text-xs">
             {databaseColumns?.length || 0}
             {' '}
             column
@@ -81,7 +80,7 @@ function RouteComponent() {
             {' '}
             row
             {total === 1 ? '' : 's'}
-          </CardDescription>
+          </p>
         </div>
         <div>
           <TooltipProvider>
@@ -128,7 +127,7 @@ function RouteComponent() {
       >
         <Separator className="h-[2px]" />
         <DataTableFooter
-          className="p-4"
+          className="p-2"
           currentPage={page}
           onPageChange={setPage}
           pageSize={pageSize}

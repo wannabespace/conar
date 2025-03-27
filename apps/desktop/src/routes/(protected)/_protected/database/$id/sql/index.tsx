@@ -1,6 +1,7 @@
 import type { editor } from 'monaco-editor'
 import { Button } from '@connnect/ui/components/button'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
 import { useLocalStorageValue } from '@react-hookz/web'
 import { RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -18,6 +19,18 @@ export const Route = createFileRoute(
   component: RouteComponent,
 })
 
+function ResultTable({ result, columns }: { result: Record<string, unknown>[], columns: string[] }) {
+  return (
+    <DataTable
+      data={result}
+      columns={columns.map(c => ({
+        name: c,
+      }))}
+      className="h-full"
+    />
+  )
+}
+
 function RouteComponent() {
   const { id } = Route.useParams()
   const { value: query, set: setQuery } = useLocalStorageValue(`sql-${id}`, {
@@ -27,19 +40,17 @@ function RouteComponent() {
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const { data: database } = useDatabase(id)
 
-  const { mutate: sendQuery, data: result, isPending } = useMutation({
-    mutationFn: async () => {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      const response = await window.electron.databases.query({
-        type: database.type,
-        connectionString: database.connectionString,
-        query,
-      })
-
-      return response as Record<string, unknown>[]
-    },
+  const { mutate: sendQuery, data: results, isPending } = useMutation({
+    mutationFn: () => window.electron.databases.query({
+      type: database.type,
+      connectionString: database.connectionString,
+      query,
+    }),
     onSuccess() {
       toast.success('Query executed successfully')
+    },
+    onError() {
+      toast.error('Failed to execute query')
     },
   })
 
@@ -49,12 +60,6 @@ function RouteComponent() {
     setQuery(formatted)
     monacoRef.current?.setValue(formatted)
   }
-
-  const columns = (result && Array.isArray(result) && result.length > 0
-    ? Object.keys(result[0] as Record<string, unknown>)
-    : []).map(column => ({
-    name: column,
-  }))
 
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex h-auto!">
@@ -91,12 +96,28 @@ function RouteComponent() {
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel minSize={20}>
-            {Array.isArray(result) && (
-              <DataTable
-                data={result}
-                columns={columns}
-                className="h-full"
-              />
+            {Array.isArray(results) && (
+              <Tabs
+                defaultValue="table-0"
+                className="size-full gap-0"
+              >
+                {results.length > 1 && (
+                  <TabsList className="rounded-none w-full bg-card">
+                    {results.map((_, i) => (
+                      <TabsTrigger key={i} value={`table-${i}`}>
+                        Result
+                        {' '}
+                        {i + 1}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                )}
+                {results.map((r, i) => (
+                  <TabsContent className="h-full" key={i} value={`table-${i}`}>
+                    <ResultTable result={r.rows} columns={r.columns} />
+                  </TabsContent>
+                ))}
+              </Tabs>
             )}
             {isPending
               ? (
@@ -107,12 +128,12 @@ function RouteComponent() {
                     </p>
                   </div>
                 )
-              : !result && (
+              : !results && (
                   <div className="h-full flex flex-col items-center justify-center">
                     <p className="text-center">
                       No results to display
                     </p>
-                    <p className="text-sm text-muted-foreground mt-1 text-center">
+                    <p className="text-muted-foreground mt-1 text-center">
                       Write and run a SQL query above to see results here
                     </p>
                   </div>

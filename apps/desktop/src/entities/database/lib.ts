@@ -9,6 +9,26 @@ import { queryClient } from '~/main'
 import { databaseQuery } from './hooks/database'
 import { databaseSchemasQuery, databaseTablesQuery } from './hooks/queries'
 
+const DATABASES_SCHEMAS_KEY = 'databases-schemas'
+
+export const databaseSchemas = {
+  get(id: string) {
+    const value = JSON.parse(localStorage.getItem(DATABASES_SCHEMAS_KEY) ?? '{}')
+
+    if (!value[id])
+      return 'public'
+
+    return value[id]
+  },
+  set(id: string, schema: string) {
+    const schemas = JSON.parse(localStorage.getItem(DATABASES_SCHEMAS_KEY) ?? '{}')
+
+    schemas[id] = schema
+
+    localStorage.setItem(DATABASES_SCHEMAS_KEY, JSON.stringify(schemas))
+  },
+}
+
 export async function fetchDatabases() {
   try {
     const [fetchedDatabases, existingDatabases] = await Promise.all([
@@ -111,12 +131,12 @@ export async function updateDatabasePassword(id: string, password: string) {
 export function prefetchDatabaseCore(database: Database) {
   queryClient.ensureQueryData(databaseQuery(database.id))
   queryClient.ensureQueryData(databaseSchemasQuery(database))
-  queryClient.ensureQueryData(databaseTablesQuery(database))
+  queryClient.ensureQueryData(databaseTablesQuery(database, databaseSchemas.get(database.id)))
 }
 
 export async function getDatabaseContext(database: Database): Promise<z.infer<typeof databaseContextSchema>> {
   // Just vibe code
-  const response = await window.electron.databases.query({
+  const results = await window.electron.databases.query({
     type: database.type,
     connectionString: database.connectionString,
     query: `
@@ -166,7 +186,8 @@ export async function getDatabaseContext(database: Database): Promise<z.infer<ty
     ) AS database_context;`,
   })
 
-  const { database_context } = response[0] as { database_context: z.infer<typeof databaseContextSchema> }
+  const [result] = results
+  const { database_context } = result.rows[0] as { database_context: z.infer<typeof databaseContextSchema> }
 
   return databaseContextSchema.parseAsync(database_context)
 }

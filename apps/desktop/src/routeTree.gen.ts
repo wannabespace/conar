@@ -24,7 +24,7 @@ import { Route as publicAuthTwoFactorSetupImport } from './routes/(public)/_auth
 import { Route as protectedProtectedDatabaseIdImport } from './routes/(protected)/_protected/database/$id'
 import { Route as protectedProtectedDatabaseIdTablesImport } from './routes/(protected)/_protected/database/$id/tables'
 import { Route as protectedProtectedDatabaseIdSqlIndexImport } from './routes/(protected)/_protected/database/$id/sql/index'
-import { Route as protectedProtectedDatabaseIdTablesTableImport } from './routes/(protected)/_protected/database/$id/tables.$table'
+import { Route as protectedProtectedDatabaseIdTablesSchemaTableImport } from './routes/(protected)/_protected/database/$id/tables.$schema.$table'
 
 // Create Virtual Routes
 
@@ -110,10 +110,10 @@ const protectedProtectedDatabaseIdSqlIndexRoute =
     getParentRoute: () => protectedProtectedDatabaseIdRoute,
   } as any)
 
-const protectedProtectedDatabaseIdTablesTableRoute =
-  protectedProtectedDatabaseIdTablesTableImport.update({
-    id: '/$table',
-    path: '/$table',
+const protectedProtectedDatabaseIdTablesSchemaTableRoute =
+  protectedProtectedDatabaseIdTablesSchemaTableImport.update({
+    id: '/$schema/$table',
+    path: '/$schema/$table',
     getParentRoute: () => protectedProtectedDatabaseIdTablesRoute,
   } as any)
 
@@ -205,13 +205,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof protectedProtectedDatabaseIdTablesImport
       parentRoute: typeof protectedProtectedDatabaseIdImport
     }
-    '/(protected)/_protected/database/$id/tables/$table': {
-      id: '/(protected)/_protected/database/$id/tables/$table'
-      path: '/$table'
-      fullPath: '/database/$id/tables/$table'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdTablesTableImport
-      parentRoute: typeof protectedProtectedDatabaseIdTablesImport
-    }
     '/(protected)/_protected/database/$id/sql/': {
       id: '/(protected)/_protected/database/$id/sql/'
       path: '/sql'
@@ -219,19 +212,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof protectedProtectedDatabaseIdSqlIndexImport
       parentRoute: typeof protectedProtectedDatabaseIdImport
     }
+    '/(protected)/_protected/database/$id/tables/$schema/$table': {
+      id: '/(protected)/_protected/database/$id/tables/$schema/$table'
+      path: '/$schema/$table'
+      fullPath: '/database/$id/tables/$schema/$table'
+      preLoaderRoute: typeof protectedProtectedDatabaseIdTablesSchemaTableImport
+      parentRoute: typeof protectedProtectedDatabaseIdTablesImport
+    }
   }
 }
 
 // Create and export the route tree
 
 interface protectedProtectedDatabaseIdTablesRouteChildren {
-  protectedProtectedDatabaseIdTablesTableRoute: typeof protectedProtectedDatabaseIdTablesTableRoute
+  protectedProtectedDatabaseIdTablesSchemaTableRoute: typeof protectedProtectedDatabaseIdTablesSchemaTableRoute
 }
 
 const protectedProtectedDatabaseIdTablesRouteChildren: protectedProtectedDatabaseIdTablesRouteChildren =
   {
-    protectedProtectedDatabaseIdTablesTableRoute:
-      protectedProtectedDatabaseIdTablesTableRoute,
+    protectedProtectedDatabaseIdTablesSchemaTableRoute:
+      protectedProtectedDatabaseIdTablesSchemaTableRoute,
   }
 
 const protectedProtectedDatabaseIdTablesRouteWithChildren =
@@ -332,8 +332,8 @@ export interface FileRoutesByFullPath {
   '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
-  '/database/$id/tables/$table': typeof protectedProtectedDatabaseIdTablesTableRoute
   '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
+  '/database/$id/tables/$schema/$table': typeof protectedProtectedDatabaseIdTablesSchemaTableRoute
 }
 
 export interface FileRoutesByTo {
@@ -345,8 +345,8 @@ export interface FileRoutesByTo {
   '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
-  '/database/$id/tables/$table': typeof protectedProtectedDatabaseIdTablesTableRoute
   '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
+  '/database/$id/tables/$schema/$table': typeof protectedProtectedDatabaseIdTablesSchemaTableRoute
 }
 
 export interface FileRoutesById {
@@ -363,8 +363,8 @@ export interface FileRoutesById {
   '/(protected)/_protected/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
   '/(public)/_auth/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/(protected)/_protected/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
-  '/(protected)/_protected/database/$id/tables/$table': typeof protectedProtectedDatabaseIdTablesTableRoute
   '/(protected)/_protected/database/$id/sql/': typeof protectedProtectedDatabaseIdSqlIndexRoute
+  '/(protected)/_protected/database/$id/tables/$schema/$table': typeof protectedProtectedDatabaseIdTablesSchemaTableRoute
 }
 
 export interface FileRouteTypes {
@@ -378,8 +378,8 @@ export interface FileRouteTypes {
     | '/database/$id'
     | '/two-factor/setup'
     | '/database/$id/tables'
-    | '/database/$id/tables/$table'
     | '/database/$id/sql'
+    | '/database/$id/tables/$schema/$table'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -390,8 +390,8 @@ export interface FileRouteTypes {
     | '/database/$id'
     | '/two-factor/setup'
     | '/database/$id/tables'
-    | '/database/$id/tables/$table'
     | '/database/$id/sql'
+    | '/database/$id/tables/$schema/$table'
   id:
     | '__root__'
     | '/(protected)'
@@ -406,8 +406,8 @@ export interface FileRouteTypes {
     | '/(protected)/_protected/database/$id'
     | '/(public)/_auth/two-factor/setup'
     | '/(protected)/_protected/database/$id/tables'
-    | '/(protected)/_protected/database/$id/tables/$table'
     | '/(protected)/_protected/database/$id/sql/'
+    | '/(protected)/_protected/database/$id/tables/$schema/$table'
   fileRoutesById: FileRoutesById
 }
 
@@ -504,16 +504,16 @@ export const routeTree = rootRoute
       "filePath": "(protected)/_protected/database/$id/tables.tsx",
       "parent": "/(protected)/_protected/database/$id",
       "children": [
-        "/(protected)/_protected/database/$id/tables/$table"
+        "/(protected)/_protected/database/$id/tables/$schema/$table"
       ]
-    },
-    "/(protected)/_protected/database/$id/tables/$table": {
-      "filePath": "(protected)/_protected/database/$id/tables.$table.tsx",
-      "parent": "/(protected)/_protected/database/$id/tables"
     },
     "/(protected)/_protected/database/$id/sql/": {
       "filePath": "(protected)/_protected/database/$id/sql/index.tsx",
       "parent": "/(protected)/_protected/database/$id"
+    },
+    "/(protected)/_protected/database/$id/tables/$schema/$table": {
+      "filePath": "(protected)/_protected/database/$id/tables.$schema.$table.tsx",
+      "parent": "/(protected)/_protected/database/$id/tables"
     }
   }
 }

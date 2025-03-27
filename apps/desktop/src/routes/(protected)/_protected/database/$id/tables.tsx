@@ -1,8 +1,16 @@
+import { Button } from '@connnect/ui/components/button'
 import { CardTitle } from '@connnect/ui/components/card'
+import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
+import { Input } from '@connnect/ui/components/input'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { RiRefreshLine } from '@remixicon/react'
+import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
-import { databaseColumnsQuery, databaseTablesQuery, useDatabase, useDatabaseSchema, useDatabaseSchemas } from '~/entities/database'
+import { useDeferredValue, useState } from 'react'
+import { toast } from 'sonner'
+import { databaseColumnsQuery, databaseSchemas, databaseSchemasQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas, useDatabaseTables } from '~/entities/database'
 import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { queryClient } from '~/main'
 import { TablesTree } from './-components/tables-tree'
@@ -18,15 +26,31 @@ function RouteComponent() {
   const { table: tableParam } = useParams({ strict: false })
   const { data: database } = useDatabase(id)
   const { data: schemas } = useDatabaseSchemas(database)
-  const [schema, setSchema] = useDatabaseSchema(id)
+  const [schema, setSchema] = useState(databaseSchemas.get(id))
+  const { data: tables } = useDatabaseTables(database, schema)
+  const [searchQuery, setSearchQuery] = useState('')
+  const search = useDeferredValue(searchQuery)
 
   useAsyncEffect(async () => {
-    const tables = await queryClient.ensureQueryData(databaseTablesQuery(database))
+    databaseSchemas.set(id, schema)
+    const tables = await queryClient.ensureQueryData(databaseTablesQuery(database, schema))
 
     tables.forEach((table) => {
       queryClient.ensureQueryData(databaseColumnsQuery(database, table.name, schema))
     })
   }, [schema])
+
+  const { mutate: refreshTables, isPending: isRefreshingTables } = useMutation({
+    mutationFn: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: databaseTablesQuery(database, schema).queryKey }),
+        queryClient.invalidateQueries({ queryKey: databaseSchemasQuery(database).queryKey }),
+      ])
+    },
+    onSuccess: () => {
+      toast.success('Tables and schemas successfully refreshed')
+    },
+  })
 
   return (
     <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} direction="horizontal" className="flex h-auto!">
@@ -34,31 +58,67 @@ function RouteComponent() {
         defaultSize={20}
         minSize={10}
         maxSize={50}
-        className="flex flex-col gap-4 h-screen"
+        className="flex flex-col gap-2 h-screen"
       >
-        <div className="flex flex-col gap-4 p-4 pb-0">
-          <CardTitle>Tables</CardTitle>
-          <Select
-            value={schema}
-            onValueChange={setSchema}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select schema" />
-            </SelectTrigger>
-            <SelectContent>
-              {schemas?.map(schema => (
-                <SelectItem
-                  key={schema.schema_name}
-                  value={schema.schema_name}
-                  onMouseEnter={() => queryClient.ensureQueryData(databaseTablesQuery(database, schema.schema_name))}
-                >
-                  {schema.schema_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex flex-col gap-2 p-4 pb-0">
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle>Tables</CardTitle>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={() => refreshTables()} disabled={isRefreshingTables}>
+                    <LoadingContent loading={isRefreshingTables}>
+                      <RiRefreshLine className="size-4" />
+                    </LoadingContent>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Refresh tables and schemas list
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          {schemas?.length && (
+            <Select
+              value={schema}
+              onValueChange={setSchema}
+            >
+              <SelectTrigger className="w-full">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">
+                    schema
+                  </span>
+                  <SelectValue placeholder="Select schema" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {schemas?.map(schema => (
+                  <SelectItem
+                    key={schema.schema_name}
+                    value={schema.schema_name}
+                    onMouseOver={() => queryClient.ensureQueryData(databaseTablesQuery(database, schema.schema_name))}
+                  >
+                    {schema.schema_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {!!tables && tables.length > 10 && (
+            <Input
+              placeholder="Search tables"
+              className="w-full"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+          )}
         </div>
-        <TablesTree className="flex-1" database={database} schema={schema} />
+        <TablesTree
+          className="flex-1"
+          database={database}
+          schema={schema}
+          search={search}
+        />
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel defaultSize={75} className="flex-1">

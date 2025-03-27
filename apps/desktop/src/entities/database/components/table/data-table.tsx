@@ -10,6 +10,15 @@ import {
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef } from 'react'
 
+const DEFAULT_ROW_HEIGHT = 35
+
+const columnsSizeMap = new Map<string, number>([
+  ['boolean', 150],
+  ['number', 150],
+  ['integer', 150],
+  ['float', 150],
+])
+
 function TableHead<T extends Record<string, unknown>>({ header }: { header: Header<T, unknown> }) {
   return (
     <div
@@ -77,7 +86,7 @@ function TableCell<T extends Record<string, unknown>>({ cell }: {
     <div
       key={cell.id}
       data-mask
-      className="shrink-0 text-xs truncate py-2 pl-4 font-mono"
+      className="h-full shrink-0 text-xs truncate py-2 pl-4 font-mono"
       style={{
         width: `${cell.column.getSize()}px`,
       }}
@@ -110,7 +119,7 @@ function TableRow<T extends Record<string, unknown>>({ row, virtualRow, virtualC
         return (
           <div
             key={virtualColumn.key}
-            className="group absolute top-0 left-0 h-full"
+            className="absolute top-0 left-0 h-full"
             style={{
               transform: `translateX(${virtualColumn.start}px)`,
               width: `${cell.column.getSize()}px`,
@@ -133,18 +142,19 @@ function TableSkeleton({ virtualColumns, rowWidth, count = 5 }: {
     <div className="relative flex flex-col">
       {Array.from({ length: count }).map((_, rowIndex) => (
         <div
+          // eslint-disable-next-line react/no-array-index-key
           key={rowIndex}
           className="flex absolute top-0 left-0 w-full border-b last:border-b-0 min-w-full border-border"
           style={{
-            height: '35px',
-            transform: `translate3d(0,${rowIndex * 35}px,0)`,
+            height: `${DEFAULT_ROW_HEIGHT}px`,
+            transform: `translate3d(0,${rowIndex * DEFAULT_ROW_HEIGHT}px,0)`,
             width: `${rowWidth}px`,
           }}
         >
           {virtualColumns.map(virtualColumn => (
             <div
               key={virtualColumn.key}
-              className="group absolute top-0 left-0 h-full"
+              className="absolute top-0 left-0 h-full"
               style={{
                 transform: `translateX(${virtualColumn.start}px)`,
                 width: `${virtualColumn.size}px`,
@@ -203,13 +213,13 @@ export function DataTable<T extends Record<string, unknown>>({
             {column.name}
           </div>
           {column.type && (
-            <span data-type={column.type} className="text-muted-foreground text-xs font-mono">
+            <div data-type={column.type} className="text-muted-foreground truncate font-mono">
               {column.type}
-            </span>
+            </div>
           )}
         </>
       ),
-      size: 200,
+      size: (column.type && columnsSizeMap.get(column.type)) || 220,
     }),
   )
 
@@ -225,7 +235,7 @@ export function DataTable<T extends Record<string, unknown>>({
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => ref.current,
-    estimateSize: () => 35,
+    estimateSize: () => DEFAULT_ROW_HEIGHT,
     scrollMargin: ref.current?.offsetTop ?? 0,
     overscan: 5,
   })

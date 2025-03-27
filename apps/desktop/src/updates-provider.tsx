@@ -55,7 +55,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
       function showToast() {
         toast.success('New update successfully downloaded', {
           action: {
-            label: 'Install',
+            label: 'Update now',
             onClick: () => installUpdate(),
           },
           duration: 10000,

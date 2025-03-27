@@ -10,13 +10,12 @@ import { Input } from '@connnect/ui/components/input'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { useCopy } from '@connnect/ui/hooks/use-copy'
+import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiDeleteBinLine, RiFileCopyLine, RiQuestionAnswerLine, RiSendPlane2Line, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { getDatabaseContext, useDatabase } from '~/entities/database'
 import { UserAvatar } from '~/entities/user'
@@ -50,7 +49,7 @@ function UserMessage({ message }: { message: Message }) {
   )
 }
 
-function AssistantMessage({ message, onCopy }: { message: Message, onCopy: (content: string) => void }) {
+function AssistantMessage({ message }: { message: Message }) {
   return (
     <>
       <div className="flex items-center gap-2">
@@ -69,11 +68,11 @@ function AssistantMessage({ message, onCopy }: { message: Message, onCopy: (cont
             scrollBeyondLastLine: false,
             folding: false,
           }}
-          style={{ height: `${Math.min(message.content.split('\n').length * 20, 200)}px` }}
+          style={{ height: `${Math.min(message.content.split('\n').length * 20, 300)}px` }}
         />
       </div>
       <div className="flex justify-end gap-2">
-        <Button size="sm" variant="outline" onClick={() => onCopy(message.content)}>
+        <Button size="sm" variant="outline" onClick={() => copy(message.content)}>
           <RiFileCopyLine className="size-3.5 mr-1" />
           Copy
         </Button>
@@ -83,15 +82,13 @@ function AssistantMessage({ message, onCopy }: { message: Message, onCopy: (cont
 }
 
 function ChatMessages({ messages, className, ...props }: ComponentProps<'div'> & { messages: Message[] }) {
-  const { copy } = useCopy(() => toast.success('Copied to clipboard'))
-
   return (
     <div className={cn('flex flex-col gap-4', className)} {...props}>
       {messages.map(message => (
         <div key={message.id} className="flex flex-col gap-2 mb-4">
           {message.role === 'user'
             ? <UserMessage message={message} />
-            : <AssistantMessage message={message} onCopy={copy} />}
+            : <AssistantMessage message={message} />}
         </div>
       ))}
     </div>
@@ -106,10 +103,9 @@ export function SqlChat() {
     queryFn: () => getDatabaseContext(database),
   })
   const { messages, stop, input, handleInputChange, handleSubmit, status, setMessages } = useChat({
+    api: `${import.meta.env.VITE_PUBLIC_API_URL}/ai/sql-chat`,
     initialMessages: chatMessages.get(id),
     initialInput: chatInput.get(id),
-    api: `${import.meta.env.VITE_PUBLIC_API_URL}/ai/sql-chat`,
-    sendExtraMessageFields: true,
     body: {
       type: DatabaseType.Postgres,
       context,

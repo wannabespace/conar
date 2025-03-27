@@ -11,6 +11,12 @@ const encryption = {
   decrypt,
 }
 
+export interface DatabaseQueryResult {
+  count: number
+  columns: string[]
+  rows: Record<string, unknown>[]
+}
+
 const databases = {
   test: async ({
     type,
@@ -25,7 +31,7 @@ const databases = {
 
     return queryMap[type]({ connectionString })
   },
-  query: async <T>({
+  query: async ({
     type,
     connectionString,
     query,
@@ -40,7 +46,7 @@ const databases = {
       [DatabaseType.Postgres]: pgQuery,
     }
 
-    return queryMap[type]({ connectionString, query, values }) as Promise<T[]>
+    return queryMap[type]({ connectionString, query, values }) satisfies Promise<DatabaseQueryResult[]>
   },
 }
 
