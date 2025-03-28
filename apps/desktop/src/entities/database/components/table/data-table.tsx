@@ -24,7 +24,7 @@ function TableHead<T extends Record<string, unknown>>({ header }: { header: Head
     <div
       key={header.id}
       style={{ width: `${header.getSize()}px` }}
-      className="shrink-0 text-xs py-2 pl-4"
+      className="shrink-0 text-xs p-2 group-first:pl-4 group-last:pr-4"
     >
       {header.isPlaceholder
         ? null
@@ -63,7 +63,7 @@ function TableHeader<T extends Record<string, unknown>>({ headerGroups, virtualC
             return (
               <div
                 key={header.id}
-                className="absolute top-0 left-0 h-full"
+                className="group absolute top-0 left-0 h-full"
                 style={{
                   transform: `translateX(${virtualColumn.start}px)`,
                   width: `${header.getSize()}px`,
@@ -86,7 +86,7 @@ function TableCell<T extends Record<string, unknown>>({ cell }: {
     <div
       key={cell.id}
       data-mask
-      className="h-full shrink-0 text-xs truncate py-2 pl-4 font-mono"
+      className="h-full shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 font-mono"
       style={{
         width: `${cell.column.getSize()}px`,
       }}
@@ -119,7 +119,7 @@ function TableRow<T extends Record<string, unknown>>({ row, virtualRow, virtualC
         return (
           <div
             key={virtualColumn.key}
-            className="absolute top-0 left-0 h-full"
+            className="group absolute top-0 left-0 h-full"
             style={{
               transform: `translateX(${virtualColumn.start}px)`,
               width: `${cell.column.getSize()}px`,
@@ -133,7 +133,7 @@ function TableRow<T extends Record<string, unknown>>({ row, virtualRow, virtualC
   )
 }
 
-function TableSkeleton({ virtualColumns, rowWidth, count = 5 }: {
+function TableSkeleton({ virtualColumns, rowWidth, count = 10 }: {
   virtualColumns: VirtualItem[]
   rowWidth: number
   count?: number
@@ -154,14 +154,14 @@ function TableSkeleton({ virtualColumns, rowWidth, count = 5 }: {
           {virtualColumns.map(virtualColumn => (
             <div
               key={virtualColumn.key}
-              className="absolute top-0 left-0 h-full"
+              className="group absolute top-0 left-0 h-full"
               style={{
                 transform: `translateX(${virtualColumn.start}px)`,
                 width: `${virtualColumn.size}px`,
               }}
             >
               <div
-                className="shrink-0 text-xs truncate py-2 pl-4 h-full"
+                className="shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 h-full"
                 style={{
                   width: `${virtualColumn.size}px`,
                 }}
