@@ -12,7 +12,7 @@ import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiDeleteBinLine, RiFileCopyLine, RiQuestionAnswerLine, RiSendPlane2Line, RiStopLine } from '@remixicon/react'
+import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiQuestionAnswerLine, RiSendPlane2Line, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useEffect } from 'react'
@@ -49,7 +49,7 @@ function UserMessage({ message }: { message: Message }) {
   )
 }
 
-function AssistantMessage({ message }: { message: Message }) {
+function AssistantMessage({ message, onEdit }: { message: Message, onEdit: (message: string) => void }) {
   return (
     <>
       <div className="flex items-center gap-2">
@@ -72,30 +72,34 @@ function AssistantMessage({ message }: { message: Message }) {
         />
       </div>
       <div className="flex justify-end gap-2">
-        <Button size="sm" variant="outline" onClick={() => copy(message.content)}>
+        <Button size="xs" variant="outline" onClick={() => copy(message.content)}>
           <RiFileCopyLine className="size-3.5 mr-1" />
           Copy
+        </Button>
+        <Button size="xs" variant="outline" onClick={() => onEdit(message.content)}>
+          <RiEditLine className="size-3.5 mr-1" />
+          Edit
         </Button>
       </div>
     </>
   )
 }
 
-function ChatMessages({ messages, className, ...props }: ComponentProps<'div'> & { messages: Message[] }) {
+function ChatMessages({ messages, className, onEdit, ...props }: ComponentProps<'div'> & { messages: Message[], onEdit: (message: string) => void }) {
   return (
     <div className={cn('flex flex-col gap-4', className)} {...props}>
       {messages.map(message => (
         <div key={message.id} className="flex flex-col gap-2 mb-4">
           {message.role === 'user'
             ? <UserMessage message={message} />
-            : <AssistantMessage message={message} />}
+            : <AssistantMessage message={message} onEdit={onEdit} />}
         </div>
       ))}
     </div>
   )
 }
 
-export function SqlChat() {
+export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
   const { id } = useParams({ from: '/(protected)/_protected/database/$id' })
   const { data: database } = useDatabase(id)
   const { data: context } = useQuery({
@@ -132,7 +136,7 @@ export function SqlChat() {
       />
       <div className="flex justify-between mb-4">
         <div>
-          <CardTitle>SQL Runner</CardTitle>
+          <CardTitle>AI Assistant</CardTitle>
         </div>
         {/* <Button variant="outline" size="icon">
           <RiHistoryLine className="size-4" />
@@ -181,7 +185,7 @@ export function SqlChat() {
         </div>
       )}
       <ScrollArea className="flex-1 overflow-y-auto -mx-4 px-4">
-        <ChatMessages messages={messages} className="pb-2" />
+        <ChatMessages messages={messages} className="pb-2" onEdit={onEdit} />
       </ScrollArea>
       <form
         className="flex gap-2"
