@@ -1,12 +1,12 @@
 import type { editor } from 'monaco-editor'
 import { Button } from '@connnect/ui/components/button'
+import { CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
-import { useLocalStorageValue } from '@react-hookz/web'
 import { RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { DataTable, useDatabase } from '~/entities/database'
@@ -31,14 +31,24 @@ function ResultTable({ result, columns }: { result: Record<string, unknown>[], c
   )
 }
 
+const queryStorage = {
+  get(id: string) {
+    return localStorage.getItem(`sql-${id}`) ?? ''
+  },
+  set(id: string, query: string) {
+    localStorage.setItem(`sql-${id}`, query)
+  },
+}
+
 function RouteComponent() {
   const { id } = Route.useParams()
-  const { value: query, set: setQuery } = useLocalStorageValue(`sql-${id}`, {
-    defaultValue: '',
-    initializeWithValue: true,
-  })
+  const [query, setQuery] = useState(queryStorage.get(id))
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const { data: database } = useDatabase(id)
+
+  useEffect(() => {
+    queryStorage.set(id, query)
+  }, [id, query])
 
   const { mutate: sendQuery, data: results, isPending } = useMutation({
     mutationFn: () => window.electron.databases.query({
@@ -49,8 +59,8 @@ function RouteComponent() {
     onSuccess() {
       toast.success('Query executed successfully')
     },
-    onError() {
-      toast.error('Failed to execute query')
+    onError(error) {
+      toast.error(error.message)
     },
   })
 
@@ -64,7 +74,12 @@ function RouteComponent() {
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex h-auto!">
       <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
-        <SqlChat />
+        <SqlChat
+          onEdit={(message) => {
+            setQuery(message)
+            monacoRef.current?.setValue(message)
+          }}
+        />
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel
@@ -74,6 +89,11 @@ function RouteComponent() {
       >
         <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
           <ResizablePanel minSize={20} className="relative">
+            <CardHeader className="dark:bg-input/30 py-3 border-b border-border">
+              <CardTitle>
+                SQL Runner
+              </CardTitle>
+            </CardHeader>
             <div className="absolute right-6 bottom-2 z-10 flex gap-2">
               <Button
                 variant="secondary"
@@ -89,7 +109,7 @@ function RouteComponent() {
             </div>
             <Monaco
               ref={monacoRef}
-              initialValue={query}
+              initialValue={queryStorage.get(id)}
               onChange={setQuery}
               className="size-full"
             />

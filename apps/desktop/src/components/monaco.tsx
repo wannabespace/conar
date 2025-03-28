@@ -54,18 +54,30 @@ export function Monaco({
       ref.current = monacoInstance.current
 
     monacoInstance.current?.onDidChangeModelContent(() => {
-      onChange(monacoInstance.current?.getValue() ?? '')
+      const value = monacoInstance.current?.getValue()
+
+      onChange(value ?? '')
     })
 
     if (!monacoInstance.current?.getValue()) {
       if (language === 'sql') {
         monacoInstance.current.setValue(
-          '-- Write your SQL query here'
+          '-- Write your SQL query here\n'
           + '\n'
+          + '-- Examples:\n'
+          + '-- Basic query with limit\n'
+          + 'SELECT * FROM users LIMIT 10;\n'
           + '\n'
-          + '-- Example:'
+          + '-- Query with filtering\n'
+          + 'SELECT id, name, email FROM users WHERE created_at > \'2023-01-01\' ORDER BY name;\n'
           + '\n'
-          + 'SELECT * FROM users LIMIT 10;',
+          + '-- Join example\n'
+          + 'SELECT u.id, u.name, p.title FROM users u\n'
+          + 'JOIN posts p ON u.id = p.user_id\n'
+          + 'WHERE p.published = true\n'
+          + 'LIMIT 10;\n'
+          + '\n'
+          + '-- You can run multiple queries at once by separating them with semicolons',
         )
       }
     }
@@ -74,13 +86,6 @@ export function Monaco({
       monacoInstance.current?.dispose()
     }
   }, [elementRef, language, options])
-
-  useEffect(() => {
-    if (!monacoInstance.current || initialValue === monacoInstance.current.getValue())
-      return
-
-    monacoInstance.current.setValue(initialValue)
-  }, [initialValue])
 
   return <div ref={elementRef} {...props} />
 }
