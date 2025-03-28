@@ -1,3 +1,4 @@
+import { Toaster } from '@connnect/ui/components/sonner'
 import appCss from '@connnect/ui/globals.css?url'
 import {
   createRootRoute,
@@ -57,6 +58,7 @@ function RootComponent() {
       </head>
       <body>
         <Outlet />
+        <Toaster />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>

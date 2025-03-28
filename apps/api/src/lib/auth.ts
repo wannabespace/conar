@@ -10,8 +10,13 @@ import { loops } from '~/lib/loops'
 async function loopsUpdateUser(user: User) {
   try {
     if (process.env.NODE_ENV === 'production') {
+      const [firstName, ...lastName] = user.name.split(' ')
+
       await loops.updateContact(user.email, {
         name: user.name,
+        userId: user.id,
+        firstName,
+        lastName: lastName.join(' '),
       })
     }
   }

@@ -1,8 +1,10 @@
 import { Button } from '@connnect/ui/components/button'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@connnect/ui/components/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@connnect/ui/components/form'
 import { Input } from '@connnect/ui/components/input'
 import { Separator } from '@connnect/ui/components/separator'
+import { copy } from '@connnect/ui/lib/copy'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { RiEyeLine, RiEyeOffLine, RiGithubFill, RiGoogleFill } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -11,7 +13,9 @@ import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { useAsyncEffect } from '~/hooks/use-async-effect'
 import { authClient, bearerToken, codeChallenge, successAuthToast } from '~/lib/auth'
+import { handleDeepLink } from '~/lib/deep-links'
 import { encrypt } from '~/lib/encryption'
 import { handleError } from '~/lib/error'
 
@@ -38,7 +42,7 @@ function useSocialMutation(provider: 'google' | 'github', onSuccess: () => void)
         provider,
         disableRedirect: true,
         callbackURL: `${import.meta.env.VITE_PUBLIC_WEB_URL}/open?code-challenge=${encryptedCodeChallenge}`,
-        newUserCallbackURL: `${import.meta.env.VITE_PUBLIC_WEB_URL}/open?code-challenge=${encryptedCodeChallenge}&newUser=true`,
+        newUserCallbackURL: `${import.meta.env.VITE_PUBLIC_WEB_URL}/open?code-challenge=${encryptedCodeChallenge}&new-user=true`,
       })
 
       if (error) {
@@ -53,6 +57,112 @@ function useSocialMutation(provider: 'google' | 'github', onSuccess: () => void)
     },
     onError: handleError,
   })
+}
+
+function SocialAuthForm({ type }: { type: Type }) {
+  const { refetch } = authClient.useSession()
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isManualAuthOpen, setIsManualAuthOpen] = useState(false)
+  const [manualAuthUrl, setManualAuthUrl] = useState('')
+
+  useAsyncEffect(async () => {
+    if (isManualAuthOpen) {
+      const text = await navigator.clipboard.readText()
+
+      if (text.startsWith('connnect://session')) {
+        setManualAuthUrl(text)
+      }
+    }
+  }, [isManualAuthOpen])
+
+  useAsyncEffect(async () => {
+    if (manualAuthUrl.startsWith('connnect://session')) {
+      setIsDialogOpen(false)
+      const { type } = await handleDeepLink(manualAuthUrl)
+
+      if (type === 'session') {
+        refetch()
+      }
+    }
+  }, [manualAuthUrl])
+
+  const { mutate: googleSignIn, isPending: isGoogleSignInPending, data: googleUrl } = useSocialMutation('google', () => {
+    setIsDialogOpen(true)
+  })
+  const { mutate: githubSignIn, isPending: isGithubSignInPending, data: githubUrl } = useSocialMutation('github', () => {
+    setIsDialogOpen(true)
+  })
+
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-4">
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => googleSignIn()}
+          disabled={isGoogleSignInPending || isGithubSignInPending}
+        >
+          <LoadingContent loading={isGoogleSignInPending}>
+            <RiGoogleFill className="size-4" />
+            {type === 'sign-up' ? 'Sign up' : 'Sign in'}
+            {' '}
+            with Google
+          </LoadingContent>
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full"
+          disabled={isGithubSignInPending || isGoogleSignInPending}
+          onClick={() => githubSignIn()}
+        >
+          <LoadingContent loading={isGithubSignInPending}>
+            <RiGithubFill className="size-4" />
+            {type === 'sign-up' ? 'Sign up' : 'Sign in'}
+            {' '}
+            with GitHub
+          </LoadingContent>
+        </Button>
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Sign in on your browser</DialogTitle>
+            <DialogDescription>
+              We've opened a browser window for you to sign in.
+              {' '}
+              If no window appeared,
+              {' '}
+              <button
+                type="button"
+                className="text-primary cursor-pointer hover:underline"
+                onClick={() => copy(googleUrl || githubUrl!)}
+              >
+                copy the URL
+              </button>
+              {' '}
+              and open the page manually.
+            </DialogDescription>
+          </DialogHeader>
+          <button
+            type="button"
+            className="text-xs text-primary cursor-pointer hover:underline"
+            onClick={() => setIsManualAuthOpen(true)}
+          >
+            Click here to paste URL from browser
+          </button>
+          {isManualAuthOpen && (
+            <Input
+              value={manualAuthUrl}
+              onChange={e => setManualAuthUrl(e.target.value)}
+              placeholder="Paste authentication URL here"
+              className="w-full"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  )
 }
 
 export function AuthForm({ type }: { type: Type }) {
@@ -109,41 +219,9 @@ export function AuthForm({ type }: { type: Type }) {
     successAuthToast(type === 'sign-up')
   }
 
-  const [_, setIsDialogOpen] = useState(false)
-
-  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google', () => setIsDialogOpen(true))
-  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github', () => setIsDialogOpen(true))
-
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => googleSignIn()}
-          disabled={isGoogleSignInPending || isGithubSignInPending}
-        >
-          <LoadingContent loading={isGoogleSignInPending}>
-            <RiGoogleFill className="size-4" />
-            {type === 'sign-up' ? 'Sign up' : 'Sign in'}
-            {' '}
-            with Google
-          </LoadingContent>
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full"
-          disabled={isGithubSignInPending || isGoogleSignInPending}
-          onClick={() => githubSignIn()}
-        >
-          <LoadingContent loading={isGithubSignInPending}>
-            <RiGithubFill className="size-4" />
-            {type === 'sign-up' ? 'Sign up' : 'Sign in'}
-            {' '}
-            with GitHub
-          </LoadingContent>
-        </Button>
-      </div>
+      <SocialAuthForm type={type} />
       <div className="relative">
         <Separator />
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-6 text-xs text-muted-foreground">

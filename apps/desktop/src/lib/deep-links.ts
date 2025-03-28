@@ -27,7 +27,7 @@ export async function handleSession(searchParams: URLSearchParams) {
 
   const token = searchParams.get('token')
   const code = searchParams.get('code-challenge')
-  const newUser = searchParams.get('newUser')
+  const newUser = searchParams.get('new-user')
 
   if (!code || !token) {
     toast.error('We couldn\'t find your sign in token. Please try signing in again.')
