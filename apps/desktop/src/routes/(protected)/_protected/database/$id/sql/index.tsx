@@ -33,7 +33,22 @@ function ResultTable({ result, columns }: { result: Record<string, unknown>[], c
 
 const queryStorage = {
   get(id: string) {
-    return localStorage.getItem(`sql-${id}`) ?? ''
+    return localStorage.getItem(`sql-${id}`) || '-- Write your SQL query here\n'
+      + '\n'
+      + '-- Examples:\n'
+      + '-- Basic query with limit\n'
+      + 'SELECT * FROM users LIMIT 10;\n'
+      + '\n'
+      + '-- Query with filtering\n'
+      + 'SELECT id, name, email FROM users WHERE created_at > \'2023-01-01\' ORDER BY name;\n'
+      + '\n'
+      + '-- Join example\n'
+      + 'SELECT u.id, u.name, p.title FROM users u\n'
+      + 'JOIN posts p ON u.id = p.user_id\n'
+      + 'WHERE p.published = true\n'
+      + 'LIMIT 10;\n'
+      + '\n'
+      + '-- You can run multiple queries at once by separating them with semicolons'
   },
   set(id: string, query: string) {
     localStorage.setItem(`sql-${id}`, query)
@@ -94,6 +109,13 @@ function RouteComponent() {
                 SQL Runner
               </CardTitle>
             </CardHeader>
+            <Monaco
+              ref={monacoRef}
+              language="sql"
+              initialValue={queryStorage.get(id)}
+              onChange={setQuery}
+              className="size-full"
+            />
             <div className="absolute right-6 bottom-2 z-10 flex gap-2">
               <Button
                 variant="secondary"
@@ -107,12 +129,6 @@ function RouteComponent() {
                 Run
               </Button>
             </div>
-            <Monaco
-              ref={monacoRef}
-              initialValue={queryStorage.get(id)}
-              onChange={setQuery}
-              className="size-full"
-            />
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel minSize={20}>

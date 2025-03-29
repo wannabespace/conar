@@ -16,12 +16,11 @@ export function databaseTablesQuery(database: Database, schema: string) {
   return queryOptions({
     queryKey: ['database', database.id, schema, 'tables'],
     queryFn: async () => {
-      const results = await window.electron.databases.query({
+      const [result] = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
         query: queryMap[database.type](),
       })
-      const [result] = results
       const tables = result.rows as {
         table_name: string
       }[]
@@ -41,10 +40,9 @@ export function databaseColumnsQuery(database: Database, table: string, schema: 
   const queryMap: Record<DatabaseType, (table: string, schema: string) => string> = {
     postgres: (table, schema) => `
       SELECT
-        c.table_name,
-        c.column_name,
-        c.column_default,
-        c.is_nullable,
+        c.table_name AS table,
+        c.column_name AS name,
+        c.column_default AS default,
         CASE
           WHEN c.data_type = 'USER-DEFINED' THEN (
             SELECT t.typname
@@ -53,7 +51,15 @@ export function databaseColumnsQuery(database: Database, table: string, schema: 
             WHERE t.typname = c.udt_name
           )
           ELSE c.data_type
-        END AS data_type
+        END AS type,
+        CASE
+          WHEN c.is_nullable = 'YES' THEN true
+          ELSE false
+        END AS nullable,
+        CASE
+          WHEN c.is_updatable = 'YES' THEN true
+          ELSE false
+        END AS editable
       FROM information_schema.columns c
       WHERE c.table_schema = '${schema}'
         AND c.table_name = '${table}'
@@ -64,19 +70,19 @@ export function databaseColumnsQuery(database: Database, table: string, schema: 
   return queryOptions({
     queryKey: ['database', database.id, 'schema', schema, 'table', table, 'columns'],
     queryFn: async () => {
-      const results = await window.electron.databases.query({
+      const [result] = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
         query: queryMap[database.type](table, schema),
       })
-      const [result] = results
 
       return result.rows as {
-        table_name: string
-        column_name: string
-        data_type: string
-        column_default: string
-        is_nullable: string
+        table: string
+        name: string
+        type: string
+        editable: boolean
+        default: string
+        nullable: boolean
       }[]
     },
   })
@@ -102,12 +108,11 @@ export function databaseEnumsQuery(database: Database) {
   return queryOptions({
     queryKey: ['database', database.id, 'enums'],
     queryFn: async () => {
-      const results = await window.electron.databases.query({
+      const [result] = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
         query: queryMap[database.type],
       })
-      const [result] = results
 
       return result.rows as {
         enum_schema: string
@@ -140,7 +145,7 @@ export function databaseRowsQuery(database: Database, table: string, schema: str
       },
     ],
     queryFn: async () => {
-      const [results, countResults] = await Promise.all([
+      const [[result], [countResult]] = await Promise.all([
         window.electron.databases.query({
           type: database.type,
           connectionString: database.connectionString,
@@ -153,11 +158,11 @@ export function databaseRowsQuery(database: Database, table: string, schema: str
         }),
       ])
 
-      const rows = results[0].rows as {
+      const rows = result.rows as {
         [key: string]: string | number | boolean | null
       }[]
 
-      const tableCount = countResults[0].rows[0] as { total: number }
+      const tableCount = countResult.rows[0] as { total: number }
 
       return {
         rows,
@@ -175,12 +180,11 @@ export function databaseSchemasQuery(database: Database) {
   return queryOptions({
     queryKey: ['database', database.id, 'schemas'],
     queryFn: async () => {
-      const results = await window.electron.databases.query({
+      const [result] = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
         query: 'SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT LIKE \'pg_temp%\' AND schema_name NOT LIKE \'pg_toast_temp%\' AND schema_name NOT LIKE \'temp%\' AND schema_name NOT IN (\'information_schema\', \'performance_schema\')',
       })
-      const [result] = results
 
       return result.rows as {
         schema_name: string

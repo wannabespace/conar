@@ -17,14 +17,14 @@ monaco.editor.defineTheme('github-light', ghLight)
 
 export function Monaco({
   initialValue,
-  language = 'sql',
+  language,
   onChange,
   ref,
   options,
   ...props
 }: Omit<ComponentProps<'div'>, 'onChange' | 'ref'> & {
   initialValue: string
-  language?: 'sql'
+  language?: string
   onChange: (value: string) => void
   ref?: React.RefObject<monaco.editor.IStandaloneCodeEditor | null>
   options?: monaco.editor.IStandaloneEditorConstructionOptions
@@ -58,29 +58,6 @@ export function Monaco({
 
       onChange(value ?? '')
     })
-
-    if (!monacoInstance.current?.getValue()) {
-      if (language === 'sql') {
-        monacoInstance.current.setValue(
-          '-- Write your SQL query here\n'
-          + '\n'
-          + '-- Examples:\n'
-          + '-- Basic query with limit\n'
-          + 'SELECT * FROM users LIMIT 10;\n'
-          + '\n'
-          + '-- Query with filtering\n'
-          + 'SELECT id, name, email FROM users WHERE created_at > \'2023-01-01\' ORDER BY name;\n'
-          + '\n'
-          + '-- Join example\n'
-          + 'SELECT u.id, u.name, p.title FROM users u\n'
-          + 'JOIN posts p ON u.id = p.user_id\n'
-          + 'WHERE p.published = true\n'
-          + 'LIMIT 10;\n'
-          + '\n'
-          + '-- You can run multiple queries at once by separating them with semicolons',
-        )
-      }
-    }
 
     return () => {
       monacoInstance.current?.dispose()

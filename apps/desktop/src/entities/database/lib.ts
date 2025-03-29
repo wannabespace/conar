@@ -136,7 +136,7 @@ export function prefetchDatabaseCore(database: Database) {
 
 export async function getDatabaseContext(database: Database): Promise<z.infer<typeof databaseContextSchema>> {
   // Just vibe code
-  const results = await window.electron.databases.query({
+  const [result] = await window.electron.databases.query({
     type: database.type,
     connectionString: database.connectionString,
     query: `
@@ -186,7 +186,6 @@ export async function getDatabaseContext(database: Database): Promise<z.infer<ty
     ) AS database_context;`,
   })
 
-  const [result] = results
   const { database_context } = result.rows[0] as { database_context: z.infer<typeof databaseContextSchema> }
 
   return databaseContextSchema.parseAsync(database_context)

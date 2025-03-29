@@ -66,7 +66,7 @@ function RouteComponent() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={() => refreshTables()} disabled={isRefreshingTables}>
+                  <Button variant="outline" size="icon" onClick={() => refreshTables()} disabled={isRefreshingTables}>
                     <LoadingContent loading={isRefreshingTables}>
                       <RiRefreshLine className="size-4" />
                     </LoadingContent>

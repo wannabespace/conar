@@ -1,7 +1,13 @@
 import type { Cell, Header, HeaderGroup, Row } from '@tanstack/react-table'
 import type { VirtualItem } from '@tanstack/react-virtual'
+import type { editor } from 'monaco-editor'
+import { Button } from '@connnect/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { ScrollArea, ScrollBar } from '@connnect/ui/components/scroll-area'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { copy } from '@connnect/ui/lib/copy'
+import { cn } from '@connnect/ui/lib/utils'
+import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import {
   createColumnHelper,
   flexRender,
@@ -19,6 +25,7 @@ const columnsSizeMap = new Map<string, number>([
   ['number', 150],
   ['integer', 150],
   ['float', 150],
+  ['uuid', 290],
 ])
 
 function TableHead<T extends Record<string, unknown>>({ header }: { header: Header<T, unknown> }) {
@@ -81,26 +88,129 @@ function TableHeader<T extends Record<string, unknown>>({ headerGroups, virtualC
   )
 }
 
-function TableCell<T extends Record<string, unknown>>({ cell }: {
-  cell: Cell<T, unknown>
-}) {
-  const [open, setOpen] = useState(false)
-  const value = cell.getValue()
-  const displayValue = (() => {
-    if (value instanceof Date)
-      return value.toISOString()
-    if (typeof value === 'object')
-      return JSON.stringify(value)
-    return String(value ?? '')
-  })()
+function TableCellContent({ value, meta: _meta }: { value: unknown, meta: TableCellMeta }) {
+  const [isBig, setIsBig] = useState(false)
+  // const [currentValue, setCurrentValue] = useState(getDisplayValue(value))
+  const displayValue = getDisplayValue(value)
+  const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <PopoverContent className={cn('p-0 w-80 overflow-auto [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[50vw]')}>
+      <Monaco
+        ref={monacoRef}
+        initialValue={displayValue}
+        className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[40vh]')}
+        onChange={() => {}}
+        // onChange={setCurrentValue}
+        options={{
+          lineNumbers: 'off',
+          readOnly: true,
+          // readOnly: !meta.editable,
+          scrollBeyondLastLine: false,
+          folding: false,
+          wordWrap: 'on',
+        }}
+      />
+      <div className="flex justify-between items-center gap-2 p-2 border-t">
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="iconXs"
+                  onClick={() => setIsBig(prev => !prev)}
+                >
+                  {isBig ? <RiCollapseDiagonal2Line className="size-3" /> : <RiExpandDiagonal2Line className="size-3" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Toggle size</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="iconXs" variant="outline" onClick={() => copy(displayValue)}>
+                  <RiFileCopyLine className="size-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Copy value</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        {/* <div className="flex gap-2">
+            {meta.editable && (
+              <>
+                {currentValue !== displayValue && (
+                  <Button
+                    size="xs"
+                    variant="secondary"
+                    onClick={resetValue}
+                  >
+                    Reset
+                  </Button>
+                )}
+                {meta.nullable && currentValue !== 'null' && (
+                  <Button
+                    size="xs"
+                    variant="secondary"
+                    onClick={setNull}
+                  >
+                    Set
+                    {' '}
+                    <span className="font-mono">null</span>
+                  </Button>
+                )}
+                <Button
+                  size="xs"
+                  disabled={currentValue === displayValue}
+                  onClick={save}
+                >
+                  Save
+                </Button>
+              </>
+            )}
+          </div> */}
+      </div>
+    </PopoverContent>
+  )
+}
+
+interface TableCellMeta {
+  type?: string
+  editable?: boolean
+  nullable?: boolean
+}
+
+function getDisplayValue(value: unknown) {
+  if (value instanceof Date)
+    return value.toISOString()
+  if (typeof value === 'object')
+    return JSON.stringify(value)
+
+  return String(value ?? '')
+}
+
+function TableCell<T extends Record<string, unknown>>({ cell }: { cell: Cell<T, unknown> }) {
+  const [open, setOpen] = useState(false)
+  const cellValue = cell.getValue()
+
+  const meta = cell.column.columnDef.meta as TableCellMeta
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={setOpen}
+    >
       <PopoverTrigger asChild>
         <div
           key={cell.id}
           data-mask
-          className="h-full shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 font-mono cursor-default"
+          className={cn(
+            'h-full shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 font-mono cursor-default select-none',
+            open && 'bg-muted/50 ring-2 ring-inset ring-primary/50',
+            cellValue === null && 'text-muted-foreground',
+          )}
           style={{
             width: `${cell.column.getSize()}px`,
           }}
@@ -115,20 +225,10 @@ function TableCell<T extends Record<string, unknown>>({ cell }: {
           )}
         </div>
       </PopoverTrigger>
-      <PopoverContent className="p-0 w-80 h-40 overflow-auto">
-        <Monaco
-          initialValue={displayValue}
-          className="h-full"
-          onChange={() => {}}
-          options={{
-            readOnly: true,
-            lineNumbers: 'off',
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            folding: false,
-          }}
-        />
-      </PopoverContent>
+      <TableCellContent
+        value={cellValue}
+        meta={meta}
+      />
     </Popover>
   )
 }
@@ -219,6 +319,8 @@ export function DataTable<T extends Record<string, unknown>>({
   data: T[]
   columns: {
     name: string
+    nullable?: boolean
+    editable?: boolean
     type?: string
   }[]
   loading?: boolean
@@ -230,6 +332,7 @@ export function DataTable<T extends Record<string, unknown>>({
   const tableColumns = columns.map(column =>
     columnHelper.accessor(row => row[column.name], {
       id: column.name,
+      meta: column satisfies TableCellMeta,
       cell: (info) => {
         const value = info.getValue()
 

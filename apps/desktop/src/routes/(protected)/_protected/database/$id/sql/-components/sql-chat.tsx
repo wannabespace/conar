@@ -60,6 +60,7 @@ function AssistantMessage({ message, onEdit }: { message: Message, onEdit: (mess
       <div className="overflow-hidden border rounded-md">
         <Monaco
           initialValue={message.content}
+          language="sql"
           onChange={() => {}}
           options={{
             readOnly: true,

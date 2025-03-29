@@ -113,10 +113,7 @@ function RouteComponent() {
           key={table}
           loading={isPending}
           data={rows}
-          columns={databaseColumns.map(column => ({
-            name: column.column_name,
-            type: column.data_type,
-          }))}
+          columns={databaseColumns}
           className="h-full"
         />
       </div>
