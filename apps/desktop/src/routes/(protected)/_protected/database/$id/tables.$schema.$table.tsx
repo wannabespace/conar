@@ -118,7 +118,7 @@ function RouteComponent() {
         />
       </div>
       <div
-        className="flex flex-col"
+        className="flex flex-col bg-muted/20"
         onMouseEnter={() => setCanPrefetch(true)}
         onMouseLeave={() => setCanPrefetch(false)}
       >

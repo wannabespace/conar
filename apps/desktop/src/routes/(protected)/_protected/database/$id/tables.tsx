@@ -58,7 +58,7 @@ function RouteComponent() {
         defaultSize={20}
         minSize={10}
         maxSize={50}
-        className="flex flex-col gap-2 h-screen"
+        className="flex flex-col gap-2 h-screen bg-muted/20"
       >
         <div className="flex flex-col gap-2 p-4 pb-0">
           <div className="flex items-center justify-between gap-2">
