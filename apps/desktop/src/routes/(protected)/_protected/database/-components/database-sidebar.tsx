@@ -20,7 +20,7 @@ export function DatabaseSidebar() {
     <>
       <div className="w-[calc(theme(spacing.16)+2px)]" />
       <div
-        className="bg-muted/30 flex flex-col border-r gap-4 items-center py-4 px-4 w-16 h-screen fixed left-0 inset-y-0"
+        className="bg-muted/35 flex flex-col border-r gap-4 items-center py-4 px-4 w-16 h-screen fixed left-0 inset-y-0"
         onMouseOver={() => prefetchDatabaseCore(database)}
       >
         <div className="flex flex-col gap-2">
