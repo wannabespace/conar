@@ -53,7 +53,7 @@ export function Monaco({
     if (ref)
       ref.current = monacoInstance.current
 
-    monacoInstance.current?.onDidChangeModelContent(() => {
+    monacoInstance.current.onDidChangeModelContent(() => {
       const value = monacoInstance.current?.getValue()
 
       onChange(value ?? '')

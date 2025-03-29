@@ -1,5 +1,6 @@
 import type { Cell, Header, HeaderGroup, Row } from '@tanstack/react-table'
 import type { VirtualItem } from '@tanstack/react-virtual'
+import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { ScrollArea, ScrollBar } from '@connnect/ui/components/scroll-area'
 import {
   createColumnHelper,
@@ -8,7 +9,8 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
+import { Monaco } from '~/components/monaco'
 
 const DEFAULT_ROW_HEIGHT = 35
 
@@ -82,20 +84,52 @@ function TableHeader<T extends Record<string, unknown>>({ headerGroups, virtualC
 function TableCell<T extends Record<string, unknown>>({ cell }: {
   cell: Cell<T, unknown>
 }) {
+  const [open, setOpen] = useState(false)
+  const value = cell.getValue()
+  const displayValue = (() => {
+    if (value instanceof Date)
+      return value.toISOString()
+    if (typeof value === 'object')
+      return JSON.stringify(value)
+    return String(value ?? '')
+  })()
+
   return (
-    <div
-      key={cell.id}
-      data-mask
-      className="h-full shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 font-mono"
-      style={{
-        width: `${cell.column.getSize()}px`,
-      }}
-    >
-      {flexRender(
-        cell.column.columnDef.cell,
-        cell.getContext(),
-      )}
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <div
+          key={cell.id}
+          data-mask
+          className="h-full shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 font-mono cursor-default"
+          style={{
+            width: `${cell.column.getSize()}px`,
+          }}
+          onDoubleClick={() => setOpen(true)}
+          onClick={(e) => {
+            e.preventDefault()
+          }}
+        >
+          {flexRender(
+            cell.column.columnDef.cell,
+            cell.getContext(),
+          )}
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="p-0 w-80 h-40 overflow-auto">
+        <Monaco
+          initialValue={displayValue}
+          className="h-full"
+          onChange={() => {}}
+          options={{
+            readOnly: true,
+            lineNumbers: 'off',
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            folding: false,
+          }}
+        />
+      </PopoverContent>
+    </Popover>
   )
 }
 
