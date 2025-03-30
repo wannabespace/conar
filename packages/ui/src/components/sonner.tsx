@@ -10,7 +10,6 @@ function Toaster() {
       theme={theme as ToasterProps['theme']}
       className="toaster group"
       position="top-center"
-      closeButton
       richColors
       style={
         {

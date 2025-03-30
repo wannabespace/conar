@@ -135,10 +135,8 @@ export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
         cr={1}
         className="absolute -z-10 top-0 left-0 opacity-50 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
-      <div className="flex justify-between mb-4">
-        <div>
-          <CardTitle>AI Assistant</CardTitle>
-        </div>
+      <div className="flex justify-between items-center mb-4">
+        <CardTitle>AI Assistant</CardTitle>
         {/* <Button variant="outline" size="icon">
           <RiHistoryLine className="size-4" />
         </Button> */}
@@ -147,7 +145,7 @@ export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
-                size="icon"
+                size="iconSm"
                 onClick={() => setMessages([])}
               >
                 <RiDeleteBinLine className="size-4" />

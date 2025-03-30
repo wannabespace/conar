@@ -1,8 +1,10 @@
 import type { editor } from 'monaco-editor'
+import { getOS } from '@connnect/shared/utils/os'
 import { Button } from '@connnect/ui/components/button'
 import { CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
@@ -12,6 +14,8 @@ import { Monaco } from '~/components/monaco'
 import { DataTable, useDatabase } from '~/entities/database'
 import { formatSql } from '~/lib/formatter'
 import { SqlChat } from './-components/sql-chat'
+
+const os = getOS()
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/sql/',
@@ -104,7 +108,7 @@ function RouteComponent() {
       >
         <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
           <ResizablePanel minSize={20} className="relative">
-            <CardHeader className="dark:bg-input/30 py-3 border-b border-border">
+            <CardHeader className="dark:bg-input/30 py-3">
               <CardTitle>
                 SQL Runner
               </CardTitle>
@@ -125,10 +129,21 @@ function RouteComponent() {
                 <RiShining2Line />
                 Format
               </Button>
-              <Button disabled={isPending} onClick={() => sendQuery()}>
-                <RiPlayLargeLine />
-                Run
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button disabled={isPending} onClick={() => sendQuery()}>
+                      <RiPlayLargeLine />
+                      Run
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {os === 'macos' ? '⌘' : 'Ctrl'}
+                    {' '}
+                    + Enter
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </ResizablePanel>
           <ResizableHandle />
@@ -160,7 +175,7 @@ function RouteComponent() {
               ? (
                   <div className="h-full flex flex-col items-center justify-center">
                     <RiLoader4Line className="size-6 text-muted-foreground mb-2 animate-spin" />
-                    <p className="text-center">
+                    <p className="text-sm text-center">
                       Running query...
                     </p>
                   </div>
@@ -170,7 +185,7 @@ function RouteComponent() {
                     <p className="text-center">
                       No results to display
                     </p>
-                    <p className="text-muted-foreground mt-1 text-center">
+                    <p className="text-xs text-muted-foreground mt-1 text-center">
                       Write and run a SQL query above to see results here
                     </p>
                   </div>

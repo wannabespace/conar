@@ -16,7 +16,6 @@ export function getOS() {
   else if (userAgent.includes('ios') || userAgent.includes('iphone') || userAgent.includes('ipad')) {
     return 'ios'
   }
-  else {
-    return 'unknown'
-  }
+
+  return 'unknown'
 }
