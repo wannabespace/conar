@@ -88,7 +88,7 @@ function RouteComponent() {
 
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex h-auto!">
-      <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+      <ResizablePanel defaultSize={30} minSize={20} maxSize={50} className="bg-muted/20">
         <SqlChat
           onEdit={(message) => {
             setQuery(message)
@@ -112,9 +112,10 @@ function RouteComponent() {
             <Monaco
               ref={monacoRef}
               language="sql"
-              initialValue={queryStorage.get(id)}
+              value={query}
               onChange={setQuery}
               className="size-full"
+              onEnter={() => sendQuery()}
             />
             <div className="absolute right-6 bottom-2 z-10 flex gap-2">
               <Button
@@ -138,7 +139,7 @@ function RouteComponent() {
                 className="size-full gap-0"
               >
                 {results.length > 1 && (
-                  <TabsList className="rounded-none w-full bg-card">
+                  <TabsList className="rounded-none w-full bg-muted/20">
                     {results.map((_, i) => (
                       <TabsTrigger key={i} value={`table-${i}`}>
                         Result

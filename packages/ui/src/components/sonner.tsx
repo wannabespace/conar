@@ -2,13 +2,16 @@ import type { ToasterProps } from 'sonner'
 import { useTheme } from 'next-themes'
 import { Toaster as Sonner } from 'sonner'
 
-function Toaster({ ...props }: ToasterProps) {
+function Toaster() {
   const { theme = 'system' } = useTheme()
 
   return (
     <Sonner
       theme={theme as ToasterProps['theme']}
       className="toaster group"
+      position="top-center"
+      closeButton
+      richColors
       style={
         {
           '--normal-bg': 'var(--popover)',
@@ -16,7 +19,6 @@ function Toaster({ ...props }: ToasterProps) {
           '--normal-border': 'var(--border)',
         } as React.CSSProperties
       }
-      {...props}
     />
   )
 }

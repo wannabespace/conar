@@ -16,18 +16,20 @@ monaco.editor.defineTheme('github-dark', ghDark)
 monaco.editor.defineTheme('github-light', ghLight)
 
 export function Monaco({
-  initialValue,
+  value,
   language,
   onChange,
   ref,
   options,
+  onEnter,
   ...props
 }: Omit<ComponentProps<'div'>, 'onChange' | 'ref'> & {
-  initialValue: string
+  value: string
   language?: string
   onChange: (value: string) => void
   ref?: React.RefObject<monaco.editor.IStandaloneCodeEditor | null>
   options?: monaco.editor.IStandaloneEditorConstructionOptions
+  onEnter?: () => void
 }) {
   const elementRef = useRef<HTMLDivElement>(null)
   const { resolvedTheme } = useTheme()
@@ -42,13 +44,27 @@ export function Monaco({
     if (!elementRef.current)
       return
 
+    const abortController = new AbortController()
+
     monacoInstance.current = monaco.editor.create(elementRef.current, {
-      value: initialValue,
+      value,
       language,
       automaticLayout: true,
       minimap: { enabled: false },
+      fontFamily: '"Geist Mono", monospace',
       ...options,
     })
+
+    if (onEnter) {
+      monacoInstance.current.getDomNode()?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && ((event.metaKey && navigator.platform.includes('Mac')) || (event.ctrlKey && !navigator.platform.includes('Mac')))) {
+          event.preventDefault()
+          onEnter?.()
+        }
+      }, {
+        signal: abortController.signal,
+      })
+    }
 
     if (ref)
       ref.current = monacoInstance.current
@@ -60,9 +76,15 @@ export function Monaco({
     })
 
     return () => {
+      abortController.abort()
       monacoInstance.current?.dispose()
     }
   }, [elementRef, language, options])
+
+  useEffect(() => {
+    if (monacoInstance.current?.getValue() !== value)
+      monacoInstance.current?.setValue(value)
+  }, [value])
 
   return <div ref={elementRef} {...props} />
 }

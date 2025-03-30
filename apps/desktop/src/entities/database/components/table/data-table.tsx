@@ -92,18 +92,17 @@ function TableHeader<T extends Record<string, unknown>>({ headerGroups, virtualC
 
 function TableCellContent({ value, meta: _meta }: { value: unknown, meta: TableCellMeta }) {
   const [isBig, setIsBig] = useState(false)
-  // const [currentValue, setCurrentValue] = useState(getDisplayValue(value))
   const displayValue = getDisplayValue(value)
+  const [currentValue, setCurrentValue] = useState(displayValue)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   return (
     <PopoverContent className={cn('p-0 w-80 overflow-auto [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[50vw]')}>
       <Monaco
         ref={monacoRef}
-        initialValue={displayValue}
+        value={currentValue}
         className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[40vh]')}
-        onChange={() => {}}
-        // onChange={setCurrentValue}
+        onChange={setCurrentValue}
         options={{
           lineNumbers: 'off',
           readOnly: true,

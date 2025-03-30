@@ -94,7 +94,7 @@ function RouteComponent() {
                   aria-label="Refresh data"
                 >
                   <LoadingContent loading={isFetching}>
-                    <RiLoopLeftLine size={18} />
+                    <RiLoopLeftLine />
                   </LoadingContent>
                 </Button>
               </TooltipTrigger>
@@ -117,24 +117,26 @@ function RouteComponent() {
           className="h-full"
         />
       </div>
-      <div
-        className="flex flex-col bg-muted/20"
-        onMouseEnter={() => setCanPrefetch(true)}
-        onMouseLeave={() => setCanPrefetch(false)}
-      >
-        <Separator className="h-[2px]" />
-        <DataTableFooter
-          className="p-2"
-          currentPage={page}
-          onPageChange={setPage}
-          pageSize={pageSize}
-          onPageSizeChange={(value) => {
-            setPage(1)
-            setPageSize(value)
-          }}
-          total={total ?? 0}
-        />
-      </div>
+      {total && total > 50 && (
+        <div
+          className="flex flex-col bg-muted/20"
+          onMouseEnter={() => setCanPrefetch(true)}
+          onMouseLeave={() => setCanPrefetch(false)}
+        >
+          <Separator className="h-[2px]" />
+          <DataTableFooter
+            className="p-2"
+            currentPage={page}
+            onPageChange={setPage}
+            pageSize={pageSize}
+            onPageSizeChange={(value) => {
+              setPage(1)
+              setPageSize(value)
+            }}
+            total={total ?? 0}
+          />
+        </div>
+      )}
     </div>
   )
 }

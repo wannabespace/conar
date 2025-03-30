@@ -5,7 +5,7 @@ import { Input } from '@connnect/ui/components/input'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { RiRefreshLine } from '@remixicon/react'
+import { RiLoopLeftLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
 import { useDeferredValue, useState } from 'react'
@@ -66,9 +66,14 @@ function RouteComponent() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={() => refreshTables()} disabled={isRefreshingTables}>
+                  <Button
+                    variant="outline"
+                    size="iconSm"
+                    onClick={() => refreshTables()}
+                    disabled={isRefreshingTables}
+                  >
                     <LoadingContent loading={isRefreshingTables}>
-                      <RiRefreshLine className="size-4" />
+                      <RiLoopLeftLine />
                     </LoadingContent>
                   </Button>
                 </TooltipTrigger>
