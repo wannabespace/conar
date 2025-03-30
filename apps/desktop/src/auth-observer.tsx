@@ -1,7 +1,7 @@
+import { useAsyncEffect } from '@connnect/ui/hooks/use-async-effect'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { identifyUser } from '~/lib/events'
-import { useAsyncEffect } from './hooks/use-async-effect'
 import { authClient } from './lib/auth'
 import { handleDeepLink } from './lib/deep-links'
 

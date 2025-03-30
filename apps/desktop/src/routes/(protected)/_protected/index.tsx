@@ -1,7 +1,6 @@
 import { Button } from '@connnect/ui/components/button'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { Separator } from '@connnect/ui/components/separator'
-import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine, RiDownloadLine, RiLoader4Line } from '@remixicon/react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useDatabases } from '~/entities/database'
@@ -17,14 +16,6 @@ function DashboardPage() {
   const { data: databases } = useDatabases()
   const router = useRouter()
   const { version, status, checkForUpdates } = useUpdates()
-
-  function handleCreateConnection() {
-    router.navigate({ to: '/create' })
-  }
-
-  useKeyboardEvent(e => e.key === 'n' && e.metaKey, () => {
-    router.navigate({ to: '/create' })
-  })
 
   return (
     <div className="flex flex-col w-full mx-auto max-w-2xl py-10">
@@ -47,7 +38,7 @@ function DashboardPage() {
         </h2>
         <div className="flex items-center gap-2">
           {!!databases?.length && (
-            <Button onClick={handleCreateConnection}>
+            <Button onClick={() => router.navigate({ to: '/create' })}>
               <RiAddLine className="size-4" />
               Add new
             </Button>

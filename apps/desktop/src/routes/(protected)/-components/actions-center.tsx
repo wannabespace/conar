@@ -1,4 +1,5 @@
 import type { Database } from '~/lib/indexeddb'
+import { getOS } from '@connnect/shared/utils/os'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@connnect/ui/components/command'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine } from '@remixicon/react'
@@ -6,12 +7,14 @@ import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
 
+const os = getOS()
+
 export function ActionsCenter() {
   const { data: databases } = useDatabases()
   const [openConnections, setOpenConnections] = useState(false)
   const router = useRouter()
 
-  useKeyboardEvent(e => e.key === 'l' && e.metaKey, () => {
+  useKeyboardEvent(e => e.key === 'l' && (os === 'macos' ? e.metaKey : e.ctrlKey), () => {
     if (!databases || databases.length === 0)
       return
 
@@ -20,8 +23,8 @@ export function ActionsCenter() {
 
   function onSelect(databases: Database) {
     setOpenConnections(false)
-    if (databases.type === 'postgres')
-      router.navigate({ to: '/database/$id/tables', params: { id: databases.id } })
+
+    router.navigate({ to: '/database/$id/tables', params: { id: databases.id } })
   }
 
   function onAdd() {

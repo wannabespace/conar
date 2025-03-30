@@ -44,8 +44,6 @@ export function Monaco({
     if (!elementRef.current)
       return
 
-    const abortController = new AbortController()
-
     monacoInstance.current = monaco.editor.create(elementRef.current, {
       value,
       language,
@@ -56,13 +54,13 @@ export function Monaco({
     })
 
     if (onEnter) {
-      monacoInstance.current.getDomNode()?.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' && ((event.metaKey && navigator.platform.includes('Mac')) || (event.ctrlKey && !navigator.platform.includes('Mac')))) {
-          event.preventDefault()
+      monacoInstance.current.addAction({
+        id: 'connnect.execute-on-enter',
+        label: 'Execute on Enter',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+        run: () => {
           onEnter?.()
-        }
-      }, {
-        signal: abortController.signal,
+        },
       })
     }
 
@@ -76,7 +74,6 @@ export function Monaco({
     })
 
     return () => {
-      abortController.abort()
       monacoInstance.current?.dispose()
     }
   }, [elementRef, language, options])

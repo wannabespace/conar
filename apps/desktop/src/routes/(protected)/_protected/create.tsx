@@ -1,6 +1,7 @@
 import type { RefObject } from 'react'
 import { databaseLabels, DatabaseType } from '@connnect/shared/enums/database-type'
 import { getProtocols, isValidConnectionString, parseConnectionString, protocolMap } from '@connnect/shared/utils/connections'
+import { getOS } from '@connnect/shared/utils/os'
 import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@connnect/ui/components/card'
@@ -28,6 +29,8 @@ import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
 import { queryClient } from '~/main'
+
+const os = getOS()
 
 export const Route = createFileRoute(
   '/(protected)/_protected/create',
@@ -199,7 +202,7 @@ function StepForm() {
     },
   })
 
-  useKeyboardEvent(e => e.key === 'v' && e.metaKey, async (e) => {
+  useKeyboardEvent(e => e.key === 'v' && (os === 'macos' ? e.metaKey : e.ctrlKey), async (e) => {
     if (inputRef.current === e.target)
       return
 

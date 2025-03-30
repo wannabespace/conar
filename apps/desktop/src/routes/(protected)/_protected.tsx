@@ -1,9 +1,13 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { getOS } from '@connnect/shared/utils/os'
+import { useKeyboardEvent } from '@react-hookz/web'
+import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
 import { fetchDatabases } from '~/entities/database'
 import { authClient } from '~/lib/auth'
 import { ActionsCenter } from './-components/actions-center'
+
+const os = getOS()
 
 export const Route = createFileRoute('/(protected)/_protected')({
   component: LayoutComponent,
@@ -11,6 +15,7 @@ export const Route = createFileRoute('/(protected)/_protected')({
 
 function LayoutComponent() {
   const { data } = authClient.useSession()
+  const router = useRouter()
 
   useEffect(() => {
     if (!data?.user)
@@ -24,6 +29,10 @@ function LayoutComponent() {
 
     return () => clearInterval(interval)
   }, [data?.user])
+
+  useKeyboardEvent(e => e.key === 'n' && (os === 'macos' ? e.metaKey : e.ctrlKey), () => {
+    router.navigate({ to: '/create' })
+  })
 
   return (
     <motion.div
