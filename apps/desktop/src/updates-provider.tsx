@@ -1,3 +1,4 @@
+import { useIsOnline } from '@connnect/ui/hooks/use-is-online'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -15,6 +16,7 @@ const UpdatesContext = createContext<{
 export const useUpdates = () => use(UpdatesContext)
 
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
+  const isOnline = useIsOnline()
   const [status, setStatus] = useState<UpdatesStatus>('no-updates')
   const [message, setMessage] = useState<string | undefined>(undefined)
   const { data: version } = useSuspenseQuery({
@@ -36,7 +38,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (import.meta.env.DEV)
+    if (import.meta.env.DEV || !isOnline)
       return
 
     checkForUpdates()
@@ -44,11 +46,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     const interval = setInterval(checkForUpdates, 1000 * 60 * 30)
 
     return () => clearInterval(interval)
-  }, [])
-
-  async function installUpdate() {
-    await window.electron.app.quitAndInstall()
-  }
+  }, [isOnline])
 
   useEffect(() => {
     if (status === 'ready') {
@@ -56,7 +54,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
         toast.success('New update successfully downloaded', {
           action: {
             label: 'Update now',
-            onClick: () => installUpdate(),
+            onClick: () => window.electron.app.quitAndInstall(),
           },
           duration: 10000,
         })
