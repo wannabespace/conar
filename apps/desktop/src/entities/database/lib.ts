@@ -7,7 +7,7 @@ import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
 import { databaseQuery } from './hooks/database'
-import { databaseSchemasQuery, databaseTablesQuery } from './hooks/queries'
+import { databasePrimaryKeysQuery, databaseSchemasQuery, databaseTablesQuery } from './hooks/queries'
 
 const DATABASES_SCHEMAS_KEY = 'databases-schemas'
 
@@ -128,10 +128,13 @@ export async function updateDatabasePassword(id: string, password: string) {
   await indexedDb.databases.put(database)
 }
 
-export function prefetchDatabaseCore(database: Database) {
-  queryClient.ensureQueryData(databaseQuery(database.id))
-  queryClient.ensureQueryData(databaseSchemasQuery(database))
-  queryClient.ensureQueryData(databaseTablesQuery(database, databaseSchemas.get(database.id)))
+export async function prefetchDatabaseCore(database: Database) {
+  await Promise.all([
+    queryClient.ensureQueryData(databaseQuery(database.id)),
+    queryClient.ensureQueryData(databaseSchemasQuery(database)),
+    queryClient.ensureQueryData(databaseTablesQuery(database, databaseSchemas.get(database.id))),
+  ])
+  await queryClient.ensureQueryData(databasePrimaryKeysQuery(database))
 }
 
 export async function getDatabaseContext(database: Database): Promise<z.infer<typeof databaseContextSchema>> {

@@ -60,6 +60,9 @@ function RouteComponent() {
   }
 
   const rows = data?.rows ?? []
+  const columns = databaseColumns ?? data?.columns.map(column => ({
+    name: column,
+  })) ?? []
 
   return (
     <div className="h-screen flex flex-col justify-between">
@@ -112,7 +115,7 @@ function RouteComponent() {
           key={table}
           loading={isPending}
           data={rows}
-          columns={databaseColumns}
+          columns={columns}
           className="h-full"
         />
       </div>

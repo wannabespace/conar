@@ -11,7 +11,7 @@ import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
 import { useDeferredValue, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseColumnsQuery, databaseSchemas, databaseSchemasQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas, useDatabaseTables } from '~/entities/database'
+import { databaseSchemas, databaseSchemasQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 import { TablesTree } from './-components/tables-tree'
 
@@ -33,12 +33,7 @@ function RouteComponent() {
 
   useAsyncEffect(async () => {
     databaseSchemas.set(id, schema)
-    const tables = await queryClient.ensureQueryData(databaseTablesQuery(database, schema))
-
-    tables.forEach((table) => {
-      queryClient.ensureQueryData(databaseColumnsQuery(database, table.name, schema))
-    })
-  }, [schema])
+  }, [id, schema])
 
   const { mutate: refreshTables, isPending: isRefreshingTables } = useMutation({
     mutationFn: async () => {

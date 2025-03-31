@@ -1,7 +1,7 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { PageSize } from '../components/table'
 import type { Database } from '~/lib/indexeddb'
-import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { queryOptions, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 
 export function databaseTablesQuery(database: Database, schema: string) {
@@ -38,6 +38,7 @@ export function databaseTablesQuery(database: Database, schema: string) {
 export function useDatabaseTables(database: Database, schema: string) {
   return useQuery(databaseTablesQuery(database, schema))
 }
+
 export function databaseColumnsQuery(database: Database, table: string, schema: string) {
   const columnSchema = z.object({
     table: z.string(),
@@ -93,7 +94,7 @@ export function databaseColumnsQuery(database: Database, table: string, schema: 
 }
 
 export function useDatabaseColumns(database: Database, table: string, schema: string) {
-  return useSuspenseQuery(databaseColumnsQuery(database, table, schema))
+  return useQuery(databaseColumnsQuery(database, table, schema))
 }
 
 export function databaseEnumsQuery(database: Database) {
@@ -133,6 +134,67 @@ export function useDatabaseEnums(database: Database) {
   return useQuery(databaseEnumsQuery(database))
 }
 
+export function databasePrimaryKeysQuery(database: Database) {
+  const primaryKeySchema = z.object({
+    table: z.string(),
+    schema: z.string(),
+    primary_key: z.string(),
+  })
+
+  const queryMap: Record<DatabaseType, () => Promise<z.infer<typeof primaryKeySchema>[]>> = {
+    postgres: async () => {
+      const [result] = await window.electron.databases.query({
+        type: database.type,
+        connectionString: database.connectionString,
+        query: `
+          SELECT
+            tc.table_name as table,
+            tc.table_schema as schema,
+            kcu.column_name AS primary_key
+          FROM
+            information_schema.table_constraints tc
+            JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name
+            AND tc.table_schema = kcu.table_schema
+          WHERE tc.table_schema NOT LIKE 'pg_temp%'
+            AND tc.table_schema NOT LIKE 'pg_toast_temp%'
+            AND tc.table_schema NOT LIKE 'temp%'
+            AND tc.table_schema NOT IN ('information_schema', 'performance_schema')
+          ORDER BY
+            kcu.ordinal_position;
+        `,
+      })
+
+      return result.rows.map(row => primaryKeySchema.parse(row))
+    },
+  }
+
+  return queryOptions({
+    queryKey: ['database', database.id, 'primaryKeys'],
+    queryFn: () => queryMap[database.type](),
+    select: (data) => {
+      const primaryKeysMap: Record<string, { table: string, schema: string, primaryKey: string[] }> = {}
+
+      data.forEach((row) => {
+        const key = `${row.schema}.${row.table}`
+
+        primaryKeysMap[key] ||= {
+          table: row.table,
+          schema: row.schema,
+          primaryKey: [row.primary_key],
+        }
+
+        primaryKeysMap[key].primaryKey.push(row.primary_key)
+      })
+
+      return Object.values(primaryKeysMap)
+    },
+  })
+}
+
+export function useDatabasePrimaryKeys(database: Database) {
+  return useQuery(databasePrimaryKeysQuery(database))
+}
+
 export function databaseRowsQuery(database: Database, table: string, schema: string, query?: { limit?: PageSize, page?: number }) {
   const countSchema = z.object({
     total: z.coerce.number(),
@@ -143,6 +205,7 @@ export function databaseRowsQuery(database: Database, table: string, schema: str
 
   const queryMap: Record<DatabaseType, () => Promise<{
     rows: Record<string, unknown>[]
+    columns: string[]
     total: number
   }>> = {
     postgres: async () => {
@@ -163,6 +226,7 @@ export function databaseRowsQuery(database: Database, table: string, schema: str
 
       return {
         rows: result.rows,
+        columns: result.columns,
         total: Number(tableCount.total || 0),
       }
     },

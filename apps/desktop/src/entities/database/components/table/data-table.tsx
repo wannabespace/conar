@@ -15,10 +15,11 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Monaco } from '~/components/monaco'
 
 const DEFAULT_ROW_HEIGHT = 35
+const DEFAULT_COLUMN_WIDTH = 220
 
 const columnsSizeMap = new Map<string, number>([
   ['boolean', 150],
@@ -272,14 +273,10 @@ function TableRow<T extends Record<string, unknown>>({ row, virtualRow, virtualC
   )
 }
 
-function TableSkeleton({ virtualColumns, rowWidth, count = 10 }: {
-  virtualColumns: VirtualItem[]
-  rowWidth: number
-  count?: number
-}) {
+function TableSkeleton({ columnsCount }: { columnsCount: number }) {
   return (
     <div className="relative flex flex-col">
-      {Array.from({ length: count }).map((_, rowIndex) => (
+      {Array.from({ length: 10 }).map((_, rowIndex) => (
         <div
           // eslint-disable-next-line react/no-array-index-key
           key={rowIndex}
@@ -287,25 +284,21 @@ function TableSkeleton({ virtualColumns, rowWidth, count = 10 }: {
           style={{
             height: `${DEFAULT_ROW_HEIGHT}px`,
             transform: `translate3d(0,${rowIndex * DEFAULT_ROW_HEIGHT}px,0)`,
-            width: `${rowWidth}px`,
           }}
         >
-          {virtualColumns.map(virtualColumn => (
+          {Array.from({ length: columnsCount }).map((_, index) => (
             <div
-              key={virtualColumn.key}
+              key={index}
               className="group absolute top-0 left-0 h-full"
               style={{
-                transform: `translateX(${virtualColumn.start}px)`,
-                width: `${virtualColumn.size}px`,
+                transform: `translateX(${index * DEFAULT_COLUMN_WIDTH}px)`,
+                width: `${DEFAULT_COLUMN_WIDTH}px`,
               }}
             >
               <div
                 className="shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 h-full"
-                style={{
-                  width: `${virtualColumn.size}px`,
-                }}
               >
-                <div className="h-4 bg-muted animate-pulse rounded w-4/5" />
+                <div className="h-4 bg-muted animate-pulse rounded w-full" />
               </div>
             </div>
           ))}
@@ -361,7 +354,7 @@ export function DataTable<T extends Record<string, unknown>>({
           )}
         </>
       ),
-      size: (column.type && columnsSizeMap.get(column.type)) || 220,
+      size: (column.type && columnsSizeMap.get(column.type)) || DEFAULT_COLUMN_WIDTH,
     }),
   )
 
@@ -390,6 +383,11 @@ export function DataTable<T extends Record<string, unknown>>({
     overscan: 1,
   })
 
+  // https://github.com/TanStack/virtual/discussions/379#discussioncomment-3501037
+  useEffect(() => {
+    columnVirtualizer.measure()
+  }, [columnVirtualizer, columns])
+
   const rowWidth = columnVirtualizer.getTotalSize()
   const virtualColumns = columnVirtualizer.getVirtualItems()
 
@@ -402,12 +400,7 @@ export function DataTable<T extends Record<string, unknown>>({
           rowWidth={rowWidth}
         />
         {loading
-          ? (
-              <TableSkeleton
-                virtualColumns={virtualColumns}
-                rowWidth={rowWidth}
-              />
-            )
+          ? <TableSkeleton columnsCount={table.getAllColumns().length || 5} />
           : data.length === 0
             ? (
                 <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">

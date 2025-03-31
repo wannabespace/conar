@@ -1,4 +1,3 @@
-import type { editor } from 'monaco-editor'
 import { getOS } from '@connnect/shared/utils/os'
 import { Button } from '@connnect/ui/components/button'
 import { CardHeader, CardTitle } from '@connnect/ui/components/card'
@@ -9,7 +8,7 @@ import { copy } from '@connnect/ui/lib/copy'
 import { RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { DataTable, useDatabase } from '~/entities/database'
@@ -63,7 +62,6 @@ const queryStorage = {
 function RouteComponent() {
   const { id } = Route.useParams()
   const [query, setQuery] = useState(queryStorage.get(id))
-  const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const { data: database } = useDatabase(id)
 
   useEffect(() => {
@@ -88,17 +86,14 @@ function RouteComponent() {
     const formatted = formatSql(query, database.type)
 
     setQuery(formatted)
-    monacoRef.current?.setValue(formatted)
+    toast.success('Query formatted successfully')
   }
 
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex h-auto!">
       <ResizablePanel defaultSize={30} minSize={20} maxSize={50} className="bg-muted/20">
         <SqlChat
-          onEdit={(message) => {
-            setQuery(message)
-            monacoRef.current?.setValue(message)
-          }}
+          onEdit={setQuery}
         />
       </ResizablePanel>
       <ResizableHandle />
@@ -115,7 +110,6 @@ function RouteComponent() {
               </CardTitle>
             </CardHeader>
             <Monaco
-              ref={monacoRef}
               language="sql"
               value={query}
               onChange={setQuery}

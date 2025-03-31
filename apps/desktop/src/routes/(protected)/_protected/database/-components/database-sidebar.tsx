@@ -4,12 +4,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connn
 import { RiDatabase2Line, RiMoonLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { Link, useMatches, useParams } from '@tanstack/react-router'
 import { ThemeToggle } from '~/components/theme-toggle'
-import { prefetchDatabaseCore, useDatabase } from '~/entities/database'
 import { UserButton } from '~/entities/user'
 
 export function DatabaseSidebar() {
   const { id } = useParams({ from: '/(protected)/_protected/database/$id' })
-  const { data: database } = useDatabase(id)
   const matches = useMatches({
     select: matches => matches.map(match => match.routeId),
   })
@@ -21,7 +19,6 @@ export function DatabaseSidebar() {
       <div className="w-[calc(theme(spacing.16)+2px)]" />
       <div
         className="bg-muted/50 flex flex-col border-r gap-4 items-center py-4 px-4 w-16 h-screen fixed left-0 inset-y-0"
-        onMouseOver={() => prefetchDatabaseCore(database)}
       >
         <div className="flex flex-col gap-2">
           <TooltipProvider>

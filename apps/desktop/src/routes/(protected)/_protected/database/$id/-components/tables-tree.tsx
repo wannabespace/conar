@@ -17,7 +17,7 @@ export function TablesTree({ database, schema, className, search }: { database: 
   const debouncedPrefetchColumns = useDebouncedCallback(
     (tableName: string) => queryClient.ensureQueryData(databaseColumnsQuery(database, tableName, schema)),
     [database.id, schema],
-    10,
+    20,
   )
 
   const debouncedPrefetchRows = useDebouncedCallback(
