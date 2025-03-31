@@ -6,8 +6,10 @@ import { toast } from 'sonner'
 import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
-import { databaseQuery } from './hooks/database'
-import { databasePrimaryKeysQuery, databaseSchemasQuery, databaseTablesQuery } from './hooks/queries'
+import { databaseQuery } from './queries/database'
+import { databasePrimaryKeysQuery } from './queries/primary-keys'
+import { databaseSchemasQuery } from './queries/schemas'
+import { databaseTablesQuery } from './queries/tables'
 
 const DATABASES_SCHEMAS_KEY = 'databases-schemas'
 
