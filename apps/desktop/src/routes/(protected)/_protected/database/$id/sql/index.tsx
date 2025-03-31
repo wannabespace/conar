@@ -5,7 +5,8 @@ import { CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
+import { copy } from '@connnect/ui/lib/copy'
+import { RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
@@ -122,6 +123,22 @@ function RouteComponent() {
               onEnter={() => sendQuery()}
             />
             <div className="absolute right-6 bottom-2 z-10 flex gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      onClick={() => copy(query)}
+                    >
+                      <RiFileCopyLine />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Copy
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <Button
                 variant="secondary"
                 onClick={() => format()}

@@ -23,7 +23,8 @@ const DEFAULT_ROW_HEIGHT = 35
 const columnsSizeMap = new Map<string, number>([
   ['boolean', 150],
   ['number', 150],
-  ['integer', 150],
+  ['integer', 120],
+  ['bigint', 150],
   ['float', 150],
   ['uuid', 290],
 ])
@@ -90,18 +91,19 @@ function TableHeader<T extends Record<string, unknown>>({ headerGroups, virtualC
   )
 }
 
-function TableCellContent({ value, meta: _meta }: { value: unknown, meta: TableCellMeta }) {
+function TableCellContent({ value, meta }: { value: unknown, meta: TableCellMeta }) {
   const [isBig, setIsBig] = useState(false)
   const displayValue = getDisplayValue(value)
-  const [currentValue, setCurrentValue] = useState(displayValue)
+  const [currentValue, setCurrentValue] = useState(value === null ? '' : displayValue)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   return (
-    <PopoverContent className={cn('p-0 w-80 overflow-auto [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[50vw]')}>
+    <PopoverContent className={cn('p-0 w-80 overflow-auto [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}>
       <Monaco
         ref={monacoRef}
         value={currentValue}
-        className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[40vh]')}
+        language={meta.type?.includes('json') ? 'json' : undefined}
+        className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(40vh,30rem)]')}
         onChange={setCurrentValue}
         options={{
           lineNumbers: 'off',
@@ -181,11 +183,13 @@ interface TableCellMeta {
   type?: string
   editable?: boolean
   nullable?: boolean
+  isEnum?: boolean
 }
 
 function getDisplayValue(value: unknown) {
   if (value instanceof Date)
     return value.toISOString()
+
   if (typeof value === 'object')
     return JSON.stringify(value)
 

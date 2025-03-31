@@ -99,11 +99,11 @@ function RouteComponent() {
               <SelectContent>
                 {schemas?.map(schema => (
                   <SelectItem
-                    key={schema.schema_name}
-                    value={schema.schema_name}
-                    onMouseOver={() => queryClient.ensureQueryData(databaseTablesQuery(database, schema.schema_name))}
+                    key={schema.name}
+                    value={schema.name}
+                    onMouseOver={() => queryClient.ensureQueryData(databaseTablesQuery(database, schema.name))}
                   >
-                    {schema.schema_name}
+                    {schema.name}
                   </SelectItem>
                 ))}
               </SelectContent>

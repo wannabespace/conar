@@ -91,7 +91,6 @@ function RouteComponent() {
                   size="icon"
                   onClick={handleRefresh}
                   disabled={isFetching}
-                  aria-label="Refresh data"
                 >
                   <LoadingContent loading={isFetching}>
                     <RiLoopLeftLine />
@@ -117,7 +116,7 @@ function RouteComponent() {
           className="h-full"
         />
       </div>
-      {total && total > 50 && (
+      {!!total && total > 50 && (
         <div
           className="flex flex-col bg-muted/20"
           onMouseEnter={() => setCanPrefetch(true)}
