@@ -83,5 +83,5 @@ export function Monaco({
       monacoInstance.current?.setValue(value)
   }, [value])
 
-  return <div ref={elementRef} {...props} />
+  return <div data-mask ref={elementRef} {...props} />
 }
