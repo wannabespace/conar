@@ -7,16 +7,47 @@ const DEEPLINK_PROTOCOL = 'connnect'
 let deepLinkUrl: string | null = null
 let mainWindow: BrowserWindow | null = null
 
-if (process.defaultApp) {
-  if (process.argv.length >= 2) {
-    app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL, process.execPath, [path.resolve(process.argv[1])])
+export function setupProtocolHandler(win: BrowserWindow) {
+  mainWindow = win
+
+  if (process.defaultApp && process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL, process.execPath, [
+      path.resolve(process.argv[1]),
+    ])
   }
-}
-else {
-  app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL)
+  else {
+    app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL)
+  }
+
+  const gotTheLock = app.requestSingleInstanceLock()
+
+  if (!gotTheLock) {
+    app.quit()
+  }
+  else {
+    app.on('second-instance', (_event, commandLine) => {
+      if (win.isMinimized())
+        win.restore()
+
+      win.focus()
+
+      const deeplinkingUrl = commandLine.pop()
+
+      if (deeplinkingUrl) {
+        sendDeepLink(deeplinkingUrl)
+      }
+    })
+  }
+
+  win.webContents.on('did-finish-load', () => {
+    if (deepLinkUrl) {
+      sendDeepLink(deepLinkUrl)
+      deepLinkUrl = null
+    }
+  })
 }
 
-function handle(url: string) {
+function sendDeepLink(url: string) {
   if (mainWindow === null) {
     deepLinkUrl = url
     return
@@ -25,6 +56,7 @@ function handle(url: string) {
   if (mainWindow.isMinimized()) {
     mainWindow.restore()
   }
+
   mainWindow.focus()
 
   // Show the app on macOS
@@ -38,40 +70,7 @@ function handle(url: string) {
   mainWindow.webContents.send('deep-link', url)
 }
 
-const gotTheLock = app.requestSingleInstanceLock()
-
-if (!gotTheLock) {
-  app.quit()
-}
-else {
-  app.on('second-instance', (_event, commandLine) => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized())
-        mainWindow.restore()
-
-      mainWindow.focus()
-
-      const deeplinkingUrl = commandLine.pop()
-
-      if (deeplinkingUrl) {
-        handle(deeplinkingUrl)
-      }
-    }
-  })
-}
-
 app.on('open-url', (event, url) => {
   event.preventDefault()
-  handle(url)
+  sendDeepLink(url)
 })
-
-export function handleDeepLink(w: BrowserWindow) {
-  mainWindow = w
-
-  w.webContents.on('did-finish-load', () => {
-    if (deepLinkUrl) {
-      handle(deepLinkUrl)
-      deepLinkUrl = null
-    }
-  })
-}

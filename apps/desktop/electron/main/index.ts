@@ -3,7 +3,7 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
-import { handleDeepLink } from './deep-link'
+import { setupProtocolHandler } from './deep-link'
 import { initElectronEvents } from './events'
 
 const started = createRequire(import.meta.url)('electron-squirrel-startup') as typeof import('electron-squirrel-startup')
@@ -31,15 +31,6 @@ export function createWindow() {
     },
   })
 
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    // TODO: recheck internal router links
-    const { protocol } = new URL(url)
-    if (protocol === 'http:' || protocol === 'https:') {
-      shell.openExternal(url)
-    }
-    return { action: 'deny' }
-  })
-
   mainWindow.on('ready-to-show', () => {
     mainWindow!.show()
   })
@@ -52,10 +43,23 @@ export function createWindow() {
     mainWindow.loadFile('dist/index.html')
   }
 
-  handleDeepLink(mainWindow)
+  return mainWindow
 }
 
-app.on('ready', createWindow)
+app.on('ready', () => {
+  const win = createWindow()
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    // TODO: recheck internal router links
+    const { protocol } = new URL(url)
+    if (protocol === 'http:' || protocol === 'https:') {
+      shell.openExternal(url)
+    }
+    return { action: 'deny' }
+  })
+
+  setupProtocolHandler(win)
+})
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
