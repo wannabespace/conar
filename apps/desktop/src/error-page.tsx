@@ -4,21 +4,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Toaster } from '@connnect/ui/components/sonner'
-import { copy } from '@connnect/ui/lib/copy'
 import { ThemeProvider } from '@connnect/ui/theme-provider'
-import { RiAlertLine, RiArrowGoBackLine, RiClipboardLine, RiLoopLeftLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowGoBackLine, RiLoopLeftLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
+import { ZodError } from 'zod'
 import { EventsProvider } from './lib/events'
 
 export function ErrorPage({ error, info }: ErrorComponentProps) {
   const router = useRouter()
-
-  const getErrorText = () => {
-    const errorText = error.stack || error.message
-    const componentStackText = info?.componentStack || ''
-
-    return `Error:\n${errorText}\n\nComponent Stack:\n${componentStackText}`
-  }
 
   return (
     <EventsProvider>
@@ -49,9 +42,42 @@ export function ErrorPage({ error, info }: ErrorComponentProps) {
                     {error.message}
                   </ScrollArea>
                 )}
-                {error.stack && (
+                {!(error instanceof ZodError) && error.stack && (
                   <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[200px] font-mono">
                     {error.stack}
+                  </ScrollArea>
+                )}
+                {error instanceof ZodError && (
+                  <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[200px] font-mono">
+                    {error.errors.map((err, index) => (
+                      <div key={index} className="mb-4 last:mb-0">
+                        <div className="font-semibold text-destructive">
+                          Error
+                          {' '}
+                          {index + 1}
+                          :
+                        </div>
+                        <div className="ml-2 mt-1">
+                          <div>
+                            <span className="opacity-70">Path:</span>
+                            {' '}
+                            {err.path.join(' > ')}
+                          </div>
+                          <div>
+                            <span className="opacity-70">Message:</span>
+                            {' '}
+                            {err.message}
+                          </div>
+                          {err.code && (
+                            <div>
+                              <span className="opacity-70">Code:</span>
+                              {' '}
+                              {err.code}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </ScrollArea>
                 )}
                 {info?.componentStack && (
@@ -71,14 +97,6 @@ export function ErrorPage({ error, info }: ErrorComponentProps) {
                 >
                   <RiArrowGoBackLine className="mr-1" />
                   Go back
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => copy(getErrorText(), 'Error copied to clipboard')}
-                >
-                  <RiClipboardLine className="mr-1" />
-                  Copy error
                 </Button>
                 <Button
                   className="flex-1"
