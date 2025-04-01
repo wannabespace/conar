@@ -3,13 +3,13 @@ import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 
-export function databaseEnumsQuery(database: Database) {
-  const enumSchema = z.object({
-    schema: z.string(),
-    name: z.string(),
-    value: z.string(),
-  })
+const enumSchema = z.object({
+  schema: z.string(),
+  name: z.string(),
+  value: z.string(),
+})
 
+export function databaseEnumsQuery(database: Database) {
   const queryMap: Record<DatabaseType, () => Promise<z.infer<typeof enumSchema>[]>> = {
     postgres: async () => {
       const [result] = await window.electron.databases.query({

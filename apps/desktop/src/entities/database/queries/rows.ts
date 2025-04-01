@@ -4,11 +4,11 @@ import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 
-export function databaseRowsQuery(database: Database, table: string, schema: string, query?: { limit?: PageSize, page?: number }) {
-  const countSchema = z.object({
-    total: z.coerce.number(),
-  })
+const countSchema = z.object({
+  total: z.coerce.number(),
+})
 
+export function databaseRowsQuery(database: Database, table: string, schema: string, query?: { limit?: PageSize, page?: number }) {
   const _limit: PageSize = query?.limit ?? 50
   const _page = query?.page ?? 1
 

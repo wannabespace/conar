@@ -7,7 +7,7 @@ import { ScrollArea, ScrollBar } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine, RiKey2Line } from '@remixicon/react'
 import {
   createColumnHelper,
   flexRender,
@@ -92,7 +92,7 @@ function TableHeader<T extends Record<string, unknown>>({ headerGroups, virtualC
   )
 }
 
-function TableCellContent({ value, meta }: { value: unknown, meta: TableCellMeta }) {
+function TableCellContent({ value, meta }: { value: unknown, meta: TableColumn }) {
   const [isBig, setIsBig] = useState(false)
   const displayValue = getDisplayValue(value)
   const [currentValue, setCurrentValue] = useState(value === null ? '' : displayValue)
@@ -109,7 +109,7 @@ function TableCellContent({ value, meta }: { value: unknown, meta: TableCellMeta
         options={{
           lineNumbers: 'off',
           readOnly: true,
-          // readOnly: !meta.editable,
+          // readOnly: !meta.isEditable,
           scrollBeyondLastLine: false,
           folding: false,
           wordWrap: 'on',
@@ -143,7 +143,7 @@ function TableCellContent({ value, meta }: { value: unknown, meta: TableCellMeta
           </TooltipProvider>
         </div>
         {/* <div className="flex gap-2">
-            {meta.editable && (
+            {meta.isEditable && (
               <>
                 {currentValue !== displayValue && (
                   <Button
@@ -154,7 +154,7 @@ function TableCellContent({ value, meta }: { value: unknown, meta: TableCellMeta
                     Reset
                   </Button>
                 )}
-                {meta.nullable && currentValue !== 'null' && (
+                {meta.isNullable && currentValue !== 'null' && (
                   <Button
                     size="xs"
                     variant="secondary"
@@ -180,11 +180,13 @@ function TableCellContent({ value, meta }: { value: unknown, meta: TableCellMeta
   )
 }
 
-interface TableCellMeta {
+interface TableColumn {
+  name: string
   type?: string
-  editable?: boolean
-  nullable?: boolean
+  isEditable?: boolean
+  isNullable?: boolean
   isEnum?: boolean
+  isPrimaryKey?: boolean
 }
 
 function getDisplayValue(value: unknown) {
@@ -201,7 +203,7 @@ function TableCell<T extends Record<string, unknown>>({ cell }: { cell: Cell<T, 
   const [open, setOpen] = useState(false)
   const cellValue = cell.getValue()
 
-  const meta = cell.column.columnDef.meta as TableCellMeta
+  const meta = cell.column.columnDef.meta as TableColumn
 
   return (
     <Popover
@@ -315,48 +317,55 @@ export function DataTable<T extends Record<string, unknown>>({
   className,
 }: {
   data: T[]
-  columns: {
-    name: string
-    nullable?: boolean
-    editable?: boolean
-    type?: string
-  }[]
+  columns: TableColumn[]
   loading?: boolean
   className?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const columnHelper = createColumnHelper<T>()
 
-  const tableColumns = columns.map(column =>
-    columnHelper.accessor(row => row[column.name], {
-      id: column.name,
-      meta: column satisfies TableCellMeta,
-      cell: (info) => {
-        const value = info.getValue()
+  const tableColumns = columns
+    .toSorted((a, b) => a.isPrimaryKey ? -1 : b.isPrimaryKey ? 1 : 0)
+    .map(column =>
+      columnHelper.accessor(row => row[column.name], {
+        id: column.name,
+        meta: column satisfies TableColumn,
+        cell: (info) => {
+          const value = info.getValue()
 
-        if (value instanceof Date)
-          return value.toISOString()
+          if (value instanceof Date)
+            return value.toISOString()
 
-        if (typeof value === 'object')
-          return JSON.stringify(value)
+          if (typeof value === 'object')
+            return JSON.stringify(value)
 
-        return String(value ?? '')
-      },
-      header: () => (
-        <>
-          <div data-mask className="truncate font-medium">
-            {column.name}
-          </div>
-          {column.type && (
-            <div data-type={column.type} className="text-muted-foreground truncate font-mono">
-              {column.type}
+          return String(value ?? '')
+        },
+        header: () => (
+          <>
+            <div data-mask className="truncate font-medium flex items-center gap-1">
+              {column.isPrimaryKey && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <RiKey2Line className="size-3 text-primary" />
+                    </TooltipTrigger>
+                    <TooltipContent>Primary key</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              {column.name}
             </div>
-          )}
-        </>
-      ),
-      size: (column.type && columnsSizeMap.get(column.type)) || DEFAULT_COLUMN_WIDTH,
-    }),
-  )
+            {column.type && (
+              <div data-type={column.type} className="text-muted-foreground truncate font-mono">
+                {column.type}
+              </div>
+            )}
+          </>
+        ),
+        size: (column.type && columnsSizeMap.get(column.type)) || DEFAULT_COLUMN_WIDTH,
+      }),
+    )
 
   const table = useReactTable({
     data,

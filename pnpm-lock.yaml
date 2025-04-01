@@ -95,6 +95,9 @@ importers:
       nanoid:
         specifier: ^5.1.5
         version: 5.1.5
+      postgres:
+        specifier: ^3.4.5
+        version: 3.4.5
       stripe:
         specifier: ^17.7.0
         version: 17.7.0
@@ -393,11 +396,11 @@ importers:
   packages/shared:
     dependencies:
       '@trpc/client':
-        specifier: ^11.0.0-rc.724
-        version: 11.0.0-rc.833(typescript@5.8.2)
+        specifier: ^11.0.0
+        version: 11.0.0(@trpc/server@11.0.0(typescript@5.8.2))(typescript@5.8.2)
       permix:
-        specifier: 1.0.4
-        version: 1.0.4(hono@4.7.5)(react@19.0.0)
+        specifier: ^1.0.4
+        version: 1.0.4(@trpc/server@11.0.0(typescript@5.8.2))(hono@4.7.5)(react@19.0.0)
       sonner:
         specifier: ^1.7.2
         version: 1.7.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -3172,12 +3175,6 @@ packages:
     resolution: {integrity: sha512-U2THlxsdr4ykAX5lpTU8k5WRADPQ+68Ex2gfUht3MlCxGK7njBmNSSzjpQSWNt7tMI/xsYrddFiRlmEPrh+Cbg==}
     peerDependencies:
       '@trpc/server': 11.0.0
-      typescript: '>=5.7.2'
-
-  '@trpc/client@11.0.0-rc.833':
-    resolution: {integrity: sha512-RxPgX4xgznT2r00IZhvCtQZwisLF/Go01sMqBIHqGPKh5wRcigPVoSlZH/e/+xr71WY19mLsgzDMfzRZQ5a7cg==}
-    peerDependencies:
-      '@trpc/server': 11.0.0-rc.833+16e52ebcf
       typescript: '>=5.7.2'
 
   '@trpc/react-query@11.0.0':
@@ -11119,10 +11116,6 @@ snapshots:
       '@trpc/server': 11.0.0(typescript@5.8.2)
       typescript: 5.8.2
 
-  '@trpc/client@11.0.0-rc.833(typescript@5.8.2)':
-    dependencies:
-      typescript: 5.8.2
-
   '@trpc/react-query@11.0.0(@tanstack/react-query@5.69.0(react@19.0.0))(@trpc/client@11.0.0(@trpc/server@11.0.0(typescript@5.8.2))(typescript@5.8.2))(@trpc/server@11.0.0(typescript@5.8.2))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.8.2)':
     dependencies:
       '@tanstack/react-query': 5.69.0(react@19.0.0)
@@ -15153,8 +15146,9 @@ snapshots:
 
   perfect-debounce@1.0.0: {}
 
-  permix@1.0.4(hono@4.7.5)(react@19.0.0):
+  permix@1.0.4(@trpc/server@11.0.0(typescript@5.8.2))(hono@4.7.5)(react@19.0.0):
     optionalDependencies:
+      '@trpc/server': 11.0.0(typescript@5.8.2)
       hono: 4.7.5
       react: 19.0.0
 

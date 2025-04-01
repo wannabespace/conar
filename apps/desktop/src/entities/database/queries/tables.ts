@@ -3,12 +3,12 @@ import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 
-export function databaseTablesQuery(database: Database, schema: string) {
-  const tableSchema = z.object({
-    name: z.string(),
-    schema: z.string(),
-  })
+const tableSchema = z.object({
+  name: z.string(),
+  schema: z.string(),
+})
 
+export function databaseTablesQuery(database: Database, schema: string) {
   const queryMap: Record<DatabaseType, () => Promise<z.infer<typeof tableSchema>[]>> = {
     postgres: async () => {
       const [result] = await window.electron.databases.query({

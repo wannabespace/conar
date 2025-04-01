@@ -3,17 +3,24 @@ import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 
-export function databaseColumnsQuery(database: Database, table: string, schema: string) {
-  const columnSchema = z.object({
-    table: z.string(),
-    name: z.string(),
-    type: z.string(),
-    editable: z.boolean(),
-    default: z.string().nullable(),
-    nullable: z.boolean(),
-  })
+export const columnSchema = z.object({
+  table: z.string(),
+  name: z.string(),
+  type: z.string(),
+  editable: z.boolean(),
+  default: z.string().nullable(),
+  nullable: z.boolean(),
+})
 
-  const queryMap: Record<DatabaseType, () => Promise<z.infer<typeof columnSchema>[]>> = {
+export function databaseColumnsQuery(database: Database, table: string, schema: string) {
+  const queryMap: Record<DatabaseType, () => Promise<{
+    table: string
+    name: string
+    type: string
+    isEditable: boolean
+    isNullable: boolean
+    default: string | null
+  }[]>> = {
     postgres: async () => {
       const [result] = await window.electron.databases.query({
         type: database.type,
@@ -47,7 +54,11 @@ export function databaseColumnsQuery(database: Database, table: string, schema: 
         `,
       })
 
-      return result.rows.map(row => columnSchema.parse(row))
+      return result.rows.map(row => columnSchema.parse(row)).map(column => ({
+        ...column,
+        isEditable: column.editable,
+        isNullable: column.nullable,
+      }))
     },
   }
 

@@ -56,6 +56,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
             label: 'Update now',
             onClick: () => window.electron.app.quitAndInstall(),
           },
+          position: 'bottom-right',
           duration: 10000,
         })
       }

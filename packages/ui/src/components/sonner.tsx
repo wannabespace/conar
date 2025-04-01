@@ -9,7 +9,7 @@ function Toaster() {
     <Sonner
       theme={theme as ToasterProps['theme']}
       className="toaster group"
-      position="top-center"
+      position="top-right"
       richColors
       style={
         {

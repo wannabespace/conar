@@ -8,7 +8,7 @@ import { useIsFetching, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseColumnsQuery, databaseRowsQuery, DataTable, DataTableFooter, useDatabase, useDatabaseColumns } from '~/entities/database'
+import { databaseColumnsQuery, databaseRowsQuery, DataTable, DataTableFooter, useDatabase, useDatabasePrimaryKeys } from '~/entities/database'
 import { queryClient } from '~/main'
 
 export const Route = createFileRoute(
@@ -22,9 +22,18 @@ function RouteComponent() {
   const { data: database } = useDatabase(id)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState<PageSize>(50)
-  const { data: databaseColumns } = useDatabaseColumns(database, table, schema)
   const queryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
   const { data, isPending } = useQuery(queryOpts)
+  const { data: primaryKeys } = useDatabasePrimaryKeys(database)
+  const { data: databaseColumns } = useQuery({
+    ...databaseColumnsQuery(database, table, schema),
+    select: (data) => {
+      return data.map(column => ({
+        ...column,
+        isPrimaryKey: !!primaryKeys?.find(key => key.table === table && key.schema === schema)?.primaryKeys.includes(column.name),
+      }))
+    },
+  })
   const isFetching = useIsFetching(databaseRowsQuery(database, table, schema, { page: 1, limit: pageSize })) > 0
   const [total, setTotal] = useState(data?.total ?? null)
 
@@ -60,9 +69,7 @@ function RouteComponent() {
   }
 
   const rows = data?.rows ?? []
-  const columns = databaseColumns ?? data?.columns.map(column => ({
-    name: column,
-  })) ?? []
+  const columns = databaseColumns ?? []
 
   return (
     <div className="h-screen flex flex-col justify-between">

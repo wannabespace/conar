@@ -2,8 +2,8 @@
   "name": "@connnect/shared",
   "type": "module",
   "peerDependencies": {
-    "@trpc/client": "^11.0.0-rc.724",
-    "permix": "1.0.4",
+    "@trpc/client": "^11.0.0",
+    "permix": "^1.0.4",
     "sonner": "^1.7.2"
   }
 }
