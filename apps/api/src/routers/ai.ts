@@ -21,6 +21,8 @@ function generateStream({
   messages: Message[]
   signal: AbortSignal
 }) {
+  console.info('messages', messages)
+
   return streamText({
     messages: [
       {
@@ -53,6 +55,9 @@ function generateStream({
     ],
     abortSignal: signal,
     model,
+    onFinish: (result) => {
+      console.info('result', result)
+    },
   })
 }
 
