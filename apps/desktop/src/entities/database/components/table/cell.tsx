@@ -1,5 +1,6 @@
 import type { Cell } from '@tanstack/react-table'
 import type { editor } from 'monaco-editor'
+import type { ComponentRef, RefObject } from 'react'
 import { Button } from '@connnect/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
@@ -9,7 +10,7 @@ import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '
 import {
   flexRender,
 } from '@tanstack/react-table'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Monaco } from '~/components/monaco'
 
 export interface TableColumn {
@@ -21,11 +22,28 @@ export interface TableColumn {
   isPrimaryKey?: boolean
 }
 
-function TableCellContent({ value, meta }: { value: unknown, meta: TableColumn }) {
+function getDisplayValue(value: unknown) {
+  if (value instanceof Date)
+    return value.toISOString()
+
+  if (typeof value === 'object')
+    return JSON.stringify(value)
+
+  return String(value ?? '')
+}
+
+function TableCellContent({ ref, value, meta }: { ref: RefObject<{ setIsBig: (isBig: boolean) => void } | null>, value: unknown, meta: TableColumn }) {
   const [isBig, setIsBig] = useState(false)
-  const displayValue = getDisplayValue(value)
+  const isJson = !!meta.type?.includes('json')
+  const displayValue = isJson ? JSON.stringify(value, null, 2) : getDisplayValue(value)
   const [currentValue, setCurrentValue] = useState(value === null ? '' : displayValue)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
+
+  useEffect(() => {
+    ref.current = {
+      setIsBig,
+    }
+  }, [isBig])
 
   return (
     <PopoverContent className={cn('p-0 w-80 overflow-auto [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}>
@@ -41,7 +59,6 @@ function TableCellContent({ value, meta }: { value: unknown, meta: TableColumn }
           // readOnly: !meta.isEditable,
           scrollBeyondLastLine: false,
           folding: false,
-          wordWrap: 'on',
         }}
       />
       <div className="flex justify-between items-center gap-2 p-2 border-t">
@@ -109,26 +126,22 @@ function TableCellContent({ value, meta }: { value: unknown, meta: TableColumn }
   )
 }
 
-function getDisplayValue(value: unknown) {
-  if (value instanceof Date)
-    return value.toISOString()
-
-  if (typeof value === 'object')
-    return JSON.stringify(value)
-
-  return String(value ?? '')
-}
-
 export function TableCell<T extends Record<string, unknown>>({ cell }: { cell: Cell<T, unknown> }) {
   const [open, setOpen] = useState(false)
   const cellValue = cell.getValue()
+  const ref = useRef<ComponentRef<typeof TableCellContent>>(null)
 
   const meta = cell.column.columnDef.meta as TableColumn
 
   return (
     <Popover
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen)
+
+        if (!isOpen)
+          ref.current?.setIsBig(false)
+      }}
     >
       <PopoverTrigger asChild>
         <div
@@ -154,6 +167,7 @@ export function TableCell<T extends Record<string, unknown>>({ cell }: { cell: C
         </div>
       </PopoverTrigger>
       <TableCellContent
+        ref={ref}
         value={cellValue}
         meta={meta}
       />
