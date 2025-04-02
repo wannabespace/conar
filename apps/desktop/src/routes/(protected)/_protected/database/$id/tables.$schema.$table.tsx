@@ -4,7 +4,7 @@ import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Separator } from '@connnect/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiLoopLeftLine } from '@remixicon/react'
-import { useIsFetching, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -34,7 +34,7 @@ function RouteComponent() {
       }))
     },
   })
-  const isFetching = useIsFetching(databaseRowsQuery(database, table, schema, { page: 1, limit: pageSize })) > 0
+  const { isFetching, dataUpdatedAt } = useQuery(databaseRowsQuery(database, table, schema, { page: 1, limit: pageSize }))
   const [total, setTotal] = useState(data?.total ?? null)
 
   const [canPrefetch, setCanPrefetch] = useState(false)
@@ -111,6 +111,11 @@ function RouteComponent() {
                 Refresh data
                 <p className="text-xs text-muted-foreground">
                   Table data is cached. Click to fetch the latest data.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Last updated:
+                  {' '}
+                  {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
                 </p>
               </TooltipContent>
             </Tooltip>
