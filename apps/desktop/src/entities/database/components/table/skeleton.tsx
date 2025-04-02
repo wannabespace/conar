@@ -22,9 +22,7 @@ export function TableSkeleton({ columnsCount }: { columnsCount: number }) {
                 width: `${DEFAULT_COLUMN_WIDTH}px`,
               }}
             >
-              <div
-                className="shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 h-full"
-              >
+              <div className="shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 h-full">
                 <div className="h-4 bg-muted animate-pulse rounded w-full" />
               </div>
             </div>

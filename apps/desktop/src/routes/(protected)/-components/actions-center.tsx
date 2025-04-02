@@ -11,29 +11,29 @@ const os = getOS()
 
 export function ActionsCenter() {
   const { data: databases } = useDatabases()
-  const [openConnections, setOpenConnections] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
 
-  useKeyboardEvent(e => e.key === 'l' && (os === 'macos' ? e.metaKey : e.ctrlKey), () => {
+  useKeyboardEvent(e => e.key === 'p' && (os === 'macos' ? e.metaKey : e.ctrlKey), () => {
     if (!databases || databases.length === 0)
       return
 
-    setOpenConnections(open => !open)
+    setIsOpen(open => !open)
   })
 
-  function onSelect(databases: Database) {
-    setOpenConnections(false)
+  function onSelect(database: Database) {
+    setIsOpen(false)
 
-    router.navigate({ to: '/database/$id/tables', params: { id: databases.id } })
+    router.navigate({ to: '/database/$id/tables', params: { id: database.id } })
   }
 
   function onAdd() {
-    setOpenConnections(false)
+    setIsOpen(false)
     router.navigate({ to: '/create' })
   }
 
   return (
-    <CommandDialog open={openConnections} onOpenChange={setOpenConnections}>
+    <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
       <CommandInput placeholder="Type a connection name..." />
       <CommandList>
         <CommandEmpty>No connections found.</CommandEmpty>

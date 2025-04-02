@@ -82,7 +82,6 @@ export function DataTable<T extends Record<string, unknown>>({
 
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
-    getItemKey: index => rows[index].id,
     getScrollElement: () => ref.current,
     estimateSize: () => DEFAULT_ROW_HEIGHT,
     scrollMargin: ref.current?.offsetTop ?? 0,
