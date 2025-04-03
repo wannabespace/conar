@@ -121,7 +121,7 @@ function RouteComponent() {
         />
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel defaultSize={75} className="flex-1">
+      <ResizablePanel defaultSize={80} className="flex-1">
         <Outlet />
         {!tableParam && (
           <div className="p-4 flex items-center justify-center h-full">
