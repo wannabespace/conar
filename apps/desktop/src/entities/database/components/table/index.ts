@@ -1,10 +1,6 @@
-export * from './cell'
-export * from './footer'
-export * from './head'
-export * from './header'
-export * from './row'
-export * from './skeleton'
-export * from './table'
+export type { PageSize } from './footer'
+export { DataTableFooter } from './footer'
+export { DataTable } from './table'
 
 export const DEFAULT_ROW_HEIGHT = 35
 export const DEFAULT_COLUMN_WIDTH = 220

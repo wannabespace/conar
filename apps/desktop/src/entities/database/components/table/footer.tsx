@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import { Input } from '@connnect/ui/components/input'
 import { Label } from '@connnect/ui/components/label'
 import {
@@ -19,13 +20,12 @@ import { useId, useMemo } from 'react'
 
 export type PageSize = 50 | 100 | 250 | 500 | 1000
 
-interface DataTableFooterProps {
+interface DataTableFooterProps extends ComponentProps<'div'> {
   currentPage: number
   onPageChange: (page: number) => void
   pageSize: PageSize
   onPageSizeChange: (pageSize: PageSize) => void
   total: number
-  className?: string
 }
 
 export function DataTableFooter({
@@ -35,6 +35,7 @@ export function DataTableFooter({
   onPageSizeChange,
   total,
   className,
+  ...props
 }: DataTableFooterProps) {
   const id = useId()
   const goToPageId = useId()
@@ -47,7 +48,7 @@ export function DataTableFooter({
   }, [currentPage, pageSize, total])
 
   return (
-    <div className={cn('flex items-center justify-center gap-8', className)}>
+    <div className={cn('flex items-center justify-center gap-8', className)} {...props}>
       <div className="flex items-center gap-3">
         <Label className="mb-0" htmlFor={id}>Rows per page</Label>
         <Select
@@ -58,11 +59,11 @@ export function DataTableFooter({
             <SelectValue placeholder="Select number of results" />
           </SelectTrigger>
           <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
-            <SelectItem value="50">50</SelectItem>
-            <SelectItem value="100">100</SelectItem>
-            <SelectItem value="250">250</SelectItem>
-            <SelectItem value="500">500</SelectItem>
-            <SelectItem value="1000">1000</SelectItem>
+            {([50, 100, 250, 500, 1000] satisfies PageSize[]).map(size => (
+              <SelectItem key={size} value={String(size)}>
+                {size}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -80,9 +81,7 @@ export function DataTableFooter({
                   <span className="text-foreground">{paginationInfo.totalPages}</span>
                 </span>
               )
-            : (
-                <span className="text-foreground">No results</span>
-              )}
+            : <span className="text-foreground">No results</span>}
         </p>
       </div>
       <div className="flex items-center gap-8">

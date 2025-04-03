@@ -59,6 +59,10 @@ function TableCellContent({ ref, value, meta }: { ref: RefObject<{ setIsBig: (is
           // readOnly: !meta.isEditable,
           scrollBeyondLastLine: false,
           folding: false,
+          scrollbar: {
+            horizontalScrollbarSize: 5,
+            verticalScrollbarSize: 5,
+          },
         }}
       />
       <div className="flex justify-between items-center gap-2 p-2 border-t">

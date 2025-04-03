@@ -1,5 +1,5 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
-import type { PageSize } from '../components/table'
+import type { PageSize } from '../components/table/footer'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
