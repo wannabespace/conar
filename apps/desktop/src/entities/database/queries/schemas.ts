@@ -19,7 +19,7 @@ export function databaseSchemasQuery(database: Database) {
           WHERE schema_name NOT LIKE 'pg_temp%'
             AND schema_name NOT LIKE 'pg_toast_temp%'
             AND schema_name NOT LIKE 'temp%'
-            AND schema_name NOT IN ('information_schema', 'performance_schema')
+            AND schema_name NOT IN ('information_schema', 'performance_schema', 'pg_toast', 'pg_catalog')
           ORDER BY schema_name ASC;
         `,
       })
