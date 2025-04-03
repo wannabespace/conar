@@ -1,4 +1,5 @@
-import type { TableColumn } from './cell'
+import type { TableCellMeta } from './cell'
+import type { Database } from '~/lib/indexeddb'
 import { ScrollArea, ScrollBar } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiKey2Line } from '@remixicon/react'
@@ -8,32 +9,37 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useRef } from 'react'
-import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '.'
+import { useEffect, useMemo, useRef } from 'react'
+import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, TableContext } from '.'
 import { TableHeader } from './header'
 import { TableRow } from './row'
 import { TableSkeleton } from './skeleton'
+
+const columnHelper = createColumnHelper<Record<string, unknown>>()
 
 export function DataTable<T extends Record<string, unknown>>({
   data,
   columns,
   loading,
   className,
+  database,
+  tableName,
 }: {
   data: T[]
-  columns: TableColumn[]
+  columns: TableCellMeta[]
   loading?: boolean
   className?: string
+  database?: Database
+  tableName?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const columnHelper = createColumnHelper<T>()
 
-  const tableColumns = columns
+  const tableColumns = useMemo(() => columns
     .toSorted((a, b) => a.isPrimaryKey ? -1 : b.isPrimaryKey ? 1 : 0)
     .map(column =>
       columnHelper.accessor(row => row[column.name], {
         id: column.name,
-        meta: column satisfies TableColumn,
+        meta: column satisfies TableCellMeta,
         cell: (info) => {
           const value = info.getValue()
 
@@ -69,7 +75,7 @@ export function DataTable<T extends Record<string, unknown>>({
         ),
         size: (column.type && columnsSizeMap.get(column.type)) || DEFAULT_COLUMN_WIDTH,
       }),
-    )
+    ), [columns])
 
   const table = useReactTable({
     data,
@@ -104,37 +110,41 @@ export function DataTable<T extends Record<string, unknown>>({
   const rowWidth = columnVirtualizer.getTotalSize()
   const virtualColumns = columnVirtualizer.getVirtualItems()
 
+  const context = useMemo(() => ({ tableName, database }), [tableName, database])
+
   return (
-    <ScrollArea scrollRef={ref} className={className} tableStyle>
-      <div className="w-full" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-        <TableHeader
-          headerGroups={table.getHeaderGroups()}
-          virtualColumns={virtualColumns}
-          rowWidth={rowWidth}
-        />
-        {loading
-          ? <TableSkeleton columnsCount={table.getAllColumns().length || 5} />
-          : data.length === 0
-            ? (
-                <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">
-                  No data available
-                </div>
-              )
-            : (
-                <div className="relative flex flex-col">
-                  {rowVirtualizer.getVirtualItems().map(virtualRow => (
-                    <TableRow
-                      key={virtualRow.key}
-                      row={rows[virtualRow.index]}
-                      virtualRow={virtualRow}
-                      virtualColumns={virtualColumns}
-                      rowWidth={rowWidth}
-                    />
-                  ))}
-                </div>
-              )}
-      </div>
-      <ScrollBar orientation="horizontal" />
-    </ScrollArea>
+    <TableContext value={context}>
+      <ScrollArea scrollRef={ref} className={className} tableStyle>
+        <div className="w-full" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+          <TableHeader
+            headerGroups={table.getHeaderGroups()}
+            virtualColumns={virtualColumns}
+            rowWidth={rowWidth}
+          />
+          {loading
+            ? <TableSkeleton columnsCount={table.getAllColumns().length || 5} />
+            : data.length === 0
+              ? (
+                  <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">
+                    No data available
+                  </div>
+                )
+              : (
+                  <div className="relative flex flex-col">
+                    {rowVirtualizer.getVirtualItems().map(virtualRow => (
+                      <TableRow
+                        key={virtualRow.key}
+                        row={rows[virtualRow.index]}
+                        virtualRow={virtualRow}
+                        virtualColumns={virtualColumns}
+                        rowWidth={rowWidth}
+                      />
+                    ))}
+                  </div>
+                )}
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+    </TableContext>
   )
 }

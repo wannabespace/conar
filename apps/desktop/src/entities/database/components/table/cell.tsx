@@ -1,6 +1,6 @@
 import type { Cell } from '@tanstack/react-table'
 import type { editor } from 'monaco-editor'
-import type { ComponentRef, RefObject } from 'react'
+import type { ComponentProps, ComponentRef, RefObject } from 'react'
 import { Button } from '@connnect/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
@@ -13,7 +13,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { Monaco } from '~/components/monaco'
 
-export interface TableColumn {
+export interface TableCellMeta {
   name: string
   type?: string
   isEditable?: boolean
@@ -32,8 +32,19 @@ function getDisplayValue(value: unknown) {
   return String(value ?? '')
 }
 
-function TableCellContent({ ref, value, meta }: { ref: RefObject<{ setIsBig: (isBig: boolean) => void } | null>, value: unknown, meta: TableColumn }) {
+function TableCellPopoverContent<T extends Record<string, unknown>>({
+  ref,
+  value,
+  cell,
+  onAnimationEnd,
+}: {
+  ref: RefObject<{ setIsBig: (isBig: boolean) => void } | null>
+  value: unknown
+  cell: Cell<T, unknown>
+  onAnimationEnd: () => void
+}) {
   const [isBig, setIsBig] = useState(false)
+  const meta = cell.column.columnDef.meta as TableCellMeta
   const isJson = !!meta.type?.includes('json')
   const displayValue = isJson ? JSON.stringify(value, null, 2) : getDisplayValue(value)
   const [currentValue, setCurrentValue] = useState(value === null ? '' : displayValue)
@@ -46,11 +57,14 @@ function TableCellContent({ ref, value, meta }: { ref: RefObject<{ setIsBig: (is
   }, [isBig])
 
   return (
-    <PopoverContent className={cn('p-0 w-80 overflow-auto [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}>
+    <PopoverContent
+      className={cn('p-0 w-80 overflow-auto [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
+      onAnimationEnd={onAnimationEnd}
+    >
       <Monaco
         ref={monacoRef}
         value={currentValue}
-        language={meta.type?.includes('json') ? 'json' : undefined}
+        language={isJson ? 'json' : undefined}
         className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(40vh,30rem)]')}
         onChange={setCurrentValue}
         options={{
@@ -130,12 +144,57 @@ function TableCellContent({ ref, value, meta }: { ref: RefObject<{ setIsBig: (is
   )
 }
 
+function TableCellContent<T extends Record<string, unknown>>({
+  cell,
+  open,
+  setCanInteract,
+  className,
+  ...props
+}: {
+  cell: Cell<T, unknown>
+  open: boolean
+  setCanInteract: (canInteract: boolean) => void
+} & ComponentProps<'div'>) {
+  const cellValue = cell.getValue()
+
+  return (
+    <div
+      data-mask
+      className={cn(
+        'flex items-center h-full shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 font-mono cursor-default select-none',
+        open && 'bg-muted/50 ring-2 ring-inset ring-primary/50',
+        cellValue === null && 'text-muted-foreground',
+        className,
+      )}
+      style={{
+        width: `${cell.column.getSize()}px`,
+      }}
+      onMouseOver={() => setCanInteract(true)}
+      {...props}
+    >
+      {flexRender(
+        cell.column.columnDef.cell,
+        cell.getContext(),
+      )}
+    </div>
+  )
+}
+
 export function TableCell<T extends Record<string, unknown>>({ cell }: { cell: Cell<T, unknown> }) {
   const [open, setOpen] = useState(false)
   const cellValue = cell.getValue()
-  const ref = useRef<ComponentRef<typeof TableCellContent>>(null)
+  const [canInteract, setCanInteract] = useState(false)
+  const ref = useRef<ComponentRef<typeof TableCellPopoverContent>>(null)
 
-  const meta = cell.column.columnDef.meta as TableColumn
+  if (!canInteract) {
+    return (
+      <TableCellContent
+        cell={cell}
+        open={open}
+        setCanInteract={setCanInteract}
+      />
+    )
+  }
 
   return (
     <Popover
@@ -143,37 +202,30 @@ export function TableCell<T extends Record<string, unknown>>({ cell }: { cell: C
       onOpenChange={(isOpen) => {
         setOpen(isOpen)
 
-        if (!isOpen)
+        if (!isOpen) {
           ref.current?.setIsBig(false)
+        }
       }}
     >
-      <PopoverTrigger asChild>
-        <div
-          key={cell.id}
-          data-mask
-          className={cn(
-            'flex items-center h-full shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 font-mono cursor-default select-none',
-            open && 'bg-muted/50 ring-2 ring-inset ring-primary/50',
-            cellValue === null && 'text-muted-foreground',
-          )}
-          style={{
-            width: `${cell.column.getSize()}px`,
-          }}
-          onDoubleClick={() => setOpen(true)}
-          onClick={(e) => {
-            e.preventDefault()
-          }}
-        >
-          {flexRender(
-            cell.column.columnDef.cell,
-            cell.getContext(),
-          )}
-        </div>
+      <PopoverTrigger
+        asChild
+        onDoubleClick={() => setOpen(true)}
+        onClick={(e) => {
+          e.preventDefault()
+        }}
+        onMouseLeave={() => !open && setCanInteract(false)}
+      >
+        <TableCellContent
+          cell={cell}
+          open={open}
+          setCanInteract={setCanInteract}
+        />
       </PopoverTrigger>
-      <TableCellContent
+      <TableCellPopoverContent
         ref={ref}
         value={cellValue}
-        meta={meta}
+        cell={cell}
+        onAnimationEnd={() => !open && setCanInteract(false)}
       />
     </Popover>
   )
