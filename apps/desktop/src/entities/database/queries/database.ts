@@ -22,7 +22,7 @@ export function useDatabases() {
       return
 
     subscription = liveQuery(() => indexedDb.databases.toArray()).subscribe(() => {
-      queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
+      queryClient.resetQueries({ queryKey: databasesQuery().queryKey })
     })
 
     return () => {
@@ -46,7 +46,6 @@ export function databaseQuery(id: string) {
 
       return c
     },
-    throwOnError: true,
   })
 }
 
@@ -60,7 +59,7 @@ export function useDatabase(id: string) {
       return
 
     subscriptions[id] = liveQuery(() => indexedDb.databases.get(id)).subscribe(() => {
-      queryClient.invalidateQueries({ queryKey: databaseQuery(id).queryKey })
+      queryClient.resetQueries({ queryKey: databaseQuery(id).queryKey })
     })
 
     return () => {

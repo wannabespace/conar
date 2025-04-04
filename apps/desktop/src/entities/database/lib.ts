@@ -56,18 +56,31 @@ export async function fetchDatabases() {
       ),
       indexedDb.databases.bulkUpdate(
         fetchedDatabases
-          .filter((d) => {
-            const existing = existingMap.get(d.id)
+          .filter(d => !!existingMap.get(d.id))
+          .map((d) => {
+            const existing = existingMap.get(d.id)!
+            const changes: Partial<Database> = {}
 
-            return existing && (
-              existing.name !== d.name
-              || existing.connectionString !== d.connectionString
-            )
-          })
-          .map(d => ({
-            key: d.id,
-            changes: d,
-          })),
+            if (existing.name !== d.name) {
+              changes.name = d.name
+            }
+
+            const existingUrl = new URL(existing.connectionString)
+            existingUrl.password = ''
+            const fetchedUrl = new URL(d.connectionString)
+            fetchedUrl.password = ''
+
+            if (existingUrl.toString() !== fetchedUrl.toString()) {
+              changes.connectionString = d.connectionString
+              changes.isPasswordExists = !!d.isPasswordExists
+              changes.isPasswordPopulated = !!fetchedUrl.password
+            }
+
+            return {
+              key: d.id,
+              changes,
+            }
+          }),
       ),
     ])
   }
