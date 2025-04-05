@@ -1,4 +1,3 @@
-import type { Database } from '~/lib/indexeddb'
 import { createContext, use } from 'react'
 
 export type { PageSize } from './footer'
@@ -18,8 +17,7 @@ export const columnsSizeMap = new Map<string, number>([
 ])
 
 export const TableContext = createContext<{
-  database?: Database
-  tableName?: string
+  updateRowCell?: (rowIndex: number, columnIndex: number, value: unknown) => void
 }>(null!)
 
 export function useTableContext() {

@@ -21,7 +21,7 @@ export function TableHeader<T extends Record<string, unknown>>({ headerGroups, v
               return (
                 <div
                   key={header.id}
-                  className="group absolute top-0 left-0 h-full"
+                  className="group/header absolute top-0 left-0 h-full"
                   style={{
                     transform: `translateX(${virtualColumn.start}px)`,
                     width: `${header.getSize()}px`,

@@ -17,10 +17,7 @@ export const databaseSchemas = {
   get(id: string) {
     const value = JSON.parse(localStorage.getItem(DATABASES_SCHEMAS_KEY) ?? '{}')
 
-    if (!value[id])
-      return 'public'
-
-    return value[id]
+    return value[id] ?? 'public'
   },
   set(id: string, schema: string) {
     const schemas = JSON.parse(localStorage.getItem(DATABASES_SCHEMAS_KEY) ?? '{}')
@@ -144,6 +141,11 @@ export async function updateDatabasePassword(id: string, password: string) {
 }
 
 export async function prefetchDatabaseCore(database: Database) {
+  if (database.isPasswordExists && !database.isPasswordPopulated) {
+    await queryClient.ensureQueryData(databaseQuery(database.id))
+    return
+  }
+
   await Promise.all([
     queryClient.ensureQueryData(databaseQuery(database.id)),
     queryClient.ensureQueryData(databaseSchemasQuery(database)),

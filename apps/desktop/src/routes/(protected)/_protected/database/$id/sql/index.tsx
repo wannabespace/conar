@@ -177,7 +177,10 @@ function RouteComponent() {
                 )}
                 {results.map((r, i) => (
                   <TabsContent className="h-full" key={i} value={`table-${i}`}>
-                    <ResultTable result={r.rows} columns={r.columns} />
+                    <ResultTable
+                      result={r.rows}
+                      columns={r.columns}
+                    />
                   </TabsContent>
                 ))}
               </Tabs>

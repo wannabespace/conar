@@ -1,5 +1,4 @@
 import type { TableCellMeta } from './cell'
-import type { Database } from '~/lib/indexeddb'
 import { ScrollArea, ScrollBar } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiKey2Line } from '@remixicon/react'
@@ -22,15 +21,13 @@ export function DataTable<T extends Record<string, unknown>>({
   columns,
   loading,
   className,
-  database,
-  tableName,
+  updateRowCell,
 }: {
   data: T[]
   columns: TableCellMeta[]
   loading?: boolean
   className?: string
-  database?: Database
-  tableName?: string
+  updateRowCell?: (rowIndex: number, columnIndex: number, value: unknown) => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -110,7 +107,7 @@ export function DataTable<T extends Record<string, unknown>>({
   const rowWidth = columnVirtualizer.getTotalSize()
   const virtualColumns = columnVirtualizer.getVirtualItems()
 
-  const context = useMemo(() => ({ tableName, database }), [tableName, database])
+  const context = useMemo(() => ({ updateRowCell }), [updateRowCell])
 
   return (
     <TableContext value={context}>

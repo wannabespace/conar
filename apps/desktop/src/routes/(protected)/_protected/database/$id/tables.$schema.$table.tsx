@@ -189,8 +189,6 @@ function RouteComponent() {
         <div className="flex-1 overflow-hidden pb-0">
           <DataTable
             key={table}
-            database={database}
-            tableName={table}
             loading={isPending}
             data={rows}
             columns={columns}

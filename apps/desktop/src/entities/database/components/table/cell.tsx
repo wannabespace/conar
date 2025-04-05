@@ -146,14 +146,11 @@ function TableCellPopoverContent<T extends Record<string, unknown>>({
 
 function TableCellContent<T extends Record<string, unknown>>({
   cell,
-  open,
-  setCanInteract,
   className,
   ...props
 }: {
   cell: Cell<T, unknown>
-  open: boolean
-  setCanInteract: (canInteract: boolean) => void
+  open?: boolean
 } & ComponentProps<'div'>) {
   const cellValue = cell.getValue()
 
@@ -161,15 +158,10 @@ function TableCellContent<T extends Record<string, unknown>>({
     <div
       data-mask
       className={cn(
-        'flex items-center h-full shrink-0 text-xs truncate p-2 group-first:pl-4 group-last:pr-4 font-mono cursor-default select-none',
-        open && 'bg-muted/50 ring-2 ring-inset ring-primary/50',
+        'h-full text-xs truncate p-2 group-first/cell:pl-4 group-last/cell:pr-4 font-mono cursor-default select-none',
         cellValue === null && 'text-muted-foreground',
         className,
       )}
-      style={{
-        width: `${cell.column.getSize()}px`,
-      }}
-      onMouseOver={() => setCanInteract(true)}
       {...props}
     >
       {flexRender(
@@ -190,8 +182,7 @@ export function TableCell<T extends Record<string, unknown>>({ cell }: { cell: C
     return (
       <TableCellContent
         cell={cell}
-        open={open}
-        setCanInteract={setCanInteract}
+        onMouseOver={() => setCanInteract(true)}
       />
     )
   }
@@ -209,16 +200,16 @@ export function TableCell<T extends Record<string, unknown>>({ cell }: { cell: C
     >
       <PopoverTrigger
         asChild
-        onDoubleClick={() => setOpen(true)}
         onClick={(e) => {
           e.preventDefault()
         }}
+        onDoubleClick={() => setOpen(true)}
         onMouseLeave={() => !open && setCanInteract(false)}
       >
         <TableCellContent
           cell={cell}
           open={open}
-          setCanInteract={setCanInteract}
+          className={cn(open && 'ring-2 ring-inset ring-primary/50 bg-muted/50')}
         />
       </PopoverTrigger>
       <TableCellPopoverContent

@@ -6,7 +6,7 @@ export function TableHead<T extends Record<string, unknown>>({ header }: { heade
     <div
       key={header.id}
       style={{ width: `${header.getSize()}px` }}
-      className="shrink-0 text-xs p-2 group-first:pl-4 group-last:pr-4"
+      className="shrink-0 text-xs p-2 group-first/header:pl-4 group-last/header:pr-4"
     >
       {header.isPlaceholder
         ? null

@@ -1,7 +1,8 @@
 import { Button } from '@connnect/ui/components/button'
+import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { Separator } from '@connnect/ui/components/separator'
-import { RiAddLine, RiDownloadLine, RiLoader4Line } from '@remixicon/react'
+import { RiAddLine, RiDownloadLine, RiLoader4Line, RiLoopLeftLine } from '@remixicon/react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useDatabases } from '~/entities/database'
 import { useUpdates } from '~/updates-provider'
@@ -13,7 +14,7 @@ export const Route = createFileRoute('/(protected)/_protected/')({
 })
 
 function DashboardPage() {
-  const { data: databases } = useDatabases()
+  const { isFetching, refetch } = useDatabases()
   const router = useRouter()
   const { version, status, checkForUpdates } = useUpdates()
 
@@ -37,12 +38,20 @@ function DashboardPage() {
           Connections
         </h2>
         <div className="flex items-center gap-2">
-          {!!databases?.length && (
-            <Button onClick={() => router.navigate({ to: '/create' })}>
-              <RiAddLine className="size-4" />
-              Add new
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="icon"
+            disabled={isFetching}
+            onClick={() => refetch()}
+          >
+            <LoadingContent loading={isFetching}>
+              <RiLoopLeftLine />
+            </LoadingContent>
+          </Button>
+          <Button onClick={() => router.navigate({ to: '/create' })}>
+            <RiAddLine className="size-4" />
+            Add new
+          </Button>
         </div>
       </div>
       <DatabasesList />
