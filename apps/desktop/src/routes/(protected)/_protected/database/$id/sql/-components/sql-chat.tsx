@@ -10,13 +10,12 @@ import { Input } from '@connnect/ui/components/input'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiQuestionAnswerLine, RiSendPlane2Line, RiStopLine } from '@remixicon/react'
+import { RiDeleteBinLine, RiQuestionAnswerLine, RiSendPlane2Line, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { Monaco } from '~/components/monaco'
+import { Markdown } from '~/components/markdown'
 import { getDatabaseContext, useDatabase } from '~/entities/database'
 import { UserAvatar } from '~/entities/user'
 
@@ -42,9 +41,7 @@ function UserMessage({ message }: { message: Message }) {
   return (
     <>
       <UserAvatar />
-      <div className="text-sm">
-        {message.content}
-      </div>
+      <Markdown content={message.content} />
     </>
   )
 }
@@ -57,31 +54,7 @@ function AssistantMessage({ message, onEdit }: { message: Message, onEdit: (mess
           <AvatarFallback className="text-xs">AI</AvatarFallback>
         </Avatar>
       </div>
-      <div className="overflow-hidden border rounded-md">
-        <Monaco
-          value={message.content}
-          language="sql"
-          onChange={() => {}}
-          options={{
-            readOnly: true,
-            lineNumbers: 'off',
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            folding: false,
-          }}
-          style={{ height: `${Math.min(message.content.split('\n').length * 20, 300)}px` }}
-        />
-      </div>
-      <div className="flex justify-end gap-2">
-        <Button size="xs" variant="outline" onClick={() => copy(message.content)}>
-          <RiFileCopyLine className="size-3.5 mr-1" />
-          Copy
-        </Button>
-        <Button size="xs" variant="outline" onClick={() => onEdit(message.content)}>
-          <RiEditLine className="size-3.5 mr-1" />
-          Edit
-        </Button>
-      </div>
+      <Markdown content={message.content} onEdit={onEdit} />
     </>
   )
 }
@@ -90,7 +63,7 @@ function ChatMessages({ messages, className, onEdit, ...props }: ComponentProps<
   return (
     <div className={cn('flex flex-col gap-4', className)} {...props}>
       {messages.map(message => (
-        <div key={message.id} className="flex flex-col gap-2 mb-4">
+        <div key={message.id} className="flex flex-col gap-2 mb-4 text-sm">
           {message.role === 'user'
             ? <UserMessage message={message} />
             : <AssistantMessage message={message} onEdit={onEdit} />}

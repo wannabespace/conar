@@ -1,4 +1,5 @@
 import { getOS } from '@connnect/shared/utils/os'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
@@ -11,6 +12,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
+import { DANGEROUS_SQL_KEYWORDS } from '~/constants'
 import { DataTable, useDatabase } from '~/entities/database'
 import { formatSql } from '~/lib/formatter'
 import { SqlChat } from './-components/sql-chat'
@@ -59,6 +61,27 @@ const queryStorage = {
   },
 }
 
+function DangerousSqlAlert({ open, setOpen, confirm }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void }) {
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Potentially Dangerous SQL Query</AlertDialogTitle>
+          <AlertDialogDescription>
+            Your query contains potentially dangerous SQL keywords that could modify or delete data.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={confirm}>
+            Run Anyway
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
 function RouteComponent() {
   const { id } = Route.useParams()
   const [query, setQuery] = useState(queryStorage.get(id))
@@ -68,7 +91,7 @@ function RouteComponent() {
     queryStorage.set(id, query)
   }, [id, query])
 
-  const { mutate: sendQuery, data: results, isPending } = useMutation({
+  const { mutate, data: results, isPending } = useMutation({
     mutationFn: () => window.electron.databases.query({
       type: database.type,
       connectionString: database.connectionString,
@@ -81,6 +104,17 @@ function RouteComponent() {
       toast.error(error.message)
     },
   })
+
+  const [isAlertVisible, setIsAlertVisible] = useState(false)
+
+  function sendQuery() {
+    if (DANGEROUS_SQL_KEYWORDS.some(keyword => query.toLowerCase().includes(keyword.toLowerCase()))) {
+      setIsAlertVisible(true)
+      return
+    }
+
+    mutate()
+  }
 
   function format() {
     const formatted = formatSql(query, database.type)
@@ -104,6 +138,11 @@ function RouteComponent() {
       >
         <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
           <ResizablePanel minSize={20} className="relative">
+            <DangerousSqlAlert
+              open={isAlertVisible}
+              setOpen={setIsAlertVisible}
+              confirm={() => mutate()}
+            />
             <CardHeader className="dark:bg-input/30 py-3">
               <CardTitle>
                 SQL Runner

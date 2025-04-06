@@ -34,21 +34,19 @@ function generateStream({
         2. Use proper table and column names exactly as provided in the context
         3. Use 2 spaces for indentation and consistent formatting
         4. Consider performance implications for complex queries
-        5. The SQL answer will be executed directly in a production database editor
+        5. The SQL code will be executed directly in a production database editor
         6. Generate SQL query only for the provided schemas, tables, columns and enums
+        7. Answer in markdown and paste the SQL code in a code block.
+        8. Say less, do not add useless information
+        9. You can use SQL comments for additional information, examples:
 
+        -- This is a comment
+        SELECT * FROM users WHERE id = 1;
 
         ----------------
         Database Context:
         ${JSON.stringify(context)}
         ----------------
-
-        The most important thing:
-        Answer ONLY with executable SQL code with no additional text or markdown formatting.
-        You can use SQL comments for additional information, examples:
-
-        -- This is a comment
-        SELECT * FROM users WHERE id = 1;
       `.trim(),
       },
       ...messages,

@@ -5,7 +5,7 @@ import { Separator } from '@connnect/ui/components/separator'
 import { RiAddLine, RiDownloadLine, RiLoader4Line, RiLoopLeftLine } from '@remixicon/react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { useDatabases } from '~/entities/database'
+import { fetchDatabases, useDatabases } from '~/entities/database'
 import { useUpdates } from '~/updates-provider'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
@@ -47,7 +47,7 @@ function DashboardPage() {
             variant="outline"
             size="icon"
             disabled={isFetching}
-            onClick={() => refetch()}
+            onClick={() => fetchDatabases()}
           >
             <LoadingContent loading={isFetching}>
               <RiLoopLeftLine />
