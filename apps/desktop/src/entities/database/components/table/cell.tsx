@@ -2,6 +2,7 @@ import type { UseMutateFunction } from '@tanstack/react-query'
 import type { Cell, CellContext, Table } from '@tanstack/react-table'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { TableMeta } from './table'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
@@ -181,15 +182,34 @@ function TableCellMonaco({
           {canEdit && (
             <>
               {canSetNull && (
-                <Button
-                  size="xs"
-                  variant="secondary"
-                  onClick={setNull}
-                >
-                  Set
-                  {' '}
-                  <span className="font-mono">null</span>
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="xs"
+                      variant="secondary"
+                    >
+                      Set
+                      {' '}
+                      <span className="font-mono">null</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Set value to null?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will set the cell value to
+                        {' '}
+                        <code className="font-mono">null</code>
+                        .
+                        This action can be undone by editing the cell again.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={setNull}>Set to null</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
               <Button
                 size="xs"
