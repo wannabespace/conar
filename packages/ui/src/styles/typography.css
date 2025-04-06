@@ -1,0 +1,49 @@
+@layer base {
+  .typography:not(.typography-disabled) h1 {
+    @apply scroll-m-20 text-xl font-extrabold tracking-tight;
+  }
+
+  .typography:not(.typography-disabled) h2 {
+    @apply scroll-m-20 text-lg font-semibold tracking-tight;
+  }
+
+  .typography:not(.typography-disabled) h3 {
+    @apply scroll-m-20 text-base font-semibold tracking-tight;
+  }
+
+  .typography:not(.typography-disabled) p {
+    @apply leading-[1.7] [&:not(:first-child)]:mt-4;
+  }
+
+  .typography:not(.typography-disabled) blockquote {
+    @apply mt-6 border-l-2 border-border pl-6 italic;
+  }
+
+  .typography:not(.typography-disabled) ul {
+    @apply my-4 ml-5 list-disc [&>li]:mt-2;
+  }
+
+  .typography:not(.typography-disabled) ol {
+    @apply my-4 ml-5 list-decimal [&>li]:mt-2;
+  }
+
+  .typography:not(.typography-disabled) code {
+    @apply relative rounded bg-muted px-[0.2rem] py-[0.1rem] font-mono [font-size:90%] font-semibold;
+  }
+
+  .typography:not(.typography-disabled) pre {
+    @apply mb-4 mt-6 overflow-x-auto rounded-lg border bg-card p-4;
+  }
+
+  .typography:not(.typography-disabled) pre > code {
+    @apply relative block bg-transparent p-0 [font-size:90%] font-normal;
+  }
+
+  .typography:not(.typography-disabled) a {
+    @apply font-medium underline underline-offset-4;
+  }
+
+  .typography:not(.typography-disabled) small {
+    @apply [font-size:90%] font-medium leading-none;
+  }
+}
