@@ -4,6 +4,7 @@ import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { Separator } from '@connnect/ui/components/separator'
 import { RiAddLine, RiDownloadLine, RiLoader4Line, RiLoopLeftLine } from '@remixicon/react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { useDatabases } from '~/entities/database'
 import { useUpdates } from '~/updates-provider'
 import { DatabasesList } from './-components/databases-list'
@@ -17,6 +18,10 @@ function DashboardPage() {
   const { isFetching, refetch } = useDatabases()
   const router = useRouter()
   const { version, status, checkForUpdates } = useUpdates()
+
+  useEffect(() => {
+    refetch()
+  }, [])
 
   return (
     <div className="flex flex-col w-full mx-auto max-w-2xl py-10">

@@ -9,7 +9,7 @@ import { useAsyncEffect } from '@connnect/ui/hooks/use-async-effect'
 import { RiLoopLeftLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
-import { useDeferredValue, useState } from 'react'
+import { useDeferredValue, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { databaseSchemas, databaseSchemasQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
@@ -33,7 +33,11 @@ function RouteComponent() {
 
   useAsyncEffect(async () => {
     databaseSchemas.set(id, schema)
-  }, [id, schema])
+  }, [schema])
+
+  useEffect(() => {
+    setSchema(databaseSchemas.get(id))
+  }, [id])
 
   const { mutate: refreshTables, isPending: isRefreshingTables } = useMutation({
     mutationFn: async () => {

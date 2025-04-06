@@ -1,6 +1,6 @@
 import type { HeaderGroup } from '@tanstack/react-table'
 import type { VirtualItem } from '@tanstack/react-virtual'
-import { TableHead } from './head'
+import { flexRender } from '@tanstack/react-table'
 
 export function TableHeader<T extends Record<string, unknown>>({ headerGroups, virtualColumns, rowWidth }: {
   headerGroups: HeaderGroup<T>[]
@@ -27,7 +27,10 @@ export function TableHeader<T extends Record<string, unknown>>({ headerGroups, v
                     width: `${header.getSize()}px`,
                   }}
                 >
-                  <TableHead header={header} />
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
                 </div>
               )
             })}
