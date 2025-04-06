@@ -1,16 +1,16 @@
-import type { Cell } from '@tanstack/react-table'
-import type { editor } from 'monaco-editor'
-import type { ComponentProps, ComponentRef, RefObject } from 'react'
+import type { UseMutateFunction } from '@tanstack/react-query'
+import type { Cell, CellContext, Table } from '@tanstack/react-table'
+import type { ComponentProps, Dispatch, SetStateAction } from 'react'
+import type { TableMeta } from './table'
 import { Button } from '@connnect/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
-import {
-  flexRender,
-} from '@tanstack/react-table'
-import { useEffect, useRef, useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import { createContext, use, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 
 export interface TableCellMeta {
@@ -32,52 +32,123 @@ function getDisplayValue(value: unknown) {
   return String(value ?? '')
 }
 
-function TableCellPopoverContent<T extends Record<string, unknown>>({
-  ref,
-  value,
+const TableCellContext = createContext<{
+  value: string
+  setValue: Dispatch<SetStateAction<string>>
+  cell: Cell<Record<string, unknown>, unknown>
+  table: Table<Record<string, unknown>>
+  isJson: boolean
+  initialValue: unknown
+  displayValue: string
+  updateCell: UseMutateFunction<void, Error, string | null>
+}>(null!)
+
+function TableCellProvider({
   cell,
-  onAnimationEnd,
+  table,
+  onSaveError,
+  onSaveSuccess,
+  children,
 }: {
-  ref: RefObject<{ setIsBig: (isBig: boolean) => void } | null>
-  value: unknown
-  cell: Cell<T, unknown>
-  onAnimationEnd: () => void
+  cell: Cell<Record<string, unknown>, unknown>
+  table: Table<Record<string, unknown>>
+  children: React.ReactNode
+  onSaveError: (error: Error) => void
+  onSaveSuccess: () => void
 }) {
-  const [isBig, setIsBig] = useState(false)
-  const meta = cell.column.columnDef.meta as TableCellMeta
-  const isJson = !!meta.type?.includes('json')
-  const displayValue = isJson ? JSON.stringify(value, null, 2) : getDisplayValue(value)
-  const [currentValue, setCurrentValue] = useState(value === null ? '' : displayValue)
-  const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
+  const initialValue = cell.getValue()
+  const isJson = !!(cell.column.columnDef.meta as TableCellMeta).type?.includes('json')
+  const displayValue = isJson ? JSON.stringify(initialValue, null, 2) : getDisplayValue(initialValue)
+  const [value, setValue] = useState<string>(initialValue === null ? '' : displayValue)
 
   useEffect(() => {
-    ref.current = {
-      setIsBig,
-    }
-  }, [isBig])
+    setValue(initialValue === null ? '' : displayValue)
+  }, [initialValue])
+
+  const { mutate: updateCell } = useMutation({
+    mutationFn: async (value: string | null) => {
+      await (table.options.meta as TableMeta).updateCell?.(cell.row.index, cell.column.getIndex(), value)
+    },
+    onSuccess: onSaveSuccess,
+    onError: onSaveError,
+  })
+
+  const context = useMemo(() => ({
+    value,
+    setValue,
+    cell,
+    table,
+    initialValue,
+    displayValue,
+    isJson,
+    updateCell,
+  }), [
+    value,
+    setValue,
+    cell,
+    table,
+    initialValue,
+    displayValue,
+    isJson,
+    updateCell,
+  ])
+
+  return <TableCellContext value={context}>{children}</TableCellContext>
+}
+
+function TableCellMonaco({
+  isBig,
+  setIsBig,
+  onClose,
+}: {
+  isBig: boolean
+  setIsBig: Dispatch<SetStateAction<boolean>>
+  onClose: () => void
+}) {
+  const { value, setValue, cell, table, initialValue, displayValue, isJson, updateCell } = use(TableCellContext)
+
+  const tableMeta = table.options.meta as TableMeta
+  const cellMeta = cell.column.columnDef.meta as TableCellMeta
+
+  const [isTouched, setIsTouched] = useState(false)
+
+  const canEdit = !!cellMeta.isEditable && !!tableMeta.updateCell
+  const canSetNull = !!cellMeta.isNullable && initialValue !== null
+  const canSave = isTouched && value !== displayValue
+
+  const setNull = () => {
+    updateCell(null)
+    onClose()
+  }
+
+  const save = (value: string) => {
+    updateCell(value)
+    onClose()
+  }
 
   return (
-    <PopoverContent
-      className={cn('p-0 w-80 overflow-auto [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
-      onAnimationEnd={onAnimationEnd}
-    >
+    <>
       <Monaco
-        ref={monacoRef}
-        value={currentValue}
+        value={value}
         language={isJson ? 'json' : undefined}
         className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(40vh,30rem)]')}
-        onChange={setCurrentValue}
+        onChange={(value) => {
+          setValue(value)
+
+          if (!isTouched)
+            setIsTouched(true)
+        }}
         options={{
-          lineNumbers: 'off',
-          readOnly: true,
-          // readOnly: !meta.isEditable,
+          lineNumbers: isBig ? 'on' : 'off',
+          readOnly: !canEdit,
           scrollBeyondLastLine: false,
-          folding: false,
+          folding: isBig,
           scrollbar: {
             horizontalScrollbarSize: 5,
             verticalScrollbarSize: 5,
           },
         }}
+        onEnter={save}
       />
       <div className="flex justify-between items-center gap-2 p-2 border-t">
         <div className="flex items-center gap-2">
@@ -106,118 +177,159 @@ function TableCellPopoverContent<T extends Record<string, unknown>>({
             </Tooltip>
           </TooltipProvider>
         </div>
-        {/* <div className="flex gap-2">
-            {meta.isEditable && (
-              <>
-                {currentValue !== displayValue && (
-                  <Button
-                    size="xs"
-                    variant="secondary"
-                    onClick={resetValue}
-                  >
-                    Reset
-                  </Button>
-                )}
-                {meta.isNullable && currentValue !== 'null' && (
-                  <Button
-                    size="xs"
-                    variant="secondary"
-                    onClick={setNull}
-                  >
-                    Set
-                    {' '}
-                    <span className="font-mono">null</span>
-                  </Button>
-                )}
+        <div className="flex gap-2">
+          {canEdit && (
+            <>
+              {canSetNull && (
                 <Button
                   size="xs"
-                  disabled={currentValue === displayValue}
-                  onClick={save}
+                  variant="secondary"
+                  onClick={setNull}
                 >
-                  Save
+                  Set
+                  {' '}
+                  <span className="font-mono">null</span>
                 </Button>
-              </>
-            )}
-          </div> */}
+              )}
+              <Button
+                size="xs"
+                disabled={!canSave}
+                onClick={() => save(value)}
+              >
+                Save
+              </Button>
+            </>
+          )}
+        </div>
       </div>
-    </PopoverContent>
+    </>
   )
 }
 
-function TableCellContent<T extends Record<string, unknown>>({
-  cell,
+export function TableCell({ cell, getValue, table }: CellContext<Record<string, unknown>, unknown>) {
+  const [isOpen, setIsOpen] = useState(false)
+  const cellValue = getValue()
+  const [canInteract, setCanInteract] = useState(false)
+  const [isBig, setIsBig] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
+
+  useEffect(() => {
+    if (status === 'success' || status === 'error') {
+      const timeout = setTimeout(
+        () => setStatus('idle'),
+        status === 'error' ? 3000 : 1000,
+      )
+
+      return () => clearTimeout(timeout)
+    }
+  }, [status])
+
+  function onSaveError(error: Error) {
+    setCanInteract(true)
+    setIsOpen(true)
+    setStatus('error')
+    toast.error(`Failed to update cell ${cell.column.id}`, {
+      description: error.message,
+      duration: 3000,
+    })
+  }
+
+  function onSaveSuccess() {
+    setStatus('success')
+  }
+
+  if (!canInteract) {
+    return (
+      <TableCellContent
+        value={cellValue}
+        onMouseOver={() => setCanInteract(true)}
+        className={cn(
+          status === 'success' && 'ring-success/50 bg-success/10',
+        )}
+      />
+    )
+  }
+
+  return (
+    <TableCellProvider
+      cell={cell}
+      table={table}
+      onSaveError={onSaveError}
+      onSaveSuccess={onSaveSuccess}
+    >
+      <Popover
+        open={isOpen}
+        onOpenChange={(isOpen) => {
+          setIsOpen(isOpen)
+
+          if (!isOpen) {
+            setIsBig(false)
+          }
+        }}
+      >
+        <PopoverTrigger
+          asChild
+          onClick={e => e.preventDefault()}
+          onDoubleClick={() => setIsOpen(true)}
+          onMouseLeave={() => !isOpen && setCanInteract(false)}
+        >
+          <TableCellContent
+            value={cellValue}
+            className={cn(
+              isOpen && 'ring-primary/50 bg-muted/50',
+              status === 'error' && 'ring-destructive/50 bg-destructive/20',
+              status === 'success' && 'ring-success/50 bg-success/10',
+              status === 'saving' && 'ring-primary/50 bg-primary/20 animate-pulse',
+            )}
+          />
+        </PopoverTrigger>
+        <PopoverContent
+          className={cn('p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
+          onAnimationEnd={() => !isOpen && setCanInteract(false)}
+        >
+          <TableCellMonaco
+            isBig={isBig}
+            setIsBig={setIsBig}
+            onClose={() => setIsOpen(false)}
+          />
+        </PopoverContent>
+      </Popover>
+    </TableCellProvider>
+  )
+}
+
+function TableCellContent({
+  value,
   className,
   ...props
 }: {
-  cell: Cell<T, unknown>
-  open?: boolean
+  value: unknown
+  className?: string
 } & ComponentProps<'div'>) {
-  const cellValue = cell.getValue()
+  const displayValue = (() => {
+    if (value === null)
+      return 'null'
+
+    if (value === '')
+      return 'empty'
+
+    return getDisplayValue(value)
+  })()
 
   return (
     <div
       data-mask
       className={cn(
         'h-full text-xs truncate p-2 group-first/cell:pl-4 group-last/cell:pr-4 font-mono cursor-default select-none',
-        cellValue === null && 'text-muted-foreground',
+        'transition-all duration-100',
+        'ring-2 ring-inset ring-transparent',
+        value === null && 'text-muted-foreground',
+        value === '' && 'text-muted-foreground',
         className,
       )}
       {...props}
     >
-      {flexRender(
-        cell.column.columnDef.cell,
-        cell.getContext(),
-      )}
+      {displayValue}
     </div>
-  )
-}
-
-export function TableCell<T extends Record<string, unknown>>({ cell }: { cell: Cell<T, unknown> }) {
-  const [open, setOpen] = useState(false)
-  const cellValue = cell.getValue()
-  const [canInteract, setCanInteract] = useState(false)
-  const ref = useRef<ComponentRef<typeof TableCellPopoverContent>>(null)
-
-  if (!canInteract) {
-    return (
-      <TableCellContent
-        cell={cell}
-        onMouseOver={() => setCanInteract(true)}
-      />
-    )
-  }
-
-  return (
-    <Popover
-      open={open}
-      onOpenChange={(isOpen) => {
-        setOpen(isOpen)
-
-        if (!isOpen) {
-          ref.current?.setIsBig(false)
-        }
-      }}
-    >
-      <PopoverTrigger
-        asChild
-        onClick={(e) => {
-          e.preventDefault()
-        }}
-        onDoubleClick={() => setOpen(true)}
-        onMouseLeave={() => !open && setCanInteract(false)}
-      >
-        <TableCellContent
-          cell={cell}
-          open={open}
-          className={cn(open && 'ring-2 ring-inset ring-primary/50 bg-muted/50')}
-        />
-      </PopoverTrigger>
-      <TableCellPopoverContent
-        ref={ref}
-        value={cellValue}
-        cell={cell}
-        onAnimationEnd={() => !open && setCanInteract(false)}
-      />
-    </Popover>
   )
 }

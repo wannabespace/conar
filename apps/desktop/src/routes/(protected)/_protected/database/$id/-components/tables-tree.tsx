@@ -6,7 +6,7 @@ import { RiTableLine } from '@remixicon/react'
 import { Link, useParams } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef } from 'react'
-import { databaseColumnsQuery, databaseRowsQuery, useDatabaseTables } from '~/entities/database'
+import { databaseColumnsQuery, databaseRowsQuery, DEFAULT_ROW_HEIGHT, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 
 export function TablesTree({ database, schema, className, search }: { database: Database, schema: string, className?: string, search?: string }) {
@@ -33,7 +33,7 @@ export function TablesTree({ database, schema, className, search }: { database: 
   const virtualizer = useVirtualizer({
     count: filteredTables.length,
     getScrollElement: () => ref.current,
-    estimateSize: () => 35,
+    estimateSize: () => DEFAULT_ROW_HEIGHT,
     scrollMargin: ref.current?.offsetTop ?? 0,
     overscan: 2,
   })

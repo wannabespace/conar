@@ -167,7 +167,7 @@ function StepSave({ name, connectionString, setName, onRandomName, saveInCloud, 
   )
 }
 
-function StepForm() {
+function RouteComponent() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -234,125 +234,6 @@ function StepForm() {
   const isConnectionStringValid = useStore(form.store, state => isValidConnectionString(state.values.connectionString))
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        form.handleSubmit()
-      }}
-      className="flex py-10 flex-col w-full max-w-2xl mx-auto"
-    >
-      <div className="flex items-center gap-2 w-full mb-6">
-        <Button
-          type="button"
-          variant="link"
-          className="px-0! text-muted-foreground"
-          onClick={() => router.history.back()}
-        >
-          <RiArrowLeftSLine className="size-3" />
-          Back
-        </Button>
-      </div>
-      <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-        Create a connection
-      </h1>
-      <p className="leading-7 [&:not(:first-child)]:mt-2 mb-10 text-muted-foreground">
-        Press
-        {' '}
-        <CommandShortcut>⌘</CommandShortcut>
-        {' '}
-        +
-        {' '}
-        <CommandShortcut>V</CommandShortcut>
-        {' '}
-        to automatically fill the form if you've copied a connection string.
-      </p>
-      <Stepper
-        active={step}
-        onChange={setStep}
-      >
-        <StepperList>
-          <StepperTrigger value="type" number={1}>
-            Type
-          </StepperTrigger>
-          <StepperTrigger value="credentials" number={2}>
-            Credentials
-          </StepperTrigger>
-          <StepperTrigger value="save" number={3}>
-            Save
-          </StepperTrigger>
-        </StepperList>
-        <StepperContent value="type">
-          <StepType type={type} setType={type => form.setFieldValue('type', type)} />
-          <div className="mt-auto flex justify-end gap-4 pt-4">
-            <Button
-              disabled={!type}
-              onClick={() => setStep('credentials')}
-            >
-              Next
-            </Button>
-          </div>
-        </StepperContent>
-        <StepperContent value="credentials">
-          <StepCredentials
-            ref={inputRef}
-            type={type}
-            connectionString={connectionString}
-            setConnectionString={connectionString => form.setFieldValue('connectionString', connectionString)}
-          />
-          <div className="flex gap-2 justify-between mt-auto pt-4">
-            <Button
-              variant="outline"
-              disabled={isConnecting || isCreating || !isConnectionStringValid}
-              onClick={() => testConnection(form.state.values)}
-            >
-              <LoadingContent loading={isConnecting}>
-                Test connection
-              </LoadingContent>
-            </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep('type')}>
-                Back
-              </Button>
-              <Button
-                disabled={!isConnectionStringValid}
-                onClick={() => setStep('save')}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </StepperContent>
-        <StepperContent value="save">
-          <StepSave
-            name={name}
-            connectionString={connectionString}
-            setName={name => form.setFieldValue('name', name)}
-            onRandomName={() => form.setFieldValue('name', generateRandomName())}
-            saveInCloud={saveInCloud}
-            setSaveInCloud={saveInCloud => form.setFieldValue('saveInCloud', saveInCloud)}
-          />
-          <div className="flex gap-2 justify-end mt-auto pt-4">
-            <Button variant="outline" onClick={() => setStep('credentials')}>
-              Back
-            </Button>
-            <Button
-              type="submit"
-              disabled={isCreating || isConnecting || !form.state.isValid}
-            >
-              <LoadingContent loading={isCreating}>
-                <AppLogo className="w-4" />
-                Save connection
-              </LoadingContent>
-            </Button>
-          </div>
-        </StepperContent>
-      </Stepper>
-    </form>
-  )
-}
-
-function RouteComponent() {
-  return (
     <div className="w-full">
       <DotPattern
         width={20}
@@ -362,7 +243,120 @@ function RouteComponent() {
         cr={1}
         className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
-      <StepForm />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          form.handleSubmit()
+        }}
+        className="flex py-10 flex-col w-full max-w-2xl mx-auto"
+      >
+        <div className="flex items-center gap-2 w-full mb-6">
+          <Button
+            type="button"
+            variant="link"
+            className="px-0! text-muted-foreground"
+            onClick={() => router.history.back()}
+          >
+            <RiArrowLeftSLine className="size-3" />
+            Back
+          </Button>
+        </div>
+        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+          Create a connection
+        </h1>
+        <p className="leading-7 [&:not(:first-child)]:mt-2 mb-10 text-muted-foreground">
+          Press
+          {' '}
+          <CommandShortcut>⌘</CommandShortcut>
+          {' '}
+          +
+          {' '}
+          <CommandShortcut>V</CommandShortcut>
+          {' '}
+          to automatically fill the form if you've copied a connection string.
+        </p>
+        <Stepper
+          active={step}
+          onChange={setStep}
+        >
+          <StepperList>
+            <StepperTrigger value="type" number={1}>
+              Type
+            </StepperTrigger>
+            <StepperTrigger value="credentials" number={2}>
+              Credentials
+            </StepperTrigger>
+            <StepperTrigger value="save" number={3}>
+              Save
+            </StepperTrigger>
+          </StepperList>
+          <StepperContent value="type">
+            <StepType type={type} setType={type => form.setFieldValue('type', type)} />
+            <div className="mt-auto flex justify-end gap-4 pt-4">
+              <Button
+                disabled={!type}
+                onClick={() => setStep('credentials')}
+              >
+                Next
+              </Button>
+            </div>
+          </StepperContent>
+          <StepperContent value="credentials">
+            <StepCredentials
+              ref={inputRef}
+              type={type}
+              connectionString={connectionString}
+              setConnectionString={connectionString => form.setFieldValue('connectionString', connectionString)}
+            />
+            <div className="flex gap-2 justify-between mt-auto pt-4">
+              <Button
+                variant="outline"
+                disabled={isConnecting || isCreating || !isConnectionStringValid}
+                onClick={() => testConnection(form.state.values)}
+              >
+                <LoadingContent loading={isConnecting}>
+                  Test connection
+                </LoadingContent>
+              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setStep('type')}>
+                  Back
+                </Button>
+                <Button
+                  disabled={!isConnectionStringValid}
+                  onClick={() => setStep('save')}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </StepperContent>
+          <StepperContent value="save">
+            <StepSave
+              name={name}
+              connectionString={connectionString}
+              setName={name => form.setFieldValue('name', name)}
+              onRandomName={() => form.setFieldValue('name', generateRandomName())}
+              saveInCloud={saveInCloud}
+              setSaveInCloud={saveInCloud => form.setFieldValue('saveInCloud', saveInCloud)}
+            />
+            <div className="flex gap-2 justify-end mt-auto pt-4">
+              <Button variant="outline" onClick={() => setStep('credentials')}>
+                Back
+              </Button>
+              <Button
+                type="submit"
+                disabled={isCreating || isConnecting || !form.state.isValid}
+              >
+                <LoadingContent loading={isCreating}>
+                  <AppLogo className="w-4" />
+                  Save connection
+                </LoadingContent>
+              </Button>
+            </div>
+          </StepperContent>
+        </Stepper>
+      </form>
     </div>
   )
 }

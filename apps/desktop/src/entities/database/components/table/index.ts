@@ -1,10 +1,9 @@
-import { createContext, use } from 'react'
-
+export { createCellUpdater } from './cells-updater'
 export type { PageSize } from './footer'
 export { DataTableFooter } from './footer'
 export { DataTable } from './table'
 
-export const DEFAULT_ROW_HEIGHT = 35
+export const DEFAULT_ROW_HEIGHT = 32
 export const DEFAULT_COLUMN_WIDTH = 220
 
 export const columnsSizeMap = new Map<string, number>([
@@ -15,14 +14,3 @@ export const columnsSizeMap = new Map<string, number>([
   ['float', 150],
   ['uuid', 290],
 ])
-
-export const TableContext = createContext<{
-  updateRowCell?: (rowIndex: number, columnIndex: number, value: unknown) => void
-}>(null!)
-
-export function useTableContext() {
-  const context = use(TableContext)
-  if (!context)
-    throw new Error('useTableContext must be used within a TableContext')
-  return context
-}

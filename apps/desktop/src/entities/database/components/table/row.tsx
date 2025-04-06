@@ -1,6 +1,6 @@
 import type { Row } from '@tanstack/react-table'
 import type { VirtualItem } from '@tanstack/react-virtual'
-import { TableCell } from './cell'
+import { flexRender } from '@tanstack/react-table'
 
 export function TableRow<T extends Record<string, unknown>>({ row, virtualRow, virtualColumns, rowWidth }: {
   row: Row<T>
@@ -28,7 +28,10 @@ export function TableRow<T extends Record<string, unknown>>({ row, virtualRow, v
               width: `${cell.column.getSize()}px`,
             }}
           >
-            <TableCell cell={cell} />
+            {flexRender(
+              cell.column.columnDef.cell,
+              cell.getContext(),
+            )}
           </div>
         )
       })}

@@ -19,7 +19,6 @@ export function Monaco({
   value,
   language,
   onChange,
-  ref,
   options,
   onEnter,
   ...props
@@ -27,9 +26,8 @@ export function Monaco({
   value: string
   language?: string
   onChange: (value: string) => void
-  ref?: React.RefObject<monaco.editor.IStandaloneCodeEditor | null>
   options?: monaco.editor.IStandaloneEditorConstructionOptions
-  onEnter?: () => void
+  onEnter?: (value: string) => void
 }) {
   const elementRef = useRef<HTMLDivElement>(null)
   const { resolvedTheme } = useTheme()
@@ -58,14 +56,11 @@ export function Monaco({
         id: 'connnect.execute-on-enter',
         label: 'Execute on Enter',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-        run: () => {
-          onEnter?.()
+        run: (e) => {
+          onEnter(e.getValue())
         },
       })
     }
-
-    if (ref)
-      ref.current = monacoInstance.current
 
     monacoInstance.current.onDidChangeModelContent(() => {
       const value = monacoInstance.current?.getValue()
@@ -76,11 +71,18 @@ export function Monaco({
     return () => {
       monacoInstance.current?.dispose()
     }
-  }, [elementRef, language, options])
+  }, [elementRef, language])
 
   useEffect(() => {
-    if (monacoInstance.current?.getValue() !== value)
-      monacoInstance.current?.setValue(value)
+    if (!monacoInstance.current || !options)
+      return
+
+    monacoInstance.current.updateOptions(options)
+  }, [options])
+
+  useEffect(() => {
+    if (monacoInstance.current && monacoInstance.current.getValue() !== value)
+      monacoInstance.current.setValue(value)
   }, [value])
 
   return <div data-mask ref={elementRef} {...props} />
