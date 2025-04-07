@@ -38,6 +38,7 @@ const router = createRouter({
   history: createHashHistory(),
   routeTree,
   defaultPreload: 'intent',
+  defaultPendingMinMs: 0,
 })
 
 declare module '@tanstack/react-router' {
