@@ -7,7 +7,7 @@
     "output": "release/${version}"
   },
   "publish": {
-    "private": true,
+    "private": false,
     "provider": "github",
     "owner": "wannabespace",
     "repo": "connnect"
