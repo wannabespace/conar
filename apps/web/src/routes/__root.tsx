@@ -1,11 +1,7 @@
 import { Toaster } from '@connnect/ui/components/sonner'
 import appCss from '@connnect/ui/globals.css?url'
-import {
-  createRootRoute,
-  HeadContent,
-  Outlet,
-  Scripts,
-} from '@tanstack/react-router'
+import { ThemeProvider } from '@connnect/ui/theme-provider'
+import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { seo } from '~/utils/seo'
 
@@ -52,12 +48,14 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <html>
+    <html suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        <Outlet />
+        <ThemeProvider>
+          <Outlet />
+        </ThemeProvider>
         <Toaster />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />

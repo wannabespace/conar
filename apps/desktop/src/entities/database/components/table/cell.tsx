@@ -75,7 +75,7 @@ function TableCellProvider({
       await (table.options.meta as TableMeta).updateCell?.(
         cell.row.index,
         cell.column.getIndex(),
-        typeof _value === 'string' ? _value.trim() : _value,
+        _value,
       )
     },
     onSuccess: onSaveSuccess,
@@ -214,7 +214,7 @@ function TableCellMonaco({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={setNull}>Set to null</AlertDialogAction>
+                      <AlertDialogAction onClick={() => setNull()}>Set to null</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>

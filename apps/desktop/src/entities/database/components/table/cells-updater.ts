@@ -24,12 +24,14 @@ export function createCellUpdater() {
 
         setValue(rowIndex, columnIndex, value)
         await saveValue(rowIndex, columnIndex, value)
-        delete cachedValues[key]
       }
       catch (error) {
         setValue(rowIndex, columnIndex, cachedValues[key])
 
         throw error
+      }
+      finally {
+        delete cachedValues[key]
       }
     }
   }

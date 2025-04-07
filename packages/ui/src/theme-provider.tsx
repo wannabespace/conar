@@ -1,4 +1,5 @@
-import { createContext, use, useEffect, useState } from 'react'
+import { ScriptOnce } from '@tanstack/react-router'
+import { createContext, use, useEffect, useMemo, useState } from 'react'
 
 export type ResolvedTheme = 'dark' | 'light'
 export type Theme = ResolvedTheme | 'system'
@@ -28,8 +29,9 @@ export function ThemeProvider({
   defaultTheme = 'system',
   storageKey = 'connnect.theme',
 }: ThemeProviderProps) {
+  const isBrowser = typeof window !== 'undefined'
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
+    () => (isBrowser ? (localStorage.getItem(storageKey) as Theme) : defaultTheme) || defaultTheme,
   )
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light')
 
@@ -57,17 +59,22 @@ export function ThemeProvider({
     return () => mediaQuery.removeEventListener('change', updateTheme)
   }, [theme])
 
-  const value = {
+  const value = useMemo(() => ({
     theme,
     resolvedTheme,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme)
       setTheme(theme)
     },
-  }
+  }), [theme, resolvedTheme])
 
   return (
     <ThemeProviderContext value={value}>
+      <ScriptOnce>
+        {`if (window.matchMedia('(prefers-color-scheme: dark)').matches && '${theme}' === 'system') {
+            document.documentElement.classList.add('dark')
+          }`}
+      </ScriptOnce>
       {children}
     </ThemeProviderContext>
   )

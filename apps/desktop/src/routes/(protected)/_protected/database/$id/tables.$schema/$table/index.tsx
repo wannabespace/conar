@@ -20,7 +20,7 @@ export const Route = createFileRoute(
   head: ({ loaderData, params }) => ({
     meta: [
       {
-        title: title(params.table, params.schema, loaderData.database.name),
+        title: title(`${params.schema}.${params.table}`, loaderData.database.name),
       },
     ],
   }),

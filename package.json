@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
-    "dev": "turbo run dev",
+    "dev": "pnpm --parallel dev",
     "build:desktop": "turbo run @connnect/desktop#build",
     "build:web": "turbo run @connnect/web#build",
     "start:web": "turbo run @connnect/web#start",
