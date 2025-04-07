@@ -1,8 +1,9 @@
+import { title } from '@connnect/shared/utils/title'
 import { Toaster } from '@connnect/ui/components/sonner'
 import { ThemeProvider } from '@connnect/ui/theme-provider'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { AnimatePresence } from 'motion/react'
 import { AuthObserver } from '~/auth-observer'
@@ -14,28 +15,38 @@ import { UpdatesProvider } from '~/updates-provider'
 export const Route = createRootRoute({
   component: RootDocument,
   errorComponent: props => <ErrorPage {...props} />,
+  head: () => ({
+    meta: [
+      {
+        title: title(),
+      },
+    ],
+  }),
 })
 
 function RootDocument() {
   return (
-    <EventsProvider>
-      <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <UpdatesProvider>
-            <AuthObserver />
-            <AnimatePresence>
-              <Outlet />
-            </AnimatePresence>
-            <Toaster />
-            {import.meta.env.DEV && (
-              <>
-                <TanStackRouterDevtools position="bottom-right" />
-                <ReactQueryDevtools initialIsOpen={false} />
-              </>
-            )}
-          </UpdatesProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
-    </EventsProvider>
+    <>
+      <HeadContent />
+      <EventsProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <UpdatesProvider>
+              <AuthObserver />
+              <AnimatePresence>
+                <Outlet />
+              </AnimatePresence>
+              <Toaster />
+              {import.meta.env.DEV && (
+                <>
+                  <TanStackRouterDevtools position="bottom-right" />
+                  <ReactQueryDevtools initialIsOpen={false} />
+                </>
+              )}
+            </UpdatesProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </EventsProvider>
+    </>
   )
 }

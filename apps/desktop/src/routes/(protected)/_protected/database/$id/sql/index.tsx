@@ -1,4 +1,5 @@
 import { getOS } from '@connnect/shared/utils/os'
+import { title } from '@connnect/shared/utils/title'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { CardHeader, CardTitle } from '@connnect/ui/components/card'
@@ -13,8 +14,9 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { DANGEROUS_SQL_KEYWORDS } from '~/constants'
-import { DataTable, useDatabase } from '~/entities/database'
+import { databaseQuery, DataTable, useDatabase } from '~/entities/database'
 import { formatSql } from '~/lib/formatter'
+import { queryClient } from '~/main'
 import { SqlChat } from './-components/sql-chat'
 
 const os = getOS()
@@ -23,6 +25,17 @@ export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/sql/',
 )({
   component: RouteComponent,
+  loader: async ({ params }) => {
+    const database = await queryClient.ensureQueryData(databaseQuery(params.id))
+    return { database }
+  },
+  head: ({ loaderData }) => ({
+    meta: [
+      {
+        title: title('SQL Runner', loaderData.database.name),
+      },
+    ],
+  }),
 })
 
 function ResultTable({ result, columns }: { result: Record<string, unknown>[], columns: string[] }) {

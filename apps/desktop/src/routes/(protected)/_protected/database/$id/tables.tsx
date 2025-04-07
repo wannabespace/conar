@@ -1,3 +1,4 @@
+import { title } from '@connnect/shared/utils/title'
 import { Button } from '@connnect/ui/components/button'
 import { CardTitle } from '@connnect/ui/components/card'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
@@ -11,7 +12,7 @@ import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
 import { useDeferredValue, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseSchemas, databaseSchemasQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas, useDatabaseTables } from '~/entities/database'
+import { databaseQuery, databaseSchemas, databaseSchemasQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 import { TablesTree } from './-components/tables-tree'
 
@@ -19,8 +20,18 @@ export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables',
 )({
   component: RouteComponent,
+  loader: async ({ params }) => {
+    const database = await queryClient.ensureQueryData(databaseQuery(params.id))
+    return { database }
+  },
+  head: ({ loaderData }) => ({
+    meta: [
+      {
+        title: title('Tables', loaderData.database.name),
+      },
+    ],
+  }),
 })
-
 function RouteComponent() {
   const { id } = Route.useParams()
   const { table: tableParam } = useParams({ strict: false })

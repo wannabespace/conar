@@ -29,8 +29,14 @@ export function TableHeader({ queryKey, columnsCount }: { queryKey: QueryKey, co
   return (
     <div className="flex gap-6 flex-row items-center justify-between p-4">
       <div>
-        <h2 className="font-medium text-sm mb-0.5">
-          {table}
+        <h2 className="font-medium text-sm mb-0.5 space-x-1">
+          <span className="text-muted-foreground">
+            {schema}
+          </span>
+          {' '}
+          <span className="text-muted-foreground/20">/</span>
+          {' '}
+          <span>{table}</span>
         </h2>
         <p className="text-muted-foreground text-xs">
           {columnsCount}

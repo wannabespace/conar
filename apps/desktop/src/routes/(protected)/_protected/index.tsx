@@ -1,3 +1,4 @@
+import { title } from '@connnect/shared/utils/title'
 import { Button } from '@connnect/ui/components/button'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
@@ -12,6 +13,13 @@ import { Profile } from './-components/profile'
 
 export const Route = createFileRoute('/(protected)/_protected/')({
   component: DashboardPage,
+  head: () => ({
+    meta: [
+      {
+        title: title('Dashboard'),
+      },
+    ],
+  }),
 })
 
 function DashboardPage() {

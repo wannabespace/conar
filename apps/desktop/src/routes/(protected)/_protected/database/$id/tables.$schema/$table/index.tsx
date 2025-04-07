@@ -1,8 +1,9 @@
 import type { PageSize } from '~/entities/database'
+import { title } from '@connnect/shared/utils/title'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { createContext, useEffect, useMemo, useState } from 'react'
-import { databaseColumnsQuery, databasePrimaryKeysQuery, databaseRowsQuery, DataTable, useDatabase } from '~/entities/database'
+import { databaseColumnsQuery, databasePrimaryKeysQuery, databaseQuery, databaseRowsQuery, DataTable, useDatabase } from '~/entities/database'
 import { createCellUpdater } from '~/entities/database/components/table'
 import { queryClient } from '~/main'
 import { TableFooter } from './-components/footer'
@@ -12,6 +13,17 @@ export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables/$schema/$table/',
 )({
   component: RouteComponent,
+  loader: async ({ params }) => {
+    const database = await queryClient.ensureQueryData(databaseQuery(params.id))
+    return { database }
+  },
+  head: ({ loaderData, params }) => ({
+    meta: [
+      {
+        title: title(params.table, params.schema, loaderData.database.name),
+      },
+    ],
+  }),
 })
 
 export const TableContext = createContext<{

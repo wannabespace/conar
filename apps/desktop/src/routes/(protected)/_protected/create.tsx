@@ -2,6 +2,7 @@ import type { RefObject } from 'react'
 import { databaseLabels, DatabaseType } from '@connnect/shared/enums/database-type'
 import { getProtocols, isValidConnectionString, parseConnectionString, protocolMap } from '@connnect/shared/utils/connections'
 import { getOS } from '@connnect/shared/utils/os'
+import { title } from '@connnect/shared/utils/title'
 import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@connnect/ui/components/card'
@@ -36,6 +37,13 @@ export const Route = createFileRoute(
   '/(protected)/_protected/create',
 )({
   component: RouteComponent,
+  head: () => ({
+    meta: [
+      {
+        title: title('Create connection'),
+      },
+    ],
+  }),
 })
 
 function generateRandomName() {
