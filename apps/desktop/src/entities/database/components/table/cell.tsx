@@ -10,9 +10,11 @@ import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
+import { sleep } from '~/lib/helpers'
 
 export interface TableCellMeta {
   name: string
@@ -68,7 +70,13 @@ function TableCellProvider({
 
   const { mutate: updateCell } = useMutation({
     mutationFn: async (value: string | null) => {
-      await (table.options.meta as TableMeta).updateCell?.(cell.row.index, cell.column.getIndex(), value)
+      const _value = isJson && value ? JSON.stringify(JSON.parse(value)) : value
+
+      await (table.options.meta as TableMeta).updateCell?.(
+        cell.row.index,
+        cell.column.getIndex(),
+        typeof _value === 'string' ? _value.trim() : _value,
+      )
     },
     onSuccess: onSaveSuccess,
     onError: onSaveError,
@@ -270,6 +278,9 @@ export function TableCell({ cell, getValue, table }: CellContext<Record<string, 
     )
   }
 
+  const isTimestamp = (cell.column.columnDef.meta as TableCellMeta)?.type?.includes('timestamp')
+  const date = dayjs(cellValue as string | null | Date)
+
   return (
     <TableCellProvider
       cell={cell}
@@ -287,22 +298,33 @@ export function TableCell({ cell, getValue, table }: CellContext<Record<string, 
           }
         }}
       >
-        <PopoverTrigger
-          asChild
-          onClick={e => e.preventDefault()}
-          onDoubleClick={() => setIsOpen(true)}
-          onMouseLeave={() => !isOpen && setCanInteract(false)}
-        >
-          <TableCellContent
-            value={cellValue}
-            className={cn(
-              isOpen && 'ring-primary/50 bg-muted/50',
-              status === 'error' && 'ring-destructive/50 bg-destructive/20',
-              status === 'success' && 'ring-success/50 bg-success/10',
-              status === 'saving' && 'ring-primary/50 bg-primary/20 animate-pulse',
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger
+                asChild
+                onClick={e => e.preventDefault()}
+                onDoubleClick={() => setIsOpen(true)}
+                onMouseLeave={() => !isOpen && sleep(100).then(() => setCanInteract(false))}
+              >
+                <TableCellContent
+                  value={cellValue}
+                  className={cn(
+                    isOpen && 'ring-primary/50 bg-muted/50',
+                    status === 'error' && 'ring-destructive/50 bg-destructive/20',
+                    status === 'success' && 'ring-success/50 bg-success/10',
+                    status === 'saving' && 'ring-primary/50 bg-primary/20 animate-pulse',
+                  )}
+                />
+              </PopoverTrigger>
+            </TooltipTrigger>
+            {isTimestamp && date.isValid() && (
+              <TooltipContent>
+                {date.format('DD MMMM YYYY, HH:mm:ss (Z)')}
+              </TooltipContent>
             )}
-          />
-        </PopoverTrigger>
+          </Tooltip>
+        </TooltipProvider>
         <PopoverContent
           className={cn('p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
           onAnimationEnd={() => !isOpen && setCanInteract(false)}
@@ -343,8 +365,8 @@ function TableCellContent({
         'h-full text-xs truncate p-2 group-first/cell:pl-4 group-last/cell:pr-4 font-mono cursor-default select-none',
         'transition-all duration-100',
         'ring-2 ring-inset ring-transparent',
-        value === null && 'text-muted-foreground',
-        value === '' && 'text-muted-foreground',
+        value === null && 'text-muted-foreground/50',
+        value === '' && 'text-muted-foreground/50',
         className,
       )}
       {...props}

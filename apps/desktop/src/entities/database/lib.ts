@@ -29,6 +29,10 @@ export const databaseSchemas = {
 }
 
 export async function fetchDatabases() {
+  if (!navigator.onLine) {
+    return
+  }
+
   try {
     const [fetchedDatabases, existingDatabases] = await Promise.all([
       trpc.databases.list.query(),
