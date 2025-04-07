@@ -61,7 +61,7 @@ function TableCellProvider({
 }) {
   const initialValue = cell.getValue()
   const isJson = !!(cell.column.columnDef.meta as TableCellMeta).type?.includes('json')
-  const displayValue = isJson ? JSON.stringify(initialValue, null, 2) : getDisplayValue(initialValue)
+  const displayValue = isJson && initialValue ? JSON.stringify(initialValue, null, 2) : getDisplayValue(initialValue)
   const [value, setValue] = useState<string>(initialValue === null ? '' : displayValue)
 
   useEffect(() => {
@@ -70,7 +70,7 @@ function TableCellProvider({
 
   const { mutate: updateCell } = useMutation({
     mutationFn: async (value: string | null) => {
-      const _value = isJson && value ? JSON.stringify(JSON.parse(value)) : value
+      const _value = isJson && value ? JSON.parse(value) : value
 
       await (table.options.meta as TableMeta).updateCell?.(
         cell.row.index,
