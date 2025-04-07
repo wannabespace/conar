@@ -11,10 +11,10 @@ import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiDeleteBinLine, RiQuestionAnswerLine, RiSendPlane2Line, RiStopLine } from '@remixicon/react'
+import { RiDeleteBinLine, RiQuestionAnswerLine, RiRefreshLine, RiSendPlane2Line, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { Fragment, useEffect } from 'react'
 import { Markdown } from '~/components/markdown'
 import { getDatabaseContext, useDatabase } from '~/entities/database'
 import { UserAvatar } from '~/entities/user'
@@ -37,39 +37,37 @@ const chatMessages = {
   },
 }
 
-function UserMessage({ message }: { message: Message }) {
+function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   return (
-    <>
-      <UserAvatar />
-      <Markdown content={message.content} />
-    </>
-  )
-}
-
-function AssistantMessage({ message, onEdit }: { message: Message, onEdit: (message: string) => void }) {
-  return (
-    <>
-      <div className="flex items-center gap-2">
-        <Avatar className="size-6">
-          <AvatarFallback className="text-xs">AI</AvatarFallback>
-        </Avatar>
-      </div>
-      <Markdown content={message.content} onEdit={onEdit} />
-    </>
-  )
-}
-
-function ChatMessages({ messages, className, onEdit, ...props }: ComponentProps<'div'> & { messages: Message[], onEdit: (message: string) => void }) {
-  return (
-    <div className={cn('flex flex-col gap-4', className)} {...props}>
-      {messages.map(message => (
-        <div key={message.id} className="flex flex-col gap-2 mb-4 text-sm">
-          {message.role === 'user'
-            ? <UserMessage message={message} />
-            : <AssistantMessage message={message} onEdit={onEdit} />}
-        </div>
-      ))}
+    <div className={cn('flex flex-col gap-2 mb-4 text-sm', className)} {...props}>
+      {children}
     </div>
+  )
+}
+
+function UserMessage({ text, ...props }: { text: string } & ComponentProps<'div'>) {
+  return (
+    <ChatMessage {...props}>
+      <UserAvatar />
+      <Markdown content={text} />
+    </ChatMessage>
+  )
+}
+
+function AssistantAvatar() {
+  return (
+    <Avatar className="size-6">
+      <AvatarFallback className="text-xs">AI</AvatarFallback>
+    </Avatar>
+  )
+}
+
+function AssistantMessage({ text, onEdit, ...props }: { text: string, onEdit?: (message: string) => void } & ComponentProps<'div'>) {
+  return (
+    <ChatMessage {...props}>
+      <AssistantAvatar />
+      <Markdown content={text} onEdit={onEdit} />
+    </ChatMessage>
   )
 }
 
@@ -80,7 +78,7 @@ export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
     queryKey: ['database-context', id],
     queryFn: () => getDatabaseContext(database),
   })
-  const { messages, stop, input, handleInputChange, handleSubmit, status, setMessages } = useChat({
+  const { messages, stop, input, handleInputChange, handleSubmit, status, setMessages, error, reload } = useChat({
     api: `${import.meta.env.VITE_PUBLIC_API_URL}/ai/sql-chat`,
     initialMessages: chatMessages.get(id),
     initialInput: chatInput.get(id),
@@ -157,7 +155,33 @@ export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
         </div>
       )}
       <ScrollArea className="flex-1 overflow-y-auto -mx-4 px-4">
-        <ChatMessages messages={messages} className="pb-2" onEdit={onEdit} />
+        <div className="flex flex-col gap-4 pb-2">
+          {messages.map(message => (
+            <Fragment key={message.id}>
+              {message.role === 'user'
+                ? <UserMessage text={message.content} />
+                : <AssistantMessage text={message.content} onEdit={onEdit} />}
+            </Fragment>
+          ))}
+          {status === 'submitted' && (
+            <ChatMessage className="flex flex-col items-start gap-2">
+              <AssistantAvatar />
+              <p className="text-muted-foreground animate-pulse">Generating SQL query...</p>
+            </ChatMessage>
+          )}
+          {error && (
+            <ChatMessage>
+              <AssistantAvatar />
+              <p className="text-red-500">{error.message}</p>
+              <div>
+                <Button variant="outline" size="xs" onClick={() => reload()}>
+                  <RiRefreshLine className="size-3" />
+                  Try again
+                </Button>
+              </div>
+            </ChatMessage>
+          )}
+        </div>
       </ScrollArea>
       <form
         className="flex gap-2"

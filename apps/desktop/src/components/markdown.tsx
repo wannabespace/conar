@@ -46,6 +46,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
             scrollBeyondLastLine: false,
             folding: false,
           }}
+          className="rounded-md border overflow-hidden"
           style={{ height: `${Math.min(content.split('\n').length * 20, 300)}px` }}
         />
       )}
