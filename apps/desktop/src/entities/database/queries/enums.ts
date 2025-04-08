@@ -1,16 +1,16 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { z } from 'zod'
+import { type } from 'arktype'
 
-const enumSchema = z.object({
-  schema: z.string(),
-  name: z.string(),
-  value: z.string(),
+const enumType = type({
+  schema: 'string',
+  name: 'string',
+  value: 'string',
 })
 
 export function databaseEnumsQuery(database: Database) {
-  const queryMap: Record<DatabaseType, () => Promise<z.infer<typeof enumSchema>[]>> = {
+  const queryMap: Record<DatabaseType, () => Promise<typeof enumType.infer[]>> = {
     postgres: async () => {
       const [result] = await window.electron.databases.query({
         type: database.type,
@@ -26,7 +26,7 @@ export function databaseEnumsQuery(database: Database) {
         `,
       })
 
-      return result.rows.map(row => enumSchema.parse(row))
+      return result.rows.map(row => enumType(row))
     },
   }
 

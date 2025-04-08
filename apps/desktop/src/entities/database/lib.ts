@@ -1,7 +1,6 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
-import type { z } from 'zod'
 import type { Database } from '~/lib/indexeddb'
-import { databaseContextSchema } from '@connnect/shared/database'
+import { databaseContextType } from '@connnect/shared/database'
 import { toast } from 'sonner'
 import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/lib/trpc'
@@ -158,7 +157,7 @@ export async function prefetchDatabaseCore(database: Database) {
   await queryClient.ensureQueryData(databasePrimaryKeysQuery(database))
 }
 
-export async function getDatabaseContext(database: Database): Promise<z.infer<typeof databaseContextSchema>> {
+export async function getDatabaseContext(database: Database): Promise<typeof databaseContextType.infer> {
   // Just vibe code
   const [result] = await window.electron.databases.query({
     type: database.type,
@@ -210,7 +209,7 @@ export async function getDatabaseContext(database: Database): Promise<z.infer<ty
     ) AS database_context;`,
   })
 
-  const { database_context } = result.rows[0] as { database_context: z.infer<typeof databaseContextSchema> }
+  const { database_context } = result.rows[0] as { database_context: unknown }
 
-  return databaseContextSchema.parseAsync(database_context)
+  return databaseContextType(database_context)
 }

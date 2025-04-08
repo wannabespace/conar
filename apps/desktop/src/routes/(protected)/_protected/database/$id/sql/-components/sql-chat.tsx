@@ -101,9 +101,6 @@ export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
       <DotPattern
         width={20}
         height={20}
-        cx={1}
-        cy={1}
-        cr={1}
         className="absolute -z-10 top-0 left-0 opacity-50 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <div className="flex justify-between items-center mb-4">

@@ -1,7 +1,6 @@
-import type { databaseContextSchema } from '@connnect/shared/database'
+import type { databaseContextType } from '@connnect/shared/database'
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { LanguageModelV1, Message } from 'ai'
-import type { z } from 'zod'
 import { anthropic } from '@ai-sdk/anthropic'
 import { streamText } from 'ai'
 import { Hono } from 'hono'
@@ -17,7 +16,7 @@ function generateStream({
 }: {
   type: DatabaseType
   model: LanguageModelV1
-  context: z.infer<typeof databaseContextSchema>
+  context: typeof databaseContextType.infer
   messages: Message[]
   signal: AbortSignal
 }) {

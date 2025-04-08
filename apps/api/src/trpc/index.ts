@@ -1,7 +1,7 @@
 import type { Context } from '~/trpc/context'
 import { initTRPC, TRPCError } from '@trpc/server'
+import { TraversalError } from 'arktype'
 import SuperJSON from 'superjson'
-import { ZodError } from 'zod'
 import { auth } from '~/lib/auth'
 
 const t = initTRPC.context<Context>().create({
@@ -11,8 +11,8 @@ const t = initTRPC.context<Context>().create({
       ...shape,
       data: {
         ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
+        arktypeError:
+          error.cause instanceof TraversalError ? error.cause.message : null,
       },
     }
   },

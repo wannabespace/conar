@@ -2,10 +2,10 @@ import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { PageSize } from '../components/table/footer'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { z } from 'zod'
+import { type } from 'arktype'
 
-const countSchema = z.object({
-  total: z.coerce.number(),
+const countType = type({
+  total: 'number',
 })
 
 export function databaseRowsQuery(database: Database, table: string, schema: string, query?: { limit?: PageSize, page?: number }) {
@@ -31,7 +31,7 @@ export function databaseRowsQuery(database: Database, table: string, schema: str
         }),
       ])
 
-      const tableCount = countSchema.parse(countResult.rows[0])
+      const tableCount = countType(countResult.rows[0])
 
       return {
         rows: result.rows,

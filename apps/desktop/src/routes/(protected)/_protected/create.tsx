@@ -20,9 +20,9 @@ import { RiArrowLeftSLine, RiLoopLeftLine } from '@remixicon/react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { type } from 'arktype'
 import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { z } from 'zod'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
 import { createDatabase, databasesQuery, useTestDatabase } from '~/entities/database'
@@ -198,11 +198,11 @@ function RouteComponent() {
       saveInCloud: true,
     },
     validators: {
-      onChange: z.object({
-        name: z.string().min(1, 'Please enter a name for your connection'),
-        type: z.nativeEnum(DatabaseType),
-        connectionString: z.string().refine(isValidConnectionString, 'Invalid connection string format'),
-        saveInCloud: z.boolean(),
+      onChange: type({
+        name: 'string > 1',
+        type: type.valueOf(DatabaseType),
+        connectionString: type('string').narrow(str => isValidConnectionString(str)),
+        saveInCloud: 'boolean',
       }),
       onSubmit(e) {
         mutate(e.value)
@@ -238,7 +238,7 @@ function RouteComponent() {
     }
   })
 
-  const [type, connectionString, name, saveInCloud] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud])
+  const [typeValue, connectionString, name, saveInCloud] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud])
   const isConnectionStringValid = useStore(form.store, state => isValidConnectionString(state.values.connectionString))
 
   return (
@@ -299,10 +299,10 @@ function RouteComponent() {
             </StepperTrigger>
           </StepperList>
           <StepperContent value="type">
-            <StepType type={type} setType={type => form.setFieldValue('type', type)} />
+            <StepType type={typeValue} setType={type => form.setFieldValue('type', type)} />
             <div className="mt-auto flex justify-end gap-4 pt-4">
               <Button
-                disabled={!type}
+                disabled={!typeValue}
                 onClick={() => setStep('credentials')}
               >
                 Next
@@ -312,7 +312,7 @@ function RouteComponent() {
           <StepperContent value="credentials">
             <StepCredentials
               ref={inputRef}
-              type={type}
+              type={typeValue}
               connectionString={connectionString}
               setConnectionString={connectionString => form.setFieldValue('connectionString', connectionString)}
             />

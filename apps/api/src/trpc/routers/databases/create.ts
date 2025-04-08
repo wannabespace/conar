@@ -1,15 +1,15 @@
 import { encrypt } from '@connnect/shared/encryption'
 import { DatabaseType } from '@connnect/shared/enums/database-type'
-import { z } from 'zod'
+import { type } from 'arktype'
 import { databases, db } from '~/drizzle'
 import { protectedProcedure } from '~/trpc'
 
 export const create = protectedProcedure
-  .input(z.object({
-    name: z.string().min(1),
-    type: z.nativeEnum(DatabaseType),
-    connectionString: z.string().min(1),
-    isPasswordExists: z.boolean(),
+  .input(type({
+    name: 'string > 1',
+    type: type.valueOf(DatabaseType),
+    connectionString: 'string > 1',
+    isPasswordExists: 'boolean',
   }))
   .mutation(async ({ input, ctx }) => {
     const [connection] = await db.insert(databases).values({

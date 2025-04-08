@@ -27,9 +27,6 @@ export function PasswordForm({ database }: { database: Database }) {
       <DotPattern
         width={20}
         height={20}
-        cx={1}
-        cy={1}
-        cr={1}
         className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <div className="flex flex-col gap-6 max-w-lg mx-auto">
