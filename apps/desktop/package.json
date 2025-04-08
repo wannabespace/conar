@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.6.4",
   "private": true,
-  "description": "AI-powered connections management app that makes database operations smarter. A modern alternative to pgAdmin, DBeaver, etc.",
+  "description": "AI-powered tool that makes database operations easier. Built for PostgreSQL, it's a modern alternative to traditional database management tools.",
   "productName": "Connnect",
   "author": {
     "name": "Wannabe Space",
