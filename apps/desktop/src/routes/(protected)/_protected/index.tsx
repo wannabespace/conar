@@ -4,9 +4,9 @@ import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { Separator } from '@connnect/ui/components/separator'
 import { RiAddLine, RiDownloadLine, RiLoader4Line, RiLoopLeftLine } from '@remixicon/react'
+import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { useEffect } from 'react'
-import { fetchDatabases, useDatabases } from '~/entities/database'
+import { fetchDatabases } from '~/entities/database'
 import { useUpdates } from '~/updates-provider'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
@@ -23,13 +23,11 @@ export const Route = createFileRoute('/(protected)/_protected/')({
 })
 
 function DashboardPage() {
-  const { isFetching, refetch } = useDatabases()
+  const { mutate: refetch, isPending: isRefetching } = useMutation({
+    mutationFn: fetchDatabases,
+  })
   const router = useRouter()
   const { version, status, checkForUpdates } = useUpdates()
-
-  useEffect(() => {
-    refetch()
-  }, [])
 
   return (
     <div className="flex flex-col w-full mx-auto max-w-2xl py-10">
@@ -43,7 +41,6 @@ function DashboardPage() {
       />
       <h1 className="scroll-m-20 mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Dashboard
-        {' '}
       </h1>
       <Profile className="mb-8" />
       <div className="flex items-center justify-between mb-6">
@@ -54,10 +51,10 @@ function DashboardPage() {
           <Button
             variant="outline"
             size="icon"
-            disabled={isFetching}
-            onClick={() => fetchDatabases()}
+            disabled={isRefetching}
+            onClick={() => refetch()}
           >
-            <LoadingContent loading={isFetching}>
+            <LoadingContent loading={isRefetching}>
               <RiLoopLeftLine />
             </LoadingContent>
           </Button>

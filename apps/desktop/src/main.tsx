@@ -3,7 +3,6 @@ import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react
 import { createRoot } from 'react-dom/client'
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
-import { sleep } from './lib/helpers'
 import { routeTree } from './routeTree.gen'
 import '@connnect/ui/globals.css'
 import './monaco-worker'
@@ -48,14 +47,5 @@ declare module '@tanstack/react-router' {
 }
 
 const root = createRoot(document.getElementById('root')!)
-const preloader = document.getElementById('preloader')!
 
-;(async () => {
-  preloader.classList.add('scale-[0.5]', 'opacity-0')
-  // Waiting animation to smooth transition
-  await sleep(80)
-  document.body.classList.remove('overflow-hidden')
-  root.render(<RouterProvider router={router} />)
-  await sleep(1000)
-  preloader.remove()
-})()
+root.render(<RouterProvider router={router} />)
