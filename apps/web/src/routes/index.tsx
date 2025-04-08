@@ -14,11 +14,9 @@ function Home() {
     <>
       <Navbar />
       <DotPattern
+        glow={true}
         width={20}
         height={20}
-        cx={1}
-        cy={1}
-        cr={1}
         className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <div className="max-w-3xl mx-auto py-50 px-4">
