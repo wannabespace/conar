@@ -1,9 +1,9 @@
 import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { AppLogoGradient } from '@connnect/ui/components/brand/app-logo-gradient'
+import { SmoothCorner } from '@connnect/ui/components/custom/smooth-corner'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { SmoothCorner } from '~/components/smooth-corner'
 
 export const Route = createFileRoute('/(public)/_auth')({
   component: AuthLayout,

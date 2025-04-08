@@ -1,3 +1,4 @@
+import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { copy } from '@connnect/ui/lib/copy'
@@ -51,40 +52,63 @@ function RouteComponent() {
         cx={1}
         cy={1}
         cr={1}
-        className="absolute z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+        className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <Card className="max-w-md w-full">
-        <CardHeader>
-          <CardTitle>Authentication</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isPending
+        {isPending
+          ? (
+              <>
+                <CardHeader>
+                  <CardTitle>
+                    Authentication
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground animate-pulse">Loading authentication data...</p>
+                </CardContent>
+              </>
+            )
+          : data
             ? (
-                <p>Loading authentication data...</p>
-              )
-            : data
-              ? (
-                  <>
-                    <p className="mb-4">
-                      If the app didn't open automatically, copy the URL below and paste it in the desktop app.
+                <>
+                  <CardHeader>
+                    <CardTitle>
+                      Authentication successful
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-6">
+                    <p>
+                      You have successfully signed in. You can now close this tab and return to the Connnect desktop app.
                     </p>
-                    <div className="flex justify-center">
-                      <button
-                        type="button"
-                        className="text-xs text-primary cursor-pointer hover:underline"
-                        onClick={handleCopyUrl}
-                      >
-                        Click here to copy the URL
-                      </button>
+                    <div className="flex flex-col gap-4">
+                      <p className="text-muted-foreground text-sm">
+                        If the app didn't open automatically, use the button below to copy the connection URL.
+                      </p>
+                      <div className="flex">
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={handleCopyUrl}
+                        >
+                          <span>Copy connection URL</span>
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Paste this URL in the desktop app to continue.
+                      </p>
                     </div>
-                  </>
-                )
-              : (
-                  <p className="mb-4">
-                    Your session has expired or is invalid. Please sign in again to continue.
-                  </p>
-                )}
-        </CardContent>
+                  </CardContent>
+                </>
+              )
+            : (
+                <>
+                  <CardContent>
+                    <p className="mb-4">
+                      Your session has expired or is invalid. Please sign in again to continue.
+                    </p>
+                  </CardContent>
+                </>
+              )}
       </Card>
     </div>
   )

@@ -5,7 +5,7 @@ import ghDark from 'monaco-themes/themes/GitHub Dark.json'
 import ghLight from 'monaco-themes/themes/GitHub Light.json'
 import { useEffect, useRef } from 'react'
 
-ghDark.colors['editor.background'] = '#181919'
+ghDark.colors['editor.background'] = '#171718'
 ghDark.colors['editor.lineHighlightBackground'] = '#212222'
 ghDark.colors['editor.selectionBackground'] = '#4fb0ba50'
 ghLight.colors['editor.selectionBackground'] = '#4fb0ba50'
