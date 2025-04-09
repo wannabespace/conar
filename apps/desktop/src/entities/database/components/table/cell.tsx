@@ -10,6 +10,7 @@ import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
+import { type } from 'arktype'
 import dayjs from 'dayjs'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -234,6 +235,28 @@ function TableCellMonaco({
   )
 }
 
+function getTimestamp(value: unknown, meta: TableCellMeta) {
+  const numberType = type('string.numeric | number | Date | null')
+  const isTimestamp = (meta as TableCellMeta)?.type?.includes('timestamp')
+    || [
+      'created_at',
+      'updated_at',
+      'deleted_at',
+      'createdAt',
+      'updatedAt',
+      'deletedAt',
+    ].some(keyword => meta.name?.toLowerCase().includes(keyword))
+  const timestamp = numberType(value)
+  const date = isTimestamp
+    && timestamp
+    && !(timestamp instanceof type.errors)
+    && !Number.isNaN(Number(timestamp))
+    ? dayjs(Number(timestamp))
+    : null
+
+  return date
+}
+
 export function TableCell({ cell, getValue, table }: CellContext<Record<string, unknown>, unknown>) {
   const [isOpen, setIsOpen] = useState(false)
   const cellValue = getValue()
@@ -278,8 +301,7 @@ export function TableCell({ cell, getValue, table }: CellContext<Record<string, 
     )
   }
 
-  const isTimestamp = (cell.column.columnDef.meta as TableCellMeta)?.type?.includes('timestamp')
-  const date = dayjs(cellValue as string | null | Date)
+  const date = getTimestamp(cellValue, cell.column.columnDef.meta as TableCellMeta)
 
   return (
     <TableCellProvider
@@ -318,7 +340,7 @@ export function TableCell({ cell, getValue, table }: CellContext<Record<string, 
                 />
               </PopoverTrigger>
             </TooltipTrigger>
-            {isTimestamp && date.isValid() && (
+            {date && date.isValid() && (
               <TooltipContent>
                 {date.format('DD MMMM YYYY, HH:mm:ss (Z)')}
               </TooltipContent>
