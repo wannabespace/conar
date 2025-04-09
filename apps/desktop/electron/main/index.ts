@@ -61,7 +61,7 @@ app.on('ready', () => {
 
   setupProtocolHandler(win)
 
-  setInterval(autoUpdater.checkForUpdates, 1000 * 60 * 10)
+  setInterval(() => autoUpdater.checkForUpdates(), 1000 * 60 * 10)
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
