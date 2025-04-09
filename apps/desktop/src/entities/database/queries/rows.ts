@@ -31,7 +31,7 @@ export function databaseRowsQuery(database: Database, table: string, schema: str
         }),
       ])
 
-      const tableCount = countType(countResult.rows[0])
+      const tableCount = countType.assert(countResult.rows[0])
 
       return {
         rows: result.rows,

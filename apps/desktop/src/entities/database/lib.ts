@@ -211,5 +211,5 @@ export async function getDatabaseContext(database: Database): Promise<typeof dat
 
   const { database_context } = result.rows[0] as { database_context: unknown }
 
-  return databaseContextType(database_context)
+  return databaseContextType.assert(database_context)
 }

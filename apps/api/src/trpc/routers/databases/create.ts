@@ -6,9 +6,9 @@ import { protectedProcedure } from '~/trpc'
 
 export const create = protectedProcedure
   .input(type({
-    name: 'string > 1',
+    name: 'string > 0',
     type: type.valueOf(DatabaseType),
-    connectionString: 'string > 1',
+    connectionString: 'string > 0',
     isPasswordExists: 'boolean',
   }))
   .mutation(async ({ input, ctx }) => {

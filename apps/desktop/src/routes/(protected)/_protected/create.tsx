@@ -199,7 +199,7 @@ function RouteComponent() {
     },
     validators: {
       onChange: type({
-        name: 'string > 1',
+        name: 'string > 0',
         type: type.valueOf(DatabaseType),
         connectionString: type('string').narrow(isValidConnectionString),
         saveInCloud: 'boolean',

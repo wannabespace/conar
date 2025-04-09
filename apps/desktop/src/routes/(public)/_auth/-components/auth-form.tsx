@@ -23,7 +23,7 @@ type Type = 'sign-up' | 'sign-in'
 
 const schema = type({
   email: 'string.email',
-  password: 'string > 8',
+  password: 'string >= 8',
   name: 'string?',
 })
 

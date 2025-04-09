@@ -26,7 +26,7 @@ export function databaseEnumsQuery(database: Database) {
         `,
       })
 
-      return result.rows.map(row => enumType(row))
+      return result.rows.map(row => enumType.assert(row))
     },
   }
 

@@ -39,7 +39,7 @@ export function databasePrimaryKeysQuery(database: Database) {
         `,
       })
 
-      return result.rows.map(row => primaryKeyType(row)).map(row => ({
+      return result.rows.map(row => primaryKeyType.assert(row)).map(row => ({
         ...row,
         primaryKeys: row.primary_keys.split(',').map(key => key.trim()),
       }))

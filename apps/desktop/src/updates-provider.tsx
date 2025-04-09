@@ -43,7 +43,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
             onClick: () => window.electron.app.quitAndInstall(),
           },
           position: 'bottom-right',
-          duration: 10000,
+          duration: 30000,
         })
       }
 

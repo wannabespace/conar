@@ -24,7 +24,7 @@ export function databaseSchemasQuery(database: Database) {
         `,
       })
 
-      return result.rows.map(row => schemaType(row))
+      return result.rows.map(row => schemaType.assert(row))
     },
   }
 

@@ -54,7 +54,7 @@ export function databaseColumnsQuery(database: Database, table: string, schema: 
         `,
       })
 
-      return result.rows.map(row => columnType(row)).map(column => ({
+      return result.rows.map(row => columnType.assert(row)).map(column => ({
         ...column,
         isEditable: column.editable,
         isNullable: column.nullable,
