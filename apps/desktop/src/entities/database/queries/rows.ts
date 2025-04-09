@@ -5,7 +5,7 @@ import { queryOptions, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 
 const countType = type({
-  total: 'number',
+  total: 'string.numeric',
 })
 
 export function databaseRowsQuery(database: Database, table: string, schema: string, query?: { limit?: PageSize, page?: number }) {

@@ -201,7 +201,7 @@ function RouteComponent() {
       onChange: type({
         name: 'string > 1',
         type: type.valueOf(DatabaseType),
-        connectionString: type('string').narrow(str => isValidConnectionString(str)),
+        connectionString: type('string').narrow(isValidConnectionString),
         saveInCloud: 'boolean',
       }),
       onSubmit(e) {

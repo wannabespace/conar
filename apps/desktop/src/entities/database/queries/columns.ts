@@ -10,7 +10,7 @@ export const columnType = type({
   editable: 'boolean',
   default: 'string | null',
   nullable: 'boolean',
-}).describe('Column')
+})
 
 export function databaseColumnsQuery(database: Database, table: string, schema: string) {
   const queryMap: Record<DatabaseType, () => Promise<{
