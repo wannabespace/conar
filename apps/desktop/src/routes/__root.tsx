@@ -13,7 +13,7 @@ import { authClient } from '~/lib/auth'
 import { EventsProvider } from '~/lib/events'
 import { sleep } from '~/lib/helpers'
 import { queryClient } from '~/main'
-import { UpdatesProvider } from '~/updates-provider'
+import { checkForUpdates, UpdatesProvider } from '~/updates-provider'
 
 export const Route = createRootRoute({
   component: RootDocument,
@@ -26,6 +26,8 @@ export const Route = createRootRoute({
     ],
   }),
 })
+
+checkForUpdates()
 
 function RootDocument() {
   const { isPending } = authClient.useSession()

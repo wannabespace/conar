@@ -8,11 +8,16 @@ const UpdatesContext = createContext<{
   version: string
   status: UpdatesStatus
   message?: string
-  checkForUpdates: () => Promise<void>
 }>(null!)
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useUpdates = () => use(UpdatesContext)
+
+export async function checkForUpdates() {
+  if (import.meta.env.PROD) {
+    await window.electron.app.checkForUpdates()
+  }
+}
 
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<UpdatesStatus>('no-updates')
@@ -21,12 +26,6 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     queryKey: ['version'],
     queryFn: () => window.electron.versions.app(),
   })
-
-  async function checkForUpdates() {
-    if (import.meta.env.PROD) {
-      await window.electron.app.checkForUpdates()
-    }
-  }
 
   useEffect(() => {
     window.electron.app.onUpdatesStatus(({ status, message }) => {
@@ -55,7 +54,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     }
   }, [status])
 
-  const value = useMemo(() => ({ status, message, version, checkForUpdates }), [status, message, version])
+  const value = useMemo(() => ({ status, message, version }), [status, message, version])
 
   return (
     <UpdatesContext value={value}>

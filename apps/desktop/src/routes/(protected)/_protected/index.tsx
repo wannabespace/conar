@@ -6,8 +6,9 @@ import { Separator } from '@connnect/ui/components/separator'
 import { RiAddLine, RiDownloadLine, RiLoader4Line, RiLoopLeftLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { toast } from 'sonner'
 import { fetchDatabases } from '~/entities/database'
-import { useUpdates } from '~/updates-provider'
+import { checkForUpdates, useUpdates } from '~/updates-provider'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
 
@@ -25,9 +26,12 @@ export const Route = createFileRoute('/(protected)/_protected/')({
 function DashboardPage() {
   const { mutate: refetch, isPending: isRefetching } = useMutation({
     mutationFn: fetchDatabases,
+    onSuccess() {
+      toast.success('Databases fetched successfully')
+    },
   })
   const router = useRouter()
-  const { version, status, checkForUpdates } = useUpdates()
+  const { version, status } = useUpdates()
 
   return (
     <div className="flex flex-col w-full mx-auto max-w-2xl py-10">

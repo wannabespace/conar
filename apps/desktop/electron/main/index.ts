@@ -47,12 +47,6 @@ export function createWindow() {
   return mainWindow
 }
 
-async function checkForUpdates() {
-  if (import.meta.env.PROD) {
-    await autoUpdater.checkForUpdates()
-  }
-}
-
 app.on('ready', () => {
   const win = createWindow()
 
@@ -67,9 +61,7 @@ app.on('ready', () => {
 
   setupProtocolHandler(win)
 
-  checkForUpdates()
-
-  setInterval(checkForUpdates, 1000 * 60 * 10)
+  setInterval(autoUpdater.checkForUpdates, 1000 * 60 * 10)
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
