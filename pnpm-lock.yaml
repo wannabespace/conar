@@ -41,9 +41,6 @@ importers:
       tsx:
         specifier: ^4.19.3
         version: 4.19.3
-      turbo:
-        specifier: ^2.4.4
-        version: 2.4.4
       typescript:
         specifier: ^5.8.2
         version: 5.8.2
@@ -7698,42 +7695,8 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  turbo-darwin-64@2.4.4:
-    resolution: {integrity: sha512-5kPvRkLAfmWI0MH96D+/THnDMGXlFNmjeqNRj5grLKiry+M9pKj3pRuScddAXPdlxjO5Ptz06UNaOQrrYGTx1g==}
-    cpu: [x64]
-    os: [darwin]
-
-  turbo-darwin-arm64@2.4.4:
-    resolution: {integrity: sha512-/gtHPqbGQXDFhrmy+Q/MFW2HUTUlThJ97WLLSe4bxkDrKHecDYhAjbZ4rN3MM93RV9STQb3Tqy4pZBtsd4DfCw==}
-    cpu: [arm64]
-    os: [darwin]
-
-  turbo-linux-64@2.4.4:
-    resolution: {integrity: sha512-SR0gri4k0bda56hw5u9VgDXLKb1Q+jrw4lM7WAhnNdXvVoep4d6LmnzgMHQQR12Wxl3KyWPbkz9d1whL6NTm2Q==}
-    cpu: [x64]
-    os: [linux]
-
-  turbo-linux-arm64@2.4.4:
-    resolution: {integrity: sha512-COXXwzRd3vslQIfJhXUklgEqlwq35uFUZ7hnN+AUyXx7hUOLIiD5NblL+ETrHnhY4TzWszrbwUMfe2BYWtaPQg==}
-    cpu: [arm64]
-    os: [linux]
-
   turbo-stream@2.4.0:
     resolution: {integrity: sha512-FHncC10WpBd2eOmGwpmQsWLDoK4cqsA/UT/GqNoaKOQnT8uzhtCbg3EoUDMvqpOSAI0S26mr0rkjzbOO6S3v1g==}
-
-  turbo-windows-64@2.4.4:
-    resolution: {integrity: sha512-PV9rYNouGz4Ff3fd6sIfQy5L7HT9a4fcZoEv8PKRavU9O75G7PoDtm8scpHU10QnK0QQNLbE9qNxOAeRvF0fJg==}
-    cpu: [x64]
-    os: [win32]
-
-  turbo-windows-arm64@2.4.4:
-    resolution: {integrity: sha512-403sqp9t5sx6YGEC32IfZTVWkRAixOQomGYB8kEc6ZD+//LirSxzeCHCnM8EmSXw7l57U1G+Fb0kxgTcKPU/Lg==}
-    cpu: [arm64]
-    os: [win32]
-
-  turbo@2.4.4:
-    resolution: {integrity: sha512-N9FDOVaY3yz0YCOhYIgOGYad7+m2ptvinXygw27WPLQvcZDl3+0Sa77KGVlLSiuPDChOUEnTKE9VJwLSi9BPGQ==}
-    hasBin: true
 
   tw-animate-css@1.2.4:
     resolution: {integrity: sha512-yt+HkJB41NAvOffe4NweJU6fLqAlVx/mBX6XmHRp15kq0JxTtOKaIw8pVSWM1Z+n2nXtyi7cW6C9f0WG/F/QAQ==}
@@ -16431,34 +16394,7 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  turbo-darwin-64@2.4.4:
-    optional: true
-
-  turbo-darwin-arm64@2.4.4:
-    optional: true
-
-  turbo-linux-64@2.4.4:
-    optional: true
-
-  turbo-linux-arm64@2.4.4:
-    optional: true
-
   turbo-stream@2.4.0: {}
-
-  turbo-windows-64@2.4.4:
-    optional: true
-
-  turbo-windows-arm64@2.4.4:
-    optional: true
-
-  turbo@2.4.4:
-    optionalDependencies:
-      turbo-darwin-64: 2.4.4
-      turbo-darwin-arm64: 2.4.4
-      turbo-linux-64: 2.4.4
-      turbo-linux-arm64: 2.4.4
-      turbo-windows-64: 2.4.4
-      turbo-windows-arm64: 2.4.4
 
   tw-animate-css@1.2.4: {}
 
