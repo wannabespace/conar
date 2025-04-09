@@ -11,13 +11,13 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "dev": "pnpm --parallel dev",
-    "build:desktop": "turbo run @connnect/desktop#build",
-    "build:web": "turbo run @connnect/web#build",
-    "start:web": "turbo run @connnect/web#start",
-    "start:api": "turbo run @connnect/api#start",
-    "drizzle:generate": "turbo run drizzle:generate",
-    "drizzle:migrate": "turbo run drizzle:migrate",
-    "check-types": "turbo run check-types"
+    "build:desktop": "pnpm run check-types && cd apps/desktop && pnpm run build",
+    "build:web": "pnpm run check-types && cd apps/web && pnpm run build",
+    "start:web": "cd apps/web && pnpm start",
+    "start:api": "cd apps/api && pnpm start",
+    "drizzle:generate": "cd apps/api && pnpm drizzle:generate",
+    "drizzle:migrate": "cd apps/api && pnpm drizzle:migrate",
+    "check-types": "pnpm --parallel check-types"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.11.0",
@@ -31,7 +31,6 @@
     "husky": "^9.1.7",
     "npm-run-all2": "^7.0.2",
     "tsx": "^4.19.3",
-    "turbo": "^2.4.4",
     "typescript": "^5.8.2",
     "vitest": "^3.0.9"
   },

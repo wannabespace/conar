@@ -1,1 +1,1 @@
-run-p lint check-types test
+pnpm --parallel lint check-types test
