@@ -1,14 +1,14 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { z } from 'zod'
+import { type } from 'arktype'
 
-const schemaSchema = z.object({
-  name: z.string(),
+const schemaType = type({
+  name: 'string',
 })
 
 export function databaseSchemasQuery(database: Database) {
-  const queryMap: Record<DatabaseType, () => Promise<z.infer<typeof schemaSchema>[]>> = {
+  const queryMap: Record<DatabaseType, () => Promise<typeof schemaType.infer[]>> = {
     postgres: async () => {
       const [result] = await window.electron.databases.query({
         type: database.type,
@@ -24,7 +24,7 @@ export function databaseSchemasQuery(database: Database) {
         `,
       })
 
-      return result.rows.map(row => schemaSchema.parse(row))
+      return result.rows.map(row => schemaType(row))
     },
   }
 

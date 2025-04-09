@@ -7,10 +7,10 @@ import { Toaster } from '@connnect/ui/components/sonner'
 import { ThemeProvider } from '@connnect/ui/theme-provider'
 import { RiAlertLine, RiArrowGoBackLine, RiLoopLeftLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
-import { ZodError } from 'zod'
+import { TraversalError } from 'arktype'
 import { EventsProvider } from './lib/events'
 
-export function ErrorPage({ error, info }: ErrorComponentProps) {
+export function ErrorPage({ error }: ErrorComponentProps) {
   const router = useRouter()
 
   return (
@@ -20,9 +20,6 @@ export function ErrorPage({ error, info }: ErrorComponentProps) {
           <DotPattern
             width={20}
             height={20}
-            cx={1}
-            cy={1}
-            cr={1}
             className="absolute z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
           />
           <div className="relative z-20 w-full max-w-lg">
@@ -37,19 +34,19 @@ export function ErrorPage({ error, info }: ErrorComponentProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {!error.stack && (
+                {!(error instanceof TraversalError) && !error.stack && (
                   <ScrollArea className="rounded-md bg-muted p-4 text-sm text-muted-foreground h-[200px]">
                     {error.message}
                   </ScrollArea>
                 )}
-                {!(error instanceof ZodError) && error.stack && (
-                  <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[200px] font-mono">
+                {!(error instanceof TraversalError) && error.stack && (
+                  <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[300px] font-mono">
                     {error.stack}
                   </ScrollArea>
                 )}
-                {error instanceof ZodError && (
-                  <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[200px] font-mono">
-                    {error.errors.map((err, index) => (
+                {error instanceof TraversalError && (
+                  <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[300px] font-mono">
+                    {error.arkErrors.map((err, index) => (
                       <div key={index} className="mb-4 last:mb-0">
                         <div className="font-semibold text-destructive">
                           Error
@@ -59,34 +56,20 @@ export function ErrorPage({ error, info }: ErrorComponentProps) {
                         </div>
                         <div className="ml-2 mt-1">
                           <div>
-                            <span className="opacity-70">Path:</span>
-                            {' '}
-                            {err.path.join(' > ')}
-                          </div>
-                          <div>
-                            <span className="opacity-70">Message:</span>
-                            {' '}
                             {err.message}
                           </div>
-                          {err.code && (
-                            <div>
-                              <span className="opacity-70">Code:</span>
-                              {' '}
-                              {err.code}
-                            </div>
-                          )}
                         </div>
                       </div>
                     ))}
+                    {error.stack && (
+                      <div className="mt-4">
+                        <h3 className="text-sm font-medium mb-2">Stack</h3>
+                        <div className="rounded-md bg-muted text-xs text-muted-foreground font-mono">
+                          {error.stack}
+                        </div>
+                      </div>
+                    )}
                   </ScrollArea>
-                )}
-                {info?.componentStack && (
-                  <div className="mt-4">
-                    <h3 className="text-sm font-medium mb-2">Component Stack</h3>
-                    <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground max-h-[200px] font-mono">
-                      {info.componentStack}
-                    </ScrollArea>
-                  </div>
                 )}
               </CardContent>
               <CardFooter className="flex justify-between gap-2">

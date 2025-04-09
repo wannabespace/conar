@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 import { fullSignOut } from '~/lib/auth'
 
 function getErrorMessage(error: unknown) {
-  return (error instanceof TRPCClientError && error.data.zodError)
+  return (error instanceof TRPCClientError && error.data.arktypeError)
     || (error as Error)?.message
     || 'Our server is practicing its meditation. Please, try again later.'
 }

@@ -3,15 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@connnect/ui/component
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { copy } from '@connnect/ui/lib/copy'
 import { createFileRoute } from '@tanstack/react-router'
+import { type } from 'arktype'
 import { useEffect } from 'react'
-import { z } from 'zod'
 import { authClient } from '~/lib/auth'
 
 export const Route = createFileRoute('/open')({
   component: RouteComponent,
-  validateSearch: z.object({
-    'code-challenge': z.string(),
-    'new-user': z.boolean().optional(),
+  validateSearch: type({
+    'code-challenge': 'string',
+    'new-user': 'boolean?',
   }),
 })
 

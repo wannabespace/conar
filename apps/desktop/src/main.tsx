@@ -1,11 +1,13 @@
+/* eslint-disable perfectionist/sort-imports */
+import './arktype'
+import './monaco-worker'
+import '@connnect/ui/globals.css'
 import { QueryClient } from '@tanstack/react-query'
 import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
 import { routeTree } from './routeTree.gen'
-import '@connnect/ui/globals.css'
-import './monaco-worker'
 
 if (import.meta.env.DEV) {
   import('react-scan').then(({ scan }) => {

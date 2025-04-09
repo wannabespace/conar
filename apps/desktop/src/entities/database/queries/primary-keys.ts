@@ -1,12 +1,12 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { z } from 'zod'
+import { type } from 'arktype'
 
-const primaryKeySchema = z.object({
-  table: z.string(),
-  schema: z.string(),
-  primary_keys: z.string(),
+const primaryKeyType = type({
+  table: 'string',
+  schema: 'string',
+  primary_keys: 'string',
 })
 
 export function databasePrimaryKeysQuery(database: Database) {
@@ -39,7 +39,7 @@ export function databasePrimaryKeysQuery(database: Database) {
         `,
       })
 
-      return result.rows.map(row => primaryKeySchema.parse(row)).map(row => ({
+      return result.rows.map(row => primaryKeyType(row)).map(row => ({
         ...row,
         primaryKeys: row.primary_keys.split(',').map(key => key.trim()),
       }))

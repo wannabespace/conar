@@ -1,3 +1,5 @@
+/* eslint-disable perfectionist/sort-imports */
+import './arktype'
 import { serve } from '@hono/node-server'
 import { trpcServer } from '@hono/trpc-server'
 import { Hono } from 'hono'

@@ -6,14 +6,14 @@ import { Input } from '@connnect/ui/components/input'
 import { Separator } from '@connnect/ui/components/separator'
 import { useAsyncEffect } from '@connnect/ui/hooks/use-async-effect'
 import { copy } from '@connnect/ui/lib/copy'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { arktypeResolver } from '@hookform/resolvers/arktype'
 import { RiEyeLine, RiEyeOffLine, RiGithubFill, RiGoogleFill } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
+import { type } from 'arktype'
 import { nanoid } from 'nanoid'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { z } from 'zod'
 import { authClient, bearerToken, codeChallenge, successAuthToast } from '~/lib/auth'
 import { handleDeepLink } from '~/lib/deep-links'
 import { encrypt } from '~/lib/encryption'
@@ -21,10 +21,10 @@ import { handleError } from '~/lib/error'
 
 type Type = 'sign-up' | 'sign-in'
 
-const schema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  name: z.string().optional(),
+const schema = type({
+  email: 'string.email',
+  password: 'string > 8',
+  name: 'string?',
 })
 
 function useSocialMutation(provider: 'google' | 'github', onSuccess: () => void) {
@@ -170,7 +170,11 @@ export function AuthForm({ type }: { type: Type }) {
   const emailRef = useRef<HTMLInputElement>(null)
 
   const form = useForm({
-    resolver: zodResolver(type === 'sign-up' ? schema.extend({ name: z.string().min(1, 'Please enter your name') }) : schema),
+    resolver: arktypeResolver(
+      type === 'sign-up'
+        ? schema.and({ name: 'string' })
+        : schema,
+    ),
     defaultValues: {
       email: '',
       password: '',
@@ -184,7 +188,7 @@ export function AuthForm({ type }: { type: Type }) {
     }
   }, [emailRef.current])
 
-  const submit = async (values: z.infer<typeof schema>) => {
+  const submit = async (values: typeof schema.infer) => {
     const { error, data } = type === 'sign-up'
       ? await authClient.signUp.email({
         email: values.email,

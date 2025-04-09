@@ -21,9 +21,6 @@ function AuthLayout() {
       <DotPattern
         width={20}
         height={20}
-        cx={1}
-        cy={1}
-        cr={1}
         className="absolute z-0 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-col gap-8 py-6">

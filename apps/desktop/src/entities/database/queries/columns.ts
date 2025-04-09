@@ -1,15 +1,15 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { z } from 'zod'
+import { type } from 'arktype'
 
-export const columnSchema = z.object({
-  table: z.string(),
-  name: z.string(),
-  type: z.string(),
-  editable: z.boolean(),
-  default: z.string().nullable(),
-  nullable: z.boolean(),
+export const columnType = type({
+  table: 'string',
+  name: 'string',
+  type: 'string',
+  editable: 'boolean',
+  default: 'string | null',
+  nullable: 'boolean',
 })
 
 export function databaseColumnsQuery(database: Database, table: string, schema: string) {
@@ -54,7 +54,7 @@ export function databaseColumnsQuery(database: Database, table: string, schema: 
         `,
       })
 
-      return result.rows.map(row => columnSchema.parse(row)).map(column => ({
+      return result.rows.map(row => columnType(row)).map(column => ({
         ...column,
         isEditable: column.editable,
         isNullable: column.nullable,
