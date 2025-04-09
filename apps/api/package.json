@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@connnect/shared": "workspace:*",
-    "@types/node": "^22.13.13",
+    "bun-types": "^1.2.9",
     "drizzle-kit": "^0.30.5",
     "tsx": "^4.19.3"
   }

@@ -6,6 +6,7 @@
     "paths": {
       "~/*": ["./src/*"]
     },
+    "types": ["bun-types"],
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "./.types"
