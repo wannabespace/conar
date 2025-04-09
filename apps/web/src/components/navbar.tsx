@@ -7,7 +7,7 @@ import { RiGithubFill, RiTwitterXLine } from '@remixicon/react'
 
 export function Navbar() {
   return (
-    <header className="flex p-4 items-center justify-between w-full gap-10 rounded-lg border bg-background/20 backdrop-blur-xs fixed top-10 left-1/2 -translate-x-1/2 z-50 max-w-lg mx-auto">
+    <header className="flex p-4 items-center justify-between w-full gap-10 rounded-lg border bg-background/70 backdrop-blur-xs fixed top-10 left-1/2 -translate-x-1/2 z-50 max-w-lg mx-auto">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-3">
           <AppLogoGradient className="hidden size-7 dark:block" />

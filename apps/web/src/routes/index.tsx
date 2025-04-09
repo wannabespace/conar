@@ -4,6 +4,7 @@ import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { RiExternalLinkLine } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { Navbar } from '~/components/navbar'
+import { Video } from './-components/video'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -11,7 +12,7 @@ export const Route = createFileRoute('/')({
 
 function Home() {
   return (
-    <>
+    <div className="space-y-20 py-20">
       <Navbar />
       <DotPattern
         glow={true}
@@ -19,7 +20,7 @@ function Home() {
         height={20}
         className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
-      <div className="max-w-3xl mx-auto py-50 px-4">
+      <div className="max-w-3xl mx-auto pt-30 pb-20 px-4">
         <div className="flex flex-col items-center text-center gap-8">
           <Badge asChild variant="secondary">
             <a href="https://github.com/wannabespace/connnect/releases/latest" target="_blank" rel="noopener noreferrer">
@@ -52,6 +53,7 @@ function Home() {
           </div>
         </div>
       </div>
-    </>
+      <Video />
+    </div>
   )
 }
