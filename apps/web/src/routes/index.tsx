@@ -36,7 +36,7 @@ function Home() {
             {' '}
             management experience
           </h1>
-          <p className="text-xl text-muted-foreground text-balance max-w-xl">
+          <p className="text-2xl text-muted-foreground text-balance max-w-xl">
             AI-powered tool that makes database operations easier. Built for PostgreSQL, it's a modern alternative to traditional database management tools.
           </p>
           <div className="flex gap-3">
