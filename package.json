@@ -29,6 +29,7 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "happy-dom": "^17.4.4",
     "husky": "^9.1.7",
+    "npm-run-all2": "^7.0.2",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
     "vitest": "^3.0.9"
