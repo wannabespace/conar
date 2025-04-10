@@ -13,8 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
-import { DANGEROUS_SQL_KEYWORDS } from '~/constants'
-import { databaseQuery, DataTable, useDatabase } from '~/entities/database'
+import { databaseQuery, DataTable, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
 import { formatSql } from '~/lib/formatter'
 import { queryClient } from '~/main'
 import { SqlChat } from './-components/sql-chat'
@@ -120,8 +119,8 @@ function RouteComponent() {
 
   const [isAlertVisible, setIsAlertVisible] = useState(false)
 
-  function sendQuery() {
-    if (DANGEROUS_SQL_KEYWORDS.some(keyword => query.toLowerCase().includes(keyword.toLowerCase()))) {
+  function sendQuery(query: string) {
+    if (hasDangerousSqlKeywords(query)) {
       setIsAlertVisible(true)
       return
     }
@@ -164,7 +163,7 @@ function RouteComponent() {
               value={query}
               onChange={setQuery}
               className="size-full"
-              onEnter={() => sendQuery()}
+              onEnter={query => sendQuery(query)}
             />
             <div className="absolute right-6 bottom-2 z-10 flex gap-2">
               <TooltipProvider>
@@ -193,7 +192,7 @@ function RouteComponent() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button disabled={isPending} onClick={() => sendQuery()}>
+                    <Button disabled={isPending} onClick={() => sendQuery(query)}>
                       <RiPlayLargeLine />
                       Run
                     </Button>
