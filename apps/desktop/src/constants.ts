@@ -1,1 +1,0 @@
-export const DANGEROUS_SQL_KEYWORDS = ['DELETE', 'UPDATE', 'INSERT', 'CREATE', 'DROP']
