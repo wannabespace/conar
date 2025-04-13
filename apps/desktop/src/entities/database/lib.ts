@@ -73,7 +73,7 @@ export async function fetchDatabases() {
             if (existingUrl.toString() !== fetchedUrl.toString()) {
               changes.connectionString = d.connectionString
               changes.isPasswordExists = !!d.isPasswordExists
-              changes.isPasswordPopulated = !!fetchedUrl.password
+              changes.isPasswordPopulated = !!new URL(d.connectionString).password
             }
 
             return {
@@ -84,7 +84,8 @@ export async function fetchDatabases() {
       ),
     ])
   }
-  catch {
+  catch (e) {
+    console.error(e)
     toast.error('Failed to fetch databases. Please try again later.')
   }
 }

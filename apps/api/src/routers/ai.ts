@@ -1,8 +1,10 @@
-import type { databaseContextType } from '@connnect/shared/database'
-import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { LanguageModelV1, Message } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
+import { databaseContextType } from '@connnect/shared/database'
+import { DatabaseType } from '@connnect/shared/enums/database-type'
+import { arktypeValidator } from '@hono/arktype-validator'
 import { streamText } from 'ai'
+import { type } from 'arktype'
 import { Hono } from 'hono'
 
 export const ai = new Hono()
@@ -58,8 +60,18 @@ function generateStream({
   })
 }
 
-ai.post('/sql-chat', async (c) => {
-  const { type, messages, context } = await c.req.json()
+const input = type({
+  type: type.valueOf(DatabaseType),
+  messages: type({
+    id: 'string',
+    role: 'string' as type.cast<Message['role']>,
+    content: 'string',
+  }).array(),
+  context: databaseContextType,
+})
+
+ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
+  const { type, messages, context } = c.req.valid('json')
 
   try {
     const result = generateStream({

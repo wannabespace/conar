@@ -1,6 +1,6 @@
 import { title } from '@connnect/shared/utils/title'
 import { Toaster } from '@connnect/ui/components/sonner'
-import { useAsyncEffect } from '@connnect/ui/hooks/use-async-effect'
+import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
 import { ThemeProvider } from '@connnect/ui/theme-provider'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'

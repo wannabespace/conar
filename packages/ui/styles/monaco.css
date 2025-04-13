@@ -1,0 +1,4 @@
+/* Disable Monaco read-only message */
+.monaco-editor-overlaymessage {
+  display: none !important;
+}

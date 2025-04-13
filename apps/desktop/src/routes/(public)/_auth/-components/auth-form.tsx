@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@connnect/ui/components/form'
 import { Input } from '@connnect/ui/components/input'
 import { Separator } from '@connnect/ui/components/separator'
-import { useAsyncEffect } from '@connnect/ui/hooks/use-async-effect'
+import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
 import { copy } from '@connnect/ui/lib/copy'
 import { arktypeResolver } from '@hookform/resolvers/arktype'
 import { RiEyeLine, RiEyeOffLine, RiGithubFill, RiGoogleFill } from '@remixicon/react'
