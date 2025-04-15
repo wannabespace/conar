@@ -19,7 +19,7 @@ function generateStream({
   type: DatabaseType
   model: LanguageModelV1
   context: typeof databaseContextType.infer
-  messages: Message[]
+  messages: (Omit<Message, 'id'> & { id?: string })[]
   signal: AbortSignal
 }) {
   console.info('messages', messages)
@@ -63,9 +63,9 @@ function generateStream({
 const input = type({
   type: type.valueOf(DatabaseType),
   messages: type({
-    id: 'string',
-    role: 'string' as type.cast<Message['role']>,
-    content: 'string',
+    'id?': 'string',
+    'role': 'string' as type.cast<Message['role']>,
+    'content': 'string',
   }).array(),
   context: databaseContextType,
 })

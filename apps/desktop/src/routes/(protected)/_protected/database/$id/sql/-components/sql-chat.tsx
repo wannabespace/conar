@@ -1,7 +1,6 @@
 import type { Message } from '@ai-sdk/react'
 import type { ComponentProps } from 'react'
 import { useChat } from '@ai-sdk/react'
-import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { Avatar, AvatarFallback } from '@connnect/ui/components/avatar'
 import { Button } from '@connnect/ui/components/button'
 import { CardTitle } from '@connnect/ui/components/card'
@@ -79,11 +78,12 @@ export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
     queryFn: () => getDatabaseContext(database),
   })
   const { messages, stop, input, handleInputChange, handleSubmit, status, setMessages, error, reload } = useChat({
+    id,
     api: `${import.meta.env.VITE_PUBLIC_API_URL}/ai/sql-chat`,
     initialMessages: chatMessages.get(id),
     initialInput: chatInput.get(id),
     body: {
-      type: DatabaseType.Postgres,
+      type: database.type,
       context,
     },
   })
@@ -125,7 +125,7 @@ export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
           </Tooltip>
         </TooltipProvider>
       </div>
-      {messages.length === 0 && (
+      {messages.length === 0 && !error && (
         <div className="pointer-events-none absolute z-10 inset-0 flex justify-center items-center px-6">
           <div className="pointer-events-auto text-center text-balance max-w-96">
             <RiQuestionAnswerLine className="mx-auto mb-2 size-8" />

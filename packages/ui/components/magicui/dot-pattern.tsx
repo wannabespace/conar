@@ -1,7 +1,9 @@
 'use client'
 
+import { useDebouncedMemo } from '@connnect/ui/hookas/use-debounced-memo'
+import { useElementSize } from '@connnect/ui/hookas/use-element-size'
 import { cn } from '@connnect/ui/lib/utils'
-import React, { useEffect, useId, useRef, useState } from 'react'
+import React, { useId, useRef } from 'react'
 
 /**
  *  DotPattern Component Props
@@ -70,22 +72,11 @@ export function DotPattern({
 }: DotPatternProps) {
   const id = useId()
   const containerRef = useRef<SVGSVGElement>(null)
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      if (containerRef.current) {
-        const { width, height } = containerRef.current.getBoundingClientRect()
-        setDimensions({ width, height })
-      }
-    }
-
-    updateDimensions()
-    window.addEventListener('resize', updateDimensions)
-    return () => window.removeEventListener('resize', updateDimensions)
-  }, [])
-
-  const dots = Array.from(
+  const dimensions = useElementSize(containerRef, {
+    width: 0,
+    height: 0,
+  })
+  const dots = useDebouncedMemo(() => Array.from(
     {
       length:
         Math.ceil(dimensions.width / width)
@@ -101,7 +92,7 @@ export function DotPattern({
         duration: Math.random() * 3 + 2,
       }
     },
-  )
+  ), [dimensions.height, dimensions.width], 100)
 
   return (
     <svg

@@ -169,7 +169,7 @@ export function AuthForm({ type }: { type: Type }) {
   const [showPassword, setShowPassword] = useState(false)
   const emailRef = useRef<HTMLInputElement>(null)
 
-  const form = useForm({
+  const form = useForm<typeof schema.infer>({
     resolver: arktypeResolver(
       type === 'sign-up'
         ? schema.and({ name: 'string' })
