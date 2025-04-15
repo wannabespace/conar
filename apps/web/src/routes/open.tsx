@@ -49,9 +49,6 @@ function RouteComponent() {
       <DotPattern
         width={20}
         height={20}
-        cx={1}
-        cy={1}
-        cr={1}
         className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <Card className="max-w-md w-full">

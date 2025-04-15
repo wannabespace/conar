@@ -14,9 +14,7 @@ const UpdatesContext = createContext<{
 export const useUpdates = () => use(UpdatesContext)
 
 export async function checkForUpdates() {
-  if (import.meta.env.PROD) {
-    await window.electron.app.checkForUpdates()
-  }
+  await window.electron.app.checkForUpdates()
 }
 
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {

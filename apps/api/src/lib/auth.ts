@@ -65,8 +65,10 @@ export const auth = betterAuth({
   },
   trustedOrigins: [env.WEB_URL, ...(process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3002'])],
   advanced: {
-    generateId: false,
     cookiePrefix: 'connnect',
+    database: {
+      generateId: false,
+    },
   },
   database: drizzleAdapter(db, {
     provider: 'pg',

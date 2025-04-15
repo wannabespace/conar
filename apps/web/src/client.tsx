@@ -4,6 +4,14 @@ import { StartClient } from '@tanstack/react-start'
 import { hydrateRoot } from 'react-dom/client'
 import { createRouter } from './router'
 
+if (import.meta.env.DEV) {
+  import('react-scan').then(({ scan }) => {
+    scan({
+      enabled: false,
+    })
+  })
+}
+
 const router = createRouter()
 
 hydrateRoot(document, <StartClient router={router} />)

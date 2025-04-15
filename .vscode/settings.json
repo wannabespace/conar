@@ -47,8 +47,11 @@
     "pcss",
     "postcss"
   ],
+  "typescript.tsdk": "node_modules/typescript/lib",
   "files.watcherExclude": {
     "**/routeTree.gen.ts": true
   },
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "files.readonlyInclude": {
+    "**/routeTree.gen.ts": true
+  }
 }

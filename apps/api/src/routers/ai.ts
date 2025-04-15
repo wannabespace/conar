@@ -1,8 +1,10 @@
-import type { databaseContextType } from '@connnect/shared/database'
-import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { LanguageModelV1, Message } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
+import { databaseContextType } from '@connnect/shared/database'
+import { DatabaseType } from '@connnect/shared/enums/database-type'
+import { arktypeValidator } from '@hono/arktype-validator'
 import { streamText } from 'ai'
+import { type } from 'arktype'
 import { Hono } from 'hono'
 
 export const ai = new Hono()
@@ -17,7 +19,7 @@ function generateStream({
   type: DatabaseType
   model: LanguageModelV1
   context: typeof databaseContextType.infer
-  messages: Message[]
+  messages: (Omit<Message, 'id'> & { id?: string })[]
   signal: AbortSignal
 }) {
   console.info('messages', messages)
@@ -37,7 +39,7 @@ function generateStream({
         6. Generate SQL query only for the provided schemas, tables, columns and enums
         7. Answer in markdown and paste the SQL code in a code block.
         8. Say less, do not add useless information
-        9. You can use SQL comments for additional information, examples:
+        9. You can use SQL comments for additional information, example:
 
         -- This is a comment
         SELECT * FROM users WHERE id = 1;
@@ -58,8 +60,18 @@ function generateStream({
   })
 }
 
-ai.post('/sql-chat', async (c) => {
-  const { type, messages, context } = await c.req.json()
+const input = type({
+  type: type.valueOf(DatabaseType),
+  messages: type({
+    'id?': 'string',
+    'role': 'string' as type.cast<Message['role']>,
+    'content': 'string',
+  }).array(),
+  context: databaseContextType,
+})
+
+ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
+  const { type, messages, context } = c.req.valid('json')
 
   try {
     const result = generateStream({
