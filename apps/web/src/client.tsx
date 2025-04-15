@@ -7,7 +7,7 @@ import { createRouter } from './router'
 if (import.meta.env.DEV) {
   import('react-scan').then(({ scan }) => {
     scan({
-      enabled: true,
+      enabled: false,
     })
   })
 }

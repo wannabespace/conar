@@ -65,6 +65,9 @@ importers:
       '@hono/arktype-validator':
         specifier: ^2.0.0
         version: 2.0.0(arktype@2.1.19)(hono@4.7.5)
+      '@hono/node-server':
+        specifier: ^1.14.1
+        version: 1.14.1(hono@4.7.5)
       '@hono/trpc-server':
         specifier: ^0.3.4
         version: 0.3.4(@trpc/server@11.0.0(typescript@5.8.2))(hono@4.7.5)
@@ -114,9 +117,6 @@ importers:
       '@connnect/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      bun-types:
-        specifier: ^1.2.9
-        version: 1.2.9
       drizzle-kit:
         specifier: ^0.30.5
         version: 0.30.5
@@ -1802,6 +1802,12 @@ packages:
     peerDependencies:
       arktype: ^2.0.0-dev.14
       hono: '*'
+
+  '@hono/node-server@1.14.1':
+    resolution: {integrity: sha512-vmbuM+HPinjWzPe7FFPWMMQMsbKE9gDPhaH0FFdqbGpkT5lp++tcWDTxwBl5EgS5y6JVgIaCdjeHRfQ4XRBRjQ==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
 
   '@hono/trpc-server@0.3.4':
     resolution: {integrity: sha512-xFOPjUPnII70FgicDzOJy1ufIoBTu8eF578zGiDOrYOrYN8CJe140s9buzuPkX+SwJRYK8LjEBHywqZtxdm8aA==}
@@ -9354,6 +9360,10 @@ snapshots:
       arktype: 2.1.19
       hono: 4.7.5
 
+  '@hono/node-server@1.14.1(hono@4.7.5)':
+    dependencies:
+      hono: 4.7.5
+
   '@hono/trpc-server@0.3.4(@trpc/server@11.0.0(typescript@5.8.2))(hono@4.7.5)':
     dependencies:
       '@trpc/server': 11.0.0(typescript@5.8.2)
@@ -11277,6 +11287,7 @@ snapshots:
   '@types/ws@8.18.1':
     dependencies:
       '@types/node': 22.13.13
+    optional: true
 
   '@types/yauzl@2.10.3':
     dependencies:
@@ -11997,6 +12008,7 @@ snapshots:
     dependencies:
       '@types/node': 22.13.13
       '@types/ws': 8.18.1
+    optional: true
 
   c12@3.0.2(magicast@0.3.5):
     dependencies:

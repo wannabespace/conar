@@ -10,7 +10,7 @@ import '@connnect/ui/globals.css'
 if (import.meta.env.DEV) {
   import('react-scan').then(({ scan }) => {
     scan({
-      enabled: true,
+      enabled: false,
     })
   })
 }
