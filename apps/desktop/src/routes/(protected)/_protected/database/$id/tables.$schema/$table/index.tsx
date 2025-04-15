@@ -63,7 +63,7 @@ function RouteComponent() {
     if (status === 'success') {
       setTotal(data.total)
     }
-  }, [status])
+  }, [status, data?.total])
 
   const rows = data?.rows ?? []
   const columns = databaseColumns ?? []
@@ -106,7 +106,7 @@ function RouteComponent() {
         type: database.type,
         connectionString: database.connectionString,
         query: `
-          UPDATE ${schema}.${table}
+          UPDATE "${schema}"."${table}"
           SET ${columns[columnIndex].name} = $1
           WHERE ${where.map((column, index) => `${column.name} = $${index + 2}`).join(' AND ')}
         `,
