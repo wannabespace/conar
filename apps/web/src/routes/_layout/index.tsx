@@ -3,17 +3,15 @@ import { Button } from '@connnect/ui/components/button'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { RiExternalLinkLine } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Navbar } from '~/components/navbar'
 import { Video } from './-components/video'
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/_layout/')({
   component: Home,
 })
 
 function Home() {
   return (
     <div className="space-y-20 py-20">
-      <Navbar />
       <DotPattern
         width={20}
         height={20}
