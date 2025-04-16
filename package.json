@@ -13,8 +13,8 @@
     "dev": "turbo run dev",
     "build:desktop": "turbo run @connnect/desktop#build",
     "build:web": "turbo run @connnect/web#build",
-    "start:web": "cd apps/web && pnpm tun start",
-    "start:api": "cd apps/api && pnpm tun start",
+    "start:web": "cd apps/web && pnpm run start",
+    "start:api": "cd apps/api && pnpm run start",
     "drizzle:generate": "turbo run drizzle:generate",
     "drizzle:migrate": "turbo run drizzle:migrate",
     "check-types": "turbo run check-types"
