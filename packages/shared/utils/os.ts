@@ -1,19 +1,21 @@
-export function getOS() {
-  const userAgent = navigator.userAgent.toLowerCase()
+export type OS = 'windows' | 'macos' | 'linux' | 'android' | 'ios' | 'unknown'
 
-  if (userAgent.includes('win')) {
+export function getOS(userAgent?: string): OS {
+  const agent = (userAgent || navigator.userAgent).toLowerCase()
+
+  if (agent.includes('win')) {
     return 'windows'
   }
-  else if (userAgent.includes('mac')) {
+  else if (agent.includes('mac')) {
     return 'macos'
   }
-  else if (userAgent.includes('linux')) {
+  else if (agent.includes('linux')) {
     return 'linux'
   }
-  else if (userAgent.includes('android')) {
+  else if (agent.includes('android')) {
     return 'android'
   }
-  else if (userAgent.includes('ios') || userAgent.includes('iphone') || userAgent.includes('ipad')) {
+  else if (agent.includes('ios') || agent.includes('iphone') || agent.includes('ipad')) {
     return 'ios'
   }
 

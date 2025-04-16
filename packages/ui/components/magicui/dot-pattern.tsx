@@ -73,8 +73,8 @@ export function DotPattern({
   const id = useId()
   const containerRef = useRef<SVGSVGElement>(null)
   const dimensions = useElementSize(containerRef, {
-    width: 0,
-    height: 0,
+    width: typeof window === 'undefined' ? 0 : window.innerWidth,
+    height: typeof window === 'undefined' ? 0 : window.innerHeight,
   })
   const dots = useDebouncedMemo(() => Array.from(
     {

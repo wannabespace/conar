@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as OpenImport } from './routes/open'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
+import { Route as LayoutDownloadImport } from './routes/_layout/download'
 
 // Create/Update Routes
 
@@ -31,6 +32,12 @@ const LayoutRoute = LayoutImport.update({
 const LayoutIndexRoute = LayoutIndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutDownloadRoute = LayoutDownloadImport.update({
+  id: '/download',
+  path: '/download',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -52,6 +59,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpenImport
       parentRoute: typeof rootRoute
     }
+    '/_layout/download': {
+      id: '/_layout/download'
+      path: '/download'
+      fullPath: '/download'
+      preLoaderRoute: typeof LayoutDownloadImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/': {
       id: '/_layout/'
       path: '/'
@@ -65,10 +79,12 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface LayoutRouteChildren {
+  LayoutDownloadRoute: typeof LayoutDownloadRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutDownloadRoute: LayoutDownloadRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 
@@ -78,11 +94,13 @@ const LayoutRouteWithChildren =
 export interface FileRoutesByFullPath {
   '': typeof LayoutRouteWithChildren
   '/open': typeof OpenRoute
+  '/download': typeof LayoutDownloadRoute
   '/': typeof LayoutIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/open': typeof OpenRoute
+  '/download': typeof LayoutDownloadRoute
   '/': typeof LayoutIndexRoute
 }
 
@@ -90,15 +108,16 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_layout': typeof LayoutRouteWithChildren
   '/open': typeof OpenRoute
+  '/_layout/download': typeof LayoutDownloadRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/open' | '/'
+  fullPaths: '' | '/open' | '/download' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/open' | '/'
-  id: '__root__' | '/_layout' | '/open' | '/_layout/'
+  to: '/open' | '/download' | '/'
+  id: '__root__' | '/_layout' | '/open' | '/_layout/download' | '/_layout/'
   fileRoutesById: FileRoutesById
 }
 
@@ -129,11 +148,16 @@ export const routeTree = rootRoute
     "/_layout": {
       "filePath": "_layout.tsx",
       "children": [
+        "/_layout/download",
         "/_layout/"
       ]
     },
     "/open": {
       "filePath": "open.tsx"
+    },
+    "/_layout/download": {
+      "filePath": "_layout/download.tsx",
+      "parent": "/_layout"
     },
     "/_layout/": {
       "filePath": "_layout/index.tsx",

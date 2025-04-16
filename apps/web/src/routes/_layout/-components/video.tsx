@@ -11,6 +11,14 @@ export function Video({ className, ...props }: Omit<React.ComponentProps<'div'>,
 
   return (
     <div className={cn('w-full', className)} {...props}>
+      <motion.h2
+        className="text-center text-3xl font-bold mb-8 lg:text-4xl"
+        transition={{ duration: 0.5 }}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+      >
+        Watch Our Demo
+      </motion.h2>
       <motion.div
         transition={{ duration: 0.5, delay: 0.3 }}
         initial={{ opacity: 0, scale: 0.9 }}

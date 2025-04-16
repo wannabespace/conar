@@ -1,12 +1,20 @@
+import { title } from '@connnect/shared/utils/title'
 import { Badge } from '@connnect/ui/components/badge'
 import { Button } from '@connnect/ui/components/button'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { RiExternalLinkLine } from '@remixicon/react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { Video } from './-components/video'
 
 export const Route = createFileRoute('/_layout/')({
   component: Home,
+  head: () => {
+    return {
+      meta: [
+        { title: title() },
+      ],
+    }
+  },
 })
 
 function Home() {
@@ -35,7 +43,7 @@ function Home() {
             management experience
           </h1>
           <p className="text-2xl text-muted-foreground text-balance max-w-xl">
-            AI-powered tool that makes database operations easier. Built for PostgreSQL, it's a modern alternative to traditional database management tools.
+            AI-powered tool that makes database operations easier. Built for PostgreSQL, Modern alternative to traditional database management tools.
           </p>
           <div className="flex gap-3">
             <Button
@@ -43,9 +51,9 @@ function Home() {
               className="gap-2"
               asChild
             >
-              <a href="https://github.com/wannabespace/connnect/releases/latest" target="_blank" rel="noopener noreferrer">
+              <Link to="/download">
                 Get Started
-              </a>
+              </Link>
             </Button>
           </div>
         </div>
