@@ -8,10 +8,10 @@ import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { Checkbox } from '@connnect/ui/components/checkbox'
 import { CommandShortcut } from '@connnect/ui/components/command'
+import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
 import { Label } from '@connnect/ui/components/label'
-import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ToggleGroup, ToggleGroupItem } from '@connnect/ui/components/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { faker } from '@faker-js/faker'
@@ -243,10 +243,8 @@ function RouteComponent() {
 
   return (
     <div className="w-full">
-      <DotPattern
-        width={20}
-        height={20}
-        className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+      <DotsBg
+        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <form
         onSubmit={(e) => {

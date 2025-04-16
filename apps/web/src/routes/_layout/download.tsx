@@ -4,7 +4,7 @@ import { getOS } from '@connnect/shared/utils/os'
 import { AppLogoGradient } from '@connnect/ui/components/brand/app-logo-gradient'
 import { Button } from '@connnect/ui/components/button'
 import { Card } from '@connnect/ui/components/card'
-import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
+import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { RiAppleFill, RiDownloadLine, RiWindowsFill } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
@@ -135,10 +135,8 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col items-center justify-center px-4 pt-40 pb-16">
-      <DotPattern
-        width={20}
-        height={20}
-        className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+      <DotsBg
+        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <div className="flex flex-col items-center max-w-2xl mx-auto text-center">
         <AppLogoGradient className="size-32 mb-6" />

@@ -1,6 +1,6 @@
 import { Badge } from '@connnect/ui/components/badge'
 import { Button } from '@connnect/ui/components/button'
-import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
+import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { RiExternalLinkLine } from '@remixicon/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Video } from './-components/video'
@@ -12,10 +12,8 @@ export const Route = createFileRoute('/_layout/')({
 function Home() {
   return (
     <div className="space-y-20 py-20">
-      <DotPattern
-        width={20}
-        height={20}
-        className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+      <DotsBg
+        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <div className="max-w-3xl mx-auto pt-30 pb-20 px-4">
         <div className="flex flex-col items-center text-center gap-8">

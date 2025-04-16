@@ -4,9 +4,9 @@ import { useChat } from '@ai-sdk/react'
 import { Avatar, AvatarFallback } from '@connnect/ui/components/avatar'
 import { Button } from '@connnect/ui/components/button'
 import { CardTitle } from '@connnect/ui/components/card'
+import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
-import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { cn } from '@connnect/ui/lib/utils'
@@ -98,10 +98,8 @@ export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
 
   return (
     <div className="relative flex h-screen flex-col justify-between gap-2 p-4">
-      <DotPattern
-        width={20}
-        height={20}
-        className="absolute -z-10 top-0 left-0 opacity-50 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+      <DotsBg
+        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <div className="flex justify-between items-center mb-4">
         <CardTitle>AI Assistant</CardTitle>

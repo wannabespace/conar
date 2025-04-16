@@ -1,9 +1,9 @@
 import type { Database } from '~/lib/indexeddb'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@connnect/ui/components/card'
+import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
-import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { RiArrowLeftSLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
@@ -24,10 +24,8 @@ export function PasswordForm({ database }: { database: Database }) {
 
   return (
     <div className="relative flex flex-col flex-1 justify-center py-10 w-full">
-      <DotPattern
-        width={20}
-        height={20}
-        className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+      <DotsBg
+        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <div className="flex flex-col gap-6 max-w-lg mx-auto">
         <div className="flex items-center gap-2 w-full">

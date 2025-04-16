@@ -1,6 +1,6 @@
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@connnect/ui/components/card'
-import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
+import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { copy } from '@connnect/ui/lib/copy'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -11,7 +11,7 @@ export const Route = createFileRoute('/open')({
   component: RouteComponent,
   validateSearch: type({
     'code-challenge': 'string',
-    'new-user': 'boolean?',
+    'new-user?': 'boolean',
   }),
 })
 
@@ -46,10 +46,8 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <DotPattern
-        width={20}
-        height={20}
-        className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+      <DotsBg
+        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <Card className="max-w-md w-full">
         {isPending

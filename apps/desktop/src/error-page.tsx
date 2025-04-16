@@ -1,7 +1,7 @@
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@connnect/ui/components/card'
-import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
+import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Toaster } from '@connnect/ui/components/sonner'
 import { ThemeProvider } from '@connnect/ui/theme-provider'
@@ -17,10 +17,8 @@ export function ErrorPage({ error }: ErrorComponentProps) {
     <EventsProvider>
       <ThemeProvider>
         <div className="flex items-center justify-center min-h-screen p-4">
-          <DotPattern
-            width={20}
-            height={20}
-            className="absolute z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+          <DotsBg
+            className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
           />
           <div className="relative z-20 w-full max-w-lg">
             <Card>

@@ -1,7 +1,7 @@
 import { title } from '@connnect/shared/utils/title'
 import { Button } from '@connnect/ui/components/button'
+import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
-import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
 import { Separator } from '@connnect/ui/components/separator'
 import { RiAddLine, RiDownloadLine, RiLoader4Line, RiLoopLeftLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -35,10 +35,8 @@ function DashboardPage() {
 
   return (
     <div className="flex flex-col w-full mx-auto max-w-2xl py-10">
-      <DotPattern
-        width={20}
-        height={20}
-        className="absolute -z-10 top-0 left-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+      <DotsBg
+        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <h1 className="scroll-m-20 mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Dashboard
