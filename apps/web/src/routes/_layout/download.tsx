@@ -15,12 +15,12 @@ import { getLatestRelease } from '~/utils/releases'
 import { seo } from '~/utils/seo'
 
 const getRelease = createServerFn({ method: 'GET' }).handler(getLatestRelease)
+const getOSFn = createServerFn({ method: 'GET' }).handler(() => getOS(getHeader('user-agent')))
 
 export const Route = createFileRoute('/_layout/download')({
   component: RouteComponent,
   loader: async () => {
-    const releaseInfo = await getRelease()
-    const os = getOS(typeof window === 'undefined' ? getHeader('user-agent') : undefined)
+    const [releaseInfo, os] = await Promise.all([getRelease(), getOSFn()])
     const assets: Partial<Record<OS, ReleaseAsset[]>> = {
       macos: releaseInfo.assets.filter(asset => asset.name.toLowerCase().endsWith('.dmg')),
       linux: releaseInfo.assets.filter(asset => asset.name.toLowerCase().endsWith('.appimage')),

@@ -1,4 +1,3 @@
-import { title } from '@connnect/shared/utils/title'
 import { Badge } from '@connnect/ui/components/badge'
 import { Button } from '@connnect/ui/components/button'
 import { DotPattern } from '@connnect/ui/components/magicui/dot-pattern'
@@ -8,13 +7,6 @@ import { Video } from './-components/video'
 
 export const Route = createFileRoute('/_layout/')({
   component: Home,
-  head: () => {
-    return {
-      meta: [
-        { title: title() },
-      ],
-    }
-  },
 })
 
 function Home() {

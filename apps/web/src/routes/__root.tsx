@@ -17,7 +17,7 @@ export const Route = createRootRoute({
       },
       ...seo({
         title: 'Connnect.app - AI-powered connections management tool',
-        description: 'AI-powered connections management tool that makes database operations smarter. A modern alternative to pgAdmin, DBeaver, etc.',
+        description: 'AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.',
       }),
       { name: 'apple-mobile-web-app-title', content: 'Connnect' },
     ],

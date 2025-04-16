@@ -10,7 +10,7 @@ export function Video({ className, ...props }: Omit<React.ComponentProps<'div'>,
   const { isPlaying, pause, play } = useMediaControls(videoRef)
 
   return (
-    <div className={cn('w-full', className)} {...props}>
+    <div className={cn('max-w-[100rem] mx-auto w-full', className)} {...props}>
       <motion.h2
         className="text-center text-3xl font-bold mb-8 lg:text-4xl"
         transition={{ duration: 0.5 }}
