@@ -55,13 +55,6 @@ Connnect is an AI-powered open-source project that simplifies database interacti
 
 This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Contact
-
-- GitHub Issues: [Create an issue](https://github.com/yourusername/connnect/issues)
-- Email: [contact@connnect.app](mailto:contact@connnect.app)
-
----
-
 <div align="center">
   <sub>Built with ❤️</sub>
 </div>
