@@ -18,7 +18,7 @@ function Home() {
       <div className="max-w-3xl mx-auto pt-30 pb-20 px-4">
         <div className="flex flex-col items-center text-center gap-8">
           <Badge asChild variant="secondary">
-            <a href="https://github.com/wannabespace/connnect/releases/latest" target="_blank" rel="noopener noreferrer">
+            <a href="https://x.com/letstri/status/1912961552162103787" target="_blank" rel="noopener noreferrer">
               Connnect is now available on macOS!
               <RiExternalLinkLine className="size-3 text-muted-foreground" />
             </a>
