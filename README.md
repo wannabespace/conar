@@ -1,28 +1,67 @@
 # Connnect.app
 
-Connnect is an AI-powered connections management application that improves how you interact with your databases. As a modern alternative to traditional tools like pgAdmin and DBeaver, it brings intelligence to your database operations while maintaining a sleek, user-friendly interface.
+<div align="center">
+  <img src="https://connnect.app/app-logo.png" alt="Connnect Logo" width="150"/>
+</div>
+<br>
 
-Whether you're a developer, database administrator, or data analyst, Connnect provides smart features that make database management more efficient and intuitive than ever before.
+Connnect is an AI-powered open-source project that simplifies database interactions. Built for PostgreSQL, with support for other databases coming in the near future. Store your connections securely in our cloud and ask AI to help you write and optimize SQL queries.
+
+<div align="center">
+  <a href="https://connnect.app/download">
+    <img src="https://img.shields.io/badge/Download-Connnect-green?style=for-the-badge" alt="Download Connnect" />
+  </a>
+</div>
 
 ## Features
 
-- 🔐 Secure Database Connections
+- **🔐 Secure & Open**
+  - Open-source codebase
   - Encrypted connection strings
   - Password protection
-  - Cloud sync support
 
-- 💾 Multi-Database Support
+- **💾 Multi-Database Support**
   - PostgreSQL
   - MySQL (coming soon)
   - MongoDB (coming soon)
 
-- 🚀 Modern Features
-  - AI SQL runner
-  - Real-time table viewing and management
-  - Schema exploration
-  - Beautiful and intuitive UI
+- **🤖 AI-Powered Features**
+  - Intelligent SQL assistance
+  - More coming soon..
+
+- **🎨 UI**
+  - Beautiful, intuitive interface
   - Dark/Light theme support
 
-- 🔄 Sync & Backup
-  - Cloud synchronization of database connections
-  - Automatic updates
+## Stack
+
+- React with TypeScript
+- Electron
+- TailwindCSS and shadcn/ui
+- Vite
+- TanStack Start/Router/Query/Table/Form/Virtual
+- Arktype
+- Hono
+- tRPC
+- Drizzle ORM
+- Better Auth
+- AI SDK with Anthropic, OpenAI, Gemini and XAI
+- Supabase
+- Railway
+- PostHog
+- Loops
+
+## 📝 License
+
+This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Contact
+
+- GitHub Issues: [Create an issue](https://github.com/yourusername/connnect/issues)
+- Email: [contact@connnect.app](mailto:contact@connnect.app)
+
+---
+
+<div align="center">
+  <sub>Built with ❤️</sub>
+</div>
