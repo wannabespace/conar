@@ -1,13 +1,11 @@
 import type { RefObject } from 'react'
 import { databaseLabels, DatabaseType } from '@connnect/shared/enums/database-type'
-import { getProtocols, isValidConnectionString, parseConnectionString, protocolMap } from '@connnect/shared/utils/connections'
-import { getOS } from '@connnect/shared/utils/os'
+import { getProtocols } from '@connnect/shared/utils/connections'
 import { title } from '@connnect/shared/utils/title'
 import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { Checkbox } from '@connnect/ui/components/checkbox'
-import { CommandShortcut } from '@connnect/ui/components/command'
 import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
@@ -15,7 +13,6 @@ import { Label } from '@connnect/ui/components/label'
 import { ToggleGroup, ToggleGroupItem } from '@connnect/ui/components/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { faker } from '@faker-js/faker'
-import { useKeyboardEvent } from '@react-hookz/web'
 import { RiArrowLeftSLine, RiLoopLeftLine } from '@remixicon/react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
@@ -25,13 +22,11 @@ import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { createDatabase, databasesQuery, useTestDatabase } from '~/entities/database'
+import { createDatabase, databasesQuery } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
 import { queryClient } from '~/main'
-
-const os = getOS()
 
 export const Route = createFileRoute(
   '/(protected)/_protected/create',
@@ -100,17 +95,22 @@ function StepCredentials({ ref, type, connectionString, setConnectionString }: {
         </Label>
         <Input
           id={id}
-          placeholder={`${getProtocols(type)[0]}://username:password@host:port/database?options`}
+          placeholder={`${getProtocols(type)[0]}://user:password@host:port/database?options`}
           ref={ref}
           value={connectionString}
           onChange={e => setConnectionString(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+            }
+          }}
         />
       </CardContent>
     </Card>
   )
 }
 
-function StepSave({ name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud }: { name: string, connectionString: string, setName: (name: string) => void, onRandomName: () => void, saveInCloud: boolean, setSaveInCloud: (saveInCloud: boolean) => void }) {
+function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud }: { type: DatabaseType, name: string, connectionString: string, setName: (name: string) => void, onRandomName: () => void, saveInCloud: boolean, setSaveInCloud: (saveInCloud: boolean) => void }) {
   const nameId = useId()
   const saveInCloudId = useId()
 
@@ -121,7 +121,7 @@ function StepSave({ name, connectionString, setName, onRandomName, saveInCloud, 
         <CardDescription>Save the connection to your account.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ConnectionDetails className="mb-6" connectionString={connectionString} />
+        <ConnectionDetails className="mb-6" type={type} connectionString={connectionString} />
         <div className="flex flex-col gap-6">
           <div>
             <Label htmlFor={nameId} className="mb-2">
@@ -188,7 +188,6 @@ function RouteComponent() {
       router.navigate({ to: '/database/$id/tables', params: { id } })
     },
   })
-  const { mutate: testConnection, isPending: isConnecting } = useTestDatabase()
 
   const form = useForm({
     defaultValues: {
@@ -199,9 +198,9 @@ function RouteComponent() {
     },
     validators: {
       onChange: type({
-        name: 'string > 0',
+        name: 'string > 1',
         type: type.valueOf(DatabaseType),
-        connectionString: type('string').narrow(isValidConnectionString),
+        connectionString: 'string > 1',
         saveInCloud: 'boolean',
       }),
       onSubmit(e) {
@@ -210,36 +209,19 @@ function RouteComponent() {
     },
   })
 
-  useKeyboardEvent(e => e.key === 'v' && (os === 'macos' ? e.metaKey : e.ctrlKey), async (e) => {
-    if (inputRef.current === e.target)
-      return
-
-    try {
-      const text = await navigator.clipboard.readText()
-      const parsed = parseConnectionString(text)
-      const protocolsEntries = Object.entries(protocolMap)
-
-      if (protocolsEntries.every(([, protocols]) => !protocols.includes(parsed.protocol))) {
-        toast.error('Sorry, we currently do not support this protocol')
-        return
-      }
-
-      const type = protocolsEntries.find(([_, protocols]) => protocols.includes(parsed.protocol))?.[0] as DatabaseType
-
-      form.setFieldValue('connectionString', text)
-      form.setFieldValue('type', type)
-
-      setStep('save')
-
-      toast.success('Connection string pasted successfully')
-    }
-    catch {
-      toast.error('Sorry, we couldn\'t parse the connection string')
-    }
+  const { mutate: testConnection, reset, status } = useMutation({
+    mutationFn: window.electron.databases.test,
+    onSuccess: () => {
+      toast.success('Connection successful. You can save the database.')
+    },
+    onError: (error) => {
+      toast.error('We couldn\'t connect to the database', {
+        description: error.message,
+      })
+    },
   })
 
   const [typeValue, connectionString, name, saveInCloud] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud])
-  const isConnectionStringValid = useStore(form.store, state => isValidConnectionString(state.values.connectionString))
 
   return (
     <div className="w-full">
@@ -268,15 +250,7 @@ function RouteComponent() {
           Create a connection
         </h1>
         <p className="leading-7 [&:not(:first-child)]:mt-2 mb-10 text-muted-foreground">
-          Press
-          {' '}
-          <CommandShortcut>⌘</CommandShortcut>
-          {' '}
-          +
-          {' '}
-          <CommandShortcut>V</CommandShortcut>
-          {' '}
-          to automatically fill the form if you've copied a connection string.
+          Connect to your database by providing the connection details.
         </p>
         <Stepper
           active={step}
@@ -300,7 +274,7 @@ function RouteComponent() {
                 disabled={!typeValue}
                 onClick={() => setStep('credentials')}
               >
-                Next
+                Continue
               </Button>
             </div>
           </StepperContent>
@@ -309,33 +283,41 @@ function RouteComponent() {
               ref={inputRef}
               type={typeValue}
               connectionString={connectionString}
-              setConnectionString={connectionString => form.setFieldValue('connectionString', connectionString)}
+              setConnectionString={(connectionString) => {
+                reset()
+                form.setFieldValue('connectionString', connectionString)
+              }}
             />
-            <div className="flex gap-2 justify-between mt-auto pt-4">
-              <Button
-                variant="outline"
-                disabled={isConnecting || isCreating || !isConnectionStringValid}
-                onClick={() => testConnection(form.state.values)}
-              >
-                <LoadingContent loading={isConnecting}>
-                  Test connection
-                </LoadingContent>
-              </Button>
+            <div className="flex gap-2 justify-end mt-auto pt-4">
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setStep('type')}>
                   Back
                 </Button>
-                <Button
-                  disabled={!isConnectionStringValid}
-                  onClick={() => setStep('save')}
-                >
-                  Next
-                </Button>
+                {status === 'success' || status === 'error'
+                  ? (
+                      <Button
+                        variant={status === 'error' ? 'destructive' : 'default'}
+                        onClick={() => setStep('save')}
+                      >
+                        {status === 'error' ? 'Continue with connection error' : 'Continue'}
+                      </Button>
+                    )
+                  : (
+                      <Button
+                        disabled={status === 'pending'}
+                        onClick={() => testConnection(form.state.values)}
+                      >
+                        <LoadingContent loading={status === 'pending'}>
+                          Test connection
+                        </LoadingContent>
+                      </Button>
+                    )}
               </div>
             </div>
           </StepperContent>
           <StepperContent value="save">
             <StepSave
+              type={typeValue}
               name={name}
               connectionString={connectionString}
               setName={name => form.setFieldValue('name', name)}
@@ -349,9 +331,9 @@ function RouteComponent() {
               </Button>
               <Button
                 type="submit"
-                disabled={isCreating || isConnecting || !form.state.isValid}
+                disabled={isCreating || status === 'pending' || !form.state.isValid}
               >
-                <LoadingContent loading={isCreating}>
+                <LoadingContent loading={isCreating || status === 'pending'}>
                   <AppLogo className="w-4" />
                   Save connection
                 </LoadingContent>

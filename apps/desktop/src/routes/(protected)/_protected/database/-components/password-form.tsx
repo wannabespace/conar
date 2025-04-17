@@ -5,16 +5,23 @@ import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
 import { RiArrowLeftSLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
+import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
-import { useTestDatabase, useUpdateDatabasePassword } from '~/entities/database'
+import { toast } from 'sonner'
+import { useUpdateDatabasePassword } from '~/entities/database'
 
 export function PasswordForm({ database }: { database: Database }) {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const { mutate: savePassword, isPending } = useUpdateDatabasePassword(database)
-  const { mutate: testConnection, isPending: isConnecting } = useTestDatabase()
+  const { mutate: testConnection, isPending: isConnecting } = useMutation({
+    mutationFn: window.electron.databases.test,
+    onSuccess: () => {
+      toast.success('Connection successful. You can now save the database password.')
+    },
+  })
 
   const newConnectionString = useMemo(() => {
     const url = new URL(database.connectionString)

@@ -398,6 +398,9 @@ importers:
       permix:
         specifier: ^1.0.4
         version: 1.0.4(@trpc/server@11.1.0(typescript@5.8.3))(hono@4.7.7)(react@19.1.0)
+      pg-connection-string:
+        specifier: ^2.7.0
+        version: 2.7.0
       sonner:
         specifier: ^1.7.2
         version: 1.7.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)

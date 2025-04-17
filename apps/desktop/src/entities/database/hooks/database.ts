@@ -16,12 +16,3 @@ export function useUpdateDatabasePassword(database: Database) {
     },
   })
 }
-
-export function useTestDatabase() {
-  return useMutation({
-    mutationFn: window.electron.databases.test,
-    onSuccess: () => {
-      toast.success('Connection successful. You can now save the database.')
-    },
-  })
-}

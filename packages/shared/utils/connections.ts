@@ -1,34 +1,14 @@
+import { parse as parsePg } from 'pg-connection-string'
 import { DatabaseType } from '../enums/database-type'
 
-export function parseConnectionString(connectionString: string) {
-  const url = new URL(connectionString)
-
-  const parsed = {
-    protocol: url.protocol.slice(0, -1),
-    username: url.username,
-    password: url.password || null,
-    host: url.hostname,
-    port: Number.parseInt(url.port),
-    database: url.pathname.slice(1),
-    options: url.searchParams.toString() || null,
+export function parseConnectionString(type: DatabaseType, connectionString: string) {
+  const map = {
+    [DatabaseType.Postgres]: parsePg,
   }
 
-  if (!parsed.protocol || !parsed.host || !parsed.port || !parsed.database) {
-    throw new Error('Invalid connection string format')
-  }
-
-  return parsed
+  return map[type](connectionString)
 }
 
-export function isValidConnectionString(connectionString: string) {
-  try {
-    parseConnectionString(connectionString)
-    return true
-  }
-  catch {
-    return false
-  }
-}
 export const protocolMap: Record<DatabaseType, string[]> = {
   [DatabaseType.Postgres]: ['postgresql', 'postgres'],
 }
