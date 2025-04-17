@@ -3,7 +3,8 @@ import * as React from 'react'
 // eslint-disable-next-line ts/no-explicit-any
 export function useDebouncedCallback<T extends (...args: any[]) => any>(
   fn: T,
-  delay = 0,
+  deps: React.DependencyList,
+  delay: number,
 ): (...args: Parameters<T>) => void {
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -17,7 +18,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
         fn(...args)
       }, delay)
     },
-    [fn, delay],
+    [fn, delay, ...deps],
   )
 
   React.useEffect(() => () => {

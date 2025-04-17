@@ -1,7 +1,7 @@
 import type { Database } from '~/lib/indexeddb'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
+import { useDebouncedCallback } from '@connnect/ui/hookas/use-debounced-callback'
 import { cn } from '@connnect/ui/lib/utils'
-import { useDebouncedCallback } from '@react-hookz/web'
 import { RiTableLine } from '@remixicon/react'
 import { Link, useParams } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
