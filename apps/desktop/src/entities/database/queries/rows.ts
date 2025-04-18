@@ -3,12 +3,25 @@ import type { PageSize } from '../components/table/footer'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { queryClient } from '~/main'
+import { rowsSql } from '../sql/rows'
+import { totalSql } from '../sql/total'
+import { databasePrimaryKeysQuery } from './primary-keys'
 
 const countType = type({
   total: 'string.numeric',
 })
 
-export function databaseRowsQuery(database: Database, table: string, schema: string, query?: { limit?: PageSize, page?: number }) {
+export function databaseRowsQuery(
+  database: Database,
+  table: string,
+  schema: string,
+  query?: {
+    limit?: PageSize
+    page?: number
+    orderBy?: string
+  },
+) {
   const _limit: PageSize = query?.limit ?? 50
   const _page = query?.page ?? 1
 
@@ -18,16 +31,24 @@ export function databaseRowsQuery(database: Database, table: string, schema: str
     total: number
   }>> = {
     postgres: async () => {
+      const primaryKeys = await queryClient.ensureQueryData(databasePrimaryKeysQuery(database))
+      const primaryKey = primaryKeys?.find(p => p.schema === schema && p.table === table)?.primaryKeys[0]
+      const orderBy = query?.orderBy ?? primaryKey
+
       const [[result], [countResult]] = await Promise.all([
         window.electron.databases.query({
           type: database.type,
           connectionString: database.connectionString,
-          query: `SELECT * FROM "${schema}"."${table}" LIMIT ${_limit} OFFSET ${(_page - 1) * _limit}`,
+          query: rowsSql(schema, table, {
+            limit: _limit,
+            page: _page,
+            orderBy,
+          })[database.type],
         }),
         window.electron.databases.query({
           type: database.type,
           connectionString: database.connectionString,
-          query: `SELECT COUNT(*) as total FROM "${schema}"."${table}"`,
+          query: totalSql(schema, table)[database.type],
         }),
       ])
 

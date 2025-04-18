@@ -5,6 +5,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { createContext, useEffect, useMemo, useState } from 'react'
 import { databaseColumnsQuery, databasePrimaryKeysQuery, databaseQuery, databaseRowsQuery, DataTable, useDatabase } from '~/entities/database'
 import { createCellUpdater } from '~/entities/database/components/table'
+import { setSql } from '~/entities/database/sql/set'
 import { queryClient } from '~/main'
 import { TableFooter } from './-components/footer'
 import { TableHeader } from './-components/header'
@@ -97,20 +98,16 @@ function RouteComponent() {
       return rows[rowIndex][columns[columnIndex].name] as string | null
     },
     saveValue: async (rowIndex: number, columnIndex: number, value: string | null) => {
-      const where = databaseColumns!.filter(column => column.isPrimaryKey)
+      const primaryColumns = databaseColumns!.filter(column => column.isPrimaryKey)
 
-      if (where.length === 0)
+      if (primaryColumns.length === 0)
         throw new Error('No primary keys found. Please use SQL Runner to update this row.')
 
       await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
-        query: `
-          UPDATE "${schema}"."${table}"
-          SET "${columns[columnIndex].name}" = $1
-          WHERE ${where.map((column, index) => `"${column.name}" = $${index + 2}`).join(' AND ')}
-        `,
-        values: [value, ...where.map(column => rows[rowIndex][column.name] as string)],
+        query: setSql(schema, table, columns[columnIndex].name, primaryColumns.map(column => column.name))[database.type],
+        values: [value, ...primaryColumns.map(column => rows[rowIndex][column.name] as string)],
       })
     },
   })

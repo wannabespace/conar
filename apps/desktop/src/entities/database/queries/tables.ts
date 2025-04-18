@@ -2,6 +2,7 @@ import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { tablesSql } from '../sql/tables'
 
 const tableType = type({
   name: 'string',
@@ -14,14 +15,7 @@ export function databaseTablesQuery(database: Database, schema: string) {
       const [result] = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
-        query: `
-          SELECT
-            table_name as name,
-            table_schema as schema
-          FROM information_schema.tables
-          WHERE table_schema = '${schema}'
-          ORDER BY table_name ASC;
-        `,
+        query: tablesSql(schema)[database.type],
       })
 
       return result.rows.map(row => tableType.assert(row))
