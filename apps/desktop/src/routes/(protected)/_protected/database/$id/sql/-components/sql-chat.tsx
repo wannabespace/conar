@@ -1,5 +1,5 @@
 import type { Message } from '@ai-sdk/react'
-import type { ComponentProps } from 'react'
+import type { ComponentProps, RefObject } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { Avatar, AvatarFallback } from '@connnect/ui/components/avatar'
 import { Button } from '@connnect/ui/components/button'
@@ -9,14 +9,16 @@ import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiDeleteBinLine, RiQuestionAnswerLine, RiRefreshLine, RiSendPlane2Line, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
-import { Fragment, useEffect } from 'react'
+import { Fragment, useEffect, useRef } from 'react'
 import { Markdown } from '~/components/markdown'
 import { getDatabaseContext, useDatabase } from '~/entities/database'
 import { UserAvatar } from '~/entities/user'
+import { sleep } from '~/lib/helpers'
 
 const chatInput = {
   get(id: string) {
@@ -70,14 +72,15 @@ function AssistantMessage({ text, onEdit, ...props }: { text: string, onEdit?: (
   )
 }
 
-export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
+export function SqlChat({ ref, onEdit }: { ref?: RefObject<{ fixError: (error: string) => void } | null>, onEdit: (message: string) => void }) {
   const { id } = useParams({ from: '/(protected)/_protected/database/$id' })
+  const scrollRef = useRef<HTMLDivElement>(null)
   const { data: database } = useDatabase(id)
   const { data: context } = useQuery({
     queryKey: ['database-context', id],
     queryFn: () => getDatabaseContext(database),
   })
-  const { messages, stop, input, handleInputChange, handleSubmit, status, setMessages, error, reload } = useChat({
+  const { messages, stop, input, handleInputChange, handleSubmit, append, status, setMessages, error, reload } = useChat({
     id,
     api: `${import.meta.env.VITE_PUBLIC_API_URL}/ai/sql-chat`,
     initialMessages: chatMessages.get(id),
@@ -87,6 +90,32 @@ export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
       context,
     },
   })
+
+  useAsyncEffect(async () => {
+    await sleep(0) // To wait for the messages to be rendered
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current?.scrollHeight,
+      behavior: 'smooth',
+    })
+  }, [messages.length])
+
+  useEffect(() => {
+    if (ref) {
+      ref.current = {
+        fixError: async (error: string) => {
+          await append({
+            role: 'user',
+            content: `Fix the following SQL error: ${error}`,
+          })
+          await sleep(0)
+          scrollRef.current?.scrollTo({
+            top: scrollRef.current?.scrollHeight,
+            behavior: 'smooth',
+          })
+        },
+      }
+    }
+  }, [ref])
 
   useEffect(() => {
     chatMessages.set(id, messages)
@@ -149,7 +178,7 @@ export function SqlChat({ onEdit }: { onEdit: (message: string) => void }) {
           </div>
         </div>
       )}
-      <ScrollArea className="flex-1 overflow-y-auto -mx-4 px-4">
+      <ScrollArea scrollRef={scrollRef} className="flex-1 overflow-y-auto -mx-4 px-4">
         <div className="flex flex-col gap-4 pb-2">
           {messages.map(message => (
             <Fragment key={message.id}>

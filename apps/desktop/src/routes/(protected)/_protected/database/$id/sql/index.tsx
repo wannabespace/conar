@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react'
 import { getOS } from '@connnect/shared/utils/os'
 import { title } from '@connnect/shared/utils/title'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
@@ -10,7 +11,7 @@ import { copy } from '@connnect/ui/lib/copy'
 import { RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { databaseQuery, DataTable, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
@@ -98,6 +99,7 @@ function RouteComponent() {
   const { id } = Route.useParams()
   const [query, setQuery] = useState(queryStorage.get(id))
   const { data: database } = useDatabase(id)
+  const chatRef = useRef<ComponentRef<typeof SqlChat>>(null)
 
   useEffect(() => {
     queryStorage.set(id, query)
@@ -113,7 +115,14 @@ function RouteComponent() {
       toast.success('Query executed successfully')
     },
     onError(error) {
-      toast.error(error.message)
+      toast.error(error.message, {
+        action: {
+          label: 'Fix with AI',
+          onClick: () => {
+            chatRef.current?.fixError(error.message)
+          },
+        },
+      })
     },
   })
 
@@ -138,7 +147,7 @@ function RouteComponent() {
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex h-auto!">
       <ResizablePanel defaultSize={30} minSize={20} maxSize={50} className="bg-muted/20">
-        <SqlChat onEdit={setQuery} />
+        <SqlChat ref={chatRef} onEdit={setQuery} />
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel
