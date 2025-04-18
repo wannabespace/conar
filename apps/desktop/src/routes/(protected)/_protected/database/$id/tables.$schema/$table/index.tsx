@@ -107,8 +107,8 @@ function RouteComponent() {
         connectionString: database.connectionString,
         query: `
           UPDATE "${schema}"."${table}"
-          SET ${columns[columnIndex].name} = $1
-          WHERE ${where.map((column, index) => `${column.name} = $${index + 2}`).join(' AND ')}
+          SET "${columns[columnIndex].name}" = $1
+          WHERE ${where.map((column, index) => `"${column.name}" = $${index + 2}`).join(' AND ')}
         `,
         values: [value, ...where.map(column => rows[rowIndex][column.name] as string)],
       })
