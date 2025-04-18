@@ -99,33 +99,33 @@ function RouteComponent() {
     links.find(link => link.type === 'windows'), [links])
 
   const downloadLinks = useMemo((): { label: string, url: string }[] => {
-    if (os === 'macos') {
+    if (os === 'macos' && macIntelAsset && macSiliconAsset) {
       return [
         {
           label: 'macOS (Intel)',
-          url: macIntelAsset!.url,
+          url: macIntelAsset.url,
         },
         {
           label: 'macOS (Apple Silicon)',
-          url: macSiliconAsset!.url,
+          url: macSiliconAsset.url,
         },
       ]
     }
 
-    if (os === 'linux') {
+    if (os === 'linux' && linuxAsset) {
       return [
         {
           label: 'Linux',
-          url: linuxAsset!.url,
+          url: linuxAsset.url,
         },
       ]
     }
 
-    if (os === 'windows') {
+    if (os === 'windows' && windowsAsset) {
       return [
         {
           label: 'Windows',
-          url: windowsAsset!.url,
+          url: windowsAsset.url,
         },
       ]
     }
