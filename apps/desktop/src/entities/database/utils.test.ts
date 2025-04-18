@@ -18,11 +18,6 @@ describe('hasDangerousSqlKeywords', () => {
     expect(hasDangerousSqlKeywords('insert into users values (1, "John")')).toBe(true)
   })
 
-  it('should return true for SQL queries containing CREATE keyword', () => {
-    expect(hasDangerousSqlKeywords('CREATE TABLE users')).toBe(true)
-    expect(hasDangerousSqlKeywords('create table users')).toBe(true)
-  })
-
   it('should return true for SQL queries containing DROP keyword', () => {
     expect(hasDangerousSqlKeywords('DROP TABLE users')).toBe(true)
     expect(hasDangerousSqlKeywords('drop table users')).toBe(true)

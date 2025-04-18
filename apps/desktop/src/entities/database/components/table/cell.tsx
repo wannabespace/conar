@@ -52,6 +52,7 @@ function TableCellProvider({
   table,
   onSaveError,
   onSaveSuccess,
+  onSavePending,
   children,
 }: {
   cell: Cell<Record<string, unknown>, unknown>
@@ -59,6 +60,7 @@ function TableCellProvider({
   children: React.ReactNode
   onSaveError: (error: Error) => void
   onSaveSuccess: () => void
+  onSavePending: () => void
 }) {
   const initialValue = cell.getValue()
   const isJson = !!(cell.column.columnDef.meta as TableCellMeta).type?.includes('json')
@@ -71,6 +73,8 @@ function TableCellProvider({
 
   const { mutate: updateCell } = useMutation({
     mutationFn: async (value: string | null) => {
+      onSavePending()
+
       const _value = isJson && value ? JSON.parse(value) : value
 
       await (table.options.meta as TableMeta).updateCell?.(
@@ -289,14 +293,23 @@ export function TableCell({ cell, getValue, table }: CellContext<Record<string, 
     setStatus('success')
   }
 
+  function onSavePending() {
+    setStatus('saving')
+  }
+
+  const className = cn(
+    isOpen && 'ring-primary/50 bg-muted/50',
+    status === 'error' && 'ring-destructive/50 bg-destructive/20',
+    status === 'success' && 'ring-success/50 bg-success/10',
+    status === 'saving' && 'animate-pulse',
+  )
+
   if (!canInteract) {
     return (
       <TableCellContent
         value={cellValue}
         onMouseOver={() => setCanInteract(true)}
-        className={cn(
-          status === 'success' && 'ring-success/50 bg-success/10',
-        )}
+        className={className}
       />
     )
   }
@@ -307,6 +320,7 @@ export function TableCell({ cell, getValue, table }: CellContext<Record<string, 
     <TableCellProvider
       cell={cell}
       table={table}
+      onSavePending={onSavePending}
       onSaveError={onSaveError}
       onSaveSuccess={onSaveSuccess}
     >
@@ -331,12 +345,7 @@ export function TableCell({ cell, getValue, table }: CellContext<Record<string, 
               >
                 <TableCellContent
                   value={cellValue}
-                  className={cn(
-                    isOpen && 'ring-primary/50 bg-muted/50',
-                    status === 'error' && 'ring-destructive/50 bg-destructive/20',
-                    status === 'success' && 'ring-success/50 bg-success/10',
-                    status === 'saving' && 'ring-primary/50 bg-primary/20 animate-pulse',
-                  )}
+                  className={className}
                 />
               </PopoverTrigger>
             </TooltipTrigger>
