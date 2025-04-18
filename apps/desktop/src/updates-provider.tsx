@@ -46,7 +46,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
       }
 
       showToast()
-      const interval = setInterval(showToast, 1000 * 60 * 30)
+      const interval = setInterval(showToast, 1000 * 60 * 10)
 
       return () => clearInterval(interval)
     }
