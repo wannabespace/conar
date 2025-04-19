@@ -45,6 +45,9 @@ function generateStream({
         -- This is a comment
         SELECT * FROM users WHERE id = 1;
 
+        Additional information:
+        - Current date and time: ${new Date().toISOString()}
+
         ----------------
         Database Context:
         ${JSON.stringify(context)}
