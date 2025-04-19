@@ -1,12 +1,7 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { type } from 'arktype'
-import { schemasSql } from '../sql/schemas'
-
-const schemaType = type({
-  name: 'string',
-})
+import { schemasSql, schemaType } from '../sql/schemas'
 
 export function databaseSchemasQuery(database: Database) {
   const queryMap: Record<DatabaseType, () => Promise<typeof schemaType.infer[]>> = {

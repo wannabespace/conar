@@ -1,5 +1,15 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import { prepareSql } from '@connnect/shared/utils/helpers'
+import { type } from 'arktype'
+
+export const columnType = type({
+  table: 'string',
+  name: 'string',
+  type: 'string',
+  editable: 'boolean',
+  default: 'string | null',
+  nullable: 'boolean',
+})
 
 export function columnsSql(schema: string, table: string): Record<DatabaseType, string> {
   return {

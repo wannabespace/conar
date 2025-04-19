@@ -1,5 +1,10 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import { prepareSql } from '@connnect/shared/utils/helpers'
+import { type } from 'arktype'
+
+export const schemaType = type({
+  name: 'string',
+})
 
 export function schemasSql(): Record<DatabaseType, string> {
   return {

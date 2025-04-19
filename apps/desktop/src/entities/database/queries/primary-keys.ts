@@ -1,14 +1,7 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { type } from 'arktype'
-import { primaryKeysSql } from '../sql/primary-keys'
-
-const primaryKeyType = type({
-  table: 'string',
-  schema: 'string',
-  primary_keys: 'string',
-})
+import { primaryKeysSql, primaryKeyType } from '../sql/primary-keys'
 
 export function databasePrimaryKeysQuery(database: Database) {
   const queryMap: Record<DatabaseType, () => Promise<{

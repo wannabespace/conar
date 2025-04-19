@@ -2,15 +2,10 @@ import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { PageSize } from '../components/table/footer'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { type } from 'arktype'
 import { queryClient } from '~/main'
 import { rowsSql } from '../sql/rows'
-import { totalSql } from '../sql/total'
+import { countType, totalSql } from '../sql/total'
 import { databasePrimaryKeysQuery } from './primary-keys'
-
-const countType = type({
-  total: 'string.numeric',
-})
 
 export function databaseRowsQuery(
   database: Database,

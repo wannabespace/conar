@@ -1,14 +1,7 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { type } from 'arktype'
-import { enumsSql } from '../sql/enums'
-
-const enumType = type({
-  schema: 'string',
-  name: 'string',
-  value: 'string',
-})
+import { enumsSql, enumType } from '../sql/enums'
 
 export function databaseEnumsQuery(database: Database) {
   const queryMap: Record<DatabaseType, () => Promise<typeof enumType.infer[]>> = {

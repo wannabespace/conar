@@ -1,17 +1,7 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { type } from 'arktype'
-import { columnsSql } from '../sql/columns'
-
-export const columnType = type({
-  table: 'string',
-  name: 'string',
-  type: 'string',
-  editable: 'boolean',
-  default: 'string | null',
-  nullable: 'boolean',
-})
+import { columnsSql, columnType } from '../sql/columns'
 
 export function databaseColumnsQuery(database: Database, table: string, schema: string) {
   const queryMap: Record<DatabaseType, () => Promise<{

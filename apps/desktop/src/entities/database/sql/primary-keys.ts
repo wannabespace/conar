@@ -1,5 +1,12 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import { prepareSql } from '@connnect/shared/utils/helpers'
+import { type } from 'arktype'
+
+export const primaryKeyType = type({
+  table: 'string',
+  schema: 'string',
+  primary_keys: 'string',
+})
 
 export function primaryKeysSql(): Record<DatabaseType, string> {
   return {
