@@ -1,8 +1,9 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
+import { prepareSql } from '@connnect/shared/utils/helpers'
 
 export function totalSql(schema: string, table: string): Record<DatabaseType, string> {
   return {
-    postgres: `
+    postgres: prepareSql(`
       SELECT
         CASE
           WHEN reltuples < 0 THEN (
@@ -19,6 +20,6 @@ export function totalSql(schema: string, table: string): Record<DatabaseType, st
       WHERE
         n.nspname = '${schema}'
         AND c.relname = '${table}';
-    `,
+    `),
   }
 }

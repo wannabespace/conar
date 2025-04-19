@@ -1,8 +1,9 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
+import { prepareSql } from '@connnect/shared/utils/helpers'
 
 export function schemasSql(): Record<DatabaseType, string> {
   return {
-    postgres: `
+    postgres: prepareSql(`
       SELECT schema_name as name
       FROM information_schema.schemata
       WHERE schema_name NOT LIKE 'pg_temp%'
@@ -10,6 +11,6 @@ export function schemasSql(): Record<DatabaseType, string> {
         AND schema_name NOT LIKE 'temp%'
         AND schema_name NOT IN ('information_schema', 'performance_schema', 'pg_toast', 'pg_catalog')
       ORDER BY schema_name ASC;
-    `,
+    `),
   }
 }

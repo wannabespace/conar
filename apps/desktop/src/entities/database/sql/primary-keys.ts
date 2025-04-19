@@ -1,8 +1,9 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
+import { prepareSql } from '@connnect/shared/utils/helpers'
 
 export function primaryKeysSql(): Record<DatabaseType, string> {
   return {
-    postgres: `
+    postgres: prepareSql(`
       SELECT DISTINCT
         tc.table_name AS table,
         tc.table_schema AS schema,
@@ -19,6 +20,6 @@ export function primaryKeysSql(): Record<DatabaseType, string> {
       GROUP BY
         tc.table_name,
         tc.table_schema;
-    `,
+    `),
   }
 }

@@ -1,8 +1,9 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
+import { prepareSql } from '@connnect/shared/utils/helpers'
 
 export function columnsSql(schema: string, table: string): Record<DatabaseType, string> {
   return {
-    postgres: `
+    postgres: prepareSql(`
       SELECT
         c.table_name AS table,
         c.column_name AS name,
@@ -28,6 +29,6 @@ export function columnsSql(schema: string, table: string): Record<DatabaseType, 
       WHERE c.table_schema = '${schema}'
         AND c.table_name = '${table}'
       ORDER BY c.ordinal_position;
-    `,
+    `),
   }
 }
