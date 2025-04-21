@@ -126,14 +126,14 @@ export function DataTable<T extends Record<string, unknown>>({
     overscan: 5,
   })
 
-  const allColumns = table.getVisibleLeafColumns()
+  const allColumns = table.getAllColumns()
 
   const columnVirtualizer = useVirtualizer({
     horizontal: true,
     count: allColumns.length,
     getScrollElement: () => ref.current,
     estimateSize: index => allColumns[index].getSize(),
-    overscan: 1,
+    overscan: 2,
   })
 
   const rowWidth = columnVirtualizer.getTotalSize()
