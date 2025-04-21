@@ -1,17 +1,17 @@
 import type { PageSize } from '~/entities/database'
 import { Separator } from '@connnect/ui/components/separator'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useState } from 'react'
-import { databaseRowsQuery, DataTableFooter, useDatabase } from '~/entities/database'
+import { databaseRowsQuery, databaseTotalQuery, DataTableFooter, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
-import { tableStore } from '..'
+import { tableStore } from './table'
 
-export function TableFooter() {
+export function Footer() {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
-  const { data } = useQuery(databaseRowsQuery(database, table, schema, { page: 1, limit: 50 }))
+  const { data: total } = useSuspenseQuery(databaseTotalQuery(database, table, schema))
   const [page, pageSize] = useStore(tableStore, state => [state.page, state.pageSize])
   const [canPrefetch, setCanPrefetch] = useState(false)
 
@@ -25,7 +25,7 @@ export function TableFooter() {
     queryClient.ensureQueryData(databaseRowsQuery(database, table, schema, { page: page + 1, limit: pageSize }))
   }, [page, pageSize, canPrefetch])
 
-  if (!data || data.total < (50 satisfies PageSize)) {
+  if (total < (50 satisfies PageSize)) {
     return null
   }
 
@@ -42,7 +42,7 @@ export function TableFooter() {
         onPageChange={page => tableStore.setState(state => ({ ...state, page }))}
         pageSize={pageSize}
         onPageSizeChange={pageSize => tableStore.setState(state => ({ ...state, page: 1, pageSize }))}
-        total={data.total ?? 0}
+        total={total}
       />
     </div>
   )

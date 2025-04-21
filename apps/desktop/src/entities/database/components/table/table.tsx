@@ -2,8 +2,9 @@ import type {
   CellContext,
   ColumnDef,
   HeaderContext,
+  OnChangeFn,
+  RowSelectionState,
 } from '@tanstack/react-table'
-import type { Dispatch, SetStateAction } from 'react'
 import type { TableCellMeta } from './cell'
 import type { CellUpdaterFunction } from './cells-updater'
 import { ScrollArea, ScrollBar } from '@connnect/ui/components/scroll-area'
@@ -69,7 +70,7 @@ export function DataTable<T extends Record<string, unknown>>({
   className?: string
   selectable?: boolean
   selectedRows?: Record<string, boolean>
-  setSelectedRows?: Dispatch<SetStateAction<Record<string, boolean>>>
+  setSelectedRows?: OnChangeFn<RowSelectionState>
 } & TableMeta) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -131,6 +132,8 @@ export function DataTable<T extends Record<string, unknown>>({
     estimateSize: index => table.getAllColumns()[index].getSize(),
     overscan: 1,
   })
+
+  console.log(1)
 
   // https://github.com/TanStack/virtual/discussions/379#discussioncomment-3501037
   useEffect(() => {
