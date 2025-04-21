@@ -1,5 +1,5 @@
 import type { electron } from '../main/events'
-import type { UpdatesStatus } from '~/updates-provider'
+import type { UpdatesStatus } from '~/updates-observer'
 import { contextBridge, ipcRenderer } from 'electron'
 
 // eslint-disable-next-line ts/no-explicit-any

@@ -19,7 +19,7 @@ function setIsOpen(isOpen: boolean) {
 
 export function ActionsCenter() {
   const { data: databases } = useDatabases()
-  const { isOpen } = useStore(actionsCenterStore)
+  const isOpen = useStore(actionsCenterStore, state => state.isOpen)
   const router = useRouter()
 
   useKeyboardEvent(e => e.key === 'p' && (os === 'macos' ? e.metaKey : e.ctrlKey), () => {

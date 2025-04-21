@@ -19,7 +19,7 @@ export async function checkForUpdates() {
   await window.electron.app.checkForUpdates()
 }
 
-export function UpdatesProvider({ children }: { children: React.ReactNode }) {
+export function UpdatesObserver() {
   const { data: version } = useSuspenseQuery({
     queryKey: ['version'],
     queryFn: () => window.electron.versions.app(),
@@ -56,5 +56,5 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     }
   }, [status])
 
-  return children
+  return <></>
 }

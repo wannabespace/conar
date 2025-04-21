@@ -9,7 +9,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { toast } from 'sonner'
 import { fetchDatabases } from '~/entities/database'
-import { checkForUpdates, updatesStore } from '~/updates-provider'
+import { checkForUpdates, updatesStore } from '~/updates-observer'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
 
