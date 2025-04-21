@@ -6,14 +6,22 @@ import { Separator } from '@connnect/ui/components/separator'
 import { RiInformationLine } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useDatabase, useDatabaseEnums, useDatabaseSchemas } from '~/entities/database'
+import { databaseQuery, useDatabase, useDatabaseEnums, useDatabaseSchemas } from '~/entities/database'
+import { queryClient } from '~/main'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id/enums/')({
   component: DashboardPage,
-  head: () => ({
+  loader: async ({ params }) => {
+    const database = await queryClient.ensureQueryData(databaseQuery(params.id))
+
+    return {
+      database,
+    }
+  },
+  head: ({ loaderData }) => ({
     meta: [
       {
-        title: title('Enums'),
+        title: title(`Enums - ${loaderData.database.name}`),
       },
     ],
   }),
