@@ -1,36 +1,40 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createContext, use, useEffect, useMemo, useState } from 'react'
+import { Store, useStore } from '@tanstack/react-store'
+import { useEffect } from 'react'
 import { toast } from 'sonner'
 
 export type UpdatesStatus = 'no-updates' | 'checking' | 'downloading' | 'ready' | 'error'
 
-const UpdatesContext = createContext<{
+export const updatesStore = new Store<{
   version: string
   status: UpdatesStatus
   message?: string
-}>(null!)
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const useUpdates = () => use(UpdatesContext)
+}>({
+  status: 'no-updates',
+  version: '',
+  message: undefined,
+})
 
 export async function checkForUpdates() {
   await window.electron.app.checkForUpdates()
 }
 
 export function UpdatesProvider({ children }: { children: React.ReactNode }) {
-  const [status, setStatus] = useState<UpdatesStatus>('no-updates')
-  const [message, setMessage] = useState<string | undefined>(undefined)
   const { data: version } = useSuspenseQuery({
     queryKey: ['version'],
     queryFn: () => window.electron.versions.app(),
   })
+  const status = useStore(updatesStore, state => state.status)
 
   useEffect(() => {
     window.electron.app.onUpdatesStatus(({ status, message }) => {
-      setStatus(status)
-      setMessage(message)
+      updatesStore.setState(state => ({ ...state, status, message }))
     })
   }, [])
+
+  useEffect(() => {
+    updatesStore.setState(state => ({ ...state, version }))
+  }, [version])
 
   useEffect(() => {
     if (status === 'ready') {
@@ -52,11 +56,5 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     }
   }, [status])
 
-  const value = useMemo(() => ({ status, message, version }), [status, message, version])
-
-  return (
-    <UpdatesContext value={value}>
-      {children}
-    </UpdatesContext>
-  )
+  return children
 }

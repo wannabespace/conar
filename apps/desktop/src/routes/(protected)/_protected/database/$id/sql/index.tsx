@@ -42,9 +42,7 @@ function ResultTable({ result, columns }: { result: Record<string, unknown>[], c
   return (
     <DataTable
       data={result}
-      columns={columns.map(c => ({
-        name: c,
-      }))}
+      columns={columns.map(c => ({ name: c }))}
       className="h-full"
     />
   )

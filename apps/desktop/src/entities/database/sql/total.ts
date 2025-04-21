@@ -10,21 +10,9 @@ export function totalSql(schema: string, table: string): Record<DatabaseType, st
   return {
     postgres: prepareSql(`
       SELECT
-        CASE
-          WHEN reltuples < 0 THEN (
-            SELECT
-              COUNT(*)
-            FROM
-              "${schema}"."${table}"
-          )
-          ELSE reltuples::bigint
-        END AS total
+        COUNT(*) AS total
       FROM
-        pg_class c
-        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-      WHERE
-        n.nspname = '${schema}'
-        AND c.relname = '${table}';
+        "${schema}"."${table}";
     `),
   }
 }
