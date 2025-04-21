@@ -23,7 +23,7 @@ export async function identifyUser(userId: string | null, properties?: IdentifyU
   }
 }
 
-export function trackEvent(event: string, properties: Record<string, unknown>) {
+export function trackEvent(event: string, properties?: Record<string, unknown>) {
   posthog.capture(event, properties)
 }
 

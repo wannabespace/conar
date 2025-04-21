@@ -6,6 +6,7 @@ import { RiAddLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { Store, useStore } from '@tanstack/react-store'
 import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
+import { trackEvent } from '~/lib/events'
 
 const os = getOS()
 
@@ -27,6 +28,7 @@ export function ActionsCenter() {
       return
 
     setIsOpen(!isOpen)
+    trackEvent('actions_center_open_shortcut')
   })
 
   function onSelect(database: Database) {

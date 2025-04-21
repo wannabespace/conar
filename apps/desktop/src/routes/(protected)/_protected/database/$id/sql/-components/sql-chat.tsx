@@ -11,7 +11,7 @@ import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiDeleteBinLine, RiQuestionAnswerLine, RiRefreshLine, RiSendPlane2Line, RiStopLine } from '@remixicon/react'
+import { RiChatAiLine, RiDeleteBinLine, RiQuestionAnswerLine, RiRefreshLine, RiSendPlaneLine, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { Fragment, useEffect, useRef } from 'react'
@@ -128,10 +128,13 @@ export function SqlChat({ ref, onEdit }: { ref?: RefObject<{ fixError: (error: s
   return (
     <div className="relative flex h-screen flex-col justify-between gap-2 p-4">
       <DotsBg
-        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+        className="absolute -z-10 inset-0 opacity-30 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <div className="flex justify-between items-center mb-4">
-        <CardTitle>AI Assistant</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <RiChatAiLine className="size-5" />
+          AI Assistant
+        </CardTitle>
         {/* <Button variant="outline" size="icon">
           <RiHistoryLine className="size-4" />
         </Button> */}
@@ -220,7 +223,7 @@ export function SqlChat({ ref, onEdit }: { ref?: RefObject<{ fixError: (error: s
         />
         <Button disabled={!input || status === 'submitted' || status === 'streaming'} type="submit" size="icon">
           <LoadingContent loading={status === 'submitted' || status === 'streaming'}>
-            <RiSendPlane2Line />
+            <RiSendPlaneLine />
           </LoadingContent>
         </Button>
         {(status === 'submitted' || status === 'streaming') && (

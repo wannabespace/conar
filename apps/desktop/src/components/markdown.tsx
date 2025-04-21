@@ -3,11 +3,12 @@ import { Button } from '@connnect/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiEditLine, RiFileCopyLine } from '@remixicon/react'
+import { RiArrowRightSLine, RiFileCopyLine } from '@remixicon/react'
 import { marked } from 'marked'
 import { memo, useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { trackEvent } from '~/lib/events'
 import { Monaco } from './monaco'
 
 function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: string) => void }) {
@@ -15,55 +16,61 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
   const content = childrenProps?.children?.toString().trim() || null
   const lang = childrenProps?.className?.split('-')[1] || 'text'
 
+  if (!content)
+    return null
+
   return (
     <div className="typography-disabled relative my-6 first:mt-0 last:mb-0">
-      <div className="absolute right-1 top-1">
-        {content && (
+      <Monaco
+        value={content}
+        language={lang}
+        onChange={() => {}}
+        options={{
+          readOnly: true,
+          lineNumbers: 'off',
+          minimap: { enabled: false },
+          scrollBeyondLastLine: false,
+          folding: false,
+        }}
+        className="rounded-md border overflow-hidden"
+        style={{ height: `${Math.min(content.split('\n').length * 20, 300)}px` }}
+      />
+      <div className="flex justify-end gap-2 mt-2">
+        <div className="flex gap-2">
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger>
-                <RiFileCopyLine
-                  className="size-6 p-1"
-                  onClick={() => copy(content)}
-                />
+              <TooltipTrigger asChild>
+                <Button
+                  size="iconXs"
+                  variant="outline"
+                  onClick={() => {
+                    copy(content)
+                    trackEvent('markdown_copy_to_clipboard')
+                  }}
+                >
+                  <RiFileCopyLine className="size-3.5" />
+                </Button>
               </TooltipTrigger>
-              <TooltipContent sideOffset={15}>
-                Copy
+              <TooltipContent>
+                Copy to clipboard
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        )}
-      </div>
-      {content && (
-        <Monaco
-          value={content}
-          language={lang}
-          onChange={() => {}}
-          options={{
-            readOnly: true,
-            lineNumbers: 'off',
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            folding: false,
-          }}
-          className="rounded-md border overflow-hidden"
-          style={{ height: `${Math.min(content.split('\n').length * 20, 300)}px` }}
-        />
-      )}
-      {content && (
-        <div className="flex justify-end gap-2 mt-2">
-          <Button size="xs" variant="outline" onClick={() => copy(content)}>
-            <RiFileCopyLine className="size-3.5 mr-1" />
-            Copy
-          </Button>
           {onEdit && (
-            <Button size="xs" variant="outline" onClick={() => onEdit?.(content)}>
-              <RiEditLine className="size-3.5 mr-1" />
-              Edit
+            <Button
+              size="xs"
+              variant="outline"
+              onClick={() => {
+                onEdit(content)
+                trackEvent('markdown_move_to_runner')
+              }}
+            >
+              <RiArrowRightSLine className="size-3.5" />
+              Move to runner
             </Button>
           )}
         </div>
-      )}
+      </div>
     </div>
   )
 }

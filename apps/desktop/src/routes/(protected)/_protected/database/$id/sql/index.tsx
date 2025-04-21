@@ -1,3 +1,4 @@
+import type { editor } from 'monaco-editor'
 import type { ComponentRef } from 'react'
 import { getOS } from '@connnect/shared/utils/os'
 import { title } from '@connnect/shared/utils/title'
@@ -8,13 +9,14 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { copy } from '@connnect/ui/lib/copy'
-import { RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
+import { useKeyboardEvent } from '@react-hookz/web'
+import { RiAlertLine, RiArrowUpLine, RiCommandLine, RiCornerDownLeftLine, RiFileCopyLine, RiLoader4Line, RiPlayLine, RiShining2Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
-import { databaseQuery, DataTable, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
+import { DANGEROUS_SQL_KEYWORDS, databaseQuery, DataTable, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
 import { formatSql } from '~/lib/formatter'
 import { queryClient } from '~/main'
 import { SqlChat } from './-components/sql-chat'
@@ -74,20 +76,48 @@ const queryStorage = {
   },
 }
 
-function DangerousSqlAlert({ open, setOpen, confirm }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void }) {
+function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void, query: string }) {
+  const os = getOS()
+  const dangerousKeywords = query.match(new RegExp(DANGEROUS_SQL_KEYWORDS.join('|'), 'gi')) || []
+  const uniqueDangerousKeywords = [...new Set(dangerousKeywords)].join(', ')
+
+  useKeyboardEvent(e => (os === 'macos' ? e.metaKey : e.ctrlKey) && e.key === 'Enter' && e.shiftKey, () => {
+    confirm()
+    setOpen(false)
+  })
+
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Potentially Dangerous SQL Query</AlertDialogTitle>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <RiAlertLine className="size-5 text-warning" />
+            Potentially Dangerous SQL Query
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            Your query contains potentially dangerous SQL keywords that could modify or delete data.
+            <div className="rounded-md bg-warning/10 p-3 mb-3 border border-warning/20">
+              Your query contains potentially dangerous SQL keywords:
+              <span className="font-semibold text-warning">
+                {' '}
+                {uniqueDangerousKeywords}
+              </span>
+            </div>
+            <p className="mt-2">
+              These operations could modify or delete data in your database. Proceed if you understand the impact of these changes.
+            </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={confirm}>
-            Run Anyway
+        <AlertDialogFooter className="gap-2">
+          <AlertDialogCancel className="border-muted-foreground/20">Cancel</AlertDialogCancel>
+          <AlertDialogAction variant="warning" onClick={confirm}>
+            <span className="flex items-center gap-2">
+              Run Anyway
+              <kbd className="flex items-center">
+                {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
+                <RiArrowUpLine className="size-3" />
+                <RiCornerDownLeftLine className="size-3" />
+              </kbd>
+            </span>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -100,6 +130,7 @@ function RouteComponent() {
   const [query, setQuery] = useState(queryStorage.get(id))
   const { data: database } = useDatabase(id)
   const chatRef = useRef<ComponentRef<typeof SqlChat>>(null)
+  const monacoRef = useRef<editor.IStandaloneCodeEditor | null>(null)
 
   useEffect(() => {
     queryStorage.set(id, query)
@@ -144,10 +175,16 @@ function RouteComponent() {
     toast.success('SQL formatted successfully')
   }
 
+  function onEdit(query: string) {
+    setQuery(query)
+    toast.success('SQL query moved to runner')
+    monacoRef.current?.focus()
+  }
+
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex h-auto!">
       <ResizablePanel defaultSize={30} minSize={20} maxSize={50} className="bg-muted/20">
-        <SqlChat ref={chatRef} onEdit={setQuery} />
+        <SqlChat ref={chatRef} onEdit={onEdit} />
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel
@@ -158,16 +195,19 @@ function RouteComponent() {
         <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
           <ResizablePanel minSize={20} className="relative">
             <DangerousSqlAlert
+              query={query}
               open={isAlertVisible}
               setOpen={setIsAlertVisible}
               confirm={() => mutate()}
             />
             <CardHeader className="dark:bg-input/30 py-3">
-              <CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <RiPlayLine />
                 SQL Runner
               </CardTitle>
             </CardHeader>
             <Monaco
+              ref={monacoRef}
               language="sql"
               value={query}
               onChange={setQuery}
@@ -180,7 +220,7 @@ function RouteComponent() {
                   <TooltipTrigger asChild>
                     <Button
                       variant="secondary"
-                      size="icon"
+                      size="iconSm"
                       onClick={() => copy(query)}
                     >
                       <RiFileCopyLine />
@@ -191,28 +231,34 @@ function RouteComponent() {
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <Button
-                variant="secondary"
-                onClick={() => format()}
-              >
-                <RiShining2Line />
-                Format
-              </Button>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button disabled={isPending} onClick={() => sendQuery(query)}>
-                      <RiPlayLargeLine />
-                      Run
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => format()}
+                    >
+                      <RiShining2Line />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {os === 'macos' ? '⌘' : 'Ctrl'}
-                    {' '}
-                    + Enter
+                    Format SQL
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+              <Button
+                disabled={isPending}
+                size="sm"
+                onClick={() => sendQuery(query)}
+              >
+                Run
+                {' '}
+                <kbd className="flex items-center text-xs">
+                  {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
+                  <RiCornerDownLeftLine className="size-3" />
+                </kbd>
+              </Button>
             </div>
           </ResizablePanel>
           <ResizableHandle />

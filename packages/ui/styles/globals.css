@@ -25,28 +25,36 @@
   --accent: oklch(96% 0.003 255.508);
   --accent-foreground: oklch(0.208 0.042 265.755);
   --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
   --success: oklch(0.577 0.245 156.325);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.75 0.220 85.0);
+  --warning-foreground: oklch(0.985 0 0);
   --border: oklch(95% 0.003 255.508);
   --input: oklch(93% 0.003 255.508);
   --ring: oklch(0.65 0.12 205.0);
 }
 
 .dark {
-  --background: oklch(17% 0.001 200);
+  --background: oklch(17% 0.001 250);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(19% 0.001 200);
+  --card: oklch(19% 0.001 250);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(21% 0.001 200);
+  --popover: oklch(21% 0.001 250);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.60 0.12 205.0);
-  --secondary: oklch(24% 0.001 200);
+  --secondary: oklch(24% 0.001 250);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(24% 0.001 200);
+  --muted: oklch(24% 0.001 250);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(24% 0.001 200);
+  --accent: oklch(24% 0.001 250);
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --success: oklch(0.704 0.191 142.216);
+  --destructive: oklch(0.704 0.220 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --success: oklch(0.704 0.220 142.216);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.75 0.220 85.0);
+  --warning-foreground: oklch(0.985 0 0);
   --border: oklch(1 0 0 / 5%);
   --input: oklch(1 0 0 / 10%);
   --ring: oklch(0.60 0.12 205.0);
@@ -70,7 +78,11 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
