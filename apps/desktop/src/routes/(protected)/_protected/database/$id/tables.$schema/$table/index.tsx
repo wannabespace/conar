@@ -2,7 +2,8 @@ import type { PageSize } from '~/entities/database'
 import { title } from '@connnect/shared/utils/title'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { createContext, useEffect, useMemo, useState } from 'react'
+import { Store, useStore } from '@tanstack/react-store'
+import { useMemo, useState } from 'react'
 import { databaseColumnsQuery, databasePrimaryKeysQuery, databaseQuery, databaseRowsQuery, DataTable, useDatabase } from '~/entities/database'
 import { createCellUpdater } from '~/entities/database/components/table'
 import { setSql } from '~/entities/database/sql/set'
@@ -27,58 +28,56 @@ export const Route = createFileRoute(
   }),
 })
 
-export const TableContext = createContext<{
+export const tableStore = new Store<{
   page: number
-  setPage: (page: number) => void
   pageSize: PageSize
-  setPageSize: (pageSize: PageSize) => void
-  total: number | null
-}>(null!)
+}>({
+  page: 1,
+  pageSize: 50,
+})
 
 const cellUpdater = createCellUpdater()
 
 function RouteComponent() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState<PageSize>(50)
+  const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({})
+  const [page, pageSize] = useStore(tableStore, state => [state.page, state.pageSize])
   const queryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
-  const { data, isPending, status } = useQuery(queryOpts)
+  const { data, isPending } = useQuery(queryOpts)
   const { data: primaryKeys } = useQuery({
     ...databasePrimaryKeysQuery(database),
     select: data => data.find(key => key.table === table && key.schema === schema)?.primaryKeys,
   })
   const { data: databaseColumns } = useQuery({
     ...databaseColumnsQuery(database, table, schema),
-    select: (data) => {
-      return data.map(column => ({
-        ...column,
-        isPrimaryKey: !!primaryKeys?.includes(column.name),
-      }))
-    },
+    select: data => data.map(column => ({
+      ...column,
+      isPrimaryKey: !!primaryKeys?.includes(column.name),
+    })),
   })
 
-  const [total, setTotal] = useState(data?.total ?? null)
+  const selectedRowsPrimaryKeys = useMemo(() => {
+    if (!primaryKeys?.length || !data?.rows)
+      return []
 
-  useEffect(() => {
-    if (status === 'success') {
-      setTotal(data.total)
-    }
-  }, [status, data?.total])
+    return Object.keys(selectedRows)
+      .filter(index => data.rows[Number(index)])
+      .map((index) => {
+        const row = data.rows[Number(index)]
+
+        return primaryKeys.reduce((acc, key) => {
+          acc[key] = row[key]
+          return acc
+        }, {} as Record<string, unknown>)
+      })
+  }, [selectedRows, primaryKeys, data?.rows])
 
   const rows = data?.rows ?? []
   const columns = databaseColumns ?? []
 
-  const context = useMemo(() => ({
-    page,
-    setPage,
-    pageSize,
-    setPageSize,
-    total,
-  }), [page, setPage, pageSize, setPageSize, total])
-
   const updateCell = cellUpdater({
-    setValue: (rowIndex: number, columnIndex: number, value: string | null) => {
+    setValue: (rowIndex: number, columnName: string, value: string | null) => {
       queryClient.setQueryData(queryOpts.queryKey, (oldData) => {
         if (!oldData)
           return oldData
@@ -86,7 +85,7 @@ function RouteComponent() {
         const newRows = [...oldData.rows]
 
         newRows[rowIndex] = { ...newRows[rowIndex] }
-        newRows[rowIndex][columns[columnIndex].name] = value
+        newRows[rowIndex][columnName] = value
 
         return {
           ...oldData,
@@ -94,10 +93,10 @@ function RouteComponent() {
         }
       })
     },
-    getValue: (rowIndex: number, columnIndex: number) => {
-      return rows[rowIndex][columns[columnIndex].name] as string | null
+    getValue: (rowIndex: number, columnName: string) => {
+      return rows[rowIndex][columnName] as string | null
     },
-    saveValue: async (rowIndex: number, columnIndex: number, value: string | null) => {
+    saveValue: async (rowIndex: number, columnName: string, value: string | null) => {
       const primaryColumns = databaseColumns!.filter(column => column.isPrimaryKey)
 
       if (primaryColumns.length === 0)
@@ -106,31 +105,33 @@ function RouteComponent() {
       await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
-        query: setSql(schema, table, columns[columnIndex].name, primaryColumns.map(column => column.name))[database.type],
+        query: setSql(schema, table, columnName, primaryColumns.map(column => column.name))[database.type],
         values: [value, ...primaryColumns.map(column => rows[rowIndex][column.name] as string)],
       })
     },
   })
 
   return (
-    <TableContext value={context}>
-      <div className="h-screen flex flex-col justify-between">
-        <TableHeader
-          queryKey={queryOpts.queryKey}
-          columnsCount={columns.length}
+    <div className="h-screen flex flex-col justify-between">
+      <TableHeader
+        queryKey={queryOpts.queryKey}
+        columnsCount={columns.length}
+        selected={selectedRowsPrimaryKeys}
+        clearSelected={() => setSelectedRows({})}
+      />
+      <div className="flex-1 overflow-hidden">
+        <DataTable
+          loading={isPending}
+          data={rows}
+          columns={columns}
+          className="h-full"
+          updateCell={updateCell}
+          selectable={!!primaryKeys && primaryKeys.length > 0}
+          selectedRows={selectedRows}
+          setSelectedRows={setSelectedRows}
         />
-        <div className="flex-1 overflow-hidden">
-          <DataTable
-            key={`${table}-${page}-${pageSize}`}
-            loading={isPending}
-            data={rows}
-            columns={columns}
-            className="h-full"
-            updateCell={updateCell}
-          />
-        </div>
-        <TableFooter />
       </div>
-    </TableContext>
+      <TableFooter />
+    </div>
   )
 }

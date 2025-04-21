@@ -31,7 +31,7 @@ export function successAuthToast(newUser: boolean) {
       ? 'Welcome to Connnect! We\'re excited to help you manage your connections with ease. Get started by creating your first connection.'
       : 'Welcome back! Your connections are ready for you.',
     {
-      duration: 5000,
+      duration: 10000,
     },
   )
 }

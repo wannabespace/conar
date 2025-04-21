@@ -79,7 +79,7 @@ function TableCellProvider({
 
       await (table.options.meta as TableMeta).updateCell?.(
         cell.row.index,
-        cell.column.getIndex(),
+        (cell.column.columnDef.meta as TableCellMeta).name,
         _value,
       )
     },
@@ -261,6 +261,42 @@ function getTimestamp(value: unknown, meta: TableCellMeta) {
   return date
 }
 
+function TableCellContent({
+  value,
+  className,
+  ...props
+}: {
+  value: unknown
+  className?: string
+} & ComponentProps<'div'>) {
+  const displayValue = (() => {
+    if (value === null)
+      return 'null'
+
+    if (value === '')
+      return 'empty'
+
+    return getDisplayValue(value)
+  })()
+
+  return (
+    <div
+      data-mask
+      className={cn(
+        'h-full text-xs truncate p-2 group-first/cell:pl-4 group-last/cell:pr-4 font-mono cursor-default select-none',
+        'transition-all duration-100',
+        'ring-2 ring-inset ring-transparent',
+        value === null && 'text-muted-foreground/50',
+        value === '' && 'text-muted-foreground/50',
+        className,
+      )}
+      {...props}
+    >
+      {displayValue}
+    </div>
+  )
+}
+
 export function TableCell({ cell, getValue, table }: CellContext<Record<string, unknown>, unknown>) {
   const [isOpen, setIsOpen] = useState(false)
   const cellValue = getValue()
@@ -283,6 +319,7 @@ export function TableCell({ cell, getValue, table }: CellContext<Record<string, 
     setCanInteract(true)
     setIsOpen(true)
     setStatus('error')
+
     toast.error(`Failed to update cell ${cell.column.id}`, {
       description: error.message,
       duration: 3000,
@@ -368,41 +405,5 @@ export function TableCell({ cell, getValue, table }: CellContext<Record<string, 
         </PopoverContent>
       </Popover>
     </TableCellProvider>
-  )
-}
-
-function TableCellContent({
-  value,
-  className,
-  ...props
-}: {
-  value: unknown
-  className?: string
-} & ComponentProps<'div'>) {
-  const displayValue = (() => {
-    if (value === null)
-      return 'null'
-
-    if (value === '')
-      return 'empty'
-
-    return getDisplayValue(value)
-  })()
-
-  return (
-    <div
-      data-mask
-      className={cn(
-        'h-full text-xs truncate p-2 group-first/cell:pl-4 group-last/cell:pr-4 font-mono cursor-default select-none',
-        'transition-all duration-100',
-        'ring-2 ring-inset ring-transparent',
-        value === null && 'text-muted-foreground/50',
-        value === '' && 'text-muted-foreground/50',
-        className,
-      )}
-      {...props}
-    >
-      {displayValue}
-    </div>
   )
 }
