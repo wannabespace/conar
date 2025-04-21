@@ -1,16 +1,21 @@
+import { getOS } from '@connnect/shared/utils/os'
 import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { Button } from '@connnect/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { RiDatabase2Line, RiMoonLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCommandLine, RiDatabase2Line, RiMoonLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { Link, useMatches, useParams } from '@tanstack/react-router'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
+import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
+
+const os = getOS()
 
 export function DatabaseSidebar() {
   const { id } = useParams({ from: '/(protected)/_protected/database/$id' })
   const matches = useMatches({
     select: matches => matches.map(match => match.routeId),
   })
+
   const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/tables')
 
@@ -78,6 +83,23 @@ export function DatabaseSidebar() {
           </div>
         </div>
         <div className="flex flex-col items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => actionsCenterStore.setState(state => ({ ...state, isOpen: true }))}
+                >
+                  <RiCommandLine className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {os === 'macos' ? '⌘' : 'Ctrl'}
+                + P
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <div className="relative">
             <ThemeToggle>
               <Button size="icon" variant="ghost">
