@@ -2,6 +2,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '@connnect/ui/components/button'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import NumberFlow from '@number-flow/react'
 import { RiDeleteBin7Line, RiLoopLeftLine } from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
@@ -86,9 +87,12 @@ export function HeaderActions() {
                     <TooltipTrigger asChild>
                       <Button variant="outline">
                         <RiDeleteBin7Line />
-                        Remove (
-                        {selected.length}
-                        )
+                        <span>
+                          Remove
+                          (
+                          <NumberFlow spinTiming={{ duration: 200 }} value={selected.length} />
+                          )
+                        </span>
                       </Button>
                     </TooltipTrigger>
                   </AlertDialogTrigger>
