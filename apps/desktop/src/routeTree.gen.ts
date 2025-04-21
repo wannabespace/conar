@@ -24,6 +24,7 @@ import { Route as publicAuthTwoFactorSetupImport } from './routes/(public)/_auth
 import { Route as protectedProtectedDatabaseIdImport } from './routes/(protected)/_protected/database/$id'
 import { Route as protectedProtectedDatabaseIdTablesImport } from './routes/(protected)/_protected/database/$id/tables'
 import { Route as protectedProtectedDatabaseIdSqlIndexImport } from './routes/(protected)/_protected/database/$id/sql/index'
+import { Route as protectedProtectedDatabaseIdEnumsIndexImport } from './routes/(protected)/_protected/database/$id/enums/index'
 import { Route as protectedProtectedDatabaseIdTablesSchemaTableIndexImport } from './routes/(protected)/_protected/database/$id/tables.$schema/$table/index'
 
 // Create Virtual Routes
@@ -107,6 +108,13 @@ const protectedProtectedDatabaseIdSqlIndexRoute =
   protectedProtectedDatabaseIdSqlIndexImport.update({
     id: '/sql/',
     path: '/sql/',
+    getParentRoute: () => protectedProtectedDatabaseIdRoute,
+  } as any)
+
+const protectedProtectedDatabaseIdEnumsIndexRoute =
+  protectedProtectedDatabaseIdEnumsIndexImport.update({
+    id: '/enums/',
+    path: '/enums/',
     getParentRoute: () => protectedProtectedDatabaseIdRoute,
   } as any)
 
@@ -205,6 +213,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof protectedProtectedDatabaseIdTablesImport
       parentRoute: typeof protectedProtectedDatabaseIdImport
     }
+    '/(protected)/_protected/database/$id/enums/': {
+      id: '/(protected)/_protected/database/$id/enums/'
+      path: '/enums'
+      fullPath: '/database/$id/enums'
+      preLoaderRoute: typeof protectedProtectedDatabaseIdEnumsIndexImport
+      parentRoute: typeof protectedProtectedDatabaseIdImport
+    }
     '/(protected)/_protected/database/$id/sql/': {
       id: '/(protected)/_protected/database/$id/sql/'
       path: '/sql'
@@ -241,6 +256,7 @@ const protectedProtectedDatabaseIdTablesRouteWithChildren =
 
 interface protectedProtectedDatabaseIdRouteChildren {
   protectedProtectedDatabaseIdTablesRoute: typeof protectedProtectedDatabaseIdTablesRouteWithChildren
+  protectedProtectedDatabaseIdEnumsIndexRoute: typeof protectedProtectedDatabaseIdEnumsIndexRoute
   protectedProtectedDatabaseIdSqlIndexRoute: typeof protectedProtectedDatabaseIdSqlIndexRoute
 }
 
@@ -248,6 +264,8 @@ const protectedProtectedDatabaseIdRouteChildren: protectedProtectedDatabaseIdRou
   {
     protectedProtectedDatabaseIdTablesRoute:
       protectedProtectedDatabaseIdTablesRouteWithChildren,
+    protectedProtectedDatabaseIdEnumsIndexRoute:
+      protectedProtectedDatabaseIdEnumsIndexRoute,
     protectedProtectedDatabaseIdSqlIndexRoute:
       protectedProtectedDatabaseIdSqlIndexRoute,
   }
@@ -332,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
+  '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
   '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
   '/database/$id/tables/$schema/$table': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
 }
@@ -345,6 +364,7 @@ export interface FileRoutesByTo {
   '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
+  '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
   '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
   '/database/$id/tables/$schema/$table': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
 }
@@ -363,6 +383,7 @@ export interface FileRoutesById {
   '/(protected)/_protected/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
   '/(public)/_auth/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/(protected)/_protected/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
+  '/(protected)/_protected/database/$id/enums/': typeof protectedProtectedDatabaseIdEnumsIndexRoute
   '/(protected)/_protected/database/$id/sql/': typeof protectedProtectedDatabaseIdSqlIndexRoute
   '/(protected)/_protected/database/$id/tables/$schema/$table/': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
 }
@@ -378,6 +399,7 @@ export interface FileRouteTypes {
     | '/database/$id'
     | '/two-factor/setup'
     | '/database/$id/tables'
+    | '/database/$id/enums'
     | '/database/$id/sql'
     | '/database/$id/tables/$schema/$table'
   fileRoutesByTo: FileRoutesByTo
@@ -390,6 +412,7 @@ export interface FileRouteTypes {
     | '/database/$id'
     | '/two-factor/setup'
     | '/database/$id/tables'
+    | '/database/$id/enums'
     | '/database/$id/sql'
     | '/database/$id/tables/$schema/$table'
   id:
@@ -406,6 +429,7 @@ export interface FileRouteTypes {
     | '/(protected)/_protected/database/$id'
     | '/(public)/_auth/two-factor/setup'
     | '/(protected)/_protected/database/$id/tables'
+    | '/(protected)/_protected/database/$id/enums/'
     | '/(protected)/_protected/database/$id/sql/'
     | '/(protected)/_protected/database/$id/tables/$schema/$table/'
   fileRoutesById: FileRoutesById
@@ -493,6 +517,7 @@ export const routeTree = rootRoute
       "parent": "/(protected)/_protected",
       "children": [
         "/(protected)/_protected/database/$id/tables",
+        "/(protected)/_protected/database/$id/enums/",
         "/(protected)/_protected/database/$id/sql/"
       ]
     },
@@ -506,6 +531,10 @@ export const routeTree = rootRoute
       "children": [
         "/(protected)/_protected/database/$id/tables/$schema/$table/"
       ]
+    },
+    "/(protected)/_protected/database/$id/enums/": {
+      "filePath": "(protected)/_protected/database/$id/enums/index.tsx",
+      "parent": "/(protected)/_protected/database/$id"
     },
     "/(protected)/_protected/database/$id/sql/": {
       "filePath": "(protected)/_protected/database/$id/sql/index.tsx",

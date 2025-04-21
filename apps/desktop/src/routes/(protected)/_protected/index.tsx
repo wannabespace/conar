@@ -3,7 +3,7 @@ import { Button } from '@connnect/ui/components/button'
 import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Separator } from '@connnect/ui/components/separator'
-import { RiAddLine, RiDownloadLine, RiLoader4Line, RiLoopLeftLine } from '@remixicon/react'
+import { RiAddLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
@@ -68,6 +68,31 @@ function DashboardPage() {
       <div className="mt-auto pt-6">
         <Separator />
         <div className="mt-3 flex gap-2 items-center">
+          <a
+            href="https://connnect.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
+          >
+            <RiGlobalLine className="size-4" />
+          </a>
+          <a
+            href="https://x.com/connnectapp"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
+          >
+            <RiTwitterXLine className="size-4" />
+          </a>
+          <a
+            href="https://github.com/wannabespace/connnect"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
+          >
+            <RiGithubLine className="size-4" />
+          </a>
+          <Separator orientation="vertical" className="h-4!" />
           <button
             type="button"
             onClick={() => checkForUpdates()}

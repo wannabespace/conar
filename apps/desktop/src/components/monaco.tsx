@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react'
+import type { ComponentProps, RefObject } from 'react'
 import { useTheme } from '@connnect/ui/theme-provider'
 import * as monaco from 'monaco-editor'
 import ghDark from 'monaco-themes/themes/GitHub Dark.json'
@@ -16,6 +16,7 @@ monaco.editor.defineTheme('github-dark', ghDark)
 monaco.editor.defineTheme('github-light', ghLight)
 
 export function Monaco({
+  ref,
   value,
   language,
   onChange,
@@ -23,6 +24,7 @@ export function Monaco({
   onEnter,
   ...props
 }: Omit<ComponentProps<'div'>, 'onChange' | 'ref'> & {
+  ref?: RefObject<monaco.editor.IStandaloneCodeEditor | null>
   value: string
   language?: string
   onChange: (value: string) => void
@@ -50,6 +52,10 @@ export function Monaco({
       fontFamily: '"Geist Mono", monospace',
       ...options,
     })
+
+    if (ref) {
+      ref.current = monacoInstance.current
+    }
 
     if (onEnter) {
       monacoInstance.current.addAction({

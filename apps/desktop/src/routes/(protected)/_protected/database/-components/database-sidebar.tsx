@@ -2,7 +2,7 @@ import { getOS } from '@connnect/shared/utils/os'
 import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { Button } from '@connnect/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { RiCommandLine, RiDatabase2Line, RiMoonLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCommandLine, RiListCheck2, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { Link, useMatches, useParams } from '@tanstack/react-router'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
@@ -18,12 +18,13 @@ export function DatabaseSidebar() {
 
   const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/tables')
+  const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
 
   return (
     <>
       <div className="w-[calc(theme(spacing.16)+2px)]" />
       <div
-        className="bg-muted/50 flex flex-col border-r gap-4 items-center py-4 px-4 w-16 h-screen fixed left-0 inset-y-0"
+        className="bg-muted/40 flex flex-col border-r gap-6 items-center py-4 px-4 w-16 h-screen fixed left-0 inset-y-0"
       >
         <div className="flex flex-col gap-2">
           <TooltipProvider>
@@ -56,7 +57,7 @@ export function DatabaseSidebar() {
                       variant={isActiveSql ? 'secondary' : 'ghost'}
                     >
                       <Link to="/database/$id/sql" params={{ id }} className="text-foreground">
-                        <RiDatabase2Line className="size-4" />
+                        <RiPlayLargeLine className="size-4" />
                       </Link>
                     </Button>
                   </TooltipTrigger>
@@ -77,6 +78,22 @@ export function DatabaseSidebar() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="right">Tables</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      asChild
+                      size="icon"
+                      variant={isActiveEnums ? 'secondary' : 'ghost'}
+                    >
+                      <Link to="/database/$id/enums" params={{ id }} className="text-foreground">
+                        <RiListCheck2 className="size-4" />
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Enums</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
