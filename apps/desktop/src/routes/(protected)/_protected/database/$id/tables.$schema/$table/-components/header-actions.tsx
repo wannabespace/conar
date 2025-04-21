@@ -80,31 +80,17 @@ export function HeaderActions() {
             transition={{ duration: 0.2, type: 'spring' }}
           >
             <AlertDialog>
-              <TooltipProvider>
-                <Tooltip>
-                  <AlertDialogTrigger asChild>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline">
-                        <RiDeleteBin7Line />
-                        <span>
-                          Remove
-                          (
-                          <NumberFlow spinTiming={{ duration: 200 }} value={selected.length} />
-                          )
-                        </span>
-                      </Button>
-                    </TooltipTrigger>
-                  </AlertDialogTrigger>
-                  <TooltipContent side="left">
-                    Remove
-                    {' '}
-                    {selected.length}
-                    {' '}
-                    selected row
-                    {selected.length === 1 ? '' : 's'}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline">
+                  <RiDeleteBin7Line />
+                  <span>
+                    Delete
+                    (
+                    <NumberFlow spinTiming={{ duration: 200 }} value={selected.length} />
+                    )
+                  </span>
+                </Button>
+              </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>
@@ -127,7 +113,7 @@ export function HeaderActions() {
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction variant="destructive" onClick={() => deleteRows()}>
                     <LoadingContent loading={isDeleting}>
-                      Remove
+                      Delete
                       {' '}
                       {selected.length}
                       {' '}
