@@ -2,7 +2,7 @@ import { getOS } from '@connnect/shared/utils/os'
 import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { Button } from '@connnect/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { RiCommandLine, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCommandLine, RiListCheck2, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { Link, useMatches, useParams } from '@tanstack/react-router'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
@@ -18,6 +18,7 @@ export function DatabaseSidebar() {
 
   const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/tables')
+  const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
 
   return (
     <>
@@ -77,6 +78,22 @@ export function DatabaseSidebar() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="right">Tables</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      asChild
+                      size="icon"
+                      variant={isActiveEnums ? 'secondary' : 'ghost'}
+                    >
+                      <Link to="/database/$id/enums" params={{ id }} className="text-foreground">
+                        <RiListCheck2 className="size-4" />
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Enums</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>

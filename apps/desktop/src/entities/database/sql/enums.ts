@@ -5,19 +5,27 @@ import { type } from 'arktype'
 export const enumType = type({
   schema: 'string',
   name: 'string',
-  value: 'string',
+  values: 'string[]',
 })
 
 export function enumsSql(): Record<DatabaseType, string> {
   return {
     postgres: prepareSql(`
-      SELECT n.nspname AS schema,
-        t.typname AS name,
-        e.enumlabel AS value
+      SELECT
+        t.typname as name,
+        n.nspname as schema,
+        coalesce(t_enums.values, '[]') as values
       FROM pg_type t
-      JOIN pg_enum e ON t.oid = e.enumtypid
-      JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-      ORDER BY schema, name, e.enumsortorder;
+      LEFT JOIN pg_namespace n ON n.oid = t.typnamespace
+      LEFT JOIN (
+        SELECT
+          enumtypid,
+          jsonb_agg(enumlabel ORDER BY enumsortorder) as values
+        FROM pg_enum
+        GROUP BY enumtypid
+      ) as t_enums ON t_enums.enumtypid = t.oid
+      WHERE t.typtype = 'e'
+      ORDER BY schema, name;
     `),
   }
 }

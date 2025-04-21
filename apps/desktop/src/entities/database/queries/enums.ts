@@ -1,5 +1,5 @@
 import type { Database } from '~/lib/indexeddb'
-import { queryOptions, useQuery } from '@tanstack/react-query'
+import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { enumsSql, enumType } from '../sql/enums'
 
 export function databaseEnumsQuery(database: Database) {
@@ -18,5 +18,5 @@ export function databaseEnumsQuery(database: Database) {
 }
 
 export function useDatabaseEnums(database: Database) {
-  return useQuery(databaseEnumsQuery(database))
+  return useSuspenseQuery(databaseEnumsQuery(database))
 }

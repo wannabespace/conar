@@ -33,7 +33,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
           folding: false,
         }}
         className="rounded-md border overflow-hidden"
-        style={{ height: `${Math.min(content.split('\n').length * 20, 300)}px` }}
+        style={{ height: `${Math.min(content.split('\n').length * 20, 200)}px` }}
       />
       <div className="flex justify-end gap-2 mt-2">
         <div className="flex gap-2">
