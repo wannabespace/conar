@@ -6,21 +6,20 @@ import NumberFlow from '@number-flow/react'
 import { RiDeleteBin7Line, RiLoopLeftLine } from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { databaseColumnsQuery, databaseRowsQuery, useDatabase } from '~/entities/database'
 import { deleteRowsSql } from '~/entities/database/sql/delete'
 import { queryClient } from '~/main'
+import { useTableContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
-import { tableStore } from './table'
 
 export function HeaderActions() {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
+  const { page, pageSize, selectedRows, setSelectedRows, setPage } = useTableContext()
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
-  const [page, pageSize, selectedRows] = useStore(tableStore, state => [state.page, state.pageSize, state.selectedRows])
   const queryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
   const { isFetching, dataUpdatedAt, data } = useQuery(queryOpts)
 
@@ -52,7 +51,7 @@ export function HeaderActions() {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
       queryClient.invalidateQueries({ queryKey: queryOpts.queryKey.slice(0, -1) })
       queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table, schema).queryKey })
-      tableStore.setState(state => ({ ...state, selectedRows: {} }))
+      setSelectedRows({})
     },
     onError: (error) => {
       toast.error('Failed to delete rows', {
@@ -62,7 +61,7 @@ export function HeaderActions() {
   })
 
   async function handleRefresh() {
-    tableStore.setState(state => ({ ...state, page: 1 }))
+    setPage(1)
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryOpts.queryKey.slice(0, -1) }),
       queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table, schema).queryKey }),

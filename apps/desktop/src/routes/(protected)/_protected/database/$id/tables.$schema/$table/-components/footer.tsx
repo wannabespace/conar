@@ -2,17 +2,16 @@ import type { PageSize } from '~/entities/database'
 import { Separator } from '@connnect/ui/components/separator'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { useEffect, useState } from 'react'
 import { databaseRowsQuery, databaseTotalQuery, DataTableFooter, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
-import { tableStore } from './table'
+import { useTableContext } from '..'
 
 export function Footer() {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
+  const { page, pageSize, setPage, setPageSize } = useTableContext()
   const { data: total } = useSuspenseQuery(databaseTotalQuery(database, table, schema))
-  const [page, pageSize] = useStore(tableStore, state => [state.page, state.pageSize])
   const [canPrefetch, setCanPrefetch] = useState(false)
 
   useEffect(() => {
@@ -39,9 +38,12 @@ export function Footer() {
       <DataTableFooter
         className="p-2"
         currentPage={page}
-        onPageChange={page => tableStore.setState(state => ({ ...state, page }))}
+        onPageChange={setPage}
         pageSize={pageSize}
-        onPageSizeChange={pageSize => tableStore.setState(state => ({ ...state, page: 1, pageSize }))}
+        onPageSizeChange={(pageSize) => {
+          setPage(1)
+          setPageSize(pageSize)
+        }}
         total={total}
       />
     </div>

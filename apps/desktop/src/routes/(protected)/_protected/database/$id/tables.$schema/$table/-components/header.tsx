@@ -1,14 +1,14 @@
 import { useParams } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { useDatabase } from '~/entities/database'
 import { useDatabaseTotal } from '~/entities/database/queries/total'
+import { useTableContext } from '..'
 import { HeaderActions } from './header-actions'
-import { tableStore } from './table'
 
 export function Header() {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
-  const columnsCount = useStore(tableStore, state => state.columnsCount)
+  const { columns } = useTableContext()
+  const columnsCount = columns.length
   const { data: total } = useDatabaseTotal(database, table, schema)
 
   return (

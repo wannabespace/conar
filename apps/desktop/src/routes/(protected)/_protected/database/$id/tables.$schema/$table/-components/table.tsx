@@ -1,48 +1,21 @@
-import type { PageSize } from '~/entities/database'
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
-import { Store, useStore } from '@tanstack/react-store'
-import { useEffect, useMemo } from 'react'
-import { createCellUpdater, databaseColumnsQuery, databaseRowsQuery, DataTable, useDatabase } from '~/entities/database'
+import { useMemo } from 'react'
+import { createCellUpdater, databaseRowsQuery, DataTable, useDatabase } from '~/entities/database'
 import { setSql } from '~/entities/database/sql/set'
 import { queryClient } from '~/main'
+import { useTableContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 
 const cellUpdater = createCellUpdater()
 
-export const tableStore = new Store<{
-  page: number
-  pageSize: PageSize
-  columnsCount: number
-  selectedRows: Record<string, boolean>
-}>({
-  page: 1,
-  pageSize: 50,
-  columnsCount: 0,
-  selectedRows: {},
-})
-
 export function Table() {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
-  const [page, pageSize, selectedRows] = useStore(tableStore, state => [state.page, state.pageSize, state.selectedRows])
+  const { page, pageSize, selectedRows, columns, setSelectedRows } = useTableContext()
   const queryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
   const { data, isPending } = useQuery(queryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
-  const { data: columns } = useSuspenseQuery({
-    ...databaseColumnsQuery(database, table, schema),
-    select: data => data.map(column => ({
-      ...column,
-      isPrimaryKey: !!primaryKeys?.includes(column.name),
-    })),
-  })
-
-  useEffect(() => {
-    tableStore.setState(state => ({
-      ...state,
-      columnsCount: columns.length,
-    }))
-  }, [columns.length])
 
   const rows = useMemo(() => data?.rows ?? [], [data])
 
@@ -92,12 +65,7 @@ export function Table() {
       updateCell={updateCell}
       selectable={!!primaryKeys && primaryKeys.length > 0}
       selectedRows={selectedRows}
-      setSelectedRows={(updaterOrValue) => {
-        tableStore.setState(state => ({
-          ...state,
-          selectedRows: typeof updaterOrValue === 'function' ? updaterOrValue(state.selectedRows) : updaterOrValue,
-        }))
-      }}
+      setSelectedRows={setSelectedRows}
     />
   )
 }
