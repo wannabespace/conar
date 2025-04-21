@@ -158,6 +158,9 @@ export async function prefetchDatabaseCore(database: Database) {
     queryClient.ensureQueryData(databaseQuery(database.id)),
     queryClient.ensureQueryData(databaseSchemasQuery(database)),
     queryClient.ensureQueryData(databaseTablesQuery(database, databaseSchemas.get(database.id))),
+  ])
+
+  await Promise.all([
     queryClient.ensureQueryData(databaseEnumsQuery(database)),
     queryClient.ensureQueryData(databasePrimaryKeysQuery(database)),
   ])
