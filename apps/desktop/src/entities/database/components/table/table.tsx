@@ -13,7 +13,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '.'
 import { TableCell } from './cell'
 import { IndeterminateCheckbox } from './checkbox'
@@ -54,6 +54,7 @@ function SelectedCell({ row }: CellContext<Record<string, unknown>, unknown>) {
     </div>
   )
 }
+
 export function DataTable<T extends Record<string, unknown>>({
   data,
   columns,
@@ -125,18 +126,15 @@ export function DataTable<T extends Record<string, unknown>>({
     overscan: 5,
   })
 
+  const allColumns = table.getAllColumns()
+
   const columnVirtualizer = useVirtualizer({
     horizontal: true,
-    count: table.getAllColumns().length,
+    count: allColumns.length,
     getScrollElement: () => ref.current,
-    estimateSize: index => table.getAllColumns()[index].getSize(),
+    estimateSize: index => allColumns[index].getSize(),
     overscan: 1,
   })
-
-  // https://github.com/TanStack/virtual/discussions/379#discussioncomment-3501037
-  useEffect(() => {
-    columnVirtualizer.measure()
-  }, [columnVirtualizer, columns])
 
   const rowWidth = columnVirtualizer.getTotalSize()
   const virtualColumns = columnVirtualizer.getVirtualItems()
@@ -150,7 +148,7 @@ export function DataTable<T extends Record<string, unknown>>({
           rowWidth={rowWidth}
         />
         {loading
-          ? <TableSkeleton columnsCount={table.getAllColumns().length || 5} />
+          ? <TableSkeleton columnsCount={allColumns.length || 5} />
           : data.length === 0
             ? (
                 <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">

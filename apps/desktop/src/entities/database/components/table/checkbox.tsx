@@ -1,25 +1,15 @@
 import type { ComponentProps } from 'react'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
-import { useEffect, useRef } from 'react'
 
 export function IndeterminateCheckbox({
   indeterminate,
   className,
   ...props
 }: { indeterminate?: boolean } & ComponentProps<'input'>) {
-  const ref = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (typeof indeterminate === 'boolean' && ref.current) {
-      ref.current.indeterminate = !props.checked && indeterminate
-    }
-  }, [ref, indeterminate])
-
   return (
     <div className="relative inline-flex items-center justify-center">
       <input
-        ref={ref}
         type="checkbox"
         className={cn(
           'peer appearance-none size-4 rounded-[4px] border border-border transition-colors outline-none duration-100',
