@@ -135,22 +135,24 @@ export function SqlChat({ ref, onEdit }: { ref?: RefObject<{ fixError: (error: s
         {/* <Button variant="outline" size="icon">
           <RiHistoryLine className="size-4" />
         </Button> */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="iconSm"
-                onClick={() => setMessages([])}
-              >
-                <RiDeleteBinLine className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              Clear chat history
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {messages.length > 0 && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="iconSm"
+                  onClick={() => setMessages([])}
+                >
+                  <RiDeleteBinLine className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Clear chat history
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
       {messages.length === 0 && !error && (
         <div className="pointer-events-none absolute z-10 inset-0 flex justify-center items-center px-6">
