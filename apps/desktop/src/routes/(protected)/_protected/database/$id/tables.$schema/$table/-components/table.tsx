@@ -42,7 +42,7 @@ export function Table() {
       ...state,
       columnsCount: columns.length,
     }))
-  }, [columns])
+  }, [columns.length])
 
   const rows = useMemo(() => data?.rows ?? [], [data])
 

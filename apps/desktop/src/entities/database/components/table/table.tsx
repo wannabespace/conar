@@ -133,8 +133,6 @@ export function DataTable<T extends Record<string, unknown>>({
     overscan: 1,
   })
 
-  console.log(1)
-
   // https://github.com/TanStack/virtual/discussions/379#discussioncomment-3501037
   useEffect(() => {
     columnVirtualizer.measure()
