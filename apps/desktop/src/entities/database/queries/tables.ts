@@ -1,11 +1,11 @@
-import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { tablesSql, tableType } from '../sql/tables'
 
 export function databaseTablesQuery(database: Database, schema: string) {
-  const queryMap: Record<DatabaseType, () => Promise<typeof tableType.infer[]>> = {
-    postgres: async () => {
+  return queryOptions({
+    queryKey: ['database', database.id, 'schema', schema, 'tables'],
+    queryFn: async () => {
       const [result] = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
@@ -14,11 +14,6 @@ export function databaseTablesQuery(database: Database, schema: string) {
 
       return result.rows.map(row => tableType.assert(row))
     },
-  }
-
-  return queryOptions({
-    queryKey: ['database', database.id, schema, 'tables'],
-    queryFn: () => queryMap[database.type](),
   })
 }
 

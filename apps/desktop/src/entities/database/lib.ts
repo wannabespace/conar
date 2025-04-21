@@ -5,10 +5,13 @@ import { toast } from 'sonner'
 import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
+import { databaseColumnsQuery } from './queries/columns'
 import { databaseQuery } from './queries/database'
+import { databaseEnumsQuery } from './queries/enums'
 import { databasePrimaryKeysQuery } from './queries/primary-keys'
 import { databaseSchemasQuery } from './queries/schemas'
 import { databaseTablesQuery } from './queries/tables'
+import { databaseTotalQuery } from './queries/total'
 import { contextSql } from './sql/context'
 
 const DATABASES_SCHEMAS_KEY = 'databases-schemas'
@@ -155,8 +158,16 @@ export async function prefetchDatabaseCore(database: Database) {
     queryClient.ensureQueryData(databaseQuery(database.id)),
     queryClient.ensureQueryData(databaseSchemasQuery(database)),
     queryClient.ensureQueryData(databaseTablesQuery(database, databaseSchemas.get(database.id))),
+    queryClient.ensureQueryData(databaseEnumsQuery(database)),
+    queryClient.ensureQueryData(databasePrimaryKeysQuery(database)),
   ])
-  await queryClient.ensureQueryData(databasePrimaryKeysQuery(database))
+}
+
+export async function prefetchDatabaseTableCore(database: Database, schema: string, table: string) {
+  await Promise.all([
+    queryClient.ensureQueryData(databaseColumnsQuery(database, table, schema)),
+    queryClient.ensureQueryData(databaseTotalQuery(database, table, schema)),
+  ])
 }
 
 export async function getDatabaseContext(database: Database): Promise<typeof databaseContextType.infer> {

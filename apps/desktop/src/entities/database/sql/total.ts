@@ -2,7 +2,7 @@ import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import { prepareSql } from '@connnect/shared/utils/helpers'
 import { type } from 'arktype'
 
-export const countType = type({
+export const totalType = type({
   total: 'string.numeric',
 })
 
