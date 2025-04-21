@@ -38,11 +38,15 @@ function generateStream({
         5. The SQL code will be executed directly in a production database editor
         6. Generate SQL query only for the provided schemas, tables, columns and enums
         7. Answer in markdown and paste the SQL code in a code block.
-        8. Say less, do not add useless information
-        9. You can use SQL comments for additional information, example:
+        8. Do not add useless information
+        9. Use quotes for table and column names to prevent SQL errors with case sensitivity
+        10. You can use SQL comments for additional information, example:
 
         -- This is a comment
         SELECT * FROM users WHERE id = 1;
+
+        Additional information:
+        - Current date and time: ${new Date().toISOString()}
 
         ----------------
         Database Context:

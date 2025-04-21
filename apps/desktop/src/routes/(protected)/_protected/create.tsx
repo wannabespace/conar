@@ -68,11 +68,11 @@ function StepType({ type, setType }: { type: DatabaseType, setType: (type: Datab
           </ToggleGroupItem>
           <ToggleGroupItem value="" disabled aria-label="MySQL">
             <MySQLIcon />
-            MySQL
+            MySQL (soon)
           </ToggleGroupItem>
           <ToggleGroupItem value="" disabled aria-label="MongoDB">
             <MongoIcon />
-            MongoDB
+            MongoDB (soon)
           </ToggleGroupItem>
         </ToggleGroup>
       </CardContent>

@@ -5,10 +5,14 @@ import { toast } from 'sonner'
 import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
+import { databaseColumnsQuery } from './queries/columns'
 import { databaseQuery } from './queries/database'
+import { databaseEnumsQuery } from './queries/enums'
 import { databasePrimaryKeysQuery } from './queries/primary-keys'
 import { databaseSchemasQuery } from './queries/schemas'
 import { databaseTablesQuery } from './queries/tables'
+import { databaseTotalQuery } from './queries/total'
+import { contextSql } from './sql/context'
 
 const DATABASES_SCHEMAS_KEY = 'databases-schemas'
 
@@ -155,59 +159,25 @@ export async function prefetchDatabaseCore(database: Database) {
     queryClient.ensureQueryData(databaseSchemasQuery(database)),
     queryClient.ensureQueryData(databaseTablesQuery(database, databaseSchemas.get(database.id))),
   ])
-  await queryClient.ensureQueryData(databasePrimaryKeysQuery(database))
+
+  await Promise.all([
+    queryClient.ensureQueryData(databaseEnumsQuery(database)),
+    queryClient.ensureQueryData(databasePrimaryKeysQuery(database)),
+  ])
+}
+
+export async function prefetchDatabaseTableCore(database: Database, schema: string, table: string) {
+  await Promise.all([
+    queryClient.ensureQueryData(databaseColumnsQuery(database, table, schema)),
+    queryClient.ensureQueryData(databaseTotalQuery(database, table, schema)),
+  ])
 }
 
 export async function getDatabaseContext(database: Database): Promise<typeof databaseContextType.infer> {
-  // Just vibe code
   const [result] = await window.electron.databases.query({
     type: database.type,
     connectionString: database.connectionString,
-    query: `
-    SELECT json_build_object(
-      'schemas', (
-        SELECT json_agg(json_build_object(
-          'schema', schemas.nspname,
-          'tables', (
-            SELECT json_agg(json_build_object(
-              'name', tables.relname,
-              'columns', (
-                SELECT json_agg(json_build_object(
-                  'name', columns.attname,
-                  'type', pg_catalog.format_type(columns.atttypid, columns.atttypmod),
-                  'nullable', NOT columns.attnotnull,
-                  'default', pg_get_expr(defaults.adbin, defaults.adrelid)
-                ))
-                FROM pg_catalog.pg_attribute columns
-                LEFT JOIN pg_catalog.pg_attrdef defaults
-                  ON defaults.adrelid = columns.attrelid AND defaults.adnum = columns.attnum
-                WHERE columns.attrelid = tables.oid
-                  AND columns.attnum > 0
-                  AND NOT columns.attisdropped
-              )
-            ))
-            FROM pg_catalog.pg_class tables
-            WHERE tables.relnamespace = schemas.oid
-              AND tables.relkind = 'r'
-          )
-        ))
-        FROM pg_catalog.pg_namespace schemas
-        WHERE schemas.nspname NOT IN ('pg_catalog', 'information_schema')
-          AND schemas.nspname NOT LIKE 'pg_toast%'
-          AND schemas.nspname NOT LIKE 'pg_temp%'
-      ),
-      'enums', (
-        SELECT json_agg(json_build_object(
-          'schema', enum_schemas.nspname,
-          'name', enum_types.typname,
-          'value', enum_labels.enumlabel
-        ))
-        FROM pg_type enum_types
-        JOIN pg_enum enum_labels ON enum_types.oid = enum_labels.enumtypid
-        JOIN pg_catalog.pg_namespace enum_schemas ON enum_schemas.oid = enum_types.typnamespace
-        WHERE enum_schemas.nspname NOT IN ('pg_catalog', 'information_schema')
-      )
-    ) AS database_context;`,
+    query: contextSql()[database.type],
   })
 
   const { database_context } = result.rows[0] as { database_context: unknown }

@@ -38,13 +38,13 @@ export function databaseQuery(id: string) {
   return queryOptions({
     queryKey: ['database', id],
     queryFn: async () => {
-      const c = await indexedDb.databases.get(id)
+      const database = await indexedDb.databases.get(id)
 
-      if (!c) {
+      if (!database) {
         throw new Error('Database not found')
       }
 
-      return c
+      return database
     },
   })
 }

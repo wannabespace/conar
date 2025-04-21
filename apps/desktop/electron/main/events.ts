@@ -40,7 +40,7 @@ const databases = {
     type: DatabaseType
     connectionString: string
     query: string
-    values?: (string | null)[]
+    values?: unknown[]
   }) => {
     const queryMap = {
       [DatabaseType.Postgres]: pgQuery,

@@ -13,7 +13,7 @@ import { authClient } from '~/lib/auth'
 import { EventsProvider } from '~/lib/events'
 import { sleep } from '~/lib/helpers'
 import { queryClient } from '~/main'
-import { checkForUpdates, UpdatesProvider } from '~/updates-provider'
+import { checkForUpdates, UpdatesObserver } from '~/updates-observer'
 
 export const Route = createRootRoute({
   component: RootDocument,
@@ -50,19 +50,18 @@ function RootDocument() {
       <EventsProvider>
         <ThemeProvider>
           <QueryClientProvider client={queryClient}>
-            <UpdatesProvider>
-              <AuthObserver />
-              <AnimatePresence>
-                {isPending ? null : <Outlet />}
-              </AnimatePresence>
-              <Toaster />
-              {import.meta.env.DEV && (
-                <>
-                  <TanStackRouterDevtools position="bottom-right" />
-                  <ReactQueryDevtools initialIsOpen={false} />
-                </>
-              )}
-            </UpdatesProvider>
+            <UpdatesObserver />
+            <AuthObserver />
+            <AnimatePresence>
+              {isPending ? null : <Outlet />}
+            </AnimatePresence>
+            <Toaster />
+            {import.meta.env.DEV && (
+              <>
+                <TanStackRouterDevtools position="bottom-right" />
+                <ReactQueryDevtools initialIsOpen={false} />
+              </>
+            )}
           </QueryClientProvider>
         </ThemeProvider>
       </EventsProvider>

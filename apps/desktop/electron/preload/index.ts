@@ -1,5 +1,5 @@
 import type { electron } from '../main/events'
-import type { UpdatesStatus } from '~/updates-provider'
+import type { UpdatesStatus } from '~/updates-observer'
 import { contextBridge, ipcRenderer } from 'electron'
 
 // eslint-disable-next-line ts/no-explicit-any
@@ -23,11 +23,19 @@ export type ElectronPreload = PromisifyElectron<typeof electron> & {
 }
 
 // eslint-disable-next-line ts/no-explicit-any
-async function handleError(func: () => any) {
+async function handleError(func: () => any, log?: () => any) {
   try {
-    return await func()
+    const result = await func()
+    if (import.meta.env.DEV && log) {
+      console.debug('preload result', log(), result)
+    }
+    return result
   }
   catch (error) {
+    if (import.meta.env.DEV && log) {
+      console.debug('preload error', log())
+    }
+
     if (error instanceof Error) {
       const message = error.message.replace(/^Error invoking remote method '[^']+': /, '')
       const errorMessage = message.toLowerCase().startsWith('error: ') ? message.slice(7) : message
@@ -40,12 +48,12 @@ async function handleError(func: () => any) {
 
 contextBridge.exposeInMainWorld('electron', {
   databases: {
-    test: arg => handleError(() => ipcRenderer.invoke('databases.test', arg)),
-    query: arg => handleError(() => ipcRenderer.invoke('databases.query', arg)),
+    test: arg => handleError(() => ipcRenderer.invoke('databases.test', arg), () => arg),
+    query: arg => handleError(() => ipcRenderer.invoke('databases.query', arg), () => arg),
   },
   encryption: {
-    encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg)),
-    decrypt: arg => handleError(() => ipcRenderer.invoke('encryption.decrypt', arg)),
+    encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg), () => arg),
+    decrypt: arg => handleError(() => ipcRenderer.invoke('encryption.decrypt', arg), () => arg),
   },
   app: {
     onDeepLink: (callback) => {

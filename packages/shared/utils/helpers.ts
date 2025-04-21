@@ -12,3 +12,7 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(fu
 
   return debounced
 }
+
+export function prepareSql(input: string) {
+  return input.replaceAll('\n', ' ').replace(/\s+/g, ' ').trim()
+}

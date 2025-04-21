@@ -11,7 +11,7 @@ export async function pgQuery({
 }: {
   connectionString: string
   query: string
-  values?: (string | null)[]
+  values?: unknown[]
 }): Promise<DatabaseQueryResult[]> {
   const pool = new pg.Pool({
     connectionString,

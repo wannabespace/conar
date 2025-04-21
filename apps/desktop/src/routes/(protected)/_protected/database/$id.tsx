@@ -1,6 +1,5 @@
 import { title } from '@connnect/shared/utils/title'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { useEffect } from 'react'
 import { databaseQuery, prefetchDatabaseCore, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
 import { DatabaseSidebar } from './-components/database-sidebar'
@@ -10,6 +9,7 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: RouteComponent,
   loader: async ({ params }) => {
     const database = await queryClient.ensureQueryData(databaseQuery(params.id))
+    await prefetchDatabaseCore(database)
     return { database }
   },
   head: ({ loaderData }) => ({
@@ -24,10 +24,6 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
 function RouteComponent() {
   const { id } = Route.useParams()
   const { data: database } = useDatabase(id)
-
-  useEffect(() => {
-    prefetchDatabaseCore(database)
-  }, [database])
 
   if (database.isPasswordExists && !database.isPasswordPopulated) {
     return <PasswordForm database={database} />

@@ -9,14 +9,14 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.74.3",
+    "@tanstack/react-query": "^5.74.4",
     "@tanstack/react-router": "^1.116.0",
     "@tanstack/react-router-devtools": "^1.116.0",
-    "@tanstack/react-start": "^1.116.1",
+    "@tanstack/react-start": "^1.116.2",
     "@trpc/client": "^11.1.0",
     "@trpc/react-query": "^11.1.0",
-    "lucide-react": "^0.488.0",
-    "motion": "^12.7.3",
+    "lucide-react": "^0.501.0",
+    "motion": "^12.7.4",
     "postgres": "^3.4.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -39,7 +39,7 @@
     "babel-plugin-react-compiler": "19.0.0-beta-ebf51a3-20250411",
     "react-scan": "^0.3.3",
     "tailwindcss": "^4.1.4",
-    "tw-animate-css": "^1.2.5",
+    "tw-animate-css": "^1.2.7",
     "typescript": "^5.8.3",
     "vite-tsconfig-paths": "^5.1.4"
   }

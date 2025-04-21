@@ -6,19 +6,13 @@ import { RiTableLine } from '@remixicon/react'
 import { Link, useParams } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef } from 'react'
-import { databaseColumnsQuery, databaseRowsQuery, DEFAULT_ROW_HEIGHT, useDatabaseTables } from '~/entities/database'
+import { databaseRowsQuery, DEFAULT_ROW_HEIGHT, prefetchDatabaseTableCore, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 
 export function TablesTree({ database, schema, className, search }: { database: Database, schema: string, className?: string, search?: string }) {
   const { data: tables } = useDatabaseTables(database, schema)
   const { table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
-
-  const debouncedPrefetchColumns = useDebouncedCallback(
-    (tableName: string) => queryClient.ensureQueryData(databaseColumnsQuery(database, tableName, schema)),
-    [database.id, schema],
-    20,
-  )
 
   const debouncedPrefetchRows = useDebouncedCallback(
     (tableName: string) => queryClient.ensureQueryData(databaseRowsQuery(database, tableName, schema)),
@@ -62,7 +56,7 @@ export function TablesTree({ database, schema, className, search }: { database: 
                   tableParam === table.name && 'border-primary bg-accent/50 font-medium',
                 )}
                 onMouseOver={() => {
-                  debouncedPrefetchColumns(table.name)
+                  prefetchDatabaseTableCore(database, schema, table.name)
                   debouncedPrefetchRows(table.name)
                 }}
                 style={{

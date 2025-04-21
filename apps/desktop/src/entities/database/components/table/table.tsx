@@ -1,24 +1,58 @@
+import type {
+  CellContext,
+  ColumnDef,
+  HeaderContext,
+  OnChangeFn,
+  RowSelectionState,
+} from '@tanstack/react-table'
 import type { TableCellMeta } from './cell'
 import type { CellUpdaterFunction } from './cells-updater'
 import { ScrollArea, ScrollBar } from '@connnect/ui/components/scroll-area'
 import {
-  createColumnHelper,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '.'
-import { TableCell } from './cell'
-import { TableHead } from './head'
-import { TableHeader } from './header'
+import { Cell } from './cell'
+import { IndeterminateCheckbox } from './checkbox'
+import { HeaderCell } from './header-cell'
+import { TableHeaderRow } from './header-row'
 import { TableRow } from './row'
 import { TableSkeleton } from './skeleton'
 
-const columnHelper = createColumnHelper<Record<string, unknown>>()
-
 export interface TableMeta {
   updateCell?: CellUpdaterFunction
+}
+
+function SelectedHeader({ table }: HeaderContext<Record<string, unknown>, unknown>) {
+  'use no memo'
+
+  return (
+    <div className="group-first/header:pl-4 flex items-center size-full">
+      <IndeterminateCheckbox
+        disabled={table.getRowCount() === 0}
+        checked={table.getIsAllRowsSelected()}
+        indeterminate={table.getIsSomeRowsSelected()}
+        onChange={table.getToggleAllRowsSelectedHandler()}
+      />
+    </div>
+  )
+}
+
+function SelectedCell({ row }: CellContext<Record<string, unknown>, unknown>) {
+  'use no memo'
+  return (
+    <div className="group-first/cell:pl-4 flex items-center size-full">
+      <IndeterminateCheckbox
+        checked={row.getIsSelected()}
+        disabled={!row.getCanSelect()}
+        indeterminate={row.getIsSomeSelected()}
+        onChange={row.getToggleSelectedHandler()}
+      />
+    </div>
+  )
 }
 
 export function DataTable<T extends Record<string, unknown>>({
@@ -26,26 +60,46 @@ export function DataTable<T extends Record<string, unknown>>({
   columns,
   loading,
   className,
+  selectable,
   updateCell,
+  selectedRows,
+  setSelectedRows,
 }: {
   data: T[]
   columns: TableCellMeta[]
   loading?: boolean
   className?: string
+  selectable?: boolean
+  selectedRows?: Record<string, boolean>
+  setSelectedRows?: OnChangeFn<RowSelectionState>
 } & TableMeta) {
   const ref = useRef<HTMLDivElement>(null)
 
-  const tableColumns = useMemo(() => columns
-    .toSorted((a, b) => a.isPrimaryKey ? -1 : b.isPrimaryKey ? 1 : 0)
-    .map(column =>
-      columnHelper.accessor(row => row[column.name], {
+  const tableColumns = useMemo(() => {
+    const sortedColumns: ColumnDef<Record<string, unknown>>[] = columns
+      .toSorted((a, b) => a.isPrimaryKey ? -1 : b.isPrimaryKey ? 1 : 0)
+      .map(column => ({
+        accessorFn: row => row[column.name],
         id: column.name,
         meta: column satisfies TableCellMeta,
-        cell: TableCell,
-        header: TableHead,
+        cell: Cell,
+        header: HeaderCell,
         size: (column.type && columnsSizeMap.get(column.type)) || DEFAULT_COLUMN_WIDTH,
-      }),
-    ), [columns])
+      }))
+
+    if (selectable) {
+      sortedColumns.unshift(
+        {
+          id: 'select',
+          size: 40,
+          header: SelectedHeader,
+          cell: SelectedCell,
+        },
+      )
+    }
+
+    return sortedColumns
+  }, [columns])
 
   const table = useReactTable({
     data,
@@ -55,6 +109,11 @@ export function DataTable<T extends Record<string, unknown>>({
       updateCell,
     } satisfies TableMeta,
     getCoreRowModel: getCoreRowModel(),
+    state: {
+      rowSelection: selectedRows,
+    },
+    enableRowSelection: selectable,
+    onRowSelectionChange: setSelectedRows,
   })
 
   const { rows } = table.getRowModel()
@@ -67,18 +126,15 @@ export function DataTable<T extends Record<string, unknown>>({
     overscan: 5,
   })
 
+  const allColumns = table.getAllColumns()
+
   const columnVirtualizer = useVirtualizer({
     horizontal: true,
-    count: table.getAllColumns().length,
+    count: allColumns.length,
     getScrollElement: () => ref.current,
-    estimateSize: index => table.getAllColumns()[index].getSize(),
-    overscan: 1,
+    estimateSize: index => allColumns[index].getSize(),
+    overscan: 2,
   })
-
-  // https://github.com/TanStack/virtual/discussions/379#discussioncomment-3501037
-  useEffect(() => {
-    columnVirtualizer.measure()
-  }, [columnVirtualizer, columns])
 
   const rowWidth = columnVirtualizer.getTotalSize()
   const virtualColumns = columnVirtualizer.getVirtualItems()
@@ -86,13 +142,13 @@ export function DataTable<T extends Record<string, unknown>>({
   return (
     <ScrollArea scrollRef={ref} className={className} tableStyle>
       <div className="w-full" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-        <TableHeader
+        <TableHeaderRow
           headerGroups={table.getHeaderGroups()}
           virtualColumns={virtualColumns}
           rowWidth={rowWidth}
         />
         {loading
-          ? <TableSkeleton columnsCount={table.getAllColumns().length || 5} />
+          ? <TableSkeleton columnsCount={allColumns.length || 5} />
           : data.length === 0
             ? (
                 <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">

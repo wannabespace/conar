@@ -1,36 +1,19 @@
-import type { DatabaseType } from '@connnect/shared/enums/database-type'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { type } from 'arktype'
-
-const tableType = type({
-  name: 'string',
-  schema: 'string',
-})
+import { tablesSql, tableType } from '../sql/tables'
 
 export function databaseTablesQuery(database: Database, schema: string) {
-  const queryMap: Record<DatabaseType, () => Promise<typeof tableType.infer[]>> = {
-    postgres: async () => {
+  return queryOptions({
+    queryKey: ['database', database.id, 'schema', schema, 'tables'],
+    queryFn: async () => {
       const [result] = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
-        query: `
-          SELECT
-            table_name as name,
-            table_schema as schema
-          FROM information_schema.tables
-          WHERE table_schema = '${schema}'
-          ORDER BY table_name ASC;
-        `,
+        query: tablesSql(schema)[database.type],
       })
 
       return result.rows.map(row => tableType.assert(row))
     },
-  }
-
-  return queryOptions({
-    queryKey: ['database', database.id, schema, 'tables'],
-    queryFn: () => queryMap[database.type](),
   })
 }
 

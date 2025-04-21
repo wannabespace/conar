@@ -6,9 +6,10 @@ import { Separator } from '@connnect/ui/components/separator'
 import { RiAddLine, RiDownloadLine, RiLoader4Line, RiLoopLeftLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { toast } from 'sonner'
 import { fetchDatabases } from '~/entities/database'
-import { checkForUpdates, useUpdates } from '~/updates-provider'
+import { checkForUpdates, updatesStore } from '~/updates-observer'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
 
@@ -31,7 +32,7 @@ function DashboardPage() {
     },
   })
   const router = useRouter()
-  const { version, status } = useUpdates()
+  const [version, status] = useStore(updatesStore, state => [state.version, state.status])
 
   return (
     <div className="flex flex-col w-full mx-auto max-w-2xl py-10">

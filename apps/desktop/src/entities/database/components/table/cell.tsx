@@ -1,5 +1,5 @@
 import type { UseMutateFunction } from '@tanstack/react-query'
-import type { Cell, CellContext, Table } from '@tanstack/react-table'
+import type { CellContext, Table, Cell as TableCell } from '@tanstack/react-table'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { TableMeta } from './table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@connnect/ui/components/alert-dialog'
@@ -39,7 +39,7 @@ function getDisplayValue(value: unknown) {
 const TableCellContext = createContext<{
   value: string
   setValue: Dispatch<SetStateAction<string>>
-  cell: Cell<Record<string, unknown>, unknown>
+  cell: TableCell<Record<string, unknown>, unknown>
   table: Table<Record<string, unknown>>
   isJson: boolean
   initialValue: unknown
@@ -52,13 +52,15 @@ function TableCellProvider({
   table,
   onSaveError,
   onSaveSuccess,
+  onSavePending,
   children,
 }: {
-  cell: Cell<Record<string, unknown>, unknown>
+  cell: TableCell<Record<string, unknown>, unknown>
   table: Table<Record<string, unknown>>
   children: React.ReactNode
   onSaveError: (error: Error) => void
   onSaveSuccess: () => void
+  onSavePending: () => void
 }) {
   const initialValue = cell.getValue()
   const isJson = !!(cell.column.columnDef.meta as TableCellMeta).type?.includes('json')
@@ -71,11 +73,13 @@ function TableCellProvider({
 
   const { mutate: updateCell } = useMutation({
     mutationFn: async (value: string | null) => {
+      onSavePending()
+
       const _value = isJson && value ? JSON.parse(value) : value
 
       await (table.options.meta as TableMeta).updateCell?.(
         cell.row.index,
-        cell.column.getIndex(),
+        (cell.column.columnDef.meta as TableCellMeta).name,
         _value,
       )
     },
@@ -257,111 +261,6 @@ function getTimestamp(value: unknown, meta: TableCellMeta) {
   return date
 }
 
-export function TableCell({ cell, getValue, table }: CellContext<Record<string, unknown>, unknown>) {
-  const [isOpen, setIsOpen] = useState(false)
-  const cellValue = getValue()
-  const [canInteract, setCanInteract] = useState(false)
-  const [isBig, setIsBig] = useState(false)
-  const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
-
-  useEffect(() => {
-    if (status === 'success' || status === 'error') {
-      const timeout = setTimeout(
-        () => setStatus('idle'),
-        status === 'error' ? 3000 : 1000,
-      )
-
-      return () => clearTimeout(timeout)
-    }
-  }, [status])
-
-  function onSaveError(error: Error) {
-    setCanInteract(true)
-    setIsOpen(true)
-    setStatus('error')
-    toast.error(`Failed to update cell ${cell.column.id}`, {
-      description: error.message,
-      duration: 3000,
-    })
-  }
-
-  function onSaveSuccess() {
-    setStatus('success')
-  }
-
-  if (!canInteract) {
-    return (
-      <TableCellContent
-        value={cellValue}
-        onMouseOver={() => setCanInteract(true)}
-        className={cn(
-          status === 'success' && 'ring-success/50 bg-success/10',
-        )}
-      />
-    )
-  }
-
-  const date = getTimestamp(cellValue, cell.column.columnDef.meta as TableCellMeta)
-
-  return (
-    <TableCellProvider
-      cell={cell}
-      table={table}
-      onSaveError={onSaveError}
-      onSaveSuccess={onSaveSuccess}
-    >
-      <Popover
-        open={isOpen}
-        onOpenChange={(isOpen) => {
-          setIsOpen(isOpen)
-
-          if (!isOpen) {
-            setIsBig(false)
-          }
-        }}
-      >
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <PopoverTrigger
-                asChild
-                onClick={e => e.preventDefault()}
-                onDoubleClick={() => setIsOpen(true)}
-                onMouseLeave={() => !isOpen && sleep(100).then(() => setCanInteract(false))}
-              >
-                <TableCellContent
-                  value={cellValue}
-                  className={cn(
-                    isOpen && 'ring-primary/50 bg-muted/50',
-                    status === 'error' && 'ring-destructive/50 bg-destructive/20',
-                    status === 'success' && 'ring-success/50 bg-success/10',
-                    status === 'saving' && 'ring-primary/50 bg-primary/20 animate-pulse',
-                  )}
-                />
-              </PopoverTrigger>
-            </TooltipTrigger>
-            {date && date.isValid() && (
-              <TooltipContent>
-                {date.format('DD MMMM YYYY, HH:mm:ss (Z)')}
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
-        <PopoverContent
-          className={cn('p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
-          onAnimationEnd={() => !isOpen && setCanInteract(false)}
-        >
-          <TableCellMonaco
-            isBig={isBig}
-            setIsBig={setIsBig}
-            onClose={() => setIsOpen(false)}
-          />
-        </PopoverContent>
-      </Popover>
-    </TableCellProvider>
-  )
-}
-
 function TableCellContent({
   value,
   className,
@@ -395,5 +294,116 @@ function TableCellContent({
     >
       {displayValue}
     </div>
+  )
+}
+
+export function Cell({ cell, getValue, table }: CellContext<Record<string, unknown>, unknown>) {
+  const [isOpen, setIsOpen] = useState(false)
+  const cellValue = getValue()
+  const [canInteract, setCanInteract] = useState(false)
+  const [isBig, setIsBig] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
+
+  useEffect(() => {
+    if (status === 'success' || status === 'error') {
+      const timeout = setTimeout(
+        () => setStatus('idle'),
+        status === 'error' ? 3000 : 1000,
+      )
+
+      return () => clearTimeout(timeout)
+    }
+  }, [status])
+
+  function onSaveError(error: Error) {
+    setCanInteract(true)
+    setIsOpen(true)
+    setStatus('error')
+
+    toast.error(`Failed to update cell ${cell.column.id}`, {
+      description: error.message,
+      duration: 3000,
+    })
+  }
+
+  function onSaveSuccess() {
+    setStatus('success')
+  }
+
+  function onSavePending() {
+    setStatus('saving')
+  }
+
+  const className = cn(
+    isOpen && 'ring-primary/50 bg-muted/50',
+    status === 'error' && 'ring-destructive/50 bg-destructive/20',
+    status === 'success' && 'ring-success/50 bg-success/10',
+    status === 'saving' && 'animate-pulse',
+  )
+
+  if (!canInteract) {
+    return (
+      <TableCellContent
+        value={cellValue}
+        onMouseOver={() => setCanInteract(true)}
+        className={className}
+      />
+    )
+  }
+
+  const date = getTimestamp(cellValue, cell.column.columnDef.meta as TableCellMeta)
+
+  return (
+    <TableCellProvider
+      cell={cell}
+      table={table}
+      onSavePending={onSavePending}
+      onSaveError={onSaveError}
+      onSaveSuccess={onSaveSuccess}
+    >
+      <Popover
+        open={isOpen}
+        onOpenChange={(isOpen) => {
+          setIsOpen(isOpen)
+
+          if (!isOpen) {
+            setIsBig(false)
+          }
+        }}
+      >
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger
+                asChild
+                onClick={e => e.preventDefault()}
+                onDoubleClick={() => setIsOpen(true)}
+                onMouseLeave={() => !isOpen && sleep(100).then(() => setCanInteract(false))}
+              >
+                <TableCellContent
+                  value={cellValue}
+                  className={className}
+                />
+              </PopoverTrigger>
+            </TooltipTrigger>
+            {date && date.isValid() && (
+              <TooltipContent>
+                {date.format('DD MMMM YYYY, HH:mm:ss (Z)')}
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+        <PopoverContent
+          className={cn('p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
+          onAnimationEnd={() => !isOpen && setCanInteract(false)}
+        >
+          <TableCellMonaco
+            isBig={isBig}
+            setIsBig={setIsBig}
+            onClose={() => setIsOpen(false)}
+          />
+        </PopoverContent>
+      </Popover>
+    </TableCellProvider>
   )
 }

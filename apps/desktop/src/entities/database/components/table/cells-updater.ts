@@ -1,32 +1,32 @@
 export interface CellUpdaterFunction {
-  (rowIndex: number, columnIndex: number, value: string | null): Promise<void>
+  (rowIndex: number, columnName: string, value: unknown): Promise<void>
 }
 
 export interface CellUpdaterOptions {
-  setValue: (rowIndex: number, columnIndex: number, value: string | null) => void
-  saveValue: (rowIndex: number, columnIndex: number, value: string | null) => Promise<void>
-  getValue: (rowIndex: number, columnIndex: number) => string | null
+  setValue: (rowIndex: number, columnName: string, value: unknown) => void
+  saveValue: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
+  getValue: (rowIndex: number, columnName: string) => unknown
+}
+
+function getKey(rowIndex: number, columnName: string) {
+  return `${rowIndex}.${columnName}`
 }
 
 export function createCellUpdater() {
-  const cachedValues: Record<string, string | null> = {}
-
-  function getKey(rowIndex: number, columnIndex: number) {
-    return `${rowIndex}.${columnIndex}`
-  }
+  const cachedValues: Record<string, unknown> = {}
 
   return ({ setValue, saveValue, getValue }: CellUpdaterOptions): CellUpdaterFunction => {
-    return async (rowIndex: number, columnIndex: number, value: string | null) => {
-      const key = getKey(rowIndex, columnIndex)
+    return async (rowIndex: number, columnName: string, value: unknown) => {
+      const key = getKey(rowIndex, columnName)
 
       try {
-        cachedValues[key] = getValue(rowIndex, columnIndex)
+        cachedValues[key] = getValue(rowIndex, columnName)
 
-        setValue(rowIndex, columnIndex, value)
-        await saveValue(rowIndex, columnIndex, value)
+        setValue(rowIndex, columnName, value)
+        await saveValue(rowIndex, columnName, value)
       }
       catch (error) {
-        setValue(rowIndex, columnIndex, cachedValues[key])
+        setValue(rowIndex, columnName, cachedValues[key])
 
         throw error
       }

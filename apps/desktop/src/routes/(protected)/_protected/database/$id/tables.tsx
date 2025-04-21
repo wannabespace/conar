@@ -6,7 +6,6 @@ import { Input } from '@connnect/ui/components/input'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
 import { RiLoopLeftLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
@@ -32,6 +31,7 @@ export const Route = createFileRoute(
     ],
   }),
 })
+
 function RouteComponent() {
   const { id } = Route.useParams()
   const { table: tableParam } = useParams({ strict: false })
@@ -42,7 +42,7 @@ function RouteComponent() {
   const [searchQuery, setSearchQuery] = useState('')
   const search = useDeferredValue(searchQuery)
 
-  useAsyncEffect(async () => {
+  useEffect(() => {
     databaseSchemas.set(id, schema)
   }, [schema])
 
@@ -137,7 +137,7 @@ function RouteComponent() {
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel defaultSize={80} className="flex-1">
-        <Outlet />
+        <Outlet key={tableParam} />
         {!tableParam && (
           <div className="p-4 flex items-center justify-center h-full">
             <div className="text-center space-y-4">

@@ -4,21 +4,29 @@ import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, C
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
-import { useState } from 'react'
+import { Store, useStore } from '@tanstack/react-store'
 import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
 
 const os = getOS()
 
+export const actionsCenterStore = new Store({
+  isOpen: false,
+})
+
+function setIsOpen(isOpen: boolean) {
+  actionsCenterStore.setState(state => ({ ...state, isOpen }))
+}
+
 export function ActionsCenter() {
   const { data: databases } = useDatabases()
-  const [isOpen, setIsOpen] = useState(false)
+  const isOpen = useStore(actionsCenterStore, state => state.isOpen)
   const router = useRouter()
 
   useKeyboardEvent(e => e.key === 'p' && (os === 'macos' ? e.metaKey : e.ctrlKey), () => {
     if (!databases || databases.length === 0)
       return
 
-    setIsOpen(open => !open)
+    setIsOpen(!isOpen)
   })
 
   function onSelect(database: Database) {

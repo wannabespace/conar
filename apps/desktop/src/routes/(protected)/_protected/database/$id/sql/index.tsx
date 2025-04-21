@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react'
 import { getOS } from '@connnect/shared/utils/os'
 import { title } from '@connnect/shared/utils/title'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
@@ -10,7 +11,7 @@ import { copy } from '@connnect/ui/lib/copy'
 import { RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { databaseQuery, DataTable, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
@@ -41,9 +42,7 @@ function ResultTable({ result, columns }: { result: Record<string, unknown>[], c
   return (
     <DataTable
       data={result}
-      columns={columns.map(c => ({
-        name: c,
-      }))}
+      columns={columns.map(c => ({ name: c }))}
       className="h-full"
     />
   )
@@ -53,20 +52,22 @@ const queryStorage = {
   get(id: string) {
     return localStorage.getItem(`sql-${id}`) || '-- Write your SQL query here\n'
       + '\n'
-      + '-- Examples:\n'
-      + '-- Basic query with limit\n'
-      + 'SELECT * FROM users LIMIT 10;\n'
+      + '-- Please write your own queries based on your database schema\n'
+      + '-- The examples below are for reference only and may not work with your database\n'
       + '\n'
-      + '-- Query with filtering\n'
-      + 'SELECT id, name, email FROM users WHERE created_at > \'2023-01-01\' ORDER BY name;\n'
+      + '-- Example 1: Basic query with limit\n'
+      + '-- SELECT * FROM users LIMIT 10;\n'
       + '\n'
-      + '-- Join example\n'
-      + 'SELECT u.id, u.name, p.title FROM users u\n'
-      + 'JOIN posts p ON u.id = p.user_id\n'
-      + 'WHERE p.published = true\n'
-      + 'LIMIT 10;\n'
+      + '-- Example 2: Query with filtering\n'
+      + '-- SELECT id, name, email FROM users WHERE created_at > \'2025-01-01\' ORDER BY name;\n'
       + '\n'
-      + '-- You can run multiple queries at once by separating them with semicolons'
+      + '-- Example 3: Join example\n'
+      + '-- SELECT u.id, u.name, p.title FROM users u\n'
+      + '-- JOIN posts p ON u.id = p.user_id\n'
+      + '-- WHERE p.published = true\n'
+      + '-- LIMIT 10;\n'
+      + '\n'
+      + '-- TIP: You can run multiple queries at once by separating them with semicolons'
   },
   set(id: string, query: string) {
     localStorage.setItem(`sql-${id}`, query)
@@ -98,6 +99,7 @@ function RouteComponent() {
   const { id } = Route.useParams()
   const [query, setQuery] = useState(queryStorage.get(id))
   const { data: database } = useDatabase(id)
+  const chatRef = useRef<ComponentRef<typeof SqlChat>>(null)
 
   useEffect(() => {
     queryStorage.set(id, query)
@@ -110,10 +112,17 @@ function RouteComponent() {
       query,
     }),
     onSuccess() {
-      toast.success('Query executed successfully')
+      toast.success('SQL executed successfully')
     },
     onError(error) {
-      toast.error(error.message)
+      toast.error(error.message, {
+        action: {
+          label: 'Fix with AI',
+          onClick: () => {
+            chatRef.current?.fixError(error.message)
+          },
+        },
+      })
     },
   })
 
@@ -132,13 +141,13 @@ function RouteComponent() {
     const formatted = formatSql(query, database.type)
 
     setQuery(formatted)
-    toast.success('Query formatted successfully')
+    toast.success('SQL formatted successfully')
   }
 
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex h-auto!">
       <ResizablePanel defaultSize={30} minSize={20} maxSize={50} className="bg-muted/20">
-        <SqlChat onEdit={setQuery} />
+        <SqlChat ref={chatRef} onEdit={setQuery} />
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel
