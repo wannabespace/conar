@@ -7,6 +7,7 @@ export function TableHeader<T extends Record<string, unknown>>({ headerGroups, v
   virtualColumns: VirtualItem[]
   rowWidth: number
 }) {
+  'use no memo'
   return (
     <div className="sticky top-0 z-10 border-y bg-background">
       <div className="bg-muted/20">

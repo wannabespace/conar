@@ -8,6 +8,7 @@ export function TableRow<T extends Record<string, unknown>>({ row, virtualRow, v
   virtualColumns: VirtualItem[]
   rowWidth: number
 }) {
+  'use no memo'
   return (
     <div
       className="group/row flex absolute top-0 left-0 w-full border-b last:border-b-0 min-w-full border-border hover:bg-accent/30"
