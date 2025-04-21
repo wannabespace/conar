@@ -126,7 +126,7 @@ export function DataTable<T extends Record<string, unknown>>({
     overscan: 5,
   })
 
-  const allColumns = table.getAllColumns()
+  const allColumns = table.getVisibleLeafColumns()
 
   const columnVirtualizer = useVirtualizer({
     horizontal: true,

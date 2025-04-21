@@ -1,3 +1,5 @@
+'use no memo'
+
 import type { Cell, Row } from '@tanstack/react-table'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import { flexRender } from '@tanstack/react-table'

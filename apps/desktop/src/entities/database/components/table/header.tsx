@@ -1,3 +1,5 @@
+'use no memo'
+
 import type { Header, HeaderGroup } from '@tanstack/react-table'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import { flexRender } from '@tanstack/react-table'
