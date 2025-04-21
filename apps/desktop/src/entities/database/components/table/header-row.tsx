@@ -46,7 +46,7 @@ function TableHeaderColumns({
   })
 }
 
-export function TableHeader({
+export function TableHeaderRow({
   headerGroups,
   virtualColumns,
   rowWidth,

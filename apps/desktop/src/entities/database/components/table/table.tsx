@@ -15,10 +15,10 @@ import {
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useMemo, useRef } from 'react'
 import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '.'
-import { TableCell } from './cell'
+import { Cell } from './cell'
 import { IndeterminateCheckbox } from './checkbox'
-import { TableHead } from './head'
-import { TableHeader } from './header'
+import { HeaderCell } from './header-cell'
+import { TableHeaderRow } from './header-row'
 import { TableRow } from './row'
 import { TableSkeleton } from './skeleton'
 
@@ -82,8 +82,8 @@ export function DataTable<T extends Record<string, unknown>>({
         accessorFn: row => row[column.name],
         id: column.name,
         meta: column satisfies TableCellMeta,
-        cell: TableCell,
-        header: TableHead,
+        cell: Cell,
+        header: HeaderCell,
         size: (column.type && columnsSizeMap.get(column.type)) || DEFAULT_COLUMN_WIDTH,
       }))
 
@@ -142,7 +142,7 @@ export function DataTable<T extends Record<string, unknown>>({
   return (
     <ScrollArea scrollRef={ref} className={className} tableStyle>
       <div className="w-full" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-        <TableHeader
+        <TableHeaderRow
           headerGroups={table.getHeaderGroups()}
           virtualColumns={virtualColumns}
           rowWidth={rowWidth}

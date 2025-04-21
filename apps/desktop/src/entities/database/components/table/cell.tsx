@@ -1,5 +1,5 @@
 import type { UseMutateFunction } from '@tanstack/react-query'
-import type { Cell, CellContext, Table } from '@tanstack/react-table'
+import type { CellContext, Table, Cell as TableCell } from '@tanstack/react-table'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { TableMeta } from './table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@connnect/ui/components/alert-dialog'
@@ -39,7 +39,7 @@ function getDisplayValue(value: unknown) {
 const TableCellContext = createContext<{
   value: string
   setValue: Dispatch<SetStateAction<string>>
-  cell: Cell<Record<string, unknown>, unknown>
+  cell: TableCell<Record<string, unknown>, unknown>
   table: Table<Record<string, unknown>>
   isJson: boolean
   initialValue: unknown
@@ -55,7 +55,7 @@ function TableCellProvider({
   onSavePending,
   children,
 }: {
-  cell: Cell<Record<string, unknown>, unknown>
+  cell: TableCell<Record<string, unknown>, unknown>
   table: Table<Record<string, unknown>>
   children: React.ReactNode
   onSaveError: (error: Error) => void
@@ -297,7 +297,7 @@ function TableCellContent({
   )
 }
 
-export function TableCell({ cell, getValue, table }: CellContext<Record<string, unknown>, unknown>) {
+export function Cell({ cell, getValue, table }: CellContext<Record<string, unknown>, unknown>) {
   const [isOpen, setIsOpen] = useState(false)
   const cellValue = getValue()
   const [canInteract, setCanInteract] = useState(false)

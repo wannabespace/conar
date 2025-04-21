@@ -3,7 +3,7 @@ import type { TableCellMeta } from './cell'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiKey2Line } from '@remixicon/react'
 
-export function TableHead<T extends Record<string, unknown>>({ header }: { header: Header<T, unknown> }) {
+export function HeaderCell<T extends Record<string, unknown>>({ header }: { header: Header<T, unknown> }) {
   const meta = header.column.columnDef.meta as TableCellMeta
 
   return (
