@@ -212,6 +212,7 @@ function RouteComponent() {
   const { mutate: testConnection, reset, status } = useMutation({
     mutationFn: window.electron.databases.test,
     onSuccess: () => {
+      setStep('save')
       toast.success('Connection successful. You can save the database.')
     },
     onError: (error) => {
