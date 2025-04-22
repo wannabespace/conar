@@ -79,7 +79,7 @@ const queryStorage = {
 function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void, query: string }) {
   const os = getOS()
   const dangerousKeywords = query.match(new RegExp(DANGEROUS_SQL_KEYWORDS.join('|'), 'gi')) || []
-  const uniqueDangerousKeywords = [...new Set(dangerousKeywords)].join(', ')
+  const uniqueDangerousKeywords = [...new Set(dangerousKeywords)].map(k => k.toUpperCase()).join(', ')
 
   useKeyboardEvent(e => (os === 'macos' ? e.metaKey : e.ctrlKey) && e.key === 'Enter' && e.shiftKey, () => {
     confirm()
@@ -95,16 +95,16 @@ function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, s
             Potentially Dangerous SQL Query
           </AlertDialogTitle>
           <AlertDialogDescription>
-            <div className="rounded-md bg-warning/10 p-3 mb-3 border border-warning/20">
+            <span className="block rounded-md bg-warning/10 p-3 mb-3 border border-warning/20">
               Your query contains potentially dangerous SQL keywords:
               <span className="font-semibold text-warning">
                 {' '}
                 {uniqueDangerousKeywords}
               </span>
-            </div>
-            <p className="mt-2">
+            </span>
+            <span className="mt-2">
               These operations could modify or delete data in your database. Proceed if you understand the impact of these changes.
-            </p>
+            </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">

@@ -11,7 +11,7 @@ import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiChatAiLine, RiDeleteBinLine, RiQuestionAnswerLine, RiRefreshLine, RiSendPlaneLine, RiStopLine } from '@remixicon/react'
+import { RiChatAiLine, RiDeleteBinLine, RiInformationLine, RiQuestionAnswerLine, RiRefreshLine, RiSendPlaneLine, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { Fragment, useEffect, useRef } from 'react'
@@ -134,6 +134,20 @@ export function SqlChat({ ref, onEdit }: { ref?: RefObject<{ fixError: (error: s
         <CardTitle className="flex items-center gap-2">
           <RiChatAiLine className="size-5" />
           AI Assistant
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <RiInformationLine className="size-4 opacity-30" />
+              </TooltipTrigger>
+              <TooltipContent>
+                We send your database schema to the AI
+                <br />
+                to provide the most accurate answers
+                <br />
+                based on your database structure.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardTitle>
         {/* <Button variant="outline" size="icon">
           <RiHistoryLine className="size-4" />
@@ -195,7 +209,9 @@ export function SqlChat({ ref, onEdit }: { ref?: RefObject<{ fixError: (error: s
           {status === 'submitted' && (
             <ChatMessage className="flex flex-col items-start gap-2">
               <AssistantAvatar />
-              <p className="text-muted-foreground animate-pulse">Generating SQL query...</p>
+              <p className="text-muted-foreground animate-pulse">
+                Thinking...
+              </p>
             </ChatMessage>
           )}
           {error && (
