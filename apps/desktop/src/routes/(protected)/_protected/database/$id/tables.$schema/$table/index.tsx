@@ -1,10 +1,9 @@
-import type { Dispatch, SetStateAction } from 'react'
-import type { columnType, PageSize } from '~/entities/database'
+import type { PageSize } from '~/entities/database'
 import { title } from '@connnect/shared/utils/title'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { createContext, use, useMemo, useState } from 'react'
-import { databaseColumnsQuery, databaseQuery, prefetchDatabaseTableCore, useDatabase } from '~/entities/database'
+import { useState } from 'react'
+import { databaseColumnsQuery, databaseQuery, databaseRowsQuery, prefetchDatabaseTableCore, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
 import { Footer } from './-components/footer'
 import { Header } from './-components/header'
@@ -29,22 +28,6 @@ export const Route = createFileRoute(
   }),
 })
 
-const TableContext = createContext<{
-  page: number
-  setPage: Dispatch<SetStateAction<number>>
-  pageSize: PageSize
-  setPageSize: Dispatch<SetStateAction<PageSize>>
-  columns: (typeof columnType.infer & {
-    isPrimaryKey: boolean
-  })[]
-  selectedRows: Record<string, boolean>
-  setSelectedRows: Dispatch<SetStateAction<Record<string, boolean>>>
-}>(null!)
-
-export function useTableContext() {
-  return use(TableContext)
-}
-
 function RouteComponent() {
   const { id, table, schema } = Route.useParams()
 
@@ -55,6 +38,8 @@ function RouteComponent() {
   const [pageSize, setPageSize] = useState<PageSize>(50)
   const [selectedRows, setSelectedRows] = useState({})
 
+  const rowsQueryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
+
   const { data: columns } = useSuspenseQuery({
     ...databaseColumnsQuery(database, table, schema),
     select: data => data.map(column => ({
@@ -63,25 +48,29 @@ function RouteComponent() {
     })),
   })
 
-  const context = useMemo(() => ({
-    page,
-    setPage,
-    pageSize,
-    setPageSize,
-    columns,
-    selectedRows,
-    setSelectedRows,
-  }), [page, pageSize, columns, selectedRows])
-
   return (
-    <TableContext value={context}>
-      <div className="h-screen flex flex-col justify-between">
-        <Header />
-        <div className="flex-1 overflow-hidden">
-          <Table />
-        </div>
-        <Footer />
+    <div className="h-screen flex flex-col justify-between">
+      <Header
+        columns={columns}
+        selectedRows={selectedRows}
+        setSelectedRows={setSelectedRows}
+        rowsQueryOpts={rowsQueryOpts}
+        setPage={setPage}
+      />
+      <div className="flex-1 overflow-hidden">
+        <Table
+          rowsQueryOpts={rowsQueryOpts}
+          columns={columns}
+          selectedRows={selectedRows}
+          setSelectedRows={setSelectedRows}
+        />
       </div>
-    </TableContext>
+      <Footer
+        page={page}
+        pageSize={pageSize}
+        setPage={setPage}
+        setPageSize={setPageSize}
+      />
+    </div>
   )
 }

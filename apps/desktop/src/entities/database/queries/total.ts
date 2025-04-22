@@ -2,7 +2,7 @@ import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { totalSql, totalType } from '../sql/total'
 
-export function databaseTotalQuery(
+export function databaseTableTotalQuery(
   database: Database,
   table: string,
   schema: string,
@@ -29,6 +29,6 @@ export function databaseTotalQuery(
   })
 }
 
-export function useDatabaseTotal(database: Database, table: string, schema: string) {
-  return useQuery(databaseTotalQuery(database, table, schema))
+export function useDatabaseTableTotal(database: Database, table: string, schema: string) {
+  return useQuery(databaseTableTotalQuery(database, table, schema))
 }

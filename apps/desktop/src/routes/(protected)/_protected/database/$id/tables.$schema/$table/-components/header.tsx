@@ -1,15 +1,27 @@
+import type { Dispatch, SetStateAction } from 'react'
+import type { columnType, databaseRowsQuery } from '~/entities/database'
 import { useParams } from '@tanstack/react-router'
 import { useDatabase } from '~/entities/database'
-import { useDatabaseTotal } from '~/entities/database/queries/total'
-import { useTableContext } from '..'
+import { useDatabaseTableTotal } from '~/entities/database/queries/total'
 import { HeaderActions } from './header-actions'
 
-export function Header() {
+export function Header({
+  columns,
+  selectedRows,
+  setSelectedRows,
+  rowsQueryOpts,
+  setPage,
+}: {
+  columns: typeof columnType.infer[]
+  selectedRows: Record<string, boolean>
+  setSelectedRows: Dispatch<SetStateAction<Record<string, boolean>>>
+  rowsQueryOpts: ReturnType<typeof databaseRowsQuery>
+  setPage: Dispatch<SetStateAction<number>>
+}) {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
-  const { columns } = useTableContext()
   const columnsCount = columns.length
-  const { data: total } = useDatabaseTotal(database, table, schema)
+  const { data: total } = useDatabaseTableTotal(database, table, schema)
 
   return (
     <div className="flex gap-6 flex-row items-center justify-between p-4">
@@ -37,7 +49,12 @@ export function Header() {
           {total !== undefined && total !== 1 && 's'}
         </p>
       </div>
-      <HeaderActions />
+      <HeaderActions
+        selectedRows={selectedRows}
+        setSelectedRows={setSelectedRows}
+        rowsQueryOpts={rowsQueryOpts}
+        setPage={setPage}
+      />
     </div>
   )
 }

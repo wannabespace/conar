@@ -1,26 +1,35 @@
+import type { Dispatch, SetStateAction } from 'react'
+import type { columnType, databaseRowsQuery } from '~/entities/database'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { createCellUpdater, databaseRowsQuery, DataTable, useDatabase } from '~/entities/database'
+import { createCellUpdater, DataTable, useDatabase } from '~/entities/database'
 import { setSql } from '~/entities/database/sql/set'
 import { queryClient } from '~/main'
-import { useTableContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 
 const cellUpdater = createCellUpdater()
 
-export function Table() {
+export function Table({
+  columns,
+  selectedRows,
+  setSelectedRows,
+  rowsQueryOpts,
+}: {
+  columns: (typeof columnType.infer & { isPrimaryKey: boolean })[]
+  selectedRows: Record<string, boolean>
+  setSelectedRows: Dispatch<SetStateAction<Record<string, boolean>>>
+  rowsQueryOpts: ReturnType<typeof databaseRowsQuery>
+}) {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
-  const { page, pageSize, selectedRows, columns, setSelectedRows } = useTableContext()
-  const queryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
-  const { data, isPending } = useQuery(queryOpts)
+  const { data, isPending } = useQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
   const rows = useMemo(() => data?.rows ?? [], [data])
 
   const setValue = (rowIndex: number, columnName: string, value: unknown) => {
-    queryClient.setQueryData(queryOpts.queryKey, (oldData) => {
+    queryClient.setQueryData(rowsQueryOpts.queryKey, (oldData) => {
       if (!oldData)
         return oldData
 

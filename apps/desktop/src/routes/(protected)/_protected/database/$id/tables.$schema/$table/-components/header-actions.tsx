@@ -1,3 +1,5 @@
+import type { Dispatch, SetStateAction } from 'react'
+import type { databaseRowsQuery } from '~/entities/database'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
@@ -9,20 +11,26 @@ import { useParams } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
-import { databaseColumnsQuery, databaseRowsQuery, useDatabase } from '~/entities/database'
+import { databaseColumnsQuery, useDatabase } from '~/entities/database'
 import { deleteRowsSql } from '~/entities/database/sql/delete'
 import { queryClient } from '~/main'
-import { useTableContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 
-export function HeaderActions() {
+export function HeaderActions({
+  selectedRows,
+  setSelectedRows,
+  rowsQueryOpts,
+  setPage,
+}: {
+  selectedRows: Record<string, boolean>
+  setSelectedRows: Dispatch<SetStateAction<Record<string, boolean>>>
+  rowsQueryOpts: ReturnType<typeof databaseRowsQuery>
+  setPage: Dispatch<SetStateAction<number>>
+}) {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
-  const { page, pageSize, selectedRows, setSelectedRows, setPage } = useTableContext()
+  const { isFetching, dataUpdatedAt, data } = useQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
-  const queryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
-  const { isFetching, dataUpdatedAt, data } = useQuery(queryOpts)
-
   const selected = useMemo(() => {
     if (!primaryKeys?.length || !data?.rows)
       return []
@@ -49,7 +57,7 @@ export function HeaderActions() {
     },
     onSuccess: () => {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
-      queryClient.invalidateQueries({ queryKey: queryOpts.queryKey.slice(0, -1) })
+      queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
       queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table, schema).queryKey })
       setSelectedRows({})
     },
@@ -63,7 +71,7 @@ export function HeaderActions() {
   async function handleRefresh() {
     setPage(1)
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryOpts.queryKey.slice(0, -1) }),
+      queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) }),
       queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table, schema).queryKey }),
     ])
     toast.success('Data refreshed')

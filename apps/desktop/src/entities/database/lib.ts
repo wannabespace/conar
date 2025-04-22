@@ -11,7 +11,7 @@ import { databaseEnumsQuery } from './queries/enums'
 import { databasePrimaryKeysQuery } from './queries/primary-keys'
 import { databaseSchemasQuery } from './queries/schemas'
 import { databaseTablesQuery } from './queries/tables'
-import { databaseTotalQuery } from './queries/total'
+import { databaseTableTotalQuery } from './queries/total'
 import { contextSql } from './sql/context'
 
 const DATABASES_SCHEMAS_KEY = 'databases-schemas'
@@ -169,7 +169,7 @@ export async function prefetchDatabaseCore(database: Database) {
 export async function prefetchDatabaseTableCore(database: Database, schema: string, table: string) {
   await Promise.all([
     queryClient.ensureQueryData(databaseColumnsQuery(database, table, schema)),
-    queryClient.ensureQueryData(databaseTotalQuery(database, table, schema)),
+    queryClient.ensureQueryData(databaseTableTotalQuery(database, table, schema)),
   ])
 }
 

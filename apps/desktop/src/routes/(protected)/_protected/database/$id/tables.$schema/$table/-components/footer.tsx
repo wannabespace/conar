@@ -1,17 +1,26 @@
+import type { Dispatch, SetStateAction } from 'react'
 import type { PageSize } from '~/entities/database'
 import { Separator } from '@connnect/ui/components/separator'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { databaseRowsQuery, databaseTotalQuery, DataTableFooter, useDatabase } from '~/entities/database'
+import { databaseRowsQuery, databaseTableTotalQuery, DataTableFooter, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
-import { useTableContext } from '..'
 
-export function Footer() {
+export function Footer({
+  page,
+  pageSize,
+  setPage,
+  setPageSize,
+}: {
+  page: number
+  pageSize: PageSize
+  setPage: Dispatch<SetStateAction<number>>
+  setPageSize: Dispatch<SetStateAction<PageSize>>
+}) {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
-  const { page, pageSize, setPage, setPageSize } = useTableContext()
-  const { data: total } = useSuspenseQuery(databaseTotalQuery(database, table, schema))
+  const { data: total } = useSuspenseQuery(databaseTableTotalQuery(database, table, schema))
   const [canPrefetch, setCanPrefetch] = useState(false)
 
   useEffect(() => {
