@@ -138,7 +138,12 @@ export function Chat() {
       <ChatForm
         input={input}
         setInput={setInput}
-        onEnter={value => handleSend({ value, status })}
+        onEnter={(value) => {
+          if (value.trim() === '' || status === 'submitted' || status === 'streaming')
+            return
+
+          handleSend({ value, status })
+        }}
         actions={(
           <>
             {(status === 'streaming' || status === 'submitted') && (
