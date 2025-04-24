@@ -1,59 +1,90 @@
 import type {
   CellContext,
   ColumnDef,
-  HeaderContext,
-  OnChangeFn,
-  RowSelectionState,
 } from '@tanstack/react-table'
-import type { TableCellMeta } from './cell'
+import type { CellMeta } from './cell'
 import type { CellUpdaterFunction } from './cells-updater'
 import { ScrollArea, ScrollBar } from '@connnect/ui/components/scroll-area'
+import { Store, useStore } from '@tanstack/react-store'
 import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useMemo, useRef } from 'react'
-import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '.'
+import { useEffect, useMemo, useRef } from 'react'
+import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, SelectionStoreContext, useSelectionStoreContext, VirtualColumnsContext } from '.'
+import { Body } from './body'
 import { Cell } from './cell'
 import { IndeterminateCheckbox } from './checkbox'
+import { Header } from './header'
 import { HeaderCell } from './header-cell'
-import { TableHeaderRow } from './header-row'
-import { TableRow } from './row'
-import { TableSkeleton } from './skeleton'
+import { Skeleton } from './skeleton'
 
 export interface TableMeta {
   updateCell?: CellUpdaterFunction
 }
 
-function SelectedHeader({ table }: HeaderContext<Record<string, unknown>, unknown>) {
-  'use no memo'
+function SelectedHeader() {
+  const store = useSelectionStoreContext()
+  const [disabled, checked, indeterminate] = useStore(store, state => [
+    state.rows.length === 0,
+    state.selected.length === state.rows.length,
+    state.selected.length > 0,
+  ])
 
   return (
     <div className="group-first/header:pl-4 flex items-center size-full">
       <IndeterminateCheckbox
-        disabled={table.getRowCount() === 0}
-        checked={table.getIsAllRowsSelected()}
-        indeterminate={table.getIsSomeRowsSelected()}
-        onChange={table.getToggleAllRowsSelectedHandler()}
+        disabled={disabled}
+        checked={checked}
+        indeterminate={indeterminate}
+        onChange={() => {
+          if (checked) {
+            store.setState(state => ({
+              ...state,
+              selected: [],
+            }))
+          }
+          else {
+            store.setState(state => ({
+              ...state,
+              selected: state.rows,
+            }))
+          }
+        }}
       />
     </div>
   )
 }
 
 function SelectedCell({ row }: CellContext<Record<string, unknown>, unknown>) {
-  'use no memo'
+  const store = useSelectionStoreContext()
+  const isSelected = useStore(store, state => state.selected.includes(row.index))
+
   return (
     <div className="group-first/cell:pl-4 flex items-center size-full">
       <IndeterminateCheckbox
-        checked={row.getIsSelected()}
-        disabled={!row.getCanSelect()}
-        indeterminate={row.getIsSomeSelected()}
-        onChange={row.getToggleSelectedHandler()}
+        checked={isSelected}
+        onChange={() => {
+          if (isSelected) {
+            store.setState(state => ({
+              ...state,
+              selected: store.state.selected.filter(index => index !== row.index),
+            }))
+          }
+          else {
+            store.setState(state => ({
+              ...state,
+              selected: [...state.selected, row.index],
+            }))
+          }
+        }}
       />
     </div>
   )
 }
+
+const selectSymbol = Symbol('select')
 
 export function DataTable<T extends Record<string, unknown>>({
   data,
@@ -66,12 +97,12 @@ export function DataTable<T extends Record<string, unknown>>({
   setSelectedRows,
 }: {
   data: T[]
-  columns: TableCellMeta[]
+  columns: CellMeta[]
   loading?: boolean
   className?: string
   selectable?: boolean
-  selectedRows?: Record<string, boolean>
-  setSelectedRows?: OnChangeFn<RowSelectionState>
+  selectedRows?: number[]
+  setSelectedRows?: (rows: number[]) => void
 } & TableMeta) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -81,7 +112,7 @@ export function DataTable<T extends Record<string, unknown>>({
       .map(column => ({
         accessorFn: row => row[column.name],
         id: column.name,
-        meta: column satisfies TableCellMeta,
+        meta: column satisfies CellMeta,
         cell: Cell,
         header: HeaderCell,
         size: (column.type && columnsSizeMap.get(column.type)) || DEFAULT_COLUMN_WIDTH,
@@ -90,7 +121,7 @@ export function DataTable<T extends Record<string, unknown>>({
     if (selectable) {
       sortedColumns.unshift(
         {
-          id: 'select',
+          id: selectSymbol as unknown as string,
           size: 40,
           header: SelectedHeader,
           cell: SelectedCell,
@@ -99,7 +130,7 @@ export function DataTable<T extends Record<string, unknown>>({
     }
 
     return sortedColumns
-  }, [columns])
+  }, [columns, selectable])
 
   const table = useReactTable({
     data,
@@ -109,11 +140,6 @@ export function DataTable<T extends Record<string, unknown>>({
       updateCell,
     } satisfies TableMeta,
     getCoreRowModel: getCoreRowModel(),
-    state: {
-      rowSelection: selectedRows,
-    },
-    enableRowSelection: selectable,
-    onRowSelectionChange: setSelectedRows,
   })
 
   const { rows } = table.getRowModel()
@@ -139,35 +165,57 @@ export function DataTable<T extends Record<string, unknown>>({
   const rowWidth = columnVirtualizer.getTotalSize()
   const virtualColumns = columnVirtualizer.getVirtualItems()
 
+  const selectionStoreContext = useRef(new Store({
+    selected: [] as number[],
+    rows: rows.map(row => row.index),
+  })).current
+
+  const selected = useStore(selectionStoreContext, state => state.selected)
+
+  useEffect(() => {
+    setSelectedRows?.(selected)
+  }, [selected, setSelectedRows])
+
+  useEffect(() => {
+    selectionStoreContext.setState(state => ({
+      ...state,
+      selected: selectedRows ?? [],
+    }))
+  }, [selectedRows])
+
+  useEffect(() => {
+    selectionStoreContext.setState(state => ({
+      ...state,
+      rows: rows.map(row => row.index),
+    }))
+  }, [rows])
+
   return (
     <ScrollArea scrollRef={ref} className={className} tableStyle>
       <div className="w-full" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-        <TableHeaderRow
-          headerGroups={table.getHeaderGroups()}
-          virtualColumns={virtualColumns}
-          rowWidth={rowWidth}
-        />
-        {loading
-          ? <TableSkeleton columnsCount={allColumns.length || 5} />
-          : data.length === 0
-            ? (
-                <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">
-                  No data available
-                </div>
-              )
-            : (
-                <div className="relative flex flex-col">
-                  {rowVirtualizer.getVirtualItems().map(virtualRow => (
-                    <TableRow
-                      key={virtualRow.key}
-                      row={rows[virtualRow.index]}
-                      virtualRow={virtualRow}
-                      virtualColumns={virtualColumns}
+        <SelectionStoreContext value={selectionStoreContext}>
+          <VirtualColumnsContext value={virtualColumns}>
+            <Header
+              headerGroups={table.getHeaderGroups()}
+              rowWidth={rowWidth}
+            />
+            {loading
+              ? <Skeleton columnsCount={columns.length || 5} />
+              : data.length === 0
+                ? (
+                    <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">
+                      No data available
+                    </div>
+                  )
+                : (
+                    <Body
+                      rows={rows}
                       rowWidth={rowWidth}
+                      virtualRows={rowVirtualizer.getVirtualItems()}
                     />
-                  ))}
-                </div>
-              )}
+                  )}
+          </VirtualColumnsContext>
+        </SelectionStoreContext>
       </div>
       <ScrollBar orientation="horizontal" />
     </ScrollArea>

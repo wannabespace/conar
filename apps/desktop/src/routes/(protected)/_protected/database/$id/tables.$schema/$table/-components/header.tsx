@@ -1,23 +1,10 @@
-import type { Dispatch, SetStateAction } from 'react'
-import type { columnType, databaseRowsQuery } from '~/entities/database'
+import type { columnType } from '~/entities/database'
 import { useParams } from '@tanstack/react-router'
 import { useDatabase } from '~/entities/database'
 import { useDatabaseTableTotal } from '~/entities/database/queries/total'
 import { HeaderActions } from './header-actions'
 
-export function Header({
-  columns,
-  selectedRows,
-  setSelectedRows,
-  rowsQueryOpts,
-  setPage,
-}: {
-  columns: typeof columnType.infer[]
-  selectedRows: Record<string, boolean>
-  setSelectedRows: Dispatch<SetStateAction<Record<string, boolean>>>
-  rowsQueryOpts: ReturnType<typeof databaseRowsQuery>
-  setPage: Dispatch<SetStateAction<number>>
-}) {
+export function Header({ columns }: { columns: typeof columnType.infer[] }) {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
   const columnsCount = columns.length
@@ -33,7 +20,7 @@ export function Header({
           {' '}
           <span className="text-muted-foreground/20">/</span>
           {' '}
-          <span>{table}</span>
+          <span data-mask>{table}</span>
         </h2>
         <p className="text-muted-foreground text-xs">
           {columnsCount}
@@ -49,12 +36,7 @@ export function Header({
           {total !== undefined && total !== 1 && 's'}
         </p>
       </div>
-      <HeaderActions
-        selectedRows={selectedRows}
-        setSelectedRows={setSelectedRows}
-        rowsQueryOpts={rowsQueryOpts}
-        setPage={setPage}
-      />
+      <HeaderActions />
     </div>
   )
 }

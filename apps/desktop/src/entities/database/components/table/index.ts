@@ -1,3 +1,7 @@
+import type { Store } from '@tanstack/react-store'
+import type { VirtualItem } from '@tanstack/react-virtual'
+import { createContext, use } from 'react'
+
 export { createCellUpdater } from './cells-updater'
 export type { PageSize } from './footer'
 export { DataTableFooter } from './footer'
@@ -14,3 +18,18 @@ export const columnsSizeMap = new Map<string, number>([
   ['float', 150],
   ['uuid', 290],
 ])
+
+export const VirtualColumnsContext = createContext<VirtualItem[]>(null!)
+
+export function useVirtualColumnsContext() {
+  return use(VirtualColumnsContext)
+}
+
+export const SelectionStoreContext = createContext<Store<{
+  selected: number[]
+  rows: number[]
+}>>(null!)
+
+export function useSelectionStoreContext() {
+  return use(SelectionStoreContext)
+}

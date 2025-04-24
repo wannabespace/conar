@@ -1,10 +1,10 @@
 import type { Header } from '@tanstack/react-table'
-import type { TableCellMeta } from './cell'
+import type { CellMeta } from './cell'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiKey2Line } from '@remixicon/react'
 
 export function HeaderCell<T extends Record<string, unknown>>({ header }: { header: Header<T, unknown> }) {
-  const meta = header.column.columnDef.meta as TableCellMeta
+  const meta = header.column.columnDef.meta as CellMeta
 
   return (
     <div

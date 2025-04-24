@@ -2,13 +2,36 @@ import type { PageSize } from '~/entities/database'
 import { title } from '@connnect/shared/utils/title'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { databaseColumnsQuery, databaseQuery, databaseRowsQuery, prefetchDatabaseTableCore, useDatabase } from '~/entities/database'
+import { Store } from '@tanstack/react-store'
+import { createContext, use, useRef } from 'react'
+import { databaseColumnsQuery, databaseQuery, prefetchDatabaseTableCore, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
 import { Footer } from './-components/footer'
 import { Header } from './-components/header'
 import { Table } from './-components/table'
 import { usePrimaryKeysQuery } from './-queries/use-primary-keys-query'
+
+// const TableContext = createContext<{
+//   rowsQueryOpts: ReturnType<typeof databaseRowsQuery>
+//   page: number
+//   setPage: (page: number) => void
+//   pageSize: PageSize
+//   setPageSize: (pageSize: PageSize) => void
+//   selectedRows: Record<string, boolean>
+//   setSelectedRows: (rows: Record<string, boolean>) => void
+// }>(null!)
+
+type TableStoreType = Store<{
+  page: number
+  pageSize: PageSize
+  selected: number[]
+}>
+
+const TableStoreContext = createContext<TableStoreType>(null!)
+
+export function useTableStoreContext() {
+  return use(TableStoreContext)
+}
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables/$schema/$table/',
@@ -34,12 +57,6 @@ function RouteComponent() {
   const { data: database } = useDatabase(id)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState<PageSize>(50)
-  const [selectedRows, setSelectedRows] = useState({})
-
-  const rowsQueryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
-
   const { data: columns } = useSuspenseQuery({
     ...databaseColumnsQuery(database, table, schema),
     select: data => data.map(column => ({
@@ -48,29 +65,21 @@ function RouteComponent() {
     })),
   })
 
+  const context = useRef(new Store({
+    page: 1,
+    pageSize: 50 satisfies PageSize as PageSize,
+    selected: [] as number[],
+  })).current
+
   return (
-    <div className="h-screen flex flex-col justify-between">
-      <Header
-        columns={columns}
-        selectedRows={selectedRows}
-        setSelectedRows={setSelectedRows}
-        rowsQueryOpts={rowsQueryOpts}
-        setPage={setPage}
-      />
-      <div className="flex-1 overflow-hidden">
-        <Table
-          rowsQueryOpts={rowsQueryOpts}
-          columns={columns}
-          selectedRows={selectedRows}
-          setSelectedRows={setSelectedRows}
-        />
+    <TableStoreContext value={context}>
+      <div className="h-screen flex flex-col justify-between">
+        <Header columns={columns} />
+        <div className="flex-1 overflow-hidden">
+          <Table columns={columns} />
+        </div>
+        <Footer />
       </div>
-      <Footer
-        page={page}
-        pageSize={pageSize}
-        setPage={setPage}
-        setPageSize={setPageSize}
-      />
-    </div>
+    </TableStoreContext>
   )
 }

@@ -2,13 +2,14 @@ import type { UseMutateFunction } from '@tanstack/react-query'
 import type { CellContext, Table, Cell as TableCell } from '@tanstack/react-table'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { TableMeta } from './table'
+import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import { RiCollapseDiagonal2Line, RiCommandLine, RiCornerDownLeftLine, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { type } from 'arktype'
 import dayjs from 'dayjs'
@@ -17,7 +18,9 @@ import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { sleep } from '~/lib/helpers'
 
-export interface TableCellMeta {
+const os = getOS()
+
+export interface CellMeta {
   name: string
   type?: string
   isEditable?: boolean
@@ -63,7 +66,7 @@ function TableCellProvider({
   onSavePending: () => void
 }) {
   const initialValue = cell.getValue()
-  const isJson = !!(cell.column.columnDef.meta as TableCellMeta).type?.includes('json')
+  const isJson = !!(cell.column.columnDef.meta as CellMeta).type?.includes('json')
   const displayValue = isJson && initialValue ? JSON.stringify(initialValue, null, 2) : getDisplayValue(initialValue)
   const [value, setValue] = useState<string>(initialValue === null ? '' : displayValue)
 
@@ -79,7 +82,7 @@ function TableCellProvider({
 
       await (table.options.meta as TableMeta).updateCell?.(
         cell.row.index,
-        (cell.column.columnDef.meta as TableCellMeta).name,
+        (cell.column.columnDef.meta as CellMeta).name,
         _value,
       )
     },
@@ -122,7 +125,7 @@ function TableCellMonaco({
   const { value, setValue, cell, table, initialValue, displayValue, isJson, updateCell } = use(TableCellContext)
 
   const tableMeta = table.options.meta as TableMeta
-  const cellMeta = cell.column.columnDef.meta as TableCellMeta
+  const cellMeta = cell.column.columnDef.meta as CellMeta
 
   const [isTouched, setIsTouched] = useState(false)
 
@@ -230,6 +233,10 @@ function TableCellMonaco({
                 onClick={() => save(value)}
               >
                 Save
+                <kbd className="flex items-center text-xs">
+                  {os === 'macos' ? <RiCommandLine className="size-2.5" /> : 'Ctrl'}
+                  <RiCornerDownLeftLine className="size-2.5" />
+                </kbd>
               </Button>
             </>
           )}
@@ -239,9 +246,9 @@ function TableCellMonaco({
   )
 }
 
-function getTimestamp(value: unknown, meta: TableCellMeta) {
+function getTimestamp(value: unknown, meta: CellMeta) {
   const numberType = type('string.numeric | number | Date | null')
-  const isTimestamp = (meta as TableCellMeta)?.type?.includes('timestamp')
+  const isTimestamp = (meta as CellMeta)?.type?.includes('timestamp')
     || [
       'created_at',
       'updated_at',
@@ -297,10 +304,10 @@ function TableCellContent({
 }
 
 export function Cell({ cell, getValue, table }: CellContext<Record<string, unknown>, unknown>) {
-  const [isOpen, setIsOpen] = useState(false)
   const cellValue = getValue()
-  const [canInteract, setCanInteract] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
+  const [canInteract, setCanInteract] = useState(false)
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
 
   useEffect(() => {
@@ -350,7 +357,7 @@ export function Cell({ cell, getValue, table }: CellContext<Record<string, unkno
     )
   }
 
-  const date = getTimestamp(cellValue, cell.column.columnDef.meta as TableCellMeta)
+  const date = getTimestamp(cellValue, cell.column.columnDef.meta as CellMeta)
 
   return (
     <TableCellProvider

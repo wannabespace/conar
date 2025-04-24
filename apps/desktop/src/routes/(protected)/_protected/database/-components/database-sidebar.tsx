@@ -24,7 +24,7 @@ export function DatabaseSidebar() {
     <>
       <div className="w-[calc(theme(spacing.16)+2px)]" />
       <div
-        className="bg-muted/40 flex flex-col border-r gap-6 items-center py-4 px-4 w-16 h-screen fixed left-0 inset-y-0"
+        className="bg-input/30 flex flex-col border-r gap-6 items-center py-4 px-4 w-16 h-screen fixed left-0 inset-y-0"
       >
         <div className="flex flex-col gap-2">
           <TooltipProvider>

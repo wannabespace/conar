@@ -1,6 +1,6 @@
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '.'
 
-export function TableSkeleton({ columnsCount }: { columnsCount: number }) {
+export function Skeleton({ columnsCount }: { columnsCount: number }) {
   return (
     <div className="relative flex flex-col">
       {Array.from({ length: 10 }).map((_, rowIndex) => (

@@ -1,31 +1,24 @@
-import type { Dispatch, SetStateAction } from 'react'
-import type { columnType, databaseRowsQuery } from '~/entities/database'
+import type { columnType } from '~/entities/database'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
-import { createCellUpdater, DataTable, useDatabase } from '~/entities/database'
+import { createCellUpdater, databaseRowsQuery, DataTable, useDatabase } from '~/entities/database'
 import { setSql } from '~/entities/database/sql/set'
 import { queryClient } from '~/main'
+import { useTableStoreContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 
 const cellUpdater = createCellUpdater()
 
-export function Table({
-  columns,
-  selectedRows,
-  setSelectedRows,
-  rowsQueryOpts,
-}: {
-  columns: (typeof columnType.infer & { isPrimaryKey: boolean })[]
-  selectedRows: Record<string, boolean>
-  setSelectedRows: Dispatch<SetStateAction<Record<string, boolean>>>
-  rowsQueryOpts: ReturnType<typeof databaseRowsQuery>
-}) {
+export function Table({ columns }: { columns: (typeof columnType.infer & { isPrimaryKey: boolean })[] }) {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
+  const store = useTableStoreContext()
+  const [page, pageSize, selected] = useStore(store, state => [state.page, state.pageSize, state.selected])
+  const rowsQueryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
   const { data, isPending } = useQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
-
   const rows = useMemo(() => data?.rows ?? [], [data])
 
   const setValue = (rowIndex: number, columnName: string, value: unknown) => {
@@ -73,8 +66,11 @@ export function Table({
       className="h-full"
       updateCell={updateCell}
       selectable={!!primaryKeys && primaryKeys.length > 0}
-      selectedRows={selectedRows}
-      setSelectedRows={setSelectedRows}
+      selectedRows={selected}
+      setSelectedRows={rows => store.setState(state => ({
+        ...state,
+        selected: rows,
+      }))}
     />
   )
 }

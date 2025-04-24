@@ -1,15 +1,15 @@
-'use no memo'
-
-import type { Header, HeaderGroup } from '@tanstack/react-table'
+import type { HeaderGroup, Header as HeaderType } from '@tanstack/react-table'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import { flexRender } from '@tanstack/react-table'
+import { memo } from 'react'
+import { useVirtualColumnsContext } from '.'
 
-function TableHeaderCell({
+const HeaderCell = memo(function HeaderCellMemo({
   virtualColumn,
   header,
 }: {
   virtualColumn: VirtualItem
-  header: Header<Record<string, unknown>, unknown>
+  header: HeaderType<Record<string, unknown>, unknown>
 }) {
   return (
     <div
@@ -25,34 +25,28 @@ function TableHeaderCell({
       )}
     </div>
   )
-}
+})
 
-function TableHeaderColumns({
-  headerGroup,
-  virtualColumns,
-}: {
-  headerGroup: HeaderGroup<Record<string, unknown>>
-  virtualColumns: VirtualItem[]
-}) {
+const HeaderColumns = memo(function HeaderColumnsMemo({ headerGroup }: { headerGroup: HeaderGroup<Record<string, unknown>> }) {
+  const virtualColumns = useVirtualColumnsContext()
+
   return virtualColumns.map((virtualColumn) => {
     const header = headerGroup.headers[virtualColumn.index]
     return (
-      <TableHeaderCell
+      <HeaderCell
         key={header.id}
         virtualColumn={virtualColumn}
         header={header}
       />
     )
   })
-}
+})
 
-export function TableHeaderRow({
+export const Header = memo(function HeaderMemo({
   headerGroups,
-  virtualColumns,
   rowWidth,
 }: {
   headerGroups: HeaderGroup<Record<string, unknown>>[]
-  virtualColumns: VirtualItem[]
   rowWidth: number
 }) {
   return (
@@ -64,14 +58,13 @@ export function TableHeaderRow({
             className="flex h-8 has-[[data-type]]:h-12 relative"
             style={{ width: `${rowWidth}px` }}
           >
-            <TableHeaderColumns
+            <HeaderColumns
               key={headerGroup.id}
               headerGroup={headerGroup}
-              virtualColumns={virtualColumns}
             />
           </div>
         ))}
       </div>
     </div>
   )
-}
+})
