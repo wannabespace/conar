@@ -1,0 +1,290 @@
+import type { editor } from 'monaco-editor'
+import { getOS } from '@connnect/shared/utils/os'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
+import { Button } from '@connnect/ui/components/button'
+import { CardHeader, CardTitle } from '@connnect/ui/components/card'
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { copy } from '@connnect/ui/lib/copy'
+import { useKeyboardEvent } from '@react-hookz/web'
+import { RiAlertLine, RiArrowUpLine, RiCommandLine, RiCornerDownLeftLine, RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
+import { useMutation } from '@tanstack/react-query'
+import { useParams } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
+import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
+import { Monaco } from '~/components/monaco'
+import { DANGEROUS_SQL_KEYWORDS, DataTable, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
+import { formatSql } from '~/lib/formatter'
+import { pageHooks, pageStore } from '..'
+
+const os = getOS()
+
+export const queryStorage = {
+  get(id: string) {
+    return localStorage.getItem(`sql-${id}`) || '-- Write your SQL query here\n'
+      + '\n'
+      + '-- Please write your own queries based on your database schema\n'
+      + '-- The examples below are for reference only and may not work with your database\n'
+      + '\n'
+      + '-- Example 1: Basic query with limit\n'
+      + '-- SELECT * FROM users LIMIT 10;\n'
+      + '\n'
+      + '-- Example 2: Query with filtering\n'
+      + '-- SELECT id, name, email FROM users WHERE created_at > \'2025-01-01\' ORDER BY name;\n'
+      + '\n'
+      + '-- Example 3: Join example\n'
+      + '-- SELECT u.id, u.name, p.title FROM users u\n'
+      + '-- JOIN posts p ON u.id = p.user_id\n'
+      + '-- WHERE p.published = true\n'
+      + '-- LIMIT 10;\n'
+      + '\n'
+      + '-- TIP: You can run multiple queries at once by separating them with semicolons'
+  },
+  set(id: string, query: string) {
+    localStorage.setItem(`sql-${id}`, query)
+  },
+}
+
+function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void, query: string }) {
+  const os = getOS()
+  const dangerousKeywords = query.match(new RegExp(DANGEROUS_SQL_KEYWORDS.join('|'), 'gi')) || []
+  const uniqueDangerousKeywords = [...new Set(dangerousKeywords)].map(k => k.toUpperCase()).join(', ')
+
+  useKeyboardEvent(e => (os === 'macos' ? e.metaKey : e.ctrlKey) && e.key === 'Enter' && e.shiftKey, () => {
+    confirm()
+    setOpen(false)
+  })
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <RiAlertLine className="size-5 text-warning" />
+            Potentially Dangerous SQL Query
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            <span className="block rounded-md bg-warning/10 p-3 mb-3 border border-warning/20">
+              Your query contains potentially dangerous SQL keywords:
+              <span className="font-semibold text-warning">
+                {' '}
+                {uniqueDangerousKeywords}
+              </span>
+            </span>
+            <span className="mt-2">
+              These operations could modify or delete data in your database. Proceed if you understand the impact of these changes.
+            </span>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="gap-2">
+          <AlertDialogCancel className="border-muted-foreground/20">Cancel</AlertDialogCancel>
+          <AlertDialogAction variant="warning" onClick={confirm}>
+            <span className="flex items-center gap-2">
+              Run Anyway
+              <kbd className="flex items-center">
+                {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
+                <RiArrowUpLine className="size-3" />
+                <RiCornerDownLeftLine className="size-3" />
+              </kbd>
+            </span>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
+function ResultTable({ result, columns }: { result: Record<string, unknown>[], columns: string[] }) {
+  return (
+    <DataTable
+      data={result}
+      columns={columns.map(c => ({ name: c }))}
+      className="h-full"
+    />
+  )
+}
+
+export function Runner() {
+  const { id } = useParams({ from: '/(protected)/_protected/database/$id/sql/' })
+  const { data: database } = useDatabase(id)
+  const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
+  const query = useStore(pageStore, state => state.query)
+
+  useEffect(() => {
+    return pageHooks.hook('focusRunner', () => {
+      monacoRef.current?.focus()
+    })
+  }, [])
+
+  useEffect(() => {
+    queryStorage.set(id, query)
+  }, [id, query])
+
+  const { mutate, data: results, isPending } = useMutation({
+    mutationFn: () => window.electron.databases.query({
+      type: database.type,
+      connectionString: database.connectionString,
+      query,
+    }),
+    onSuccess() {
+      toast.success('SQL executed successfully')
+    },
+    onError(error) {
+      toast.error(error.message, {
+        action: {
+          label: 'Fix with AI',
+          onClick: () => {
+            pageHooks.callHook('fix', error.message)
+          },
+        },
+      })
+    },
+  })
+
+  const [isAlertVisible, setIsAlertVisible] = useState(false)
+
+  function sendQuery(query: string) {
+    if (hasDangerousSqlKeywords(query)) {
+      setIsAlertVisible(true)
+      return
+    }
+
+    mutate()
+  }
+
+  function format() {
+    const formatted = formatSql(query, database.type)
+
+    pageStore.setState(state => ({
+      ...state,
+      query: formatted,
+    }))
+    toast.success('SQL formatted successfully')
+  }
+
+  return (
+    <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
+      <ResizablePanel minSize={20} className="relative">
+        <DangerousSqlAlert
+          query={query}
+          open={isAlertVisible}
+          setOpen={setIsAlertVisible}
+          confirm={() => mutate()}
+        />
+        <CardHeader className="dark:bg-input/30 py-3">
+          <CardTitle className="flex items-center gap-2">
+            <RiPlayLargeLine className="size-4" />
+            SQL Runner
+          </CardTitle>
+        </CardHeader>
+        <Monaco
+          ref={monacoRef}
+          language="sql"
+          value={query}
+          onChange={q => pageStore.setState(state => ({
+            ...state,
+            query: q,
+          }))}
+          className="size-full"
+          onEnter={query => sendQuery(query)}
+        />
+        <div className="absolute right-6 bottom-2 z-10 flex gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="iconSm"
+                  onClick={() => copy(query)}
+                >
+                  <RiFileCopyLine />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Copy
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => format()}
+                >
+                  <RiShining2Line />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Format SQL
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Button
+            disabled={isPending}
+            size="sm"
+            onClick={() => sendQuery(query)}
+          >
+            Run
+            {' '}
+            <kbd className="flex items-center text-xs">
+              {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
+              <RiCornerDownLeftLine className="size-3" />
+            </kbd>
+          </Button>
+        </div>
+      </ResizablePanel>
+      <ResizableHandle />
+      <ResizablePanel minSize={20}>
+        {Array.isArray(results) && (
+          <Tabs
+            defaultValue="table-0"
+            className="size-full gap-0"
+          >
+            {results.length > 1 && (
+              <TabsList className="rounded-none w-full bg-muted/20">
+                {results.map((_, i) => (
+                  <TabsTrigger key={i} value={`table-${i}`}>
+                    Result
+                    {' '}
+                    {i + 1}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            )}
+            {results.map((r, i) => (
+              <TabsContent className="h-full" key={i} value={`table-${i}`}>
+                <ResultTable
+                  result={r.rows}
+                  columns={r.columns}
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
+        )}
+        {isPending
+          ? (
+              <div className="h-full flex flex-col items-center justify-center">
+                <RiLoader4Line className="size-6 text-muted-foreground mb-2 animate-spin" />
+                <p className="text-sm text-center">
+                  Running query...
+                </p>
+              </div>
+            )
+          : !results && (
+              <div className="h-full flex flex-col items-center justify-center">
+                <p className="text-center">
+                  No results to display
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 text-center">
+                  Write and run a SQL query above to see results here
+                </p>
+              </div>
+            )}
+      </ResizablePanel>
+    </ResizablePanelGroup>
+  )
+}

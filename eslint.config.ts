@@ -7,6 +7,7 @@ export default antfu({
     'ts/no-explicit-any': 'error',
     'no-console': 'warn',
     'react-hooks/exhaustive-deps': 'off',
+    'prefer-arrow-callback': 'off',
   },
   ignores: [
     '**/routeTree.gen.ts',

@@ -8,6 +8,7 @@ import { marked } from 'marked'
 import { memo, useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { toast } from 'sonner'
 import { trackEvent } from '~/lib/events'
 import { Monaco } from './monaco'
 
@@ -62,6 +63,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
               variant="outline"
               onClick={() => {
                 onEdit(content)
+                toast.success('Moved to runner')
                 trackEvent('markdown_move_to_runner')
               }}
             >
@@ -76,13 +78,15 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
 }
 
 function MarkdownBase({ content, onEdit }: { content: string, onEdit?: (content: string) => void }) {
+  const processedContent = content.replace(/\n/g, '  \n')
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
         pre: preProps => <Pre {...preProps} onEdit={onEdit} />,
       }}
-      children={content}
+      children={processedContent}
     />
   )
 }

@@ -1,9 +1,13 @@
 import type { LanguageModelV1, Message } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
+import { google } from '@ai-sdk/google'
+import { openai } from '@ai-sdk/openai'
+import { xai } from '@ai-sdk/xai'
 import { databaseContextType } from '@connnect/shared/database'
+import { AiSqlChatModel } from '@connnect/shared/enums/ai-chat-model'
 import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { arktypeValidator } from '@hono/arktype-validator'
-import { streamText } from 'ai'
+import { smoothStream, streamText } from 'ai'
 import { type } from 'arktype'
 import { Hono } from 'hono'
 
@@ -40,10 +44,6 @@ function generateStream({
         7. Answer in markdown and paste the SQL code in a code block.
         8. Do not add useless information
         9. Use quotes for table and column names to prevent SQL errors with case sensitivity
-        10. You can use SQL comments for additional information, example:
-
-        -- This is a comment
-        SELECT * FROM users WHERE id = 1;
 
         Additional information:
         - Current date and time: ${new Date().toISOString()}
@@ -56,6 +56,7 @@ function generateStream({
       },
       ...messages,
     ],
+    experimental_transform: smoothStream(),
     abortSignal: signal,
     model,
     onFinish: (result) => {
@@ -65,22 +66,37 @@ function generateStream({
 }
 
 const input = type({
-  type: type.valueOf(DatabaseType),
-  messages: type({
+  'type': type.valueOf(DatabaseType),
+  'messages': type({
     'id?': 'string',
     'role': 'string' as type.cast<Message['role']>,
     'content': 'string',
+    'experimental_attachments?': type({
+      name: 'string',
+      contentType: 'string',
+      url: 'string',
+    }).array(),
   }).array(),
-  context: databaseContextType,
+  'context': databaseContextType,
+  'model?': type.valueOf(AiSqlChatModel).or(type.enumerated('auto')),
 })
 
+const models: Record<AiSqlChatModel, LanguageModelV1> = {
+  [AiSqlChatModel.Claude_3_7_Sonnet]: anthropic('claude-3-7-sonnet-20250219'),
+  [AiSqlChatModel.GPT_4o_Mini]: openai('gpt-4o-mini'),
+  [AiSqlChatModel.Gemini_2_5_Pro]: google('gemini-2.5-pro-exp-03-25'),
+  [AiSqlChatModel.Grok_3]: xai('grok-3-latest'),
+}
+
+const autoModel = models[AiSqlChatModel.Claude_3_7_Sonnet]
+
 ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
-  const { type, messages, context } = c.req.valid('json')
+  const { type, messages, context, model } = c.req.valid('json')
 
   try {
     const result = generateStream({
       type,
-      model: anthropic('claude-3-7-sonnet-20250219'),
+      model: !model || model === 'auto' ? autoModel : models[model],
       context,
       messages,
       signal: c.req.raw.signal,
@@ -91,10 +107,12 @@ ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
   catch (error) {
     const isOverloaded = error instanceof Error && error.message.includes('Overloaded')
 
+    console.log('Request overloaded, trying to use fallback model')
+
     if (isOverloaded) {
       const result = generateStream({
         type,
-        model: anthropic('claude-3-5-haiku-latest'),
+        model: !model || model === 'auto' ? anthropic('claude-3-5-haiku-latest') : models[model],
         context,
         messages,
         signal: c.req.raw.signal,

@@ -305,7 +305,7 @@ function RouteComponent() {
                     )
                   : (
                       <Button
-                        disabled={status === 'pending'}
+                        disabled={status === 'pending' || !connectionString}
                         onClick={() => testConnection(form.state.values)}
                       >
                         <LoadingContent loading={status === 'pending'}>

@@ -27,11 +27,8 @@ Connnect is an AI-powered open-source project that simplifies database interacti
 
 - **🤖 AI-Powered Features**
   - Intelligent SQL assistance
+  - Ability to change AI model
   - More coming soon..
-
-- **🎨 UI**
-  - Beautiful, intuitive interface
-  - Dark/Light theme support
 
 ## Stack
 
@@ -51,7 +48,7 @@ Connnect is an AI-powered open-source project that simplifies database interacti
 - PostHog
 - Loops
 
-## 📝 License
+## License
 
 This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.
 

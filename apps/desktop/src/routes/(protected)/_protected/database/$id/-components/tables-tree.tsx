@@ -44,6 +44,7 @@ export function TablesTree({ database, schema, className, search }: { database: 
 
             return (
               <Link
+                data-mask
                 key={virtualRow.key}
                 to="/database/$id/tables/$schema/$table"
                 params={{
