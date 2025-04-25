@@ -2,8 +2,8 @@ import { title } from '@connnect/shared/utils/title'
 import { Badge } from '@connnect/ui/components/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@connnect/ui/components/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
-import { Separator } from '@connnect/ui/components/separator'
-import { RiInformationLine } from '@remixicon/react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { RiInformationLine, RiListUnordered } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { databaseQuery, useDatabase, useDatabaseEnums, useDatabaseSchemas } from '~/entities/database'
@@ -62,30 +62,45 @@ function DashboardPage() {
       </div>
       {filteredEnums.length
         ? (
-            <div className="grid grid-cols-1 gap-3 mt-2">
+            <div className="grid grid-cols-1 gap-4 mt-2">
               {filteredEnums.map(enumItem => (
                 <Card
                   key={`${enumItem.schema}-${enumItem.name}`}
-                  className="rounded-md"
+                  className="overflow-hidden border border-border/60 hover:border-border/90 transition-colors"
                 >
-                  <CardHeader className="py-2 px-4">
+                  <CardHeader className="py-3 px-4 bg-muted/50">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
-                        <CardTitle className="text-sm">{enumItem.name}</CardTitle>
-                        <Badge variant="outline" className="text-xs">
-                          {enumItem.schema}
-                        </Badge>
+                        <RiListUnordered className="text-primary size-4" />
+                        <CardTitle className="text-base font-medium">{enumItem.name}</CardTitle>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge variant="outline" className="text-xs">
+                                {enumItem.schema}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Schema name
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
+                      <Badge variant="secondary" className="text-xs">
+                        {enumItem.values.length}
+                        {' '}
+                        value
+                        {enumItem.values.length === 1 ? '' : 's'}
+                      </Badge>
                     </div>
                   </CardHeader>
-                  <Separator />
-                  <CardContent className="py-2 px-4">
-                    <div className="flex flex-wrap gap-1.5">
+                  <CardContent className="py-3 px-4">
+                    <div className="flex flex-wrap gap-2">
                       {enumItem.values.map(value => (
                         <Badge
                           key={value}
-                          variant="secondary"
-                          className="px-2 py-0.5 text-xs rounded hover:bg-secondary/80 transition-colors"
+                          variant="outline"
+                          className="px-2.5 py-1 text-xs rounded-md hover:bg-muted/80 transition-colors"
                         >
                           {value}
                         </Badge>
@@ -97,11 +112,11 @@ function DashboardPage() {
             </div>
           )
         : (
-            <Card className="w-full mt-4 border border-dashed border-muted-foreground/20 bg-muted/20">
+            <Card className="w-full mt-4 border border-dashed border-muted-foreground/20 bg-muted/10">
               <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-                <RiInformationLine className="size-12 mx-auto mb-3 opacity-90 text-muted-foreground/80" />
-                <h3 className="text-lg font-medium text-foreground/90">No enums found</h3>
-                <p className="text-muted-foreground/80 text-sm max-w-md">
+                <RiInformationLine className="size-12 mx-auto mb-3 text-muted-foreground" />
+                <h3 className="text-lg font-medium text-foreground">No enums found</h3>
+                <p className="text-muted-foreground text-sm max-w-md">
                   This schema doesn't have any enums defined yet.
                 </p>
               </CardContent>
