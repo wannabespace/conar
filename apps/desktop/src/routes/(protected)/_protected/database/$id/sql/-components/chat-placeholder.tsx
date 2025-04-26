@@ -1,6 +1,6 @@
 import { RiQuestionAnswerLine } from '@remixicon/react'
 
-export function ChatError() {
+export function ChatPlaceholder() {
   return (
     <div className="pointer-events-none absolute z-10 inset-0 flex justify-center items-center px-6 pb-[15vh]">
       <div className="pointer-events-auto text-center text-balance max-w-96">

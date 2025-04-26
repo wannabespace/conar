@@ -40,12 +40,18 @@ const chatMessages = {
   },
 }
 
-export function useDatabaseChat(id: string) {
+export function useDatabaseContext(id: string) {
   const { data: database } = useDatabase(id)
-  const { data: context } = useQuery({
+
+  return useQuery({
     queryKey: ['database-context', id],
     queryFn: () => getDatabaseContext(database),
   })
+}
+
+export function useDatabaseChat(id: string) {
+  const { data: database } = useDatabase(id)
+  const { data: context } = useDatabaseContext(id)
 
   const initialMessages = usePromise(() => chatMessages.get(id))
   const chat = useChat({

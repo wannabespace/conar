@@ -46,8 +46,8 @@ export const Route = createFileRoute(
 function RouteComponent() {
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex h-auto!">
-      <ResizablePanel defaultSize={30} minSize={20} maxSize={50} className="bg-muted/20">
-        <Chat />
+      <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+        <Chat className="h-screen" />
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel

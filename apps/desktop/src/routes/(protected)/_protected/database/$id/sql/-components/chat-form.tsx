@@ -1,8 +1,15 @@
+import type { UseChatHelpers } from '@ai-sdk/react'
 import { AiSqlChatModel } from '@connnect/shared/enums/ai-chat-model'
+import { Button } from '@connnect/ui/components/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
+import { RiCornerDownLeftLine, RiStopCircleLine } from '@remixicon/react'
+import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
+import { Monaco } from '~/components/monaco'
 import { TipTap } from '~/components/tiptap'
 import { pageStore } from '..'
+import { useDatabaseContext } from '../-hooks/use-database-chat'
 import { ChatImages } from './chat-images'
 
 function ModelSelector() {
@@ -36,17 +43,55 @@ function ModelSelector() {
     </Select>
   )
 }
+function SchemaProvider() {
+  const { id } = useParams({ from: '/(protected)/_protected/database/$id/sql/' })
+  const { data: context } = useDatabaseContext(id)
+
+  return (
+    <div className="text-xs text-center text-muted-foreground truncate">
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="link"
+            className="text-xs p-0 h-auto text-muted-foreground opacity-50"
+          >
+            Database schema provided to assistant.
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[500px] p-0" side="top" sideOffset={10}>
+          <Monaco
+            language="json"
+            className="h-[80vh]"
+            value={JSON.stringify(context, null, 2)}
+            options={{
+              readOnly: true,
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              folding: true,
+              foldingStrategy: 'indentation',
+              stickyScroll: {
+                enabled: false,
+              },
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  )
+}
 
 export function ChatForm({
   input,
   setInput,
-  onEnter,
-  actions,
+  status,
+  stop,
+  handleSend,
 }: {
   input: string
   setInput: (input: string) => void
-  onEnter: (input: string) => void
-  actions: React.ReactNode
+  status: UseChatHelpers['status']
+  stop: UseChatHelpers['stop']
+  handleSend: (input: string) => void
 }) {
   const files = useStore(pageStore, state => state.files.map(file => ({
     name: file.name,
@@ -66,13 +111,13 @@ export function ChatForm({
           }}
         />
       )}
-      <div className="flex flex-col gap-2 relative bg-background dark:bg-input/30 rounded-md border border-input">
+      <div className="flex flex-col gap-2 relative bg-background dark:bg-input/20 rounded-md border">
         <TipTap
           value={input}
           setValue={setInput}
           placeholder="Generate SQL query using natural language"
           className="min-h-[50px] max-h-[250px] p-2 text-sm outline-none overflow-y-auto"
-          onEnter={onEnter}
+          onEnter={handleSend}
           onImageAdd={(file) => {
             pageStore.setState(state => ({
               ...state,
@@ -85,13 +130,33 @@ export function ChatForm({
             <ModelSelector />
           </div>
           <div className="flex gap-2 pointer-events-auto">
-            {actions}
+            {(status === 'streaming' || status === 'submitted')
+              ? (
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="outline"
+                    disabled={status === 'submitted'}
+                    onClick={stop}
+                  >
+                    <RiStopCircleLine className="size-3" />
+                    Stop
+                  </Button>
+                )
+              : (
+                  <Button
+                    size="xs"
+                    disabled={!input.trim()}
+                    onClick={() => handleSend(input)}
+                  >
+                    Send
+                    <RiCornerDownLeftLine className="size-3" />
+                  </Button>
+                )}
           </div>
         </div>
       </div>
-      <div className="text-xs text-center text-muted-foreground">
-        AI can make mistakes.
-      </div>
+      <SchemaProvider />
     </>
   )
 }

@@ -1,31 +1,24 @@
 import type { UseChatHelpers } from '@ai-sdk/react'
+import type { ComponentProps } from 'react'
+import { getBase64FromFiles } from '@connnect/shared/utils/base64'
 import { Button } from '@connnect/ui/components/button'
 import { CardTitle } from '@connnect/ui/components/card'
-import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
-import { RiChatAiLine, RiCornerDownLeftLine, RiDeleteBinLine, RiStopCircleLine } from '@remixicon/react'
+import { cn } from '@connnect/ui/lib/utils'
+import { RiChatAiLine, RiDeleteBinLine } from '@remixicon/react'
 import { useParams } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { sleep } from '~/lib/helpers'
 import { pageHooks, pageStore } from '..'
 import { useDatabaseChat } from '../-hooks/use-database-chat'
-import { ChatError } from './chat-error'
 import { ChatForm } from './chat-form'
 import { ChatMessages } from './chat-messages'
+import { ChatPlaceholder } from './chat-placeholder'
 
-function getBase64(file: File): Promise<string | ArrayBuffer | null> {
-  return new Promise((resolve) => {
-    const reader = new FileReader()
-
-    reader.addEventListener('load', () => resolve(reader.result))
-
-    reader.readAsDataURL(file)
-  })
-}
-
-export function Chat() {
+export function Chat({ className, ...props }: ComponentProps<'div'>) {
   const { id } = useParams({ from: '/(protected)/_protected/database/$id/sql/' })
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -41,7 +34,61 @@ export function Chat() {
     stop,
   } = useDatabaseChat(id)
 
+  const statusRef = useRef<UseChatHelpers['status']>(status)
+
+  useEffect(() => {
+    // I don't know why, but status is not changing in functions like handleSend
+    statusRef.current = status
+  }, [status])
+
+  const handleSend = async (value: string) => {
+    if (value.trim() === '' || statusRef.current === 'streaming' || statusRef.current === 'submitted')
+      return
+
+    const cachedValue = value
+    const cachedFiles = [...pageStore.state.files]
+
+    try {
+      const filesBase64 = await getBase64FromFiles(cachedFiles)
+
+      setInput('')
+      pageStore.setState(state => ({
+        ...state,
+        files: [],
+      }))
+
+      await append({
+        role: 'user',
+        content: cachedValue,
+      }, {
+        experimental_attachments: filesBase64.map((base64, index) => ({
+          name: `attachment-${index + 1}.png`,
+          contentType: 'image/png',
+          url: base64,
+        })),
+        body: {
+          model: pageStore.state.model,
+        },
+      })
+    }
+    catch (error) {
+      setInput(cachedValue)
+      pageStore.setState(state => ({
+        ...state,
+        files: cachedFiles,
+      }))
+      toast.error('Failed to send message', {
+        description: error instanceof Error
+          ? error.message
+          : 'An unexpected error occurred. Please try again.',
+      })
+    }
+  }
+
   useAsyncEffect(async () => {
+    if (messages.length === 0)
+      return
+
     await sleep(0) // To wait for the messages to be rendered
     scrollRef.current?.scrollTo({
       top: scrollRef.current?.scrollHeight,
@@ -51,52 +98,12 @@ export function Chat() {
 
   useEffect(() => {
     return pageHooks.hook('fix', async (error) => {
-      await handleSend({ value: `Fix the following SQL error: ${error}`, status })
+      await handleSend(`Fix the following SQL error: ${error}`)
     })
-  }, [status])
-
-  async function handleSend({
-    value,
-    status,
-  }: {
-    value: string
-    status: UseChatHelpers['status']
-  }) {
-    if (value.trim() === '' || status === 'submitted' || status === 'streaming')
-      return
-
-    const filesBase64 = await Promise.all(pageStore.state.files.map(getBase64))
-
-    append({
-      role: 'user',
-      content: value,
-    }, {
-      experimental_attachments: filesBase64.map((base64, index) => ({
-        name: `attachment-${index + 1}.png`,
-        contentType: 'image/png',
-        url: base64 as string,
-      })),
-      body: {
-        model: pageStore.state.model,
-      },
-    })
-    setInput('')
-    pageStore.setState(state => ({
-      ...state,
-      files: [],
-    }))
-    await sleep(0)
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current?.scrollHeight,
-      behavior: 'smooth',
-    })
-  }
+  }, [handleSend])
 
   return (
-    <div className="relative flex h-screen flex-col justify-between gap-2 p-4">
-      <DotsBg
-        className="absolute -z-10 inset-0 opacity-30 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-      />
+    <div className={cn('relative flex flex-col justify-between gap-2 p-4 bg-muted/20', className)} {...props}>
       <div className="flex justify-between items-center mb-4">
         <CardTitle className="flex items-center gap-2">
           <RiChatAiLine className="size-5" />
@@ -125,9 +132,12 @@ export function Chat() {
         )}
       </div>
       {messages.length === 0 && !error && (
-        <ChatError />
+        <ChatPlaceholder />
       )}
-      <ScrollArea scrollRef={scrollRef} className="flex-1 overflow-y-auto -mx-4 px-4">
+      <ScrollArea
+        scrollRef={scrollRef}
+        className="relative flex-1 overflow-y-auto -mx-4 px-4"
+      >
         <ChatMessages
           messages={messages}
           status={status}
@@ -138,38 +148,9 @@ export function Chat() {
       <ChatForm
         input={input}
         setInput={setInput}
-        onEnter={(value) => {
-          if (value.trim() === '' || status === 'submitted' || status === 'streaming')
-            return
-
-          handleSend({ value, status })
-        }}
-        actions={(
-          <>
-            {(status === 'streaming' || status === 'submitted') && (
-              <Button
-                type="button"
-                size="xs"
-                variant="outline"
-                disabled={status === 'submitted'}
-                onClick={stop}
-              >
-                <RiStopCircleLine className="size-3" />
-                Stop
-              </Button>
-            )}
-            {(status !== 'submitted' && status !== 'streaming') && (
-              <Button
-                size="xs"
-                disabled={!input.trim()}
-                onClick={() => handleSend({ value: input, status })}
-              >
-                Send
-                <RiCornerDownLeftLine className="size-3" />
-              </Button>
-            )}
-          </>
-        )}
+        handleSend={handleSend}
+        status={status}
+        stop={stop}
       />
     </div>
   )
