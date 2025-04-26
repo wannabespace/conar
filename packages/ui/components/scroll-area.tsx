@@ -19,7 +19,7 @@ function ScrollArea({
         ref={scrollRef}
         data-slot="scroll-area-viewport"
         className={cn(
-          'ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] focus-visible:ring-4 focus-visible:outline-1',
+          'focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1',
           !tableStyle && '[&>div]:[display:unset]!',
         )}
       >
@@ -52,7 +52,7 @@ function ScrollBar({
     >
       <ScrollAreaPrimitive.ScrollAreaThumb
         data-slot="scroll-area-thumb"
-        className="z-50 bg-gray-200 dark:bg-accent relative flex-1 rounded-full"
+        className="bg-border relative flex-1 rounded-full"
       />
     </ScrollAreaPrimitive.ScrollAreaScrollbar>
   )

@@ -5,7 +5,7 @@ import ghDark from 'monaco-themes/themes/GitHub Dark.json'
 import ghLight from 'monaco-themes/themes/GitHub Light.json'
 import { useEffect, useRef } from 'react'
 
-ghDark.colors['editor.background'] = '#171718'
+ghDark.colors['editor.background'] = '#131313'
 ghDark.colors['editor.lineHighlightBackground'] = '#212222'
 ghDark.colors['editor.selectionBackground'] = '#4fb0ba50'
 ghLight.colors['editor.selectionBackground'] = '#4fb0ba50'
@@ -27,7 +27,7 @@ export function Monaco({
   ref?: RefObject<monaco.editor.IStandaloneCodeEditor | null>
   value: string
   language?: string
-  onChange: (value: string) => void
+  onChange?: (value: string) => void
   options?: monaco.editor.IStandaloneEditorConstructionOptions
   onEnter?: (value: string) => void
 }) {
@@ -68,11 +68,13 @@ export function Monaco({
       })
     }
 
-    monacoInstance.current.onDidChangeModelContent(() => {
-      const value = monacoInstance.current?.getValue()
+    if (onChange) {
+      monacoInstance.current.onDidChangeModelContent(() => {
+        const value = monacoInstance.current?.getValue()
 
-      onChange(value ?? '')
-    })
+        onChange(value ?? '')
+      })
+    }
 
     return () => {
       monacoInstance.current?.dispose()
