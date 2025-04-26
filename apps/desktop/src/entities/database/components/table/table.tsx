@@ -28,7 +28,7 @@ function SelectedHeader() {
   const store = useSelectionStoreContext()
   const [disabled, checked, indeterminate] = useStore(store, state => [
     state.rows.length === 0,
-    state.selected.length === state.rows.length,
+    state.rows.length > 0 && state.selected.length === state.rows.length,
     state.selected.length > 0,
   ])
 
