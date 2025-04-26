@@ -39,6 +39,10 @@ export const indexedDb = new Dexie('connnect') as Dexie & {
 
 indexedDb.version(1).stores({
   databases: '++id, name, type, createdAt, connectionString, isPasswordExists, isPasswordPopulated',
+})
+
+indexedDb.version(2).stores({
+  databases: '++id, name, type, createdAt, connectionString, isPasswordExists, isPasswordPopulated',
   databaseChats: '++id, databaseId, messages',
 })
 
