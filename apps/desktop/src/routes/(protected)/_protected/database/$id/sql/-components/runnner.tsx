@@ -49,7 +49,9 @@ export const queryStorage = {
 
 function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void, query: string }) {
   const os = getOS()
-  const dangerousKeywords = query.match(new RegExp(DANGEROUS_SQL_KEYWORDS.join('|'), 'gi')) || []
+  const uncommentedLines = query.split('\n').filter(line => !line.trim().startsWith('--')).join('\n')
+  const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
+  const dangerousKeywords = uncommentedLines.match(new RegExp(dangerousKeywordsPattern, 'gi')) || []
   const uniqueDangerousKeywords = [...new Set(dangerousKeywords)].map(k => k.toUpperCase()).join(', ')
 
   useKeyboardEvent(e => (os === 'macos' ? e.metaKey : e.ctrlKey) && e.key === 'Enter' && e.shiftKey, () => {
