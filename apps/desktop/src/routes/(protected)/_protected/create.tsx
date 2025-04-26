@@ -147,27 +147,27 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
                       <RiLoopLeftLine />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent sideOffset={8}>
                     Generate a random connection name
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
           </div>
-          <div>
-            <Label htmlFor={saveInCloudId} className="mb-2">
-              Sync password
-            </Label>
-            <label className="text-xs flex items-center gap-2">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm flex items-center gap-2">
               <Checkbox
                 id={saveInCloudId}
                 checked={saveInCloud}
                 onCheckedChange={() => setSaveInCloud(!saveInCloud)}
               />
-              <span className="text-muted-foreground">
-                Do you want to sync the password in our cloud?
-              </span>
+              Do you want to sync the password in our cloud?
             </label>
+            <div className="text-xs text-muted-foreground/50 text-balance">
+              Syncing passwords in our cloud allows access from any device without re-entering the password.
+              <br />
+              If not synced, passwords remain securely stored on your local device only.
+            </div>
           </div>
         </div>
       </CardContent>

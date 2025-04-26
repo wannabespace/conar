@@ -11,7 +11,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, SelectionStoreContext, useSelectionStoreContext, VirtualColumnsContext } from '.'
 import { Body } from './body'
 import { Cell } from './cell'
@@ -165,10 +165,10 @@ export function DataTable<T extends Record<string, unknown>>({
   const rowWidth = columnVirtualizer.getTotalSize()
   const virtualColumns = columnVirtualizer.getVirtualItems()
 
-  const selectionStoreContext = useRef(new Store({
+  const [selectionStoreContext] = useState(() => new Store({
     selected: [] as number[],
     rows: rows.map(row => row.index),
-  })).current
+  }))
 
   const selected = useStore(selectionStoreContext, state => state.selected)
 

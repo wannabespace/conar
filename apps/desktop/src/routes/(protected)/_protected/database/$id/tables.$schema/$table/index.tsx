@@ -3,7 +3,7 @@ import { title } from '@connnect/shared/utils/title'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Store } from '@tanstack/react-store'
-import { createContext, use, useRef } from 'react'
+import { createContext, use, useState } from 'react'
 import { databaseColumnsQuery, databaseQuery, prefetchDatabaseTableCore, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
 import { Footer } from './-components/footer'
@@ -65,11 +65,11 @@ function RouteComponent() {
     })),
   })
 
-  const context = useRef(new Store({
+  const [context] = useState(() => new Store({
     page: 1,
     pageSize: 50 satisfies PageSize as PageSize,
     selected: [] as number[],
-  })).current
+  }))
 
   return (
     <TableStoreContext value={context}>

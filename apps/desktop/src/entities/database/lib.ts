@@ -100,7 +100,7 @@ export async function createDatabase({ saveInCloud, ...database }: {
   connectionString: string
   saveInCloud: boolean
 }) {
-  const url = new URL(database.connectionString)
+  const url = new URL(database.connectionString.trim())
 
   const isPasswordExists = !!url.password
 
