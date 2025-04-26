@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm'
-import { pgTable } from 'drizzle-orm/pg-core'
+import { index, pgTable } from 'drizzle-orm/pg-core'
 import { nanoid } from 'nanoid'
 import { baseTable } from '../base-table'
 
@@ -11,7 +11,9 @@ export const users = pgTable('users', ({ text, boolean }) => ({
   image: text(),
   normalizedEmail: text().unique('users_normalized_email_unique'),
   secret: text().notNull().$defaultFn(() => nanoid()),
-})).enableRLS()
+}), t => [
+  index().on(t.email),
+]).enableRLS()
 
 export const sessions = pgTable('sessions', ({ text, timestamp, uuid }) => ({
   ...baseTable,
@@ -20,7 +22,10 @@ export const sessions = pgTable('sessions', ({ text, timestamp, uuid }) => ({
   ipAddress: text(),
   userAgent: text(),
   userId: uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
-})).enableRLS()
+}), t => [
+  index().on(t.userId),
+  index().on(t.token),
+]).enableRLS()
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, {
@@ -41,7 +46,9 @@ export const accounts = pgTable('accounts', ({ text, timestamp, uuid }) => ({
   refreshTokenExpiresAt: timestamp({ withTimezone: true }),
   scope: text(),
   password: text(),
-})).enableRLS()
+}), t => [
+  index().on(t.userId),
+]).enableRLS()
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
   user: one(users, {
@@ -56,7 +63,9 @@ export const verifications = pgTable('verifications', ({ text, timestamp }) => (
   value: text().notNull(),
   expiresAt: timestamp({ withTimezone: true }).notNull(),
   updatedAt: timestamp({ withTimezone: true }),
-})).enableRLS()
+}), t => [
+  index().on(t.identifier),
+]).enableRLS()
 
 export const twoFactors = pgTable('two_factors', ({ text, uuid }) => ({
   ...baseTable,
@@ -78,14 +87,19 @@ export const workspaces = pgTable('workspaces', ({ text }) => ({
   slug: text().unique(),
   logo: text(),
   metadata: text(),
-})).enableRLS()
+}), t => [
+  index().on(t.slug),
+]).enableRLS()
 
 export const members = pgTable('members', ({ text, uuid }) => ({
   ...baseTable,
   workspaceId: uuid().notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
   userId: uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
   role: text().notNull(),
-})).enableRLS()
+}), t => [
+  index().on(t.userId),
+  index().on(t.workspaceId),
+]).enableRLS()
 
 export const membersRelations = relations(members, ({ one }) => ({
   workspace: one(workspaces, {
@@ -106,7 +120,10 @@ export const invitations = pgTable('invitations', ({ text, uuid, timestamp }) =>
   status: text().notNull(),
   expiresAt: timestamp().notNull(),
   inviterId: uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
-})).enableRLS()
+}), t => [
+  index().on(t.email),
+  index().on(t.workspaceId),
+]).enableRLS()
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
   workspace: one(workspaces, {

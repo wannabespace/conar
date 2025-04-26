@@ -8,6 +8,13 @@
       "when": 1741623410505,
       "tag": "0000_absurd_iron_fist",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1745691082032,
+      "tag": "0001_slimy_gideon",
+      "breakpoints": true
     }
   ]
 }

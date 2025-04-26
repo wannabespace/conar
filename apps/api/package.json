@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx --env-file=.env ./src/index.ts",
-    "start": "tsx src/index.ts",
+    "start": "pnpm run drizzle:migrate && tsx src/index.ts",
     "check-types": "tsc",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:generate-custom": "drizzle-kit generate --custom",
