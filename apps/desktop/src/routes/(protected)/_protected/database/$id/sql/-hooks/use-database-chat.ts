@@ -8,12 +8,23 @@ import { indexedDb } from '~/lib/indexeddb'
 
 const chatInput = {
   get(id: string) {
-    return localStorage.getItem(`sql-chat-input-${id}`) || ''
+    return JSON.parse(localStorage.getItem(`sql-chat-input-${id}`) || '""')
   },
   set(id: string, input: string) {
-    localStorage.setItem(`sql-chat-input-${id}`, input)
+    localStorage.setItem(`sql-chat-input-${id}`, JSON.stringify(input))
   },
 }
+
+// TODO: remove this in future releases
+function clearOldInfos() {
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('sql-chat-messages')) {
+      localStorage.removeItem(key)
+    }
+  })
+}
+
+clearOldInfos()
 
 const chatMessages = {
   async get(id: string) {
