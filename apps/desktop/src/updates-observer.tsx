@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 
 export type UpdatesStatus = 'no-updates' | 'checking' | 'downloading' | 'ready' | 'error'
 
+const TOAST_UPDATE_READY_ID = 'update-ready-toast'
+
 export const updatesStore = new Store<{
   version: string
   status: UpdatesStatus
@@ -40,6 +42,7 @@ export function UpdatesObserver() {
     if (status === 'ready') {
       function showToast() {
         toast.success('New update successfully downloaded', {
+          id: TOAST_UPDATE_READY_ID,
           action: {
             label: 'Update now',
             onClick: () => window.electron.app.quitAndInstall(),
