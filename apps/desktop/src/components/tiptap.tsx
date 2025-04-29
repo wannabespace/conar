@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import Placeholder from '@tiptap/extension-placeholder'
 import { EditorContent, Extension, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -11,14 +12,14 @@ export function TipTap({
   onEnter,
   onImageAdd,
   className,
+  ...props
 }: {
   value: string
   setValue: (value: string) => void
   placeholder?: string
   onEnter?: (value: string) => void
   onImageAdd?: (file: File) => void
-  className?: string
-}) {
+} & Omit<ComponentProps<typeof EditorContent>, 'editor'>) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -95,6 +96,7 @@ export function TipTap({
       onDrop={(e) => {
         addImage(e, e.dataTransfer)
       }}
+      {...props}
     />
   )
 }
