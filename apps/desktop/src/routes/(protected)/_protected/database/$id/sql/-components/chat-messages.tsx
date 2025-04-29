@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react'
 import { Avatar, AvatarFallback } from '@connnect/ui/components/avatar'
 import { Button } from '@connnect/ui/components/button'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiRefreshLine } from '@remixicon/react'
+import { RiRefreshLine, RiRestartLine } from '@remixicon/react'
 import { Fragment } from 'react'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
@@ -19,12 +19,20 @@ function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   )
 }
 
-function UserMessage({ text, images, ...props }: { text: string, images: { name: string, url: string }[] } & ComponentProps<'div'>) {
+function UserMessage({ message, ...props }: { message: Message } & ComponentProps<'div'>) {
   return (
     <ChatMessage {...props}>
       <UserAvatar className="size-6" />
-      <Markdown content={text} />
-      {images.length > 0 && <ChatImages images={images} imageClassName="size-8" />}
+      <Markdown content={message.content} />
+      {!!message.experimental_attachments && message.experimental_attachments.length > 0 && (
+        <ChatImages
+          images={message.experimental_attachments.map(attachment => ({
+            name: attachment.name ?? '',
+            url: attachment.url,
+          }))}
+          imageClassName="size-8"
+        />
+      )}
     </ChatMessage>
   )
 }
@@ -37,12 +45,12 @@ function AssistantAvatar() {
   )
 }
 
-function AssistantMessage({ text, ...props }: { text: string } & ComponentProps<'div'>) {
+function AssistantMessage({ message, last, onReload, ...props }: { message: Message, last: boolean, onReload: () => void } & ComponentProps<'div'>) {
   return (
     <ChatMessage {...props}>
       <AssistantAvatar />
       <Markdown
-        content={text}
+        content={message.content}
         onEdit={async (query) => {
           pageStore.setState(state => ({
             ...state,
@@ -52,10 +60,32 @@ function AssistantMessage({ text, ...props }: { text: string } & ComponentProps<
           pageHooks.callHook('focusRunner')
         }}
       />
+      {last && (
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="xs" onClick={onReload}>
+            <RiRestartLine className="size-3" />
+            Generate again
+          </Button>
+        </div>
+      )}
     </ChatMessage>
   )
 }
 
+function ErrorMessage({ error, onReload, ...props }: { error: Error, onReload: () => void } & ComponentProps<'div'>) {
+  return (
+    <ChatMessage {...props}>
+      <AssistantAvatar />
+      <p className="text-red-500">{error.message}</p>
+      <div>
+        <Button variant="outline" size="xs" onClick={onReload}>
+          <RiRefreshLine className="size-3" />
+          Try again
+        </Button>
+      </div>
+    </ChatMessage>
+  )
+}
 export function ChatMessages({
   messages,
   status,
@@ -69,19 +99,17 @@ export function ChatMessages({
 }) {
   return (
     <div className="flex flex-col gap-4 pb-2">
-      {messages.map(message => (
+      {messages.map((message, index) => (
         <Fragment key={message.id}>
           {message.role === 'user'
-            ? (
-                <UserMessage
-                  text={message.content}
-                  images={message.experimental_attachments?.map(attachment => ({
-                    name: attachment.name ?? '',
-                    url: attachment.url,
-                  })) ?? []}
+            ? <UserMessage message={message} />
+            : (
+                <AssistantMessage
+                  message={message}
+                  last={status === 'ready' && index === messages.length - 1}
+                  onReload={onReload}
                 />
-              )
-            : <AssistantMessage text={message.content} />}
+              )}
         </Fragment>
       ))}
       {status === 'submitted' && (
@@ -92,18 +120,7 @@ export function ChatMessages({
           </p>
         </ChatMessage>
       )}
-      {error && (
-        <ChatMessage>
-          <AssistantAvatar />
-          <p className="text-red-500">{error.message}</p>
-          <div>
-            <Button variant="outline" size="xs" onClick={onReload}>
-              <RiRefreshLine className="size-3" />
-              Try again
-            </Button>
-          </div>
-        </ChatMessage>
-      )}
+      {error && <ErrorMessage error={error} onReload={onReload} />}
     </div>
   )
 }

@@ -42,8 +42,13 @@ export function Chat({ className, ...props }: ComponentProps<'div'>) {
   }, [status])
 
   const handleSend = async (value: string) => {
-    if (value.trim() === '' || statusRef.current === 'streaming' || statusRef.current === 'submitted')
+    if (
+      value.trim() === ''
+      || statusRef.current === 'streaming'
+      || statusRef.current === 'submitted'
+    ) {
       return
+    }
 
     const cachedValue = value
     const cachedFiles = [...pageStore.state.files]
@@ -136,7 +141,7 @@ export function Chat({ className, ...props }: ComponentProps<'div'>) {
       )}
       <ScrollArea
         scrollRef={scrollRef}
-        className="relative flex-1 overflow-y-auto -mx-4 px-4"
+        className="relative flex-1 overflow-y-auto px-4 -mx-4"
       >
         <ChatMessages
           messages={messages}
