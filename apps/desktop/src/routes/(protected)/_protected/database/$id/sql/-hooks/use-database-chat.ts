@@ -2,13 +2,17 @@ import type { Message } from '@ai-sdk/react'
 import { useChat } from '@ai-sdk/react'
 import { usePromise } from '@connnect/ui/hookas/use-promise'
 import { useQuery } from '@tanstack/react-query'
+import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import { getDatabaseContext, useDatabase } from '~/entities/database'
 import { indexedDb } from '~/lib/indexeddb'
+import { pageStore } from '..'
 
 const chatInput = {
   get(id: string) {
-    return JSON.parse(localStorage.getItem(`sql-chat-input-${id}`) || '""')
+    const data = JSON.parse(localStorage.getItem(`sql-chat-input-${id}`) || '""')
+
+    return typeof data === 'string' ? data : ''
   },
   set(id: string, input: string) {
     localStorage.setItem(`sql-chat-input-${id}`, JSON.stringify(input))
@@ -63,6 +67,7 @@ export function useDatabaseContext(id: string) {
 export function useDatabaseChat(id: string) {
   const { data: database } = useDatabase(id)
   const { data: context } = useDatabaseContext(id)
+  const currentQuery = useStore(pageStore, state => state.query)
 
   const initialMessages = usePromise(() => chatMessages.get(id))
   const chat = useChat({
@@ -73,6 +78,7 @@ export function useDatabaseChat(id: string) {
     body: {
       type: database.type,
       context,
+      currentQuery,
     },
   })
 
