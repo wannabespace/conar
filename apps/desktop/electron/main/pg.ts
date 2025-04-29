@@ -1,8 +1,10 @@
-import type { QueryResult } from 'pg'
+import type { Pool, QueryResult } from 'pg'
 import type { DatabaseQueryResult } from './events'
 import { createRequire } from 'node:module'
 
 const pg = createRequire(import.meta.url)('pg') as typeof import('pg')
+
+const pools: Record<string, { pool: Pool, count: number }> = {}
 
 export async function pgQuery({
   connectionString,
@@ -13,22 +15,34 @@ export async function pgQuery({
   query: string
   values?: unknown[]
 }): Promise<DatabaseQueryResult[]> {
-  const pool = new pg.Pool({
-    connectionString,
-  })
+  if (!pools[connectionString]) {
+    pools[connectionString] = {
+      pool: new pg.Pool({
+        connectionString,
+      }),
+      count: 0,
+    }
+  }
 
   try {
-    const result = await pool.query(query, values)
+    pools[connectionString].count++
+    const result = await pools[connectionString].pool.query(query, values)
     const array = (Array.isArray(result) ? result : [result]) as QueryResult[]
 
     return array.map(r => ({
       count: r.rowCount ?? 0,
-      columns: r.fields.map(f => f.name),
+      columns: r.fields.map(f => ({
+        name: f.name,
+      })),
       rows: r.rows,
     }))
   }
   finally {
-    await pool.end()
+    pools[connectionString].count--
+    if (pools[connectionString].count === 0) {
+      await pools[connectionString].pool.end()
+      delete pools[connectionString]
+    }
   }
 }
 
