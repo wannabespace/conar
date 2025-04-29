@@ -107,7 +107,7 @@ function RouteComponent() {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                {schemas?.map(schema => (
+                {schemas.map(schema => (
                   <SelectItem
                     key={schema.name}
                     value={schema.name}
