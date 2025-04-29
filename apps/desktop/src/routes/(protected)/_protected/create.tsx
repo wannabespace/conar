@@ -2,6 +2,7 @@ import type { RefObject } from 'react'
 import { databaseLabels, DatabaseType } from '@connnect/shared/enums/database-type'
 import { getProtocols } from '@connnect/shared/utils/connections'
 import { title } from '@connnect/shared/utils/title'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@connnect/ui/components/alert-dialog'
 import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { Button } from '@connnect/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@connnect/ui/components/card'
@@ -112,7 +113,6 @@ function StepCredentials({ ref, type, connectionString, setConnectionString }: {
 
 function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud }: { type: DatabaseType, name: string, connectionString: string, setName: (name: string) => void, onRandomName: () => void, saveInCloud: boolean, setSaveInCloud: (saveInCloud: boolean) => void }) {
   const nameId = useId()
-  const saveInCloudId = useId()
 
   return (
     <Card className="w-full">
@@ -157,7 +157,6 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
           <div className="flex flex-col gap-2">
             <label className="text-sm flex items-center gap-2">
               <Checkbox
-                id={saveInCloudId}
                 checked={saveInCloud}
                 onCheckedChange={() => setSaveInCloud(!saveInCloud)}
               />
@@ -294,25 +293,52 @@ function RouteComponent() {
                 <Button variant="outline" onClick={() => setStep('type')}>
                   Back
                 </Button>
-                {status === 'success' || status === 'error'
+                {status === 'success'
                   ? (
                       <Button
-                        variant={status === 'error' ? 'destructive' : 'default'}
+                        variant="default"
                         onClick={() => setStep('save')}
                       >
-                        {status === 'error' ? 'Continue with connection error' : 'Continue'}
+                        Continue
                       </Button>
                     )
-                  : (
-                      <Button
-                        disabled={status === 'pending' || !connectionString}
-                        onClick={() => testConnection(form.state.values)}
-                      >
-                        <LoadingContent loading={status === 'pending'}>
-                          Test connection
-                        </LoadingContent>
-                      </Button>
-                    )}
+                  : status === 'error'
+                    ? (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive">
+                              Continue with connection error
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Only proceed if you're sure that your connection string is correct and the database will be accessible later.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                variant="destructive"
+                                onClick={() => setStep('save')}
+                              >
+                                Continue
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )
+                    : (
+                        <Button
+                          disabled={status === 'pending' || !connectionString}
+                          onClick={() => testConnection(form.state.values)}
+                        >
+                          <LoadingContent loading={status === 'pending'}>
+                            Test connection
+                          </LoadingContent>
+                        </Button>
+                      )}
               </div>
             </div>
           </StepperContent>
