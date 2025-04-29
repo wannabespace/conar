@@ -291,7 +291,7 @@ function TableCellContent({
       data-mask
       className={cn(
         'h-full text-xs truncate p-2 group-first/cell:pl-4 group-last/cell:pr-4 font-mono cursor-default select-none',
-        'transition-ring duration-100 ring-2 ring-inset ring-transparent',
+        'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
         value === null && 'text-muted-foreground/50',
         value === '' && 'text-muted-foreground/50',
         className,
@@ -341,7 +341,7 @@ export function Cell({ cell, getValue, table }: CellContext<Record<string, unkno
   }
 
   const className = cn(
-    isOpen && 'ring-primary/50 bg-muted/50',
+    isOpen && 'ring-primary/30 bg-primary/10',
     status === 'error' && 'ring-destructive/50 bg-destructive/20',
     status === 'success' && 'ring-success/50 bg-success/10',
     status === 'saving' && 'animate-pulse',
