@@ -13,6 +13,7 @@ export function databaseRowsQuery(
     limit?: PageSize
     page?: number
     orderBy?: string
+    where?: string
   },
 ) {
   const _limit: PageSize = query?.limit ?? 50
@@ -30,6 +31,8 @@ export function databaseRowsQuery(
       {
         limit: _limit,
         page: _page,
+        orderBy: query?.orderBy,
+        where: query?.where,
       },
     ],
     queryFn: async () => {
@@ -44,6 +47,7 @@ export function databaseRowsQuery(
           limit: _limit,
           page: _page,
           orderBy,
+          where: query?.where,
         })[database.type],
       })
 
