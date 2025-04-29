@@ -4,6 +4,7 @@
 @import "./monaco.css";
 @import "./typography.css";
 @import "./animations.css";
+
 @source "../../../packages/ui/**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
@@ -16,7 +17,7 @@
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.65 0.12 205.0);
+  --primary: oklch(0.65 0.12 215.0);
   --primary-foreground: oklch(0.984 0.003 255.508);
   --secondary: oklch(94% 0.003 255.508);
   --secondary-foreground: oklch(0.208 0.042 265.755);
@@ -32,7 +33,7 @@
   --warning-foreground: oklch(0.985 0 0);
   --border: oklch(95% 0.003 255.508);
   --input: oklch(93% 0.003 255.508);
-  --ring: oklch(0.65 0.12 205.0);
+  --ring: oklch(0.65 0.12 215.0);
 }
 
 .dark {
@@ -42,7 +43,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(21% 0.000 205);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.60 0.12 205.0);
+  --primary: oklch(0.62 0.12 215.0);
   --secondary: oklch(24% 0.000 205);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(24% 0.000 205);
@@ -57,7 +58,7 @@
   --warning-foreground: oklch(0.985 0 0);
   --border: oklch(1 0 0 / 5%);
   --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.60 0.12 205.0);
+  --ring: oklch(0.62 0.12 215.0);
 }
 
 @theme inline {
