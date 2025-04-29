@@ -5,7 +5,7 @@ import { cn } from '@connnect/ui/lib/utils'
 import { RiTableLine } from '@remixicon/react'
 import { Link, useParams } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { databaseRowsQuery, DEFAULT_ROW_HEIGHT, prefetchDatabaseTableCore, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 
@@ -20,9 +20,9 @@ export function TablesTree({ database, schema, className, search }: { database: 
     100,
   )
 
-  const filteredTables = tables?.filter(table =>
+  const filteredTables = useMemo(() => tables?.filter(table =>
     !search || table.name.toLowerCase().includes(search.toLowerCase()),
-  ) || []
+  ) || [], [search, tables])
 
   const virtualizer = useVirtualizer({
     count: filteredTables.length,
