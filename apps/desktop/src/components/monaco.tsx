@@ -89,8 +89,17 @@ export function Monaco({
   }, [options])
 
   useEffect(() => {
-    if (monacoInstance.current && monacoInstance.current.getValue() !== value)
-      monacoInstance.current.setValue(value)
+    if (monacoInstance.current && monacoInstance.current.getValue() !== value) {
+      monacoInstance.current.executeEdits('', [
+        {
+          range: monacoInstance.current.getModel()!.getFullModelRange(),
+          text: value,
+          forceMoveMarkers: true,
+        },
+      ])
+
+      monacoInstance.current.pushUndoStop()
+    }
   }, [value])
 
   return <div data-mask ref={elementRef} {...props} />
