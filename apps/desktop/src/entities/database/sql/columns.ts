@@ -21,12 +21,18 @@ export function columnsSql(schema: string, table: string): Record<DatabaseType, 
         CASE
           WHEN "data_type" = 'ARRAY' THEN
             REPLACE("udt_name", '_', '') || '[]'
-          WHEN "data_type" = 'character varying' THEN
-            'varchar(' || character_maximum_length || ')'
           WHEN "data_type" = 'USER-DEFINED' THEN
             "udt_name"
+          WHEN "data_type" = 'character varying' THEN
+            'varchar'
+          WHEN "data_type" = 'character' THEN
+            'char'
+          WHEN "data_type" = 'bit varying' THEN
+            'varbit'
+          WHEN "data_type" LIKE 'time%' THEN
+            "udt_name"
           ELSE
-            COALESCE("udt_name", "data_type")
+            COALESCE("data_type", "udt_name")
         END AS type,
         CASE
           WHEN c.is_nullable = 'YES' THEN true

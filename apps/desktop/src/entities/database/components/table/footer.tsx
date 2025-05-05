@@ -20,7 +20,7 @@ import { useId, useMemo } from 'react'
 
 export type PageSize = 50 | 100 | 250 | 500 | 1000
 
-interface DataTableFooterProps extends ComponentProps<'div'> {
+interface TableFooterProps extends ComponentProps<'div'> {
   currentPage: number
   onPageChange: (page: number) => void
   pageSize: PageSize
@@ -28,7 +28,7 @@ interface DataTableFooterProps extends ComponentProps<'div'> {
   total: number
 }
 
-export function DataTableFooter({
+export function TableFooter({
   currentPage,
   onPageChange,
   pageSize,
@@ -36,7 +36,7 @@ export function DataTableFooter({
   total,
   className,
   ...props
-}: DataTableFooterProps) {
+}: TableFooterProps) {
   const id = useId()
   const goToPageId = useId()
 
