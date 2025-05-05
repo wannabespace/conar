@@ -5,7 +5,7 @@ import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiArrowRightSLine, RiFileCopyLine } from '@remixicon/react'
 import { marked } from 'marked'
-import { memo, useMemo } from 'react'
+import { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
@@ -25,7 +25,6 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
       <Monaco
         value={content}
         language={lang}
-        onChange={() => {}}
         options={{
           readOnly: true,
           lineNumbers: 'off',
@@ -96,25 +95,18 @@ function parseMarkdownIntoBlocks(markdown: string) {
   return tokens.map(token => token.raw)
 }
 
-const MemoizedMarkdownBlock = memo(
-  ({ content, onEdit }: { content: string, onEdit?: (content: string) => void }) => <MarkdownBase content={content} onEdit={onEdit} />,
-  (prevProps, nextProps) => prevProps.content === nextProps.content,
-)
+export function Markdown({ content, id, className, onEdit }: { content: string, id?: string, className?: string, onEdit?: (content: string) => void }) {
+  const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content])
 
-export const Markdown = memo(
-  ({ content, id, className, onEdit }: { content: string, id?: string, className?: string, onEdit?: (content: string) => void }) => {
-    const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content])
-
-    return (
-      <div className={cn('typography', className)}>
-        {blocks.map((block, index) => (
-          <MemoizedMarkdownBlock
-            content={block}
-            onEdit={onEdit}
-            key={id ? `${id}-block_${index}` : `block_${index}`}
-          />
-        ))}
-      </div>
-    )
-  },
-)
+  return (
+    <div className={cn('typography', className)}>
+      {blocks.map((block, index) => (
+        <MarkdownBase
+          content={block}
+          onEdit={onEdit}
+          key={id ? `${id}-block_${index}` : `block_${index}`}
+        />
+      ))}
+    </div>
+  )
+}

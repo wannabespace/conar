@@ -1,4 +1,5 @@
 import type { editor } from 'monaco-editor'
+import type { DataTableCell } from '~/entities/database'
 import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
@@ -8,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/component
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { copy } from '@connnect/ui/lib/copy'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAlertLine, RiArrowUpLine, RiCommandLine, RiCornerDownLeftLine, RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
+import { RiAlertLine, RiArrowUpLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
@@ -98,11 +99,11 @@ function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, s
   )
 }
 
-function ResultTable({ result, columns }: { result: Record<string, unknown>[], columns: string[] }) {
+function ResultTable({ result, columns }: { result: Record<string, unknown>[], columns: DataTableCell[] }) {
   return (
     <DataTable
       data={result}
-      columns={columns.map(c => ({ name: c }))}
+      columns={columns}
       className="h-full"
     />
   )
@@ -193,6 +194,25 @@ export function Runner() {
           onEnter={query => sendQuery(query)}
         />
         <div className="absolute right-6 bottom-2 z-10 flex gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="iconSm"
+                  onClick={() => pageStore.setState(state => ({
+                    ...state,
+                    query: '',
+                  }))}
+                >
+                  <RiDeleteBin5Line />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Clear
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

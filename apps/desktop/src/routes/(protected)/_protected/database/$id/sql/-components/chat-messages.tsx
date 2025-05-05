@@ -11,6 +11,11 @@ import { sleep } from '~/lib/helpers'
 import { pageHooks, pageStore } from '..'
 import { ChatImages } from './chat-images'
 
+interface attachment {
+  name?: string
+  url: string
+}
+
 function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   return (
     <div className={cn('flex flex-col gap-2 mb-4 text-sm', className)} {...props}>
@@ -19,14 +24,14 @@ function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   )
 }
 
-function UserMessage({ message, ...props }: { message: Message } & ComponentProps<'div'>) {
+function UserMessage({ text, attachments, ...props }: { text: string, attachments?: attachment[] } & ComponentProps<'div'>) {
   return (
     <ChatMessage {...props}>
       <UserAvatar className="size-6" />
-      <Markdown content={message.content} />
-      {!!message.experimental_attachments && message.experimental_attachments.length > 0 && (
+      <Markdown content={text} />
+      {!!attachments && attachments.length > 0 && (
         <ChatImages
-          images={message.experimental_attachments.map(attachment => ({
+          images={attachments.map(attachment => ({
             name: attachment.name ?? '',
             url: attachment.url,
           }))}
@@ -45,20 +50,31 @@ function AssistantAvatar() {
   )
 }
 
-function AssistantMessage({ message, last, onReload, ...props }: { message: Message, last: boolean, onReload: () => void } & ComponentProps<'div'>) {
+function AssistantMessage({
+  text,
+  last,
+  onReload,
+  ...props
+}: {
+  text: string
+  last: boolean
+  onReload: () => void
+} & ComponentProps<'div'>) {
+  async function handleEdit(query: string) {
+    pageStore.setState(state => ({
+      ...state,
+      query,
+    }))
+    await sleep(0)
+    pageHooks.callHook('focusRunner')
+  }
+
   return (
     <ChatMessage {...props}>
       <AssistantAvatar />
       <Markdown
-        content={message.content}
-        onEdit={async (query) => {
-          pageStore.setState(state => ({
-            ...state,
-            query,
-          }))
-          await sleep(0)
-          pageHooks.callHook('focusRunner')
-        }}
+        content={text}
+        onEdit={handleEdit}
       />
       {last && (
         <div className="flex items-center gap-2">
@@ -86,6 +102,7 @@ function ErrorMessage({ error, onReload, ...props }: { error: Error, onReload: (
     </ChatMessage>
   )
 }
+
 export function ChatMessages({
   messages,
   status,
@@ -102,10 +119,15 @@ export function ChatMessages({
       {messages.map((message, index) => (
         <Fragment key={message.id}>
           {message.role === 'user'
-            ? <UserMessage message={message} />
+            ? (
+                <UserMessage
+                  text={message.content}
+                  attachments={message.experimental_attachments}
+                />
+              )
             : (
                 <AssistantMessage
-                  message={message}
+                  text={message.content}
                   last={status === 'ready' && index === messages.length - 1}
                   onReload={onReload}
                 />

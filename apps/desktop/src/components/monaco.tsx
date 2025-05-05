@@ -90,15 +90,19 @@ export function Monaco({
 
   useEffect(() => {
     if (monacoInstance.current && monacoInstance.current.getValue() !== value) {
-      monacoInstance.current.executeEdits('', [
-        {
-          range: monacoInstance.current.getModel()!.getFullModelRange(),
-          text: value,
-          forceMoveMarkers: true,
-        },
-      ])
-
-      monacoInstance.current.pushUndoStop()
+      if (options?.readOnly || !onChange) {
+        monacoInstance.current.setValue(value)
+      }
+      else {
+        monacoInstance.current.executeEdits('', [
+          {
+            range: monacoInstance.current.getModel()!.getFullModelRange(),
+            text: value,
+            forceMoveMarkers: true,
+          },
+        ])
+        monacoInstance.current.pushUndoStop()
+      }
     }
   }, [value])
 

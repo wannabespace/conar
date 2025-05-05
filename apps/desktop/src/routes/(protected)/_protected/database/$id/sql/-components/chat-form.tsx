@@ -1,9 +1,11 @@
 import type { UseChatHelpers } from '@ai-sdk/react'
+import type { ComponentRef } from 'react'
 import { AiSqlChatModel } from '@connnect/shared/enums/ai-chat-model'
 import { Button } from '@connnect/ui/components/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
 import { RiCornerDownLeftLine, RiStopCircleLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
+import { useEffect, useRef } from 'react'
 import { TipTap } from '~/components/tiptap'
 import { pageStore } from '..'
 import { ChatImages } from './chat-images'
@@ -53,10 +55,17 @@ export function ChatForm({
   stop: UseChatHelpers['stop']
   handleSend: (input: string) => void
 }) {
+  const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const files = useStore(pageStore, state => state.files.map(file => ({
     name: file.name,
     url: URL.createObjectURL(file),
   })))
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.editor.commands.focus()
+    }
+  }, [ref])
 
   return (
     <>
@@ -73,6 +82,7 @@ export function ChatForm({
       )}
       <div className="flex flex-col gap-2 relative bg-background dark:bg-input/20 rounded-md border">
         <TipTap
+          ref={ref}
           data-mask
           value={input}
           setValue={setInput}
