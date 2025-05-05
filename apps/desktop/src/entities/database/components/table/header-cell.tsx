@@ -1,7 +1,7 @@
 import type { Header } from '@tanstack/react-table'
 import type { CellMeta } from './cell'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { RiKey2Line } from '@remixicon/react'
+import { RiBookOpenLine, RiEraserLine, RiKey2Line } from '@remixicon/react'
 
 export function HeaderCell<T extends Record<string, unknown>>({ header }: { header: Header<T, unknown> }) {
   const meta = header.column.columnDef.meta as CellMeta
@@ -25,21 +25,43 @@ export function HeaderCell<T extends Record<string, unknown>>({ header }: { head
                 data-mask
                 className="truncate font-medium flex items-center gap-1"
               >
-                {meta.isPrimaryKey && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <RiKey2Line className="size-3 text-primary" />
-                      </TooltipTrigger>
-                      <TooltipContent>Primary key</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
                 {meta.name}
               </div>
               {meta.type && (
-                <div data-type={meta.type} className="text-muted-foreground truncate font-mono">
-                  {meta.type}
+                <div className="flex items-center gap-1">
+                  {meta.isPrimaryKey && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <RiKey2Line className="size-3 text-primary" />
+                        </TooltipTrigger>
+                        <TooltipContent>Primary key</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  {meta.isNullable && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <RiEraserLine className="size-3 opacity-30" />
+                        </TooltipTrigger>
+                        <TooltipContent>Nullable</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  {meta.isEditable === false && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <RiBookOpenLine className="size-3 opacity-30" />
+                        </TooltipTrigger>
+                        <TooltipContent>Read only</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  <div data-type={meta.type} className="text-muted-foreground truncate font-mono">
+                    {meta.type}
+                  </div>
                 </div>
               )}
             </div>
