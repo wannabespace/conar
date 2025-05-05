@@ -5,7 +5,7 @@ import { prepareSql } from '@connnect/shared/utils/helpers'
 export function rowsSql(schema: string, table: string, query: {
   limit: PageSize
   page: number
-  orderBy?: string
+  orderBy?: [string, 'ASC' | 'DESC']
   where?: string
 }): Record<DatabaseType, string> {
   return {
@@ -13,7 +13,7 @@ export function rowsSql(schema: string, table: string, query: {
       SELECT *
       FROM "${schema}"."${table}"
       ${query.where ? `WHERE ${query.where}` : ''}
-      ${query.orderBy ? `ORDER BY "${query.orderBy}" ASC` : ''}
+      ${query.orderBy ? `ORDER BY "${query.orderBy[0]}" ${query.orderBy[1]}` : ''}
       LIMIT ${query.limit}
       OFFSET ${(query.page - 1) * query.limit}
     `),

@@ -27,9 +27,9 @@ export interface CellMeta {
   isPrimaryKey?: boolean
 }
 
-function getDisplayValue(value: unknown) {
+function getDisplayValue(value: unknown, pretty = true) {
   if (typeof value === 'object')
-    return JSON.stringify(value)
+    return pretty ? JSON.stringify(value, null, 2) : JSON.stringify(value)
 
   return String(value ?? '')
 }
@@ -64,10 +64,6 @@ function TableCellProvider({
   const isJson = !!(cell.column.columnDef.meta as CellMeta).type?.includes('json')
   const displayValue = getDisplayValue(initialValue)
   const [value, setValue] = useState<string>(initialValue === null ? '' : displayValue)
-
-  useEffect(() => {
-    setValue(initialValue === null ? '' : displayValue)
-  }, [initialValue])
 
   const { mutate: updateCell } = useMutation({
     mutationFn: async (value: string | null) => {
@@ -268,7 +264,7 @@ function TableCellContent({
     if (value === '')
       return 'empty'
 
-    return getDisplayValue(value)
+    return getDisplayValue(value, false)
   }, [value, cell])
 
   return (

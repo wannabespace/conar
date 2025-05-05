@@ -1,24 +1,25 @@
-import type { columnType } from '~/entities/database'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
-import { createCellUpdater, databaseRowsQuery, DataTable, useDatabase } from '~/entities/database'
-import { setSql } from '~/entities/database/sql/set'
+import { createCellUpdater, DataTable, setSql, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
 import { useTableStoreContext } from '..'
+import { useColumnsQuery } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
+import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
 const cellUpdater = createCellUpdater()
 
-export function Table({ columns }: { columns: (typeof columnType.infer & { isPrimaryKey: boolean })[] }) {
+export function Table() {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
-  const [page, pageSize, selected] = useStore(store, state => [state.page, state.pageSize, state.selected])
-  const rowsQueryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
-  const { data, isPending } = useQuery(rowsQueryOpts)
+  const selected = useStore(store, state => state.selected)
+  const rowsQueryOpts = useRowsQueryOpts()
+  const { data, error, isPending } = useQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
+  const { data: columns } = useColumnsQuery()
   const rows = useMemo(() => data?.rows ?? [], [data])
 
   const setValue = (rowIndex: number, columnName: string, value: unknown) => {
@@ -44,11 +45,14 @@ export function Table({ columns }: { columns: (typeof columnType.infer & { isPri
     if (primaryColumns.length === 0)
       throw new Error('No primary keys found. Please use SQL Runner to update this row.')
 
+    const primaryKeys = primaryColumns.map(column => column.name)
+    const primaryValues = primaryKeys.map(key => rows[rowIndex][key])
+
     await window.electron.databases.query({
       type: database.type,
       connectionString: database.connectionString,
-      query: setSql(schema, table, columnName, primaryColumns.map(column => column.name))[database.type],
-      values: [value, ...primaryColumns.map(column => rows[rowIndex][column.name] as string)],
+      query: setSql(schema, table, columnName, primaryKeys)[database.type],
+      values: [value, ...primaryValues],
     })
   }
 
@@ -63,6 +67,7 @@ export function Table({ columns }: { columns: (typeof columnType.infer & { isPri
       loading={isPending}
       data={rows}
       columns={columns}
+      error={error ?? undefined}
       className="h-full"
       updateCell={updateCell}
       selectable={!!primaryKeys && primaryKeys.length > 0}

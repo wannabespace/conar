@@ -12,7 +12,7 @@ export function databaseRowsQuery(
   query?: {
     limit?: PageSize
     page?: number
-    orderBy?: string
+    orderBy?: [string, 'ASC' | 'DESC']
     where?: string
   },
 ) {
@@ -38,7 +38,7 @@ export function databaseRowsQuery(
     queryFn: async () => {
       const primaryKeys = await queryClient.ensureQueryData(databasePrimaryKeysQuery(database))
       const primaryKey = primaryKeys?.find(p => p.schema === schema && p.table === table)?.primaryKeys[0]
-      const orderBy = query?.orderBy ?? primaryKey
+      const orderBy = query?.orderBy ?? (primaryKey ? [primaryKey, 'ASC'] : undefined)
 
       const [result] = await window.electron.databases.query({
         type: database.type,
