@@ -29,7 +29,8 @@
     "postgres": "^3.4.5",
     "stripe": "^18.0.0",
     "superjson": "^2.2.2",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@connnect/shared": "workspace:*",

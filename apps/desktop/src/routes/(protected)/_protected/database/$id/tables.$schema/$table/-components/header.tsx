@@ -1,10 +1,9 @@
-import { Input } from '@connnect/ui/components/input'
 import { Separator } from '@connnect/ui/components/separator'
-import { RiBardLine } from '@remixicon/react'
 import { useParams } from '@tanstack/react-router'
 import { useDatabase, useDatabaseTableTotal } from '~/entities/database'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 import { HeaderActions } from './header-actions'
+import { HeaderSearch } from './header-search'
 
 export function Header() {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
@@ -16,8 +15,8 @@ export function Header() {
 
   return (
     <div className="flex gap-6 w-full items-center justify-between">
-      <div className="flex gap-4 items-center">
-        <div>
+      <div className="flex flex-1 gap-4 items-center">
+        <div className="shrink-0">
           <h2 className="font-medium text-sm mb-0.5 space-x-1">
             <span className="text-muted-foreground">
               {schema}
@@ -42,13 +41,7 @@ export function Header() {
           </p>
         </div>
         <Separator orientation="vertical" className="h-6!" />
-        <div className="relative">
-          <RiBardLine className="size-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-          <Input
-            className="pl-8 w-72"
-            placeholder="Ask AI to filter data..."
-          />
-        </div>
+        <HeaderSearch />
       </div>
       <HeaderActions />
     </div>

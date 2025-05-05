@@ -293,10 +293,10 @@ export function FilterItem({
   }, [filter.operator])
 
   return (
-    <div className="flex items-center border rounded-md h-7 dark:bg-input/30">
+    <div className="flex items-center border rounded-sm h-6 dark:bg-input/30">
       <Popover>
-        <PopoverTrigger className="text-sm flex items-center gap-1 px-3 h-full hover:bg-accent/50 transition-colors font-medium">
-          <RiDatabase2Line className="size-3.5 text-primary/70" />
+        <PopoverTrigger className="text-xs flex items-center gap-1 px-2 h-full hover:bg-accent/50 transition-colors font-medium">
+          <RiDatabase2Line className="size-3 text-primary/70" />
           {filter.column}
         </PopoverTrigger>
         <PopoverContent className="p-0 shadow-md">
@@ -307,7 +307,7 @@ export function FilterItem({
       </Popover>
       <Separator orientation="vertical" />
       <Popover>
-        <PopoverTrigger className="text-sm px-3 h-full hover:bg-accent/50 transition-colors text-muted-foreground font-medium">
+        <PopoverTrigger className="text-xs px-2 h-full hover:bg-accent/50 transition-colors text-muted-foreground font-medium">
           {filter.operator}
         </PopoverTrigger>
         <PopoverContent className="p-0 shadow-md">
@@ -320,8 +320,11 @@ export function FilterItem({
         <>
           <Separator orientation="vertical" />
           <Popover>
-            <PopoverTrigger className="text-sm px-3 h-full hover:bg-accent/50 transition-colors">
-              <div className="font-mono truncate max-w-60">{filter.value}</div>
+            <PopoverTrigger className="text-xs px-2 h-full hover:bg-accent/50 transition-colors">
+              <div className="font-mono truncate max-w-60">
+                {filter.value}
+                {filter.value === '' && <span className="opacity-30">Empty</span>}
+              </div>
             </PopoverTrigger>
             <PopoverContent className="p-0 shadow-md max-h-[calc(100vh-10rem)]">
               <FilterValueSelector
@@ -338,7 +341,7 @@ export function FilterItem({
       <Separator orientation="vertical" className="h-6" />
       <button
         type="button"
-        className="flex items-center justify-center hover:bg-destructive/10 hover:text-destructive transition-colors h-full w-7 rounded-r-md"
+        className="flex items-center justify-center hover:bg-destructive/10 hover:text-destructive transition-colors h-full w-6 rounded-r-md"
         onClick={onRemove}
         aria-label="Remove filter"
       >

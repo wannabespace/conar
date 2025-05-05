@@ -39,8 +39,7 @@ export function Filters() {
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              size="iconSm"
-              className="size-7"
+              size="iconXs"
               onClick={() => toggleForm()}
             >
               <RiAddLine className="size-4" />
