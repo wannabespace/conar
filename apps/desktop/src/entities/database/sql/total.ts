@@ -6,13 +6,16 @@ export const totalType = type({
   total: 'string.numeric',
 })
 
-export function totalSql(schema: string, table: string): Record<DatabaseType, string> {
+export function totalSql(schema: string, table: string, query: {
+  where?: string
+}): Record<DatabaseType, string> {
   return {
     postgres: prepareSql(`
       SELECT
         COUNT(*) AS total
       FROM
-        "${schema}"."${table}";
+        "${schema}"."${table}"
+      ${query.where ? `WHERE ${query.where}` : ''}
     `),
   }
 }
