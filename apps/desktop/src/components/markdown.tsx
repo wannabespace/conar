@@ -62,10 +62,10 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
   }, [content, loading])
 
   useEffect(() => {
-    if (content && content.split('\n').length < 10) {
+    if (!isLoading && content && content.split('\n').length < 10) {
       setOpened('pre')
     }
-  }, [content])
+  }, [content, isLoading])
 
   if (!content)
     return null
@@ -80,7 +80,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
         type="single"
         collapsible
       >
-        <AccordionItem value="pre" className="rounded-md border! bg-background overflow-hidden">
+        <AccordionItem value="pre" className="rounded-md border! bg-input/30 overflow-hidden">
           <AccordionPrimitive.Trigger asChild>
             <div className="cursor-pointer select-none flex justify-between items-center gap-2 p-1">
               <div className="flex items-center gap-2">
@@ -166,7 +166,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
               </div>
             </div>
           </AccordionPrimitive.Trigger>
-          <AccordionContent className="overflow-hidden p-0 pt-2">
+          <AccordionContent className="overflow-hidden p-0">
             <Monaco
               value={content}
               language={lang}
@@ -177,7 +177,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                 scrollBeyondLastLine: false,
                 folding: false,
               }}
-              style={{ height: `${Math.min(content.split('\n').length * 19, 500)}px` }}
+              style={{ height: `${Math.min(content.split('\n').length * 19, 400)}px` }}
             />
           </AccordionContent>
         </AccordionItem>
