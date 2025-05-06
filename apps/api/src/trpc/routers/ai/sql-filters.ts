@@ -29,6 +29,7 @@ export const sqlFilters = protectedProcedure
         - Format values correctly based on column types (strings, numbers, dates, etc.)
         - For enum columns, ensure values match the available options
 
+        Current time: ${new Date().toISOString()}
         Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}
 
         Table context:
