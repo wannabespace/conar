@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connn
 import { useDebouncedMemo } from '@connnect/ui/hookas/use-debounced-memo'
 import { copy } from '@connnect/ui/lib/copy'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAlertLine, RiArrowUpLine, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiSearchLine, RiShining2Line } from '@remixicon/react'
+import { RiAlertLine, RiArrowUpLine, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiMagicLine, RiPlayLargeLine, RiSearchLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
@@ -290,7 +290,7 @@ export function Runner() {
                   size="sm"
                   onClick={() => format()}
                 >
-                  <RiShining2Line />
+                  <RiMagicLine />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>

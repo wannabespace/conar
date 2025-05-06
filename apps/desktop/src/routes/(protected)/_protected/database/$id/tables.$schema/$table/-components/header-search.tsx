@@ -50,7 +50,7 @@ export function HeaderSearch() {
 
   return (
     <form
-      className="relative max-w-full w-80 has-focus:w-full transition-all duration-300 ease-in-out"
+      className="relative max-w-full w-60 has-focus:w-full transition-all duration-300 ease-in-out"
       onSubmit={(e) => {
         e.preventDefault()
         generateFilter({ prompt, context })

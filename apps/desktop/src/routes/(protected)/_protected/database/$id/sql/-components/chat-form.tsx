@@ -68,7 +68,7 @@ export function ChatForm({
   }, [ref])
 
   return (
-    <>
+    <div className="flex flex-col gap-1">
       {files.length > 0 && (
         <ChatImages
           images={files}
@@ -127,6 +127,9 @@ export function ChatForm({
           </div>
         </div>
       </div>
-    </>
+      <div className="text-xs text-center text-muted-foreground">
+        Always review the generated SQL before running it.
+      </div>
+    </div>
   )
 }

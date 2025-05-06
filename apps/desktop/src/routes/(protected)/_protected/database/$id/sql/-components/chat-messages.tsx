@@ -2,8 +2,9 @@ import type { Message, UseChatHelpers } from '@ai-sdk/react'
 import type { ComponentProps } from 'react'
 import { Avatar, AvatarFallback } from '@connnect/ui/components/avatar'
 import { Button } from '@connnect/ui/components/button'
+import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiRefreshLine, RiRestartLine } from '@remixicon/react'
+import { RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
 import { Fragment } from 'react'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
@@ -38,6 +39,18 @@ function UserMessage({ text, attachments, ...props }: { text: string, attachment
           imageClassName="size-8"
         />
       )}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="xs"
+          onClick={() => {
+            copy(text, 'Message copied to clipboard')
+          }}
+        >
+          <RiFileCopyLine className="size-3" />
+          Copy
+        </Button>
+      </div>
     </ChatMessage>
   )
 }
@@ -53,12 +66,14 @@ function AssistantAvatar() {
 function AssistantMessage({
   text,
   last,
+  loading,
   onReload,
   ...props
 }: {
   text: string
   last: boolean
   onReload: () => void
+  loading?: boolean
 } & ComponentProps<'div'>) {
   async function handleEdit(query: string) {
     pageStore.setState(state => ({
@@ -75,15 +90,30 @@ function AssistantMessage({
       <Markdown
         content={text}
         onEdit={handleEdit}
+        loading={loading}
       />
-      {last && (
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="xs" onClick={onReload}>
+      <div className="flex items-center gap-2">
+        {last && (
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={onReload}
+          >
             <RiRestartLine className="size-3" />
             Generate again
           </Button>
-        </div>
-      )}
+        )}
+        <Button
+          variant="outline"
+          size="xs"
+          onClick={() => {
+            copy(text, 'Message copied to clipboard')
+          }}
+        >
+          <RiFileCopyLine className="size-3" />
+          Copy
+        </Button>
+      </div>
     </ChatMessage>
   )
 }
@@ -129,6 +159,7 @@ export function ChatMessages({
                 <AssistantMessage
                   text={message.content}
                   last={status === 'ready' && index === messages.length - 1}
+                  loading={(status === 'submitted' || status === 'streaming') && index === messages.length - 1}
                   onReload={onReload}
                 />
               )}

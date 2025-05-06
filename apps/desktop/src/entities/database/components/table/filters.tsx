@@ -307,7 +307,7 @@ export function FilterItem({
       </Popover>
       <Separator orientation="vertical" />
       <Popover>
-        <PopoverTrigger className="text-xs px-2 h-full hover:bg-accent/50 transition-colors text-muted-foreground font-medium">
+        <PopoverTrigger className="text-xs px-2 h-full hover:bg-accent/50 transition-colors text-muted-foreground">
           {filter.operator}
         </PopoverTrigger>
         <PopoverContent className="p-0 shadow-md">
