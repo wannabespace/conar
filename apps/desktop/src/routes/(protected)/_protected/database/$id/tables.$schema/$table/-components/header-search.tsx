@@ -50,7 +50,7 @@ export function HeaderSearch() {
 
   return (
     <form
-      className="relative max-w-full w-60 has-focus:w-full transition-all duration-300 ease-in-out"
+      className="relative max-w-full w-60 has-focus-visible:w-full transition-all duration-300 ease-in-out"
       onSubmit={(e) => {
         e.preventDefault()
         generateFilter({ prompt, context })
@@ -58,7 +58,7 @@ export function HeaderSearch() {
     >
       <RiBardLine className="size-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
       <Input
-        className="pl-8 pr-10 w-full"
+        className="pl-8 pr-10 w-full focus-visible:ring-0 focus-visible:border-border"
         placeholder="Ask AI to filter data..."
         disabled={isPending}
         value={prompt}
