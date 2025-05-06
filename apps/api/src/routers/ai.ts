@@ -19,12 +19,14 @@ function generateStream({
   context,
   signal,
   messages,
+  currentQuery,
 }: {
   type: DatabaseType
   model: LanguageModelV1
   context: typeof databaseContextType.infer
   messages: (Omit<Message, 'id'> & { id?: string })[]
   signal: AbortSignal
+  currentQuery: string
 }) {
   console.info('messages', messages)
 
@@ -48,7 +50,9 @@ function generateStream({
         Additional information:
         - Current date and time: ${new Date().toISOString()}
 
-        ----------------
+        Current query in the SQL runner that user is writing:
+        ${currentQuery || 'Empty'}
+
         Database Context:
         ${JSON.stringify(context)}
         ----------------
@@ -79,6 +83,7 @@ const input = type({
   }).array(),
   'context': databaseContextType,
   'model?': type.valueOf(AiSqlChatModel).or(type.enumerated('auto')),
+  'currentQuery?': 'string',
 })
 
 const models: Record<AiSqlChatModel, LanguageModelV1> = {
@@ -91,7 +96,7 @@ const models: Record<AiSqlChatModel, LanguageModelV1> = {
 const autoModel = models[AiSqlChatModel.Claude_3_7_Sonnet]
 
 ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
-  const { type, messages, context, model } = c.req.valid('json')
+  const { type, messages, context, model, currentQuery = '' } = c.req.valid('json')
 
   try {
     const result = generateStream({
@@ -99,6 +104,7 @@ ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
       model: !model || model === 'auto' ? autoModel : models[model],
       context,
       messages,
+      currentQuery,
       signal: c.req.raw.signal,
     })
 
@@ -115,6 +121,7 @@ ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
         model: !model || model === 'auto' ? anthropic('claude-3-5-haiku-latest') : models[model],
         context,
         messages,
+        currentQuery,
         signal: c.req.raw.signal,
       })
 

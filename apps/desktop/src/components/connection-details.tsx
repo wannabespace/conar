@@ -19,19 +19,21 @@ export function ConnectionDetails({ className, connectionString, type }: { class
           <td className="py-1 pr-4 text-muted-foreground">User</td>
           <td data-mask>{connection.user}</td>
         </tr>
-        <tr>
-          <td className="py-1 pr-4 text-muted-foreground">Password</td>
-          <td data-mask>
-            <button
-              type="button"
-              className="p-1 rounded-md hover:bg-accent translate-y-0.4 cursor-pointer mr-2 inline-block [&_svg]:size-3"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
-            </button>
-            {showPassword ? connection.password : '••••••••'}
-          </td>
-        </tr>
+        {connection.password && (
+          <tr>
+            <td className="py-1 pr-4 text-muted-foreground">Password</td>
+            <td data-mask>
+              <button
+                type="button"
+                className="p-1 rounded-md hover:bg-accent translate-y-0.4 cursor-pointer mr-2 inline-block [&_svg]:size-3"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
+              </button>
+              {showPassword ? connection.password : Array.from({ length: connection.password.length }).map(() => '*').join('')}
+            </td>
+          </tr>
+        )}
         <tr>
           <td className="py-1 pr-4 text-muted-foreground">Host</td>
           <td data-mask>{connection.host}</td>

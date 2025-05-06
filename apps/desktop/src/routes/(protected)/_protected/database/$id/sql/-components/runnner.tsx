@@ -1,15 +1,18 @@
 import type { editor } from 'monaco-editor'
+import type { DataTableCell } from '~/entities/database'
 import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { CardHeader, CardTitle } from '@connnect/ui/components/card'
+import { Input } from '@connnect/ui/components/input'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { useDebouncedMemo } from '@connnect/ui/hookas/use-debounced-memo'
 import { copy } from '@connnect/ui/lib/copy'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAlertLine, RiArrowUpLine, RiCommandLine, RiCornerDownLeftLine, RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiShining2Line } from '@remixicon/react'
-import { useMutation } from '@tanstack/react-query'
+import { RiAlertLine, RiArrowUpLine, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiMagicLine, RiPlayLargeLine, RiSearchLine } from '@remixicon/react'
+import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
@@ -49,8 +52,10 @@ export const queryStorage = {
 
 function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void, query: string }) {
   const os = getOS()
-  const dangerousKeywords = query.match(new RegExp(DANGEROUS_SQL_KEYWORDS.join('|'), 'gi')) || []
-  const uniqueDangerousKeywords = [...new Set(dangerousKeywords)].map(k => k.toUpperCase()).join(', ')
+  const uncommentedLines = query.split('\n').filter(line => !line.trim().startsWith('--')).join('\n')
+  const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
+  const dangerousKeywords = uncommentedLines.match(new RegExp(dangerousKeywordsPattern, 'gi')) || []
+  const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map(k => k.toUpperCase()))]
 
   useKeyboardEvent(e => (os === 'macos' ? e.metaKey : e.ctrlKey) && e.key === 'Enter' && e.shiftKey, () => {
     confirm()
@@ -70,7 +75,7 @@ function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, s
               Your query contains potentially dangerous SQL keywords:
               <span className="font-semibold text-warning">
                 {' '}
-                {uniqueDangerousKeywords}
+                {uniqueDangerousKeywords.join(', ')}
               </span>
             </span>
             <span className="mt-2">
@@ -96,13 +101,55 @@ function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, s
   )
 }
 
-function ResultTable({ result, columns }: { result: Record<string, unknown>[], columns: string[] }) {
+function ResultTable({
+  result,
+  columns,
+}: {
+  result: Record<string, unknown>[]
+  columns: DataTableCell[]
+}) {
+  const [search, setSearch] = useState('')
+
+  const filteredData = useDebouncedMemo(() => {
+    if (!search.trim())
+      return result
+
+    return result.filter(row =>
+      Object.values(row).some(value =>
+        !!value && String(value).toLowerCase().includes(search.toLowerCase()),
+      ),
+    )
+  }, [result, search], 100)
+
   return (
-    <DataTable
-      data={result}
-      columns={columns.map(c => ({ name: c }))}
-      className="h-full"
-    />
+    <div className="flex flex-col h-full">
+      <div className="px-4 py-1 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Results</span>
+          <span className="text-xs text-muted-foreground">
+            {filteredData.length}
+            {' '}
+            {filteredData.length === 1 ? 'row' : 'rows'}
+            {search && filteredData.length !== result.length && ` (filtered from ${result.length})`}
+          </span>
+        </div>
+        <div className="relative flex-1 max-w-60">
+          <Input
+            placeholder="Search results..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-7 pr-8 h-8 text-sm"
+          />
+          <RiSearchLine className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground size-3.5" />
+          {search && (
+            <Button variant="ghost" size="iconXs" className="absolute right-1.5 top-1/2 -translate-y-1/2" onClick={() => setSearch('')}>
+              <RiCloseLine className="size-3" />
+            </Button>
+          )}
+        </div>
+      </div>
+      <DataTable data={filteredData} columns={columns} className="flex-1" />
+    </div>
   )
 }
 
@@ -122,16 +169,25 @@ export function Runner() {
     queryStorage.set(id, query)
   }, [id, query])
 
-  const { mutate, data: results, isPending } = useMutation({
-    mutationFn: () => window.electron.databases.query({
-      type: database.type,
-      connectionString: database.connectionString,
-      query,
-    }),
-    onSuccess() {
+  const { refetch: runQuery, data: results, status, fetchStatus: queryStatus, error } = useQuery({
+    queryKey: ['sql', id],
+    queryFn: async () => {
+      const res = window.electron.databases.query({
+        type: database.type,
+        connectionString: database.connectionString,
+        query,
+      })
+
       toast.success('SQL executed successfully')
+
+      return res
     },
-    onError(error) {
+    select: data => data.filter(r => r.rows.length > 0),
+    enabled: false,
+  })
+
+  useEffect(() => {
+    if (status === 'error') {
       toast.error(error.message, {
         action: {
           label: 'Fix with AI',
@@ -140,8 +196,8 @@ export function Runner() {
           },
         },
       })
-    },
-  })
+    }
+  }, [error, status])
 
   const [isAlertVisible, setIsAlertVisible] = useState(false)
 
@@ -151,7 +207,7 @@ export function Runner() {
       return
     }
 
-    mutate()
+    runQuery()
   }
 
   function format() {
@@ -171,7 +227,7 @@ export function Runner() {
           query={query}
           open={isAlertVisible}
           setOpen={setIsAlertVisible}
-          confirm={() => mutate()}
+          confirm={() => runQuery()}
         />
         <CardHeader className="dark:bg-input/30 py-3">
           <CardTitle className="flex items-center gap-2">
@@ -197,6 +253,25 @@ export function Runner() {
                 <Button
                   variant="secondary"
                   size="iconSm"
+                  onClick={() => pageStore.setState(state => ({
+                    ...state,
+                    query: '',
+                  }))}
+                >
+                  <RiDeleteBin5Line />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Clear
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="iconSm"
                   onClick={() => copy(query)}
                 >
                   <RiFileCopyLine />
@@ -215,7 +290,7 @@ export function Runner() {
                   size="sm"
                   onClick={() => format()}
                 >
-                  <RiShining2Line />
+                  <RiMagicLine />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -224,7 +299,7 @@ export function Runner() {
             </Tooltip>
           </TooltipProvider>
           <Button
-            disabled={isPending}
+            disabled={queryStatus === 'fetching'}
             size="sm"
             onClick={() => sendQuery(query)}
           >
@@ -265,7 +340,7 @@ export function Runner() {
             ))}
           </Tabs>
         )}
-        {isPending
+        {queryStatus === 'fetching'
           ? (
               <div className="h-full flex flex-col items-center justify-center">
                 <RiLoader4Line className="size-6 text-muted-foreground mb-2 animate-spin" />

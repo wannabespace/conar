@@ -1,15 +1,13 @@
 import type { UseChatHelpers } from '@ai-sdk/react'
+import type { ComponentRef } from 'react'
 import { AiSqlChatModel } from '@connnect/shared/enums/ai-chat-model'
 import { Button } from '@connnect/ui/components/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
 import { RiCornerDownLeftLine, RiStopCircleLine } from '@remixicon/react'
-import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { Monaco } from '~/components/monaco'
+import { useEffect, useRef } from 'react'
 import { TipTap } from '~/components/tiptap'
 import { pageStore } from '..'
-import { useDatabaseContext } from '../-hooks/use-database-chat'
 import { ChatImages } from './chat-images'
 
 function ModelSelector() {
@@ -43,42 +41,6 @@ function ModelSelector() {
     </Select>
   )
 }
-function SchemaProvider() {
-  const { id } = useParams({ from: '/(protected)/_protected/database/$id/sql/' })
-  const { data: context } = useDatabaseContext(id)
-
-  return (
-    <div className="text-xs text-center text-muted-foreground truncate">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="link"
-            className="text-xs p-0 h-auto text-muted-foreground opacity-50"
-          >
-            Database schema provided to assistant.
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[500px] p-0" side="top" sideOffset={10}>
-          <Monaco
-            language="json"
-            className="h-[80vh]"
-            value={JSON.stringify(context, null, 2)}
-            options={{
-              readOnly: true,
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              folding: true,
-              foldingStrategy: 'indentation',
-              stickyScroll: {
-                enabled: false,
-              },
-            }}
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
-  )
-}
 
 export function ChatForm({
   input,
@@ -93,13 +55,20 @@ export function ChatForm({
   stop: UseChatHelpers['stop']
   handleSend: (input: string) => void
 }) {
+  const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const files = useStore(pageStore, state => state.files.map(file => ({
     name: file.name,
     url: URL.createObjectURL(file),
   })))
 
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.editor.commands.focus()
+    }
+  }, [ref])
+
   return (
-    <>
+    <div className="flex flex-col gap-1">
       {files.length > 0 && (
         <ChatImages
           images={files}
@@ -113,6 +82,8 @@ export function ChatForm({
       )}
       <div className="flex flex-col gap-2 relative bg-background dark:bg-input/20 rounded-md border">
         <TipTap
+          ref={ref}
+          data-mask
           value={input}
           setValue={setInput}
           placeholder="Generate SQL query using natural language"
@@ -156,7 +127,9 @@ export function ChatForm({
           </div>
         </div>
       </div>
-      <SchemaProvider />
-    </>
+      <div className="text-xs text-center text-muted-foreground">
+        Always review the generated SQL before running it.
+      </div>
+    </div>
   )
 }

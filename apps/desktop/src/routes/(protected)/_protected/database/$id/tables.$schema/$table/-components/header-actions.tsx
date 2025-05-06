@@ -1,28 +1,31 @@
+import type { WhereFilter } from '~/entities/database'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
+import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import NumberFlow from '@number-flow/react'
-import { RiDeleteBin7Line, RiLoopLeftLine } from '@remixicon/react'
+import { RiDeleteBin7Line, RiFilterLine, RiLoopLeftLine } from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseColumnsQuery, databaseRowsQuery, useDatabase } from '~/entities/database'
-import { deleteRowsSql } from '~/entities/database/sql/delete'
+import { databaseColumnsQuery, DataFilterForm, deleteRowsSql, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
 import { useTableStoreContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
+import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
 export function HeaderActions() {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
-  const [page, pageSize, selected] = useStore(store, state => [state.page, state.pageSize, state.selected])
+  const selected = useStore(store, state => state.selected)
   const [isOpened, setIsOpened] = useState(false)
-  const rowsQueryOpts = databaseRowsQuery(database, table, schema, { page, limit: pageSize })
+  const [isFiltersOpened, setIsFiltersOpened] = useState(false)
+  const rowsQueryOpts = useRowsQueryOpts()
   const { isFetching, dataUpdatedAt, data } = useQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
@@ -132,6 +135,33 @@ export function HeaderActions() {
           </motion.div>
         )}
       </AnimatePresence>
+      <Popover open={isFiltersOpened} onOpenChange={setIsFiltersOpened}>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button size="icon" variant="outline">
+                  <RiFilterLine />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              Add new filter
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <PopoverContent className="p-0 w-2xs" side="left" align="start">
+          <DataFilterForm
+            onAdd={(filter) => {
+              setIsFiltersOpened(false)
+              store.setState(state => ({
+                ...state,
+                filters: [...state.filters, filter as WhereFilter],
+              }))
+            }}
+          />
+        </PopoverContent>
+      </Popover>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

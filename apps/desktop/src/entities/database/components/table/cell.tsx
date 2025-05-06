@@ -11,7 +11,6 @@ import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiCollapseDiagonal2Line, RiCommandLine, RiCornerDownLeftLine, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { type } from 'arktype'
 import dayjs from 'dayjs'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -25,16 +24,12 @@ export interface CellMeta {
   type?: string
   isEditable?: boolean
   isNullable?: boolean
-  isEnum?: boolean
   isPrimaryKey?: boolean
 }
 
-function getDisplayValue(value: unknown) {
-  if (value instanceof Date)
-    return value.toISOString()
-
+function getDisplayValue(value: unknown, pretty = true) {
   if (typeof value === 'object')
-    return JSON.stringify(value)
+    return pretty ? JSON.stringify(value, null, 2) : JSON.stringify(value)
 
   return String(value ?? '')
 }
@@ -67,12 +62,8 @@ function TableCellProvider({
 }) {
   const initialValue = cell.getValue()
   const isJson = !!(cell.column.columnDef.meta as CellMeta).type?.includes('json')
-  const displayValue = isJson && initialValue ? JSON.stringify(initialValue, null, 2) : getDisplayValue(initialValue)
+  const displayValue = getDisplayValue(initialValue)
   const [value, setValue] = useState<string>(initialValue === null ? '' : displayValue)
-
-  useEffect(() => {
-    setValue(initialValue === null ? '' : displayValue)
-  }, [initialValue])
 
   const { mutate: updateCell } = useMutation({
     mutationFn: async (value: string | null) => {
@@ -247,51 +238,41 @@ function TableCellMonaco({
 }
 
 function getTimestamp(value: unknown, meta: CellMeta) {
-  const numberType = type('string.numeric | number | Date | null')
-  const isTimestamp = (meta as CellMeta)?.type?.includes('timestamp')
-    || [
-      'created_at',
-      'updated_at',
-      'deleted_at',
-      'createdAt',
-      'updatedAt',
-      'deletedAt',
-    ].some(keyword => meta.name?.toLowerCase().includes(keyword))
-  const timestamp = numberType(value)
-  const date = isTimestamp
-    && timestamp
-    && !(timestamp instanceof type.errors)
-    && !Number.isNaN(Number(timestamp))
-    ? dayjs(Number(timestamp))
+  const date = meta?.type?.includes('timestamp')
+    && value
+    && (typeof value === 'string' || typeof value === 'number')
+    ? dayjs(value)
     : null
 
-  return date
+  return date?.isValid() ? date : null
 }
 
 function TableCellContent({
-  value,
+  cell,
   className,
   ...props
 }: {
-  value: unknown
+  cell: TableCell<Record<string, unknown>, unknown>
   className?: string
 } & ComponentProps<'div'>) {
-  const displayValue = (() => {
+  const value = cell.getValue()
+
+  const displayValue = useMemo(() => {
     if (value === null)
       return 'null'
 
     if (value === '')
       return 'empty'
 
-    return getDisplayValue(value)
-  })()
+    return getDisplayValue(value, false)
+  }, [value, cell])
 
   return (
     <div
       data-mask
       className={cn(
         'h-full text-xs truncate p-2 group-first/cell:pl-4 group-last/cell:pr-4 font-mono cursor-default select-none',
-        'transition-ring duration-100 ring-2 ring-inset ring-transparent',
+        'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
         value === null && 'text-muted-foreground/50',
         value === '' && 'text-muted-foreground/50',
         className,
@@ -303,8 +284,7 @@ function TableCellContent({
   )
 }
 
-export function Cell({ cell, getValue, table }: CellContext<Record<string, unknown>, unknown>) {
-  const cellValue = getValue()
+export function Cell({ cell, table }: CellContext<Record<string, unknown>, unknown>) {
   const [isOpen, setIsOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
@@ -341,7 +321,7 @@ export function Cell({ cell, getValue, table }: CellContext<Record<string, unkno
   }
 
   const className = cn(
-    isOpen && 'ring-primary/50 bg-muted/50',
+    isOpen && 'ring-primary/30 bg-primary/10',
     status === 'error' && 'ring-destructive/50 bg-destructive/20',
     status === 'success' && 'ring-success/50 bg-success/10',
     status === 'saving' && 'animate-pulse',
@@ -350,14 +330,14 @@ export function Cell({ cell, getValue, table }: CellContext<Record<string, unkno
   if (!canInteract) {
     return (
       <TableCellContent
-        value={cellValue}
+        cell={cell}
         onMouseOver={() => setCanInteract(true)}
         className={className}
       />
     )
   }
 
-  const date = getTimestamp(cellValue, cell.column.columnDef.meta as CellMeta)
+  const date = getTimestamp(cell.getValue(), cell.column.columnDef.meta as CellMeta)
 
   return (
     <TableCellProvider
@@ -387,12 +367,12 @@ export function Cell({ cell, getValue, table }: CellContext<Record<string, unkno
                 onMouseLeave={() => !isOpen && sleep(100).then(() => setCanInteract(false))}
               >
                 <TableCellContent
-                  value={cellValue}
+                  cell={cell}
                   className={className}
                 />
               </PopoverTrigger>
             </TooltipTrigger>
-            {date && date.isValid() && (
+            {date && (
               <TooltipContent>
                 {date.format('DD MMMM YYYY, HH:mm:ss (Z)')}
               </TooltipContent>

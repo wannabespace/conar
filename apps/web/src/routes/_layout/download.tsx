@@ -171,10 +171,8 @@ function RouteComponent() {
             <span className="font-medium">{version}</span>
           </p>
         </div>
-
         <div className="max-w-xl">
           <h2 className="text-2xl font-semibold text-center mb-4">All platforms</h2>
-
           <div className="grid gap-4">
             {macSiliconAsset && (
               <DownloadOption
@@ -184,7 +182,6 @@ function RouteComponent() {
                 asset={macSiliconAsset}
               />
             )}
-
             {macIntelAsset && (
               <DownloadOption
                 icon={<RiAppleFill className="text-muted-foreground" />}
@@ -193,7 +190,6 @@ function RouteComponent() {
                 asset={macIntelAsset}
               />
             )}
-
             {linuxAsset && (
               <DownloadOption
                 icon={<LinuxLogo className="fill-muted-foreground size-5" />}
@@ -202,7 +198,6 @@ function RouteComponent() {
                 asset={linuxAsset}
               />
             )}
-
             {windowsAsset && (
               <DownloadOption
                 icon={<RiWindowsFill className="text-muted-foreground" />}

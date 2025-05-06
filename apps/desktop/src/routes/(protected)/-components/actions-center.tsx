@@ -1,8 +1,7 @@
-import type { Database } from '~/lib/indexeddb'
 import { getOS } from '@connnect/shared/utils/os'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@connnect/ui/components/command'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAddLine } from '@remixicon/react'
+import { RiAddLine, RiDashboardLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { Store, useStore } from '@tanstack/react-store'
 import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
@@ -31,28 +30,31 @@ export function ActionsCenter() {
     trackEvent('actions_center_open_shortcut')
   })
 
-  function onSelect(database: Database) {
-    setIsOpen(false)
-
-    router.navigate({ to: '/database/$id/tables', params: { id: database.id } })
-  }
-
-  function onAdd() {
-    setIsOpen(false)
-    router.navigate({ to: '/create' })
-  }
-
   return (
     <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
-      <CommandInput placeholder="Type a connection name..." />
+      <CommandInput placeholder="Type a command..." />
       <CommandList>
-        <CommandEmpty>No connections found.</CommandEmpty>
+        <CommandEmpty>No commands found.</CommandEmpty>
+        <CommandGroup heading="Commands">
+          <CommandItem
+            onSelect={() => {
+              setIsOpen(false)
+              router.navigate({ to: '/' })
+            }}
+          >
+            <RiDashboardLine className="size-4 shrink-0 opacity-60" />
+            Dashboard
+          </CommandItem>
+        </CommandGroup>
         {!!databases?.length && (
           <CommandGroup heading="Databases">
             {databases.map(database => (
               <CommandItem
                 key={database.id}
-                onSelect={() => onSelect(database)}
+                onSelect={() => {
+                  setIsOpen(false)
+                  router.navigate({ to: '/database/$id/tables', params: { id: database.id } })
+                }}
                 onMouseOver={() => prefetchDatabaseCore(database)}
               >
                 <DatabaseIcon type={database.type} className="size-4 shrink-0" />
@@ -62,7 +64,12 @@ export function ActionsCenter() {
           </CommandGroup>
         )}
         <CommandGroup heading="Actions">
-          <CommandItem onSelect={onAdd}>
+          <CommandItem
+            onSelect={() => {
+              setIsOpen(false)
+              router.navigate({ to: '/create' })
+            }}
+          >
             <RiAddLine className="size-4 shrink-0 opacity-60" />
             Add New Connection...
           </CommandItem>

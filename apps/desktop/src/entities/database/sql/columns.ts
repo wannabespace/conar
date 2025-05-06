@@ -19,13 +19,20 @@ export function columnsSql(schema: string, table: string): Record<DatabaseType, 
         c.column_name AS name,
         c.column_default AS default,
         CASE
-          WHEN c.data_type = 'USER-DEFINED' THEN (
-            SELECT t.typname
-            FROM pg_catalog.pg_type t
-            JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-            WHERE t.typname = c.udt_name
-          )
-          ELSE c.data_type
+          WHEN "data_type" = 'ARRAY' THEN
+            REPLACE("udt_name", '_', '') || '[]'
+          WHEN "data_type" = 'USER-DEFINED' THEN
+            "udt_name"
+          WHEN "data_type" = 'character varying' THEN
+            'varchar'
+          WHEN "data_type" = 'character' THEN
+            'char'
+          WHEN "data_type" = 'bit varying' THEN
+            'varbit'
+          WHEN "data_type" LIKE 'time%' THEN
+            "udt_name"
+          ELSE
+            COALESCE("data_type", "udt_name")
         END AS type,
         CASE
           WHEN c.is_nullable = 'YES' THEN true

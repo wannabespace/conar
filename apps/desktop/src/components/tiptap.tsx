@@ -1,3 +1,5 @@
+import type { Editor } from '@tiptap/react'
+import type { ComponentProps, RefObject } from 'react'
 import Placeholder from '@tiptap/extension-placeholder'
 import { EditorContent, Extension, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -11,14 +13,18 @@ export function TipTap({
   onEnter,
   onImageAdd,
   className,
+  ref,
+  ...props
 }: {
   value: string
   setValue: (value: string) => void
   placeholder?: string
   onEnter?: (value: string) => void
   onImageAdd?: (file: File) => void
-  className?: string
-}) {
+  ref: RefObject<{
+    editor: Editor
+  } | null>
+} & Omit<ComponentProps<typeof EditorContent>, 'editor' | 'ref'>) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -58,6 +64,14 @@ export function TipTap({
   }, [className])
 
   useEffect(() => {
+    if (ref) {
+      ref.current = {
+        editor,
+      }
+    }
+  }, [editor, ref])
+
+  useEffect(() => {
     if (editor && value !== editor.getText()) {
       editor.commands.setContent(value)
     }
@@ -95,6 +109,7 @@ export function TipTap({
       onDrop={(e) => {
         addImage(e, e.dataTransfer)
       }}
+      {...props}
     />
   )
 }

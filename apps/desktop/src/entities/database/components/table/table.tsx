@@ -5,6 +5,7 @@ import type {
 import type { CellMeta } from './cell'
 import type { CellUpdaterFunction } from './cells-updater'
 import { ScrollArea, ScrollBar } from '@connnect/ui/components/scroll-area'
+import { RiErrorWarningLine } from '@remixicon/react'
 import { Store, useStore } from '@tanstack/react-store'
 import {
   getCoreRowModel,
@@ -86,7 +87,7 @@ function SelectedCell({ row }: CellContext<Record<string, unknown>, unknown>) {
 
 const selectSymbol = Symbol('select')
 
-export function DataTable<T extends Record<string, unknown>>({
+export function Table<T extends Record<string, unknown>>({
   data,
   columns,
   loading,
@@ -95,6 +96,7 @@ export function DataTable<T extends Record<string, unknown>>({
   updateCell,
   selectedRows,
   setSelectedRows,
+  error,
 }: {
   data: T[]
   columns: CellMeta[]
@@ -103,6 +105,7 @@ export function DataTable<T extends Record<string, unknown>>({
   selectable?: boolean
   selectedRows?: number[]
   setSelectedRows?: (rows: number[]) => void
+  error?: Error
 } & TableMeta) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -201,19 +204,33 @@ export function DataTable<T extends Record<string, unknown>>({
             />
             {loading
               ? <Skeleton columnsCount={columns.length || 5} />
-              : data.length === 0
+              : error
                 ? (
-                    <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">
-                      No data available
+                    <div className="absolute inset-x-0 pointer-events-none h-full flex items-center pb-10 justify-center">
+                      <div className="flex flex-col items-center p-4 bg-card rounded-lg border max-w-md">
+                        <div className="flex items-center gap-1 text-destructive mb-2">
+                          <RiErrorWarningLine className="size-4" />
+                          <span>Error occurred</span>
+                        </div>
+                        <p className="text-sm text-center text-muted-foreground">
+                          {error.message}
+                        </p>
+                      </div>
                     </div>
                   )
-                : (
-                    <Body
-                      rows={rows}
-                      rowWidth={rowWidth}
-                      virtualRows={rowVirtualizer.getVirtualItems()}
-                    />
-                  )}
+                : data.length === 0
+                  ? (
+                      <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">
+                        No data available
+                      </div>
+                    )
+                  : (
+                      <Body
+                        rows={rows}
+                        rowWidth={rowWidth}
+                        virtualRows={rowVirtualizer.getVirtualItems()}
+                      />
+                    )}
           </VirtualColumnsContext>
         </SelectionStoreContext>
       </div>

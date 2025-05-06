@@ -2,10 +2,16 @@ import type { Store } from '@tanstack/react-store'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import { createContext, use } from 'react'
 
+export type { CellMeta as DataTableCell } from './cell'
 export { createCellUpdater } from './cells-updater'
+export {
+  FilterForm as DataFilterForm,
+  FilterItem as DataFilterItem,
+  FiltersProvider as DataFiltersProvider,
+} from './filters'
 export type { PageSize } from './footer'
-export { DataTableFooter } from './footer'
-export { DataTable } from './table'
+export { TableFooter as DataTableFooter } from './footer'
+export { Table as DataTable } from './table'
 
 export const DEFAULT_ROW_HEIGHT = 32
 export const DEFAULT_COLUMN_WIDTH = 220

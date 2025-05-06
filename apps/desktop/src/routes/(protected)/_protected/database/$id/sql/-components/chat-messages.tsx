@@ -2,14 +2,20 @@ import type { Message, UseChatHelpers } from '@ai-sdk/react'
 import type { ComponentProps } from 'react'
 import { Avatar, AvatarFallback } from '@connnect/ui/components/avatar'
 import { Button } from '@connnect/ui/components/button'
+import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiRefreshLine } from '@remixicon/react'
+import { RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
 import { Fragment } from 'react'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
 import { sleep } from '~/lib/helpers'
 import { pageHooks, pageStore } from '..'
 import { ChatImages } from './chat-images'
+
+interface attachment {
+  name?: string
+  url: string
+}
 
 function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   return (
@@ -19,12 +25,32 @@ function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   )
 }
 
-function UserMessage({ text, images, ...props }: { text: string, images: { name: string, url: string }[] } & ComponentProps<'div'>) {
+function UserMessage({ text, attachments, ...props }: { text: string, attachments?: attachment[] } & ComponentProps<'div'>) {
   return (
     <ChatMessage {...props}>
       <UserAvatar className="size-6" />
       <Markdown content={text} />
-      {images.length > 0 && <ChatImages images={images} imageClassName="size-8" />}
+      {!!attachments && attachments.length > 0 && (
+        <ChatImages
+          images={attachments.map(attachment => ({
+            name: attachment.name ?? '',
+            url: attachment.url,
+          }))}
+          imageClassName="size-8"
+        />
+      )}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="xs"
+          onClick={() => {
+            copy(text, 'Message copied to clipboard')
+          }}
+        >
+          <RiFileCopyLine className="size-3" />
+          Copy
+        </Button>
+      </div>
     </ChatMessage>
   )
 }
@@ -37,21 +63,72 @@ function AssistantAvatar() {
   )
 }
 
-function AssistantMessage({ text, ...props }: { text: string } & ComponentProps<'div'>) {
+function AssistantMessage({
+  text,
+  last,
+  loading,
+  onReload,
+  ...props
+}: {
+  text: string
+  last: boolean
+  onReload: () => void
+  loading?: boolean
+} & ComponentProps<'div'>) {
+  async function handleEdit(query: string) {
+    pageStore.setState(state => ({
+      ...state,
+      query,
+    }))
+    await sleep(0)
+    pageHooks.callHook('focusRunner')
+  }
+
   return (
     <ChatMessage {...props}>
       <AssistantAvatar />
       <Markdown
         content={text}
-        onEdit={async (query) => {
-          pageStore.setState(state => ({
-            ...state,
-            query,
-          }))
-          await sleep(0)
-          pageHooks.callHook('focusRunner')
-        }}
+        onEdit={handleEdit}
+        loading={loading}
       />
+      <div className="flex items-center gap-2">
+        {last && (
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={onReload}
+          >
+            <RiRestartLine className="size-3" />
+            Generate again
+          </Button>
+        )}
+        <Button
+          variant="outline"
+          size="xs"
+          onClick={() => {
+            copy(text, 'Message copied to clipboard')
+          }}
+        >
+          <RiFileCopyLine className="size-3" />
+          Copy
+        </Button>
+      </div>
+    </ChatMessage>
+  )
+}
+
+function ErrorMessage({ error, onReload, ...props }: { error: Error, onReload: () => void } & ComponentProps<'div'>) {
+  return (
+    <ChatMessage {...props}>
+      <AssistantAvatar />
+      <p className="text-red-500">{error.message}</p>
+      <div>
+        <Button variant="outline" size="xs" onClick={onReload}>
+          <RiRefreshLine className="size-3" />
+          Try again
+        </Button>
+      </div>
     </ChatMessage>
   )
 }
@@ -69,19 +146,23 @@ export function ChatMessages({
 }) {
   return (
     <div className="flex flex-col gap-4 pb-2">
-      {messages.map(message => (
+      {messages.map((message, index) => (
         <Fragment key={message.id}>
           {message.role === 'user'
             ? (
                 <UserMessage
                   text={message.content}
-                  images={message.experimental_attachments?.map(attachment => ({
-                    name: attachment.name ?? '',
-                    url: attachment.url,
-                  })) ?? []}
+                  attachments={message.experimental_attachments}
                 />
               )
-            : <AssistantMessage text={message.content} />}
+            : (
+                <AssistantMessage
+                  text={message.content}
+                  last={status === 'ready' && index === messages.length - 1}
+                  loading={(status === 'submitted' || status === 'streaming') && index === messages.length - 1}
+                  onReload={onReload}
+                />
+              )}
         </Fragment>
       ))}
       {status === 'submitted' && (
@@ -92,18 +173,7 @@ export function ChatMessages({
           </p>
         </ChatMessage>
       )}
-      {error && (
-        <ChatMessage>
-          <AssistantAvatar />
-          <p className="text-red-500">{error.message}</p>
-          <div>
-            <Button variant="outline" size="xs" onClick={onReload}>
-              <RiRefreshLine className="size-3" />
-              Try again
-            </Button>
-          </div>
-        </ChatMessage>
-      )}
+      {error && <ErrorMessage error={error} onReload={onReload} />}
     </div>
   )
 }

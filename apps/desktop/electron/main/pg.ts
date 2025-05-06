@@ -4,6 +4,14 @@ import { createRequire } from 'node:module'
 
 const pg = createRequire(import.meta.url)('pg') as typeof import('pg')
 
+const parseDate = (value: string) => value
+
+pg.types.setTypeParser(pg.types.builtins.DATE, parseDate)
+pg.types.setTypeParser(pg.types.builtins.TIMESTAMP, parseDate)
+pg.types.setTypeParser(pg.types.builtins.TIMESTAMPTZ, parseDate)
+pg.types.setTypeParser(pg.types.builtins.TIME, parseDate)
+pg.types.setTypeParser(pg.types.builtins.TIMETZ, parseDate)
+
 export async function pgQuery({
   connectionString,
   query,
@@ -23,7 +31,9 @@ export async function pgQuery({
 
     return array.map(r => ({
       count: r.rowCount ?? 0,
-      columns: r.fields.map(f => f.name),
+      columns: r.fields.map(f => ({
+        name: f.name,
+      })),
       rows: r.rows,
     }))
   }
