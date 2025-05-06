@@ -3,12 +3,12 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./globals.css": "./styles/globals.css",
-    "./lib/*": "./lib/*.ts",
-    "./components/*": "./components/*.tsx",
-    "./hooks/*": "./hooks/*.ts",
-    "./hookas/*": "./hookas/*.ts",
-    "./theme-provider": "./theme-provider.tsx"
+    "./globals.css": "./src/styles/globals.css",
+    "./lib/*": "./src/lib/*.ts",
+    "./components/*": "./src/components/*.tsx",
+    "./hooks/*": "./src/hooks/*.ts",
+    "./hookas/*": "./src/hookas/*.ts",
+    "./theme-provider": "./src/theme-provider.tsx"
   },
   "scripts": {
     "check-types": "tsc"
