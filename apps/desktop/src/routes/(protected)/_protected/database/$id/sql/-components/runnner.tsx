@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connn
 import { useDebouncedMemo } from '@connnect/ui/hookas/use-debounced-memo'
 import { copy } from '@connnect/ui/lib/copy'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAlertLine, RiArrowUpLine, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiMagicLine, RiPlayLargeLine, RiSearchLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiSearchLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
@@ -172,7 +172,7 @@ export function Runner() {
   const { refetch: runQuery, data: results, status, fetchStatus: queryStatus, error } = useQuery({
     queryKey: ['sql', id],
     queryFn: async () => {
-      const res = window.electron.databases.query({
+      const res = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
         query,
@@ -182,6 +182,7 @@ export function Runner() {
 
       return res
     },
+    throwOnError: false,
     select: data => data.filter(r => r.rows.length > 0),
     enabled: false,
   })
@@ -290,7 +291,7 @@ export function Runner() {
                   size="sm"
                   onClick={() => format()}
                 >
-                  <RiMagicLine />
+                  <RiBrush2Line />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
