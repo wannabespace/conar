@@ -2,7 +2,6 @@
 
 ![image](https://github.com/user-attachments/assets/8b0985a0-f4f8-4d67-bb2b-4a88ca91757a)
 
-
 Connnect is an AI-powered open-source project that simplifies database interactions. Built for PostgreSQL, with support for other databases coming in the near future. Store your connections securely in our cloud and ask AI to help you write and optimize SQL queries.
 
 <div align="center">
