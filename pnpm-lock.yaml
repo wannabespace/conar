@@ -412,7 +412,7 @@ importers:
     dependencies:
       '@trpc/client':
         specifier: ^11.0.0
-        version: 11.1.1(@trpc/server@11.1.2(typescript@5.8.3))(typescript@5.8.3)
+        version: 11.1.2(@trpc/server@11.1.2(typescript@5.8.3))(typescript@5.8.3)
       permix:
         specifier: ^1.0.4
         version: 1.0.4(@trpc/server@11.1.2(typescript@5.8.3))(express@5.1.0)(hono@4.7.8)(react@19.1.0)
@@ -3801,12 +3801,6 @@ packages:
   '@tootallnate/once@2.0.0':
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
     engines: {node: '>= 10'}
-
-  '@trpc/client@11.1.1':
-    resolution: {integrity: sha512-Beiv56hlt+ARbijtUsCQOvKJw/FkfuVk4W9TzJl285iIJw8iCA3ZTwTG9GjIeSgeR7d2MyOeUbI26LV255n33A==}
-    peerDependencies:
-      '@trpc/server': 11.1.1
-      typescript: '>=5.7.2'
 
   '@trpc/client@11.1.2':
     resolution: {integrity: sha512-RpifJOAv+ql9gF3oafa3dLCF01AzWu2DzejvehAPG2IlwHxopKoYXaImJ8zPwRkZokuWiKz5v65HjElmi8TlrQ==}
@@ -13066,11 +13060,6 @@ snapshots:
       '@tiptap/pm': 2.12.0
 
   '@tootallnate/once@2.0.0': {}
-
-  '@trpc/client@11.1.1(@trpc/server@11.1.2(typescript@5.8.3))(typescript@5.8.3)':
-    dependencies:
-      '@trpc/server': 11.1.2(typescript@5.8.3)
-      typescript: 5.8.3
 
   '@trpc/client@11.1.2(@trpc/server@11.1.2(typescript@5.8.3))(typescript@5.8.3)':
     dependencies:

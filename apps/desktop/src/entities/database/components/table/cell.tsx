@@ -285,7 +285,7 @@ function TableCellContent({
 }
 
 export function Cell({ cell, table }: CellContext<Record<string, unknown>, unknown>) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
@@ -303,7 +303,7 @@ export function Cell({ cell, table }: CellContext<Record<string, unknown>, unkno
 
   function onSaveError(error: Error) {
     setCanInteract(true)
-    setIsOpen(true)
+    setIsPopoverOpen(true)
     setStatus('error')
 
     toast.error(`Failed to update cell ${cell.column.id}`, {
@@ -321,7 +321,7 @@ export function Cell({ cell, table }: CellContext<Record<string, unknown>, unkno
   }
 
   const className = cn(
-    isOpen && 'ring-primary/30 bg-primary/10',
+    isPopoverOpen && 'ring-primary/30 bg-primary/10',
     status === 'error' && 'ring-destructive/50 bg-destructive/20',
     status === 'success' && 'ring-success/50 bg-success/10',
     status === 'saving' && 'animate-pulse',
@@ -337,7 +337,8 @@ export function Cell({ cell, table }: CellContext<Record<string, unknown>, unkno
     )
   }
 
-  const date = getTimestamp(cell.getValue(), cell.column.columnDef.meta as CellMeta)
+  const cellMeta = cell.column.columnDef.meta as CellMeta
+  const date = getTimestamp(cell.getValue(), cellMeta)
 
   return (
     <TableCellProvider
@@ -348,9 +349,9 @@ export function Cell({ cell, table }: CellContext<Record<string, unknown>, unkno
       onSaveSuccess={onSaveSuccess}
     >
       <Popover
-        open={isOpen}
+        open={isPopoverOpen}
         onOpenChange={(isOpen) => {
-          setIsOpen(isOpen)
+          setIsPopoverOpen(isOpen)
 
           if (!isOpen) {
             setIsBig(false)
@@ -363,8 +364,8 @@ export function Cell({ cell, table }: CellContext<Record<string, unknown>, unkno
               <PopoverTrigger
                 asChild
                 onClick={e => e.preventDefault()}
-                onDoubleClick={() => setIsOpen(true)}
-                onMouseLeave={() => !isOpen && sleep(100).then(() => setCanInteract(false))}
+                onDoubleClick={() => setIsPopoverOpen(true)}
+                onMouseLeave={() => !isPopoverOpen && sleep(100).then(() => setCanInteract(false))}
               >
                 <TableCellContent
                   cell={cell}
@@ -381,12 +382,12 @@ export function Cell({ cell, table }: CellContext<Record<string, unknown>, unkno
         </TooltipProvider>
         <PopoverContent
           className={cn('p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
-          onAnimationEnd={() => !isOpen && setCanInteract(false)}
+          onAnimationEnd={() => !isPopoverOpen && setCanInteract(false)}
         >
           <TableCellMonaco
             isBig={isBig}
             setIsBig={setIsBig}
-            onClose={() => setIsOpen(false)}
+            onClose={() => setIsPopoverOpen(false)}
           />
         </PopoverContent>
       </Popover>

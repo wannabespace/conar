@@ -32,6 +32,7 @@ export function databaseTableTotalQuery(
 
       return Number(totalType.assert(result.rows[0]).total || 0)
     },
+    throwOnError: false,
   })
 }
 
