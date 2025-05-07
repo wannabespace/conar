@@ -80,7 +80,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
         type="single"
         collapsible
       >
-        <AccordionItem value="pre" className="rounded-md border! bg-input/30 overflow-hidden">
+        <AccordionItem value="pre" className="rounded-md border! bg-background dark:bg-input/30 overflow-hidden">
           <AccordionPrimitive.Trigger asChild>
             <div className="cursor-pointer select-none flex justify-between items-center gap-2 p-1">
               <div className="flex items-center gap-2">

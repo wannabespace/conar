@@ -6,6 +6,9 @@ export function databaseTableTotalQuery(
   database: Database,
   table: string,
   schema: string,
+  query?: {
+    where?: string
+  },
 ) {
   return queryOptions({
     queryKey: [
@@ -16,19 +19,30 @@ export function databaseTableTotalQuery(
       'table',
       table,
       'total',
+      query,
     ],
     queryFn: async () => {
       const [result] = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
-        query: totalSql(schema, table)[database.type],
+        query: totalSql(schema, table, {
+          where: query?.where,
+        })[database.type],
       })
 
       return Number(totalType.assert(result.rows[0]).total || 0)
     },
+    throwOnError: false,
   })
 }
 
-export function useDatabaseTableTotal(database: Database, table: string, schema: string) {
-  return useQuery(databaseTableTotalQuery(database, table, schema))
+export function useDatabaseTableTotal(
+  database: Database,
+  table: string,
+  schema: string,
+  query?: {
+    where?: string
+  },
+) {
+  return useQuery(databaseTableTotalQuery(database, table, schema, query))
 }

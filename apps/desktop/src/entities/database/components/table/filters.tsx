@@ -293,7 +293,7 @@ export function FilterItem({
   }, [filter.operator])
 
   return (
-    <div className="flex items-center border rounded-sm h-6 dark:bg-input/30">
+    <div className="flex items-center border rounded-sm overflow-hidden h-6 dark:bg-input/30">
       <Popover>
         <PopoverTrigger className="text-xs flex items-center gap-1 px-2 h-full hover:bg-accent/50 transition-colors font-medium">
           <RiDatabase2Line className="size-3 text-primary/70" />
@@ -341,7 +341,7 @@ export function FilterItem({
       <Separator orientation="vertical" className="h-6" />
       <button
         type="button"
-        className="flex items-center justify-center hover:bg-destructive/10 hover:text-destructive transition-colors h-full w-6 rounded-r-md"
+        className="flex items-center justify-center hover:bg-destructive/10 hover:text-destructive transition-colors h-full w-6"
         onClick={onRemove}
         aria-label="Remove filter"
       >

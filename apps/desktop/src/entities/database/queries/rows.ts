@@ -1,9 +1,7 @@
 import type { PageSize } from '../components/table/footer'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { queryClient } from '~/main'
 import { rowsSql } from '../sql/rows'
-import { databasePrimaryKeysQuery } from './primary-keys'
 
 export function databaseRowsQuery(
   database: Database,
@@ -36,17 +34,13 @@ export function databaseRowsQuery(
       },
     ],
     queryFn: async () => {
-      const primaryKeys = await queryClient.ensureQueryData(databasePrimaryKeysQuery(database))
-      const primaryKey = primaryKeys?.find(p => p.schema === schema && p.table === table)?.primaryKeys[0]
-      const orderBy = query?.orderBy ?? (primaryKey ? [primaryKey, 'ASC'] : undefined)
-
       const [result] = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
         query: rowsSql(schema, table, {
           limit: _limit,
           page: _page,
-          orderBy,
+          orderBy: query?.orderBy,
           where: query?.where,
         })[database.type],
       })
