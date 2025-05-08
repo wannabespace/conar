@@ -9,7 +9,7 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: RouteComponent,
   loader: async ({ params }) => {
     const database = await queryClient.ensureQueryData(databaseQuery(params.id))
-    await prefetchDatabaseCore(database)
+    prefetchDatabaseCore(database)
     return { database }
   },
   head: ({ loaderData }) => ({

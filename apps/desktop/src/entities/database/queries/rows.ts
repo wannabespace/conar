@@ -29,8 +29,8 @@ export function databaseRowsQuery(
       {
         limit: _limit,
         page: _page,
-        orderBy: query?.orderBy,
-        where: query?.where,
+        ...(query?.orderBy && { orderBy: query.orderBy }),
+        ...(query?.where && { where: query.where }),
       },
     ],
     queryFn: async () => {

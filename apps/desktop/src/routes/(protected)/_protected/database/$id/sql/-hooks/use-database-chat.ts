@@ -69,11 +69,11 @@ export function useDatabaseChat(id: string) {
   const { data: context } = useDatabaseContext(id)
   const currentQuery = useStore(pageStore, state => state.query)
 
-  const initialMessages = usePromise(() => chatMessages.get(id))
+  const initialMessages = usePromise(() => chatMessages.get(id), [])
   const chat = useChat({
     id,
     api: `${import.meta.env.VITE_PUBLIC_API_URL}/ai/sql-chat`,
-    initialMessages: [],
+    initialMessages,
     initialInput: chatInput.get(id),
     body: {
       type: database.type,
@@ -81,12 +81,6 @@ export function useDatabaseChat(id: string) {
       currentQuery,
     },
   })
-
-  useEffect(() => {
-    if (initialMessages) {
-      chat.setMessages(initialMessages)
-    }
-  }, [initialMessages])
 
   useEffect(() => {
     chatMessages.set(id, chat.messages)

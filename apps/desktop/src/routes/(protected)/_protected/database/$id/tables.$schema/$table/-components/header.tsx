@@ -40,7 +40,7 @@ export function Header() {
             {' '}
             •
             {' '}
-            {total ?? '...'}
+            {total ?? <span className="animate-pulse">...</span>}
             {' '}
             row
             {total !== undefined && total !== 1 && 's'}
