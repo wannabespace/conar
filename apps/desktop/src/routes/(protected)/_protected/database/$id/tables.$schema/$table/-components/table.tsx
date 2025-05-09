@@ -9,8 +9,6 @@ import { useColumnsQuery } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
-const cellUpdater = createCellUpdater()
-
 export function Table() {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
@@ -56,7 +54,7 @@ export function Table() {
     })
   }
 
-  const updateCell = cellUpdater({
+  const updateCell = createCellUpdater({
     setValue,
     getValue: (rowIndex, columnName) => rows[rowIndex][columnName],
     saveValue,

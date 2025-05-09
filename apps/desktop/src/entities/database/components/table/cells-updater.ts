@@ -8,31 +8,18 @@ export interface CellUpdaterOptions {
   getValue: (rowIndex: number, columnName: string) => unknown
 }
 
-function getKey(rowIndex: number, columnName: string) {
-  return `${rowIndex}.${columnName}`
-}
+export function createCellUpdater({ setValue, saveValue, getValue }: CellUpdaterOptions): CellUpdaterFunction {
+  return async (rowIndex: number, columnName: string, value: unknown) => {
+    const cachedValue = getValue(rowIndex, columnName)
 
-export function createCellUpdater() {
-  const cachedValues: Record<string, unknown> = {}
+    try {
+      setValue(rowIndex, columnName, value)
+      await saveValue(rowIndex, columnName, value)
+    }
+    catch (error) {
+      setValue(rowIndex, columnName, cachedValue)
 
-  return ({ setValue, saveValue, getValue }: CellUpdaterOptions): CellUpdaterFunction => {
-    return async (rowIndex: number, columnName: string, value: unknown) => {
-      const key = getKey(rowIndex, columnName)
-
-      try {
-        cachedValues[key] = getValue(rowIndex, columnName)
-
-        setValue(rowIndex, columnName, value)
-        await saveValue(rowIndex, columnName, value)
-      }
-      catch (error) {
-        setValue(rowIndex, columnName, cachedValues[key])
-
-        throw error
-      }
-      finally {
-        delete cachedValues[key]
-      }
+      throw error
     }
   }
 }
