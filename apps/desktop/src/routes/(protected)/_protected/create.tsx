@@ -23,7 +23,7 @@ import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { createDatabase, databasesQuery } from '~/entities/database'
+import { createDatabase, databaseQuery, databasesQuery, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
@@ -183,7 +183,8 @@ function RouteComponent() {
     mutationFn: createDatabase,
     onSuccess: async ({ id }) => {
       toast.success('Connection created successfully 🎉')
-      await queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
+      queryClient.ensureQueryData(databaseQuery(id)).then(prefetchDatabaseCore)
+      queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
       router.navigate({ to: '/database/$id/tables', params: { id } })
     },
   })

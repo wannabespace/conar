@@ -7,7 +7,7 @@ import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
 import { cn } from '@connnect/ui/lib/utils'
-import { RiChatAiLine, RiDeleteBinLine } from '@remixicon/react'
+import { RiDeleteBinLine } from '@remixicon/react'
 import { useParams } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
@@ -111,7 +111,6 @@ export function Chat({ className, ...props }: ComponentProps<'div'>) {
     <div className={cn('relative flex flex-col justify-between gap-2 p-4 bg-muted/20', className)} {...props}>
       <div className="flex justify-between items-center mb-4">
         <CardTitle className="flex items-center gap-2">
-          <RiChatAiLine className="size-5" />
           AI Assistant
         </CardTitle>
         {/* <Button variant="outline" size="icon">

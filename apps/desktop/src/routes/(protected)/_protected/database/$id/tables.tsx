@@ -93,7 +93,7 @@ function RouteComponent() {
               </Tooltip>
             </TooltipProvider>
           </div>
-          {schemas?.length && (
+          {!!schemas && schemas.length > 1 && (
             <Select
               value={schema}
               onValueChange={setSchema}
