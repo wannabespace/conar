@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connn
 import { useDebouncedMemo } from '@connnect/ui/hookas/use-debounced-memo'
 import { copy } from '@connnect/ui/lib/copy'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiSearchLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
@@ -143,12 +143,12 @@ function ResultTable({
           <RiSearchLine className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground size-3.5" />
           {search && (
             <Button variant="ghost" size="iconXs" className="absolute right-1.5 top-1/2 -translate-y-1/2" onClick={() => setSearch('')}>
-              <RiCloseLine className="size-3" />
+              <RiCloseLine className="size-4" />
             </Button>
           )}
         </div>
       </div>
-      <DataTable data={filteredData} columns={columns} className="flex-1" />
+      <DataTable data={filteredData} columns={columns} className="h-full" />
     </div>
   )
 }
@@ -232,7 +232,6 @@ export function Runner() {
         />
         <CardHeader className="dark:bg-input/30 py-3">
           <CardTitle className="flex items-center gap-2">
-            <RiPlayLargeLine className="size-4" />
             SQL Runner
           </CardTitle>
         </CardHeader>
