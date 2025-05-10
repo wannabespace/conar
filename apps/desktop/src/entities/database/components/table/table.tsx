@@ -85,6 +85,30 @@ function SelectedCell({ row }: CellContext<Record<string, unknown>, unknown>) {
   )
 }
 
+function Error({ error }: { error: Error }) {
+  return (
+    <div className="absolute inset-x-0 pointer-events-none h-full flex items-center pb-10 justify-center">
+      <div className="flex flex-col items-center p-4 bg-card rounded-lg border max-w-md">
+        <div className="flex items-center gap-1 text-destructive mb-2">
+          <RiErrorWarningLine className="size-4" />
+          <span>Error occurred</span>
+        </div>
+        <p className="text-sm text-center text-muted-foreground">
+          {error.message}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function Empty() {
+  return (
+    <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">
+      No data available
+    </div>
+  )
+}
+
 const selectSymbol = Symbol('select')
 
 export function Table<T extends Record<string, unknown>>({
@@ -205,25 +229,9 @@ export function Table<T extends Record<string, unknown>>({
             {loading
               ? <Skeleton columnsCount={columns.length || 5} />
               : error
-                ? (
-                    <div className="absolute inset-x-0 pointer-events-none h-full flex items-center pb-10 justify-center">
-                      <div className="flex flex-col items-center p-4 bg-card rounded-lg border max-w-md">
-                        <div className="flex items-center gap-1 text-destructive mb-2">
-                          <RiErrorWarningLine className="size-4" />
-                          <span>Error occurred</span>
-                        </div>
-                        <p className="text-sm text-center text-muted-foreground">
-                          {error.message}
-                        </p>
-                      </div>
-                    </div>
-                  )
+                ? <Error error={error} />
                 : data.length === 0
-                  ? (
-                      <div className="absolute inset-x-0 pointer-events-none text-muted-foreground h-full flex items-center pb-10 justify-center">
-                        No data available
-                      </div>
-                    )
+                  ? <Empty />
                   : (
                       <Body
                         rows={rows}
