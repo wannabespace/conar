@@ -6,13 +6,6 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { seo } from '~/utils/seo'
 
 export const Route = createRootRoute({
-  scripts: () => [
-    {
-      'defer': true,
-      'data-domain': 'connnect.app',
-      'src': 'https://plausible.io/js/script.js',
-    },
-  ],
   head: () => ({
     meta: [
       {
@@ -35,6 +28,13 @@ export const Route = createRootRoute({
       { rel: 'shortcut icon', href: '/favicon.ico' },
       { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
       { rel: 'manifest', href: '/site.webmanifest' },
+    ],
+    scripts: [
+      {
+        'defer': true,
+        'data-domain': 'connnect.app',
+        'src': 'https://plausible.io/js/script.js',
+      },
     ],
   }),
   component: RootComponent,
