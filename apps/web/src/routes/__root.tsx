@@ -6,6 +6,13 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { seo } from '~/utils/seo'
 
 export const Route = createRootRoute({
+  scripts: () => [
+    {
+      'defer': true,
+      'data-domain': 'connnect.app',
+      'src': 'https://plausible.io/js/script.js',
+    },
+  ],
   head: () => ({
     meta: [
       {
