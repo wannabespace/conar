@@ -1,5 +1,5 @@
 import type { Database } from '~/lib/indexeddb'
-import { queryOptions, useQuery } from '@tanstack/react-query'
+import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { schemasSql, schemaType } from '../sql/schemas'
 
 export function databaseSchemasQuery(database: Database, hideInternal = true) {
@@ -21,5 +21,5 @@ export function databaseSchemasQuery(database: Database, hideInternal = true) {
 }
 
 export function useDatabaseSchemas(database: Database, hideInternal = true) {
-  return useQuery(databaseSchemasQuery(database, hideInternal))
+  return useSuspenseQuery(databaseSchemasQuery(database, hideInternal))
 }

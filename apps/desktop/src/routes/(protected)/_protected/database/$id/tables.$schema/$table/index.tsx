@@ -12,13 +12,15 @@ import { Header } from './-components/header'
 import { Table } from './-components/table'
 import { useColumnsQuery } from './-queries/use-columns-query'
 
-const TableStoreContext = createContext<Store<{
+interface TableStore {
   page: number
   pageSize: PageSize
   selected: number[]
   filters: WhereFilter[]
   orderBy?: [string, 'ASC' | 'DESC']
-}>>(null!)
+}
+
+const TableStoreContext = createContext<Store<TableStore>>(null!)
 
 export function useTableStoreContext() {
   return use(TableStoreContext)
@@ -27,7 +29,7 @@ export function useTableStoreContext() {
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables/$schema/$table/',
 )({
-  component: RouteComponent,
+  component: DatabaseTablePage,
   loader: async ({ params }) => {
     const database = await queryClient.ensureQueryData(databaseQuery(params.id))
     await prefetchDatabaseTableCore(database, params.schema, params.table)
@@ -42,12 +44,12 @@ export const Route = createFileRoute(
   }),
 })
 
-function RouteComponent() {
-  const [store] = useState(() => new Store({
+function DatabaseTablePage() {
+  const [store] = useState(() => new Store<TableStore>({
     page: 1,
-    pageSize: 50 satisfies PageSize as PageSize,
-    selected: [] as number[],
-    filters: [] as WhereFilter[],
+    pageSize: 50,
+    selected: [],
+    filters: [],
   }))
   const { data: columns } = useColumnsQuery()
 

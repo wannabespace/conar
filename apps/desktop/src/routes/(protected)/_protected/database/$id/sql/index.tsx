@@ -7,7 +7,8 @@ import { createHooks } from 'hookable'
 import { databaseQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { Chat } from './-components/chat'
-import { queryStorage, Runner } from './-components/runnner'
+import { Runner } from './-components/runnner'
+import { queryStorage } from './-lib'
 
 export const pageStore = new Store({
   query: '',
@@ -23,7 +24,7 @@ export const pageHooks = createHooks<{
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/sql/',
 )({
-  component: RouteComponent,
+  component: DatabaseSqlPage,
   beforeLoad: ({ params }) => {
     pageStore.setState(state => ({
       ...state,
@@ -43,7 +44,7 @@ export const Route = createFileRoute(
   }),
 })
 
-function RouteComponent() {
+function DatabaseSqlPage() {
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex h-auto!">
       <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>

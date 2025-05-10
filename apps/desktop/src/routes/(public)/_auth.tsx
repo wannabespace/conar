@@ -3,7 +3,6 @@ import { AppLogoGradient } from '@connnect/ui/components/brand/app-logo-gradient
 import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { SmoothCorner } from '@connnect/ui/components/custom/smooth-corner'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { AnimatePresence, motion } from 'motion/react'
 
 export const Route = createFileRoute('/(public)/_auth')({
   component: AuthLayout,
@@ -11,12 +10,8 @@ export const Route = createFileRoute('/(public)/_auth')({
 
 function AuthLayout() {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 1.1 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3 }}
-      className="flex min-h-screen bg-background items-center justify-center px-3"
+    <div
+      className="flex min-h-screen bg-background items-center justify-center px-3 animate-in fade-in zoom-in-[1.2] duration-300 ease-out"
     >
       <DotsBg
         className="absolute z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
@@ -28,10 +23,8 @@ function AuthLayout() {
             <AppLogo className="size-8 text-white" />
           </SmoothCorner>
         </div>
-        <AnimatePresence>
-          <Outlet />
-        </AnimatePresence>
+        <Outlet />
       </div>
-    </motion.div>
+    </div>
   )
 }

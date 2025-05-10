@@ -32,7 +32,7 @@ import { queryClient } from '~/main'
 export const Route = createFileRoute(
   '/(protected)/_protected/create',
 )({
-  component: RouteComponent,
+  component: CreateConnectionPage,
   head: () => ({
     meta: [
       {
@@ -174,7 +174,7 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
   )
 }
 
-function RouteComponent() {
+function CreateConnectionPage() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)

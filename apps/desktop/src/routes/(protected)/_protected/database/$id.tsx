@@ -6,7 +6,7 @@ import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id')({
-  component: RouteComponent,
+  component: DatabasePage,
   loader: async ({ params }) => {
     const database = await queryClient.ensureQueryData(databaseQuery(params.id))
     prefetchDatabaseCore(database)
@@ -21,7 +21,7 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   }),
 })
 
-function RouteComponent() {
+function DatabasePage() {
   const { id } = Route.useParams()
   const { data: database } = useDatabase(id)
 

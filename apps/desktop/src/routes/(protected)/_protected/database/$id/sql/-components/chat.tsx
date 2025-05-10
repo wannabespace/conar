@@ -90,15 +90,22 @@ export function Chat({ className, ...props }: ComponentProps<'div'>) {
     }
   }
 
+  const firstTimeMessagesRendered = useRef(false)
   useAsyncEffect(async () => {
-    if (messages.length === 0)
+    if (messages.length === 0 || !scrollRef.current)
       return
 
     await sleep(0) // To wait for the messages to be rendered
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current?.scrollHeight,
-      behavior: 'smooth',
-    })
+    if (firstTimeMessagesRendered.current) {
+      scrollRef.current?.scrollTo({
+        top: scrollRef.current?.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+    else {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+      firstTimeMessagesRendered.current = true
+    }
   }, [messages.length])
 
   useEffect(() => {
@@ -109,7 +116,7 @@ export function Chat({ className, ...props }: ComponentProps<'div'>) {
 
   return (
     <div className={cn('relative flex flex-col justify-between gap-2 p-4 bg-muted/20', className)} {...props}>
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-4 h-8">
         <CardTitle className="flex items-center gap-2">
           AI Assistant
         </CardTitle>
@@ -140,9 +147,10 @@ export function Chat({ className, ...props }: ComponentProps<'div'>) {
       )}
       <ScrollArea
         scrollRef={scrollRef}
-        className="relative flex-1 overflow-y-auto px-4 -mx-4"
+        className="relative flex-1 overflow-y-auto -mx-4"
       >
         <ChatMessages
+          className="px-4"
           messages={messages}
           status={status}
           error={error}

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/component
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useDebouncedMemo } from '@connnect/ui/hookas/use-debounced-memo'
 import { copy } from '@connnect/ui/lib/copy'
+import NumberFlow from '@number-flow/react'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
@@ -21,34 +22,9 @@ import { Monaco } from '~/components/monaco'
 import { DANGEROUS_SQL_KEYWORDS, DataTable, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
 import { formatSql } from '~/lib/formatter'
 import { pageHooks, pageStore } from '..'
+import { queryStorage } from '../-lib'
 
 const os = getOS()
-
-export const queryStorage = {
-  get(id: string) {
-    return localStorage.getItem(`sql-${id}`) || '-- Write your SQL query here\n'
-      + '\n'
-      + '-- Please write your own queries based on your database schema\n'
-      + '-- The examples below are for reference only and may not work with your database\n'
-      + '\n'
-      + '-- Example 1: Basic query with limit\n'
-      + '-- SELECT * FROM users LIMIT 10;\n'
-      + '\n'
-      + '-- Example 2: Query with filtering\n'
-      + '-- SELECT id, name, email FROM users WHERE created_at > \'2025-01-01\' ORDER BY name;\n'
-      + '\n'
-      + '-- Example 3: Join example\n'
-      + '-- SELECT u.id, u.name, p.title FROM users u\n'
-      + '-- JOIN posts p ON u.id = p.user_id\n'
-      + '-- WHERE p.published = true\n'
-      + '-- LIMIT 10;\n'
-      + '\n'
-      + '-- TIP: You can run multiple queries at once by separating them with semicolons'
-  },
-  set(id: string, query: string) {
-    localStorage.setItem(`sql-${id}`, query)
-  },
-}
 
 function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void, query: string }) {
   const os = getOS()
@@ -127,7 +103,7 @@ function ResultTable({
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Results</span>
           <span className="text-xs text-muted-foreground">
-            {filteredData.length}
+            <NumberFlow value={filteredData.length} />
             {' '}
             {filteredData.length === 1 ? 'row' : 'rows'}
             {search && filteredData.length !== result.length && ` (filtered from ${result.length})`}

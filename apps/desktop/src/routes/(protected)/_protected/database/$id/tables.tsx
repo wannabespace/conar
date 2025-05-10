@@ -18,7 +18,7 @@ import { TablesTree } from './-components/tables-tree'
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables',
 )({
-  component: RouteComponent,
+  component: DatabaseTablesPage,
   loader: async ({ params }) => {
     const database = await queryClient.ensureQueryData(databaseQuery(params.id))
     return { database }
@@ -32,7 +32,7 @@ export const Route = createFileRoute(
   }),
 })
 
-function RouteComponent() {
+function DatabaseTablesPage() {
   const { id } = Route.useParams()
   const { table: tableParam } = useParams({ strict: false })
   const { data: database } = useDatabase(id)

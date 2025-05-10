@@ -10,7 +10,7 @@ import { databaseQuery, useDatabase, useDatabaseEnums, useDatabaseSchemas } from
 import { queryClient } from '~/main'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id/enums/')({
-  component: DashboardPage,
+  component: DatabaseEnumsPage,
   loader: async ({ params }) => {
     const database = await queryClient.ensureQueryData(databaseQuery(params.id))
 
@@ -27,7 +27,7 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id/enums
   }),
 })
 
-function DashboardPage() {
+function DatabaseEnumsPage() {
   const { id } = Route.useParams()
   const { data: database } = useDatabase(id)
   const [selectedSchema, setSelectedSchema] = useState('public')
@@ -42,23 +42,25 @@ function DashboardPage() {
         <h2 className="text-2xl font-bold">
           Enums
         </h2>
-        <Select value={selectedSchema} onValueChange={setSelectedSchema}>
-          <SelectTrigger className="w-[180px]">
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">
-                schema
-              </span>
-              <SelectValue placeholder="Select schema" />
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            {schemas?.map(schema => (
-              <SelectItem key={schema.name} value={schema.name}>
-                {schema.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {schemas.length > 1 && (
+          <Select value={selectedSchema} onValueChange={setSelectedSchema}>
+            <SelectTrigger className="w-[180px]">
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">
+                  schema
+                </span>
+                <SelectValue placeholder="Select schema" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {schemas.map(schema => (
+                <SelectItem key={schema.name} value={schema.name}>
+                  {schema.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
       {filteredEnums.length
         ? (

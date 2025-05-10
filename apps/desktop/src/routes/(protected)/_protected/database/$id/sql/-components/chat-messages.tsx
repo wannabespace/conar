@@ -138,14 +138,16 @@ export function ChatMessages({
   status,
   error,
   onReload,
+  className,
+  ...props
 }: {
   messages: Message[]
   status: UseChatHelpers['status']
   error?: Error
   onReload: () => void
-}) {
+} & ComponentProps<'div'>) {
   return (
-    <div className="flex flex-col gap-4 pb-2">
+    <div className={cn('flex flex-col gap-4 pb-2', className)} {...props}>
       {messages.map((message, index) => (
         <Fragment key={message.id}>
           {message.role === 'user'
