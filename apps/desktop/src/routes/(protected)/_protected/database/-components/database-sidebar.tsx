@@ -3,7 +3,7 @@ import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { Button } from '@connnect/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
-import { Link, useMatches, useParams } from '@tanstack/react-router'
+import { Link, useMatches, useNavigate, useParams } from '@tanstack/react-router'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
@@ -11,6 +11,7 @@ import { actionsCenterStore } from '~/routes/(protected)/-components/actions-cen
 const os = getOS()
 
 export function DatabaseSidebar() {
+  const navigate = useNavigate()
   const { id } = useParams({ from: '/(protected)/_protected/database/$id' })
   const matches = useMatches({
     select: matches => matches.map(match => match.routeId),
@@ -56,7 +57,15 @@ export function DatabaseSidebar() {
                       size="icon"
                       variant={isActiveSql ? 'secondary' : 'ghost'}
                     >
-                      <Link to="/database/$id/sql" params={{ id }} className="text-foreground">
+                      <Link
+                        to="/database/$id/sql"
+                        params={{ id }}
+                        className="text-foreground"
+                        onMouseDown={() => navigate({
+                          to: '/database/$id/sql',
+                          params: { id },
+                        })}
+                      >
                         <RiPlayLargeLine className="size-4" />
                       </Link>
                     </Button>
@@ -72,7 +81,15 @@ export function DatabaseSidebar() {
                       size="icon"
                       variant={isActiveTables ? 'secondary' : 'ghost'}
                     >
-                      <Link to="/database/$id/tables" params={{ id }} className="text-foreground">
+                      <Link
+                        to="/database/$id/tables"
+                        params={{ id }}
+                        className="text-foreground"
+                        onMouseDown={() => navigate({
+                          to: '/database/$id/tables',
+                          params: { id },
+                        })}
+                      >
                         <RiTableLine className="size-4" />
                       </Link>
                     </Button>
@@ -88,7 +105,15 @@ export function DatabaseSidebar() {
                       size="icon"
                       variant={isActiveEnums ? 'secondary' : 'ghost'}
                     >
-                      <Link to="/database/$id/enums" params={{ id }} className="text-foreground">
+                      <Link
+                        to="/database/$id/enums"
+                        params={{ id }}
+                        className="text-foreground"
+                        onMouseDown={() => navigate({
+                          to: '/database/$id/enums',
+                          params: { id },
+                        })}
+                      >
                         <RiListUnordered className="size-4" />
                       </Link>
                     </Button>

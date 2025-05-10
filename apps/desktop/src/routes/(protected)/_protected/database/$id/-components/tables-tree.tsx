@@ -3,7 +3,7 @@ import { ScrollArea } from '@connnect/ui/components/scroll-area'
 import { useDebouncedCallback } from '@connnect/ui/hookas/use-debounced-callback'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiTableLine } from '@remixicon/react'
-import { Link, useParams } from '@tanstack/react-router'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useMemo, useRef } from 'react'
 import { databaseRowsQuery, DEFAULT_ROW_HEIGHT, prefetchDatabaseTableCore, useDatabaseTables } from '~/entities/database'
@@ -13,6 +13,7 @@ export function TablesTree({ database, schema, className, search }: { database: 
   const { data: tables } = useDatabaseTables(database, schema)
   const { table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
 
   const debouncedPrefetchRows = useDebouncedCallback(
     (tableName: string) => queryClient.ensureQueryData(databaseRowsQuery(database, tableName, schema)),
@@ -60,6 +61,14 @@ export function TablesTree({ database, schema, className, search }: { database: 
                   prefetchDatabaseTableCore(database, schema, table.name)
                   debouncedPrefetchRows(table.name)
                 }}
+                onMouseDown={() => navigate({
+                  to: '/database/$id/tables/$schema/$table',
+                  params: {
+                    id: database.id,
+                    schema,
+                    table: table.name,
+                  },
+                })}
                 style={{
                   height: virtualRow.size,
                   transform: `translateY(${virtualRow.start}px)`,

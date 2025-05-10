@@ -1,6 +1,8 @@
 import { Separator } from '@connnect/ui/components/separator'
 import { useParams } from '@tanstack/react-router'
-import { useDatabase, useDatabaseTableTotal } from '~/entities/database'
+import { useStore } from '@tanstack/react-store'
+import { useDatabase, useDatabaseTableTotal, whereSql } from '~/entities/database'
+import { useTableStoreContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 import { HeaderActions } from './header-actions'
 import { HeaderSearch } from './header-search'
@@ -9,7 +11,11 @@ export function Header() {
   const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
   const { data: database } = useDatabase(id)
   const { data: columns } = useColumnsQuery()
-  const { data: total } = useDatabaseTableTotal(database, table, schema)
+  const store = useTableStoreContext()
+  const filters = useStore(store, state => state.filters)
+  const { data: total } = useDatabaseTableTotal(database, table, schema, {
+    where: whereSql(filters)[database.type],
+  })
 
   const columnsCount = columns.length
 

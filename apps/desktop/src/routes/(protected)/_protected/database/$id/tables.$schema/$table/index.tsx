@@ -17,6 +17,7 @@ const TableStoreContext = createContext<Store<{
   pageSize: PageSize
   selected: number[]
   filters: WhereFilter[]
+  orderBy?: [string, 'ASC' | 'DESC']
 }>>(null!)
 
 export function useTableStoreContext() {
