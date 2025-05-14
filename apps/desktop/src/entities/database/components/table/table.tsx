@@ -5,6 +5,7 @@ import type {
 import type { CellMeta } from './cell'
 import type { CellUpdaterFunction } from './cells-updater'
 import { ScrollArea } from '@connnect/ui/components/custom/scroll-area'
+import { cn } from '@connnect/ui/lib/utils'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { Store, useStore } from '@tanstack/react-store'
 import {
@@ -218,8 +219,8 @@ export function Table<T extends Record<string, unknown>>({
   }, [rows])
 
   return (
-    <div className="relative h-full">
-      <ScrollArea ref={ref} className={className}>
+    <div className={cn('relative', className)}>
+      <ScrollArea ref={ref} className="h-full">
         <div className="w-full table" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
           <SelectionStoreContext value={selectionStoreContext}>
             <VirtualColumnsContext value={virtualColumns}>

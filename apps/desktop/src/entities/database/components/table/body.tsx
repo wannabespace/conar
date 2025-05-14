@@ -64,7 +64,7 @@ const Row = memo(function RowMemo({
       {children}
     </div>
   )
-})
+}, (prev, next) => prev.virtualRow.key === next.virtualRow.key)
 
 export const Body = memo(function BodyMemo({
   rows,
