@@ -142,7 +142,7 @@ export function DatabaseSidebar() {
               </TooltipTrigger>
               <TooltipContent side="right">
                 {os === 'macos' ? '⌘' : 'Ctrl'}
-                + P
+                P
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
