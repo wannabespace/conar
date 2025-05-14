@@ -4,7 +4,7 @@ import type {
 } from '@tanstack/react-table'
 import type { CellMeta } from './cell'
 import type { CellUpdaterFunction } from './cells-updater'
-import { ScrollArea, ScrollBar } from '@connnect/ui/components/scroll-area'
+import { ScrollArea } from '@connnect/ui/components/custom/scroll-area'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { Store, useStore } from '@tanstack/react-store'
 import {
@@ -58,7 +58,7 @@ function SelectedHeader() {
   )
 }
 
-function SelectedCell({ row }: CellContext<Record<string, unknown>, unknown>) {
+function SelectionCell({ row }: CellContext<Record<string, unknown>, unknown>) {
   const store = useSelectionStoreContext()
   const isSelected = useStore(store, state => state.selected.includes(row.index))
 
@@ -151,7 +151,7 @@ export function Table<T extends Record<string, unknown>>({
           id: selectSymbol as unknown as string,
           size: 40,
           header: SelectedHeader,
-          cell: SelectedCell,
+          cell: SelectionCell,
         },
       )
     }
@@ -218,31 +218,32 @@ export function Table<T extends Record<string, unknown>>({
   }, [rows])
 
   return (
-    <ScrollArea scrollRef={ref} className={className} tableStyle>
-      <div className="w-full" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-        <SelectionStoreContext value={selectionStoreContext}>
-          <VirtualColumnsContext value={virtualColumns}>
-            <Header
-              headerGroups={table.getHeaderGroups()}
-              rowWidth={rowWidth}
-            />
-            {loading
-              ? <Skeleton columnsCount={columns.length || 5} />
-              : error
-                ? <Error error={error} />
-                : data.length === 0
-                  ? <Empty />
-                  : (
-                      <Body
-                        rows={rows}
-                        rowWidth={rowWidth}
-                        virtualRows={rowVirtualizer.getVirtualItems()}
-                      />
-                    )}
-          </VirtualColumnsContext>
-        </SelectionStoreContext>
-      </div>
-      <ScrollBar orientation="horizontal" />
-    </ScrollArea>
+    <div className="relative h-full">
+      <ScrollArea ref={ref} className={className}>
+        <div className="w-full table" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+          <SelectionStoreContext value={selectionStoreContext}>
+            <VirtualColumnsContext value={virtualColumns}>
+              <Header
+                headerGroups={table.getHeaderGroups()}
+                rowWidth={rowWidth}
+              />
+              {loading
+                ? <Skeleton columnsCount={columns.length || 5} />
+                : error
+                  ? <Error error={error} />
+                  : data.length === 0
+                    ? <Empty />
+                    : (
+                        <Body
+                          rows={rows}
+                          rowWidth={rowWidth}
+                          virtualRows={rowVirtualizer.getVirtualItems()}
+                        />
+                      )}
+            </VirtualColumnsContext>
+          </SelectionStoreContext>
+        </div>
+      </ScrollArea>
+    </div>
   )
 }

@@ -6,18 +6,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connn
 import { RiInformationLine, RiListUnordered } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { databaseQuery, useDatabase, useDatabaseEnums, useDatabaseSchemas } from '~/entities/database'
-import { queryClient } from '~/main'
+import { useDatabaseEnums, useDatabaseSchemas } from '~/entities/database'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id/enums/')({
   component: DatabaseEnumsPage,
-  loader: async ({ params }) => {
-    const database = await queryClient.ensureQueryData(databaseQuery(params.id))
-
-    return {
-      database,
-    }
-  },
+  loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({
     meta: [
       {
@@ -28,8 +21,7 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id/enums
 })
 
 function DatabaseEnumsPage() {
-  const { id } = Route.useParams()
-  const { data: database } = useDatabase(id)
+  const { database } = Route.useLoaderData()
   const [selectedSchema, setSelectedSchema] = useState('public')
   const { data: enums } = useDatabaseEnums(database)
   const { data: schemas } = useDatabaseSchemas(database)

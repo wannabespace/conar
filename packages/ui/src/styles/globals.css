@@ -5,6 +5,8 @@
 @import "./typography.css";
 @import "./animations.css";
 
+@plugin 'tailwind-scrollbar';
+
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../../../components/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";

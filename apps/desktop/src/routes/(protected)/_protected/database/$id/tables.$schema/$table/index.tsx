@@ -4,8 +4,7 @@ import { title } from '@connnect/shared/utils/title'
 import { createFileRoute } from '@tanstack/react-router'
 import { Store } from '@tanstack/react-store'
 import { createContext, use, useState } from 'react'
-import { databaseQuery, DataFiltersProvider, prefetchDatabaseTableCore } from '~/entities/database'
-import { queryClient } from '~/main'
+import { DataFiltersProvider, ensureDatabaseTableCore } from '~/entities/database'
 import { Filters } from './-components/filters'
 import { Footer } from './-components/footer'
 import { Header } from './-components/header'
@@ -30,11 +29,10 @@ export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables/$schema/$table/',
 )({
   component: DatabaseTablePage,
-  loader: async ({ params }) => {
-    const database = await queryClient.ensureQueryData(databaseQuery(params.id))
-    await prefetchDatabaseTableCore(database, params.schema, params.table)
-    return { database }
+  beforeLoad: ({ context, params }) => {
+    ensureDatabaseTableCore(context.database, params.schema, params.table)
   },
+  loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData, params }) => ({
     meta: [
       {

@@ -148,7 +148,7 @@ export async function updateDatabasePassword(id: string, password: string) {
   await indexedDb.databases.put(database)
 }
 
-export async function prefetchDatabaseCore(database: Database) {
+export async function ensureDatabaseCore(database: Database) {
   if (database.isPasswordExists && !database.isPasswordPopulated) {
     await queryClient.ensureQueryData(databaseQuery(database.id))
     return
@@ -166,7 +166,7 @@ export async function prefetchDatabaseCore(database: Database) {
   ])
 }
 
-export async function prefetchDatabaseTableCore(database: Database, schema: string, table: string) {
+export async function ensureDatabaseTableCore(database: Database, schema: string, table: string) {
   await Promise.all([
     queryClient.ensureQueryData(databaseColumnsQuery(database, table, schema)),
     queryClient.ensureQueryData(databaseTableTotalQuery(database, table, schema)),

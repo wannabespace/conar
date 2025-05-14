@@ -1,16 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { createCellUpdater, DataTable, setSql, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
-import { useTableStoreContext } from '..'
+import { Route, useTableStoreContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
 export function Table() {
-  const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
+  const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
   const selected = useStore(store, state => state.selected)

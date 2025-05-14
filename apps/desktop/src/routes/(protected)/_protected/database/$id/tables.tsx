@@ -11,7 +11,7 @@ import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
 import { useDeferredValue, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseQuery, databaseSchemas, databaseSchemasQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas, useDatabaseTables } from '~/entities/database'
+import { databaseSchemas, databaseSchemasQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 import { TablesTree } from './-components/tables-tree'
 
@@ -19,10 +19,7 @@ export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables',
 )({
   component: DatabaseTablesPage,
-  loader: async ({ params }) => {
-    const database = await queryClient.ensureQueryData(databaseQuery(params.id))
-    return { database }
-  },
+  loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({
     meta: [
       {

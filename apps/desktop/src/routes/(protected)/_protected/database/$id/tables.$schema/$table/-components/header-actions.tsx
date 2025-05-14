@@ -7,19 +7,18 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connn
 import NumberFlow from '@number-flow/react'
 import { RiDeleteBin7Line, RiFilterLine, RiLoopLeftLine } from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { databaseColumnsQuery, DataFilterForm, deleteRowsSql, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
-import { useTableStoreContext } from '..'
+import { Route, useTableStoreContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
 export function HeaderActions() {
-  const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
+  const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
   const selected = useStore(store, state => state.selected)
@@ -121,7 +120,7 @@ export function HeaderActions() {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.2, type: 'spring' }}
+            transition={{ duration: 0.1 }}
           >
             <Button variant="destructive" onClick={() => setIsOpened(true)}>
               <RiDeleteBin7Line />

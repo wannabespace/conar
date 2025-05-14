@@ -1,10 +1,10 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
 import { databaseColumnsQuery, useDatabase } from '~/entities/database'
+import { Route } from '..'
 import { usePrimaryKeysQuery } from './use-primary-keys-query'
 
 export function useColumnsQuery() {
-  const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
+  const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 

@@ -1,14 +1,13 @@
 import type { PageSize } from '~/entities/database'
 import { Separator } from '@connnect/ui/components/separator'
-import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useState } from 'react'
 import { databaseRowsQuery, DataTableFooter, useDatabase, useDatabaseTableTotal, whereSql } from '~/entities/database'
 import { queryClient } from '~/main'
-import { useTableStoreContext } from '..'
+import { Route, useTableStoreContext } from '..'
 
 export function Footer() {
-  const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
+  const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
   const [page, pageSize, filters] = useStore(store, state => [state.page, state.pageSize, state.filters])

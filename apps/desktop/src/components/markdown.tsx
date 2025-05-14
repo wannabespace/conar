@@ -56,7 +56,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
 
     const timeout = setTimeout(() => {
       setIsLoading(false)
-    }, 500)
+    }, 1000)
 
     return () => clearTimeout(timeout)
   }, [content, loading])
@@ -97,7 +97,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                   </span>
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  <NumberFlow value={lines} />
+                  <NumberFlow className="tabular-nums" value={lines} />
                   {' '}
                   line
                   {lines === 1 ? '' : 's'}
