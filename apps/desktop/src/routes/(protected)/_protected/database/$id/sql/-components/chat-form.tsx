@@ -1,13 +1,19 @@
 import type { UseChatHelpers } from '@ai-sdk/react'
 import type { ComponentRef } from 'react'
 import { AiSqlChatModel } from '@connnect/shared/enums/ai-chat-model'
+import { getBase64FromFiles } from '@connnect/shared/utils/base64'
 import { Button } from '@connnect/ui/components/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
+import { useMountEffect } from '@connnect/ui/hookas/use-mount-effect'
 import { RiCornerDownLeftLine, RiStopCircleLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
-import { pageStore } from '..'
+import { databaseContextQuery, useDatabase } from '~/entities/database'
+import { queryClient } from '~/main'
+import { pageHooks, pageStore, Route } from '..'
+import { chatInput } from '../-lib'
 import { ChatImages } from './chat-images'
 
 function ModelSelector() {
@@ -43,18 +49,14 @@ function ModelSelector() {
 }
 
 export function ChatForm({
+  append,
+  stop,
+  status,
   input,
   setInput,
-  status,
-  stop,
-  handleSend,
-}: {
-  input: string
-  setInput: (input: string) => void
-  status: UseChatHelpers['status']
-  stop: UseChatHelpers['stop']
-  handleSend: (input: string) => void
-}) {
+}: Pick<UseChatHelpers, 'status' | 'append' | 'stop' | 'input' | 'setInput'>) {
+  const { id } = Route.useParams()
+  const { data: database } = useDatabase(id)
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const files = useStore(pageStore, state => state.files.map(file => ({
     name: file.name,
@@ -63,9 +65,75 @@ export function ChatForm({
 
   useEffect(() => {
     if (ref.current) {
-      ref.current.editor.commands.focus()
+      ref.current.editor.commands.focus('end')
     }
   }, [ref])
+
+  const statusRef = useRef(status)
+
+  useEffect(() => {
+    // I don't know why but the status is not updating in function below
+    statusRef.current = status
+  }, [status])
+
+  const handleSend = async (value: string) => {
+    if (
+      value.trim() === ''
+      || statusRef.current === 'streaming'
+      || statusRef.current === 'submitted'
+    ) {
+      return
+    }
+
+    const cachedValue = value
+    const cachedFiles = [...pageStore.state.files]
+
+    try {
+      const filesBase64 = await getBase64FromFiles(cachedFiles)
+
+      setInput('')
+      pageStore.setState(state => ({
+        ...state,
+        files: [],
+      }))
+
+      await append({
+        role: 'user',
+        content: cachedValue,
+      }, {
+        experimental_attachments: filesBase64.map((base64, index) => ({
+          name: `attachment-${index + 1}.png`,
+          contentType: 'image/png',
+          url: base64,
+        })),
+        body: {
+          context: await queryClient.ensureQueryData(databaseContextQuery(database)),
+        },
+      })
+    }
+    catch (error) {
+      setInput(cachedValue)
+      pageStore.setState(state => ({
+        ...state,
+        files: cachedFiles,
+      }))
+      toast.error('Failed to send message', {
+        description: error instanceof Error
+          ? error.message
+          : 'An unexpected error occurred. Please try again.',
+      })
+    }
+  }
+
+  useMountEffect(() => {
+    chatInput.set(id, input)
+  }, [input])
+
+  useEffect(() => {
+    return pageHooks.hook('fix', async (error) => {
+      await handleSend(`Fix the following SQL error: ${error}`)
+    })
+  }, [handleSend])
 
   return (
     <div className="flex flex-col gap-1">
@@ -126,9 +194,6 @@ export function ChatForm({
                 )}
           </div>
         </div>
-      </div>
-      <div className="text-xs text-center text-muted-foreground">
-        Always review the generated SQL before running it.
       </div>
     </div>
   )

@@ -1,4 +1,7 @@
-export const queryStorage = {
+import type { Message } from '@ai-sdk/react'
+import { indexedDb } from '~/lib/indexeddb'
+
+export const chatQuery = {
   get(id: string) {
     return localStorage.getItem(`sql-${id}`) || '-- Write your SQL query here\n'
       + '\n'
@@ -21,5 +24,41 @@ export const queryStorage = {
   },
   set(id: string, query: string) {
     localStorage.setItem(`sql-${id}`, query)
+  },
+}
+
+export const chatInput = {
+  get(id: string) {
+    const data = JSON.parse(localStorage.getItem(`sql-chat-input-${id}`) || '""')
+
+    return typeof data === 'string' ? data : ''
+  },
+  set(id: string, input: string) {
+    localStorage.setItem(`sql-chat-input-${id}`, JSON.stringify(input))
+  },
+}
+
+export const chatMessages = {
+  async get(id: string) {
+    const chat = await indexedDb.databaseChats.get({ databaseId: id })
+    return chat?.messages || []
+  },
+  async set(id: string, messages: Message[]) {
+    const chat = await indexedDb.databaseChats.get({ databaseId: id })
+    const formattedMessages = messages
+      .filter(message => message.role === 'user' || message.role === 'assistant') as Extract<Message, { role: 'system' | 'data' }>[]
+
+    if (chat) {
+      await indexedDb.databaseChats.update(chat.id, {
+        messages: formattedMessages,
+      })
+    }
+    else {
+      await indexedDb.databaseChats.add({
+        id: crypto.randomUUID(),
+        databaseId: id,
+        messages: formattedMessages,
+      })
+    }
   },
 }

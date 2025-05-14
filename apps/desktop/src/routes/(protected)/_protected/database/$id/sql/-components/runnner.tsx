@@ -9,20 +9,20 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useDebouncedMemo } from '@connnect/ui/hookas/use-debounced-memo'
+import { useMountEffect } from '@connnect/ui/hookas/use-mount-effect'
 import { copy } from '@connnect/ui/lib/copy'
 import NumberFlow from '@number-flow/react'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { DANGEROUS_SQL_KEYWORDS, DataTable, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
 import { formatSql } from '~/lib/formatter'
-import { pageHooks, pageStore } from '..'
-import { queryStorage } from '../-lib'
+import { pageHooks, pageStore, Route } from '..'
+import { chatQuery } from '../-lib'
 
 const os = getOS()
 
@@ -103,7 +103,7 @@ function ResultTable({
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Results</span>
           <span className="text-xs text-muted-foreground">
-            <NumberFlow value={filteredData.length} />
+            <NumberFlow value={filteredData.length} className="tabular-nums" />
             {' '}
             {filteredData.length === 1 ? 'row' : 'rows'}
             {search && filteredData.length !== result.length && ` (filtered from ${result.length})`}
@@ -130,7 +130,7 @@ function ResultTable({
 }
 
 export function Runner() {
-  const { id } = useParams({ from: '/(protected)/_protected/database/$id/sql/' })
+  const { id } = Route.useParams()
   const { data: database } = useDatabase(id)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const query = useStore(pageStore, state => state.query)
@@ -141,8 +141,8 @@ export function Runner() {
     })
   }, [])
 
-  useEffect(() => {
-    queryStorage.set(id, query)
+  useMountEffect(() => {
+    chatQuery.set(id, query)
   }, [id, query])
 
   const { refetch: runQuery, data: results, status, fetchStatus: queryStatus, error } = useQuery({
@@ -158,6 +158,7 @@ export function Runner() {
 
       return res
     },
+    staleTime: Infinity,
     throwOnError: false,
     select: data => data.filter(r => r.rows.length > 0),
     enabled: false,
