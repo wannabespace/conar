@@ -127,7 +127,11 @@ export function HeaderActions() {
               <span>
                 Delete
                 (
-                <NumberFlow spinTiming={{ duration: 200 }} value={selectedRows.length} />
+                <NumberFlow
+                  spinTiming={{ duration: 200 }}
+                  value={selectedRows.length}
+                  className="tabular-nums"
+                />
                 )
               </span>
             </Button>
