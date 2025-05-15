@@ -24,7 +24,7 @@
     "better-auth-harmony": "^1.2.4",
     "drizzle-orm": "^0.43.1",
     "hono": "^4.7.9",
-    "loops": "^5.0.0",
+    "loops": "^5.0.1",
     "nanoid": "^5.1.5",
     "postgres": "^3.4.5",
     "stripe": "^18.1.0",

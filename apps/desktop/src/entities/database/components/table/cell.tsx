@@ -271,7 +271,7 @@ function TableCellContent({
     <div
       data-mask
       className={cn(
-        'h-full text-xs truncate p-2 group-first/cell:pl-4 group-last/cell:pr-4 font-mono cursor-default select-none',
+        'h-full text-xs truncate p-2 group-data-[column-index="0"]/cell:pl-4 group-last/cell:pr-4 font-mono cursor-default select-none',
         'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
         value === null && 'text-muted-foreground/50',
         value === '' && 'text-muted-foreground/50',

@@ -7,6 +7,6 @@
     "sonner": "^1.7.2"
   },
   "dependencies": {
-    "pg-connection-string": "^2.8.5"
+    "pg-connection-string": "^2.9.0"
   }
 }

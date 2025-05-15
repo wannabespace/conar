@@ -20,7 +20,7 @@ export const columnsSizeMap = new Map<string, number>([
   ['boolean', 150],
   ['number', 150],
   ['integer', 120],
-  ['bigint', 150],
+  ['bigint', 160],
   ['float', 150],
   ['uuid', 290],
 ])
@@ -31,11 +31,11 @@ export function useVirtualColumnsContext() {
   return use(VirtualColumnsContext)
 }
 
-export const SelectionStoreContext = createContext<Store<{
+export const TableStoreContext = createContext<Store<{
   selected: number[]
   rows: number[]
 }>>(null!)
 
-export function useSelectionStoreContext() {
-  return use(SelectionStoreContext)
+export function useTableStoreContext() {
+  return use(TableStoreContext)
 }

@@ -14,6 +14,7 @@ const RowCell = memo(function RowCellMemo({
   return (
     <div
       key={virtualColumn.key}
+      data-column-index={virtualColumn.index}
       className="group/cell absolute top-0 left-0 h-full"
       style={{
         transform: `translateX(${virtualColumn.start}px)`,
