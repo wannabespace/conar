@@ -16,11 +16,13 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   },
   loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: title(loaderData.database.name),
-      },
-    ],
+    meta: loaderData
+      ? [
+          {
+            title: title(loaderData.database.name),
+          },
+        ]
+      : [],
   }),
 })
 

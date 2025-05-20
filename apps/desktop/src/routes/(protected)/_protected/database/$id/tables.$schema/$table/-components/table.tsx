@@ -1,18 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
-import { createCellUpdater, DataTable, setSql, useDatabase } from '~/entities/database'
+import { setSql, useDatabase } from '~/entities/database'
+import { createCellUpdater, Table, TableBody, TableEmpty, TableError, TableHeader, TableSkeleton } from '~/entities/database/components/table'
 import { queryClient } from '~/main'
 import { Route, useTableStoreContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
-export function Table() {
+function TableComponent() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
-  const selected = useStore(store, state => state.selected)
   const rowsQueryOpts = useRowsQueryOpts()
   const { data, error, isPending } = useQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
@@ -54,25 +53,34 @@ export function Table() {
   }
 
   const updateCell = createCellUpdater({
-    setValue,
     getValue: (rowIndex, columnName) => rows[rowIndex][columnName],
+    setValue,
     saveValue,
   })
 
   return (
-    <DataTable
-      loading={isPending}
+    <Table
       data={rows}
       columns={columns}
-      error={error ?? undefined}
-      className="h-full"
-      updateCell={updateCell}
       selectable={!!primaryKeys && primaryKeys.length > 0}
-      selectedRows={selected}
-      setSelectedRows={rows => store.setState(state => ({
+      onUpdate={updateCell}
+      onSelect={rows => store.setState(state => ({
         ...state,
         selected: rows,
       }))}
-    />
+    >
+      <TableHeader />
+      {isPending
+        ? <TableSkeleton />
+        : error
+          ? <TableError error={error} />
+          : rows.length === 0
+            ? <TableEmpty />
+            : <TableBody />}
+    </Table>
   )
+}
+
+export {
+  TableComponent as Table,
 }

@@ -1,6 +1,8 @@
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '.'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, useTableContext } from '.'
 
-export function Skeleton({ columnsCount }: { columnsCount: number }) {
+export function TableSkeleton() {
+  const columnsCount = useTableContext(state => state.columns.length) || 5
+
   return (
     <div className="relative flex flex-col">
       {Array.from({ length: 10 }).map((_, rowIndex) => (

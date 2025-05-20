@@ -34,11 +34,13 @@ export const Route = createFileRoute(
     initialMessages: await chatMessages.get(params.id),
   }),
   head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: title('SQL Runner', loaderData.database.name),
-      },
-    ],
+    meta: loaderData
+      ? [
+          {
+            title: title('SQL Runner', loaderData.database.name),
+          },
+        ]
+      : [],
   }),
 })
 

@@ -1,17 +1,20 @@
+import type { ContextSelector } from '@fluentui/react-context-selector'
 import type { Store } from '@tanstack/react-store'
 import type { VirtualItem } from '@tanstack/react-virtual'
-import { createContext, use } from 'react'
+import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 
-export type { CellMeta as DataTableCell } from './cell'
+export * from './body'
 export { createCellUpdater } from './cells-updater'
 export {
-  FilterForm as DataFilterForm,
-  FilterItem as DataFilterItem,
-  FiltersProvider as DataFiltersProvider,
+  FilterForm,
+  FilterItem,
+  FiltersProvider,
 } from './filters'
 export type { PageSize } from './footer'
-export { TableFooter as DataTableFooter } from './footer'
-export { Table as DataTable } from './table'
+export * from './footer'
+export * from './header'
+export * from './skeleton'
+export * from './table'
 
 export const DEFAULT_ROW_HEIGHT = 32
 export const DEFAULT_COLUMN_WIDTH = 220
@@ -25,17 +28,48 @@ export const columnsSizeMap = new Map<string, number>([
   ['uuid', 290],
 ])
 
-export const VirtualColumnsContext = createContext<VirtualItem[]>(null!)
-
-export function useVirtualColumnsContext() {
-  return use(VirtualColumnsContext)
+export interface StoreValue {
+  selected: number[]
+  sort: {
+    column: string
+    direction: 'asc' | 'desc'
+  }[]
+  hiddenColumns: string[]
 }
 
-export const TableStoreContext = createContext<Store<{
-  selected: number[]
-  rows: number[]
-}>>(null!)
+interface TableContextValue {
+  store: Store<StoreValue>
+  data: Record<string, unknown>[]
+  columns: ColumnRenderer[]
+  virtualRows: VirtualItem[]
+  virtualColumns: VirtualItem[]
+  rowWidth: number
+  selectable: boolean
+  selected?: number[]
+  onUpdate?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
+  onSelect?: (rows: number[]) => void
+}
 
-export function useTableStoreContext() {
-  return use(TableStoreContext)
+export const TableContext = createContext<TableContextValue>(null!)
+
+export const TableProvider = TableContext.Provider
+
+export function useTableContext<T>(selector: ContextSelector<TableContextValue, T>) {
+  return useContextSelector(TableContext, selector)
+}
+
+export interface Column {
+  name: string
+  type?: string
+  isEditable?: boolean
+  isNullable?: boolean
+  isPrimaryKey?: boolean
+}
+
+export interface ColumnRenderer {
+  name: string
+  meta?: Column
+  size: number
+  cell: React.ComponentType<{ value: unknown, rowIndex: number, column: ColumnRenderer }>
+  header: React.ComponentType<{ column: ColumnRenderer }>
 }

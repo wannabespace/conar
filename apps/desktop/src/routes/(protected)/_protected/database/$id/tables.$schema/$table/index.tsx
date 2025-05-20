@@ -1,10 +1,12 @@
-import type { PageSize, WhereFilter } from '~/entities/database'
+import type { WhereFilter } from '~/entities/database'
+import type { PageSize } from '~/entities/database/table'
 import { SQL_OPERATORS_LIST } from '@connnect/shared/utils/sql'
 import { title } from '@connnect/shared/utils/title'
 import { createFileRoute } from '@tanstack/react-router'
 import { Store } from '@tanstack/react-store'
 import { createContext, use, useState } from 'react'
-import { DataFiltersProvider, ensureDatabaseTableCore } from '~/entities/database'
+import { ensureDatabaseTableCore } from '~/entities/database'
+import { FiltersProvider } from '~/entities/database/table'
 import { Filters } from './-components/filters'
 import { Footer } from './-components/footer'
 import { Header } from './-components/header'
@@ -34,11 +36,13 @@ export const Route = createFileRoute(
   },
   loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData, params }) => ({
-    meta: [
-      {
-        title: title(`${params.schema}.${params.table}`, loaderData.database.name),
-      },
-    ],
+    meta: loaderData
+      ? [
+          {
+            title: title(`${params.schema}.${params.table}`, loaderData.database.name),
+          },
+        ]
+      : [],
   }),
 })
 
@@ -53,7 +57,7 @@ function DatabaseTablePage() {
 
   return (
     <TableStoreContext value={store}>
-      <DataFiltersProvider
+      <FiltersProvider
         columns={columns}
         operators={SQL_OPERATORS_LIST}
       >
@@ -67,7 +71,7 @@ function DatabaseTablePage() {
           </div>
           <Footer />
         </div>
-      </DataFiltersProvider>
+      </FiltersProvider>
     </TableStoreContext>
   )
 }

@@ -1,5 +1,5 @@
 import type { editor } from 'monaco-editor'
-import type { DataTableCell } from '~/entities/database'
+import type { Column } from '~/entities/database/components/table'
 import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
@@ -19,7 +19,8 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
-import { DANGEROUS_SQL_KEYWORDS, DataTable, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
+import { DANGEROUS_SQL_KEYWORDS, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
+import { Table } from '~/entities/database/components/table'
 import { formatSql } from '~/lib/formatter'
 import { pageHooks, pageStore, Route } from '..'
 import { chatQuery } from '../-lib'
@@ -82,7 +83,7 @@ function ResultTable({
   columns,
 }: {
   result: Record<string, unknown>[]
-  columns: DataTableCell[]
+  columns: Column[]
 }) {
   const [search, setSearch] = useState('')
 
@@ -124,7 +125,7 @@ function ResultTable({
           )}
         </div>
       </div>
-      <DataTable data={filteredData} columns={columns} className="h-full" />
+      <Table data={filteredData} columns={columns} className="h-full" />
     </div>
   )
 }

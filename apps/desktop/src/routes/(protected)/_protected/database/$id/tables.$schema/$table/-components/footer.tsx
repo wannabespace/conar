@@ -1,8 +1,9 @@
-import type { PageSize } from '~/entities/database'
+import type { PageSize } from '~/entities/database/components/table'
 import { Separator } from '@connnect/ui/components/separator'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useState } from 'react'
-import { databaseRowsQuery, DataTableFooter, useDatabase, useDatabaseTableTotal, whereSql } from '~/entities/database'
+import { databaseRowsQuery, useDatabase, useDatabaseTableTotal, whereSql } from '~/entities/database'
+import { TableFooter } from '~/entities/database/components/table'
 import { queryClient } from '~/main'
 import { Route, useTableStoreContext } from '..'
 
@@ -37,7 +38,7 @@ export function Footer() {
       onMouseLeave={() => setCanPrefetch(false)}
     >
       <Separator className="h-[2px]" />
-      <DataTableFooter
+      <TableFooter
         className="p-2"
         currentPage={page}
         onPageChange={page => store.setState(state => ({

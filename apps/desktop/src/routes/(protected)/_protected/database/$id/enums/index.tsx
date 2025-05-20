@@ -12,11 +12,13 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id/enums
   component: DatabaseEnumsPage,
   loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: title(`Enums - ${loaderData.database.name}`),
-      },
-    ],
+    meta: loaderData
+      ? [
+          {
+            title: title(`Enums - ${loaderData.database.name}`),
+          },
+        ]
+      : [],
   }),
 })
 

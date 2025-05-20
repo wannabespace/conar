@@ -1,9 +1,8 @@
-import type { CellContext } from '@tanstack/react-table'
 import type { ComponentProps } from 'react'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { useTableStoreContext } from '.'
+import { useTableContext } from '.'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -37,17 +36,17 @@ function IndeterminateCheckbox({
 }
 
 export function SelectionHeaderCell() {
-  const store = useTableStoreContext()
-  const [disabled, checked, indeterminate] = useStore(store, state => [
-    state.rows.length === 0,
-    state.rows.length > 0 && state.selected.length === state.rows.length,
+  const store = useTableContext(state => state.store)
+  const data = useTableContext(state => state.data)
+  const [checked, indeterminate] = useStore(store, state => [
+    data.length > 0 && state.selected.length === data.length,
     state.selected.length > 0,
   ])
 
   return (
     <div className="group-first/header:pl-4 flex items-center size-full">
       <IndeterminateCheckbox
-        disabled={disabled}
+        disabled={data.length === 0}
         checked={checked}
         indeterminate={indeterminate}
         onChange={() => {
@@ -60,7 +59,7 @@ export function SelectionHeaderCell() {
           else {
             store.setState(state => ({
               ...state,
-              selected: state.rows,
+              selected: data.map((_, index) => index),
             }))
           }
         }}
@@ -69,9 +68,9 @@ export function SelectionHeaderCell() {
   )
 }
 
-export function SelectionCell({ row }: CellContext<Record<string, unknown>, unknown>) {
-  const store = useTableStoreContext()
-  const isSelected = useStore(store, state => state.selected.includes(row.index))
+export function SelectionCell({ rowIndex }: { rowIndex: number }) {
+  const store = useTableContext(state => state.store)
+  const isSelected = useStore(store, state => state.selected.includes(rowIndex))
 
   return (
     <div className="group-first/cell:pl-4 flex items-center size-full">
@@ -81,13 +80,13 @@ export function SelectionCell({ row }: CellContext<Record<string, unknown>, unkn
           if (isSelected) {
             store.setState(state => ({
               ...state,
-              selected: store.state.selected.filter(index => index !== row.index),
+              selected: store.state.selected.filter(i => i !== rowIndex),
             }))
           }
           else {
             store.setState(state => ({
               ...state,
-              selected: [...state.selected, row.index],
+              selected: [...state.selected, rowIndex],
             }))
           }
         }}

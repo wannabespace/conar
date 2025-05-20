@@ -11,7 +11,8 @@ import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseColumnsQuery, DataFilterForm, deleteRowsSql, useDatabase } from '~/entities/database'
+import { databaseColumnsQuery, deleteRowsSql, useDatabase } from '~/entities/database'
+import { FilterForm } from '~/entities/database/components/table'
 import { queryClient } from '~/main'
 import { Route, useTableStoreContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
@@ -154,7 +155,7 @@ export function HeaderActions() {
           </Tooltip>
         </TooltipProvider>
         <PopoverContent className="p-0 w-2xs" side="left" align="start">
-          <DataFilterForm
+          <FilterForm
             onAdd={(filter) => {
               setIsFiltersOpened(false)
               store.setState(state => ({

@@ -28,13 +28,13 @@ export const Route = createFileRoute('/_layout/download')({
     }
     return { assets, version: releaseInfo.tag_name, os }
   },
-  head: ({ loaderData }) => {
-    return {
-      meta: seo({
-        title: `Download Connnect - ${loaderData.version}`,
-      }),
-    }
-  },
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? seo({
+          title: `Download Connnect - ${loaderData.version}`,
+        })
+      : [],
+  }),
   pendingComponent: () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted/20 text-foreground px-4 pt-40 pb-16">

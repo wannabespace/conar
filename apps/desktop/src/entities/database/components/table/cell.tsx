@@ -1,7 +1,6 @@
 import type { UseMutateFunction } from '@tanstack/react-query'
-import type { CellContext, Table, Cell as TableCell } from '@tanstack/react-table'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
-import type { TableMeta } from './table'
+import type { Column, ColumnRenderer } from '.'
 import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
@@ -16,16 +15,9 @@ import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { sleep } from '~/lib/helpers'
+import { useTableContext } from '.'
 
 const os = getOS()
-
-export interface CellMeta {
-  name: string
-  type?: string
-  isEditable?: boolean
-  isNullable?: boolean
-  isPrimaryKey?: boolean
-}
 
 function getDisplayValue(value: unknown, pretty = true) {
   if (typeof value === 'object')
@@ -34,46 +26,54 @@ function getDisplayValue(value: unknown, pretty = true) {
   return String(value ?? '')
 }
 
-const TableCellContext = createContext<{
+interface CellContextValue {
   value: string
   setValue: Dispatch<SetStateAction<string>>
-  cell: TableCell<Record<string, unknown>, unknown>
-  table: Table<Record<string, unknown>>
+  column: ColumnRenderer
   isJson: boolean
   initialValue: unknown
   displayValue: string
-  updateCell: UseMutateFunction<void, Error, string | null>
-}>(null!)
+  update: UseMutateFunction<void, Error, { value: string | null, rowIndex: number }>
+}
 
-function TableCellProvider({
-  cell,
-  table,
+const CellContext = createContext<CellContextValue>(null!)
+
+function useCellContext() {
+  return use(CellContext)
+}
+
+function CellProvider({
+  column,
+  initialValue,
   onSaveError,
   onSaveSuccess,
   onSavePending,
   children,
 }: {
-  cell: TableCell<Record<string, unknown>, unknown>
-  table: Table<Record<string, unknown>>
+  column: ColumnRenderer
+  initialValue: unknown
   children: React.ReactNode
   onSaveError: (error: Error) => void
   onSaveSuccess: () => void
   onSavePending: () => void
 }) {
-  const initialValue = cell.getValue()
-  const isJson = !!(cell.column.columnDef.meta as CellMeta).type?.includes('json')
+  const onUpdate = useTableContext(state => state.onUpdate)
+  const isJson = !!column.meta?.type?.includes('json')
   const displayValue = getDisplayValue(initialValue)
-  const [value, setValue] = useState<string>(initialValue === null ? '' : displayValue)
+  const [value, setValue] = useState<string>(() => initialValue === null ? '' : displayValue)
 
-  const { mutate: updateCell } = useMutation({
-    mutationFn: async (value: string | null) => {
+  const { mutate: update } = useMutation({
+    mutationFn: async ({ rowIndex, value }: { value: string | null, rowIndex: number }) => {
+      if (!onUpdate)
+        return
+
       onSavePending()
 
       const _value = isJson && value ? JSON.parse(value) : value
 
-      await (table.options.meta as TableMeta).updateCell?.(
-        cell.row.index,
-        (cell.column.columnDef.meta as CellMeta).name,
+      await onUpdate(
+        rowIndex,
+        column.name,
         _value,
       )
     },
@@ -84,53 +84,51 @@ function TableCellProvider({
   const context = useMemo(() => ({
     value,
     setValue,
-    cell,
-    table,
+    column,
     initialValue,
     displayValue,
     isJson,
-    updateCell,
+    update,
   }), [
     value,
     setValue,
-    cell,
-    table,
+    column,
     initialValue,
     displayValue,
     isJson,
-    updateCell,
+    update,
   ])
 
-  return <TableCellContext value={context}>{children}</TableCellContext>
+  return <CellContext.Provider value={context}>{children}</CellContext.Provider>
 }
 
 function TableCellMonaco({
+  rowIndex,
   isBig,
   setIsBig,
   onClose,
 }: {
+  rowIndex: number
   isBig: boolean
   setIsBig: Dispatch<SetStateAction<boolean>>
   onClose: () => void
 }) {
-  const { value, setValue, cell, table, initialValue, displayValue, isJson, updateCell } = use(TableCellContext)
-
-  const tableMeta = table.options.meta as TableMeta
-  const cellMeta = cell.column.columnDef.meta as CellMeta
+  const { value, initialValue, column, displayValue, isJson, setValue, update } = useCellContext()
+  const onUpdate = useTableContext(state => state.onUpdate)
 
   const [isTouched, setIsTouched] = useState(false)
 
-  const canEdit = !!cellMeta.isEditable && !!tableMeta.updateCell
-  const canSetNull = !!cellMeta.isNullable && initialValue !== null
+  const canEdit = !!column.meta?.isEditable && !!onUpdate
+  const canSetNull = !!column.meta?.isNullable && initialValue !== null
   const canSave = isTouched && value !== displayValue
 
   const setNull = () => {
-    updateCell(null)
+    update({ value: null, rowIndex })
     onClose()
   }
 
   const save = (value: string) => {
-    updateCell(value)
+    update({ value, rowIndex })
     onClose()
   }
 
@@ -237,27 +235,15 @@ function TableCellMonaco({
   )
 }
 
-function getTimestamp(value: unknown, meta: CellMeta) {
-  const date = meta?.type?.includes('timestamp')
-    && value
-    && (typeof value === 'string' || typeof value === 'number')
-    ? dayjs(value)
-    : null
-
-  return date?.isValid() ? date : null
-}
-
-function TableCellContent({
-  cell,
+function CellContent({
+  value,
   className,
   ...props
 }: {
-  cell: TableCell<Record<string, unknown>, unknown>
+  value: unknown
   className?: string
 } & ComponentProps<'div'>) {
-  const value = cell.getValue()
-
-  const displayValue = useMemo(() => {
+  const displayValue = (() => {
     if (value === null)
       return 'null'
 
@@ -265,13 +251,13 @@ function TableCellContent({
       return 'empty'
 
     return getDisplayValue(value, false)
-  }, [value, cell])
+  })()
 
   return (
     <div
       data-mask
       className={cn(
-        'h-full text-xs truncate p-2 group-data-[column-index="0"]/cell:pl-4 group-last/cell:pr-4 font-mono cursor-default select-none',
+        'h-full text-xs truncate p-2 group-data-[column-index="0"]/cell:pl-4 font-mono cursor-default select-none',
         'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
         value === null && 'text-muted-foreground/50',
         value === '' && 'text-muted-foreground/50',
@@ -284,7 +270,23 @@ function TableCellContent({
   )
 }
 
-export function Cell({ cell, table }: CellContext<Record<string, unknown>, unknown>) {
+function getTimestamp(value: unknown, meta: Column) {
+  const date = meta?.type?.includes('timestamp')
+    && value
+    && (typeof value === 'string' || typeof value === 'number')
+    ? dayjs(value)
+    : null
+
+  return date?.isValid() ? date : null
+}
+
+export function Cell({
+  value,
+  rowIndex,
+  column,
+  className,
+  ...props
+}: { value: unknown, rowIndex: number, column: ColumnRenderer } & ComponentProps<'div'>) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
@@ -301,12 +303,30 @@ export function Cell({ cell, table }: CellContext<Record<string, unknown>, unkno
     }
   }, [status])
 
+  const cellClassName = cn(
+    isPopoverOpen && 'ring-primary/30 bg-primary/10',
+    status === 'error' && 'ring-destructive/50 bg-destructive/20',
+    status === 'success' && 'ring-success/50 bg-success/10',
+    status === 'saving' && 'animate-pulse',
+  )
+
+  if (!canInteract) {
+    return (
+      <CellContent
+        value={value}
+        onMouseOver={() => setCanInteract(true)}
+        className={cn(cellClassName, className)}
+        {...props}
+      />
+    )
+  }
+
   function onSaveError(error: Error) {
     setCanInteract(true)
     setIsPopoverOpen(true)
     setStatus('error')
 
-    toast.error(`Failed to update cell ${cell.column.id}`, {
+    toast.error(`Failed to update cell ${column.name}`, {
       description: error.message,
       duration: 3000,
     })
@@ -320,30 +340,12 @@ export function Cell({ cell, table }: CellContext<Record<string, unknown>, unkno
     setStatus('saving')
   }
 
-  const className = cn(
-    isPopoverOpen && 'ring-primary/30 bg-primary/10',
-    status === 'error' && 'ring-destructive/50 bg-destructive/20',
-    status === 'success' && 'ring-success/50 bg-success/10',
-    status === 'saving' && 'animate-pulse',
-  )
-
-  if (!canInteract) {
-    return (
-      <TableCellContent
-        cell={cell}
-        onMouseOver={() => setCanInteract(true)}
-        className={className}
-      />
-    )
-  }
-
-  const cellMeta = cell.column.columnDef.meta as CellMeta
-  const date = getTimestamp(cell.getValue(), cellMeta)
+  const date = column.meta ? getTimestamp(value, column.meta) : null
 
   return (
-    <TableCellProvider
-      cell={cell}
-      table={table}
+    <CellProvider
+      column={column}
+      initialValue={value}
       onSavePending={onSavePending}
       onSaveError={onSaveError}
       onSaveSuccess={onSaveSuccess}
@@ -367,9 +369,10 @@ export function Cell({ cell, table }: CellContext<Record<string, unknown>, unkno
                 onDoubleClick={() => setIsPopoverOpen(true)}
                 onMouseLeave={() => !isPopoverOpen && sleep(100).then(() => setCanInteract(false))}
               >
-                <TableCellContent
-                  cell={cell}
-                  className={className}
+                <CellContent
+                  value={value}
+                  className={cn(cellClassName, className)}
+                  {...props}
                 />
               </PopoverTrigger>
             </TooltipTrigger>
@@ -385,12 +388,13 @@ export function Cell({ cell, table }: CellContext<Record<string, unknown>, unkno
           onAnimationEnd={() => !isPopoverOpen && setCanInteract(false)}
         >
           <TableCellMonaco
+            rowIndex={rowIndex}
             isBig={isBig}
             setIsBig={setIsBig}
             onClose={() => setIsPopoverOpen(false)}
           />
         </PopoverContent>
       </Popover>
-    </TableCellProvider>
+    </CellProvider>
   )
 }

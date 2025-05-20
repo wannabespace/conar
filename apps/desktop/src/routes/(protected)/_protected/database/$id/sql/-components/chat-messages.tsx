@@ -200,7 +200,7 @@ export function ChatMessages({
       className={cn('relative -mx-4', className)}
       {...props}
     >
-      <div className="flex flex-col gap-4 px-4">
+      <div className="flex flex-col gap-6 px-4">
         {messages.map((message, index) => (
           <Fragment key={message.id}>
             {message.role === 'user'

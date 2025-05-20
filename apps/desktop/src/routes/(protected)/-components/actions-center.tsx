@@ -71,7 +71,7 @@ export function ActionsCenter() {
             }}
           >
             <RiAddLine className="size-4 shrink-0 opacity-60" />
-            Add New Connection...
+            Add new connection...
           </CommandItem>
         </CommandGroup>
       </CommandList>

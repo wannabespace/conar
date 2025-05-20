@@ -12,6 +12,7 @@ export function useColumnsQuery() {
     ...databaseColumnsQuery(database, table, schema),
     select: data => data.map(column => ({
       ...column,
+      id: column.name,
       isPrimaryKey: !!primaryKeys?.includes(column.name),
     })),
   })

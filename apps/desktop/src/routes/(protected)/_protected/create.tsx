@@ -165,7 +165,7 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
             <div className="text-xs text-muted-foreground/50 text-balance">
               Syncing passwords in our cloud allows access from any device without re-entering the password.
               <br />
-              If not synced, passwords remain securely stored on your local device only.
+              If not synced, we will store the connection string without the password.
             </div>
           </div>
         </div>

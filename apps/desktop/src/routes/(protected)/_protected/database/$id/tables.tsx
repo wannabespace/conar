@@ -21,11 +21,13 @@ export const Route = createFileRoute(
   component: DatabaseTablesPage,
   loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: title('Tables', loaderData.database.name),
-      },
-    ],
+    meta: loaderData
+      ? [
+          {
+            title: title('Tables', loaderData.database.name),
+          },
+        ]
+      : [],
   }),
 })
 

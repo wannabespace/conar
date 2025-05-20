@@ -1,5 +1,3 @@
-'use client'
-
 import { cn } from '@connnect/ui/lib/utils'
 import React, { useState } from 'react'
 
