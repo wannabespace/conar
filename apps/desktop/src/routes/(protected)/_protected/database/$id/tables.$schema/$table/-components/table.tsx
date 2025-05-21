@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { setSql, useDatabase } from '~/entities/database'
-import { createCellUpdater, Table, TableBody, TableEmpty, TableError, TableHeader, TableSkeleton } from '~/entities/database/components/table'
+import { createCellUpdater, Table } from '~/entities/database/components/table'
 import { queryClient } from '~/main'
 import { Route, useTableStoreContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
@@ -62,22 +62,15 @@ function TableComponent() {
     <Table
       data={rows}
       columns={columns}
+      loading={isPending}
+      error={error}
       selectable={!!primaryKeys && primaryKeys.length > 0}
       onUpdate={updateCell}
       onSelect={rows => store.setState(state => ({
         ...state,
         selected: rows,
       }))}
-    >
-      <TableHeader />
-      {isPending
-        ? <TableSkeleton />
-        : error
-          ? <TableError error={error} />
-          : rows.length === 0
-            ? <TableEmpty />
-            : <TableBody />}
-    </Table>
+    />
   )
 }
 

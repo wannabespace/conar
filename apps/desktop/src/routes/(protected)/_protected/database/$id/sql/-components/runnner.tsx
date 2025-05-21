@@ -125,7 +125,11 @@ function ResultTable({
           )}
         </div>
       </div>
-      <Table data={filteredData} columns={columns} className="h-full" />
+      <Table
+        data={filteredData}
+        columns={columns}
+        className="h-full"
+      />
     </div>
   )
 }

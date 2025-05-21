@@ -7,7 +7,7 @@ import { RiErrorWarningLine } from '@remixicon/react'
 import { Store, useStore } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, TableProvider } from '.'
+import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, TableBody, TableHeader, TableProvider, TableSkeleton } from '.'
 import { Cell } from './cell'
 import { HeaderCell } from './header-cell'
 import { SelectionCell, SelectionHeaderCell } from './selection'
@@ -75,6 +75,8 @@ export function Table({
   initialState,
   onUpdate,
   onSelect,
+  loading,
+  error,
   ...props
 }: {
   data: Record<string, unknown>[]
@@ -83,7 +85,9 @@ export function Table({
   initialState?: TableState
   onUpdate?: CellUpdaterFunction
   onSelect?: (rows: number[]) => void
-} & Omit<ComponentProps<'div'>, 'onSelect'>) {
+  loading?: boolean
+  error?: Error | null
+} & Omit<ComponentProps<'div'>, 'onSelect' | 'children'>) {
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const [store] = useState(() => new Store<StoreValue>({
     selected: initialState?.selected ?? [],
@@ -171,7 +175,16 @@ export function Table({
         height={tableHeight}
         className={className}
         {...props}
-      />
+      >
+        <TableHeader />
+        {loading
+          ? <TableSkeleton />
+          : error
+            ? <TableError error={error} />
+            : data.length === 0
+              ? <TableEmpty />
+              : <TableBody />}
+      </TableScrollArea>
     </TableProvider>
   )
 }

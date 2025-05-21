@@ -25,18 +25,20 @@ export function TableHeader() {
 
   return (
     <div className="sticky top-0 z-10 border-y bg-background">
-      <div className="bg-muted/20 flex h-8 has-[[data-type]]:h-12" style={{ width: `${rowWidth}px` }}>
-        {virtualColumns.map((virtualColumn) => {
-          const column = columns[virtualColumn.index]
+      <div className="bg-muted/20">
+        <div className="flex h-8 has-[[data-type]]:h-12" style={{ width: `${rowWidth}px` }}>
+          {virtualColumns.map((virtualColumn) => {
+            const column = columns[virtualColumn.index]
 
-          return (
-            <HeaderColumn
-              key={column.name}
-              column={column}
-              virtualColumn={virtualColumn}
-            />
-          )
-        })}
+            return (
+              <HeaderColumn
+                key={column.name}
+                column={column}
+                virtualColumn={virtualColumn}
+              />
+            )
+          })}
+        </div>
       </div>
     </div>
   )
