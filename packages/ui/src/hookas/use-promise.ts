@@ -1,19 +1,17 @@
 import * as React from 'react'
+import { useIsomorphicEffect } from './use-isomorphic-effect'
 
-// eslint-disable-next-line ts/no-explicit-any
-export function usePromise<T>(promiseFn: (...args: any[]) => Promise<T>): T | null
-// eslint-disable-next-line ts/no-explicit-any
-export function usePromise<T, D extends T>(promiseFn: (...args: any[]) => Promise<T>, initialData: D): T
+export function usePromise<T>(promiseFn: () => Promise<T>): T | null
+export function usePromise<T, D extends T>(promiseFn: () => Promise<T>, initialData: D): T
 export function usePromise<T, D extends T>(
-  // eslint-disable-next-line ts/no-explicit-any
-  promiseFn: (...args: any[]) => Promise<T>,
+  promiseFn: () => Promise<T>,
   initialData?: D,
 ) {
   const [data, setData] = React.useState<T | null>(initialData || null)
 
-  React.useEffect(() => {
+  useIsomorphicEffect(() => {
     promiseFn().then(setData)
-  }, [promiseFn])
+  }, [])
 
   return data
 }

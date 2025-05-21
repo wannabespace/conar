@@ -1,10 +1,10 @@
 import type { OS } from '@connnect/shared/utils/os'
-import type { ReleaseAsset } from '~/utils/releases'
 import { getOS } from '@connnect/shared/utils/os'
 import { AppLogoGradient } from '@connnect/ui/components/brand/app-logo-gradient'
 import { Button } from '@connnect/ui/components/button'
 import { Card } from '@connnect/ui/components/card'
 import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
+import { usePromise } from '@connnect/ui/hookas/use-promise'
 import { RiAppleFill, RiDownloadLine, RiWindowsFill } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
@@ -14,27 +14,20 @@ import { LinuxLogo } from '~/assets/linux-logo'
 import { getLatestRelease } from '~/utils/releases'
 import { seo } from '~/utils/seo'
 
-const getRelease = createServerFn({ method: 'GET' }).handler(() => getLatestRelease())
 const getOSFn = createServerFn({ method: 'GET' }).handler(() => getOS(getHeader('user-agent')))
 
 export const Route = createFileRoute('/_layout/download')({
   component: RouteComponent,
   loader: async () => {
-    const [releaseInfo, os] = await Promise.all([getRelease(), getOSFn()])
-    const assets: Partial<Record<OS, ReleaseAsset[]>> = {
-      macos: releaseInfo.assets.filter(asset => asset.name.toLowerCase().endsWith('.dmg')),
-      linux: releaseInfo.assets.filter(asset => asset.name.toLowerCase().endsWith('.appimage')),
-      windows: releaseInfo.assets.filter(asset => asset.name.toLowerCase().endsWith('.exe')),
-    }
-    return { assets, version: releaseInfo.tag_name, os }
+    const os = await getOSFn()
+
+    return { os }
   },
-  head: ({ loaderData }) => {
-    return {
-      meta: seo({
-        title: `Download Connnect - ${loaderData.version}`,
-      }),
-    }
-  },
+  head: () => ({
+    meta: seo({
+      title: 'Download Connnect',
+    }),
+  }),
   pendingComponent: () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted/20 text-foreground px-4 pt-40 pb-16">
@@ -71,7 +64,15 @@ function formatBytes(bytes: number, decimals = 2): string {
 }
 
 function RouteComponent() {
-  const { assets, version, os } = Route.useLoaderData()
+  const { os } = Route.useLoaderData()
+
+  const releaseInfo = usePromise(() => getLatestRelease())
+  const assets = useMemo(() => ({
+    macos: releaseInfo?.assets.filter(asset => asset.name.toLowerCase().endsWith('.dmg')) || [],
+    linux: releaseInfo?.assets.filter(asset => asset.name.toLowerCase().endsWith('.appimage')) || [],
+    windows: releaseInfo?.assets.filter(asset => asset.name.toLowerCase().endsWith('.exe')) || [],
+  }), [releaseInfo])
+  const version = useMemo(() => releaseInfo?.tag_name, [releaseInfo])
 
   const links = useMemo(() => {
     return [
@@ -174,7 +175,7 @@ function RouteComponent() {
         <div className="max-w-xl">
           <h2 className="text-2xl font-semibold text-center mb-4">All platforms</h2>
           <div className="grid gap-4">
-            {macSiliconAsset && (
+            {macSiliconAsset && version && (
               <DownloadOption
                 icon={<RiAppleFill className="text-muted-foreground" />}
                 platform="macOS (Apple Silicon)"
@@ -182,7 +183,7 @@ function RouteComponent() {
                 asset={macSiliconAsset}
               />
             )}
-            {macIntelAsset && (
+            {macIntelAsset && version && (
               <DownloadOption
                 icon={<RiAppleFill className="text-muted-foreground" />}
                 platform="macOS (Intel)"
@@ -190,7 +191,7 @@ function RouteComponent() {
                 asset={macIntelAsset}
               />
             )}
-            {linuxAsset && (
+            {linuxAsset && version && (
               <DownloadOption
                 icon={<LinuxLogo className="fill-muted-foreground size-5" />}
                 platform="Linux"
@@ -198,7 +199,7 @@ function RouteComponent() {
                 asset={linuxAsset}
               />
             )}
-            {windowsAsset && (
+            {windowsAsset && version && (
               <DownloadOption
                 icon={<RiWindowsFill className="text-muted-foreground" />}
                 platform="Windows"
