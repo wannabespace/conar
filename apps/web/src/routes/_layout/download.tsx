@@ -7,22 +7,13 @@ import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
 import { usePromise } from '@connnect/ui/hookas/use-promise'
 import { RiAppleFill, RiDownloadLine, RiWindowsFill } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
-import { getHeader } from '@tanstack/react-start/server'
 import { useMemo } from 'react'
 import { LinuxLogo } from '~/assets/linux-logo'
 import { getLatestRelease } from '~/utils/releases'
 import { seo } from '~/utils/seo'
 
-const getOSFn = createServerFn({ method: 'GET' }).handler(() => getOS(getHeader('user-agent')))
-
 export const Route = createFileRoute('/_layout/download')({
   component: RouteComponent,
-  loader: async () => {
-    const os = await getOSFn()
-
-    return { os }
-  },
   head: () => ({
     meta: seo({
       title: 'Download Connnect',
@@ -64,7 +55,7 @@ function formatBytes(bytes: number, decimals = 2): string {
 }
 
 function RouteComponent() {
-  const { os } = Route.useLoaderData()
+  const os = useMemo(() => getOS(), [])
 
   const releaseInfo = usePromise(() => getLatestRelease())
   const assets = useMemo(() => ({
