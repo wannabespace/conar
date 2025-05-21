@@ -14,7 +14,7 @@ import { LinuxLogo } from '~/assets/linux-logo'
 import { getLatestRelease } from '~/utils/releases'
 import { seo } from '~/utils/seo'
 
-const getRelease = createServerFn({ method: 'GET' }).handler(getLatestRelease)
+const getRelease = createServerFn({ method: 'GET' }).handler(() => getLatestRelease())
 const getOSFn = createServerFn({ method: 'GET' }).handler(() => getOS(getHeader('user-agent')))
 
 export const Route = createFileRoute('/_layout/download')({
