@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@connnect/tsconfig": "workspace:*",
-    "@types/react": "^19.1.4",
+    "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.1.7"

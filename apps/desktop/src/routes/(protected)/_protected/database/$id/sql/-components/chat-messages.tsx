@@ -58,7 +58,7 @@ function UserMessage({ text, attachments, className, ...props }: { text: string,
                 <RiFileCopyLine className="size-3.5 text-muted-foreground" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Copy</TooltipContent>
+            <TooltipContent>Copy message</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
@@ -134,7 +134,7 @@ function AssistantMessage({
                 <RiFileCopyLine className="size-3.5 text-muted-foreground" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Copy</TooltipContent>
+            <TooltipContent>Copy message</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>

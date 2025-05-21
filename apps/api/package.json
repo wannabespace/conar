@@ -26,11 +26,11 @@
     "hono": "^4.7.10",
     "loops": "^5.0.1",
     "nanoid": "^5.1.5",
-    "postgres": "^3.4.5",
+    "postgres": "^3.4.7",
     "stripe": "^18.1.1",
     "superjson": "^2.2.2",
     "uuid": "^11.1.0",
-    "zod": "^3.25.7"
+    "zod": "^3.25.17"
   },
   "devDependencies": {
     "@connnect/shared": "workspace:*",
