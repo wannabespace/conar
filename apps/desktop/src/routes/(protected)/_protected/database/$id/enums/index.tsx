@@ -36,7 +36,7 @@ function DatabaseEnumsPage() {
         <h2 className="text-2xl font-bold">
           Enums
         </h2>
-        {schemas.length > 1 && (
+        {schemas?.length && schemas.length > 1 && (
           <Select value={selectedSchema} onValueChange={setSelectedSchema}>
             <SelectTrigger className="w-[180px]">
               <div className="flex items-center gap-2">

@@ -44,6 +44,7 @@ export function Footer() {
         onPageChange={page => store.setState(state => ({
           ...state,
           page,
+          selected: [],
         }))}
         pageSize={pageSize}
         onPageSizeChange={pageSize => store.setState(state => ({

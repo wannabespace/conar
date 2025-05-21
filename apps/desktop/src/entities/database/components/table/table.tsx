@@ -72,6 +72,7 @@ export function Table({
   data,
   columns,
   selectable = false,
+  state,
   initialState,
   onUpdate,
   onSelect,
@@ -82,6 +83,7 @@ export function Table({
   data: Record<string, unknown>[]
   columns: Column[]
   selectable?: boolean
+  state?: TableState
   initialState?: TableState
   onUpdate?: CellUpdaterFunction
   onSelect?: (rows: number[]) => void
@@ -168,6 +170,15 @@ export function Table({
     onSelect?.(selectedRows)
   }, [selectedRows, onSelect])
 
+  useEffect(() => {
+    if (state?.selected) {
+      store.setState(s => ({
+        ...s,
+        selected: state.selected!,
+      }))
+    }
+  }, [state?.selected])
+
   return (
     <TableProvider value={context}>
       <TableScrollArea
@@ -176,9 +187,9 @@ export function Table({
         className={className}
         {...props}
       >
-        <TableHeader />
+        <TableHeader columns={tableColumns} />
         {loading
-          ? <TableSkeleton />
+          ? <TableSkeleton columnsCount={tableColumns.length || 5} />
           : error
             ? <TableError error={error} />
             : data.length === 0

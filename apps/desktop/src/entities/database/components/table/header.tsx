@@ -18,8 +18,7 @@ const HeaderColumn = memo(function HeaderColumnMemo({ column, virtualColumn }: {
   )
 }, (prev, next) => prev.virtualColumn.key === next.virtualColumn.key)
 
-export function TableHeader() {
-  const columns = useTableContext(state => state.columns)
+export function TableHeader({ columns }: { columns: ColumnRenderer[] }) {
   const virtualColumns = useTableContext(state => state.virtualColumns)
   const rowWidth = useTableContext(state => state.rowWidth)
 

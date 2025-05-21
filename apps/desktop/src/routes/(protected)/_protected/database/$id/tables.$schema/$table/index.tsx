@@ -31,8 +31,8 @@ export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables/$schema/$table/',
 )({
   component: DatabaseTablePage,
-  beforeLoad: ({ context, params }) => {
-    ensureDatabaseTableCore(context.database, params.schema, params.table)
+  beforeLoad: async ({ context, params }) => {
+    await ensureDatabaseTableCore(context.database, params.schema, params.table)
   },
   loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData, params }) => ({

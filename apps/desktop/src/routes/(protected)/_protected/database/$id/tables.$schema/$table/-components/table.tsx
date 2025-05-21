@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { setSql, useDatabase } from '~/entities/database'
 import { createCellUpdater, Table } from '~/entities/database/components/table'
@@ -12,6 +13,7 @@ function TableComponent() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
+  const selected = useStore(store, state => state.selected)
   const rowsQueryOpts = useRowsQueryOpts()
   const { data, error, isPending } = useQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
@@ -65,6 +67,9 @@ function TableComponent() {
       loading={isPending}
       error={error}
       selectable={!!primaryKeys && primaryKeys.length > 0}
+      state={{
+        selected,
+      }}
       onUpdate={updateCell}
       onSelect={rows => store.setState(state => ({
         ...state,

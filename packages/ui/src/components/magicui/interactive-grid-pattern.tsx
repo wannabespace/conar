@@ -18,6 +18,8 @@ interface InteractiveGridPatternProps extends React.SVGProps<SVGSVGElement> {
   squaresClassName?: string
 }
 
+const DEFAULT_SQUARES = [24, 24] as [number, number]
+
 /**
  * The InteractiveGridPattern component.
  *
@@ -27,7 +29,7 @@ interface InteractiveGridPatternProps extends React.SVGProps<SVGSVGElement> {
 export function InteractiveGridPattern({
   width = 40,
   height = 40,
-  squares = [24, 24],
+  squares = DEFAULT_SQUARES,
   className,
   squaresClassName,
   ...props
