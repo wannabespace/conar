@@ -4,10 +4,9 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/
 import { createFileRoute } from '@tanstack/react-router'
 import { Store } from '@tanstack/react-store'
 import { createHooks } from 'hookable'
-import { databaseQuery } from '~/entities/database'
-import { queryClient } from '~/main'
 import { Chat } from './-components/chat'
-import { queryStorage, Runner } from './-components/runnner'
+import { Runner } from './-components/runnner'
+import { chatMessages, chatQuery } from './-lib'
 
 export const pageStore = new Store({
   query: '',
@@ -23,27 +22,29 @@ export const pageHooks = createHooks<{
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/sql/',
 )({
-  component: RouteComponent,
+  component: DatabaseSqlPage,
   beforeLoad: ({ params }) => {
     pageStore.setState(state => ({
       ...state,
-      query: queryStorage.get(params.id),
+      query: chatQuery.get(params.id),
     }))
   },
-  loader: async ({ params }) => {
-    const database = await queryClient.ensureQueryData(databaseQuery(params.id))
-    return { database }
-  },
+  loader: async ({ params, context }) => ({
+    database: context.database,
+    initialMessages: await chatMessages.get(params.id),
+  }),
   head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: title('SQL Runner', loaderData.database.name),
-      },
-    ],
+    meta: loaderData
+      ? [
+          {
+            title: title('SQL Runner', loaderData.database.name),
+          },
+        ]
+      : [],
   }),
 })
 
-function RouteComponent() {
+function DatabaseSqlPage() {
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex h-auto!">
       <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>

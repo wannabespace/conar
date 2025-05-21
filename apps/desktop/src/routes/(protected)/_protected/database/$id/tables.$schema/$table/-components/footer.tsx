@@ -1,14 +1,14 @@
-import type { PageSize } from '~/entities/database'
+import type { PageSize } from '~/entities/database/components/table'
 import { Separator } from '@connnect/ui/components/separator'
-import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useState } from 'react'
-import { databaseRowsQuery, DataTableFooter, useDatabase, useDatabaseTableTotal, whereSql } from '~/entities/database'
+import { databaseRowsQuery, useDatabase, useDatabaseTableTotal, whereSql } from '~/entities/database'
+import { TableFooter } from '~/entities/database/components/table'
 import { queryClient } from '~/main'
-import { useTableStoreContext } from '..'
+import { Route, useTableStoreContext } from '..'
 
 export function Footer() {
-  const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
+  const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
   const [page, pageSize, filters] = useStore(store, state => [state.page, state.pageSize, state.filters])
@@ -38,12 +38,13 @@ export function Footer() {
       onMouseLeave={() => setCanPrefetch(false)}
     >
       <Separator className="h-[2px]" />
-      <DataTableFooter
+      <TableFooter
         className="p-2"
         currentPage={page}
         onPageChange={page => store.setState(state => ({
           ...state,
           page,
+          selected: [],
         }))}
         pageSize={pageSize}
         onPageSizeChange={pageSize => store.setState(state => ({

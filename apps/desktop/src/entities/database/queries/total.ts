@@ -19,7 +19,9 @@ export function databaseTableTotalQuery(
       'table',
       table,
       'total',
-      query,
+      {
+        ...(query?.where && { where: query.where }),
+      },
     ],
     queryFn: async () => {
       const [result] = await window.electron.databases.query({

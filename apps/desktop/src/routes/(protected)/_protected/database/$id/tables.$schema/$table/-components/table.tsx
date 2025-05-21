@@ -1,18 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
-import { createCellUpdater, DataTable, setSql, useDatabase } from '~/entities/database'
+import { setSql, useDatabase } from '~/entities/database'
+import { createCellUpdater, Table } from '~/entities/database/components/table'
 import { queryClient } from '~/main'
-import { useTableStoreContext } from '..'
+import { Route, useTableStoreContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
-const cellUpdater = createCellUpdater()
-
-export function Table() {
-  const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
+function TableComponent() {
+  const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
   const selected = useStore(store, state => state.selected)
@@ -56,26 +54,31 @@ export function Table() {
     })
   }
 
-  const updateCell = cellUpdater({
-    setValue,
+  const updateCell = createCellUpdater({
     getValue: (rowIndex, columnName) => rows[rowIndex][columnName],
+    setValue,
     saveValue,
   })
 
   return (
-    <DataTable
-      loading={isPending}
+    <Table
       data={rows}
       columns={columns}
-      error={error ?? undefined}
-      className="h-full"
-      updateCell={updateCell}
+      loading={isPending}
+      error={error}
       selectable={!!primaryKeys && primaryKeys.length > 0}
-      selectedRows={selected}
-      setSelectedRows={rows => store.setState(state => ({
+      state={{
+        selected,
+      }}
+      onUpdate={updateCell}
+      onSelect={rows => store.setState(state => ({
         ...state,
         selected: rows,
       }))}
     />
   )
+}
+
+export {
+  TableComponent as Table,
 }

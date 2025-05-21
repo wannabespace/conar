@@ -11,28 +11,27 @@ import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
 import { useDeferredValue, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseQuery, databaseSchemas, databaseSchemasQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas, useDatabaseTables } from '~/entities/database'
+import { databaseSchemas, databaseSchemasQuery, databaseTablesQuery, useDatabase, useDatabaseSchemas, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 import { TablesTree } from './-components/tables-tree'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables',
 )({
-  component: RouteComponent,
-  loader: async ({ params }) => {
-    const database = await queryClient.ensureQueryData(databaseQuery(params.id))
-    return { database }
-  },
+  component: DatabaseTablesPage,
+  loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: title('Tables', loaderData.database.name),
-      },
-    ],
+    meta: loaderData
+      ? [
+          {
+            title: title('Tables', loaderData.database.name),
+          },
+        ]
+      : [],
   }),
 })
 
-function RouteComponent() {
+function DatabaseTablesPage() {
   const { id } = Route.useParams()
   const { table: tableParam } = useParams({ strict: false })
   const { data: database } = useDatabase(id)
@@ -93,7 +92,7 @@ function RouteComponent() {
               </Tooltip>
             </TooltipProvider>
           </div>
-          {schemas?.length && (
+          {!!schemas && schemas.length > 1 && (
             <Select
               value={schema}
               onValueChange={setSchema}

@@ -4,17 +4,16 @@ import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
 import { RiBardLine, RiSendPlaneLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { useDatabase, useDatabaseEnums } from '~/entities/database'
 import { trpc } from '~/lib/trpc'
-import { useTableStoreContext } from '..'
+import { Route, useTableStoreContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 
 export function HeaderSearch() {
   const [prompt, setPrompt] = useState('')
-  const { id, table, schema } = useParams({ from: '/(protected)/_protected/database/$id/tables/$schema/$table/' })
+  const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
   const { mutate: generateFilter, isPending } = useMutation({

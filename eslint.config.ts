@@ -8,6 +8,7 @@ export default antfu({
     'no-console': 'warn',
     'react-hooks/exhaustive-deps': 'off',
     'prefer-arrow-callback': 'off',
+    'react/no-context-provider': 'off', // Due to context selector
   },
   ignores: [
     '**/routeTree.gen.ts',

@@ -23,7 +23,7 @@ import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { createDatabase, databasesQuery } from '~/entities/database'
+import { createDatabase, databaseQuery, databasesQuery, ensureDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
@@ -32,7 +32,7 @@ import { queryClient } from '~/main'
 export const Route = createFileRoute(
   '/(protected)/_protected/create',
 )({
-  component: RouteComponent,
+  component: CreateConnectionPage,
   head: () => ({
     meta: [
       {
@@ -165,7 +165,7 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
             <div className="text-xs text-muted-foreground/50 text-balance">
               Syncing passwords in our cloud allows access from any device without re-entering the password.
               <br />
-              If not synced, passwords remain securely stored on your local device only.
+              If not synced, we will store the connection string without the password.
             </div>
           </div>
         </div>
@@ -174,7 +174,7 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
   )
 }
 
-function RouteComponent() {
+function CreateConnectionPage() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -183,7 +183,8 @@ function RouteComponent() {
     mutationFn: createDatabase,
     onSuccess: async ({ id }) => {
       toast.success('Connection created successfully 🎉')
-      await queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
+      queryClient.ensureQueryData(databaseQuery(id)).then(ensureDatabaseCore)
+      queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
       router.navigate({ to: '/database/$id/tables', params: { id } })
     },
   })

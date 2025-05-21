@@ -38,7 +38,7 @@ function RootDocument() {
 
     const preloader = document.getElementById('preloader')!
 
-    preloader.classList.add('scale-[0.5]', 'opacity-0')
+    preloader.classList.add('scale-[0.6]', 'opacity-0')
     // Waiting animation to smooth transition
     await sleep(80)
     document.body.classList.remove('overflow-hidden')

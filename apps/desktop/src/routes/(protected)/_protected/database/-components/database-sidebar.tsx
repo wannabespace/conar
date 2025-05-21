@@ -3,16 +3,17 @@ import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { Button } from '@connnect/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
-import { Link, useMatches, useNavigate, useParams } from '@tanstack/react-router'
+import { Link, useMatches, useNavigate } from '@tanstack/react-router'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
+import { Route } from '../$id'
 
 const os = getOS()
 
 export function DatabaseSidebar() {
+  const { id } = Route.useParams()
   const navigate = useNavigate()
-  const { id } = useParams({ from: '/(protected)/_protected/database/$id' })
   const matches = useMatches({
     select: matches => matches.map(match => match.routeId),
   })
@@ -65,6 +66,7 @@ export function DatabaseSidebar() {
                           to: '/database/$id/sql',
                           params: { id },
                         })}
+                        onClick={e => e.preventDefault()}
                       >
                         <RiPlayLargeLine className="size-4" />
                       </Link>
@@ -89,6 +91,7 @@ export function DatabaseSidebar() {
                           to: '/database/$id/tables',
                           params: { id },
                         })}
+                        onClick={e => e.preventDefault()}
                       >
                         <RiTableLine className="size-4" />
                       </Link>
@@ -113,6 +116,7 @@ export function DatabaseSidebar() {
                           to: '/database/$id/enums',
                           params: { id },
                         })}
+                        onClick={e => e.preventDefault()}
                       >
                         <RiListUnordered className="size-4" />
                       </Link>
@@ -138,7 +142,7 @@ export function DatabaseSidebar() {
               </TooltipTrigger>
               <TooltipContent side="right">
                 {os === 'macos' ? '⌘' : 'Ctrl'}
-                + P
+                P
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

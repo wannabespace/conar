@@ -44,7 +44,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
   const lang = childrenProps?.className?.split('-')[1] || 'text'
   const [isLoading, setIsLoading] = useState(false)
   const { loading } = use(MarkdownContext)
-  const [opened, setOpened] = useState('')
+  const [opened, setOpened] = useState<'pre' | ''>('')
 
   useEffect(() => {
     if (!loading) {
@@ -56,7 +56,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
 
     const timeout = setTimeout(() => {
       setIsLoading(false)
-    }, 500)
+    }, 1000)
 
     return () => clearTimeout(timeout)
   }, [content, loading])
@@ -76,7 +76,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
     <div className="typography-disabled relative my-6 first:mt-0 last:mb-0">
       <Accordion
         value={opened}
-        onValueChange={setOpened}
+        onValueChange={value => setOpened(value as 'pre')}
         type="single"
         collapsible
       >
@@ -97,7 +97,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                   </span>
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  <NumberFlow value={lines} />
+                  <NumberFlow className="tabular-nums" value={lines} />
                   {' '}
                   line
                   {lines === 1 ? '' : 's'}

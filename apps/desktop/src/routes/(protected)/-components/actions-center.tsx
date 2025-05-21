@@ -4,7 +4,7 @@ import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine, RiDashboardLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { Store, useStore } from '@tanstack/react-store'
-import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
+import { DatabaseIcon, ensureDatabaseCore, useDatabases } from '~/entities/database'
 import { trackEvent } from '~/lib/events'
 
 const os = getOS()
@@ -55,7 +55,7 @@ export function ActionsCenter() {
                   setIsOpen(false)
                   router.navigate({ to: '/database/$id/tables', params: { id: database.id } })
                 }}
-                onMouseOver={() => prefetchDatabaseCore(database)}
+                onMouseOver={() => ensureDatabaseCore(database)}
               >
                 <DatabaseIcon type={database.type} className="size-4 shrink-0" />
                 {database.name}
@@ -71,7 +71,7 @@ export function ActionsCenter() {
             }}
           >
             <RiAddLine className="size-4 shrink-0 opacity-60" />
-            Add New Connection...
+            Add new connection...
           </CommandItem>
         </CommandGroup>
       </CommandList>

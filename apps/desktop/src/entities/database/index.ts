@@ -1,5 +1,4 @@
 export * from './components/database-icon'
-export * from './components/table'
 export * from './hooks/database'
 export * from './lib'
 export * from './queries/columns'

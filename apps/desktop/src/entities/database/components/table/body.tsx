@@ -1,91 +1,96 @@
-import type { Cell as CellType, Row as RowType } from '@tanstack/react-table'
 import type { VirtualItem } from '@tanstack/react-virtual'
-import { flexRender } from '@tanstack/react-table'
+import type { ColumnRenderer } from '.'
 import { memo } from 'react'
-import { useVirtualColumnsContext } from '.'
+import { useTableContext } from '.'
 
-const RowCell = memo(function RowCellMemo({
+const RowColumn = memo(function RowColumnMemo({
+  value,
+  rowIndex,
   virtualColumn,
-  cell,
+  column,
 }: {
+  value: unknown
+  rowIndex: number
   virtualColumn: VirtualItem
-  cell: CellType<Record<string, unknown>, unknown>
+  column: ColumnRenderer
 }) {
   return (
     <div
-      key={virtualColumn.key}
+      data-column-index={virtualColumn.index}
       className="group/cell absolute top-0 left-0 h-full"
       style={{
         transform: `translateX(${virtualColumn.start}px)`,
-        width: `${cell.column.getSize()}px`,
+        width: `${column.size}px`,
       }}
     >
-      {flexRender(
-        cell.column.columnDef.cell,
-        cell.getContext(),
-      )}
+      <column.cell
+        value={value}
+        rowIndex={rowIndex}
+        column={column}
+      />
     </div>
   )
-})
-
-const RowColumns = memo(function RowColumnsMemo({ row }: { row: RowType<Record<string, unknown>> }) {
-  const virtualColumns = useVirtualColumnsContext()
-
-  return virtualColumns.map((virtualColumn) => {
-    const cell = row.getVisibleCells()[virtualColumn.index]
-    return (
-      <RowCell
-        key={virtualColumn.key}
-        virtualColumn={virtualColumn}
-        cell={cell}
-      />
-    )
-  })
-})
+}, (prev, next) => prev.virtualColumn.key === next.virtualColumn.key)
 
 const Row = memo(function RowMemo({
-  virtualRow,
   children,
-  rowWidth,
+  virtualRow,
 }: {
-  virtualRow: VirtualItem
   children: React.ReactNode
-  rowWidth: number
+  virtualRow: VirtualItem
 }) {
   return (
     <div
-      className="group/row flex absolute top-0 left-0 w-full border-b last:border-b-0 min-w-full hover:bg-accent/30"
+      data-row-index={virtualRow.index}
+      className="group/row absolute flex w-full border-b last:border-b-0 min-w-full hover:bg-accent/30"
       style={{
         height: `${virtualRow.size}px`,
         transform: `translate3d(0,${virtualRow.start}px,0)`,
-        width: `${rowWidth}px`,
       }}
     >
       {children}
     </div>
   )
-})
+}, (prev, next) => prev.virtualRow.key === next.virtualRow.key)
 
-export const Body = memo(function BodyMemo({
-  rows,
-  virtualRows,
-  rowWidth,
-}: {
-  rowWidth: number
-  rows: RowType<Record<string, unknown>>[]
-  virtualRows: VirtualItem[]
-}) {
+function RowColumns({ rowIndex }: { rowIndex: number }) {
+  const virtualColumns = useTableContext(state => state.virtualColumns)
+  const data = useTableContext(state => state.data)
+  const columns = useTableContext(state => state.columns)
+
+  return virtualColumns.map((virtualColumn) => {
+    const column = columns[virtualColumn.index]
+    const value = data[rowIndex][column.name]
+
+    return (
+      <RowColumn
+        key={virtualColumn.key}
+        virtualColumn={virtualColumn}
+        value={value}
+        rowIndex={rowIndex}
+        column={column}
+      />
+    )
+  })
+}
+
+export function TableBody() {
+  const virtualRows = useTableContext(state => state.virtualRows)
+  const rowWidth = useTableContext(state => state.rowWidth)
+
   return (
-    <div className="relative flex flex-col">
+    <div
+      className="relative flex flex-col"
+      style={{ width: `${rowWidth}px` }}
+    >
       {virtualRows.map(virtualRow => (
         <Row
           key={virtualRow.key}
           virtualRow={virtualRow}
-          rowWidth={rowWidth}
         >
-          <RowColumns row={rows[virtualRow.index]} />
+          <RowColumns rowIndex={virtualRow.index} />
         </Row>
       ))}
     </div>
   )
-})
+}

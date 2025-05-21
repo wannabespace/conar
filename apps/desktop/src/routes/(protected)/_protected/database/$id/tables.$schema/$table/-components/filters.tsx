@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components
 import { useToggle } from '@connnect/ui/hookas/use-toggle'
 import { RiAddLine, RiFilterOffLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { DataFilterForm, DataFilterItem } from '~/entities/database'
+import { FilterForm, FilterItem } from '~/entities/database/components/table'
 import { useTableStoreContext } from '..'
 
 export function Filters() {
@@ -20,7 +20,7 @@ export function Filters() {
     <div className="flex gap-2 justify-between">
       <div className="flex gap-2 flex-wrap">
         {filters.map(filter => (
-          <DataFilterItem
+          <FilterItem
             key={`${filter.column}-${filter.operator}-${filter.value}`}
             filter={filter}
             onRemove={() => store.setState(state => ({
@@ -46,7 +46,7 @@ export function Filters() {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="p-0">
-            <DataFilterForm
+            <FilterForm
               onAdd={(filter) => {
                 toggleForm(false)
                 store.setState(state => ({

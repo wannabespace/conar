@@ -1,27 +1,32 @@
 import { title } from '@connnect/shared/utils/title'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { databaseQuery, prefetchDatabaseCore, useDatabase } from '~/entities/database'
+import { databaseQuery, ensureDatabaseCore, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id')({
-  component: RouteComponent,
-  loader: async ({ params }) => {
+  component: DatabasePage,
+  beforeLoad: async ({ params }) => {
     const database = await queryClient.ensureQueryData(databaseQuery(params.id))
-    await prefetchDatabaseCore(database)
+
+    ensureDatabaseCore(database)
+
     return { database }
   },
+  loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: title(loaderData.database.name),
-      },
-    ],
+    meta: loaderData
+      ? [
+          {
+            title: title(loaderData.database.name),
+          },
+        ]
+      : [],
   }),
 })
 
-function RouteComponent() {
+function DatabasePage() {
   const { id } = Route.useParams()
   const { data: database } = useDatabase(id)
 

@@ -1,5 +1,5 @@
 import type { editor } from 'monaco-editor'
-import type { DataTableCell } from '~/entities/database'
+import type { Column } from '~/entities/database/components/table'
 import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
@@ -9,46 +9,23 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useDebouncedMemo } from '@connnect/ui/hookas/use-debounced-memo'
+import { useMountEffect } from '@connnect/ui/hookas/use-mount-effect'
 import { copy } from '@connnect/ui/lib/copy'
+import NumberFlow from '@number-flow/react'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiPlayLargeLine, RiSearchLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
-import { DANGEROUS_SQL_KEYWORDS, DataTable, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
+import { DANGEROUS_SQL_KEYWORDS, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
+import { Table } from '~/entities/database/components/table'
 import { formatSql } from '~/lib/formatter'
-import { pageHooks, pageStore } from '..'
+import { pageHooks, pageStore, Route } from '..'
+import { chatQuery } from '../-lib'
 
 const os = getOS()
-
-export const queryStorage = {
-  get(id: string) {
-    return localStorage.getItem(`sql-${id}`) || '-- Write your SQL query here\n'
-      + '\n'
-      + '-- Please write your own queries based on your database schema\n'
-      + '-- The examples below are for reference only and may not work with your database\n'
-      + '\n'
-      + '-- Example 1: Basic query with limit\n'
-      + '-- SELECT * FROM users LIMIT 10;\n'
-      + '\n'
-      + '-- Example 2: Query with filtering\n'
-      + '-- SELECT id, name, email FROM users WHERE created_at > \'2025-01-01\' ORDER BY name;\n'
-      + '\n'
-      + '-- Example 3: Join example\n'
-      + '-- SELECT u.id, u.name, p.title FROM users u\n'
-      + '-- JOIN posts p ON u.id = p.user_id\n'
-      + '-- WHERE p.published = true\n'
-      + '-- LIMIT 10;\n'
-      + '\n'
-      + '-- TIP: You can run multiple queries at once by separating them with semicolons'
-  },
-  set(id: string, query: string) {
-    localStorage.setItem(`sql-${id}`, query)
-  },
-}
 
 function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void, query: string }) {
   const os = getOS()
@@ -106,7 +83,7 @@ function ResultTable({
   columns,
 }: {
   result: Record<string, unknown>[]
-  columns: DataTableCell[]
+  columns: Column[]
 }) {
   const [search, setSearch] = useState('')
 
@@ -127,7 +104,7 @@ function ResultTable({
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Results</span>
           <span className="text-xs text-muted-foreground">
-            {filteredData.length}
+            <NumberFlow value={filteredData.length} className="tabular-nums" />
             {' '}
             {filteredData.length === 1 ? 'row' : 'rows'}
             {search && filteredData.length !== result.length && ` (filtered from ${result.length})`}
@@ -143,18 +120,22 @@ function ResultTable({
           <RiSearchLine className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground size-3.5" />
           {search && (
             <Button variant="ghost" size="iconXs" className="absolute right-1.5 top-1/2 -translate-y-1/2" onClick={() => setSearch('')}>
-              <RiCloseLine className="size-3" />
+              <RiCloseLine className="size-4" />
             </Button>
           )}
         </div>
       </div>
-      <DataTable data={filteredData} columns={columns} className="flex-1" />
+      <Table
+        data={filteredData}
+        columns={columns}
+        className="h-full"
+      />
     </div>
   )
 }
 
 export function Runner() {
-  const { id } = useParams({ from: '/(protected)/_protected/database/$id/sql/' })
+  const { id } = Route.useParams()
   const { data: database } = useDatabase(id)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const query = useStore(pageStore, state => state.query)
@@ -165,8 +146,8 @@ export function Runner() {
     })
   }, [])
 
-  useEffect(() => {
-    queryStorage.set(id, query)
+  useMountEffect(() => {
+    chatQuery.set(id, query)
   }, [id, query])
 
   const { refetch: runQuery, data: results, status, fetchStatus: queryStatus, error } = useQuery({
@@ -182,6 +163,7 @@ export function Runner() {
 
       return res
     },
+    staleTime: Infinity,
     throwOnError: false,
     select: data => data.filter(r => r.rows.length > 0),
     enabled: false,
@@ -232,7 +214,6 @@ export function Runner() {
         />
         <CardHeader className="dark:bg-input/30 py-3">
           <CardTitle className="flex items-center gap-2">
-            <RiPlayLargeLine className="size-4" />
             SQL Runner
           </CardTitle>
         </CardHeader>

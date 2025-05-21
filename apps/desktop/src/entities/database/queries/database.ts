@@ -1,9 +1,11 @@
 import type { Subscription } from 'dexie'
+import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { liveQuery } from 'dexie'
 import { useEffect } from 'react'
 import { indexedDb } from '~/lib/indexeddb'
 import { queryClient } from '~/main'
+import { getDatabaseContext } from '../lib'
 
 export function databasesQuery() {
   return queryOptions({
@@ -69,4 +71,15 @@ export function useDatabase(id: string) {
   }, [id])
 
   return query
+}
+
+export function databaseContextQuery(database: Database) {
+  return queryOptions({
+    queryKey: ['database', database.id, 'context'],
+    queryFn: () => getDatabaseContext(database),
+  })
+}
+
+export function useDatabaseContext(database: Database) {
+  return useQuery(databaseContextQuery(database))
 }

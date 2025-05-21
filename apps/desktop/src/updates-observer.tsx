@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Store, useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
@@ -22,7 +22,7 @@ export async function checkForUpdates() {
 }
 
 export function UpdatesObserver() {
-  const { data: version } = useSuspenseQuery({
+  const { data: version } = useQuery({
     queryKey: ['version'],
     queryFn: () => window.electron.versions.app(),
   })
@@ -35,7 +35,9 @@ export function UpdatesObserver() {
   }, [])
 
   useEffect(() => {
-    updatesStore.setState(state => ({ ...state, version }))
+    if (version) {
+      updatesStore.setState(state => ({ ...state, version }))
+    }
   }, [version])
 
   useEffect(() => {
