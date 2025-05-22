@@ -73,7 +73,7 @@ function CellProvider({
 
       await onUpdate(
         rowIndex,
-        column.name,
+        column.id,
         _value,
       )
     },
@@ -238,10 +238,12 @@ function TableCellMonaco({
 function CellContent({
   value,
   className,
+  index,
   ...props
 }: {
   value: unknown
   className?: string
+  index: number
 } & ComponentProps<'div'>) {
   const displayValue = (() => {
     if (value === null)
@@ -257,8 +259,9 @@ function CellContent({
     <div
       data-mask
       className={cn(
-        'h-full text-xs truncate p-2 group-data-[column-index="0"]/cell:pl-4 font-mono cursor-default select-none',
         'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
+        'h-full text-xs truncate p-2 font-mono cursor-default select-none',
+        index === 0 && 'pl-4',
         value === null && 'text-muted-foreground/50',
         value === '' && 'text-muted-foreground/50',
         className,
@@ -285,8 +288,14 @@ export function Cell({
   rowIndex,
   column,
   className,
+  index,
   ...props
-}: { value: unknown, rowIndex: number, column: ColumnRenderer } & ComponentProps<'div'>) {
+}: {
+  value: unknown
+  rowIndex: number
+  column: ColumnRenderer
+  index: number
+} & ComponentProps<'div'>) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
@@ -314,6 +323,7 @@ export function Cell({
     return (
       <CellContent
         value={value}
+        index={index}
         onMouseOver={() => setCanInteract(true)}
         className={cn(cellClassName, className)}
         {...props}
@@ -326,7 +336,7 @@ export function Cell({
     setIsPopoverOpen(true)
     setStatus('error')
 
-    toast.error(`Failed to update cell ${column.name}`, {
+    toast.error(`Failed to update cell ${column.id}`, {
       description: error.message,
       duration: 3000,
     })
@@ -371,6 +381,7 @@ export function Cell({
               >
                 <CellContent
                   value={value}
+                  index={index}
                   className={cn(cellClassName, className)}
                   {...props}
                 />

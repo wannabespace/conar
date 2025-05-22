@@ -13,11 +13,10 @@ const RowColumn = memo(function RowColumnMemo({
   const columns = useTableContext(state => state.columns)
 
   const column = columns[virtualColumn.index]
-  const value = data[rowIndex][column.name]
+  const value = data[rowIndex][column.id]
 
   return (
     <div
-      data-column-index={virtualColumn.index}
       className="group/cell absolute top-0 left-0 h-full"
       style={{
         transform: `translateX(${virtualColumn.start}px)`,
@@ -28,6 +27,7 @@ const RowColumn = memo(function RowColumnMemo({
         value={value}
         rowIndex={rowIndex}
         column={column}
+        index={virtualColumn.index}
       />
     </div>
   )

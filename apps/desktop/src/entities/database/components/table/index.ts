@@ -67,9 +67,9 @@ export interface Column {
 }
 
 export interface ColumnRenderer {
-  name: string
+  id: string
   meta?: Column
   size: number
-  cell: React.ComponentType<{ value: unknown, rowIndex: number, column: ColumnRenderer }>
-  header: React.ComponentType<{ column: ColumnRenderer }>
+  cell: React.ComponentType<{ value: unknown, rowIndex: number, column: ColumnRenderer, index: number }>
+  header: React.ComponentType<{ column: ColumnRenderer, index: number }>
 }

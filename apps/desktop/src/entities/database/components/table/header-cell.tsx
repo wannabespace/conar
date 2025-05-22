@@ -1,11 +1,15 @@
 import type { ColumnRenderer } from '.'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { cn } from '@connnect/ui/lib/utils'
 import { RiBookOpenLine, RiEraserLine, RiKey2Line } from '@remixicon/react'
 
-export function HeaderCell({ column }: { column: ColumnRenderer }) {
+export function HeaderCell({ column, index }: { column: ColumnRenderer, index: number }) {
   return (
     <div
-      className="shrink-0 text-xs p-2 group-data-[column-index='0']/header:pl-4"
+      className={cn(
+        'shrink-0 text-xs p-2',
+        index === 0 && 'pl-4',
+      )}
     >
       {/* TODO: add sortable */}
       <div
@@ -17,11 +21,12 @@ export function HeaderCell({ column }: { column: ColumnRenderer }) {
         <div
           data-mask
           className="truncate font-medium flex items-center gap-1"
+          title={column.id}
         >
-          {column.name}
+          {column.id}
         </div>
         {column.meta?.type && (
-          <div className="flex items-center gap-1">
+          <div data-type={column.meta.type} className="flex items-center gap-1">
             {column.meta.isPrimaryKey && (
               <TooltipProvider>
                 <Tooltip>
@@ -52,9 +57,9 @@ export function HeaderCell({ column }: { column: ColumnRenderer }) {
                 </Tooltip>
               </TooltipProvider>
             )}
-            <div data-type={column.meta.type} className="text-muted-foreground truncate font-mono">
+            <span className="text-muted-foreground truncate font-mono">
               {column.meta.type}
-            </div>
+            </span>
           </div>
         )}
       </div>

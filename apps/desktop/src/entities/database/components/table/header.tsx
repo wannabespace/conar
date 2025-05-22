@@ -13,14 +13,13 @@ const HeaderColumn = memo(function HeaderColumnMemo({
 }) {
   return (
     <div
-      data-column-index={index}
       className="group/header absolute top-0 left-0 flex h-full"
       style={{
         transform: `translateX(${start}px)`,
         width: `${column.size}px`,
       }}
     >
-      <column.header column={column} />
+      <column.header column={column} index={index} />
     </div>
   )
 })
@@ -38,7 +37,7 @@ export function TableHeader({ columns }: { columns: ColumnRenderer[] }) {
 
             return (
               <HeaderColumn
-                key={column.name}
+                key={column.id}
                 column={column}
                 index={virtualColumn.index}
                 start={virtualColumn.start}

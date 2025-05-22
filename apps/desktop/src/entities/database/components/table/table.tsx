@@ -104,7 +104,7 @@ export function Table({
     const sortedColumns: ColumnRenderer[] = columns
       .toSorted((a, b) => a.isPrimaryKey ? -1 : b.isPrimaryKey ? 1 : 0)
       .map(column => ({
-        name: column.name,
+        id: column.name,
         meta: column,
         size: columnsSizeMap.get(column.type!) ?? DEFAULT_COLUMN_WIDTH,
         cell: Cell,
@@ -114,7 +114,7 @@ export function Table({
     if (selectable) {
       sortedColumns.unshift(
         {
-          name: String(selectSymbol),
+          id: String(selectSymbol),
           cell: SelectionCell,
           header: SelectionHeaderCell,
           size: 40,

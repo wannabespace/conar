@@ -4,7 +4,8 @@ import { SQL_OPERATORS_LIST } from '@connnect/shared/utils/sql'
 import { title } from '@connnect/shared/utils/title'
 import { createFileRoute } from '@tanstack/react-router'
 import { Store } from '@tanstack/react-store'
-import { createContext, use, useState } from 'react'
+import { type } from 'arktype'
+import { createContext, use, useEffect, useState } from 'react'
 import { ensureDatabaseTableCore } from '~/entities/database'
 import { FiltersProvider } from '~/entities/database/table'
 import { Filters } from './-components/filters'
@@ -18,7 +19,8 @@ interface TableStore {
   pageSize: PageSize
   selected: number[]
   filters: WhereFilter[]
-  orderBy?: [string, 'ASC' | 'DESC']
+  orderBy?: [string, 'ASC' | 'DESC'][]
+  prompt: string
 }
 
 const TableStoreContext = createContext<Store<TableStore>>(null!)
@@ -46,13 +48,41 @@ export const Route = createFileRoute(
   }),
 })
 
+const storeState = type({
+  'page': 'number > 0',
+  'pageSize': 'number' as type.cast<PageSize>,
+  'selected': 'number[]',
+  'filters': type<WhereFilter>({
+    column: 'string',
+    operator: 'string',
+    value: 'string',
+  }).array(),
+  'orderBy?': type(['string', 'string' as type.cast<'ASC' | 'DESC'>]).array(),
+  'prompt': 'string',
+})
+
 function DatabaseTablePage() {
-  const [store] = useState(() => new Store<TableStore>({
-    page: 1,
-    pageSize: 50,
-    selected: [],
-    filters: [],
-  }))
+  const { table } = Route.useParams()
+  const [store] = useState(() => {
+    const state = storeState(JSON.parse(sessionStorage.getItem(`${table}-store`) ?? '{}'))
+
+    return new Store<TableStore>(state instanceof type.errors
+      ? {
+          page: 1,
+          pageSize: 50,
+          selected: [],
+          filters: [],
+          prompt: '',
+        }
+      : state)
+  })
+
+  useEffect(() => {
+    return store.subscribe((state) => {
+      sessionStorage.setItem(`${table}-store`, JSON.stringify(state.currentVal))
+    })
+  }, [])
+
   const { data: columns } = useColumnsQuery()
 
   return (

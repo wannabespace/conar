@@ -2,9 +2,9 @@ import type { SQL_OPERATORS_LIST } from '@connnect/shared/utils/sql'
 import { Button } from '@connnect/ui/components/button'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
-import { useSessionStorage } from '@connnect/ui/hookas/use-session-storage'
 import { RiBardLine, RiSendPlaneLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
+import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { useDatabase, useDatabaseEnums } from '~/entities/database'
@@ -14,9 +14,9 @@ import { useColumnsQuery } from '../-queries/use-columns-query'
 
 export function HeaderSearch() {
   const { id, table, schema } = Route.useParams()
-  const [prompt, setPrompt] = useSessionStorage(`${table}-header-search`, '')
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
+  const prompt = useStore(store, state => state.prompt)
   const { mutate: generateFilter, isPending } = useMutation({
     mutationFn: trpc.ai.sqlFilters.mutate,
     onSuccess: (data) => {
@@ -62,7 +62,7 @@ export function HeaderSearch() {
         placeholder="Ask AI to filter data..."
         disabled={isPending}
         value={prompt}
-        onChange={e => setPrompt(e.target.value)}
+        onChange={e => store.setState(state => ({ ...state, prompt: e.target.value }))}
       />
       <Button
         type="submit"
