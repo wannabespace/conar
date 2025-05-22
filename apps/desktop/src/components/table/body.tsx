@@ -9,11 +9,8 @@ const RowColumn = memo(function RowColumnMemo({
   rowIndex: number
   virtualColumn: VirtualItem
 }) {
-  const data = useTableContext(state => state.data)
   const columns = useTableContext(state => state.columns)
-
   const column = columns[virtualColumn.index]
-  const value = data[rowIndex][column.id]
 
   return (
     <div
@@ -24,10 +21,8 @@ const RowColumn = memo(function RowColumnMemo({
       }}
     >
       <column.cell
-        value={value}
         rowIndex={rowIndex}
-        column={column}
-        index={virtualColumn.index}
+        columnIndex={virtualColumn.index}
       />
     </div>
   )

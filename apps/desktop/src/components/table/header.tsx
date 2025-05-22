@@ -19,7 +19,7 @@ const HeaderColumn = memo(function HeaderColumnMemo({
         width: `${column.size}px`,
       }}
     >
-      <column.header column={column} index={index} />
+      <column.header columnIndex={index} />
     </div>
   )
 })

@@ -1,19 +1,32 @@
+import type { ColumnRenderer } from '~/components/table'
 import { useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
+import { DEFAULT_COLUMN_WIDTH, Table } from '~/components/table'
 import { setSql, useDatabase } from '~/entities/database'
-import { createCellUpdater, Table } from '~/entities/database/components/table'
+import { createCellUpdater } from '~/entities/database/components/cells-updater'
+import { TableCell } from '~/entities/database/components/table-cell'
+import { TableHeaderCell } from '~/entities/database/components/table-header-cell'
 import { queryClient } from '~/main'
-import { Route, useTableStoreContext } from '..'
+import { Route } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
+import { SelectionCell, SelectionHeaderCell } from './table-selection'
+
+const selectSymbol = Symbol('table-selection')
+
+const columnsSizeMap = new Map<string, number>([
+  ['boolean', 150],
+  ['number', 150],
+  ['integer', 120],
+  ['bigint', 160],
+  ['float', 150],
+  ['uuid', 290],
+])
 
 function TableComponent() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
-  const store = useTableStoreContext()
-  const selected = useStore(store, state => state.selected)
   const rowsQueryOpts = useRowsQueryOpts()
   const { data, error, isPending } = useQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
@@ -60,21 +73,34 @@ function TableComponent() {
     saveValue,
   })
 
+  const tableColumns = useMemo(() => {
+    const sortedColumns: ColumnRenderer[] = columns
+      .toSorted((a, b) => a.isPrimaryKey ? -1 : b.isPrimaryKey ? 1 : 0)
+      .map(column => ({
+        id: column.name,
+        size: columnsSizeMap.get(column.type) ?? DEFAULT_COLUMN_WIDTH,
+        cell: props => <TableCell value={rows[props.rowIndex][column.name]} column={column} onUpdate={updateCell} {...props} />,
+        header: props => <TableHeaderCell column={column} {...props} />,
+      }) satisfies ColumnRenderer)
+
+    if (!!primaryKeys && primaryKeys.length > 0) {
+      sortedColumns.unshift({
+        id: String(selectSymbol),
+        cell: SelectionCell,
+        header: props => <SelectionHeaderCell data={rows} {...props} />,
+        size: 40,
+      } satisfies ColumnRenderer)
+    }
+
+    return sortedColumns
+  }, [columns, rows, primaryKeys])
+
   return (
     <Table
       data={rows}
-      columns={columns}
+      columns={tableColumns}
       loading={isPending}
       error={error}
-      selectable={!!primaryKeys && primaryKeys.length > 0}
-      state={{
-        selected,
-      }}
-      onUpdate={updateCell}
-      onSelect={rows => store.setState(state => ({
-        ...state,
-        selected: rows,
-      }))}
     />
   )
 }

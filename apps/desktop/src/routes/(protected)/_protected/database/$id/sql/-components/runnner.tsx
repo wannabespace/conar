@@ -1,5 +1,6 @@
 import type { editor } from 'monaco-editor'
-import type { Column } from '~/entities/database/components/table'
+import type { ColumnRenderer } from '~/components/table'
+import type { Column } from '~/entities/database/table'
 import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
@@ -16,11 +17,13 @@ import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
+import { DEFAULT_COLUMN_WIDTH, Table } from '~/components/table'
 import { DANGEROUS_SQL_KEYWORDS, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
-import { Table } from '~/entities/database/components/table'
+import { TableCell } from '~/entities/database/components/table-cell'
+import { TableHeaderCell } from '~/entities/database/components/table-header-cell'
 import { formatSql } from '~/lib/formatter'
 import { pageHooks, pageStore, Route } from '..'
 import { chatQuery } from '../-lib'
@@ -87,6 +90,15 @@ function ResultTable({
 }) {
   const [search, setSearch] = useState('')
 
+  const tableColumns = useMemo(() => {
+    return columns.map(column => ({
+      id: column.name,
+      cell: props => <TableCell value={result[props.rowIndex][column.name]} column={column} {...props} />,
+      header: props => <TableHeaderCell column={column} {...props} />,
+      size: DEFAULT_COLUMN_WIDTH,
+    } satisfies ColumnRenderer))
+  }, [columns, result])
+
   const filteredData = useDebouncedMemo(() => {
     if (!search.trim())
       return result
@@ -127,7 +139,7 @@ function ResultTable({
       </div>
       <Table
         data={filteredData}
-        columns={columns}
+        columns={tableColumns}
         className="h-full"
       />
     </div>

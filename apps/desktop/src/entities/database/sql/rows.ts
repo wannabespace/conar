@@ -1,5 +1,5 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
-import type { PageSize } from '../table'
+import type { PageSize } from '~/components/table'
 import { prepareSql } from '@connnect/shared/utils/helpers'
 
 export function rowsSql(schema: string, table: string, query: {

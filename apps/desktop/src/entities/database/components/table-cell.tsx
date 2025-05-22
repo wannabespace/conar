@@ -1,6 +1,6 @@
 import type { UseMutateFunction } from '@tanstack/react-query'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
-import type { Column, ColumnRenderer } from '.'
+import type { Column } from '../table'
 import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
@@ -15,7 +15,6 @@ import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { sleep } from '~/lib/helpers'
-import { useTableContext } from '.'
 
 const os = getOS()
 
@@ -29,7 +28,7 @@ function getDisplayValue(value: unknown, pretty = true) {
 interface CellContextValue {
   value: string
   setValue: Dispatch<SetStateAction<string>>
-  column: ColumnRenderer
+  column: Column
   isJson: boolean
   initialValue: unknown
   displayValue: string
@@ -43,22 +42,23 @@ function useCellContext() {
 }
 
 function CellProvider({
+  children,
   column,
   initialValue,
+  onUpdate,
   onSaveError,
   onSaveSuccess,
   onSavePending,
-  children,
 }: {
-  column: ColumnRenderer
-  initialValue: unknown
   children: React.ReactNode
+  column: Column
+  initialValue: unknown
+  onUpdate?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   onSaveError: (error: Error) => void
   onSaveSuccess: () => void
   onSavePending: () => void
 }) {
-  const onUpdate = useTableContext(state => state.onUpdate)
-  const isJson = !!column.meta?.type?.includes('json')
+  const isJson = !!column?.type?.includes('json')
   const displayValue = getDisplayValue(initialValue)
   const [value, setValue] = useState<string>(() => initialValue === null ? '' : displayValue)
 
@@ -73,7 +73,7 @@ function CellProvider({
 
       await onUpdate(
         rowIndex,
-        column.id,
+        column.name,
         _value,
       )
     },
@@ -107,19 +107,20 @@ function TableCellMonaco({
   isBig,
   setIsBig,
   onClose,
+  onUpdate,
 }: {
   rowIndex: number
   isBig: boolean
   setIsBig: Dispatch<SetStateAction<boolean>>
   onClose: () => void
+  onUpdate?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
 }) {
   const { value, initialValue, column, displayValue, isJson, setValue, update } = useCellContext()
-  const onUpdate = useTableContext(state => state.onUpdate)
 
   const [isTouched, setIsTouched] = useState(false)
 
-  const canEdit = !!column.meta?.isEditable && !!onUpdate
-  const canSetNull = !!column.meta?.isNullable && initialValue !== null
+  const canEdit = !!column?.isEditable && !!onUpdate
+  const canSetNull = !!column?.isNullable && initialValue !== null
   const canSave = isTouched && value !== displayValue
 
   const setNull = () => {
@@ -238,12 +239,12 @@ function TableCellMonaco({
 function CellContent({
   value,
   className,
-  index,
+  columnIndex,
   ...props
 }: {
   value: unknown
   className?: string
-  index: number
+  columnIndex: number
 } & ComponentProps<'div'>) {
   const displayValue = (() => {
     if (value === null)
@@ -261,7 +262,7 @@ function CellContent({
       className={cn(
         'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
         'h-full text-xs truncate p-2 font-mono cursor-default select-none',
-        index === 0 && 'pl-4',
+        columnIndex === 0 && 'pl-4',
         value === null && 'text-muted-foreground/50',
         value === '' && 'text-muted-foreground/50',
         className,
@@ -283,18 +284,20 @@ function getTimestamp(value: unknown, meta: Column) {
   return date?.isValid() ? date : null
 }
 
-export function Cell({
+export function TableCell({
   value,
   rowIndex,
   column,
   className,
-  index,
+  columnIndex,
+  onUpdate,
   ...props
 }: {
   value: unknown
   rowIndex: number
-  column: ColumnRenderer
-  index: number
+  column: Column
+  columnIndex: number
+  onUpdate?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
 } & ComponentProps<'div'>) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
@@ -323,7 +326,7 @@ export function Cell({
     return (
       <CellContent
         value={value}
-        index={index}
+        columnIndex={columnIndex}
         onMouseOver={() => setCanInteract(true)}
         className={cn(cellClassName, className)}
         {...props}
@@ -336,7 +339,7 @@ export function Cell({
     setIsPopoverOpen(true)
     setStatus('error')
 
-    toast.error(`Failed to update cell ${column.id}`, {
+    toast.error(`Failed to update cell ${column.name}`, {
       description: error.message,
       duration: 3000,
     })
@@ -350,12 +353,13 @@ export function Cell({
     setStatus('saving')
   }
 
-  const date = column.meta ? getTimestamp(value, column.meta) : null
+  const date = column ? getTimestamp(value, column) : null
 
   return (
     <CellProvider
       column={column}
       initialValue={value}
+      onUpdate={onUpdate}
       onSavePending={onSavePending}
       onSaveError={onSaveError}
       onSaveSuccess={onSaveSuccess}
@@ -381,7 +385,7 @@ export function Cell({
               >
                 <CellContent
                   value={value}
-                  index={index}
+                  columnIndex={columnIndex}
                   className={cn(cellClassName, className)}
                   {...props}
                 />

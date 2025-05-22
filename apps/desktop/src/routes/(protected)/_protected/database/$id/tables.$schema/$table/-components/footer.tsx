@@ -1,9 +1,9 @@
-import type { PageSize } from '~/entities/database/components/table'
+import type { PageSize } from '~/components/table'
 import { Separator } from '@connnect/ui/components/separator'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useState } from 'react'
+import { TableFooter } from '~/components/table'
 import { databaseRowsQuery, useDatabase, useDatabaseTableTotal, whereSql } from '~/entities/database'
-import { TableFooter } from '~/entities/database/components/table'
 import { queryClient } from '~/main'
 import { Route, useTableStoreContext } from '..'
 

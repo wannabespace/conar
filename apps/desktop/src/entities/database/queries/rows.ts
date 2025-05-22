@@ -1,4 +1,4 @@
-import type { PageSize } from '../components/table/footer'
+import type { PageSize } from '~/components/table'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { rowsSql } from '../sql/rows'
