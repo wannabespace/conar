@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connn
 import { useDebouncedMemo } from '@connnect/ui/hookas/use-debounced-memo'
 import { useMountedEffect } from '@connnect/ui/hookas/use-mounted-effect'
 import { copy } from '@connnect/ui/lib/copy'
+import { cn } from '@connnect/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
@@ -23,7 +24,6 @@ import { Monaco } from '~/components/monaco'
 import { DEFAULT_COLUMN_WIDTH, Table } from '~/components/table'
 import { DANGEROUS_SQL_KEYWORDS, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
-import { TableHeaderCell } from '~/entities/database/components/table-header-cell'
 import { formatSql } from '~/lib/formatter'
 import { pageHooks, pageStore, Route } from '..'
 import { chatQuery } from '../-lib'
@@ -93,8 +93,25 @@ function ResultTable({
   const tableColumns = useMemo(() => {
     return columns.map(column => ({
       id: column.name,
+      header: ({ columnIndex }) => (
+        <div
+          className={cn(
+            'flex w-full items-center justify-between shrink-0 p-2',
+            columnIndex === 0 && 'pl-4',
+          )}
+        >
+          <div className="text-xs">
+            <div
+              data-mask
+              className="truncate font-medium flex items-center gap-1"
+              title={column.name}
+            >
+              {column.name}
+            </div>
+          </div>
+        </div>
+      ),
       cell: props => <TableCell value={result[props.rowIndex][column.name]} column={column} {...props} />,
-      header: props => <TableHeaderCell column={column} {...props} />,
       size: DEFAULT_COLUMN_WIDTH,
     } satisfies ColumnRenderer))
   }, [columns, result])
@@ -111,8 +128,8 @@ function ResultTable({
   }, [result, search], 100)
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-4 py-1 flex items-center justify-between gap-2">
+    <div className="h-full">
+      <div className="px-4 h-10 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Results</span>
           <span className="text-xs text-muted-foreground">
@@ -140,7 +157,7 @@ function ResultTable({
       <Table
         data={filteredData}
         columns={tableColumns}
-        className="h-full"
+        className="h-[calc(100%-theme(spacing.10))]"
       />
     </div>
   )
