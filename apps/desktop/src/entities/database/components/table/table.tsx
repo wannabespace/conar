@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react'
 import type { Column, ColumnRenderer, StoreValue } from '.'
 import type { CellUpdaterFunction } from './cells-updater'
 import { ScrollArea } from '@connnect/ui/components/custom/scroll-area'
+import { useScrollDirection } from '@connnect/ui/hookas/use-scroll-direction'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { Store, useStore } from '@tanstack/react-store'
@@ -97,6 +98,8 @@ export function Table({
     hiddenColumns: initialState?.hiddenColumns ?? [],
   }))
 
+  const scrollDirection = useScrollDirection(scrollRef)
+
   const tableColumns = useMemo(() => {
     const sortedColumns: ColumnRenderer[] = columns
       .toSorted((a, b) => a.isPrimaryKey ? -1 : b.isPrimaryKey ? 1 : 0)
@@ -110,12 +113,12 @@ export function Table({
 
     if (selectable) {
       sortedColumns.unshift(
-          {
-            name: String(selectSymbol),
-            cell: SelectionCell,
-            header: SelectionHeaderCell,
-            size: 40,
-          } satisfies ColumnRenderer,
+        {
+          name: String(selectSymbol),
+          cell: SelectionCell,
+          header: SelectionHeaderCell,
+          size: 40,
+        } satisfies ColumnRenderer,
       )
     }
 
@@ -126,7 +129,7 @@ export function Table({
     count: data.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => DEFAULT_ROW_HEIGHT,
-    overscan: 5,
+    overscan: scrollDirection === 'down' || scrollDirection === 'up' ? 10 : 0,
   })
 
   const columnVirtualizer = useVirtualizer({
@@ -134,7 +137,7 @@ export function Table({
     count: tableColumns.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: index => tableColumns[index].size ?? DEFAULT_COLUMN_WIDTH,
-    overscan: 2,
+    overscan: scrollDirection === 'right' || scrollDirection === 'left' ? 5 : 0,
   })
 
   const virtualRows = rowVirtualizer.getVirtualItems()

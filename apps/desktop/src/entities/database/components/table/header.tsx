@@ -1,22 +1,29 @@
-import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ColumnRenderer } from '.'
 import { memo } from 'react'
 import { useTableContext } from '.'
 
-const HeaderColumn = memo(function HeaderColumnMemo({ column, virtualColumn }: { column: ColumnRenderer, virtualColumn: VirtualItem }) {
+const HeaderColumn = memo(function HeaderColumnMemo({
+  column,
+  index,
+  start,
+}: {
+  column: ColumnRenderer
+  index: number
+  start: number
+}) {
   return (
     <div
-      data-column-index={virtualColumn.index}
+      data-column-index={index}
       className="group/header absolute top-0 left-0 flex h-full"
       style={{
-        transform: `translateX(${virtualColumn.start}px)`,
+        transform: `translateX(${start}px)`,
         width: `${column.size}px`,
       }}
     >
       <column.header column={column} />
     </div>
   )
-}, (prev, next) => prev.virtualColumn.key === next.virtualColumn.key)
+})
 
 export function TableHeader({ columns }: { columns: ColumnRenderer[] }) {
   const virtualColumns = useTableContext(state => state.virtualColumns)
@@ -33,7 +40,8 @@ export function TableHeader({ columns }: { columns: ColumnRenderer[] }) {
               <HeaderColumn
                 key={column.name}
                 column={column}
-                virtualColumn={virtualColumn}
+                index={virtualColumn.index}
+                start={virtualColumn.start}
               />
             )
           })}
