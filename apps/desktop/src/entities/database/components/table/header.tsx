@@ -13,7 +13,7 @@ const HeaderColumn = memo(function HeaderColumnMemo({
 }) {
   return (
     <div
-      className="group/header absolute top-0 left-0 flex h-full"
+      className="absolute top-0 left-0 flex h-full"
       style={{
         transform: `translateX(${start}px)`,
         width: `${column.size}px`,

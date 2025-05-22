@@ -28,6 +28,7 @@ export const sqlFilters = protectedProcedure
         - Choose the most appropriate operator for each condition
         - Format values correctly based on column types (strings, numbers, dates, etc.)
         - For enum columns, ensure values match the available options
+        - For exact days use >= and <= operators
 
         Current time: ${new Date().toISOString()}
         Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}

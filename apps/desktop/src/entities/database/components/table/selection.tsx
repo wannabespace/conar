@@ -35,7 +35,7 @@ function IndeterminateCheckbox({
   )
 }
 
-export function SelectionHeaderCell() {
+export function SelectionHeaderCell({ index }: { index: number }) {
   const store = useTableContext(state => state.store)
   const data = useTableContext(state => state.data)
   const [checked, indeterminate] = useStore(store, state => [
@@ -44,7 +44,7 @@ export function SelectionHeaderCell() {
   ])
 
   return (
-    <div className="group-first/header:pl-4 flex items-center size-full">
+    <div className={cn('flex items-center size-full', index === 0 && 'pl-4')}>
       <IndeterminateCheckbox
         disabled={data.length === 0}
         checked={checked}
@@ -68,12 +68,12 @@ export function SelectionHeaderCell() {
   )
 }
 
-export function SelectionCell({ rowIndex }: { rowIndex: number }) {
+export function SelectionCell({ rowIndex, index }: { rowIndex: number, index: number }) {
   const store = useTableContext(state => state.store)
   const isSelected = useStore(store, state => state.selected.includes(rowIndex))
 
   return (
-    <div className="group-first/cell:pl-4 flex items-center size-full">
+    <div className={cn('flex items-center size-full', index === 0 && 'pl-4')}>
       <IndeterminateCheckbox
         checked={isSelected}
         onChange={() => {

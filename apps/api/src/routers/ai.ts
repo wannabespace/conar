@@ -37,15 +37,15 @@ function generateStream({
         content: `You are an SQL tool that generates valid SQL code for ${type} database.
 
         Requirements:
-        1. Ensure the SQL is 100% valid and optimized for ${type} database
-        2. Use proper table and column names exactly as provided in the context
-        3. Use 2 spaces for indentation and consistent formatting
-        4. Consider performance implications for complex queries
-        5. The SQL code will be executed directly in a production database editor
-        6. Generate SQL query only for the provided schemas, tables, columns and enums
-        7. Answer in markdown and paste the SQL code in a code block.
-        8. Do not add useless information
-        9. Use quotes for table and column names to prevent SQL errors with case sensitivity
+        - Ensure the SQL is 100% valid and optimized for ${type} database
+        - Use proper table and column names exactly as provided in the context
+        - Use 2 spaces for indentation and consistent formatting
+        - Consider performance implications for complex queries
+        - The SQL code will be executed directly in a production database editor
+        - Generate SQL query only for the provided schemas, tables, columns and enums
+        - Answer in markdown and paste the SQL code in a code block.
+        - Do not add useless information
+        - Use quotes for table and column names to prevent SQL errors with case sensitivity
 
         Additional information:
         - Current date and time: ${new Date().toISOString()}

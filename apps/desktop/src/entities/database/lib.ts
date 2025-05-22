@@ -18,12 +18,12 @@ const DATABASES_SCHEMAS_KEY = 'databases-schemas'
 
 export const databaseSchemas = {
   get(id: string) {
-    const value = JSON.parse(localStorage.getItem(DATABASES_SCHEMAS_KEY) ?? '{}')
+    const value = JSON.parse(localStorage.getItem(DATABASES_SCHEMAS_KEY) ?? '{}') as Record<string, string>
 
     return value[id] ?? 'public'
   },
   set(id: string, schema: string) {
-    const schemas = JSON.parse(localStorage.getItem(DATABASES_SCHEMAS_KEY) ?? '{}')
+    const schemas = JSON.parse(localStorage.getItem(DATABASES_SCHEMAS_KEY) ?? '{}') as Record<string, string>
 
     schemas[id] = schema
 

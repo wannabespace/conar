@@ -17,7 +17,7 @@ const RowColumn = memo(function RowColumnMemo({
 
   return (
     <div
-      className="group/cell absolute top-0 left-0 h-full"
+      className="absolute top-0 left-0 h-full"
       style={{
         transform: `translateX(${virtualColumn.start}px)`,
         width: `${column.size}px`,
@@ -46,7 +46,7 @@ const Row = memo(function RowMemo({
 }) {
   return (
     <div
-      className="group/row absolute w-full border-b last:border-b-0 min-w-full hover:bg-accent/30"
+      className="absolute w-full border-b last:border-b-0 min-w-full hover:bg-accent/30"
       style={{
         height: `${size}px`,
         transform: `translate3d(0,${start}px,0)`,
