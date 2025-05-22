@@ -2,9 +2,10 @@ import type { SQL_OPERATORS_LIST } from '@connnect/shared/utils/sql'
 import { Button } from '@connnect/ui/components/button'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
+import { useSessionStorage } from '@connnect/ui/hookas/use-session-storage'
 import { RiBardLine, RiSendPlaneLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { useDatabase, useDatabaseEnums } from '~/entities/database'
 import { trpc } from '~/lib/trpc'
@@ -12,8 +13,8 @@ import { Route, useTableStoreContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 
 export function HeaderSearch() {
-  const [prompt, setPrompt] = useState('')
   const { id, table, schema } = Route.useParams()
+  const [prompt, setPrompt] = useSessionStorage(`${table}-header-search`, '')
   const { data: database } = useDatabase(id)
   const store = useTableStoreContext()
   const { mutate: generateFilter, isPending } = useMutation({
@@ -64,6 +65,7 @@ export function HeaderSearch() {
         onChange={e => setPrompt(e.target.value)}
       />
       <Button
+        type="submit"
         variant="secondary"
         size="iconXs"
         disabled={isPending}

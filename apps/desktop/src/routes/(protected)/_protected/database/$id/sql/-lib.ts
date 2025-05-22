@@ -29,12 +29,12 @@ export const chatQuery = {
 
 export const chatInput = {
   get(id: string) {
-    const data = JSON.parse(localStorage.getItem(`sql-chat-input-${id}`) || '""')
+    const data = JSON.parse(sessionStorage.getItem(`sql-chat-input-${id}`) || '""')
 
     return typeof data === 'string' ? data : ''
   },
   set(id: string, input: string) {
-    localStorage.setItem(`sql-chat-input-${id}`, JSON.stringify(input))
+    sessionStorage.setItem(`sql-chat-input-${id}`, JSON.stringify(input))
   },
 }
 

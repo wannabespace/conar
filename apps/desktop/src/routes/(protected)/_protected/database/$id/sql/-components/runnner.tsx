@@ -9,7 +9,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useDebouncedMemo } from '@connnect/ui/hookas/use-debounced-memo'
-import { useMountEffect } from '@connnect/ui/hookas/use-mount-effect'
+import { useMountedEffect } from '@connnect/ui/hookas/use-mounted-effect'
 import { copy } from '@connnect/ui/lib/copy'
 import NumberFlow from '@number-flow/react'
 import { useKeyboardEvent } from '@react-hookz/web'
@@ -146,7 +146,7 @@ export function Runner() {
     })
   }, [])
 
-  useMountEffect(() => {
+  useMountedEffect(() => {
     chatQuery.set(id, query)
   }, [id, query])
 

@@ -3,7 +3,8 @@ import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { Button } from '@connnect/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
-import { Link, useMatches, useNavigate } from '@tanstack/react-router'
+import { Link, useMatches, useNavigate, useParams } from '@tanstack/react-router'
+import { useEffect, useRef } from 'react'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
@@ -13,15 +14,45 @@ const os = getOS()
 
 export function DatabaseSidebar() {
   const { id } = Route.useParams()
+  const { table: tableParam, schema: schemaParam } = useParams({ strict: false })
+  const lastOpenedTableRef = useRef<{ schema: string, table: string } | null>(null)
   const navigate = useNavigate()
   const matches = useMatches({
     select: matches => matches.map(match => match.routeId),
   })
 
+  useEffect(() => {
+    if (tableParam && schemaParam) {
+      lastOpenedTableRef.current = { schema: schemaParam, table: tableParam }
+    }
+  }, [tableParam, schemaParam])
+
   const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/tables')
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
 
+  function onTablesClick() {
+    if (lastOpenedTableRef.current?.schema === schemaParam && lastOpenedTableRef.current?.table === tableParam) {
+      lastOpenedTableRef.current = null
+    }
+
+    if (lastOpenedTableRef.current) {
+      navigate({
+        to: '/database/$id/tables/$schema/$table',
+        params: {
+          id,
+          schema: lastOpenedTableRef.current.schema,
+          table: lastOpenedTableRef.current.table,
+        },
+      })
+    }
+    else {
+      navigate({
+        to: '/database/$id/tables',
+        params: { id },
+      })
+    }
+  }
   return (
     <>
       <div className="w-[calc(theme(spacing.16)+2px)]" />
@@ -87,10 +118,7 @@ export function DatabaseSidebar() {
                         to="/database/$id/tables"
                         params={{ id }}
                         className="text-foreground"
-                        onMouseDown={() => navigate({
-                          to: '/database/$id/tables',
-                          params: { id },
-                        })}
+                        onMouseDown={onTablesClick}
                         onClick={e => e.preventDefault()}
                       >
                         <RiTableLine className="size-4" />

@@ -5,7 +5,7 @@ import { Button } from '@connnect/ui/components/button'
 import { ScrollArea } from '@connnect/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
-import { useMountEffect } from '@connnect/ui/hookas/use-mount-effect'
+import { useMountedEffect } from '@connnect/ui/hookas/use-mounted-effect'
 import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
@@ -168,7 +168,7 @@ export function ChatMessages({
   const { id } = Route.useParams()
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  useMountEffect(() => {
+  useMountedEffect(() => {
     chatMessages.set(id, messages)
   }, [messages])
 
