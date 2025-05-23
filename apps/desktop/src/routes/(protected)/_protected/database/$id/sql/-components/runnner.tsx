@@ -185,7 +185,6 @@ export function Runner() {
       connectionString: database.connectionString,
       query,
     }),
-    staleTime: Infinity,
     throwOnError: false,
     select: data => data.filter(r => r.rows.length > 0),
     enabled: false,

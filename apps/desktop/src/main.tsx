@@ -25,6 +25,7 @@ export const queryClient = new QueryClient({
       retry: 0,
       throwOnError: true,
       refetchOnWindowFocus: false,
+      staleTime: Infinity,
       placeholderData: keepPreviousData,
     },
     mutations: {
