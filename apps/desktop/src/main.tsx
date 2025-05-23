@@ -1,4 +1,4 @@
-import { QueryClient } from '@tanstack/react-query'
+import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { handleError } from './lib/error'
@@ -25,6 +25,7 @@ export const queryClient = new QueryClient({
       retry: 0,
       throwOnError: true,
       refetchOnWindowFocus: false,
+      placeholderData: keepPreviousData,
     },
     mutations: {
       onError: handleError,

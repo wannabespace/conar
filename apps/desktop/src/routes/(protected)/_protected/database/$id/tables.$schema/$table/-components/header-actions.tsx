@@ -1,11 +1,12 @@
 import type { WhereFilter } from '~/entities/database'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
+import { ContentSwitch } from '@connnect/ui/components/custom/content-switch'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import NumberFlow from '@number-flow/react'
-import { RiDeleteBin7Line, RiFilterLine, RiLoopLeftLine } from '@remixicon/react'
+import { RiCheckLine, RiDeleteBin7Line, RiFilterLine, RiLoopLeftLine } from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
@@ -76,7 +77,6 @@ export function HeaderActions() {
       queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) }),
       queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table, schema).queryKey }),
     ])
-    toast.success('Data refreshed')
   }
 
   return (
@@ -176,7 +176,12 @@ export function HeaderActions() {
               disabled={isFetching}
             >
               <LoadingContent loading={isFetching}>
-                <RiLoopLeftLine />
+                <ContentSwitch
+                  activeContent={<RiCheckLine className="text-success" />}
+                  active={isFetching}
+                >
+                  <RiLoopLeftLine />
+                </ContentSwitch>
               </LoadingContent>
             </Button>
           </TooltipTrigger>

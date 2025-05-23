@@ -1,8 +1,9 @@
 import type { SQL_OPERATORS_LIST } from '@connnect/shared/utils/sql'
 import { Button } from '@connnect/ui/components/button'
+import { ContentSwitch } from '@connnect/ui/components/custom/content-switch'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
-import { RiBardLine, RiSendPlaneLine } from '@remixicon/react'
+import { RiBardLine, RiCheckLine, RiSendPlaneLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
@@ -29,10 +30,7 @@ export function HeaderSearch() {
         })),
       }))
 
-      if (data.length > 0) {
-        toast.success(`Table successfully filtered with ${data.length} ${data.length === 1 ? 'filter' : 'filters'}`)
-      }
-      else {
+      if (data.length === 0) {
         toast.info('No filters were generated, please try again with a different prompt')
       }
     },
@@ -72,7 +70,12 @@ export function HeaderSearch() {
         className="absolute right-2 top-1/2 -translate-y-1/2"
       >
         <LoadingContent loading={isPending} loaderClassName="size-3">
-          <RiSendPlaneLine className="size-3" />
+          <ContentSwitch
+            activeContent={<RiCheckLine className="size-3 text-success" />}
+            active={!isPending}
+          >
+            <RiSendPlaneLine className="size-3" />
+          </ContentSwitch>
         </LoadingContent>
       </Button>
     </form>

@@ -10,7 +10,7 @@ export function databaseRowsQuery(
   query?: {
     limit?: PageSize
     page?: number
-    orderBy?: [string, 'ASC' | 'DESC'][]
+    orderBy?: Record<string, 'ASC' | 'DESC'>
     where?: string
   },
 ) {

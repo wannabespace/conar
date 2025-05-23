@@ -5,12 +5,12 @@ import { DEFAULT_COLUMN_WIDTH, Table } from '~/components/table'
 import { setSql, useDatabase } from '~/entities/database'
 import { createCellUpdater } from '~/entities/database/components/cells-updater'
 import { TableCell } from '~/entities/database/components/table-cell'
-import { TableHeaderCell } from '~/entities/database/components/table-header-cell'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
+import { TableHeaderCell } from './table-header-cell'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
 
 const selectSymbol = Symbol('table-selection')

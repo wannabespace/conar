@@ -5,6 +5,7 @@ import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { CardHeader, CardTitle } from '@connnect/ui/components/card'
+import { ContentSwitch } from '@connnect/ui/components/custom/content-switch'
 import { Input } from '@connnect/ui/components/input'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
@@ -15,7 +16,7 @@ import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCheckLine, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -179,17 +180,11 @@ export function Runner() {
 
   const { refetch: runQuery, data: results, status, fetchStatus: queryStatus, error } = useQuery({
     queryKey: ['sql', id],
-    queryFn: async () => {
-      const res = await window.electron.databases.query({
-        type: database.type,
-        connectionString: database.connectionString,
-        query,
-      })
-
-      toast.success('SQL executed successfully')
-
-      return res
-    },
+    queryFn: () => window.electron.databases.query({
+      type: database.type,
+      connectionString: database.connectionString,
+      query,
+    }),
     staleTime: Infinity,
     throwOnError: false,
     select: data => data.filter(r => r.rows.length > 0),
@@ -312,7 +307,12 @@ export function Runner() {
             size="sm"
             onClick={() => sendQuery(query)}
           >
-            Run
+            <ContentSwitch
+              activeContent={<RiCheckLine className="mx-auto mt-0.5" />}
+              active={queryStatus === 'fetching'}
+            >
+              Run
+            </ContentSwitch>
             {' '}
             <kbd className="flex items-center text-xs">
               {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
@@ -323,7 +323,7 @@ export function Runner() {
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel minSize={20}>
-        {Array.isArray(results) && (
+        {Array.isArray(results) && results.length > 0 && (
           <Tabs
             defaultValue="table-0"
             className="size-full gap-0"
@@ -358,13 +358,17 @@ export function Runner() {
                 </p>
               </div>
             )
-          : !results && (
+          : (!results || (Array.isArray(results) && results.length === 0)) && (
               <div className="h-full flex flex-col items-center justify-center">
                 <p className="text-center">
                   No results to display
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 text-center">
-                  Write and run a SQL query above to see results here
+                  Write and run a
+                  {' '}
+                  <span className="font-mono">SELECT</span>
+                  {' '}
+                  query above to see results here
                 </p>
               </div>
             )}

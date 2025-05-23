@@ -19,7 +19,7 @@ interface TableStore {
   pageSize: PageSize
   selected: number[]
   filters: WhereFilter[]
-  orderBy?: [string, 'ASC' | 'DESC'][]
+  orderBy?: Record<string, 'ASC' | 'DESC'>
   prompt: string
 }
 
@@ -57,7 +57,9 @@ const storeState = type({
     operator: 'string',
     value: 'string',
   }).array(),
-  'orderBy?': type(['string', 'string' as type.cast<'ASC' | 'DESC'>]).array(),
+  'orderBy?': {
+    '[string]': 'string' as type.cast<'ASC' | 'DESC'>,
+  },
   'prompt': 'string',
 })
 
@@ -73,6 +75,7 @@ function DatabaseTablePage() {
           selected: [],
           filters: [],
           prompt: '',
+          orderBy: {},
         }
       : state)
   })
