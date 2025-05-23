@@ -90,6 +90,15 @@ function ResultTable({
 }) {
   const [search, setSearch] = useState('')
 
+  const filteredData = useDebouncedMemo(() => {
+    if (!search.trim())
+      return result
+
+    return result.filter(row =>
+      JSON.stringify(Object.values(row)).toLowerCase().includes(search.toLowerCase()),
+    )
+  }, [result, search], 100)
+
   const tableColumns = useMemo(() => {
     return columns.map(column => ({
       id: column.name,
@@ -111,21 +120,10 @@ function ResultTable({
           </div>
         </div>
       ),
-      cell: props => <TableCell value={result[props.rowIndex][column.name]} column={column} {...props} />,
+      cell: props => <TableCell value={filteredData[props.rowIndex][column.name]} column={column} {...props} />,
       size: DEFAULT_COLUMN_WIDTH,
     } satisfies ColumnRenderer))
-  }, [columns, result])
-
-  const filteredData = useDebouncedMemo(() => {
-    if (!search.trim())
-      return result
-
-    return result.filter(row =>
-      Object.values(row).some(value =>
-        !!value && String(value).toLowerCase().includes(search.toLowerCase()),
-      ),
-    )
-  }, [result, search], 100)
+  }, [columns, filteredData])
 
   return (
     <div className="h-full">
@@ -155,7 +153,7 @@ function ResultTable({
         </div>
       </div>
       <Table
-        data={filteredData}
+        rowsCount={filteredData.length}
         columns={tableColumns}
         className="h-[calc(100%-theme(spacing.10))]"
       />

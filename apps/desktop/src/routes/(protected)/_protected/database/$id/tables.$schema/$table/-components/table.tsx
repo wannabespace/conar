@@ -97,7 +97,7 @@ function TableComponent() {
 
   return (
     <Table
-      data={rows}
+      rowsCount={rows.length}
       columns={tableColumns}
       loading={isPending}
       error={error}
