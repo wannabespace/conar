@@ -121,7 +121,7 @@ function ResultTable({
           </div>
         </div>
       ),
-      cell: props => <TableCell value={filteredData[props.rowIndex][column.name]} column={column} {...props} />,
+      cell: props => <TableCell column={column} {...props} />,
       size: DEFAULT_COLUMN_WIDTH,
     } satisfies ColumnRenderer))
   }, [columns, filteredData])
@@ -154,7 +154,7 @@ function ResultTable({
         </div>
       </div>
       <Table
-        rowsCount={filteredData.length}
+        data={filteredData}
         columns={tableColumns}
         className="h-[calc(100%-theme(spacing.10))]"
       />
@@ -310,13 +310,15 @@ export function Runner() {
               activeContent={<RiCheckLine className="mx-auto mt-0.5" />}
               active={queryStatus === 'fetching'}
             >
-              Run
+              <div className="flex items-center gap-1">
+                Run
+                {' '}
+                <kbd className="flex items-center text-xs">
+                  {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
+                  <RiCornerDownLeftLine className="size-3" />
+                </kbd>
+              </div>
             </ContentSwitch>
-            {' '}
-            <kbd className="flex items-center text-xs">
-              {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
-              <RiCornerDownLeftLine className="size-3" />
-            </kbd>
           </Button>
         </div>
       </ResizablePanel>

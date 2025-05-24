@@ -4,12 +4,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connn
 import { cn } from '@connnect/ui/lib/utils'
 import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiKey2Line } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { useTableStoreContext } from '..'
+import { usePageStoreContext } from '..'
 
 type SortOrder = 'ASC' | 'DESC'
 
 function SortButton({ column }: { column: Column }) {
-  const store = useTableStoreContext()
+  const store = usePageStoreContext()
   const order = useStore(store, state => state.orderBy?.[column.name] ?? null)
 
   function setOrder(order: SortOrder) {

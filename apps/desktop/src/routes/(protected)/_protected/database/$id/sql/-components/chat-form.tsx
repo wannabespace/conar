@@ -40,7 +40,7 @@ function ModelSelector() {
       <SelectContent>
         <SelectItem value="auto">Auto</SelectItem>
         <SelectItem value={AiSqlChatModel.Claude_3_7_Sonnet}>Claude 3.7 Sonnet</SelectItem>
-        <SelectItem value={AiSqlChatModel.Claude_4_opus}>Claude 4 Opus</SelectItem>
+        <SelectItem value={AiSqlChatModel.Claude_4_Opus}>Claude 4 Opus</SelectItem>
         <SelectItem value={AiSqlChatModel.GPT_4o_Mini}>GPT-4o Mini</SelectItem>
         <SelectItem value={AiSqlChatModel.Gemini_2_5_Pro}>Gemini 2.5 Pro</SelectItem>
         <SelectItem value={AiSqlChatModel.Grok_3}>Grok 3</SelectItem>

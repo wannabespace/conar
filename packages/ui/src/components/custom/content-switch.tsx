@@ -4,10 +4,12 @@ import { useState } from 'react'
 
 export function ContentSwitch({
   children,
+  className,
   activeContent,
   active = true,
 }: {
   children: React.ReactNode
+  className?: string
   activeContent: React.ReactNode
   active?: boolean
 }) {
@@ -26,7 +28,7 @@ export function ContentSwitch({
   }, [active])
 
   return (
-    <div className="relative">
+    <div className={cn('relative flex items-center gap-1', className)}>
       <div
         className={cn(
           'transition-all',

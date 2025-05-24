@@ -1,8 +1,10 @@
 import type { ComponentProps } from 'react'
+import type { TableCellProps, TableHeaderCellProps } from '~/components/table'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { useTableStoreContext } from '..'
+import { useTableContext } from '~/components/table'
+import { usePageStoreContext } from '..'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -35,8 +37,9 @@ function IndeterminateCheckbox({
   )
 }
 
-export function SelectionHeaderCell({ data, columnIndex }: { data: Record<string, unknown>[], columnIndex: number }) {
-  const store = useTableStoreContext()
+export function SelectionHeaderCell({ columnIndex }: TableHeaderCellProps) {
+  const data = useTableContext(state => state.data)
+  const store = usePageStoreContext()
   const [checked, indeterminate] = useStore(store, state => [
     data.length > 0 && state.selected.length === data.length,
     state.selected.length > 0,
@@ -67,8 +70,8 @@ export function SelectionHeaderCell({ data, columnIndex }: { data: Record<string
   )
 }
 
-export function SelectionCell({ rowIndex, columnIndex }: { rowIndex: number, columnIndex: number }) {
-  const store = useTableStoreContext()
+export function SelectionCell({ rowIndex, columnIndex }: TableCellProps) {
+  const store = usePageStoreContext()
   const isSelected = useStore(store, state => state.selected.includes(rowIndex))
 
   return (

@@ -4,25 +4,32 @@ import { useTableContext } from '.'
 
 const RowColumn = memo(function RowColumnMemo({
   rowIndex,
-  virtualColumn,
+  size,
+  start,
+  index,
 }: {
   rowIndex: number
-  virtualColumn: VirtualItem
+  size: number
+  start: number
+  index: number
 }) {
+  const data = useTableContext(state => state.data)
   const columns = useTableContext(state => state.columns)
-  const column = columns[virtualColumn.index]
+  const column = columns[index]
+  const value = data[rowIndex][column.id]
 
   return (
     <div
       className="absolute top-0 left-0 h-full"
       style={{
-        transform: `translateX(${virtualColumn.start}px)`,
-        width: `${column.size}px`,
+        transform: `translateX(${start}px)`,
+        width: `${size}px`,
       }}
     >
       <column.cell
         rowIndex={rowIndex}
-        columnIndex={virtualColumn.index}
+        columnIndex={index}
+        value={value}
       />
     </div>
   )
@@ -50,7 +57,9 @@ const Row = memo(function RowMemo({
       {virtualColumns.map(virtualColumn => (
         <RowColumn
           key={virtualColumn.key}
-          virtualColumn={virtualColumn}
+          size={virtualColumn.size}
+          start={virtualColumn.start}
+          index={virtualColumn.index}
           rowIndex={rowIndex}
         />
       ))}

@@ -10,13 +10,13 @@ import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { useDatabase, useDatabaseEnums } from '~/entities/database'
 import { trpc } from '~/lib/trpc'
-import { Route, useTableStoreContext } from '..'
+import { Route, usePageStoreContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 
 export function HeaderSearch() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
-  const store = useTableStoreContext()
+  const store = usePageStoreContext()
   const prompt = useStore(store, state => state.prompt)
   const { mutate: generateFilter, isPending } = useMutation({
     mutationFn: trpc.ai.sqlFilters.mutate,

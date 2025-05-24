@@ -15,14 +15,14 @@ import { toast } from 'sonner'
 import { FilterForm } from '~/components/table'
 import { databaseColumnsQuery, deleteRowsSql, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
-import { Route, useTableStoreContext } from '..'
+import { Route, usePageStoreContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
 export function HeaderActions() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
-  const store = useTableStoreContext()
+  const store = usePageStoreContext()
   const selected = useStore(store, state => state.selected)
   const [isOpened, setIsOpened] = useState(false)
   const [isFiltersOpened, setIsFiltersOpened] = useState(false)

@@ -1,5 +1,6 @@
 import type { ContextSelector } from '@fluentui/react-context-selector'
 import type { VirtualItem } from '@tanstack/react-virtual'
+import type { ComponentType } from 'react'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 
 export * from './body'
@@ -18,6 +19,7 @@ export const DEFAULT_ROW_HEIGHT = 32
 export const DEFAULT_COLUMN_WIDTH = 220
 
 interface TableContextValue {
+  data: Record<string, unknown>[]
   columns: ColumnRenderer[]
   virtualRows: VirtualItem[]
   virtualColumns: VirtualItem[]
@@ -32,9 +34,19 @@ export function useTableContext<T>(selector: ContextSelector<TableContextValue, 
   return useContextSelector(TableContext, selector)
 }
 
+export interface TableCellProps {
+  rowIndex: number
+  columnIndex: number
+  value: unknown
+}
+
+export interface TableHeaderCellProps {
+  columnIndex: number
+}
+
 export interface ColumnRenderer {
   id: string
   size: number
-  cell: React.ComponentType<{ rowIndex: number, columnIndex: number }>
-  header: React.ComponentType<{ columnIndex: number }>
+  cell: ComponentType<TableCellProps>
+  header: ComponentType<TableHeaderCellProps>
 }

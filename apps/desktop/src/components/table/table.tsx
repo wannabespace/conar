@@ -57,13 +57,13 @@ function TableScrollArea({
 
 export function Table({
   className,
-  rowsCount,
+  data,
   columns,
   loading,
   error,
   ...props
 }: {
-  rowsCount: number
+  data: Record<string, unknown>[]
   columns: ColumnRenderer[]
   loading?: boolean
   error?: Error | null
@@ -75,7 +75,7 @@ export function Table({
   const scrollDirection = useScrollDirection(scrollRef)
 
   const rowVirtualizer = useVirtualizer({
-    count: rowsCount,
+    count: data.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => DEFAULT_ROW_HEIGHT,
     overscan: scrollDirection === 'down' || scrollDirection === 'up' ? 10 : 0,
@@ -95,11 +95,13 @@ export function Table({
   const rowWidth = columnVirtualizer.getTotalSize()
 
   const context = useMemo(() => ({
+    data,
     columns,
     virtualRows,
     virtualColumns,
     rowWidth,
   }), [
+    data,
     columns,
     virtualRows,
     virtualColumns,
@@ -119,7 +121,7 @@ export function Table({
           ? <TableSkeleton columnsCount={columns.length || 5} />
           : error
             ? <TableError error={error} />
-            : rowsCount === 0
+            : data.length === 0
               ? <TableEmpty />
               : <TableBody />}
       </TableScrollArea>

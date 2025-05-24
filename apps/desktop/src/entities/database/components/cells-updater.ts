@@ -1,23 +1,20 @@
 export interface CellUpdaterFunction {
-  (rowIndex: number, columnName: string, value: unknown): Promise<void>
+  ({ rowIndex, columnId, newValue, oldValue }: { rowIndex: number, columnId: string, newValue: unknown, oldValue: unknown }): Promise<void>
 }
 
 export interface CellUpdaterOptions {
-  getValue: (rowIndex: number, columnName: string) => unknown
   setValue: (rowIndex: number, columnName: string, value: unknown) => void
   saveValue: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
 }
 
-export function createCellUpdater({ getValue, setValue, saveValue }: CellUpdaterOptions): CellUpdaterFunction {
-  return async (rowIndex: number, columnName: string, value: unknown) => {
-    const cachedValue = getValue(rowIndex, columnName)
-
+export function createCellUpdater({ setValue, saveValue }: CellUpdaterOptions): CellUpdaterFunction {
+  return async ({ rowIndex, columnId, newValue, oldValue }) => {
     try {
-      setValue(rowIndex, columnName, value)
-      await saveValue(rowIndex, columnName, value)
+      setValue(rowIndex, columnId, newValue)
+      await saveValue(rowIndex, columnId, newValue)
     }
     catch (error) {
-      setValue(rowIndex, columnName, cachedValue)
+      setValue(rowIndex, columnId, oldValue)
 
       throw error
     }

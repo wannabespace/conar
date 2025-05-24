@@ -1,6 +1,8 @@
 import type { UseMutateFunction } from '@tanstack/react-query'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '../table'
+import type { CellUpdaterFunction } from './cells-updater'
+import type { TableCellProps } from '~/components/table'
 import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
@@ -53,7 +55,7 @@ function CellProvider({
   children: React.ReactNode
   column: Column
   initialValue: unknown
-  onUpdate?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
+  onUpdate?: ({ rowIndex, columnId, newValue, oldValue }: { rowIndex: number, columnId: string, newValue: unknown, oldValue: unknown }) => Promise<void>
   onSaveError: (error: Error) => void
   onSaveSuccess: () => void
   onSavePending: () => void
@@ -71,11 +73,12 @@ function CellProvider({
 
       const _value = isJson && value ? JSON.parse(value) : value
 
-      await onUpdate(
+      await onUpdate({
         rowIndex,
-        column.name,
-        _value,
-      )
+        columnId: column.name,
+        newValue: _value,
+        oldValue: initialValue,
+      })
     },
     onSuccess: onSaveSuccess,
     onError: onSaveError,
@@ -107,19 +110,19 @@ function TableCellMonaco({
   isBig,
   setIsBig,
   onClose,
-  onUpdate,
+  hasUpdateFn,
 }: {
   rowIndex: number
   isBig: boolean
   setIsBig: Dispatch<SetStateAction<boolean>>
   onClose: () => void
-  onUpdate?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
+  hasUpdateFn: boolean
 }) {
   const { value, initialValue, column, displayValue, isJson, setValue, update } = useCellContext()
 
   const [isTouched, setIsTouched] = useState(false)
 
-  const canEdit = !!column?.isEditable && !!onUpdate
+  const canEdit = !!column?.isEditable && hasUpdateFn
   const canSetNull = !!column?.isNullable && initialValue !== null
   const canSave = isTouched && value !== displayValue
 
@@ -260,11 +263,10 @@ function CellContent({
     <div
       data-mask
       className={cn(
-        'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
         'h-full text-xs truncate p-2 font-mono cursor-default select-none',
+        'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
         columnIndex === 0 && 'pl-4',
-        value === null && 'text-muted-foreground/50',
-        value === '' && 'text-muted-foreground/50',
+        (value === null || value === '') && 'text-muted-foreground/50',
         className,
       )}
       {...props}
@@ -293,12 +295,9 @@ export function TableCell({
   onUpdate,
   ...props
 }: {
-  value: unknown
-  rowIndex: number
   column: Column
-  columnIndex: number
-  onUpdate?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
-} & ComponentProps<'div'>) {
+  onUpdate?: CellUpdaterFunction
+} & TableCellProps & ComponentProps<'div'>) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
@@ -308,7 +307,7 @@ export function TableCell({
     if (status === 'success' || status === 'error') {
       const timeout = setTimeout(
         () => setStatus('idle'),
-        status === 'error' ? 3000 : 1000,
+        status === 'error' ? 3000 : 1500,
       )
 
       return () => clearTimeout(timeout)
@@ -339,7 +338,9 @@ export function TableCell({
     setIsPopoverOpen(true)
     setStatus('error')
 
-    toast.error(`Failed to update cell ${column.name}`, {
+    console.error(error)
+
+    toast.error(`Failed to update cell "${column.name}"`, {
       description: error.message,
       duration: 3000,
     })
@@ -407,6 +408,7 @@ export function TableCell({
             isBig={isBig}
             setIsBig={setIsBig}
             onClose={() => setIsPopoverOpen(false)}
+            hasUpdateFn={!!onUpdate}
           />
         </PopoverContent>
       </Popover>

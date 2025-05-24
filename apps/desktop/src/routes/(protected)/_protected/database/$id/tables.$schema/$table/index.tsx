@@ -14,19 +14,19 @@ import { Header } from './-components/header'
 import { Table } from './-components/table'
 import { useColumnsQuery } from './-queries/use-columns-query'
 
-interface TableStore {
+interface PageStore {
   page: number
   pageSize: PageSize
   selected: number[]
   filters: WhereFilter[]
-  orderBy?: Record<string, 'ASC' | 'DESC'>
+  orderBy: Record<string, 'ASC' | 'DESC'>
   prompt: string
 }
 
-const TableStoreContext = createContext<Store<TableStore>>(null!)
+const PageStoreContext = createContext<Store<PageStore>>(null!)
 
-export function useTableStoreContext() {
-  return use(TableStoreContext)
+export function usePageStoreContext() {
+  return use(PageStoreContext)
 }
 
 export const Route = createFileRoute(
@@ -49,18 +49,18 @@ export const Route = createFileRoute(
 })
 
 const storeState = type({
-  'page': 'number > 0',
-  'pageSize': 'number' as type.cast<PageSize>,
-  'selected': 'number[]',
-  'filters': type<WhereFilter>({
+  page: 'number > 0',
+  pageSize: 'number' as type.cast<PageSize>,
+  selected: 'number[]',
+  filters: type<WhereFilter>({
     column: 'string',
     operator: 'string',
     value: 'string',
   }).array(),
-  'orderBy?': {
+  orderBy: {
     '[string]': 'string' as type.cast<'ASC' | 'DESC'>,
   },
-  'prompt': 'string',
+  prompt: 'string',
 })
 
 function DatabaseTablePage() {
@@ -68,7 +68,7 @@ function DatabaseTablePage() {
   const [store] = useState(() => {
     const state = storeState(JSON.parse(sessionStorage.getItem(`${table}-store`) ?? '{}'))
 
-    return new Store<TableStore>(state instanceof type.errors
+    return new Store<PageStore>(state instanceof type.errors
       ? {
           page: 1,
           pageSize: 50,
@@ -89,7 +89,7 @@ function DatabaseTablePage() {
   const { data: columns } = useColumnsQuery()
 
   return (
-    <TableStoreContext value={store}>
+    <PageStoreContext value={store}>
       <FiltersProvider
         columns={columns}
         operators={SQL_OPERATORS_LIST}
@@ -105,6 +105,6 @@ function DatabaseTablePage() {
           <Footer />
         </div>
       </FiltersProvider>
-    </TableStoreContext>
+    </PageStoreContext>
   )
 }

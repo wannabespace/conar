@@ -5,12 +5,12 @@ import { useEffect, useState } from 'react'
 import { TableFooter } from '~/components/table'
 import { databaseRowsQuery, useDatabase, useDatabaseTableTotal, whereSql } from '~/entities/database'
 import { queryClient } from '~/main'
-import { Route, useTableStoreContext } from '..'
+import { Route, usePageStoreContext } from '..'
 
 export function Footer() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
-  const store = useTableStoreContext()
+  const store = usePageStoreContext()
   const [page, pageSize, filters] = useStore(store, state => [state.page, state.pageSize, state.filters])
   const { data: total } = useDatabaseTableTotal(database, table, schema, {
     where: whereSql(filters)[database.type],
