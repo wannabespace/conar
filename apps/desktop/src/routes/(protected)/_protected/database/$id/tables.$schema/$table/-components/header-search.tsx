@@ -1,21 +1,23 @@
 import type { SQL_OPERATORS_LIST } from '@connnect/shared/utils/sql'
 import { Button } from '@connnect/ui/components/button'
+import { ContentSwitch } from '@connnect/ui/components/custom/content-switch'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Input } from '@connnect/ui/components/input'
-import { RiBardLine, RiSendPlaneLine } from '@remixicon/react'
+import { RiBardLine, RiCheckLine, RiSendPlaneLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useStore } from '@tanstack/react-store'
+import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { useDatabase, useDatabaseEnums } from '~/entities/database'
 import { trpc } from '~/lib/trpc'
-import { Route, useTableStoreContext } from '..'
+import { Route, usePageStoreContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 
 export function HeaderSearch() {
-  const [prompt, setPrompt] = useState('')
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
-  const store = useTableStoreContext()
+  const store = usePageStoreContext()
+  const prompt = useStore(store, state => state.prompt)
   const { mutate: generateFilter, isPending } = useMutation({
     mutationFn: trpc.ai.sqlFilters.mutate,
     onSuccess: (data) => {
@@ -28,10 +30,7 @@ export function HeaderSearch() {
         })),
       }))
 
-      if (data.length > 0) {
-        toast.success(`Table successfully filtered with ${data.length} ${data.length === 1 ? 'filter' : 'filters'}`)
-      }
-      else {
+      if (data.length === 0) {
         toast.info('No filters were generated, please try again with a different prompt')
       }
     },
@@ -61,16 +60,22 @@ export function HeaderSearch() {
         placeholder="Ask AI to filter data..."
         disabled={isPending}
         value={prompt}
-        onChange={e => setPrompt(e.target.value)}
+        onChange={e => store.setState(state => ({ ...state, prompt: e.target.value }))}
       />
       <Button
+        type="submit"
         variant="secondary"
         size="iconXs"
         disabled={isPending}
         className="absolute right-2 top-1/2 -translate-y-1/2"
       >
         <LoadingContent loading={isPending} loaderClassName="size-3">
-          <RiSendPlaneLine className="size-3" />
+          <ContentSwitch
+            activeContent={<RiCheckLine className="size-3 text-success" />}
+            active={!isPending}
+          >
+            <RiSendPlaneLine className="size-3" />
+          </ContentSwitch>
         </LoadingContent>
       </Button>
     </form>

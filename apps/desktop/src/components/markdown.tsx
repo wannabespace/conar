@@ -1,15 +1,18 @@
+import type { ContextSelector } from '@fluentui/react-context-selector'
 import type { ReactElement, ReactNode } from 'react'
 import { Accordion, AccordionContent, AccordionItem } from '@connnect/ui/components/accordion'
 import { Button } from '@connnect/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { useMountedEffect } from '@connnect/ui/hookas/use-mounted-effect'
 import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
+import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 import NumberFlow from '@number-flow/react'
 import * as AccordionPrimitive from '@radix-ui/react-accordion'
 import { RiArrowRightDoubleLine, RiArrowRightSLine, RiFileCopyLine } from '@remixicon/react'
 import { marked } from 'marked'
 import { AnimatePresence, motion } from 'motion/react'
-import { createContext, use, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
@@ -34,38 +37,45 @@ const langsMap: Record<string, string> = {
   sql: 'SQL',
 }
 
-const MarkdownContext = createContext<{
+interface MarkdownContextType {
   loading: boolean
-}>(null!)
+}
+
+const MarkdownContext = createContext<MarkdownContextType>(null!)
+
+function useMarkdownContext<T>(selector: ContextSelector<MarkdownContextType, T>) {
+  return useContextSelector(MarkdownContext, selector)
+}
 
 function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: string) => void }) {
   const childrenProps = (typeof children === 'object' && (children as ReactElement<{ children?: ReactNode, className?: string }>)?.props) || null
   const content = childrenProps?.children?.toString().trim() || null
   const lang = childrenProps?.className?.split('-')[1] || 'text'
-  const [isLoading, setIsLoading] = useState(false)
-  const { loading } = use(MarkdownContext)
+  const [isPreLoading, setIsPreLoading] = useState(false)
+  const loading = useMarkdownContext(state => state.loading)
   const [opened, setOpened] = useState<'pre' | ''>('')
 
   useEffect(() => {
     if (!loading) {
-      setIsLoading(false)
+      setIsPreLoading(false)
       return
     }
 
-    setIsLoading(true)
+    setIsPreLoading(true)
 
     const timeout = setTimeout(() => {
-      setIsLoading(false)
+      setIsPreLoading(false)
     }, 1000)
 
     return () => clearTimeout(timeout)
   }, [content, loading])
 
-  useEffect(() => {
-    if (!isLoading && content && content.split('\n').length < 10) {
+  useMountedEffect(() => {
+    console.log(isPreLoading, content)
+    if (!isPreLoading && content && content.split('\n').length < 10) {
       setOpened('pre')
     }
-  }, [content, isLoading])
+  }, [isPreLoading])
 
   if (!content)
     return null
@@ -103,7 +113,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                   {lines === 1 ? '' : 's'}
                 </span>
                 <AnimatePresence>
-                  {isLoading && (
+                  {isPreLoading && (
                     <motion.span
                       className="text-xs text-muted-foreground mt-0.5"
                       initial={{ opacity: 0, x: 3 }}
@@ -146,7 +156,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                         <Button
                           size="iconXs"
                           variant="ghost"
-                          disabled={isLoading}
+                          disabled={isPreLoading}
                           onClick={(e) => {
                             e.stopPropagation()
                             onEdit(content)
@@ -221,7 +231,7 @@ export function Markdown({
   const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content])
 
   return (
-    <MarkdownContext value={{ loading }}>
+    <MarkdownContext.Provider value={{ loading }}>
       <div className={cn('typography', className)}>
         {blocks.map((block, index) => (
           <MarkdownBase
@@ -231,6 +241,6 @@ export function Markdown({
           />
         ))}
       </div>
-    </MarkdownContext>
+    </MarkdownContext.Provider>
   )
 }

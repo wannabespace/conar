@@ -1,22 +1,12 @@
 import type { ComponentProps } from 'react'
-import type { Column, ColumnRenderer, StoreValue } from '.'
-import type { CellUpdaterFunction } from './cells-updater'
+import type { ColumnRenderer } from '.'
 import { ScrollArea } from '@connnect/ui/components/custom/scroll-area'
+import { useScrollDirection } from '@connnect/ui/hookas/use-scroll-direction'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiErrorWarningLine } from '@remixicon/react'
-import { Store, useStore } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, TableBody, TableHeader, TableProvider, TableSkeleton } from '.'
-import { Cell } from './cell'
-import { HeaderCell } from './header-cell'
-import { SelectionCell, SelectionHeaderCell } from './selection'
-
-interface TableState {
-  selected?: StoreValue['selected']
-  sort?: StoreValue['sort']
-  hiddenColumns?: StoreValue['hiddenColumns']
-}
+import { useMemo, useRef } from 'react'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, TableBody, TableHeader, TableProvider, TableSkeleton } from '.'
 
 export function TableError({ error }: { error: Error }) {
   return (
@@ -65,76 +55,38 @@ function TableScrollArea({
   )
 }
 
-const selectSymbol = Symbol('table-selection')
-
 export function Table({
   className,
   data,
   columns,
-  selectable = false,
-  state,
-  initialState,
-  onUpdate,
-  onSelect,
   loading,
   error,
   ...props
 }: {
   data: Record<string, unknown>[]
-  columns: Column[]
-  selectable?: boolean
-  state?: TableState
-  initialState?: TableState
-  onUpdate?: CellUpdaterFunction
-  onSelect?: (rows: number[]) => void
+  columns: ColumnRenderer[]
   loading?: boolean
   error?: Error | null
 } & Omit<ComponentProps<'div'>, 'onSelect' | 'children'>) {
+  'use no memo'
+  // no memo due to https://github.com/TanStack/virtual/issues/736
+
   const scrollRef = useRef<HTMLDivElement | null>(null)
-  const [store] = useState(() => new Store<StoreValue>({
-    selected: initialState?.selected ?? [],
-    sort: initialState?.sort ?? [],
-    hiddenColumns: initialState?.hiddenColumns ?? [],
-  }))
-
-  const tableColumns = useMemo(() => {
-    const sortedColumns: ColumnRenderer[] = columns
-      .toSorted((a, b) => a.isPrimaryKey ? -1 : b.isPrimaryKey ? 1 : 0)
-      .map(column => ({
-        name: column.name,
-        meta: column,
-        size: columnsSizeMap.get(column.type!) ?? DEFAULT_COLUMN_WIDTH,
-        cell: Cell,
-        header: HeaderCell,
-      }) satisfies ColumnRenderer)
-
-    if (selectable) {
-      sortedColumns.unshift(
-          {
-            name: String(selectSymbol),
-            cell: SelectionCell,
-            header: SelectionHeaderCell,
-            size: 40,
-          } satisfies ColumnRenderer,
-      )
-    }
-
-    return sortedColumns
-  }, [columns, selectable])
+  const scrollDirection = useScrollDirection(scrollRef)
 
   const rowVirtualizer = useVirtualizer({
     count: data.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => DEFAULT_ROW_HEIGHT,
-    overscan: 5,
+    overscan: scrollDirection === 'down' || scrollDirection === 'up' ? 10 : 0,
   })
 
   const columnVirtualizer = useVirtualizer({
     horizontal: true,
-    count: tableColumns.length,
+    count: columns.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: index => tableColumns[index].size ?? DEFAULT_COLUMN_WIDTH,
-    overscan: 2,
+    estimateSize: index => columns[index].size ?? DEFAULT_COLUMN_WIDTH,
+    overscan: scrollDirection === 'right' || scrollDirection === 'left' ? 5 : 0,
   })
 
   const virtualRows = rowVirtualizer.getVirtualItems()
@@ -143,41 +95,18 @@ export function Table({
   const rowWidth = columnVirtualizer.getTotalSize()
 
   const context = useMemo(() => ({
-    store,
-    selectable,
-    data,
-    columns: tableColumns,
-    virtualRows,
-    virtualColumns,
-    rowWidth,
-    onUpdate,
-    onSelect,
-  }), [
-    store,
-    selectable,
     data,
     columns,
     virtualRows,
     virtualColumns,
     rowWidth,
-    onUpdate,
-    onSelect,
+  }), [
+    data,
+    columns,
+    virtualRows,
+    virtualColumns,
+    rowWidth,
   ])
-
-  const selectedRows = useStore(store, state => state.selected)
-
-  useEffect(() => {
-    onSelect?.(selectedRows)
-  }, [selectedRows, onSelect])
-
-  useEffect(() => {
-    if (state?.selected) {
-      store.setState(s => ({
-        ...s,
-        selected: state.selected!,
-      }))
-    }
-  }, [state?.selected])
 
   return (
     <TableProvider value={context}>
@@ -187,9 +116,9 @@ export function Table({
         className={className}
         {...props}
       >
-        <TableHeader columns={tableColumns} />
+        <TableHeader columns={columns} />
         {loading
-          ? <TableSkeleton columnsCount={tableColumns.length || 5} />
+          ? <TableSkeleton columnsCount={columns.length || 5} />
           : error
             ? <TableError error={error} />
             : data.length === 0

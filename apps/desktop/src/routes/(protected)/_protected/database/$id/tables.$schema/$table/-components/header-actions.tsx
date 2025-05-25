@@ -1,27 +1,28 @@
 import type { WhereFilter } from '~/entities/database'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
+import { ContentSwitch } from '@connnect/ui/components/custom/content-switch'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import NumberFlow from '@number-flow/react'
-import { RiDeleteBin7Line, RiFilterLine, RiLoopLeftLine } from '@remixicon/react'
+import { RiCheckLine, RiDeleteBin7Line, RiFilterLine, RiLoopLeftLine } from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { FilterForm } from '~/components/table'
 import { databaseColumnsQuery, deleteRowsSql, useDatabase } from '~/entities/database'
-import { FilterForm } from '~/entities/database/components/table'
 import { queryClient } from '~/main'
-import { Route, useTableStoreContext } from '..'
+import { Route, usePageStoreContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
 export function HeaderActions() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
-  const store = useTableStoreContext()
+  const store = usePageStoreContext()
   const selected = useStore(store, state => state.selected)
   const [isOpened, setIsOpened] = useState(false)
   const [isFiltersOpened, setIsFiltersOpened] = useState(false)
@@ -76,7 +77,6 @@ export function HeaderActions() {
       queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) }),
       queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table, schema).queryKey }),
     ])
-    toast.success('Data refreshed')
   }
 
   return (
@@ -176,7 +176,12 @@ export function HeaderActions() {
               disabled={isFetching}
             >
               <LoadingContent loading={isFetching}>
-                <RiLoopLeftLine />
+                <ContentSwitch
+                  activeContent={<RiCheckLine className="text-success" />}
+                  active={isFetching}
+                >
+                  <RiLoopLeftLine />
+                </ContentSwitch>
               </LoadingContent>
             </Button>
           </TooltipTrigger>

@@ -9,13 +9,13 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.76.1",
-    "@tanstack/react-router": "^1.120.5",
-    "@tanstack/react-router-devtools": "^1.120.6",
-    "@tanstack/react-start": "^1.120.5",
+    "@tanstack/react-query": "^5.77.0",
+    "@tanstack/react-router": "^1.120.10",
+    "@tanstack/react-router-devtools": "^1.120.10",
+    "@tanstack/react-start": "^1.120.10",
     "@trpc/client": "^11.1.2",
     "@trpc/react-query": "^11.1.2",
-    "motion": "^12.12.1",
+    "motion": "^12.12.2",
     "postgres": "^3.4.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

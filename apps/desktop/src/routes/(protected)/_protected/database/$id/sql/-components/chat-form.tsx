@@ -4,7 +4,7 @@ import { AiSqlChatModel } from '@connnect/shared/enums/ai-chat-model'
 import { getBase64FromFiles } from '@connnect/shared/utils/base64'
 import { Button } from '@connnect/ui/components/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
-import { useMountEffect } from '@connnect/ui/hookas/use-mount-effect'
+import { useMountedEffect } from '@connnect/ui/hookas/use-mounted-effect'
 import { RiCornerDownLeftLine, RiStopCircleLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef } from 'react'
@@ -40,6 +40,7 @@ function ModelSelector() {
       <SelectContent>
         <SelectItem value="auto">Auto</SelectItem>
         <SelectItem value={AiSqlChatModel.Claude_3_7_Sonnet}>Claude 3.7 Sonnet</SelectItem>
+        <SelectItem value={AiSqlChatModel.Claude_4_Opus}>Claude 4 Opus</SelectItem>
         <SelectItem value={AiSqlChatModel.GPT_4o_Mini}>GPT-4o Mini</SelectItem>
         <SelectItem value={AiSqlChatModel.Gemini_2_5_Pro}>Gemini 2.5 Pro</SelectItem>
         <SelectItem value={AiSqlChatModel.Grok_3}>Grok 3</SelectItem>
@@ -125,7 +126,7 @@ export function ChatForm({
     }
   }
 
-  useMountEffect(() => {
+  useMountedEffect(() => {
     chatInput.set(id, input)
   }, [input])
 

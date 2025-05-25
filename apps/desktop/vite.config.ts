@@ -18,12 +18,12 @@ export default defineConfig(({ command }) => {
     plugins: [
       tsconfigPaths(),
       tailwindcss(),
-      TanStackRouterVite(),
       react({
         babel: {
           plugins: [['babel-plugin-react-compiler', { target: '19' }]],
         },
       }),
+      TanStackRouterVite(),
       electron({
         main: {
           entry: 'electron/main/index.ts',

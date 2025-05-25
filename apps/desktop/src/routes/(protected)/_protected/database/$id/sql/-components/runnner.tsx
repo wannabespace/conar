@@ -1,26 +1,30 @@
 import type { editor } from 'monaco-editor'
-import type { Column } from '~/entities/database/components/table'
+import type { ColumnRenderer } from '~/components/table'
+import type { Column } from '~/entities/database/table'
 import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { CardHeader, CardTitle } from '@connnect/ui/components/card'
+import { ContentSwitch } from '@connnect/ui/components/custom/content-switch'
 import { Input } from '@connnect/ui/components/input'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useDebouncedMemo } from '@connnect/ui/hookas/use-debounced-memo'
-import { useMountEffect } from '@connnect/ui/hookas/use-mount-effect'
+import { useMountedEffect } from '@connnect/ui/hookas/use-mounted-effect'
 import { copy } from '@connnect/ui/lib/copy'
+import { cn } from '@connnect/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCheckLine, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
+import { DEFAULT_COLUMN_WIDTH, Table } from '~/components/table'
 import { DANGEROUS_SQL_KEYWORDS, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
-import { Table } from '~/entities/database/components/table'
+import { TableCell } from '~/entities/database/components/table-cell'
 import { formatSql } from '~/lib/formatter'
 import { pageHooks, pageStore, Route } from '..'
 import { chatQuery } from '../-lib'
@@ -92,15 +96,39 @@ function ResultTable({
       return result
 
     return result.filter(row =>
-      Object.values(row).some(value =>
-        !!value && String(value).toLowerCase().includes(search.toLowerCase()),
-      ),
+      JSON.stringify(Object.values(row)).toLowerCase().includes(search.toLowerCase()),
     )
   }, [result, search], 100)
 
+  const tableColumns = useMemo(() => {
+    return columns.map(column => ({
+      id: column.name,
+      header: ({ columnIndex }) => (
+        <div
+          className={cn(
+            'flex w-full items-center justify-between shrink-0 p-2',
+            columnIndex === 0 && 'pl-4',
+          )}
+        >
+          <div className="text-xs">
+            <div
+              data-mask
+              className="truncate font-medium flex items-center gap-1"
+              title={column.name}
+            >
+              {column.name}
+            </div>
+          </div>
+        </div>
+      ),
+      cell: props => <TableCell column={column} {...props} />,
+      size: DEFAULT_COLUMN_WIDTH,
+    } satisfies ColumnRenderer))
+  }, [columns, filteredData])
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-4 py-1 flex items-center justify-between gap-2">
+    <div className="h-full">
+      <div className="px-4 h-10 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Results</span>
           <span className="text-xs text-muted-foreground">
@@ -127,8 +155,8 @@ function ResultTable({
       </div>
       <Table
         data={filteredData}
-        columns={columns}
-        className="h-full"
+        columns={tableColumns}
+        className="h-[calc(100%-theme(spacing.10))]"
       />
     </div>
   )
@@ -146,24 +174,17 @@ export function Runner() {
     })
   }, [])
 
-  useMountEffect(() => {
+  useMountedEffect(() => {
     chatQuery.set(id, query)
   }, [id, query])
 
   const { refetch: runQuery, data: results, status, fetchStatus: queryStatus, error } = useQuery({
     queryKey: ['sql', id],
-    queryFn: async () => {
-      const res = await window.electron.databases.query({
-        type: database.type,
-        connectionString: database.connectionString,
-        query,
-      })
-
-      toast.success('SQL executed successfully')
-
-      return res
-    },
-    staleTime: Infinity,
+    queryFn: () => window.electron.databases.query({
+      type: database.type,
+      connectionString: database.connectionString,
+      query,
+    }),
     throwOnError: false,
     select: data => data.filter(r => r.rows.length > 0),
     enabled: false,
@@ -285,18 +306,25 @@ export function Runner() {
             size="sm"
             onClick={() => sendQuery(query)}
           >
-            Run
-            {' '}
-            <kbd className="flex items-center text-xs">
-              {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
-              <RiCornerDownLeftLine className="size-3" />
-            </kbd>
+            <ContentSwitch
+              activeContent={<RiCheckLine className="mx-auto mt-0.5" />}
+              active={queryStatus === 'fetching'}
+            >
+              <div className="flex items-center gap-1">
+                Run
+                {' '}
+                <kbd className="flex items-center text-xs">
+                  {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
+                  <RiCornerDownLeftLine className="size-3" />
+                </kbd>
+              </div>
+            </ContentSwitch>
           </Button>
         </div>
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel minSize={20}>
-        {Array.isArray(results) && (
+        {Array.isArray(results) && results.length > 0 && (
           <Tabs
             defaultValue="table-0"
             className="size-full gap-0"
@@ -331,13 +359,17 @@ export function Runner() {
                 </p>
               </div>
             )
-          : !results && (
+          : (!results || (Array.isArray(results) && results.length === 0)) && (
               <div className="h-full flex flex-col items-center justify-center">
                 <p className="text-center">
                   No results to display
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 text-center">
-                  Write and run a SQL query above to see results here
+                  Write and run a
+                  {' '}
+                  <span className="font-mono">SELECT</span>
+                  {' '}
+                  query above to see results here
                 </p>
               </div>
             )}

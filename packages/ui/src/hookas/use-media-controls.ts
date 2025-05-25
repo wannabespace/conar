@@ -32,22 +32,15 @@ export function useMediaControls(
 
     const abortController = new AbortController()
 
-    const handlePlay = () => setIsPlaying(true)
-    const handlePause = () => setIsPlaying(false)
-    const handleVolumeChange = () => {
+    media.addEventListener('play', () => setIsPlaying(true), { signal: abortController.signal })
+    media.addEventListener('pause', () => setIsPlaying(false), { signal: abortController.signal })
+    media.addEventListener('volumechange', () => {
       setVolume(media.volume)
       setIsMuted(media.muted)
-    }
-    const handleTimeUpdate = () => setCurrentTime(media.currentTime)
-    const handleDurationChange = () => setDuration(media.duration)
-    const handleEnded = () => setIsPlaying(false)
-
-    media.addEventListener('play', handlePlay, { signal: abortController.signal })
-    media.addEventListener('pause', handlePause, { signal: abortController.signal })
-    media.addEventListener('volumechange', handleVolumeChange, { signal: abortController.signal })
-    media.addEventListener('timeupdate', handleTimeUpdate, { signal: abortController.signal })
-    media.addEventListener('durationchange', handleDurationChange, { signal: abortController.signal })
-    media.addEventListener('ended', handleEnded, { signal: abortController.signal })
+    }, { signal: abortController.signal })
+    media.addEventListener('timeupdate', () => setCurrentTime(media.currentTime), { signal: abortController.signal })
+    media.addEventListener('durationchange', () => setDuration(media.duration), { signal: abortController.signal })
+    media.addEventListener('ended', () => setIsPlaying(false), { signal: abortController.signal })
 
     setVolume(media.volume)
     setIsMuted(media.muted)

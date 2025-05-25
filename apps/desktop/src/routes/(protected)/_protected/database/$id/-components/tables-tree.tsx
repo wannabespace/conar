@@ -6,8 +6,8 @@ import { RiTableLine } from '@remixicon/react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useMemo, useRef } from 'react'
+import { DEFAULT_ROW_HEIGHT } from '~/components/table'
 import { databaseRowsQuery, ensureDatabaseTableCore, useDatabaseTables } from '~/entities/database'
-import { DEFAULT_ROW_HEIGHT } from '~/entities/database/table'
 import { queryClient } from '~/main'
 
 export function TablesTree({ database, schema, className, search }: { database: Database, schema: string, className?: string, search?: string }) {

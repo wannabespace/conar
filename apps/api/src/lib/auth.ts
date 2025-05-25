@@ -2,7 +2,7 @@ import type { User } from 'better-auth'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { bearer, organization, twoFactor } from 'better-auth/plugins'
+import { bearer, twoFactor } from 'better-auth/plugins'
 import { db } from '~/drizzle'
 import { env } from '~/env'
 import { loops } from '~/lib/loops'
@@ -36,13 +36,13 @@ export const auth = betterAuth({
   plugins: [
     bearer(),
     twoFactor(),
-    organization({
-      schema: {
-        organization: {
-          modelName: 'workspaces',
-        },
-      },
-    }),
+    // organization({
+    //   schema: {
+    //     organization: {
+    //       modelName: 'workspaces',
+    //     },
+    //   },
+    // }),
     emailHarmony(),
   ],
   user: {

@@ -5,7 +5,7 @@ import { Button } from '@connnect/ui/components/button'
 import { ScrollArea } from '@connnect/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
-import { useMountEffect } from '@connnect/ui/hookas/use-mount-effect'
+import { useMountedEffect } from '@connnect/ui/hookas/use-mounted-effect'
 import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
@@ -24,7 +24,7 @@ interface attachment {
 
 function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('flex flex-col gap-2 text-sm', className)} {...props}>
+    <div data-mask className={cn('flex flex-col gap-2 text-sm', className)} {...props}>
       {children}
     </div>
   )
@@ -105,7 +105,7 @@ function AssistantMessage({
         loading={loading}
       />
       <div className="flex items-center -ml-1 -mt-1 gap-1 opacity-0 group-hover/message:opacity-100 transition-opacity duration-150">
-        {last && (
+        {last && !loading && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -168,7 +168,7 @@ export function ChatMessages({
   const { id } = Route.useParams()
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  useMountEffect(() => {
+  useMountedEffect(() => {
     chatMessages.set(id, messages)
   }, [messages])
 
@@ -213,8 +213,8 @@ export function ChatMessages({
               : (
                   <AssistantMessage
                     text={message.content}
-                    last={status === 'ready' && index === messages.length - 1}
-                    loading={(status === 'submitted' || status === 'streaming') && index === messages.length - 1}
+                    last={index === messages.length - 1}
+                    loading={status === 'submitted' || status === 'streaming'}
                     onReload={onReload}
                   />
                 )}

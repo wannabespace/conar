@@ -7,7 +7,7 @@ import { databaseContextType } from '@connnect/shared/database'
 import { AiSqlChatModel } from '@connnect/shared/enums/ai-chat-model'
 import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { arktypeValidator } from '@hono/arktype-validator'
-import { smoothStream, streamText } from 'ai'
+import { streamText } from 'ai'
 import { type } from 'arktype'
 import { Hono } from 'hono'
 
@@ -37,15 +37,15 @@ function generateStream({
         content: `You are an SQL tool that generates valid SQL code for ${type} database.
 
         Requirements:
-        1. Ensure the SQL is 100% valid and optimized for ${type} database
-        2. Use proper table and column names exactly as provided in the context
-        3. Use 2 spaces for indentation and consistent formatting
-        4. Consider performance implications for complex queries
-        5. The SQL code will be executed directly in a production database editor
-        6. Generate SQL query only for the provided schemas, tables, columns and enums
-        7. Answer in markdown and paste the SQL code in a code block.
-        8. Do not add useless information
-        9. Use quotes for table and column names to prevent SQL errors with case sensitivity
+        - Ensure the SQL is 100% valid and optimized for ${type} database
+        - Use proper table and column names exactly as provided in the context
+        - Use 2 spaces for indentation and consistent formatting
+        - Consider performance implications for complex queries
+        - The SQL code will be executed directly in a production database editor
+        - Generate SQL query only for the provided schemas, tables, columns and enums
+        - Answer in markdown and paste the SQL code in a code block.
+        - Do not add useless information
+        - Use quotes for table and column names to prevent SQL errors with case sensitivity
 
         Additional information:
         - Current date and time: ${new Date().toISOString()}
@@ -60,11 +60,13 @@ function generateStream({
       },
       ...messages,
     ],
-    experimental_transform: smoothStream(),
     abortSignal: signal,
     model,
     onFinish: (result) => {
       console.info('result', result)
+    },
+    onError: (error) => {
+      console.error('error', error)
     },
   })
 }
@@ -88,6 +90,7 @@ const input = type({
 
 const models: Record<AiSqlChatModel, LanguageModelV1> = {
   [AiSqlChatModel.Claude_3_7_Sonnet]: anthropic('claude-3-7-sonnet-20250219'),
+  [AiSqlChatModel.Claude_4_Opus]: anthropic('claude-4-opus-20250514'),
   [AiSqlChatModel.GPT_4o_Mini]: openai('gpt-4o-mini'),
   [AiSqlChatModel.Gemini_2_5_Pro]: google('gemini-2.5-pro-exp-03-25'),
   [AiSqlChatModel.Grok_3]: xai('grok-3-latest'),
@@ -108,7 +111,11 @@ ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
       signal: c.req.raw.signal,
     })
 
-    return result.toDataStreamResponse()
+    return result.toDataStreamResponse({
+      headers: {
+        'Transfer-Encoding': 'chunked',
+      },
+    })
   }
   catch (error) {
     const isOverloaded = error instanceof Error && error.message.includes('Overloaded')
@@ -125,10 +132,12 @@ ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
         signal: c.req.raw.signal,
       })
 
-      return result.toDataStreamResponse()
+      return result.toDataStreamResponse({
+        headers: {
+          'Transfer-Encoding': 'chunked',
+        },
+      })
     }
-
-    console.log('Unhandled error in /sql-chat route:', error)
 
     throw error
   }

@@ -3,6 +3,7 @@ import appCss from '@connnect/ui/globals.css?url'
 import { ThemeProvider } from '@connnect/ui/theme-provider'
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { ErrorPage } from '~/error-page'
 import { seo } from '~/utils/seo'
 
 export const Route = createRootRoute({
@@ -38,6 +39,7 @@ export const Route = createRootRoute({
     ],
   }),
   component: RootComponent,
+  errorComponent: props => <ErrorPage {...props} />,
 })
 
 function RootComponent() {

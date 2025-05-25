@@ -1,30 +1,32 @@
+import type { PageSize } from '~/components/table'
 import type { WhereFilter } from '~/entities/database'
-import type { PageSize } from '~/entities/database/table'
 import { SQL_OPERATORS_LIST } from '@connnect/shared/utils/sql'
 import { title } from '@connnect/shared/utils/title'
 import { createFileRoute } from '@tanstack/react-router'
 import { Store } from '@tanstack/react-store'
-import { createContext, use, useState } from 'react'
+import { type } from 'arktype'
+import { createContext, use, useEffect, useState } from 'react'
+import { FiltersProvider } from '~/components/table'
 import { ensureDatabaseTableCore } from '~/entities/database'
-import { FiltersProvider } from '~/entities/database/table'
 import { Filters } from './-components/filters'
 import { Footer } from './-components/footer'
 import { Header } from './-components/header'
 import { Table } from './-components/table'
 import { useColumnsQuery } from './-queries/use-columns-query'
 
-interface TableStore {
+interface PageStore {
   page: number
   pageSize: PageSize
   selected: number[]
   filters: WhereFilter[]
-  orderBy?: [string, 'ASC' | 'DESC']
+  orderBy: Record<string, 'ASC' | 'DESC'>
+  prompt: string
 }
 
-const TableStoreContext = createContext<Store<TableStore>>(null!)
+const PageStoreContext = createContext<Store<PageStore>>(null!)
 
-export function useTableStoreContext() {
-  return use(TableStoreContext)
+export function usePageStoreContext() {
+  return use(PageStoreContext)
 }
 
 export const Route = createFileRoute(
@@ -46,17 +48,48 @@ export const Route = createFileRoute(
   }),
 })
 
+const storeState = type({
+  page: 'number > 0',
+  pageSize: 'number' as type.cast<PageSize>,
+  selected: 'number[]',
+  filters: type<WhereFilter>({
+    column: 'string',
+    operator: 'string',
+    value: 'string',
+  }).array(),
+  orderBy: {
+    '[string]': 'string' as type.cast<'ASC' | 'DESC'>,
+  },
+  prompt: 'string',
+})
+
 function DatabaseTablePage() {
-  const [store] = useState(() => new Store<TableStore>({
-    page: 1,
-    pageSize: 50,
-    selected: [],
-    filters: [],
-  }))
+  const { table } = Route.useParams()
+  const [store] = useState(() => {
+    const state = storeState(JSON.parse(sessionStorage.getItem(`${table}-store`) ?? '{}'))
+
+    return new Store<PageStore>(state instanceof type.errors
+      ? {
+          page: 1,
+          pageSize: 50,
+          selected: [],
+          filters: [],
+          prompt: '',
+          orderBy: {},
+        }
+      : state)
+  })
+
+  useEffect(() => {
+    return store.subscribe((state) => {
+      sessionStorage.setItem(`${table}-store`, JSON.stringify(state.currentVal))
+    })
+  }, [])
+
   const { data: columns } = useColumnsQuery()
 
   return (
-    <TableStoreContext value={store}>
+    <PageStoreContext value={store}>
       <FiltersProvider
         columns={columns}
         operators={SQL_OPERATORS_LIST}
@@ -72,6 +105,6 @@ function DatabaseTablePage() {
           <Footer />
         </div>
       </FiltersProvider>
-    </TableStoreContext>
+    </PageStoreContext>
   )
 }
