@@ -105,7 +105,7 @@ function AssistantMessage({
         loading={loading}
       />
       <div className="flex items-center -ml-1 -mt-1 gap-1 opacity-0 group-hover/message:opacity-100 transition-opacity duration-150">
-        {last && (
+        {last && !loading && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -213,8 +213,8 @@ export function ChatMessages({
               : (
                   <AssistantMessage
                     text={message.content}
-                    last={status === 'ready' && index === messages.length - 1}
-                    loading={(status === 'submitted' || status === 'streaming') && index === messages.length - 1}
+                    last={index === messages.length - 1}
+                    loading={status === 'submitted' || status === 'streaming'}
                     onReload={onReload}
                   />
                 )}
