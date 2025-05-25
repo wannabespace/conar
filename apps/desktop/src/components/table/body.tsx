@@ -13,10 +13,8 @@ const RowColumn = memo(function RowColumnMemo({
   start: number
   index: number
 }) {
-  const data = useTableContext(state => state.data)
-  const columns = useTableContext(state => state.columns)
-  const column = columns[index]
-  const value = data[rowIndex][column.id]
+  const column = useTableContext(state => state.columns[index])
+  const value = useTableContext(state => state.data[rowIndex][column.id])
 
   return (
     <div

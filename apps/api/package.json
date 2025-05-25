@@ -20,7 +20,7 @@
     "@trpc/server": "^11.1.2",
     "ai": "^4.3.16",
     "arktype": "^2.1.20",
-    "better-auth": "^1.2.7",
+    "better-auth": "^1.2.8",
     "better-auth-harmony": "^1.2.4",
     "drizzle-orm": "^0.43.1",
     "hono": "^4.7.10",
@@ -30,7 +30,7 @@
     "stripe": "^18.1.1",
     "superjson": "^2.2.2",
     "uuid": "^11.1.0",
-    "zod": "^3.25.21"
+    "zod": "^3.25.28"
   },
   "devDependencies": {
     "@connnect/shared": "workspace:*",

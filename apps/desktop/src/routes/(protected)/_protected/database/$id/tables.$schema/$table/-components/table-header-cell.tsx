@@ -55,9 +55,7 @@ function SortButton({ column }: { column: Column }) {
             variant="ghost"
             size="iconXs"
             onClick={handleClick}
-            className={cn(
-              order !== null && 'text-primary',
-            )}
+            className={cn(order !== null && 'text-primary')}
           >
             {order === 'ASC'
               ? (

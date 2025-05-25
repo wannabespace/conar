@@ -7,7 +7,7 @@ import { databaseContextType } from '@connnect/shared/database'
 import { AiSqlChatModel } from '@connnect/shared/enums/ai-chat-model'
 import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { arktypeValidator } from '@hono/arktype-validator'
-import { smoothStream, streamText } from 'ai'
+import { streamText } from 'ai'
 import { type } from 'arktype'
 import { Hono } from 'hono'
 
@@ -60,11 +60,13 @@ function generateStream({
       },
       ...messages,
     ],
-    experimental_transform: smoothStream(),
     abortSignal: signal,
     model,
     onFinish: (result) => {
       console.info('result', result)
+    },
+    onError: (error) => {
+      console.error('error', error)
     },
   })
 }
@@ -109,7 +111,11 @@ ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
       signal: c.req.raw.signal,
     })
 
-    return result.toDataStreamResponse()
+    return result.toDataStreamResponse({
+      headers: {
+        'Transfer-Encoding': 'chunked',
+      },
+    })
   }
   catch (error) {
     const isOverloaded = error instanceof Error && error.message.includes('Overloaded')
@@ -126,10 +132,12 @@ ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
         signal: c.req.raw.signal,
       })
 
-      return result.toDataStreamResponse()
+      return result.toDataStreamResponse({
+        headers: {
+          'Transfer-Encoding': 'chunked',
+        },
+      })
     }
-
-    console.log('Unhandled error in /sql-chat route:', error)
 
     throw error
   }
