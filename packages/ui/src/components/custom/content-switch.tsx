@@ -28,23 +28,23 @@ export function ContentSwitch({
   }, [active])
 
   return (
-    <div className={cn('relative flex items-center gap-1', className)}>
-      <div
+    <span className={cn('relative flex items-center gap-1', className)}>
+      <span
         className={cn(
           'transition-all',
           !isActive ? 'scale-100 opacity-100' : 'scale-0 opacity-0',
         )}
       >
         {children}
-      </div>
-      <div
+      </span>
+      <span
         className={cn(
           'absolute inset-0 transition-all',
           !isActive ? 'scale-0 opacity-0' : 'scale-100 opacity-100',
         )}
       >
         {activeContent}
-      </div>
-    </div>
+      </span>
+    </span>
   )
 }
