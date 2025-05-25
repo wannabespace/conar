@@ -102,7 +102,7 @@ function AssistantMessage({
       <Markdown
         content={text}
         onEdit={handleEdit}
-        loading={loading}
+        loading={loading && last}
       />
       <div className="flex items-center -ml-1 -mt-1 gap-1 opacity-0 group-hover/message:opacity-100 transition-opacity duration-150">
         {last && !loading && (
