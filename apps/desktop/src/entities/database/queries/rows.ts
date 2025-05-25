@@ -16,6 +16,8 @@ export function databaseRowsQuery(
 ) {
   const _limit: PageSize = query?.limit ?? 50
   const _page = query?.page ?? 1
+  const _orderBy = query?.orderBy ?? {}
+  const _where = query?.where ?? ''
 
   return queryOptions({
     queryKey: [
@@ -29,8 +31,8 @@ export function databaseRowsQuery(
       {
         limit: _limit,
         page: _page,
-        ...(query?.orderBy && { orderBy: query.orderBy }),
-        ...(query?.where && { where: query.where }),
+        orderBy: _orderBy,
+        where: _where,
       },
     ],
     queryFn: async () => {
