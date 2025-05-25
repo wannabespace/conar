@@ -113,9 +113,9 @@ ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
   catch (error) {
     const isOverloaded = error instanceof Error && error.message.includes('Overloaded')
 
-    console.log('Request overloaded, trying to use fallback model')
-
     if (isOverloaded) {
+      console.log('Request overloaded, trying to use fallback model')
+
       const result = generateStream({
         type,
         model: !model || model === 'auto' ? anthropic('claude-3-5-haiku-latest') : models[model],
@@ -127,6 +127,8 @@ ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
 
       return result.toDataStreamResponse()
     }
+
+    console.log('Unhandled error in /sql-chat route:', error)
 
     throw error
   }
