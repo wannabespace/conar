@@ -17,6 +17,6 @@ export function databaseEnumsQuery(database: Database) {
   })
 }
 
-export function useDatabaseEnums(database: Database) {
-  return useSuspenseQuery(databaseEnumsQuery(database))
+export function useDatabaseEnums(...params: Parameters<typeof databaseEnumsQuery>) {
+  return useSuspenseQuery(databaseEnumsQuery(...params))
 }

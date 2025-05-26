@@ -10,10 +10,10 @@ export function databaseRowsQuery(
   table: string,
   schema: string,
   query?: {
-    pageSize?: PageSize
-    page?: number
-    orderBy?: Record<string, 'ASC' | 'DESC'>
-    filters?: WhereFilter[]
+    pageSize: PageSize
+    page: number
+    orderBy: Record<string, 'ASC' | 'DESC'>
+    filters: WhereFilter[]
   },
 ) {
   const _pageSize: PageSize = query?.pageSize ?? 50
@@ -57,6 +57,6 @@ export function databaseRowsQuery(
   })
 }
 
-export function useDatabaseRows(database: Database, table: string, schema: string, query: { limit?: PageSize, page?: number } = {}) {
-  return useQuery(databaseRowsQuery(database, table, schema, query))
+export function useDatabaseRows(...params: Parameters<typeof databaseRowsQuery>) {
+  return useQuery(databaseRowsQuery(...params))
 }

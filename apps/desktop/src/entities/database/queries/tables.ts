@@ -17,6 +17,6 @@ export function databaseTablesQuery(database: Database, schema: string) {
   })
 }
 
-export function useDatabaseTables(database: Database, schema: string) {
-  return useQuery(databaseTablesQuery(database, schema))
+export function useDatabaseTables(...params: Parameters<typeof databaseTablesQuery>) {
+  return useQuery(databaseTablesQuery(...params))
 }

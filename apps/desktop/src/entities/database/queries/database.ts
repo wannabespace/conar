@@ -80,6 +80,6 @@ export function databaseContextQuery(database: Database) {
   })
 }
 
-export function useDatabaseContext(database: Database) {
-  return useQuery(databaseContextQuery(database))
+export function useDatabaseContext(...params: Parameters<typeof databaseContextQuery>) {
+  return useQuery(databaseContextQuery(...params))
 }

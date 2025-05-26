@@ -20,6 +20,6 @@ export function databasePrimaryKeysQuery(database: Database) {
   })
 }
 
-export function useDatabasePrimaryKeys(database: Database) {
-  return useQuery(databasePrimaryKeysQuery(database))
+export function useDatabasePrimaryKeys(...params: Parameters<typeof databasePrimaryKeysQuery>) {
+  return useQuery(databasePrimaryKeysQuery(...params))
 }

@@ -9,7 +9,7 @@ export function databaseTableTotalQuery(
   table: string,
   schema: string,
   query?: {
-    filters?: WhereFilter[]
+    filters: WhereFilter[]
   },
 ) {
   const _filters = query?.filters ?? []
@@ -42,13 +42,6 @@ export function databaseTableTotalQuery(
   })
 }
 
-export function useDatabaseTableTotal(
-  database: Database,
-  table: string,
-  schema: string,
-  query?: {
-    filters?: WhereFilter[]
-  },
-) {
-  return useQuery(databaseTableTotalQuery(database, table, schema, query))
+export function useDatabaseTableTotal(...params: Parameters<typeof databaseTableTotalQuery>) {
+  return useQuery(databaseTableTotalQuery(...params))
 }

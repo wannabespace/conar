@@ -21,6 +21,6 @@ export function databaseColumnsQuery(database: Database, table: string, schema: 
   })
 }
 
-export function useDatabaseColumns(database: Database, table: string, schema: string) {
-  return useQuery(databaseColumnsQuery(database, table, schema))
+export function useDatabaseColumns(...params: Parameters<typeof databaseColumnsQuery>) {
+  return useQuery(databaseColumnsQuery(...params))
 }

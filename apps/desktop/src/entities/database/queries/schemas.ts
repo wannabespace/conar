@@ -20,6 +20,6 @@ export function databaseSchemasQuery(database: Database, hideInternal = true) {
   })
 }
 
-export function useDatabaseSchemas(database: Database, hideInternal = true) {
-  return useQuery(databaseSchemasQuery(database, hideInternal))
+export function useDatabaseSchemas(...params: Parameters<typeof databaseSchemasQuery>) {
+  return useQuery(databaseSchemasQuery(...params))
 }

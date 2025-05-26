@@ -22,5 +22,13 @@ export function useRowsQueryOpts() {
       },
     ),
     throwOnError: false,
-  }), [database, table, schema, page, pageSize, orderBy])
+  }), [
+    database,
+    table,
+    schema,
+    page,
+    pageSize,
+    filters,
+    orderBy,
+  ])
 }
