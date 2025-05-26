@@ -1,6 +1,7 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ColumnRenderer } from '.'
 import { memo } from 'react'
+import { useTableContext } from './provider'
 
 const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   virtualColumn,
@@ -22,16 +23,13 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   )
 })
 
-export const TableHeader = memo(function TableHeader({
-  columns,
-  virtualColumns,
-}: {
-  columns: ColumnRenderer[]
-  virtualColumns: VirtualItem[]
-}) {
+export function TableHeader() {
+  const virtualColumns = useTableContext(context => context.virtualColumns)
+  const columns = useTableContext(context => context.columns)
+
   return (
-    <div className="sticky top-0 z-10 border-y bg-background h-8 has-[[data-type]]:h-12 w-fit min-w-full">
-      <div className="flex bg-muted/20 w-fit min-w-full items-center">
+    <div className="sticky top-0 z-10 border-y bg-background h-8 has-[[data-footer]]:h-12 w-fit min-w-full">
+      <div className="flex bg-muted/20 h-full w-fit min-w-full items-center">
         <div className="shrink-0 w-(--scroll-left-offset)" />
         {virtualColumns.map(virtualColumn => (
           <VirtualHeaderColumn
@@ -44,4 +42,4 @@ export const TableHeader = memo(function TableHeader({
       </div>
     </div>
   )
-})
+}

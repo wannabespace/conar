@@ -33,8 +33,8 @@ export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables/$schema/$table/',
 )({
   component: DatabaseTablePage,
-  beforeLoad: async ({ context, params }) => {
-    await ensureDatabaseTableCore(context.database, params.schema, params.table)
+  beforeLoad: ({ context, params }) => {
+    ensureDatabaseTableCore(context.database, params.schema, params.table)
   },
   loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData, params }) => ({
@@ -99,7 +99,7 @@ function DatabaseTablePage() {
   return (
     <PageStoreContext value={store}>
       <FiltersProvider
-        columns={columns}
+        columns={columns ?? []}
         operators={SQL_OPERATORS_LIST}
       >
         <div className="h-screen flex flex-col justify-between">

@@ -1,7 +1,7 @@
 import type { ColumnRenderer } from '~/components/table'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { DEFAULT_COLUMN_WIDTH, Table } from '~/components/table'
+import { DEFAULT_COLUMN_WIDTH, Table, TableBody, TableBodySkeleton, TableEmpty, TableError, TableHeader, TableHeaderSkeleton } from '~/components/table'
 import { setSql, useDatabase } from '~/entities/database'
 import { createCellUpdater } from '~/entities/database/components/cells-updater'
 import { TableCell } from '~/entities/database/components/table-cell'
@@ -30,12 +30,14 @@ function TableComponent() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
   const rowsQueryOpts = useRowsQueryOpts()
-  const { data: rows, error, isPending } = useQuery({
+  const { data: columns, isPending: isColumnsPending } = useColumnsQuery()
+  const { data: rows, error, isPending: isRowsPending } = useQuery({
     ...rowsQueryOpts,
     select: data => data?.rows ?? [],
   })
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
-  const { data: columns } = useColumnsQuery()
+
+  const selectable = useMemo(() => !!primaryKeys && primaryKeys.length > 0, [primaryKeys])
 
   const setValue = (rowIndex: number, columnName: string, value: unknown) => {
     queryClient.setQueryData(rowsQueryOpts.queryKey, (oldData) => {
@@ -74,6 +76,9 @@ function TableComponent() {
   })
 
   const tableColumns = useMemo(() => {
+    if (!columns)
+      return []
+
     const sortedColumns: ColumnRenderer[] = columns
       .toSorted((a, b) => a.isPrimaryKey ? -1 : b.isPrimaryKey ? 1 : 0)
       .map(column => ({
@@ -89,7 +94,7 @@ function TableComponent() {
         header: props => <TableHeaderCell column={column} {...props} />,
       }) satisfies ColumnRenderer)
 
-    if (!!primaryKeys && primaryKeys.length > 0) {
+    if (selectable) {
       sortedColumns.unshift({
         id: String(selectSymbol),
         cell: SelectionCell,
@@ -99,15 +104,22 @@ function TableComponent() {
     }
 
     return sortedColumns
-  }, [columns, primaryKeys])
+  }, [columns, selectable])
 
   return (
     <Table
-      data={rows ?? []}
+      rowsCount={rows?.length ?? 0}
       columns={tableColumns}
-      loading={isPending}
-      error={error}
-    />
+    >
+      {isColumnsPending ? <TableHeaderSkeleton /> : <TableHeader />}
+      {isRowsPending || isColumnsPending
+        ? <TableBodySkeleton />
+        : error
+          ? <TableError error={error} />
+          : rows?.length === 0
+            ? <TableEmpty />
+            : <TableBody rows={rows} />}
+    </Table>
   )
 }
 

@@ -16,7 +16,7 @@ export function Header() {
     filters,
   })
 
-  const columnsCount = columns.length
+  const columnsCount = columns?.length ?? 0
 
   return (
     <div className="flex gap-6 w-full items-center justify-between">

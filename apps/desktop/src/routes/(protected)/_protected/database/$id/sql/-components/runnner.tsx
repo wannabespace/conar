@@ -21,7 +21,7 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
-import { DEFAULT_COLUMN_WIDTH, Table } from '~/components/table'
+import { DEFAULT_COLUMN_WIDTH, Table, TableBody, TableHeader } from '~/components/table'
 import { DANGEROUS_SQL_KEYWORDS, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { formatSql } from '~/lib/formatter'
@@ -154,10 +154,13 @@ function ResultTable({
         </div>
       </div>
       <Table
-        data={filteredData}
+        rowsCount={filteredData.length}
         columns={tableColumns}
         className="h-[calc(100%-theme(spacing.10))]"
-      />
+      >
+        <TableHeader />
+        <TableBody rows={filteredData} />
+      </Table>
     </div>
   )
 }

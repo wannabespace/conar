@@ -5,8 +5,9 @@ import { useScrollDirection } from '@connnect/ui/hookas/use-scroll-direction'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useRef } from 'react'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, TableBody, TableHeader, TableSkeleton } from '.'
+import { useMemo, useRef } from 'react'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '.'
+import { TableProvider } from './provider'
 
 export function TableError({ error }: { error: Error }) {
   return (
@@ -34,24 +35,21 @@ export function TableEmpty() {
 
 export function Table({
   className,
-  data,
+  rowsCount,
   columns,
-  loading,
-  error,
+  children,
   ...props
 }: {
-  data: Record<string, unknown>[]
+  rowsCount: number
   columns: ColumnRenderer[]
-  loading?: boolean
-  error?: Error | null
-} & Omit<ComponentProps<'div'>, 'ref' | 'onSelect' | 'children'>) {
+} & Omit<ComponentProps<'div'>, 'ref' | 'onSelect'>) {
   'use no memo'
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollDirection = useScrollDirection(scrollRef)
 
   const rowVirtualizer = useVirtualizer({
-    count: data.length,
+    count: rowsCount,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => DEFAULT_ROW_HEIGHT,
     overscan: scrollDirection === 'up' || scrollDirection === 'down' ? 10 : 0,
@@ -84,34 +82,25 @@ export function Table({
     scrollRef.current.style.setProperty('--scroll-bottom-offset', `${virtualBottomOffset}px`)
   }
 
+  const context = useMemo(() => ({
+    columns,
+    virtualRows,
+    virtualColumns,
+  }), [columns, virtualRows, virtualColumns])
+
   return (
-    <div
-      className={cn('size-full relative', className)}
-      {...props}
-    >
-      <ScrollArea
-        ref={scrollRef}
-        className="size-full"
+    <TableProvider value={context}>
+      <div
+        className={cn('size-full relative', className)}
+        {...props}
       >
-        <TableHeader
-          columns={columns}
-          virtualColumns={virtualColumns}
-        />
-        {loading
-          ? <TableSkeleton columnsCount={columns.length || 5} />
-          : error
-            ? <TableError error={error} />
-            : data.length === 0
-              ? <TableEmpty />
-              : (
-                  <TableBody
-                    columns={columns}
-                    virtualColumns={virtualColumns}
-                    virtualRows={virtualRows}
-                    data={data}
-                  />
-                )}
-      </ScrollArea>
-    </div>
+        <ScrollArea
+          ref={scrollRef}
+          className="size-full"
+        >
+          {children}
+        </ScrollArea>
+      </div>
+    </TableProvider>
   )
 }

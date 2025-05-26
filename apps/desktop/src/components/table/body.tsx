@@ -2,6 +2,7 @@ import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ColumnRenderer } from '.'
 import { cn } from '@connnect/ui/lib/utils'
 import { memo } from 'react'
+import { useTableContext } from './provider'
 
 const VirtualColumn = memo(function VirtualColumn({
   virtualColumn,
@@ -34,17 +35,17 @@ const Row = memo(function Row({
   size,
   rowIndex,
   virtualColumns,
-  columns,
   data,
   last,
 }: {
   size: number
   rowIndex: number
   virtualColumns: VirtualItem[]
-  columns: ColumnRenderer[]
-  data: Record<string, unknown>
+  data?: Record<string, unknown>
   last: boolean
 }) {
+  const columns = useTableContext(context => context.columns)
+
   return (
     <div
       className={cn('flex w-fit border-b min-w-full hover:bg-accent/30', last && 'border-b-0')}
@@ -56,7 +57,7 @@ const Row = memo(function Row({
           key={virtualColumn.key}
           virtualColumn={virtualColumn}
           column={columns[virtualColumn.index]}
-          value={data[columns[virtualColumn.index].id]}
+          value={data?.[columns[virtualColumn.index]?.id]}
           rowIndex={rowIndex}
         />
       ))}
@@ -65,17 +66,10 @@ const Row = memo(function Row({
   )
 })
 
-export const TableBody = memo(function TableBody({
-  data,
-  virtualRows,
-  virtualColumns,
-  columns,
-}: {
-  data: Record<string, unknown>[]
-  virtualRows: VirtualItem[]
-  virtualColumns: VirtualItem[]
-  columns: ColumnRenderer[]
-}) {
+export function TableBody({ rows }: { rows: Record<string, unknown>[] }) {
+  const virtualRows = useTableContext(context => context.virtualRows)
+  const virtualColumns = useTableContext(context => context.virtualColumns)
+
   return (
     <div data-mask className="relative w-fit min-w-full">
       <div className="h-(--scroll-top-offset)" />
@@ -84,13 +78,12 @@ export const TableBody = memo(function TableBody({
           key={virtualRow.key}
           rowIndex={virtualRow.index}
           virtualColumns={virtualColumns}
-          data={data[virtualRow.index]}
+          data={rows[virtualRow.index]}
           last={virtualRow.index === virtualRows.length - 1}
           size={virtualRow.size}
-          columns={columns}
         />
       ))}
       <div className="h-(--scroll-bottom-offset)" />
     </div>
   )
-})
+}

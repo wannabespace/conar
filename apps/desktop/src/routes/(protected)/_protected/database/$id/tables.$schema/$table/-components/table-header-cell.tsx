@@ -103,7 +103,7 @@ export function TableHeaderCell({ column, columnIndex, className, ...props }: { 
           {column.name}
         </div>
         {column?.type && (
-          <div data-type={column.type} className="flex items-center gap-1">
+          <div data-footer={!!column.type} className="flex items-center gap-1">
             {column.isPrimaryKey && (
               <TooltipProvider>
                 <Tooltip>
