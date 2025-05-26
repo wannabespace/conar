@@ -1,7 +1,7 @@
 {
   "name": "@connnect/desktop",
   "type": "module",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "private": true,
   "description": "AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.",
   "productName": "Connnect",
