@@ -33,7 +33,7 @@ Connnect is an AI-powered open-source project that simplifies database interacti
 - Electron
 - TailwindCSS and shadcn/ui
 - Vite
-- TanStack Start/Router/Query/Table/Form/Virtual
+- TanStack Start/Router/Query/Form/Virtual
 - Arktype
 - Hono
 - tRPC
