@@ -1,6 +1,34 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ColumnRenderer } from '.'
+import { cn } from '@connnect/ui/lib/utils'
 import { memo } from 'react'
+
+const VirtualColumn = memo(function VirtualColumn({
+  virtualColumn,
+  column,
+  value,
+  rowIndex,
+}: {
+  virtualColumn: VirtualItem
+  column: ColumnRenderer
+  value: unknown
+  rowIndex: number
+}) {
+  return (
+    <column.cell
+      value={value}
+      id={column.id}
+      size={virtualColumn.size}
+      rowIndex={rowIndex}
+      columnIndex={virtualColumn.index}
+      style={{
+        width: `${column.size}px`,
+        height: '100%',
+        flexShrink: 0,
+      }}
+    />
+  )
+})
 
 const Row = memo(function Row({
   size,
@@ -8,43 +36,36 @@ const Row = memo(function Row({
   virtualColumns,
   columns,
   data,
+  last,
 }: {
   size: number
   rowIndex: number
   virtualColumns: VirtualItem[]
   columns: ColumnRenderer[]
   data: Record<string, unknown>
+  last: boolean
 }) {
   return (
     <div
-      className="flex w-fit border-b last:border-b-0 min-w-full hover:bg-accent/30"
+      className={cn('flex w-fit border-b min-w-full hover:bg-accent/30', last && 'border-b-0')}
       style={{ height: `${size}px` }}
     >
       <div className="w-(--scroll-left-offset) shrink-0" />
-      {virtualColumns.map((virtualColumn) => {
-        const column = columns[virtualColumn.index]
-        const value = data?.[column.id]
-
-        return (
-          <column.cell
-            key={virtualColumn.key}
-            rowIndex={rowIndex}
-            columnIndex={virtualColumn.index}
-            value={value}
-            style={{
-              width: `${column.size}px`,
-              height: '100%',
-              flexShrink: 0,
-            }}
-          />
-        )
-      })}
+      {virtualColumns.map(virtualColumn => (
+        <VirtualColumn
+          key={virtualColumn.key}
+          virtualColumn={virtualColumn}
+          column={columns[virtualColumn.index]}
+          value={data[columns[virtualColumn.index].id]}
+          rowIndex={rowIndex}
+        />
+      ))}
       <div className="w-(--scroll-right-offset) shrink-0" />
     </div>
   )
 })
 
-export function TableBody({
+export const TableBody = memo(function TableBody({
   data,
   virtualRows,
   virtualColumns,
@@ -64,6 +85,7 @@ export function TableBody({
           rowIndex={virtualRow.index}
           virtualColumns={virtualColumns}
           data={data[virtualRow.index]}
+          last={virtualRow.index === virtualRows.length - 1}
           size={virtualRow.size}
           columns={columns}
         />
@@ -71,4 +93,4 @@ export function TableBody({
       <div className="h-(--scroll-bottom-offset)" />
     </div>
   )
-}
+})

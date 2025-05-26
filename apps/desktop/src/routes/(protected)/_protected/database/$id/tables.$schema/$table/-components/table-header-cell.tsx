@@ -9,9 +9,14 @@ import { usePageStoreContext } from '..'
 
 type SortOrder = 'ASC' | 'DESC'
 
+const CANNOT_SORT_TYPES = ['json']
+
 function SortButton({ column }: { column: Column }) {
   const store = usePageStoreContext()
   const order = useStore(store, state => state.orderBy?.[column.name] ?? null)
+
+  if (column.type && CANNOT_SORT_TYPES.includes(column.type))
+    return null
 
   function setOrder(order: SortOrder) {
     store.setState(state => ({

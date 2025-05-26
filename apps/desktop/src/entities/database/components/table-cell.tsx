@@ -20,11 +20,11 @@ import { sleep } from '~/lib/helpers'
 
 const os = getOS()
 
-function getDisplayValue(value: unknown, pretty = true) {
-  if (typeof value === 'object')
-    return pretty ? JSON.stringify(value, null, 2) : JSON.stringify(value)
+function getDisplayValue(value: unknown, oneLine: boolean) {
+  if (typeof value === 'object' && value !== null)
+    return oneLine ? JSON.stringify(value).replaceAll('\n', ' ') : JSON.stringify(value, null, 2)
 
-  return String(value ?? '')
+  return oneLine ? String(value ?? '').replaceAll('\n', ' ') : String(value ?? '')
 }
 
 interface CellContextValue {
@@ -61,7 +61,7 @@ function CellProvider({
   onSavePending: () => void
 }) {
   const isJson = !!column?.type?.includes('json')
-  const displayValue = getDisplayValue(initialValue)
+  const displayValue = getDisplayValue(initialValue, false)
   const [value, setValue] = useState<string>(() => initialValue === null ? '' : displayValue)
 
   const { mutate: update } = useMutation({
@@ -242,12 +242,14 @@ function TableCellMonaco({
 function CellContent({
   value,
   className,
+  size,
   columnIndex,
   ...props
 }: {
   value: unknown
   className?: string
   columnIndex: number
+  size: number
 } & ComponentProps<'div'>) {
   const displayValue = useMemo(() => {
     if (value === null)
@@ -256,7 +258,12 @@ function CellContent({
     if (value === '')
       return 'empty'
 
-    return getDisplayValue(value, false)
+    /*
+      If value has a lot of symbols that don't fit in the cell,
+      we truncate it to avoid performance issues.
+      Used 6 as a multiplier because 1 symbol takes ~6px width
+    */
+    return getDisplayValue(value, true).slice(0, size / 6)
   }, [value])
 
   return (
@@ -275,8 +282,8 @@ function CellContent({
   )
 }
 
-function getTimestamp(value: unknown, meta: Column) {
-  const date = meta?.type?.includes('timestamp')
+function getTimestamp(value: unknown, column: Column) {
+  const date = column?.type?.includes('timestamp')
     && value
     && (typeof value === 'string' || typeof value === 'number')
     ? dayjs(value)
@@ -291,11 +298,12 @@ export function TableCell({
   column,
   className,
   columnIndex,
+  size,
   onUpdate,
   ...props
 }: {
-  column: Column
   onUpdate?: CellUpdaterFunction
+  column: Column
 } & TableCellProps & ComponentProps<'div'>) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
@@ -326,6 +334,7 @@ export function TableCell({
       <CellContent
         value={value}
         columnIndex={columnIndex}
+        size={size}
         onMouseOver={() => setCanInteract(true)}
         className={cellClassName}
         {...props}
@@ -387,6 +396,7 @@ export function TableCell({
                 <CellContent
                   value={value}
                   columnIndex={columnIndex}
+                  size={size}
                   className={cellClassName}
                   {...props}
                 />

@@ -71,7 +71,6 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
   }, [content, loading])
 
   useMountedEffect(() => {
-    console.log(isPreLoading, content)
     if (!isPreLoading && content && content.split('\n').length < 10) {
       setOpened('pre')
     }

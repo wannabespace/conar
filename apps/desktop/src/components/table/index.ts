@@ -15,7 +15,7 @@ export * from './table'
 export const DEFAULT_ROW_HEIGHT = 32
 export const DEFAULT_COLUMN_WIDTH = 220
 
-export interface TableCellProps extends ComponentProps<'div'> {
+export interface TableCellProps extends Omit<ComponentProps<'div'>, 'id'>, Pick<ColumnRenderer, 'size' | 'id'> {
   rowIndex: number
   columnIndex: number
   value: unknown

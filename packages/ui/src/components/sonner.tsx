@@ -9,6 +9,7 @@ function Toaster() {
       theme={resolvedTheme}
       className="toaster group"
       position="top-right"
+      closeButton
       richColors
       style={
         {

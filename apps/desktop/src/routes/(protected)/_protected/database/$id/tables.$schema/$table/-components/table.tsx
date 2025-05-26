@@ -51,8 +51,6 @@ function TableComponent() {
     })
   }
 
-  console.log(rows)
-
   const saveValue = async (rowIndex: number, columnName: string, value: unknown) => {
     const data = queryClient.getQueryData(rowsQueryOpts.queryKey)
 

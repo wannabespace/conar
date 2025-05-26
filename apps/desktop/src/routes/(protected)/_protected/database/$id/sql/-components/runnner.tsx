@@ -5,7 +5,6 @@ import { getOS } from '@connnect/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { CardHeader, CardTitle } from '@connnect/ui/components/card'
-import { ContentSwitch } from '@connnect/ui/components/custom/content-switch'
 import { Input } from '@connnect/ui/components/input'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
@@ -16,7 +15,7 @@ import { copy } from '@connnect/ui/lib/copy'
 import { cn } from '@connnect/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCheckLine, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowUpLine, RiBrush2Line, RiCloseLine, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiLoader4Line, RiSearchLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -181,11 +180,17 @@ export function Runner() {
 
   const { refetch: runQuery, data: results, status, fetchStatus: queryStatus, error } = useQuery({
     queryKey: ['sql', id],
-    queryFn: () => window.electron.databases.query({
-      type: database.type,
-      connectionString: database.connectionString,
-      query,
-    }),
+    queryFn: async () => {
+      const result = await window.electron.databases.query({
+        type: database.type,
+        connectionString: database.connectionString,
+        query,
+      })
+
+      toast.success('SQL executed successfully')
+
+      return result
+    },
     throwOnError: false,
     select: data => data.filter(r => r.rows.length > 0),
     enabled: false,
@@ -200,6 +205,7 @@ export function Runner() {
             pageHooks.callHook('fix', error.message)
           },
         },
+        duration: 5000,
       })
     }
   }, [error, status])
@@ -307,19 +313,14 @@ export function Runner() {
             size="sm"
             onClick={() => sendQuery(query)}
           >
-            <ContentSwitch
-              activeContent={<RiCheckLine className="mx-auto mt-0.5" />}
-              active={queryStatus === 'fetching'}
-            >
-              <div className="flex items-center gap-1">
-                Run
-                {' '}
-                <kbd className="flex items-center text-xs">
-                  {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
-                  <RiCornerDownLeftLine className="size-3" />
-                </kbd>
-              </div>
-            </ContentSwitch>
+            <div className="flex items-center gap-1">
+              Run
+              {' '}
+              <kbd className="flex items-center text-xs">
+                {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
+                <RiCornerDownLeftLine className="size-3" />
+              </kbd>
+            </div>
           </Button>
         </div>
       </ResizablePanel>
