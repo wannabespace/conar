@@ -2,18 +2,10 @@ import * as React from 'react'
 
 type ScrollDirection = 'up' | 'down' | 'left' | 'right' | null
 
-interface ScrollState {
-  direction: ScrollDirection
-  lastScrollY: number
-  lastScrollX: number
-}
-
-export function useScrollDirection(ref?: React.RefObject<HTMLElement | null>) {
-  const [scrollState, setScrollState] = React.useState<ScrollState>({
-    direction: null,
-    lastScrollY: 0,
-    lastScrollX: 0,
-  })
+export function useScrollDirection(ref?: React.RefObject<HTMLElement | null>, delay = 500) {
+  const [scrollDirection, setScrollDirection] = React.useState<ScrollDirection>(null)
+  const lastScrollRef = React.useRef({ y: 0, x: 0 })
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
   React.useEffect(() => {
     const element = ref ? ref.current : window
@@ -25,41 +17,48 @@ export function useScrollDirection(ref?: React.RefObject<HTMLElement | null>) {
       const currentScrollY = element === window ? window.scrollY : (element as HTMLElement).scrollTop
       const currentScrollX = element === window ? window.scrollX : (element as HTMLElement).scrollLeft
 
-      if (currentScrollY > scrollState.lastScrollY) {
-        setScrollState(prev => ({ ...prev, direction: 'down' }))
+      let newDirection: ScrollDirection = null
+
+      if (currentScrollY > lastScrollRef.current.y) {
+        newDirection = 'down'
       }
-      else if (currentScrollY < scrollState.lastScrollY) {
-        setScrollState(prev => ({ ...prev, direction: 'up' }))
+      else if (currentScrollY < lastScrollRef.current.y) {
+        newDirection = 'up'
       }
-      else if (currentScrollX > scrollState.lastScrollX) {
-        setScrollState(prev => ({ ...prev, direction: 'right' }))
+      else if (currentScrollX > lastScrollRef.current.x) {
+        newDirection = 'right'
       }
-      else if (currentScrollX < scrollState.lastScrollX) {
-        setScrollState(prev => ({ ...prev, direction: 'left' }))
+      else if (currentScrollX < lastScrollRef.current.x) {
+        newDirection = 'left'
       }
 
-      setScrollState(prev => ({
-        ...prev,
-        lastScrollY: currentScrollY,
-        lastScrollX: currentScrollX,
-      }))
+      if (newDirection !== scrollDirection) {
+        setScrollDirection(newDirection)
+      }
+
+      lastScrollRef.current = {
+        y: currentScrollY,
+        x: currentScrollX,
+      }
+
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+
+      timeoutRef.current = setTimeout(() => {
+        setScrollDirection(null)
+      }, delay)
     }
-
-    const timeout = setTimeout(() => {
-      if (scrollState.direction) {
-        setScrollState(prev => ({ ...prev, direction: null }))
-      }
-    }, 100)
 
     element.addEventListener('scroll', handleScroll)
 
     return () => {
-      if (timeout) {
-        clearTimeout(timeout)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
       element.removeEventListener('scroll', handleScroll)
     }
-  }, [scrollState.lastScrollY, scrollState.lastScrollX, ref])
+  }, [scrollDirection, ref, delay])
 
-  return scrollState.direction
+  return scrollDirection
 }

@@ -9,15 +9,32 @@ import { useMemo, useRef } from 'react'
 import { DEFAULT_ROW_HEIGHT } from '~/components/table'
 import { databaseRowsQuery, ensureDatabaseTableCore, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
+import { getTableStoreState } from '../tables.$schema/$table'
 
 export function TablesTree({ database, schema, className, search }: { database: Database, schema: string, className?: string, search?: string }) {
   const { data: tables } = useDatabaseTables(database, schema)
-  const { table: tableParam } = useParams({ strict: false })
+  const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
   const debouncedPrefetchRows = useDebouncedCallback(
-    (tableName: string) => queryClient.ensureQueryData(databaseRowsQuery(database, tableName, schema)),
+    (tableName: string) => {
+      const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
+
+      if (state) {
+        const { page, pageSize, filters, orderBy } = state
+
+        queryClient.ensureQueryData(databaseRowsQuery(database, tableName, schema, {
+          page,
+          pageSize,
+          filters,
+          orderBy,
+        }))
+      }
+      else {
+        queryClient.ensureQueryData(databaseRowsQuery(database, tableName, schema))
+      }
+    },
     [database.id, schema],
     100,
   )

@@ -249,7 +249,7 @@ function CellContent({
   className?: string
   columnIndex: number
 } & ComponentProps<'div'>) {
-  const displayValue = (() => {
+  const displayValue = useMemo(() => {
     if (value === null)
       return 'null'
 
@@ -257,11 +257,10 @@ function CellContent({
       return 'empty'
 
     return getDisplayValue(value, false)
-  })()
+  }, [value])
 
   return (
     <div
-      data-mask
       className={cn(
         'h-full text-xs truncate p-2 font-mono cursor-default select-none',
         'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
@@ -319,6 +318,7 @@ export function TableCell({
     status === 'error' && 'ring-destructive/50 bg-destructive/20',
     status === 'success' && 'ring-success/50 bg-success/10',
     status === 'saving' && 'animate-pulse',
+    className,
   )
 
   if (!canInteract) {
@@ -327,7 +327,7 @@ export function TableCell({
         value={value}
         columnIndex={columnIndex}
         onMouseOver={() => setCanInteract(true)}
-        className={cn(cellClassName, className)}
+        className={cellClassName}
         {...props}
       />
     )
@@ -387,7 +387,7 @@ export function TableCell({
                 <CellContent
                   value={value}
                   columnIndex={columnIndex}
-                  className={cn(cellClassName, className)}
+                  className={cellClassName}
                   {...props}
                 />
               </PopoverTrigger>

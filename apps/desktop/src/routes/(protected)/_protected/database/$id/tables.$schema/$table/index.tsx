@@ -63,26 +63,34 @@ const storeState = type({
   prompt: 'string',
 })
 
-function DatabaseTablePage() {
-  const { table } = Route.useParams()
-  const [store] = useState(() => {
-    const state = storeState(JSON.parse(sessionStorage.getItem(`${table}-store`) ?? '{}'))
+export function getTableStoreState(schema: string, table: string) {
+  const parsed = storeState(JSON.parse(sessionStorage.getItem(`${schema}.${table}-store`) ?? '{}'))
 
-    return new Store<PageStore>(state instanceof type.errors
-      ? {
-          page: 1,
-          pageSize: 50,
-          selected: [],
-          filters: [],
-          prompt: '',
-          orderBy: {},
-        }
-      : state)
+  if (parsed instanceof type.errors)
+    return null
+
+  return parsed
+}
+
+function DatabaseTablePage() {
+  const { table, schema } = Route.useParams()
+  const [store] = useState(() => {
+    const state = getTableStoreState(schema, table)
+
+    return new Store<PageStore>(state
+      ?? {
+        page: 1,
+        pageSize: 50,
+        selected: [],
+        filters: [],
+        prompt: '',
+        orderBy: {},
+      })
   })
 
   useEffect(() => {
     return store.subscribe((state) => {
-      sessionStorage.setItem(`${table}-store`, JSON.stringify(state.currentVal))
+      sessionStorage.setItem(`${schema}.${table}-store`, JSON.stringify(state.currentVal))
     })
   }, [])
 

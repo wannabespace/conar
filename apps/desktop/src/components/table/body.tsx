@@ -1,89 +1,74 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
+import type { ColumnRenderer } from '.'
 import { memo } from 'react'
-import { useTableContext } from '.'
 
-const RowColumn = memo(function RowColumnMemo({
-  rowIndex,
+const Row = memo(function Row({
   size,
-  start,
-  index,
-}: {
-  rowIndex: number
-  size: number
-  start: number
-  index: number
-}) {
-  const column = useTableContext(state => state.columns[index])
-  const value = useTableContext(state => state.data[rowIndex][column.id])
-
-  return (
-    <div
-      className="absolute top-0 left-0 h-full"
-      style={{
-        transform: `translateX(${start}px)`,
-        width: `${size}px`,
-      }}
-    >
-      <column.cell
-        rowIndex={rowIndex}
-        columnIndex={index}
-        value={value}
-      />
-    </div>
-  )
-})
-
-const Row = memo(function RowMemo({
-  size,
-  start,
   rowIndex,
   virtualColumns,
+  columns,
+  data,
 }: {
   size: number
-  start: number
   rowIndex: number
   virtualColumns: VirtualItem[]
+  columns: ColumnRenderer[]
+  data: Record<string, unknown>
 }) {
   return (
     <div
-      className="absolute w-full border-b last:border-b-0 min-w-full hover:bg-accent/30"
-      style={{
-        height: `${size}px`,
-        transform: `translate3d(0,${start}px,0)`,
-      }}
+      className="flex w-fit border-b last:border-b-0 min-w-full hover:bg-accent/30"
+      style={{ height: `${size}px` }}
     >
-      {virtualColumns.map(virtualColumn => (
-        <RowColumn
-          key={virtualColumn.key}
-          size={virtualColumn.size}
-          start={virtualColumn.start}
-          index={virtualColumn.index}
-          rowIndex={rowIndex}
-        />
-      ))}
+      <div className="w-(--scroll-left-offset) shrink-0" />
+      {virtualColumns.map((virtualColumn) => {
+        const column = columns[virtualColumn.index]
+        const value = data?.[column.id]
+
+        return (
+          <column.cell
+            key={virtualColumn.key}
+            rowIndex={rowIndex}
+            columnIndex={virtualColumn.index}
+            value={value}
+            style={{
+              width: `${column.size}px`,
+              height: '100%',
+              flexShrink: 0,
+            }}
+          />
+        )
+      })}
+      <div className="w-(--scroll-right-offset) shrink-0" />
     </div>
   )
 })
 
-export function TableBody() {
-  const virtualRows = useTableContext(state => state.virtualRows)
-  const rowWidth = useTableContext(state => state.rowWidth)
-  const virtualColumns = useTableContext(state => state.virtualColumns)
-
+export function TableBody({
+  data,
+  virtualRows,
+  virtualColumns,
+  columns,
+}: {
+  data: Record<string, unknown>[]
+  virtualRows: VirtualItem[]
+  virtualColumns: VirtualItem[]
+  columns: ColumnRenderer[]
+}) {
   return (
-    <div
-      className="relative"
-      style={{ width: `${rowWidth}px` }}
-    >
+    <div data-mask className="relative w-fit min-w-full">
+      <div className="h-(--scroll-top-offset)" />
       {virtualRows.map(virtualRow => (
         <Row
           key={virtualRow.key}
-          size={virtualRow.size}
-          start={virtualRow.start}
           rowIndex={virtualRow.index}
           virtualColumns={virtualColumns}
+          data={data[virtualRow.index]}
+          size={virtualRow.size}
+          columns={columns}
         />
       ))}
+      <div className="h-(--scroll-bottom-offset)" />
     </div>
   )
 }

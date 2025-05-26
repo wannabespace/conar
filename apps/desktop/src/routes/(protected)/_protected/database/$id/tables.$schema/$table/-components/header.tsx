@@ -1,6 +1,6 @@
 import { Separator } from '@connnect/ui/components/separator'
 import { useStore } from '@tanstack/react-store'
-import { useDatabase, useDatabaseTableTotal, whereSql } from '~/entities/database'
+import { useDatabase, useDatabaseTableTotal } from '~/entities/database'
 import { Route, usePageStoreContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 import { HeaderActions } from './header-actions'
@@ -13,7 +13,7 @@ export function Header() {
   const store = usePageStoreContext()
   const filters = useStore(store, state => state.filters)
   const { data: total } = useDatabaseTableTotal(database, table, schema, {
-    where: whereSql(filters)[database.type],
+    filters,
   })
 
   const columnsCount = columns.length

@@ -1,3 +1,4 @@
+import type { TableHeaderCellProps } from '~/components/table'
 import type { Column } from '~/entities/database/table'
 import { Button } from '@connnect/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
@@ -78,15 +79,17 @@ function SortButton({ column }: { column: Column }) {
   )
 }
 
-export function TableHeaderCell({ column, columnIndex }: { column: Column, columnIndex: number }) {
+export function TableHeaderCell({ column, columnIndex, className, ...props }: { column: Column } & TableHeaderCellProps) {
   return (
     <div
       className={cn(
         'flex w-full items-center justify-between shrink-0 p-2',
         columnIndex === 0 && 'pl-4',
+        className,
       )}
+      {...props}
     >
-      <div className="text-xs">
+      <div className="text-xs overflow-hidden">
         <div
           data-mask
           className="truncate font-medium flex items-center gap-1"

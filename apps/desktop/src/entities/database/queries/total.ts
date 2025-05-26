@@ -1,15 +1,19 @@
+import type { WhereFilter } from '../sql/where'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { totalSql, totalType } from '../sql/total'
+import { whereSql } from '../sql/where'
 
 export function databaseTableTotalQuery(
   database: Database,
   table: string,
   schema: string,
   query?: {
-    where?: string
+    filters?: WhereFilter[]
   },
 ) {
+  const _filters = query?.filters ?? []
+
   return queryOptions({
     queryKey: [
       'database',
@@ -20,7 +24,7 @@ export function databaseTableTotalQuery(
       table,
       'total',
       {
-        ...(query?.where && { where: query.where }),
+        filters: _filters,
       },
     ],
     queryFn: async () => {
@@ -28,7 +32,7 @@ export function databaseTableTotalQuery(
         type: database.type,
         connectionString: database.connectionString,
         query: totalSql(schema, table, {
-          where: query?.where,
+          where: whereSql(_filters)[database.type],
         })[database.type],
       })
 
@@ -43,7 +47,7 @@ export function useDatabaseTableTotal(
   table: string,
   schema: string,
   query?: {
-    where?: string
+    filters?: WhereFilter[]
   },
 ) {
   return useQuery(databaseTableTotalQuery(database, table, schema, query))

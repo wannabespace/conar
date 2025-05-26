@@ -3,7 +3,7 @@ import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '.'
 export function TableSkeleton({ columnsCount }: { columnsCount: number }) {
   return (
     <div className="relative flex flex-col">
-      {Array.from({ length: 10 }).map((_, rowIndex) => (
+      {Array.from({ length: 20 }).map((_, rowIndex) => (
         <div
           // eslint-disable-next-line react/no-array-index-key
           key={rowIndex}

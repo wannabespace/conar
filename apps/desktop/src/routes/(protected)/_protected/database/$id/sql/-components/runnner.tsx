@@ -103,12 +103,13 @@ function ResultTable({
   const tableColumns = useMemo(() => {
     return columns.map(column => ({
       id: column.name,
-      header: ({ columnIndex }) => (
+      header: ({ columnIndex, ...props }) => (
         <div
           className={cn(
             'flex w-full items-center justify-between shrink-0 p-2',
             columnIndex === 0 && 'pl-4',
           )}
+          {...props}
         >
           <div className="text-xs">
             <div

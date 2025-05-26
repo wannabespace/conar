@@ -2,9 +2,10 @@ import type { ComponentProps } from 'react'
 import type { TableCellProps, TableHeaderCellProps } from '~/components/table'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
+import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useTableContext } from '~/components/table'
 import { usePageStoreContext } from '..'
+import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -37,18 +38,22 @@ function IndeterminateCheckbox({
   )
 }
 
-export function SelectionHeaderCell({ columnIndex }: TableHeaderCellProps) {
-  const data = useTableContext(state => state.data)
+export function SelectionHeaderCell({ columnIndex, className, ...props }: TableHeaderCellProps) {
+  const rowsQueryOpts = useRowsQueryOpts()
+  const { data } = useQuery(rowsQueryOpts)
   const store = usePageStoreContext()
   const [checked, indeterminate] = useStore(store, state => [
-    data.length > 0 && state.selected.length === data.length,
+    !!data && data.rows.length > 0 && state.selected.length === data?.rows.length,
     state.selected.length > 0,
   ])
 
   return (
-    <div className={cn('flex items-center size-full', columnIndex === 0 && 'pl-4')}>
+    <div
+      className={cn('flex items-center size-full', columnIndex === 0 && 'pl-4', className)}
+      {...props}
+    >
       <IndeterminateCheckbox
-        disabled={data.length === 0}
+        disabled={!data || data.rows.length === 0}
         checked={checked}
         indeterminate={indeterminate}
         onChange={() => {
@@ -61,7 +66,7 @@ export function SelectionHeaderCell({ columnIndex }: TableHeaderCellProps) {
           else {
             store.setState(state => ({
               ...state,
-              selected: data.map((_, index) => index),
+              selected: data?.rows.map((_, index) => index) ?? [],
             }))
           }
         }}
@@ -70,12 +75,15 @@ export function SelectionHeaderCell({ columnIndex }: TableHeaderCellProps) {
   )
 }
 
-export function SelectionCell({ rowIndex, columnIndex }: TableCellProps) {
+export function SelectionCell({ rowIndex, columnIndex, className, ...props }: TableCellProps) {
   const store = usePageStoreContext()
   const isSelected = useStore(store, state => state.selected.includes(rowIndex))
 
   return (
-    <div className={cn('flex items-center size-full', columnIndex === 0 && 'pl-4')}>
+    <div
+      className={cn('flex items-center size-full', columnIndex === 0 && 'pl-4', className)}
+      {...props}
+    >
       <IndeterminateCheckbox
         checked={isSelected}
         onChange={() => {

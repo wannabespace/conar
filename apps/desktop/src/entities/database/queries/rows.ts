@@ -1,23 +1,25 @@
+import type { WhereFilter } from '../sql/where'
 import type { PageSize } from '~/components/table'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { rowsSql } from '../sql/rows'
+import { whereSql } from '../sql/where'
 
 export function databaseRowsQuery(
   database: Database,
   table: string,
   schema: string,
   query?: {
-    limit?: PageSize
+    pageSize?: PageSize
     page?: number
     orderBy?: Record<string, 'ASC' | 'DESC'>
-    where?: string
+    filters?: WhereFilter[]
   },
 ) {
-  const _limit: PageSize = query?.limit ?? 50
+  const _pageSize: PageSize = query?.pageSize ?? 50
   const _page = query?.page ?? 1
   const _orderBy = query?.orderBy ?? {}
-  const _where = query?.where ?? ''
+  const _filters = query?.filters ?? []
 
   return queryOptions({
     queryKey: [
@@ -29,10 +31,10 @@ export function databaseRowsQuery(
       table,
       'rows',
       {
-        limit: _limit,
+        pageSize: _pageSize,
         page: _page,
         orderBy: _orderBy,
-        where: _where,
+        filters: _filters,
       },
     ],
     queryFn: async () => {
@@ -40,10 +42,10 @@ export function databaseRowsQuery(
         type: database.type,
         connectionString: database.connectionString,
         query: rowsSql(schema, table, {
-          limit: _limit,
+          limit: _pageSize,
           page: _page,
-          orderBy: query?.orderBy,
-          where: query?.where,
+          orderBy: _orderBy,
+          where: whereSql(_filters)[database.type],
         })[database.type],
       })
 

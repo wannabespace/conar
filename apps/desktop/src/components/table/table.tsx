@@ -5,8 +5,8 @@ import { useScrollDirection } from '@connnect/ui/hookas/use-scroll-direction'
 import { cn } from '@connnect/ui/lib/utils'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useMemo, useRef } from 'react'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, TableBody, TableHeader, TableProvider, TableSkeleton } from '.'
+import { useRef } from 'react'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, TableBody, TableHeader, TableSkeleton } from '.'
 
 export function TableError({ error }: { error: Error }) {
   return (
@@ -32,29 +32,6 @@ export function TableEmpty() {
   )
 }
 
-function TableScrollArea({
-  children,
-  className,
-  height,
-  ref,
-  ...props
-}: {
-  height: number
-} & ComponentProps<'div'>) {
-  return (
-    <div className={cn('relative size-full', className)} {...props}>
-      <ScrollArea
-        ref={ref}
-        className="size-full overflow-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-black/15 dark:scrollbar-thumb-white/15"
-      >
-        <div className="w-full table" style={{ height: `${height}px` }}>
-          {children}
-        </div>
-      </ScrollArea>
-    </div>
-  )
-}
-
 export function Table({
   className,
   data,
@@ -67,9 +44,8 @@ export function Table({
   columns: ColumnRenderer[]
   loading?: boolean
   error?: Error | null
-} & Omit<ComponentProps<'div'>, 'onSelect' | 'children'>) {
+} & Omit<ComponentProps<'div'>, 'ref' | 'onSelect' | 'children'>) {
   'use no memo'
-  // no memo due to https://github.com/TanStack/virtual/issues/736
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollDirection = useScrollDirection(scrollRef)
@@ -78,7 +54,7 @@ export function Table({
     count: data.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => DEFAULT_ROW_HEIGHT,
-    overscan: scrollDirection === 'down' || scrollDirection === 'up' ? 10 : 0,
+    overscan: scrollDirection === 'up' || scrollDirection === 'down' ? 10 : 0,
   })
 
   const columnVirtualizer = useVirtualizer({
@@ -86,45 +62,56 @@ export function Table({
     count: columns.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: index => columns[index].size ?? DEFAULT_COLUMN_WIDTH,
-    overscan: scrollDirection === 'right' || scrollDirection === 'left' ? 5 : 0,
+    overscan: scrollDirection === 'left' || scrollDirection === 'right' ? 5 : 0,
   })
 
   const virtualRows = rowVirtualizer.getVirtualItems()
   const virtualColumns = columnVirtualizer.getVirtualItems()
-  const tableHeight = rowVirtualizer.getTotalSize()
-  const rowWidth = columnVirtualizer.getTotalSize()
 
-  const context = useMemo(() => ({
-    data,
-    columns,
-    virtualRows,
-    virtualColumns,
-    rowWidth,
-  }), [
-    data,
-    columns,
-    virtualRows,
-    virtualColumns,
-    rowWidth,
-  ])
+  const tableHeight = rowVirtualizer.getTotalSize()
+  const tableWidth = columnVirtualizer.getTotalSize()
+
+  const virtualTopOffset = virtualRows[0]?.start ?? 0
+  const virtualBottomOffset = tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0)
+
+  const virtualLeftOffset = virtualColumns[0]?.start ?? 0
+  const virtualRightOffset = tableWidth - (virtualColumns[virtualColumns.length - 1]?.end ?? 0)
+
+  if (scrollRef.current) {
+    scrollRef.current.style.setProperty('--scroll-left-offset', `${virtualLeftOffset}px`)
+    scrollRef.current.style.setProperty('--scroll-right-offset', `${virtualRightOffset}px`)
+    scrollRef.current.style.setProperty('--scroll-top-offset', `${virtualTopOffset}px`)
+    scrollRef.current.style.setProperty('--scroll-bottom-offset', `${virtualBottomOffset}px`)
+  }
 
   return (
-    <TableProvider value={context}>
-      <TableScrollArea
+    <div
+      className={cn('size-full relative', className)}
+      {...props}
+    >
+      <ScrollArea
         ref={scrollRef}
-        height={tableHeight}
-        className={className}
-        {...props}
+        className="size-full"
       >
-        <TableHeader columns={columns} />
+        <TableHeader
+          columns={columns}
+          virtualColumns={virtualColumns}
+        />
         {loading
           ? <TableSkeleton columnsCount={columns.length || 5} />
           : error
             ? <TableError error={error} />
             : data.length === 0
               ? <TableEmpty />
-              : <TableBody />}
-      </TableScrollArea>
-    </TableProvider>
+              : (
+                  <TableBody
+                    columns={columns}
+                    virtualColumns={virtualColumns}
+                    virtualRows={virtualRows}
+                    data={data}
+                  />
+                )}
+      </ScrollArea>
+    </div>
   )
 }
