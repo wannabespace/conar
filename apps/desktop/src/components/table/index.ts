@@ -18,10 +18,14 @@ export interface TableCellProps extends Omit<ComponentProps<'div'>, 'id'>, Pick<
   rowIndex: number
   columnIndex: number
   value: unknown
+  isFirst: boolean
+  isLast: boolean
 }
 
 export interface TableHeaderCellProps extends ComponentProps<'div'> {
   columnIndex: number
+  isFirst: boolean
+  isLast: boolean
 }
 
 export interface ColumnRenderer {

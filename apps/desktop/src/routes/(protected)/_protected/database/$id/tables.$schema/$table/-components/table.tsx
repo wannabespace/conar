@@ -109,7 +109,7 @@ function TableComponent() {
 
   return (
     <Table
-      rowsCount={rows?.length ?? 0}
+      rows={rows ?? []}
       columns={tableColumns}
     >
       {isColumnsPending ? <TableHeaderSkeleton /> : <TableHeader />}
@@ -119,7 +119,7 @@ function TableComponent() {
           ? <TableError error={error} />
           : rows?.length === 0
             ? <TableEmpty />
-            : <TableBody rows={rows} />}
+            : <TableBody />}
     </Table>
   )
 }

@@ -84,12 +84,13 @@ function SortButton({ column }: { column: Column }) {
   )
 }
 
-export function TableHeaderCell({ column, columnIndex, className, ...props }: { column: Column } & TableHeaderCellProps) {
+export function TableHeaderCell({ column, isFirst, isLast, columnIndex, className, ...props }: { column: Column } & TableHeaderCellProps) {
   return (
     <div
       className={cn(
         'flex w-full items-center justify-between shrink-0 p-2',
-        columnIndex === 0 && 'pl-4',
+        isFirst && 'pl-4',
+        isLast && 'pr-4',
         className,
       )}
       {...props}

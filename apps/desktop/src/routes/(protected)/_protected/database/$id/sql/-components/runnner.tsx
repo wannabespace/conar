@@ -154,12 +154,12 @@ function ResultTable({
         </div>
       </div>
       <Table
-        rowsCount={filteredData.length}
+        rows={filteredData}
         columns={tableColumns}
         className="h-[calc(100%-theme(spacing.10))]"
       >
         <TableHeader />
-        <TableBody rows={filteredData} />
+        <TableBody />
       </Table>
     </div>
   )

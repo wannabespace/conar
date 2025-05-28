@@ -1,4 +1,5 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
+import type { CSSProperties } from 'react'
 import type { ColumnRenderer } from '.'
 import { cn } from '@connnect/ui/lib/utils'
 import { memo } from 'react'
@@ -9,11 +10,13 @@ const VirtualColumn = memo(function VirtualColumn({
   column,
   value,
   rowIndex,
+  isLast,
 }: {
   virtualColumn: VirtualItem
   column: ColumnRenderer
   value: unknown
   rowIndex: number
+  isLast: boolean
 }) {
   return (
     <column.cell
@@ -22,6 +25,8 @@ const VirtualColumn = memo(function VirtualColumn({
       size={virtualColumn.size}
       rowIndex={rowIndex}
       columnIndex={virtualColumn.index}
+      isFirst={virtualColumn.index === 0}
+      isLast={isLast}
       style={{
         width: `${column.size}px`,
         height: '100%',
@@ -34,56 +39,78 @@ const VirtualColumn = memo(function VirtualColumn({
 const Row = memo(function Row({
   size,
   rowIndex,
-  virtualColumns,
-  data,
-  last,
 }: {
   size: number
   rowIndex: number
-  virtualColumns: VirtualItem[]
-  data?: Record<string, unknown>
-  last: boolean
 }) {
   const columns = useTableContext(context => context.columns)
+  const virtualColumns = useTableContext(context => context.virtualColumns)
+  const rows = useTableContext(context => context.rows)
+  const row = rows[rowIndex]
+  const lastIndex = rows.length - 1
+  const spacerStyle: CSSProperties = {
+    contain: 'layout style size',
+  }
 
   return (
     <div
-      className={cn('flex w-fit border-b min-w-full hover:bg-accent/30', last && 'border-b-0')}
-      style={{ height: `${size}px` }}
+      className={cn('flex w-fit border-b min-w-full hover:bg-accent/30', rowIndex === lastIndex && 'border-b-0')}
+      style={{ height: `${size}px`, contain: 'layout style' }}
     >
-      <div className="w-(--scroll-left-offset) shrink-0" />
-      {virtualColumns.map(virtualColumn => (
-        <VirtualColumn
-          key={virtualColumn.key}
-          virtualColumn={virtualColumn}
-          column={columns[virtualColumn.index]}
-          value={data?.[columns[virtualColumn.index]?.id]}
-          rowIndex={rowIndex}
-        />
-      ))}
-      <div className="w-(--scroll-right-offset) shrink-0" />
+      <div
+        aria-hidden="true"
+        className="w-(--table-scroll-left-offset) will-change-[height] shrink-0"
+        style={spacerStyle}
+      />
+      {virtualColumns.map((virtualColumn) => {
+        const column = columns[virtualColumn.index]
+        const value = row?.[column?.id]
+
+        return (
+          <VirtualColumn
+            key={virtualColumn.key}
+            virtualColumn={virtualColumn}
+            column={column}
+            value={value}
+            rowIndex={rowIndex}
+            isLast={virtualColumn.index === virtualColumns.length - 1}
+          />
+        )
+      })}
+      <div
+        aria-hidden="true"
+        className="w-(--table-scroll-right-offset) will-change-[height] shrink-0"
+        style={spacerStyle}
+      />
     </div>
   )
 })
 
-export function TableBody({ rows }: { rows: Record<string, unknown>[] }) {
+export function TableBody() {
   const virtualRows = useTableContext(context => context.virtualRows)
-  const virtualColumns = useTableContext(context => context.virtualColumns)
+  const spacerStyle: CSSProperties = {
+    contain: 'layout style size',
+  }
 
   return (
     <div data-mask className="relative w-fit min-w-full">
-      <div className="h-(--scroll-top-offset)" />
+      <div
+        aria-hidden="true"
+        className="h-(--table-scroll-top-offset) will-change-[height] shrink-0"
+        style={spacerStyle}
+      />
       {virtualRows.map(virtualRow => (
         <Row
           key={virtualRow.key}
           rowIndex={virtualRow.index}
-          virtualColumns={virtualColumns}
-          data={rows[virtualRow.index]}
-          last={virtualRow.index === virtualRows.length - 1}
           size={virtualRow.size}
         />
       ))}
-      <div className="h-(--scroll-bottom-offset)" />
+      <div
+        aria-hidden="true"
+        className="h-(--table-scroll-bottom-offset) will-change-[height] shrink-0"
+        style={spacerStyle}
+      />
     </div>
   )
 }

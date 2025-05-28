@@ -243,13 +243,15 @@ function CellContent({
   value,
   className,
   size,
-  columnIndex,
+  isFirst,
+  isLast,
   ...props
 }: {
   value: unknown
   className?: string
-  columnIndex: number
   size: number
+  isFirst: boolean
+  isLast: boolean
 } & ComponentProps<'div'>) {
   const displayValue = useMemo(() => {
     if (value === null)
@@ -271,7 +273,8 @@ function CellContent({
       className={cn(
         'h-full text-xs truncate p-2 font-mono cursor-default select-none',
         'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
-        columnIndex === 0 && 'pl-4',
+        isFirst && 'pl-4',
+        isLast && 'pr-4',
         (value === null || value === '') && 'text-muted-foreground/50',
         className,
       )}
@@ -298,6 +301,8 @@ export function TableCell({
   column,
   className,
   columnIndex,
+  isFirst,
+  isLast,
   size,
   onUpdate,
   ...props
@@ -333,7 +338,8 @@ export function TableCell({
     return (
       <CellContent
         value={value}
-        columnIndex={columnIndex}
+        isFirst={isFirst}
+        isLast={isLast}
         size={size}
         onMouseOver={() => setCanInteract(true)}
         className={cellClassName}
@@ -395,7 +401,8 @@ export function TableCell({
               >
                 <CellContent
                   value={value}
-                  columnIndex={columnIndex}
+                  isFirst={isFirst}
+                  isLast={isLast}
                   size={size}
                   className={cellClassName}
                   {...props}

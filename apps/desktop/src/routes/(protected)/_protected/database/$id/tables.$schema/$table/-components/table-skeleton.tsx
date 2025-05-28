@@ -34,14 +34,19 @@ export function TableHeaderSkeleton({ className, columnsCount = 5 }: { className
   )
 }
 
+const ROWS_COUNT = 20
+
 export function TableBodySkeleton({ className, columnsCount = 5 }: { className?: string, columnsCount?: number }) {
   return (
     <div className={cn('relative w-full', className)}>
-      {Array.from({ length: 10 }).map((_, rowIndex) => (
+      {Array.from({ length: ROWS_COUNT }).map((_, rowIndex) => (
         <div
           key={rowIndex}
           className="flex w-fit border-b min-w-full last:border-b-0"
-          style={{ height: `${DEFAULT_ROW_HEIGHT}px` }}
+          style={{
+            height: `${DEFAULT_ROW_HEIGHT}px`,
+            opacity: 1 - (rowIndex * (1 / ROWS_COUNT)),
+          }}
         >
           <div className="p-2 pl-4">
             <div className="size-4 bg-muted animate-pulse rounded" />
@@ -54,7 +59,7 @@ export function TableBodySkeleton({ className, columnsCount = 5 }: { className?:
                 width: `${DEFAULT_COLUMN_WIDTH}px`,
               }}
             >
-              <div className="shrink-0 h-4 bg-muted animate-pulse rounded w-2/3" />
+              <div className="shrink-0 h-4 bg-muted animate-pulse rounded w-3/4" />
             </div>
           ))}
         </div>

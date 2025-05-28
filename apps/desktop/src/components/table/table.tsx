@@ -35,24 +35,25 @@ export function TableEmpty() {
 
 export function Table({
   className,
-  rowsCount,
+  rows,
   columns,
   children,
   ...props
 }: {
-  rowsCount: number
+  rows: Record<string, unknown>[]
   columns: ColumnRenderer[]
 } & Omit<ComponentProps<'div'>, 'ref' | 'onSelect'>) {
-  'use no memo'
-
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollDirection = useScrollDirection(scrollRef)
 
+  const verticalScroll = scrollDirection === 'up' || scrollDirection === 'down'
+  const horizontalScroll = scrollDirection === 'left' || scrollDirection === 'right'
+
   const rowVirtualizer = useVirtualizer({
-    count: rowsCount,
+    count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => DEFAULT_ROW_HEIGHT,
-    overscan: scrollDirection === 'up' || scrollDirection === 'down' ? 10 : 0,
+    overscan: verticalScroll ? 20 : (scrollDirection === null ? 5 : 0),
   })
 
   const columnVirtualizer = useVirtualizer({
@@ -60,7 +61,7 @@ export function Table({
     count: columns.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: index => columns[index].size ?? DEFAULT_COLUMN_WIDTH,
-    overscan: scrollDirection === 'left' || scrollDirection === 'right' ? 5 : 0,
+    overscan: horizontalScroll ? 5 : (scrollDirection === null ? 2 : 0),
   })
 
   const virtualRows = rowVirtualizer.getVirtualItems()
@@ -69,24 +70,28 @@ export function Table({
   const tableHeight = rowVirtualizer.getTotalSize()
   const tableWidth = columnVirtualizer.getTotalSize()
 
-  const virtualTopOffset = virtualRows[0]?.start ?? 0
-  const virtualBottomOffset = tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0)
+  const offsets = useMemo(() => {
+    const top = virtualRows[0]?.start ?? 0
+    const bottom = tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0)
+    const left = virtualColumns[0]?.start ?? 0
+    const right = tableWidth - (virtualColumns[virtualColumns.length - 1]?.end ?? 0)
 
-  const virtualLeftOffset = virtualColumns[0]?.start ?? 0
-  const virtualRightOffset = tableWidth - (virtualColumns[virtualColumns.length - 1]?.end ?? 0)
+    return { top, bottom, left, right }
+  }, [virtualRows, virtualColumns, tableHeight, tableWidth])
 
   if (scrollRef.current) {
-    scrollRef.current.style.setProperty('--scroll-left-offset', `${virtualLeftOffset}px`)
-    scrollRef.current.style.setProperty('--scroll-right-offset', `${virtualRightOffset}px`)
-    scrollRef.current.style.setProperty('--scroll-top-offset', `${virtualTopOffset}px`)
-    scrollRef.current.style.setProperty('--scroll-bottom-offset', `${virtualBottomOffset}px`)
+    scrollRef.current.style.setProperty('--table-scroll-left-offset', `${offsets.left}px`)
+    scrollRef.current.style.setProperty('--table-scroll-right-offset', `${offsets.right}px`)
+    scrollRef.current.style.setProperty('--table-scroll-top-offset', `${offsets.top}px`)
+    scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${offsets.bottom}px`)
   }
 
   const context = useMemo(() => ({
+    rows,
     columns,
     virtualRows,
     virtualColumns,
-  }), [columns, virtualRows, virtualColumns])
+  }), [rows, columns, virtualRows, virtualColumns])
 
   return (
     <TableProvider value={context}>

@@ -4,6 +4,7 @@ import type { ColumnRenderer } from '.'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 
 interface TableContextType {
+  rows: Record<string, unknown>[]
   columns: ColumnRenderer[]
   virtualRows: VirtualItem[]
   virtualColumns: VirtualItem[]
