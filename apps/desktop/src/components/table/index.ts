@@ -9,7 +9,6 @@ export {
 export type { PageSize } from './footer'
 export * from './footer'
 export * from './header'
-export * from './skeleton'
 export * from './table'
 
 export const DEFAULT_ROW_HEIGHT = 32

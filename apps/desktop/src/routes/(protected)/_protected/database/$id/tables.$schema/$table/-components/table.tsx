@@ -1,7 +1,7 @@
 import type { ColumnRenderer } from '~/components/table'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { DEFAULT_COLUMN_WIDTH, Table, TableBody, TableBodySkeleton, TableEmpty, TableError, TableHeader, TableHeaderSkeleton } from '~/components/table'
+import { DEFAULT_COLUMN_WIDTH, Table, TableBody, TableEmpty, TableError, TableHeader } from '~/components/table'
 import { setSql, useDatabase } from '~/entities/database'
 import { createCellUpdater } from '~/entities/database/components/cells-updater'
 import { TableCell } from '~/entities/database/components/table-cell'
@@ -12,6 +12,7 @@ import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 import { TableHeaderCell } from './table-header-cell'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
+import { TableBodySkeleton, TableHeaderSkeleton } from './table-skeleton'
 
 const selectSymbol = Symbol('table-selection')
 
