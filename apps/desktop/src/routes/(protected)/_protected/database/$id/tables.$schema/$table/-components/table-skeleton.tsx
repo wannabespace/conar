@@ -1,18 +1,22 @@
 /* eslint-disable react/no-array-index-key */
 import { cn } from '@connnect/ui/lib/utils'
+import { useMemo } from 'react'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/components/table'
+import { useTableContext } from '~/components/table/provider'
 
-export function TableHeaderSkeleton({ className, columnsCount = 5 }: { className?: string, columnsCount?: number }) {
+export function TableHeaderSkeleton({ className, selectable, columnsCount = 5 }: { className?: string, selectable?: boolean, columnsCount?: number }) {
   return (
     <div className={cn('sticky top-0 z-10 border-y bg-background h-12 w-fit min-w-full', className)}>
       <div className="flex bg-muted/20 h-full w-fit min-w-full items-center">
-        <div className="p-2 pl-4">
-          <div className="size-4 bg-muted animate-pulse rounded" />
-        </div>
+        {selectable && (
+          <div className="p-2 pl-4">
+            <div className="size-4 bg-muted animate-pulse rounded" />
+          </div>
+        )}
         {Array.from({ length: columnsCount }).map((_, index) => (
           <div
             key={index}
-            className="shrink-0 px-2 py-1 h-full flex justify-between items-center"
+            className="first:pl-4 shrink-0 px-2 py-1 h-full flex justify-between items-center"
             style={{
               width: `${DEFAULT_COLUMN_WIDTH}px`,
             }}
@@ -36,7 +40,23 @@ export function TableHeaderSkeleton({ className, columnsCount = 5 }: { className
 
 const ROWS_COUNT = 20
 
-export function TableBodySkeleton({ className, columnsCount = 5 }: { className?: string, columnsCount?: number }) {
+export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: { className?: string, selectable?: boolean, columnsCount?: number }) {
+  const columns = useTableContext(state => state.columns)
+
+  const cols = useMemo(() => {
+    if (columns.length === 0) {
+      return Array.from({ length: columnsCount }).map((_, index) => ({
+        id: `column-${index}`,
+        size: DEFAULT_COLUMN_WIDTH,
+      }))
+    }
+
+    return columns.map(column => ({
+      id: column.id,
+      size: column.size ?? DEFAULT_COLUMN_WIDTH,
+    }))
+  }, [columns])
+
   return (
     <div className={cn('relative w-full', className)}>
       {Array.from({ length: ROWS_COUNT }).map((_, rowIndex) => (
@@ -48,20 +68,26 @@ export function TableBodySkeleton({ className, columnsCount = 5 }: { className?:
             opacity: 1 - (rowIndex * (1 / ROWS_COUNT)),
           }}
         >
-          <div className="p-2 pl-4">
-            <div className="size-4 bg-muted animate-pulse rounded" />
-          </div>
-          {Array.from({ length: columnsCount }).map((_, index) => (
-            <div
-              key={index}
-              className="shrink-0 px-2 py-1 h-full flex items-center"
-              style={{
-                width: `${DEFAULT_COLUMN_WIDTH}px`,
-              }}
-            >
-              <div className="shrink-0 h-4 bg-muted animate-pulse rounded w-3/4" />
+          {selectable && (
+            <div className="p-2 pl-4 shrink-0">
+              <div className="size-4 bg-muted animate-pulse rounded" />
             </div>
-          ))}
+          )}
+          {cols.map((column, index) => {
+            const width = column.size
+
+            return (
+              <div
+                key={index}
+                className="first:pl-4 shrink-0 px-2 py-1 h-full flex items-center"
+                style={{
+                  width: `${width}px`,
+                }}
+              >
+                <div className="shrink-0 h-4 bg-muted animate-pulse rounded w-3/4" />
+              </div>
+            )
+          })}
         </div>
       ))}
     </div>

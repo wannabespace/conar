@@ -264,8 +264,9 @@ function CellContent({
       If value has a lot of symbols that don't fit in the cell,
       we truncate it to avoid performance issues.
       Used 6 as a multiplier because 1 symbol takes ~6px width
+      + 5 to make sure there are extra symbols for ellipsis
     */
-    return getDisplayValue(value, true).slice(0, size / 6)
+    return getDisplayValue(value, true).slice(0, (size / 6) + 5)
   }, [value])
 
   return (

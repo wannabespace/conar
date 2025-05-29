@@ -73,7 +73,7 @@ const Row = memo(function Row({
             column={column}
             value={value}
             rowIndex={rowIndex}
-            isLast={virtualColumn.index === virtualColumns.length - 1}
+            isLast={virtualColumn.index === columns.length - 1}
           />
         )
       })}

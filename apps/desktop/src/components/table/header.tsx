@@ -48,7 +48,7 @@ export function TableHeader() {
             key={virtualColumn.key}
             virtualColumn={virtualColumn}
             column={columns[virtualColumn.index]}
-            isLast={virtualColumn.index === virtualColumns.length - 1}
+            isLast={virtualColumn.index === columns.length - 1}
           />
         ))}
         <div
