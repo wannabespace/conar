@@ -1,9 +1,9 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
-import type { CSSProperties } from 'react'
+import type { ComponentProps, CSSProperties } from 'react'
 import type { ColumnRenderer } from '.'
 import { cn } from '@connnect/ui/lib/utils'
 import { memo } from 'react'
-import { useTableContext } from './provider'
+import { useTableContext } from '.'
 
 const VirtualColumn = memo(function VirtualColumn({
   virtualColumn,
@@ -86,14 +86,19 @@ const Row = memo(function Row({
   )
 })
 
-export function TableBody() {
+export function TableBody({ className, style, ...props }: ComponentProps<'div'>) {
   const virtualRows = useTableContext(context => context.virtualRows)
+  const tableWidth = useTableContext(context => context.tableWidth)
   const spacerStyle: CSSProperties = {
     contain: 'layout style size',
   }
 
   return (
-    <div data-mask className="relative w-fit min-w-full">
+    <div
+      className={cn('relative w-fit min-w-full', className)}
+      style={{ width: `${tableWidth}px`, ...style }}
+      {...props}
+    >
       <div
         aria-hidden="true"
         className="h-(--table-scroll-top-offset) will-change-[height] shrink-0"

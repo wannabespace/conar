@@ -1,8 +1,8 @@
 /* eslint-disable react/no-array-index-key */
 import { cn } from '@connnect/ui/lib/utils'
 import { useMemo } from 'react'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/components/table'
-import { useTableContext } from '~/components/table/provider'
+import { useTableContext } from '~/components/table'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 
 export function TableHeaderSkeleton({ className, selectable, columnsCount = 5 }: { className?: string, selectable?: boolean, columnsCount?: number }) {
   return (

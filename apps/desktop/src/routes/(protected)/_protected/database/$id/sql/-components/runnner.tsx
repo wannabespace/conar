@@ -21,8 +21,8 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
-import { DEFAULT_COLUMN_WIDTH, Table, TableBody, TableHeader } from '~/components/table'
-import { DANGEROUS_SQL_KEYWORDS, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
+import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
+import { DANGEROUS_SQL_KEYWORDS, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { formatSql } from '~/lib/formatter'
 import { pageHooks, pageStore, Route } from '..'
@@ -102,13 +102,13 @@ function ResultTable({
   const tableColumns = useMemo(() => {
     return columns.map(column => ({
       id: column.name,
-      header: ({ columnIndex, ...props }) => (
+      header: ({ columnIndex, style }) => (
         <div
           className={cn(
             'flex w-full items-center justify-between shrink-0 p-2',
             columnIndex === 0 && 'pl-4',
           )}
-          {...props}
+          style={style}
         >
           <div className="text-xs">
             <div
@@ -153,14 +153,17 @@ function ResultTable({
           )}
         </div>
       </div>
-      <Table
+      <TableProvider
         rows={filteredData}
         columns={tableColumns}
-        className="h-[calc(100%-theme(spacing.10))]"
+        estimatedRowSize={DEFAULT_ROW_HEIGHT}
+        estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
       >
-        <TableHeader />
-        <TableBody />
-      </Table>
+        <Table className="h-[calc(100%-theme(spacing.10))]">
+          <TableHeader />
+          <TableBody data-mask />
+        </Table>
+      </TableProvider>
     </div>
   )
 }

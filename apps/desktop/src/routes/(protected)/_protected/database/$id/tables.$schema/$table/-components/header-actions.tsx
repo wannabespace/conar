@@ -7,42 +7,43 @@ import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import NumberFlow from '@number-flow/react'
 import { RiCheckLine, RiDeleteBin7Line, RiFilterLine, RiLoopLeftLine } from '@remixicon/react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { FilterForm } from '~/components/table'
-import { databaseColumnsQuery, deleteRowsSql, useDatabase } from '~/entities/database'
+import { databaseColumnsQuery, databaseTableTotalQuery, deleteRowsSql, useDatabase } from '~/entities/database'
 import { queryClient } from '~/main'
-import { Route, usePageStoreContext } from '..'
+import { Route, usePageContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
 export function HeaderActions() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
-  const store = usePageStoreContext()
+  const { store } = usePageContext()
   const selected = useStore(store, state => state.selected)
   const [isOpened, setIsOpened] = useState(false)
   const [isFiltersOpened, setIsFiltersOpened] = useState(false)
+
   const rowsQueryOpts = useRowsQueryOpts()
-  const { isFetching, dataUpdatedAt, data } = useQuery(rowsQueryOpts)
+  const { isFetching, dataUpdatedAt, data: rows, refetch } = useInfiniteQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
   const selectedRows = useMemo(() => {
-    if (!primaryKeys?.length || !data?.rows)
+    if (!primaryKeys?.length || !rows)
       return []
 
     return selected.map((index) => {
-      const row = data.rows[index]
+      const row = rows[index]
 
       return primaryKeys.reduce((acc, key) => {
         acc[key] = row[key]
         return acc
       }, {} as Record<string, unknown>)
     })
-  }, [selected, primaryKeys, data?.rows])
+  }, [selected, primaryKeys, rows])
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
@@ -54,8 +55,13 @@ export function HeaderActions() {
     },
     onSuccess: () => {
       toast.success(`${selectedRows.length} row${selectedRows.length === 1 ? '' : 's'} successfully deleted`)
-      queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
+      refetch()
       queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table, schema).queryKey })
+      queryClient.invalidateQueries({
+        queryKey: databaseTableTotalQuery(database, table, schema, {
+          filters: store.state.filters,
+        }).queryKey,
+      })
       store.setState(state => ({
         ...state,
         selected: [],
@@ -74,7 +80,7 @@ export function HeaderActions() {
       page: 1,
     }))
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) }),
+      refetch(),
       queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table, schema).queryKey }),
     ])
   }
@@ -149,7 +155,7 @@ export function HeaderActions() {
                 </Button>
               </PopoverTrigger>
             </TooltipTrigger>
-            <TooltipContent side="left">
+            <TooltipContent side="bottom">
               Add new filter
             </TooltipContent>
           </Tooltip>
@@ -185,7 +191,7 @@ export function HeaderActions() {
               </LoadingContent>
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="left">
+          <TooltipContent side="bottom" align="end">
             Refresh data
             <p className="text-xs text-muted-foreground">
               Table data is cached. Click to fetch the latest data.

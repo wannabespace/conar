@@ -97,7 +97,6 @@ export function DatabaseSidebar() {
                           to: '/database/$id/sql',
                           params: { id },
                         })}
-                        onClick={e => e.preventDefault()}
                       >
                         <RiPlayLargeLine className="size-4" />
                       </Link>
@@ -119,7 +118,6 @@ export function DatabaseSidebar() {
                         params={{ id }}
                         className="text-foreground"
                         onMouseDown={onTablesClick}
-                        onClick={e => e.preventDefault()}
                       >
                         <RiTableLine className="size-4" />
                       </Link>
@@ -144,7 +142,6 @@ export function DatabaseSidebar() {
                           to: '/database/$id/enums',
                           params: { id },
                         })}
-                        onClick={e => e.preventDefault()}
                       >
                         <RiListUnordered className="size-4" />
                       </Link>

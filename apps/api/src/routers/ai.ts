@@ -43,8 +43,8 @@ function generateStream({
         - Consider performance implications for complex queries
         - The SQL code will be executed directly in a production database editor
         - Generate SQL query only for the provided schemas, tables, columns and enums
-        - Answer in markdown and paste the SQL code in a code block.
-        - Do not add useless information
+        - Answer in markdown and paste the SQL code in a code block
+        - Answer in the same language as the user's message
         - Use quotes for table and column names to prevent SQL errors with case sensitivity
 
         Additional information:

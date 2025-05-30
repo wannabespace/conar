@@ -6,7 +6,6 @@ import { RiTableLine } from '@remixicon/react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useMemo, useRef } from 'react'
-import { DEFAULT_ROW_HEIGHT } from '~/components/table'
 import { databaseRowsQuery, ensureDatabaseTableCore, useDatabaseTables } from '~/entities/database'
 import { queryClient } from '~/main'
 import { getTableStoreState } from '../tables.$schema/$table'
@@ -17,23 +16,25 @@ export function TablesTree({ database, schema, className, search }: { database: 
   const ref = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
+  function getQueryOpts(tableName: string) {
+    const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
+
+    if (state) {
+      return {
+        filters: state.filters,
+        orderBy: state.orderBy,
+      }
+    }
+
+    return {
+      filters: [],
+      orderBy: {},
+    }
+  }
+
   const debouncedPrefetchRows = useDebouncedCallback(
     (tableName: string) => {
-      const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
-
-      if (state) {
-        const { page, pageSize, filters, orderBy } = state
-
-        queryClient.ensureQueryData(databaseRowsQuery(database, tableName, schema, {
-          page,
-          pageSize,
-          filters,
-          orderBy,
-        }))
-      }
-      else {
-        queryClient.ensureQueryData(databaseRowsQuery(database, tableName, schema))
-      }
+      queryClient.ensureInfiniteQueryData(databaseRowsQuery(database, tableName, schema, getQueryOpts(tableName)))
     },
     [database.id, schema],
     100,
@@ -46,7 +47,7 @@ export function TablesTree({ database, schema, className, search }: { database: 
   const virtualizer = useVirtualizer({
     count: filteredTables.length,
     getScrollElement: () => ref.current,
-    estimateSize: () => DEFAULT_ROW_HEIGHT,
+    estimateSize: () => 32,
     scrollMargin: ref.current?.offsetTop ?? 0,
     overscan: 2,
   })
@@ -77,7 +78,7 @@ export function TablesTree({ database, schema, className, search }: { database: 
                     tableParam === table.name && 'border-primary bg-accent/50 font-medium',
                   )}
                   onMouseOver={() => {
-                    ensureDatabaseTableCore(database, schema, table.name)
+                    ensureDatabaseTableCore(database, schema, table.name, getQueryOpts(table.name))
                     debouncedPrefetchRows(table.name)
                   }}
                   onMouseDown={() => navigate({
@@ -88,7 +89,6 @@ export function TablesTree({ database, schema, className, search }: { database: 
                       table: table.name,
                     },
                   })}
-                  onClick={e => e.preventDefault()}
                   style={{
                     height: virtualRow.size,
                     transform: `translateY(${virtualRow.start}px)`,

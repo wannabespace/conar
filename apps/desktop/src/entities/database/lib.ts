@@ -175,12 +175,17 @@ export async function ensureDatabaseCore(database: Database) {
   ])
 }
 
-export async function ensureDatabaseTableCore(database: Database, schema: string, table: string) {
+export async function ensureDatabaseTableCore(database: Database, schema: string, table: string, query: {
+  filters: WhereFilter[]
+  orderBy: Record<string, 'ASC' | 'DESC'>
+}) {
   await Promise.all([
+    queryClient.ensureInfiniteQueryData(databaseRowsQuery(database, table, schema, query)),
     queryClient.ensureQueryData(databaseColumnsQuery(database, table, schema)),
-    queryClient.ensureQueryData(databaseTableTotalQuery(database, table, schema)),
+    queryClient.ensureQueryData(databaseTableTotalQuery(database, table, schema, query)),
   ])
 }
+
 export async function getDatabaseContext(database: Database): Promise<typeof databaseContextType.infer> {
   const [result] = await window.electron.databases.query({
     type: database.type,

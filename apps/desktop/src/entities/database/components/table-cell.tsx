@@ -301,16 +301,15 @@ export function TableCell({
   rowIndex,
   column,
   className,
-  columnIndex,
+  style,
   isFirst,
   isLast,
   size,
   onUpdate,
-  ...props
 }: {
   onUpdate?: CellUpdaterFunction
   column: Column
-} & TableCellProps & ComponentProps<'div'>) {
+} & TableCellProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
@@ -344,7 +343,7 @@ export function TableCell({
         size={size}
         onMouseOver={() => setCanInteract(true)}
         className={cellClassName}
-        {...props}
+        style={style}
       />
     )
   }
@@ -406,7 +405,7 @@ export function TableCell({
                   isLast={isLast}
                   size={size}
                   className={cellClassName}
-                  {...props}
+                  style={style}
                 />
               </PopoverTrigger>
             </TooltipTrigger>

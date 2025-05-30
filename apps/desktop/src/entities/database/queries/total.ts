@@ -8,12 +8,10 @@ export function databaseTableTotalQuery(
   database: Database,
   table: string,
   schema: string,
-  query?: {
+  query: {
     filters: WhereFilter[]
   },
 ) {
-  const _filters = query?.filters ?? []
-
   return queryOptions({
     queryKey: [
       'database',
@@ -23,16 +21,14 @@ export function databaseTableTotalQuery(
       'table',
       table,
       'total',
-      {
-        filters: _filters,
-      },
+      query,
     ],
     queryFn: async () => {
       const [result] = await window.electron.databases.query({
         type: database.type,
         connectionString: database.connectionString,
         query: totalSql(schema, table, {
-          where: whereSql(_filters)[database.type],
+          where: whereSql(query.filters)[database.type],
         })[database.type],
       })
 

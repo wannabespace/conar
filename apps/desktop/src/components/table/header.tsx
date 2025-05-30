@@ -1,8 +1,9 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
-import type { CSSProperties } from 'react'
+import type { ComponentProps, CSSProperties } from 'react'
 import type { ColumnRenderer } from '.'
+import { cn } from '@connnect/ui/lib/utils'
 import { memo } from 'react'
-import { useTableContext } from './provider'
+import { useTableContext } from '.'
 
 const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   virtualColumn,
@@ -28,15 +29,20 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   )
 })
 
-export function TableHeader() {
+export function TableHeader({ className, style, ...props }: ComponentProps<'div'>) {
   const virtualColumns = useTableContext(context => context.virtualColumns)
+  const tableWidth = useTableContext(context => context.tableWidth)
   const columns = useTableContext(context => context.columns)
   const spacerStyle: CSSProperties = {
     contain: 'layout style size',
   }
 
   return (
-    <div className="sticky top-0 z-10 border-y bg-background h-8 has-[[data-footer]]:h-12 w-fit min-w-full">
+    <div
+      className={cn('sticky top-0 z-10 border-y bg-background h-8 has-[[data-footer]]:h-12 w-fit min-w-full', className)}
+      style={{ width: `${tableWidth}px`, ...style }}
+      {...props}
+    >
       <div className="flex bg-muted/20 h-full w-fit min-w-full items-center">
         <div
           aria-hidden="true"

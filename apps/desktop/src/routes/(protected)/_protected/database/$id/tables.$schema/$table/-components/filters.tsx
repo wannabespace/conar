@@ -5,10 +5,10 @@ import { useToggle } from '@connnect/ui/hookas/use-toggle'
 import { RiAddLine, RiFilterOffLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { FilterForm, FilterItem } from '~/components/table'
-import { usePageStoreContext } from '..'
+import { usePageContext } from '..'
 
 export function Filters() {
-  const store = usePageStoreContext()
+  const { store } = usePageContext()
   const filters = useStore(store, state => state.filters)
   const [isOpened, toggleForm] = useToggle()
 

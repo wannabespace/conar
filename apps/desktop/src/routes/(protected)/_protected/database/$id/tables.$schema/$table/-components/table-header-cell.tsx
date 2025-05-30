@@ -5,14 +5,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connn
 import { cn } from '@connnect/ui/lib/utils'
 import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiKey2Line } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { usePageStoreContext } from '..'
+import { usePageContext } from '..'
 
 type SortOrder = 'ASC' | 'DESC'
 
 const CANNOT_SORT_TYPES = ['json']
 
 function SortButton({ column }: { column: Column }) {
-  const store = usePageStoreContext()
+  const { store } = usePageContext()
   const order = useStore(store, state => state.orderBy?.[column.name] ?? null)
 
   if (column.type && CANNOT_SORT_TYPES.includes(column.type))
@@ -84,7 +84,7 @@ function SortButton({ column }: { column: Column }) {
   )
 }
 
-export function TableHeaderCell({ column, isFirst, isLast, columnIndex, className, ...props }: { column: Column } & TableHeaderCellProps) {
+export function TableHeaderCell({ column, isFirst, isLast, className, style }: { column: Column } & TableHeaderCellProps) {
   return (
     <div
       className={cn(
@@ -93,7 +93,7 @@ export function TableHeaderCell({ column, isFirst, isLast, columnIndex, classNam
         isLast && 'pr-4',
         className,
       )}
-      {...props}
+      style={style}
     >
       <div className="text-xs overflow-hidden">
         <div
