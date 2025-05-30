@@ -38,8 +38,8 @@ function FilterColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLInputElem
 
   return (
     <Command>
-      <CommandInput ref={ref} placeholder="Select column..." />
-      <CommandList>
+      <CommandInput ref={ref} placeholder="Select column to filter..." />
+      <CommandList className="h-fit max-h-[70vh]">
         <CommandEmpty>No columns found.</CommandEmpty>
         <CommandGroup>
           {columns.map(column => (
@@ -107,7 +107,7 @@ function FilterOperatorSelector({
   return (
     <Command>
       <CommandInput ref={ref} placeholder="Select operator..." />
-      <CommandList>
+      <CommandList className="h-fit max-h-[70vh]">
         <CommandEmpty>No operators found.</CommandEmpty>
         {Object.entries(groupedOperators).map(([group, ops]) => (
           <CommandGroup key={group} heading={groupLabels[group as keyof typeof groupLabels] || group}>

@@ -55,7 +55,7 @@ export function TableEmpty() {
           <RiMoreLine className="size-6 text-muted-foreground" />
         </div>
         <span className="text-muted-foreground font-medium">Table is empty</span>
-        <span className="text-xs text-muted-foreground/70">There are no records in this table</span>
+        <span className="text-xs text-muted-foreground/70">There are no records to show</span>
       </div>
     </div>
   )
@@ -82,7 +82,7 @@ function TableInfiniteLoader() {
 
   return (
     <div className="sticky left-0 h-[50vh] min-h-40 pointer-events-none">
-      <div ref={loaderRef} className="absolute h-200 bottom-full inset-x-0" />
+      <div ref={loaderRef} className="absolute h-[calc(50vh+50rem)] bottom-0 inset-x-0" />
       <div className=" inset-x-0 flex items-center justify-center h-[inherit]">
         {hasNextPage
           ? <RiLoaderLine className="size-10 animate-spin opacity-50" />
@@ -194,7 +194,7 @@ function TableComponent() {
             ? <TableBodySkeleton selectable={selectable} />
             : error
               ? <TableError error={error} />
-              : rows?.length === 0
+              : rows?.length === 0 || tableColumns.length === 0
                 ? <TableEmpty />
                 : (
                     <>
