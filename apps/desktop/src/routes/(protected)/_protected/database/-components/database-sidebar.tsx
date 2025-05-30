@@ -2,6 +2,7 @@ import { getOS } from '@connnect/shared/utils/os'
 import { AppLogo } from '@connnect/ui/components/brand/app-logo'
 import { Button } from '@connnect/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { clickHandlers } from '@connnect/ui/lib/utils'
 import { RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { Link, useMatches, useNavigate, useParams } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
@@ -53,6 +54,7 @@ export function DatabaseSidebar() {
       })
     }
   }
+
   return (
     <>
       <div className="w-[calc(theme(spacing.16)+2px)]" />
@@ -93,10 +95,10 @@ export function DatabaseSidebar() {
                         to="/database/$id/sql"
                         params={{ id }}
                         className="text-foreground"
-                        onMouseDown={() => navigate({
+                        {...clickHandlers(() => navigate({
                           to: '/database/$id/sql',
                           params: { id },
-                        })}
+                        }))}
                       >
                         <RiPlayLargeLine className="size-4" />
                       </Link>
@@ -117,7 +119,7 @@ export function DatabaseSidebar() {
                         to="/database/$id/tables"
                         params={{ id }}
                         className="text-foreground"
-                        onMouseDown={onTablesClick}
+                        {...clickHandlers(onTablesClick)}
                       >
                         <RiTableLine className="size-4" />
                       </Link>
@@ -138,10 +140,10 @@ export function DatabaseSidebar() {
                         to="/database/$id/enums"
                         params={{ id }}
                         className="text-foreground"
-                        onMouseDown={() => navigate({
+                        {...clickHandlers(() => navigate({
                           to: '/database/$id/enums',
                           params: { id },
-                        })}
+                        }))}
                       >
                         <RiListUnordered className="size-4" />
                       </Link>

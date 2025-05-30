@@ -1,7 +1,7 @@
 import type { Database } from '~/lib/indexeddb'
 import { ScrollArea } from '@connnect/ui/components/custom/scroll-area'
 import { useDebouncedCallback } from '@connnect/ui/hookas/use-debounced-callback'
-import { cn } from '@connnect/ui/lib/utils'
+import { clickHandlers, cn } from '@connnect/ui/lib/utils'
 import { RiTableLine } from '@remixicon/react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
@@ -73,6 +73,14 @@ export function TablesTree({ database, schema, className, search }: { database: 
                     schema,
                     table: table.name,
                   }}
+                  {...clickHandlers(() => navigate({
+                    to: '/database/$id/tables/$schema/$table',
+                    params: {
+                      id: database.id,
+                      schema,
+                      table: table.name,
+                    },
+                  }))}
                   className={cn(
                     'absolute top-0 left-0 w-full border-l-2 border-transparent flex items-center gap-2 py-1.5 px-4 text-sm text-foreground hover:bg-accent/50',
                     tableParam === table.name && 'border-primary bg-accent/50 font-medium',
@@ -81,14 +89,6 @@ export function TablesTree({ database, schema, className, search }: { database: 
                     ensureDatabaseTableCore(database, schema, table.name, getQueryOpts(table.name))
                     debouncedPrefetchRows(table.name)
                   }}
-                  onMouseDown={() => navigate({
-                    to: '/database/$id/tables/$schema/$table',
-                    params: {
-                      id: database.id,
-                      schema,
-                      table: table.name,
-                    },
-                  })}
                   style={{
                     height: virtualRow.size,
                     transform: `translateY(${virtualRow.start}px)`,
