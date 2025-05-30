@@ -28,7 +28,7 @@ const VirtualColumn = memo(function VirtualColumn({
       isFirst={virtualColumn.index === 0}
       isLast={isLast}
       style={{
-        width: `${column.size}px`,
+        width: `${virtualColumn.size}px`,
         height: '100%',
         flexShrink: 0,
       }}

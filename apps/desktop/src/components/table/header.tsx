@@ -20,8 +20,9 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
       columnIndex={virtualColumn.index}
       isFirst={virtualColumn.index === 0}
       isLast={isLast}
+      size={virtualColumn.size}
       style={{
-        width: `${column.size}px`,
+        width: `${virtualColumn.size}px`,
         height: '100%',
         flexShrink: 0,
       }}

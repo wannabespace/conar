@@ -1,6 +1,7 @@
 import type { ColumnRenderer } from '~/components/table'
 import { useInViewport } from '@connnect/ui/hookas/use-in-viewport'
 import { useMountedEffect } from '@connnect/ui/hookas/use-mounted-effect'
+import { cn } from '@connnect/ui/lib/utils'
 import { RiErrorWarningLine, RiLoaderLine, RiMoreLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
@@ -33,7 +34,7 @@ const columnsSizeMap = new Map<string, number>([
 
 export function TableError({ error }: { error: Error }) {
   return (
-    <div className="absolute inset-x-0 pointer-events-none h-full flex items-center pb-10 justify-center">
+    <div className="sticky left-0 pointer-events-none h-full flex items-center pb-10 justify-center">
       <div className="flex flex-col items-center p-4 bg-card rounded-lg border max-w-md">
         <div className="flex items-center gap-1 text-destructive mb-2">
           <RiErrorWarningLine className="size-4" />
@@ -47,15 +48,15 @@ export function TableError({ error }: { error: Error }) {
   )
 }
 
-export function TableEmpty() {
+export function TableEmpty({ className, title, description }: { className?: string, title: string, description: string }) {
   return (
-    <div className="sticky bottom-0 left-0 pointer-events-none h-full flex items-center justify-center">
+    <div className={cn('sticky left-0 pointer-events-none h-full flex items-center justify-center', className)}>
       <div className="flex flex-col items-center justify-center w-full h-32">
         <div className="flex items-center justify-center rounded-full bg-muted/40 p-3 mb-4">
           <RiMoreLine className="size-6 text-muted-foreground" />
         </div>
-        <span className="text-muted-foreground font-medium">Table is empty</span>
-        <span className="text-xs text-muted-foreground/70">There are no records to show</span>
+        <span className="text-muted-foreground font-medium">{title}</span>
+        <span className="text-xs text-muted-foreground/70">{description}</span>
       </div>
     </div>
   )
@@ -86,15 +87,7 @@ function TableInfiniteLoader() {
       <div className=" inset-x-0 flex items-center justify-center h-[inherit]">
         {hasNextPage
           ? <RiLoaderLine className="size-10 animate-spin opacity-50" />
-          : (
-              <div className="flex flex-col items-center justify-center w-full h-32">
-                <div className="flex items-center justify-center rounded-full bg-muted/40 p-3 mb-4">
-                  <RiMoreLine className="size-6 text-muted-foreground" />
-                </div>
-                <span className="text-muted-foreground font-medium">No more data</span>
-                <span className="text-xs text-muted-foreground/70">You’ve reached the end of the results</span>
-              </div>
-            )}
+          : <TableEmpty className="bottom-0" title="No more data" description="This table has no more records" />}
       </div>
     </div>
   )
@@ -168,7 +161,7 @@ function TableComponent() {
         header: props => <TableHeaderCell column={column} {...props} />,
       }) satisfies ColumnRenderer)
 
-    if (selectable) {
+    if (selectable && hiddenColumns.length !== columns.length) {
       sortedColumns.unshift({
         id: String(selectSymbol),
         cell: SelectionCell,
@@ -189,19 +182,21 @@ function TableComponent() {
     >
       <div className="size-full relative">
         <Table>
-          {isColumnsPending ? <TableHeaderSkeleton selectable={selectable} /> : <TableHeader />}
+          {isColumnsPending ? <TableHeaderSkeleton selectable={selectable} /> : tableColumns.length > 0 ? <TableHeader /> : null}
           {isRowsPending || isColumnsPending
             ? <TableBodySkeleton selectable={selectable} />
             : error
               ? <TableError error={error} />
-              : rows?.length === 0 || tableColumns.length === 0
-                ? <TableEmpty />
-                : (
-                    <>
-                      <TableBody data-mask className="bg-background" />
-                      <TableInfiniteLoader />
-                    </>
-                  )}
+              : rows?.length === 0
+                ? <TableEmpty className="bottom-0" title="Table is empty" description="There are no records to show" />
+                : tableColumns.length === 0
+                  ? <TableEmpty title="No columns to show" description="Please show at least one column" />
+                  : (
+                      <>
+                        <TableBody data-mask className="bg-background" />
+                        <TableInfiniteLoader />
+                      </>
+                    )}
         </Table>
       </div>
     </TableProvider>

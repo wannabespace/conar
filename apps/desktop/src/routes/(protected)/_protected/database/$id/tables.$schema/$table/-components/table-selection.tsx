@@ -37,7 +37,7 @@ function IndeterminateCheckbox({
   )
 }
 
-export function SelectionHeaderCell({ columnIndex, className }: TableHeaderCellProps) {
+export function SelectionHeaderCell({ columnIndex, className, size }: TableHeaderCellProps) {
   const rows = useTableContext(state => state.rows)
   const { store } = usePageContext()
   const [checked, indeterminate] = useStore(store, state => [
@@ -46,7 +46,7 @@ export function SelectionHeaderCell({ columnIndex, className }: TableHeaderCellP
   ])
 
   return (
-    <div className={cn('flex items-center size-full', columnIndex === 0 && 'pl-4', className)}>
+    <div className={cn('flex items-center w-fit', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
       <IndeterminateCheckbox
         disabled={!rows || rows.length === 0}
         checked={checked}
@@ -70,12 +70,12 @@ export function SelectionHeaderCell({ columnIndex, className }: TableHeaderCellP
   )
 }
 
-export function SelectionCell({ rowIndex, columnIndex, className }: TableCellProps) {
+export function SelectionCell({ rowIndex, columnIndex, className, size }: TableCellProps) {
   const { store } = usePageContext()
   const isSelected = useStore(store, state => state.selected.includes(rowIndex))
 
   return (
-    <div className={cn('flex items-center size-full', columnIndex === 0 && 'pl-4', className)}>
+    <div className={cn('flex items-center w-fit', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
       <IndeterminateCheckbox
         checked={isSelected}
         onChange={() => {

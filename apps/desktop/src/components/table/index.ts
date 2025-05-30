@@ -18,7 +18,7 @@ export interface TableCellProps extends Omit<ComponentProps<'div'>, 'id'>, Pick<
   isLast: boolean
 }
 
-export interface TableHeaderCellProps extends ComponentProps<'div'> {
+export interface TableHeaderCellProps extends ComponentProps<'div'>, Pick<ColumnRenderer, 'size'> {
   columnIndex: number
   isFirst: boolean
   isLast: boolean
