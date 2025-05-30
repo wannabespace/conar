@@ -1,4 +1,5 @@
 import type { DatabaseType } from '@connnect/shared/enums/database-type'
+import type { WhereFilter } from './sql/where'
 import type { Database } from '~/lib/indexeddb'
 import { databaseContextType } from '@connnect/shared/database'
 import { toast } from 'sonner'
@@ -6,9 +7,10 @@ import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
 import { databaseColumnsQuery } from './queries/columns'
-import { databaseQuery } from './queries/database'
+import { databaseQuery, databasesQuery } from './queries/database'
 import { databaseEnumsQuery } from './queries/enums'
 import { databasePrimaryKeysQuery } from './queries/primary-keys'
+import { databaseRowsQuery } from './queries/rows'
 import { databaseSchemasQuery } from './queries/schemas'
 import { databaseTablesQuery } from './queries/tables'
 import { databaseTableTotalQuery } from './queries/total'
@@ -44,49 +46,56 @@ export async function fetchDatabases() {
     const existingMap = new Map(existingDatabases.map(d => [d.id, d]))
     const fetchedMap = new Map(fetchedDatabases.map(d => [d.id, d]))
 
+    const toDelete = existingDatabases
+      .filter(d => !fetchedMap.has(d.id))
+      .map(d => d.id)
+    const toAdd = fetchedDatabases
+      .filter(d => !existingMap.has(d.id))
+      .map(d => ({
+        ...d,
+        isPasswordPopulated: !!new URL(d.connectionString).password,
+      }))
+    const toUpdate = fetchedDatabases
+      .filter(d => !!existingMap.get(d.id))
+      .map((d) => {
+        const existing = existingMap.get(d.id)!
+        const changes: Partial<Database> = {}
+
+        if (existing.name !== d.name) {
+          changes.name = d.name
+        }
+
+        const existingUrl = new URL(existing.connectionString)
+        existingUrl.password = ''
+        const fetchedUrl = new URL(d.connectionString)
+        fetchedUrl.password = ''
+
+        if (existingUrl.toString() !== fetchedUrl.toString()) {
+          changes.connectionString = d.connectionString
+          changes.isPasswordExists = !!d.isPasswordExists
+          changes.isPasswordPopulated = !!new URL(d.connectionString).password
+        }
+
+        return {
+          key: d.id,
+          changes,
+        }
+      })
+
     await Promise.all([
-      indexedDb.databases.bulkDelete(
-        existingDatabases
-          .filter(d => !fetchedMap.has(d.id))
-          .map(d => d.id),
-      ),
-      indexedDb.databases.bulkAdd(
-        fetchedDatabases
-          .filter(d => !existingMap.has(d.id))
-          .map(d => ({
-            ...d,
-            isPasswordPopulated: !!new URL(d.connectionString).password,
-          })),
-      ),
-      indexedDb.databases.bulkUpdate(
-        fetchedDatabases
-          .filter(d => !!existingMap.get(d.id))
-          .map((d) => {
-            const existing = existingMap.get(d.id)!
-            const changes: Partial<Database> = {}
+      indexedDb.databases.bulkDelete(toDelete),
+      indexedDb.databases.bulkAdd(toAdd),
+      indexedDb.databases.bulkUpdate(toUpdate),
+    ]);
 
-            if (existing.name !== d.name) {
-              changes.name = d.name
-            }
-
-            const existingUrl = new URL(existing.connectionString)
-            existingUrl.password = ''
-            const fetchedUrl = new URL(d.connectionString)
-            fetchedUrl.password = ''
-
-            if (existingUrl.toString() !== fetchedUrl.toString()) {
-              changes.connectionString = d.connectionString
-              changes.isPasswordExists = !!d.isPasswordExists
-              changes.isPasswordPopulated = !!new URL(d.connectionString).password
-            }
-
-            return {
-              key: d.id,
-              changes,
-            }
-          }),
-      ),
-    ])
+    [
+      ...toDelete,
+      ...toAdd.map(d => d.id),
+      ...toUpdate.filter(d => Object.keys(d.changes).length > 0).map(d => d.key),
+    ].forEach((id) => {
+      queryClient.invalidateQueries({ queryKey: databaseQuery(id).queryKey })
+    })
+    queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
   }
   catch (e) {
     console.error(e)
@@ -172,7 +181,6 @@ export async function ensureDatabaseTableCore(database: Database, schema: string
     queryClient.ensureQueryData(databaseTableTotalQuery(database, table, schema)),
   ])
 }
-
 export async function getDatabaseContext(database: Database): Promise<typeof databaseContextType.infer> {
   const [result] = await window.electron.databases.query({
     type: database.type,
