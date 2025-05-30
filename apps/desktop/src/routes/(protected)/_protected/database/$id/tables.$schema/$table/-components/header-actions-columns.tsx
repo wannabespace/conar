@@ -1,5 +1,6 @@
 import { Button } from '@connnect/ui/components/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@connnect/ui/components/command'
+import { Indicator } from '@connnect/ui/components/custom/indicator'
 import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiCheckLine, RiDatabase2Line, RiLayoutColumnLine } from '@remixicon/react'
@@ -16,13 +17,16 @@ export function HeaderActionsColumns() {
     <Popover>
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <PopoverTrigger asChild>
-              <Button size="icon" variant="outline">
-                <RiLayoutColumnLine />
-              </Button>
-            </PopoverTrigger>
-          </TooltipTrigger>
+          <div className="relative">
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button size="icon" variant="outline">
+                  <RiLayoutColumnLine />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            {hiddenColumns.length > 0 && <Indicator />}
+          </div>
           <TooltipContent side="bottom">
             Columns visibility
           </TooltipContent>
