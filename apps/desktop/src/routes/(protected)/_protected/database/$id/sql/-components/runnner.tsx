@@ -246,7 +246,7 @@ export function Runner() {
           setOpen={setIsAlertVisible}
           confirm={() => runQuery()}
         />
-        <CardHeader className="dark:bg-input/30 py-3">
+        <CardHeader className="bg-input/30 py-3">
           <CardTitle className="flex items-center gap-2">
             SQL Runner
           </CardTitle>
@@ -330,7 +330,7 @@ export function Runner() {
           </Button>
         </div>
       </ResizablePanel>
-      <ResizableHandle />
+      <ResizableHandle withHandle />
       <ResizablePanel minSize={20}>
         {Array.isArray(results) && results.length > 0 && (
           <Tabs

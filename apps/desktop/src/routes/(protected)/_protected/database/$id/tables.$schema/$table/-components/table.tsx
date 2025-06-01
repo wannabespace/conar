@@ -52,7 +52,7 @@ export function TableEmpty({ className, title, description }: { className?: stri
   return (
     <div className={cn('sticky left-0 pointer-events-none h-full flex items-center justify-center', className)}>
       <div className="flex flex-col items-center justify-center w-full h-32">
-        <div className="flex items-center justify-center rounded-full bg-muted/40 p-3 mb-4">
+        <div className="flex items-center justify-center rounded-full bg-muted/60 p-3 mb-4">
           <RiMoreLine className="size-6 text-muted-foreground" />
         </div>
         <span className="text-muted-foreground font-medium">{title}</span>
@@ -180,7 +180,7 @@ function TableComponent() {
       estimatedRowSize={DEFAULT_ROW_HEIGHT}
       estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
     >
-      <div className="size-full relative">
+      <div className="size-full relative bg-background">
         <Table>
           {isColumnsPending ? <TableHeaderSkeleton selectable={selectable} /> : tableColumns.length > 0 ? <TableHeader /> : null}
           {isRowsPending || isColumnsPending

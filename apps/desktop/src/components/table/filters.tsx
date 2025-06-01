@@ -63,9 +63,11 @@ function FilterColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLInputElem
 function FilterOperatorSelector({
   ref,
   onSelect,
+  onBackspace,
 }: {
   ref?: RefObject<HTMLInputElement | null>
   onSelect: (operator: string) => void
+  onBackspace?: () => void
 }) {
   const { operators } = useInternalContext()
 
@@ -106,7 +108,15 @@ function FilterOperatorSelector({
 
   return (
     <Command>
-      <CommandInput ref={ref} placeholder="Select operator..." />
+      <CommandInput
+        ref={ref}
+        placeholder="Select operator..."
+        onKeyDown={(e) => {
+          if (e.key === 'Backspace') {
+            onBackspace?.()
+          }
+        }}
+      />
       <CommandList className="h-fit max-h-[70vh]">
         <CommandEmpty>No operators found.</CommandEmpty>
         {Object.entries(groupedOperators).map(([group, ops]) => (
@@ -137,6 +147,7 @@ function FilterValueSelector({
   value,
   onChange,
   onApply,
+  onBackspace,
 }: {
   ref?: RefObject<HTMLInputElement | null>
   column: string
@@ -144,6 +155,7 @@ function FilterValueSelector({
   value: string
   onChange: (value: string) => void
   onApply: () => void
+  onBackspace?: () => void
 }) {
   return (
     <Command>
@@ -156,6 +168,9 @@ function FilterValueSelector({
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               onApply()
+            }
+            if (e.key === 'Backspace') {
+              onBackspace?.()
             }
           }}
         />
@@ -220,62 +235,6 @@ function FilterValueSelector({
   )
 }
 
-export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
-  const [selectedColumn, setSelectedColumn] = useState<string | null>(null)
-  const [selectedOperator, setSelectedOperator] = useState<string | null>(null)
-  const [value, setValue] = useState('')
-  const { columns, operators } = useInternalContext()
-
-  const operatorRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (operatorRef.current) {
-      operatorRef.current.focus()
-    }
-  }, [operatorRef, selectedColumn])
-
-  const valueRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (valueRef.current) {
-      valueRef.current.focus()
-    }
-  }, [valueRef, selectedOperator])
-
-  const column = useMemo(() => columns.find(column => column.name === selectedColumn), [columns, selectedColumn])
-  const operator = useMemo(() => operators.find(operator => operator.value === selectedOperator), [operators, selectedOperator])
-
-  useEffect(() => {
-    if (column && operator && !operator.hasValue) {
-      onAdd({ column: column.name, operator: operator.value })
-    }
-  }, [column, operator])
-
-  return (
-    <div>
-      {!column && (
-        <FilterColumnSelector onSelect={setSelectedColumn} />
-      )}
-      {column && !operator && (
-        <FilterOperatorSelector
-          ref={operatorRef}
-          onSelect={setSelectedOperator}
-        />
-      )}
-      {column && selectedOperator && (
-        <FilterValueSelector
-          ref={valueRef}
-          column={column.name}
-          operator={selectedOperator}
-          value={value}
-          onChange={setValue}
-          onApply={() => onAdd({ column: column.name, operator: selectedOperator, value })}
-        />
-      )}
-    </div>
-  )
-}
-
 export function FilterItem({
   filter,
   onRemove,
@@ -293,7 +252,7 @@ export function FilterItem({
   }, [filter.operator])
 
   return (
-    <div className="flex items-center border rounded-sm overflow-hidden h-6 dark:bg-input/30">
+    <div className="flex items-center border rounded-sm overflow-hidden h-6 bg-input/30">
       <Popover>
         <PopoverTrigger className="text-xs flex items-center gap-1 px-2 h-full hover:bg-accent/50 transition-colors font-medium">
           <RiDatabase2Line className="size-3 text-primary/70" />
@@ -347,6 +306,72 @@ export function FilterItem({
       >
         <RiCloseLine className="size-3.5" />
       </button>
+    </div>
+  )
+}
+
+export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
+  const [selectedColumn, setSelectedColumn] = useState<string | null>(null)
+  const [selectedOperator, setSelectedOperator] = useState<string | null>(null)
+  const [value, setValue] = useState('')
+  const { columns, operators } = useInternalContext()
+
+  const operatorRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (operatorRef.current) {
+      operatorRef.current.focus()
+    }
+  }, [operatorRef, selectedColumn, selectedOperator])
+
+  const valueRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (valueRef.current) {
+      valueRef.current.focus()
+    }
+  }, [valueRef, selectedOperator])
+
+  const column = useMemo(() => columns.find(column => column.name === selectedColumn), [columns, selectedColumn])
+  const operator = useMemo(() => operators.find(operator => operator.value === selectedOperator), [operators, selectedOperator])
+
+  useEffect(() => {
+    if (column && operator && !operator.hasValue) {
+      onAdd({ column: column.name, operator: operator.value })
+    }
+  }, [column, operator])
+
+  return (
+    <div>
+      {!column && (
+        <FilterColumnSelector onSelect={setSelectedColumn} />
+      )}
+      {column && !operator && (
+        <FilterOperatorSelector
+          ref={operatorRef}
+          onSelect={setSelectedOperator}
+          onBackspace={() => {
+            if (value === '') {
+              setSelectedColumn(null)
+            }
+          }}
+        />
+      )}
+      {column && selectedOperator && (
+        <FilterValueSelector
+          ref={valueRef}
+          column={column.name}
+          operator={selectedOperator}
+          value={value}
+          onChange={setValue}
+          onApply={() => onAdd({ column: column.name, operator: selectedOperator, value })}
+          onBackspace={() => {
+            if (value === '') {
+              setSelectedOperator(null)
+            }
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -14,6 +14,20 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   column: ColumnRenderer
   isLast: boolean
 }) {
+  if (!column.header) {
+    return (
+      <div
+        style={{
+          width: `${virtualColumn.size}px`,
+          height: '100%',
+          flexShrink: 0,
+        }}
+      >
+        {column.id}
+      </div>
+    )
+  }
+
   return (
     <column.header
       key={virtualColumn.key}

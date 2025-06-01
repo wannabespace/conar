@@ -27,6 +27,6 @@ export interface TableHeaderCellProps extends ComponentProps<'div'>, Pick<Column
 export interface ColumnRenderer {
   id: string
   size: number
-  cell: ComponentType<TableCellProps>
-  header: ComponentType<TableHeaderCellProps>
+  cell?: ComponentType<TableCellProps>
+  header?: ComponentType<TableHeaderCellProps>
 }

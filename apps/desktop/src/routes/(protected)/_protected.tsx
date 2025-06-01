@@ -36,9 +36,7 @@ function ProtectedLayout() {
   return (
     <div className="min-h-screen flex flex-col animate-in fade-in zoom-in-[1.2] duration-300 ease-out">
       <ActionsCenter />
-      <div className="flex flex-1">
-        <Outlet />
-      </div>
+      <Outlet />
     </div>
   )
 }

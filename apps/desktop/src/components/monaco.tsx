@@ -5,10 +5,10 @@ import ghDark from 'monaco-themes/themes/GitHub Dark.json'
 import ghLight from 'monaco-themes/themes/GitHub Light.json'
 import { useEffect, useRef } from 'react'
 
-ghDark.colors['editor.background'] = '#131313'
-ghDark.colors['editor.lineHighlightBackground'] = '#212222'
-ghDark.colors['editor.selectionBackground'] = '#4fb0ba50'
-ghLight.colors['editor.selectionBackground'] = '#4fb0ba50'
+ghDark.colors['editor.background'] = '#1e1f21'
+ghDark.colors['editor.lineHighlightBackground'] = '#252628'
+ghDark.colors['editor.selectionBackground'] = '#5081f150'
+ghLight.colors['editor.selectionBackground'] = '#5081f150'
 
 // @ts-expect-error wrong type
 monaco.editor.defineTheme('github-dark', ghDark)

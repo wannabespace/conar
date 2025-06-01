@@ -149,7 +149,7 @@ export function ChatForm({
           }}
         />
       )}
-      <div className="flex flex-col gap-2 relative bg-background dark:bg-input/20 rounded-md border">
+      <div className="flex flex-col gap-2 relative dark:bg-input/30 rounded-md border">
         <TipTap
           ref={ref}
           data-mask

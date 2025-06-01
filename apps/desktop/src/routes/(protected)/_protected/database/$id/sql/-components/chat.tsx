@@ -57,7 +57,7 @@ export function Chat({ className, ...props }: ComponentProps<'div'>) {
   }, [initialMessages])
 
   return (
-    <div className={cn('relative flex flex-col justify-between gap-4 p-4 bg-muted/20', className)} {...props}>
+    <div className={cn('relative flex flex-col justify-between gap-4 p-4', className)} {...props}>
       <ChatHeader
         messages={messages}
         setMessages={setMessages}

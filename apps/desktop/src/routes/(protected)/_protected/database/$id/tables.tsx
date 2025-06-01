@@ -62,12 +62,12 @@ function DatabaseTablesPage() {
   })
 
   return (
-    <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} direction="horizontal" className="flex h-auto!">
+    <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} direction="horizontal" className="flex">
       <ResizablePanel
         defaultSize={20}
         minSize={10}
         maxSize={50}
-        className="flex flex-col gap-2 h-screen bg-muted/20"
+        className="flex flex-col gap-2 h-full border bg-background rounded-lg"
       >
         <div className="flex flex-col gap-2 p-4 pb-0">
           <div className="flex items-center justify-between gap-2">
@@ -134,8 +134,8 @@ function DatabaseTablesPage() {
           search={search}
         />
       </ResizablePanel>
-      <ResizableHandle />
-      <ResizablePanel defaultSize={80} className="flex-1">
+      <ResizableHandle className="w-2 bg-transparent" />
+      <ResizablePanel defaultSize={80} className="flex-1 border bg-background rounded-lg">
         <Outlet key={tableParam} />
         {!tableParam && (
           <div className="p-4 flex items-center justify-center h-full">

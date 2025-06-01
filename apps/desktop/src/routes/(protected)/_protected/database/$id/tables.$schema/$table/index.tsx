@@ -108,7 +108,7 @@ function DatabaseTablePage() {
         columns={columns ?? []}
         operators={SQL_OPERATORS_LIST}
       >
-        <div className="h-screen flex flex-col justify-between">
+        <div className="h-full flex flex-col justify-between">
           <div className="flex flex-col gap-4 p-4">
             <Header />
             <Filters />

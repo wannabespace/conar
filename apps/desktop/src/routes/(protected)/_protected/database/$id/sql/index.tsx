@@ -46,15 +46,20 @@ export const Route = createFileRoute(
 
 function DatabaseSqlPage() {
   return (
-    <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex h-auto!">
-      <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
-        <Chat className="h-screen" />
+    <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex">
+      <ResizablePanel
+        defaultSize={30}
+        minSize={20}
+        maxSize={50}
+        className="border bg-background rounded-lg"
+      >
+        <Chat className="h-full" />
       </ResizablePanel>
-      <ResizableHandle />
+      <ResizableHandle className="w-2 bg-transparent" />
       <ResizablePanel
         minSize={30}
         maxSize={80}
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-4 border bg-background rounded-lg"
       >
         <Runner />
       </ResizablePanel>

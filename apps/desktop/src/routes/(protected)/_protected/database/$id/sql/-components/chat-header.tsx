@@ -9,7 +9,7 @@ export function ChatHeader({
   setMessages,
 }: Pick<UseChatHelpers, 'messages' | 'setMessages'>) {
   return (
-    <div className="flex justify-between items-center mb-4 h-8">
+    <div className="flex justify-between items-center h-8">
       <CardTitle className="flex items-center gap-2">
         AI Assistant
       </CardTitle>
