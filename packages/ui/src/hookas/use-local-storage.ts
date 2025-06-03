@@ -1,22 +1,26 @@
 import * as React from 'react'
 
+export function getLocalStorageValue<T>(key: string, defaultValue: T): T {
+  if (typeof window === 'undefined') {
+    return defaultValue
+  }
+
+  try {
+    const item = window.localStorage.getItem(key)
+    return item ? (JSON.parse(item) as T) : defaultValue
+  }
+  catch (error) {
+    console.warn(`Error reading localStorage key "${key}":`, error)
+    return defaultValue
+  }
+}
+
 export function useLocalStorage<T>(key: string, initialValue: T | (() => T)) {
   const readValue = React.useCallback(() => {
     const initial = typeof initialValue === 'function' ? (initialValue as () => T)() : initialValue
 
-    if (typeof window === 'undefined') {
-      return initial
-    }
-
-    try {
-      const item = window.localStorage.getItem(key)
-      return item ? (JSON.parse(item) as T) : initial
-    }
-    catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error)
-      return initial
-    }
-  }, [key, initialValue])
+    return getLocalStorageValue(key, initial)
+  }, [key])
 
   const [storedValue, setStoredValue] = React.useState<T>(readValue)
 

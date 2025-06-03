@@ -20,7 +20,7 @@ export function useSessionStorage<T>(key: string, initialValue: T | (() => T)) {
     const initial = typeof initialValue === 'function' ? (initialValue as () => T)() : initialValue
 
     return getSessionStorageValue(key, initial)
-  }, [key, initialValue])
+  }, [key])
 
   const [storedValue, setStoredValue] = React.useState<T>(readValue)
 
