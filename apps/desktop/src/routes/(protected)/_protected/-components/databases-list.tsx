@@ -30,7 +30,7 @@ function DatabaseCard({ database, onRemove }: { database: Database, onRemove: ()
       params={{ id: database.id }}
       onMouseOver={() => ensureDatabaseCore(database)}
     >
-      <div className="size-14 shrink-0 rounded-full bg-muted/50 p-3">
+      <div className="size-12 shrink-0 rounded-full bg-muted/50 p-3">
         <DatabaseIcon type={database.type} className="size-full text-primary" />
       </div>
       <div className="flex flex-1 flex-col gap-1 min-w-0">
