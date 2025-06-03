@@ -1,4 +1,5 @@
 import { Separator } from '@connnect/ui/components/separator'
+import NumberFlow from '@number-flow/react'
 import { useStore } from '@tanstack/react-store'
 import { useDatabase, useDatabaseTableTotal } from '~/entities/database'
 import { Route, usePageContext } from '..'
@@ -32,14 +33,14 @@ export function Header() {
             <span data-mask>{table}</span>
           </h2>
           <p className="text-muted-foreground text-xs">
-            {columnsCount}
+            <span className="tabular-nums">{columnsCount}</span>
             {' '}
             column
             {columnsCount === 1 ? '' : 's'}
             {' '}
             •
             {' '}
-            {total ?? <span className="animate-pulse">...</span>}
+            {total !== undefined ? <NumberFlow className="tabular-nums" value={total} /> : <span className="animate-pulse">...</span>}
             {' '}
             row
             {total !== undefined && total !== 1 && 's'}

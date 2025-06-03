@@ -87,7 +87,7 @@ function TableInfiniteLoader() {
       <div className=" inset-x-0 flex items-center justify-center h-[inherit]">
         {hasNextPage
           ? <RiLoaderLine className="size-10 animate-spin opacity-50" />
-          : <TableEmpty className="bottom-0" title="No more data" description="This table has no more records" />}
+          : <TableEmpty className="bottom-0" title="No more data" description="This table has no more rows" />}
       </div>
     </div>
   )

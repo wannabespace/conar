@@ -11,27 +11,14 @@ import { databaseQuery, databasesQuery } from './queries/database'
 import { databaseEnumsQuery } from './queries/enums'
 import { databasePrimaryKeysQuery } from './queries/primary-keys'
 import { databaseRowsQuery } from './queries/rows'
-import { databaseSchemasQuery } from './queries/schemas'
-import { databaseTablesQuery } from './queries/tables'
+import { databaseTablesAndSchemasQuery } from './queries/tables-and-schemas'
 import { databaseTableTotalQuery } from './queries/total'
 import { contextSql } from './sql/context'
 
 const DATABASES_SCHEMAS_KEY = 'databases-schemas'
 
-export const databaseSchemas = {
-  get(id: string) {
-    const value = JSON.parse(localStorage.getItem(DATABASES_SCHEMAS_KEY) ?? '{}') as Record<string, string>
-
-    return value[id] ?? 'public'
-  },
-  set(id: string, schema: string) {
-    const schemas = JSON.parse(localStorage.getItem(DATABASES_SCHEMAS_KEY) ?? '{}') as Record<string, string>
-
-    schemas[id] = schema
-
-    localStorage.setItem(DATABASES_SCHEMAS_KEY, JSON.stringify(schemas))
-  },
-}
+// TODO: remove it in future releases
+localStorage.removeItem(DATABASES_SCHEMAS_KEY)
 
 export async function fetchDatabases() {
   if (!navigator.onLine) {
@@ -165,8 +152,7 @@ export async function ensureDatabaseCore(database: Database) {
 
   await Promise.all([
     queryClient.ensureQueryData(databaseQuery(database.id)),
-    queryClient.ensureQueryData(databaseSchemasQuery(database)),
-    queryClient.ensureQueryData(databaseTablesQuery(database, databaseSchemas.get(database.id))),
+    queryClient.ensureQueryData(databaseTablesAndSchemasQuery(database)),
   ])
 
   await Promise.all([

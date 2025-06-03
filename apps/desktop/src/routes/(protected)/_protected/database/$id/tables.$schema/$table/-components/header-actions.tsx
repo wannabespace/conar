@@ -57,9 +57,6 @@ export function HeaderActions() {
           <TooltipContent side="bottom" align="end">
             Refresh data
             <p className="text-xs text-muted-foreground">
-              Table data is cached. Click to fetch the latest data.
-            </p>
-            <p className="text-xs text-muted-foreground">
               Last updated:
               {' '}
               {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
