@@ -15,7 +15,7 @@ export const sqlFilters = protectedProcedure
     const { prompt, context } = input
 
     const { object } = await generateObject({
-      model: google('gemini-1.5-flash-latest'),
+      model: google('gemini-2.0-flash'),
       system: `
         You are a SQL filter generator that converts natural language queries into precise database filters.
 
