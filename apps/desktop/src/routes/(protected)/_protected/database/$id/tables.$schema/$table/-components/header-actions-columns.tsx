@@ -27,7 +27,7 @@ export function HeaderActionsColumns() {
             </TooltipTrigger>
             {hiddenColumns.length > 0 && <Indicator />}
           </div>
-          <TooltipContent side="bottom">
+          <TooltipContent side="top">
             Columns visibility
           </TooltipContent>
         </Tooltip>

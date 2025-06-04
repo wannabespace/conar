@@ -1,6 +1,7 @@
 import type { Database } from '~/lib/indexeddb'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@connnect/ui/components/accordion'
 import { ScrollArea } from '@connnect/ui/components/custom/scroll-area'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { useDebouncedCallback } from '@connnect/ui/hookas/use-debounced-callback'
 import { useSessionStorage } from '@connnect/ui/hookas/use-session-storage'
 import { clickHandlers, cn } from '@connnect/ui/lib/utils'
@@ -81,12 +82,21 @@ export function TablesTree({ database, className, search }: { database: Database
               >
                 <AccordionTrigger className="truncate mb-1 py-1.5 px-2 cursor-pointer hover:no-underline hover:bg-accent/50">
                   <span className="flex items-center gap-2">
-                    <RiStackLine
-                      className={cn(
-                        'size-4 text-muted-foreground shrink-0 opacity-50',
-                        schemaParam === schema.name && 'text-primary opacity-100',
-                      )}
-                    />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <RiStackLine
+                            className={cn(
+                              'size-4 text-muted-foreground shrink-0 opacity-50',
+                              schemaParam === schema.name && 'text-primary opacity-100',
+                            )}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Schema
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     {schema.name}
                   </span>
                 </AccordionTrigger>

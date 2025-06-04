@@ -54,7 +54,7 @@ export function HeaderActions() {
               </LoadingContent>
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom" align="end">
+          <TooltipContent side="top" align="end">
             Refresh data
             <p className="text-xs text-muted-foreground">
               Last updated:

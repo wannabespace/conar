@@ -22,7 +22,7 @@ export function HeaderActionsFilters() {
               </Button>
             </PopoverTrigger>
           </TooltipTrigger>
-          <TooltipContent side="bottom">
+          <TooltipContent side="top">
             Add new filter
           </TooltipContent>
         </Tooltip>
