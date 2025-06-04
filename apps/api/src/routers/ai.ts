@@ -7,7 +7,7 @@ import { databaseContextType } from '@connnect/shared/database'
 import { AiSqlChatModel } from '@connnect/shared/enums/ai-chat-model'
 import { DatabaseType } from '@connnect/shared/enums/database-type'
 import { arktypeValidator } from '@hono/arktype-validator'
-import { streamText } from 'ai'
+import { smoothStream, streamText } from 'ai'
 import { type } from 'arktype'
 import { Hono } from 'hono'
 
@@ -62,6 +62,7 @@ function generateStream({
     ],
     abortSignal: signal,
     model,
+    experimental_transform: smoothStream(),
     onFinish: (result) => {
       console.info('result', result)
     },

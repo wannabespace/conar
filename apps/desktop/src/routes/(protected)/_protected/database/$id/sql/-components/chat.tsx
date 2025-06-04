@@ -73,6 +73,7 @@ export function Chat({ className, ...props }: ComponentProps<'div'>) {
         onReload={handleReload}
       />
       <ChatForm
+        database={database}
         append={append}
         stop={stop}
         status={status}

@@ -50,6 +50,7 @@ export function Monaco({
       automaticLayout: true,
       minimap: { enabled: false },
       fontFamily: '"Geist Mono", monospace',
+      tabSize: 2,
       ...options,
     })
 
@@ -106,5 +107,5 @@ export function Monaco({
     }
   }, [value])
 
-  return <div data-mask ref={elementRef} {...props} />
+  return <div ref={elementRef} {...props} />
 }

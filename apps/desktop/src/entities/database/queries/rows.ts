@@ -29,7 +29,10 @@ export function databaseRowsQuery(
       'table',
       table,
       'rows',
-      query,
+      {
+        filters: query.filters,
+        orderBy: query.orderBy,
+      },
     ],
     queryFn: async ({ pageParam: offset = 0 }) => {
       const [result] = await window.electron.databases.query({

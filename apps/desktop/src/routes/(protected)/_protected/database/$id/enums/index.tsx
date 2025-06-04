@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@connnect/ui/component
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@connnect/ui/components/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiInformationLine, RiListUnordered } from '@remixicon/react'
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useDatabaseEnums, useDatabaseSchemas } from '~/entities/database'
+import { databaseTablesAndSchemasQuery, useDatabaseEnums } from '~/entities/database'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id/enums/')({
   component: DatabaseEnumsPage,
@@ -26,7 +27,10 @@ function DatabaseEnumsPage() {
   const { database } = Route.useLoaderData()
   const [selectedSchema, setSelectedSchema] = useState('public')
   const { data: enums } = useDatabaseEnums(database)
-  const { data: schemas } = useDatabaseSchemas(database)
+  const { data: schemas } = useQuery({
+    ...databaseTablesAndSchemasQuery(database),
+    select: data => [...new Set(data.map(({ schema }) => schema))],
+  })
 
   const filteredEnums = enums.filter(enumItem => enumItem.schema === selectedSchema)
 
@@ -49,8 +53,8 @@ function DatabaseEnumsPage() {
               </SelectTrigger>
               <SelectContent>
                 {schemas.map(schema => (
-                  <SelectItem key={schema.name} value={schema.name}>
-                    {schema.name}
+                  <SelectItem key={schema} value={schema}>
+                    {schema}
                   </SelectItem>
                 ))}
               </SelectContent>

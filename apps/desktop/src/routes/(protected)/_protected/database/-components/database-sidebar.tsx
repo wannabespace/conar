@@ -57,8 +57,8 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
   }
 
   const classes = (isActive = false) => cn(
-    'cursor-pointer text-foreground size-9 rounded-md flex items-center justify-center',
-    isActive && 'bg-background hover:bg-background',
+    'cursor-pointer text-foreground size-9 rounded-md flex items-center justify-center border border-transparent',
+    isActive && 'bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary',
   )
 
   return (

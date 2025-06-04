@@ -1,11 +1,9 @@
+import type { Database } from '~/lib/indexeddb'
 import { useQuery } from '@tanstack/react-query'
-import { databaseColumnsQuery, useDatabase } from '~/entities/database'
-import { Route } from '..'
+import { databaseColumnsQuery } from '~/entities/database'
 import { usePrimaryKeysQuery } from './use-primary-keys-query'
 
-export function useColumnsQuery() {
-  const { id, table, schema } = Route.useParams()
-  const { data: database } = useDatabase(id)
+export function useColumnsQuery(database: Database, table: string, schema: string) {
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
   return useQuery({

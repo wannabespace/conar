@@ -89,7 +89,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
         type="single"
         collapsible
       >
-        <AccordionItem value="pre" className="rounded-md border! bg-accent/50 overflow-hidden">
+        <AccordionItem value="pre" className="rounded-md border! bg-muted/30 overflow-hidden">
           <AccordionPrimitive.Trigger asChild>
             <div className="cursor-pointer select-none flex justify-between items-center gap-2 p-1">
               <div className="flex items-center gap-2">
@@ -177,6 +177,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
           </AccordionPrimitive.Trigger>
           <AccordionContent className="overflow-hidden p-0">
             <Monaco
+              data-mask
               value={content}
               language={lang}
               options={{

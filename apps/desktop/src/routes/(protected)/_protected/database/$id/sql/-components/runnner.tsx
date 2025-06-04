@@ -198,7 +198,6 @@ export function Runner() {
       return result
     },
     throwOnError: false,
-    select: data => data.filter(r => r.rows.length > 0),
     enabled: false,
   })
 
@@ -246,12 +245,13 @@ export function Runner() {
           setOpen={setIsAlertVisible}
           confirm={() => runQuery()}
         />
-        <CardHeader className="bg-input/30 py-3">
+        <CardHeader className="dark:bg-input/30 py-3">
           <CardTitle className="flex items-center gap-2">
             SQL Runner
           </CardTitle>
         </CardHeader>
         <Monaco
+          data-mask
           ref={monacoRef}
           language="sql"
           value={query}
