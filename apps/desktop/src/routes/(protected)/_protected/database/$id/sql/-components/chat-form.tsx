@@ -1,5 +1,6 @@
 import type { UseChatHelpers } from '@ai-sdk/react'
 import type { ComponentRef } from 'react'
+import type { Database } from '~/lib/indexeddb'
 import { AiSqlChatModel } from '@connnect/shared/enums/ai-chat-model'
 import { getBase64FromFiles } from '@connnect/shared/utils/base64'
 import { Button } from '@connnect/ui/components/button'
@@ -10,9 +11,9 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
-import { databaseContextQuery, useDatabase } from '~/entities/database'
+import { databaseContextQuery } from '~/entities/database'
 import { queryClient } from '~/main'
-import { pageHooks, pageStore, Route } from '..'
+import { pageHooks, pageStore } from '..'
 import { chatInput } from '../-lib'
 import { ChatImages } from './chat-images'
 
@@ -50,14 +51,13 @@ function ModelSelector() {
 }
 
 export function ChatForm({
+  database,
   append,
   stop,
   status,
   input,
   setInput,
-}: Pick<UseChatHelpers, 'status' | 'append' | 'stop' | 'input' | 'setInput'>) {
-  const { id } = Route.useParams()
-  const { data: database } = useDatabase(id)
+}: Pick<UseChatHelpers, 'status' | 'append' | 'stop' | 'input' | 'setInput'> & { database: Database }) {
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const files = useStore(pageStore, state => state.files.map(file => ({
     name: file.name,
@@ -127,7 +127,7 @@ export function ChatForm({
   }
 
   useMountedEffect(() => {
-    chatInput.set(id, input)
+    chatInput.set(database.id, input)
   }, [input])
 
   useEffect(() => {

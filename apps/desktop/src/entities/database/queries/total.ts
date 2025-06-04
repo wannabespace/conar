@@ -21,7 +21,9 @@ export function databaseTableTotalQuery(
       'table',
       table,
       'total',
-      query,
+      {
+        filters: query.filters,
+      },
     ],
     queryFn: async () => {
       const [result] = await window.electron.databases.query({

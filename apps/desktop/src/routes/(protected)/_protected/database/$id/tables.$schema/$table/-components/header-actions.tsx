@@ -1,20 +1,19 @@
+import type { Database } from '~/lib/indexeddb'
 import { Button } from '@connnect/ui/components/button'
 import { ContentSwitch } from '@connnect/ui/components/custom/content-switch'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
 import { RiCheckLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { databaseColumnsQuery, useDatabase } from '~/entities/database'
+import { databaseColumnsQuery } from '~/entities/database'
 import { queryClient } from '~/main'
-import { Route, usePageContext } from '..'
+import { usePageContext } from '..'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 import { HeaderActionsColumns } from './header-actions-columns'
 import { HeaderActionsDelete } from './header-actions-delete'
 import { HeaderActionsFilters } from './header-actions-filters'
 
-export function HeaderActions() {
-  const { id, table, schema } = Route.useParams()
-  const { data: database } = useDatabase(id)
+export function HeaderActions({ table, schema, database }: { table: string, schema: string, database: Database }) {
   const { store } = usePageContext()
   const rowsQueryOpts = useRowsQueryOpts()
   const { isFetching, dataUpdatedAt, refetch } = useInfiniteQuery(rowsQueryOpts)
@@ -32,8 +31,16 @@ export function HeaderActions() {
 
   return (
     <div className="flex gap-2">
-      <HeaderActionsDelete />
-      <HeaderActionsColumns />
+      <HeaderActionsDelete
+        table={table}
+        schema={schema}
+        database={database}
+      />
+      <HeaderActionsColumns
+        database={database}
+        table={table}
+        schema={schema}
+      />
       <HeaderActionsFilters />
       <TooltipProvider>
         <Tooltip>

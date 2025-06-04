@@ -126,8 +126,8 @@ export function TablesTree({ database, className, search }: { database: Database
                             },
                           }))}
                           className={cn(
-                            'w-full flex items-center gap-2 py-1.5 px-2 text-sm text-foreground rounded-md hover:bg-accent/50',
-                            tableParam === table && 'bg-accent/80 hover:bg-accent/80',
+                            'w-full flex items-center gap-2 border border-transparent py-1.5 px-2 text-sm text-foreground rounded-md hover:bg-accent/60',
+                            tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
                           )}
                           onMouseOver={() => {
                             ensureDatabaseTableCore(database, schema.name, table, getQueryOpts(table))

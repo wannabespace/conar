@@ -8,13 +8,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connn
 import { useSessionStorage } from '@connnect/ui/hookas/use-session-storage'
 import { RiCheckLine, RiCloseLine, RiLoopLeftLine } from '@remixicon/react'
 import { useDatabaseTablesAndSchemas } from '~/entities/database'
-import { Route } from '../tables'
 import { TablesTree } from './tables-tree'
 
 export function Sidebar({ database }: { database: Database }) {
-  const { id } = Route.useParams()
   const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useDatabaseTablesAndSchemas(database)
-  const [search, setSearch] = useSessionStorage(`database-tables-search-${id}`, '')
+  const [search, setSearch] = useSessionStorage(`database-tables-search-${database.id}`, '')
 
   return (
     <>

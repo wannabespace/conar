@@ -6,7 +6,7 @@ import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { FiltersProvider } from '~/components/table'
-import { ensureDatabaseTableCore } from '~/entities/database'
+import { ensureDatabaseTableCore, useDatabase } from '~/entities/database'
 import { Filters } from './-components/filters'
 import { Header } from './-components/header'
 import { Table } from './-components/table'
@@ -76,7 +76,8 @@ export const Route = createFileRoute(
 })
 
 function DatabaseTablePage() {
-  const { table, schema } = Route.useParams()
+  const { id, table, schema } = Route.useParams()
+  const { data: database } = useDatabase(id)
   const [store] = useState(() => {
     const state = getTableStoreState(schema, table)
 
@@ -96,7 +97,7 @@ function DatabaseTablePage() {
     })
   }, [])
 
-  const { data: columns } = useColumnsQuery()
+  const { data: columns } = useColumnsQuery(database, table, schema)
 
   const context = useMemo(() => ({
     store,
@@ -109,8 +110,12 @@ function DatabaseTablePage() {
         operators={SQL_OPERATORS_LIST}
       >
         <div className="h-full flex flex-col justify-between">
-          <div className="flex flex-col gap-4 p-4">
-            <Header />
+          <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
+            <Header
+              database={database}
+              table={table}
+              schema={schema}
+            />
             <Filters />
           </div>
           <div className="flex-1 overflow-hidden">

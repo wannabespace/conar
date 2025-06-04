@@ -58,7 +58,7 @@ export function TableHeader({ className, style, ...props }: ComponentProps<'div'
       style={{ width: `${tableWidth}px`, ...style }}
       {...props}
     >
-      <div className="flex bg-muted/50 h-full w-fit min-w-full items-center">
+      <div className="flex bg-muted/30 h-full w-fit min-w-full items-center">
         <div
           aria-hidden="true"
           className="shrink-0 w-(--table-scroll-left-offset) will-change-[height]"

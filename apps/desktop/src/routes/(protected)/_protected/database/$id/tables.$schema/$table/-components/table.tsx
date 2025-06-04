@@ -96,7 +96,7 @@ function TableInfiniteLoader() {
 function TableComponent() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
-  const { data: columns, isPending: isColumnsPending } = useColumnsQuery()
+  const { data: columns, isPending: isColumnsPending } = useColumnsQuery(database, table, schema)
   const { store } = usePageContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const rowsQueryOpts = useRowsQueryOpts()

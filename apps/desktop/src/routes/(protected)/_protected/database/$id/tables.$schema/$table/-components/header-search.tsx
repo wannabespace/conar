@@ -35,7 +35,7 @@ export function HeaderSearch() {
       }
     },
   })
-  const { data: columns } = useColumnsQuery()
+  const { data: columns } = useColumnsQuery(database, table, schema)
   const { data: enums } = useDatabaseEnums(database)
   const context = useMemo(() => `
     Filters working with AND operator.

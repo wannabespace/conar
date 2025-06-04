@@ -3,7 +3,7 @@ import { prepareSql } from '@connnect/shared/utils/helpers'
 import { type } from 'arktype'
 
 export const tableAndSchemaType = type({
-  name: 'string',
+  table: 'string',
   schema: 'string',
 })
 
@@ -11,21 +11,14 @@ export function tablesAndSchemasSql(): Record<DatabaseType, string> {
   return {
     postgres: prepareSql(`
       SELECT
-        n.nspname AS schema,
-        c.relname AS name
-      FROM
-        pg_catalog.pg_class c
-      JOIN
-        pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-      WHERE
-        n.nspname NOT LIKE 'pg_temp%'
-        AND n.nspname NOT LIKE 'pg_toast_temp%'
-        AND n.nspname NOT LIKE 'temp%'
-        AND n.nspname NOT IN ('information_schema', 'performance_schema', 'pg_toast', 'pg_catalog')
-        AND c.relkind = 'r'
-      ORDER BY
-        n.nspname,
-        c.relname;
+        table_name as table,
+        table_schema as schema
+      FROM information_schema.tables
+      WHERE table_schema NOT LIKE 'pg_temp%'
+        AND table_schema NOT LIKE 'pg_toast_temp%'
+        AND table_schema NOT LIKE 'temp%'
+        AND table_schema NOT IN ('information_schema', 'performance_schema', 'pg_toast', 'pg_catalog')
+      ORDER BY table_schema ASC, table_name ASC;
     `),
   }
 }

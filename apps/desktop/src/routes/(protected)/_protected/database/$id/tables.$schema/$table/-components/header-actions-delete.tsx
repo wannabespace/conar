@@ -1,3 +1,4 @@
+import type { Database } from '~/lib/indexeddb'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@connnect/ui/components/alert-dialog'
 import { Button } from '@connnect/ui/components/button'
 import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
@@ -8,15 +9,13 @@ import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseColumnsQuery, databaseTableTotalQuery, deleteRowsSql, useDatabase } from '~/entities/database'
+import { databaseColumnsQuery, databaseTableTotalQuery, deleteRowsSql } from '~/entities/database'
 import { queryClient } from '~/main'
-import { Route, usePageContext } from '..'
+import { usePageContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
-export function HeaderActionsDelete() {
-  const { id, table, schema } = Route.useParams()
-  const { data: database } = useDatabase(id)
+export function HeaderActionsDelete({ table, schema, database }: { table: string, schema: string, database: Database }) {
   const rowsQueryOpts = useRowsQueryOpts()
   const { data: rows, refetch } = useInfiniteQuery(rowsQueryOpts)
   const [isOpened, setIsOpened] = useState(false)

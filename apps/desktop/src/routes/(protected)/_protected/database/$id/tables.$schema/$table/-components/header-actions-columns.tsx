@@ -1,3 +1,4 @@
+import type { Database } from '~/lib/indexeddb'
 import { Button } from '@connnect/ui/components/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@connnect/ui/components/command'
 import { Indicator } from '@connnect/ui/components/custom/indicator'
@@ -8,10 +9,10 @@ import { useStore } from '@tanstack/react-store'
 import { usePageContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
 
-export function HeaderActionsColumns() {
+export function HeaderActionsColumns({ database, table, schema }: { database: Database, table: string, schema: string }) {
   const { store } = usePageContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
-  const { data: columns } = useColumnsQuery()
+  const { data: columns } = useColumnsQuery(database, table, schema)
 
   return (
     <Popover>

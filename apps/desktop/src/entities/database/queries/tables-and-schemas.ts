@@ -17,9 +17,9 @@ export function databaseTablesAndSchemasQuery(database: Database) {
     select: (data) => {
       const schemas = new Map<string, string[]>()
 
-      for (const { schema, name } of data) {
+      for (const { schema, table } of data) {
         const tables = schemas.get(schema) ?? []
-        tables.push(name)
+        tables.push(table)
         schemas.set(schema, tables)
       }
 

@@ -1,7 +1,8 @@
+import type { ComponentRef } from 'react'
 import { title } from '@connnect/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
-import { useLocalStorage } from '@connnect/ui/hookas/use-local-storage'
 import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
+import { useRef } from 'react'
 import { useDatabase } from '~/entities/database'
 import { Sidebar } from './-components/sidebar'
 import { TablesTabs } from './-components/tabs'
@@ -22,28 +23,47 @@ export const Route = createFileRoute(
   }),
 })
 
-function DatabaseTablesPage() {
-  const { id } = Route.useParams()
-  const { schema: schemaParam } = useParams({ strict: false })
-  const { table: tableParam } = useParams({ strict: false })
-  const [tabs, setTabs] = useLocalStorage<{
-    table: string
-    schema: string
-    order: number
-  }[]>(`database-tables-tabs-${id}`, [])
+function Content({ id }: { id: string }) {
+  const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
+  const tabsRef = useRef<ComponentRef<typeof TablesTabs>>(null)
   const { data: database } = useDatabase(id)
 
-  function ensureTab(schema: string, table: string) {
-    if (tabs.find(tab => tab.table === table && tab.schema === schema)) {
-      return
-    }
-
-    setTabs(prev => [...prev, {
-      table,
-      schema,
-      order: prev.length + 1,
-    }])
+  if (!schemaParam || !tableParam) {
+    return (
+      <div className="p-4 flex items-center justify-center h-full">
+        <div className="text-center space-y-4">
+          <div className="text-lg font-medium">
+            No table selected
+          </div>
+          <p className="text-muted-foreground text-sm max-w-md mx-auto">
+            Select a schema from the dropdown and choose a table from the sidebar to view and manage your data.
+          </p>
+        </div>
+      </div>
+    )
   }
+
+  return (
+    <>
+      <TablesTabs
+        ref={tabsRef}
+        database={database}
+        id={id}
+      />
+      <div
+        key={tableParam}
+        className="h-[calc(100%-theme(spacing.9))]"
+        onClick={() => tabsRef.current?.ensureTab(schemaParam, tableParam)}
+      >
+        <Outlet />
+      </div>
+    </>
+  )
+}
+
+function DatabaseTablesPage() {
+  const { id } = Route.useParams()
+  const { data: database } = useDatabase(id)
 
   return (
     <ResizablePanelGroup autoSaveId={`database-layout-${id}`} direction="horizontal" className="flex">
@@ -57,36 +77,7 @@ function DatabaseTablesPage() {
       </ResizablePanel>
       <ResizableHandle className="w-2 bg-transparent" />
       <ResizablePanel defaultSize={80} className="flex-1 border bg-background rounded-lg">
-        {schemaParam && tableParam
-          ? (
-              <>
-                <TablesTabs
-                  database={database}
-                  id={id}
-                  ensureTab={ensureTab}
-                  tabs={tabs}
-                />
-                <div
-                  key={tableParam}
-                  className="h-[calc(100%-theme(spacing.8))]"
-                  onClick={() => ensureTab(schemaParam, tableParam)}
-                >
-                  <Outlet />
-                </div>
-              </>
-            )
-          : (
-              <div className="p-4 flex items-center justify-center h-full">
-                <div className="text-center space-y-4">
-                  <div className="text-lg font-medium">
-                    No table selected
-                  </div>
-                  <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                    Select a schema from the dropdown and choose a table from the sidebar to view and manage your data.
-                  </p>
-                </div>
-              </div>
-            )}
+        <Content id={id} />
       </ResizablePanel>
     </ResizablePanelGroup>
   )
