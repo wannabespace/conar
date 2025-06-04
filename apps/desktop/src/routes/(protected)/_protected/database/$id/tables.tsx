@@ -1,3 +1,4 @@
+import type { Database } from '~/lib/indexeddb'
 import { title } from '@connnect/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { Tabs, TabsList, TabsTrigger } from '@connnect/ui/components/tabs'
@@ -6,6 +7,55 @@ import { createFileRoute, Outlet, useNavigate, useParams } from '@tanstack/react
 import { ensureDatabaseTableCore, useDatabase } from '~/entities/database'
 import { Sidebar } from './-components/sidebar'
 import { getTableStoreState } from './tables.$schema/$table'
+
+function TablesTabs({ database, id, ensureTab, tabs }: { database: Database, id: string, ensureTab: (schema: string, table: string) => void, tabs: { table: string, schema: string, order: number }[] }) {
+  const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
+  const navigate = useNavigate()
+
+  function getQueryOpts(tableName: string) {
+    const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
+
+    if (state) {
+      return {
+        filters: state.filters,
+        orderBy: state.orderBy,
+      }
+    }
+
+    return {
+      filters: [],
+      orderBy: {},
+    }
+  }
+
+  return (
+    <div className="h-8">
+      <Tabs value={tableParam}>
+        <TabsList>
+          {tabs.map(tab => (
+            <TabsTrigger
+              key={tab.table}
+              value={tab.table}
+              onClick={() => navigate({ to: `/database/${id}/tables/${tab.schema}/${tab.table}` })}
+              onMouseOver={() => ensureDatabaseTableCore(database, tab.schema, tab.table, getQueryOpts(tab.table))}
+            >
+              {tab.table}
+            </TabsTrigger>
+          ))}
+          {schemaParam && tableParam && !tabs.find(tab => tab.table === tableParam && tab.schema === schemaParam) && (
+            <TabsTrigger
+              value={tableParam!}
+              onClick={() => navigate({ to: `/database/${id}/tables/${schemaParam}/${tableParam}` })}
+              onDoubleClick={() => ensureTab(schemaParam, tableParam)}
+            >
+              {tableParam}
+            </TabsTrigger>
+          )}
+        </TabsList>
+      </Tabs>
+    </div>
+  )
+}
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables',
@@ -26,7 +76,6 @@ export const Route = createFileRoute(
 function DatabaseTablesPage() {
   const { id } = Route.useParams()
   const { schema: schemaParam } = useParams({ strict: false })
-  const navigate = useNavigate()
   const { table: tableParam } = useParams({ strict: false })
   const [tabs, setTabs] = useLocalStorage<{
     table: string
@@ -34,22 +83,6 @@ function DatabaseTablesPage() {
     order: number
   }[]>(`database-tables-tabs-${id}`, [])
   const { data: database } = useDatabase(id)
-
-  function getQueryOpts(tableName: string) {
-    const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
-
-    if (state) {
-      return {
-        filters: state.filters,
-        orderBy: state.orderBy,
-      }
-    }
-
-    return {
-      filters: [],
-      orderBy: {},
-    }
-  }
 
   function ensureTab(schema: string, table: string) {
     if (tabs.find(tab => tab.table === table && tab.schema === schema)) {
@@ -78,31 +111,12 @@ function DatabaseTablesPage() {
         {schemaParam && tableParam
           ? (
               <>
-                <div className="h-8">
-                  <Tabs value={tableParam}>
-                    <TabsList>
-                      {tabs.map(tab => (
-                        <TabsTrigger
-                          key={tab.table}
-                          value={tab.table}
-                          onClick={() => navigate({ to: `/database/${id}/tables/${tab.schema}/${tab.table}` })}
-                          onMouseOver={() => ensureDatabaseTableCore(database, tab.schema, tab.table, getQueryOpts(tab.table))}
-                        >
-                          {tab.table}
-                        </TabsTrigger>
-                      ))}
-                      {!tabs.find(tab => tab.table === tableParam && tab.schema === schemaParam) && (
-                        <TabsTrigger
-                          value={tableParam!}
-                          onClick={() => navigate({ to: `/database/${id}/tables/${schemaParam}/${tableParam}` })}
-                          onDoubleClick={() => ensureTab(schemaParam, tableParam)}
-                        >
-                          {tableParam}
-                        </TabsTrigger>
-                      )}
-                    </TabsList>
-                  </Tabs>
-                </div>
+                <TablesTabs
+                  database={database}
+                  id={id}
+                  ensureTab={ensureTab}
+                  tabs={tabs}
+                />
                 <div
                   key={tableParam}
                   className="h-[calc(100%-theme(spacing.8))]"

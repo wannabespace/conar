@@ -40,7 +40,17 @@ export function Header() {
             {' '}
             •
             {' '}
-            {total !== undefined ? <NumberFlow className="tabular-nums" value={total} /> : <span className="animate-pulse">...</span>}
+            {total !== undefined
+              ? (
+                  <NumberFlow
+                    className="tabular-nums"
+                    value={total}
+                    style={{
+                      '--number-flow-mask-height': '0px',
+                    } as React.CSSProperties}
+                  />
+                )
+              : <span className="animate-pulse">...</span>}
             {' '}
             row
             {total !== undefined && total !== 1 && 's'}

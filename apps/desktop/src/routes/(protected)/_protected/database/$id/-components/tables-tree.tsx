@@ -138,7 +138,7 @@ export function TablesTree({ database, className, search }: { database: Database
                                     dangerouslySetInnerHTML={{
                                       __html: table.replace(
                                         new RegExp(search, 'gi'),
-                                        match => `<mark class="text-white bg-primary/50 dark:bg-primary/50">${match}</mark>`,
+                                        match => `<mark class="text-white bg-primary/50">${match}</mark>`,
                                       ),
                                     }}
                                   />
