@@ -9,7 +9,7 @@ import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { DatabaseIcon, databasesQuery, ensureDatabaseCore, removeDatabase, useDatabases } from '~/entities/database'
+import { DatabaseIcon, databasesQuery, prefetchDatabaseCore, removeDatabase, useDatabases } from '~/entities/database'
 import { queryClient } from '~/main'
 
 function DatabaseCard({ database, onRemove }: { database: Database, onRemove: () => void }) {
@@ -28,7 +28,7 @@ function DatabaseCard({ database, onRemove }: { database: Database, onRemove: ()
       className="relative flex items-center justify-between gap-4 rounded-lg bg-card p-5 border hover:border-primary transition-all duration-150 hover:shadow-lg shadow-black/3"
       to="/database/$id/tables"
       params={{ id: database.id }}
-      onMouseOver={() => ensureDatabaseCore(database)}
+      onMouseOver={() => prefetchDatabaseCore(database)}
     >
       <div className="size-12 shrink-0 rounded-full bg-muted/50 p-3">
         <DatabaseIcon type={database.type} className="size-full text-primary" />

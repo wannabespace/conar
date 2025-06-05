@@ -144,31 +144,31 @@ export async function updateDatabasePassword(id: string, password: string) {
   await indexedDb.databases.put(database)
 }
 
-export async function ensureDatabaseCore(database: Database) {
+export async function prefetchDatabaseCore(database: Database) {
   if (database.isPasswordExists && !database.isPasswordPopulated) {
-    await queryClient.ensureQueryData(databaseQuery(database.id))
+    await queryClient.prefetchQuery(databaseQuery(database.id))
     return
   }
 
   await Promise.all([
-    queryClient.ensureQueryData(databaseQuery(database.id)),
-    queryClient.ensureQueryData(databaseTablesAndSchemasQuery(database)),
+    queryClient.prefetchQuery(databaseQuery(database.id)),
+    queryClient.prefetchQuery(databaseTablesAndSchemasQuery(database)),
   ])
 
   await Promise.all([
-    queryClient.ensureQueryData(databaseEnumsQuery(database)),
-    queryClient.ensureQueryData(databasePrimaryKeysQuery(database)),
+    queryClient.prefetchQuery(databaseEnumsQuery(database)),
+    queryClient.prefetchQuery(databasePrimaryKeysQuery(database)),
   ])
 }
 
-export async function ensureDatabaseTableCore(database: Database, schema: string, table: string, query: {
+export async function prefetchDatabaseTableCore(database: Database, schema: string, table: string, query: {
   filters: WhereFilter[]
   orderBy: Record<string, 'ASC' | 'DESC'>
 }) {
   await Promise.all([
-    queryClient.ensureInfiniteQueryData(databaseRowsQuery(database, table, schema, query)),
-    queryClient.ensureQueryData(databaseColumnsQuery(database, table, schema)),
-    queryClient.ensureQueryData(databaseTableTotalQuery(database, table, schema, query)),
+    queryClient.prefetchInfiniteQuery(databaseRowsQuery(database, table, schema, query)),
+    queryClient.prefetchQuery(databaseColumnsQuery(database, table, schema)),
+    queryClient.prefetchQuery(databaseTableTotalQuery(database, table, schema, query)),
   ])
 }
 

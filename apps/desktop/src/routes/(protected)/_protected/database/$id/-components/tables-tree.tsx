@@ -9,8 +9,7 @@ import { RiStackLine, RiTableLine } from '@remixicon/react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
-import { databaseRowsQuery, ensureDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
-import { queryClient } from '~/main'
+import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
 import { getTableStoreState } from '../tables.$schema/$table'
 
 export function TablesTree({ database, className, search }: { database: Database, className?: string, search?: string }) {
@@ -35,10 +34,8 @@ export function TablesTree({ database, className, search }: { database: Database
     }
   }
 
-  const debouncedPrefetchRows = useDebouncedCallback(
-    (schema: string, tableName: string) => {
-      queryClient.ensureInfiniteQueryData(databaseRowsQuery(database, tableName, schema, getQueryOpts(tableName)))
-    },
+  const debouncedPrefetchDatabaseTableCore = useDebouncedCallback(
+    (schema: string, tableName: string) => prefetchDatabaseTableCore(database, schema, tableName, getQueryOpts(tableName)),
     [database.id],
     100,
   )
@@ -129,10 +126,7 @@ export function TablesTree({ database, className, search }: { database: Database
                             'w-full flex items-center gap-2 border border-transparent py-1.5 px-2 text-sm text-foreground rounded-md hover:bg-accent/60',
                             tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
                           )}
-                          onMouseOver={() => {
-                            ensureDatabaseTableCore(database, schema.name, table, getQueryOpts(table))
-                            debouncedPrefetchRows(schema.name, table)
-                          }}
+                          onMouseOver={() => debouncedPrefetchDatabaseTableCore(schema.name, table)}
                         >
                           <RiTableLine
                             className={cn(

@@ -13,9 +13,6 @@ if (started) {
   app.quit()
 }
 
-autoUpdater.autoInstallOnAppQuit = true
-autoUpdater.autoDownload = true
-
 initElectronEvents()
 
 let mainWindow: BrowserWindow | null = null

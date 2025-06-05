@@ -18,7 +18,7 @@ import { useKeyboardEvent } from '@react-hookz/web'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef } from 'react'
-import { ensureDatabaseTableCore } from '~/entities/database'
+import { prefetchDatabaseTableCore } from '~/entities/database'
 import { getTableStoreState } from '../tables.$schema/$table'
 
 interface Tab {
@@ -216,7 +216,7 @@ export function TablesTabs({ ref, database, id }: {
 
   useAsyncEffect(async () => {
     for (const tab of tabs) {
-      await ensureDatabaseTableCore(database, tab.schema, tab.table, getQueryOpts(tab.table))
+      await prefetchDatabaseTableCore(database, tab.schema, tab.table, getQueryOpts(tab.table))
     }
   }, [])
 
@@ -310,7 +310,7 @@ export function TablesTabs({ ref, database, id }: {
               item={item}
               showSchema={!isOneSchema}
               onClose={() => closeTab(item.tab.schema, item.tab.table)}
-              onMouseOver={() => ensureDatabaseTableCore(database, item.tab.schema, item.tab.table, getQueryOpts(item.tab.table))}
+              onMouseOver={() => prefetchDatabaseTableCore(database, item.tab.schema, item.tab.table, getQueryOpts(item.tab.table))}
               onDoubleClick={() => ensureTab(item.tab.schema, item.tab.table, false)}
               onFocus={(ref) => {
                 if (ref.current) {

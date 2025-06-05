@@ -1,11 +1,11 @@
 import type { ComponentRef } from 'react'
+import type { TablesTabs } from './-components/tabs'
 import { title } from '@connnect/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@connnect/ui/components/resizable'
 import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { useDatabase } from '~/entities/database'
 import { Sidebar } from './-components/sidebar'
-import { TablesTabs } from './-components/tabs'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables',
@@ -23,10 +23,10 @@ export const Route = createFileRoute(
   }),
 })
 
-function Content({ id }: { id: string }) {
+function Content({ id: _id }: { id: string }) {
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const tabsRef = useRef<ComponentRef<typeof TablesTabs>>(null)
-  const { data: database } = useDatabase(id)
+  // const { data: database } = useDatabase(id)
 
   if (!schemaParam || !tableParam) {
     return (
@@ -45,11 +45,11 @@ function Content({ id }: { id: string }) {
 
   return (
     <>
-      <TablesTabs
+      {/* <TablesTabs
         ref={tabsRef}
         database={database}
         id={id}
-      />
+      /> */}
       <div
         key={tableParam}
         className="h-[calc(100%-theme(spacing.9))]"
