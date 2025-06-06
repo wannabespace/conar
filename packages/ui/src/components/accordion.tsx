@@ -1,4 +1,4 @@
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import * as AccordionPrimitive from '@radix-ui/react-accordion'
 import { ChevronDownIcon } from 'lucide-react'
 import * as React from 'react'

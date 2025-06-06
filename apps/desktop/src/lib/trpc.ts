@@ -1,4 +1,4 @@
-import type { AppRouter, RouterInputs, RouterOutputs } from '@connnect/api/src/trpc/routers'
+import type { AppRouter, RouterInputs, RouterOutputs } from '@conar/api/src/trpc/routers'
 import { createTRPCClient, httpBatchLink } from '@trpc/client'
 import SuperJSON from 'superjson'
 import { handleError } from '~/lib/error'

@@ -1,5 +1,5 @@
 import type { SqlLanguage } from 'sql-formatter'
-import { DatabaseType } from '@connnect/shared/enums/database-type'
+import { DatabaseType } from '@conar/shared/enums/database-type'
 import { format } from 'sql-formatter'
 
 export function formatSql(

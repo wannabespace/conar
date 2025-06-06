@@ -1,4 +1,4 @@
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
 import { CheckIcon } from 'lucide-react'
 import * as React from 'react'

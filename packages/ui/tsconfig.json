@@ -1,9 +1,9 @@
 {
-  "extends": "@connnect/tsconfig/react.json",
+  "extends": "@conar/tsconfig/react.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@connnect/ui/*": ["./src/*"]
+      "@conar/ui/*": ["./src/*"]
     },
     "noEmit": true
   },

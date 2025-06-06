@@ -114,7 +114,7 @@ importers:
         specifier: ^3.25.42
         version: 3.25.42
     devDependencies:
-      '@connnect/shared':
+      '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       drizzle-kit:
@@ -139,16 +139,16 @@ importers:
       '@ai-sdk/react':
         specifier: ^1.2.12
         version: 1.2.12(react@19.1.0)(zod@3.25.42)
-      '@connnect/api':
+      '@conar/api':
         specifier: workspace:*
         version: link:../api
-      '@connnect/shared':
+      '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@connnect/tsconfig':
+      '@conar/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
-      '@connnect/ui':
+      '@conar/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@dnd-kit/core':
@@ -362,16 +362,16 @@ importers:
         specifier: 0.5.6
         version: 0.5.6(@types/node@22.15.27)(db0@0.3.2(drizzle-orm@0.44.0(@opentelemetry/api@1.9.0)(@types/pg@8.15.2)(bun-types@1.2.9)(gel@2.0.1)(kysely@0.28.2)(pg@8.16.0)(postgres@3.4.7)))(drizzle-orm@0.44.0(@opentelemetry/api@1.9.0)(@types/pg@8.15.2)(bun-types@1.2.9)(gel@2.0.1)(kysely@0.28.2)(pg@8.16.0)(postgres@3.4.7))(encoding@0.1.13)(ioredis@5.6.1)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.39.0)(tsx@4.19.4)(yaml@2.7.0)
     devDependencies:
-      '@connnect/api':
+      '@conar/api':
         specifier: workspace:*
         version: link:../api
-      '@connnect/shared':
+      '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@connnect/tsconfig':
+      '@conar/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
-      '@connnect/ui':
+      '@conar/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@remixicon/react':
@@ -536,7 +536,7 @@ importers:
         specifier: ^11.1.0
         version: 11.1.0
     devDependencies:
-      '@connnect/tsconfig':
+      '@conar/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       '@types/react':

@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "com.wannabespace.connnect",
+  "appId": "com.wannabespace.conar",
   "asar": true,
   "directories": {
     "output": "release/${version}"
@@ -9,12 +9,12 @@
     "private": false,
     "provider": "github",
     "owner": "wannabespace",
-    "repo": "connnect"
+    "repo": "conar"
   },
   "protocols": [
     {
-      "name": "Connnect",
-      "schemes": ["connnect"]
+      "name": "Conar",
+      "schemes": ["conar"]
     }
   ],
   "files": [
@@ -49,7 +49,7 @@
   "linux": {
     "target": ["AppImage"],
     "category": "Development",
-    "mimeTypes": ["x-scheme-handler/connnect"],
+    "mimeTypes": ["x-scheme-handler/conar"],
     "artifactName": "${productName}-Linux-${version}.${ext}"
   }
 }

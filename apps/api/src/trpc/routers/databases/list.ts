@@ -1,4 +1,4 @@
-import { decrypt } from '@connnect/shared/encryption'
+import { decrypt } from '@conar/shared/encryption'
 import { desc, eq } from 'drizzle-orm'
 import { databases, db } from '~/drizzle'
 import { protectedProcedure } from '~/trpc'

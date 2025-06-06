@@ -1,4 +1,4 @@
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import * as React from 'react'
 

@@ -1,6 +1,6 @@
 import type { VariantProps } from 'class-variance-authority'
-import { toggleVariants } from '@connnect/ui/components/toggle'
-import { cn } from '@connnect/ui/lib/utils'
+import { toggleVariants } from '@conar/ui/components/toggle'
+import { cn } from '@conar/ui/lib/utils'
 import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group'
 import * as React from 'react'
 

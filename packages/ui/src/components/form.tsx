@@ -1,7 +1,7 @@
 import type * as LabelPrimitive from '@radix-ui/react-label'
 import type { ControllerProps, FieldPath, FieldValues } from 'react-hook-form'
-import { Label } from '@connnect/ui/components/label'
-import { cn } from '@connnect/ui/lib/utils'
+import { Label } from '@conar/ui/components/label'
+import { cn } from '@conar/ui/lib/utils'
 import { Slot } from '@radix-ui/react-slot'
 import * as React from 'react'
 import {

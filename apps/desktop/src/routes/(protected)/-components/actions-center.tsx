@@ -1,5 +1,5 @@
-import { getOS } from '@connnect/shared/utils/os'
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@connnect/ui/components/command'
+import { getOS } from '@conar/shared/utils/os'
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine, RiDashboardLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'

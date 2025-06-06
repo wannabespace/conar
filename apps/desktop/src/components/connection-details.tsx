@@ -1,6 +1,6 @@
-import type { DatabaseType } from '@connnect/shared/enums/database-type'
-import { parseConnectionString } from '@connnect/shared/utils/connections'
-import { cn } from '@connnect/ui/lib/utils'
+import type { DatabaseType } from '@conar/shared/enums/database-type'
+import { parseConnectionString } from '@conar/shared/utils/connections'
+import { cn } from '@conar/ui/lib/utils'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useState } from 'react'
 

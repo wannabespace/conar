@@ -1,7 +1,7 @@
-import type { DatabaseType } from '@connnect/shared/enums/database-type'
-import type { SQL_OPERATORS } from '@connnect/shared/utils/sql'
-import { prepareSql } from '@connnect/shared/utils/helpers'
-import { SQL_OPERATORS_LIST } from '@connnect/shared/utils/sql'
+import type { DatabaseType } from '@conar/shared/enums/database-type'
+import type { SQL_OPERATORS } from '@conar/shared/utils/sql'
+import { prepareSql } from '@conar/shared/utils/helpers'
+import { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
 
 export interface WhereFilter {
   column: string

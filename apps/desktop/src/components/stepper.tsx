@@ -1,4 +1,4 @@
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import { createContext, use } from 'react'
 
 const StepperContext = createContext<{

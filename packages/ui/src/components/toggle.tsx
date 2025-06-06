@@ -1,5 +1,5 @@
 import type { VariantProps } from 'class-variance-authority'
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import * as TogglePrimitive from '@radix-ui/react-toggle'
 import { cva } from 'class-variance-authority'
 import * as React from 'react'

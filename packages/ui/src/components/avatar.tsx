@@ -1,4 +1,4 @@
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import * as AvatarPrimitive from '@radix-ui/react-avatar'
 import * as React from 'react'
 

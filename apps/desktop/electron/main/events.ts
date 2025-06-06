@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module'
-import { decrypt, encrypt } from '@connnect/shared/encryption'
-import { DatabaseType } from '@connnect/shared/enums/database-type'
+import { decrypt, encrypt } from '@conar/shared/encryption'
+import { DatabaseType } from '@conar/shared/enums/database-type'
 import { app, ipcMain } from 'electron'
 import { pgQuery, pgTestConnection } from './pg'
 

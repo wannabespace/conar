@@ -1,7 +1,7 @@
-import { Button } from '@connnect/ui/components/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@connnect/ui/components/card'
-import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
-import { copy } from '@connnect/ui/lib/copy'
+import { Button } from '@conar/ui/components/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
+import { DotsBg } from '@conar/ui/components/custom/dots-bg'
+import { copy } from '@conar/ui/lib/copy'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
@@ -19,7 +19,7 @@ function RouteComponent() {
   const { 'code-challenge': codeChallenge, 'new-user': newUser } = Route.useSearch()
   const { data, isPending } = authClient.useSession()
 
-  const getUrl = (token: string, codeChallenge: string) => `connnect://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
+  const getUrl = (token: string, codeChallenge: string) => `conar://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
 
   function handleOpenSession(codeChallenge: string) {
     if (!data)
@@ -73,7 +73,7 @@ function RouteComponent() {
                   </CardHeader>
                   <CardContent className="flex flex-col gap-6">
                     <p>
-                      You have successfully signed in. You can now close this tab and return to the Connnect desktop app.
+                      You have successfully signed in. You can now close this tab and return to the Conar desktop app.
                     </p>
                     <div className="flex flex-col gap-4">
                       <p className="text-muted-foreground text-sm">

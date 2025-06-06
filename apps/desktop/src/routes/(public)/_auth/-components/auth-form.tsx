@@ -1,11 +1,11 @@
-import { Button } from '@connnect/ui/components/button'
-import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@connnect/ui/components/dialog'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@connnect/ui/components/form'
-import { Input } from '@connnect/ui/components/input'
-import { Separator } from '@connnect/ui/components/separator'
-import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
-import { copy } from '@connnect/ui/lib/copy'
+import { Button } from '@conar/ui/components/button'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@conar/ui/components/form'
+import { Input } from '@conar/ui/components/input'
+import { Separator } from '@conar/ui/components/separator'
+import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
+import { copy } from '@conar/ui/lib/copy'
 import { arktypeResolver } from '@hookform/resolvers/arktype'
 import { RiEyeLine, RiEyeOffLine, RiGithubFill, RiGoogleFill } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -69,14 +69,14 @@ function SocialAuthForm({ type }: { type: Type }) {
     if (isManualAuthOpen) {
       const text = await navigator.clipboard.readText()
 
-      if (text.startsWith('connnect://session')) {
+      if (text.startsWith('conar://session')) {
         setManualAuthUrl(text)
       }
     }
   }, [isManualAuthOpen])
 
   useAsyncEffect(async () => {
-    if (manualAuthUrl.startsWith('connnect://session')) {
+    if (manualAuthUrl.startsWith('conar://session')) {
       setIsDialogOpen(false)
       const { type } = await handleDeepLink(manualAuthUrl)
 

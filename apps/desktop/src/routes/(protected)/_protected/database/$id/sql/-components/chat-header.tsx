@@ -1,7 +1,7 @@
 import type { UseChatHelpers } from '@ai-sdk/react'
-import { Button } from '@connnect/ui/components/button'
-import { CardTitle } from '@connnect/ui/components/card'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
+import { Button } from '@conar/ui/components/button'
+import { CardTitle } from '@conar/ui/components/card'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiDeleteBinLine } from '@remixicon/react'
 
 export function ChatHeader({

@@ -1,4 +1,4 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { RiLogoutCircleRLine } from '@remixicon/react'
 import { useSignOut } from '../hooks/use-sign-out'
 import { UserAvatar } from './user-avatar'

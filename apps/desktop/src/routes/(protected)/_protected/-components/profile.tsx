@@ -1,7 +1,7 @@
-import { Button } from '@connnect/ui/components/button'
-import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
-import { Skeleton } from '@connnect/ui/components/skeleton'
-import { cn } from '@connnect/ui/lib/utils'
+import { Button } from '@conar/ui/components/button'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { Skeleton } from '@conar/ui/components/skeleton'
+import { cn } from '@conar/ui/lib/utils'
 import { RiLogoutBoxLine } from '@remixicon/react'
 import { UserAvatar, useSignOut } from '~/entities/user'
 

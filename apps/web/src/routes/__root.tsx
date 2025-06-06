@@ -1,6 +1,6 @@
-import { Toaster } from '@connnect/ui/components/sonner'
-import appCss from '@connnect/ui/globals.css?url'
-import { ThemeProvider } from '@connnect/ui/theme-provider'
+import { Toaster } from '@conar/ui/components/sonner'
+import appCss from '@conar/ui/globals.css?url'
+import { ThemeProvider } from '@conar/ui/theme-provider'
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { ErrorPage } from '~/error-page'
@@ -17,10 +17,10 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       ...seo({
-        title: 'Connnect.app - AI-powered connections management tool',
+        title: 'Conar.app - AI-powered connections management tool',
         description: 'AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.',
       }),
-      { name: 'apple-mobile-web-app-title', content: 'Connnect' },
+      { name: 'apple-mobile-web-app-title', content: 'Conar' },
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
@@ -33,7 +33,7 @@ export const Route = createRootRoute({
     scripts: [
       {
         'defer': true,
-        'data-domain': 'connnect.app',
+        'data-domain': 'conar.app',
         'src': 'https://plausible.io/js/script.js',
       },
     ],

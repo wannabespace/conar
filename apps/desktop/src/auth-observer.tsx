@@ -1,4 +1,4 @@
-import { useAsyncEffect } from '@connnect/ui/hookas/use-async-effect'
+import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { identifyUser } from '~/lib/events'

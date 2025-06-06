@@ -1,6 +1,6 @@
 import type { MotionProps, Variants } from 'motion/react'
 import type { ElementType } from 'react'
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import { AnimatePresence, motion } from 'motion/react'
 
 type AnimationType = 'text' | 'word' | 'character' | 'line'

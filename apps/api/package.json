@@ -1,5 +1,5 @@
 {
-  "name": "@connnect/api",
+  "name": "@conar/api",
   "type": "module",
   "scripts": {
     "dev": "tsx --env-file=.env ./src/index.ts",
@@ -33,7 +33,7 @@
     "zod": "^3.25.42"
   },
   "devDependencies": {
-    "@connnect/shared": "workspace:*",
+    "@conar/shared": "workspace:*",
     "drizzle-kit": "^0.31.1",
     "tsx": "^4.19.4"
   }

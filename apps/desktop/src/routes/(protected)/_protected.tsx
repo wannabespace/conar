@@ -1,4 +1,4 @@
-import { getOS } from '@connnect/shared/utils/os'
+import { getOS } from '@conar/shared/utils/os'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'

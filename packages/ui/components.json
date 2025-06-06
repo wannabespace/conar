@@ -11,10 +11,10 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@connnect/ui/components",
-    "utils": "@connnect/ui/lib/utils",
-    "hooks": "@connnect/ui/hooks",
-    "lib": "@connnect/ui/lib",
-    "ui": "@connnect/ui/components"
+    "components": "@conar/ui/components",
+    "utils": "@conar/ui/lib/utils",
+    "hooks": "@conar/ui/hooks",
+    "lib": "@conar/ui/lib",
+    "ui": "@conar/ui/components"
   }
 }

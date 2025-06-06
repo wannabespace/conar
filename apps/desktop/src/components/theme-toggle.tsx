@@ -1,5 +1,5 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@connnect/ui/components/dropdown-menu'
-import { useTheme } from '@connnect/ui/theme-provider'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import { useTheme } from '@conar/ui/theme-provider'
 import { RiComputerLine, RiMoonLine, RiSunLine } from '@remixicon/react'
 
 export function ThemeToggle({ children }: { children: React.ReactNode }) {

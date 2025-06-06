@@ -1,4 +1,4 @@
-import { title as titleFn } from '@connnect/shared/utils/title'
+import { title as titleFn } from '@conar/shared/utils/title'
 
 export function seo({
   title,

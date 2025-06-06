@@ -1,10 +1,10 @@
-import type { OS } from '@connnect/shared/utils/os'
-import { getOS } from '@connnect/shared/utils/os'
-import { AppLogoGradient } from '@connnect/ui/components/brand/app-logo-gradient'
-import { Button } from '@connnect/ui/components/button'
-import { Card } from '@connnect/ui/components/card'
-import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
-import { usePromise } from '@connnect/ui/hookas/use-promise'
+import type { OS } from '@conar/shared/utils/os'
+import { getOS } from '@conar/shared/utils/os'
+import { AppLogoGradient } from '@conar/ui/components/brand/app-logo-gradient'
+import { Button } from '@conar/ui/components/button'
+import { Card } from '@conar/ui/components/card'
+import { DotsBg } from '@conar/ui/components/custom/dots-bg'
+import { usePromise } from '@conar/ui/hookas/use-promise'
 import { RiAppleFill, RiDownloadLine, RiWindowsFill } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useMemo } from 'react'
@@ -16,7 +16,7 @@ export const Route = createFileRoute('/_layout/download')({
   component: RouteComponent,
   head: () => ({
     meta: seo({
-      title: 'Download Connnect',
+      title: 'Download Conar',
     }),
   }),
   pendingComponent: () => {
@@ -132,7 +132,7 @@ function RouteComponent() {
       />
       <div className="flex flex-col items-center max-w-2xl mx-auto text-center">
         <AppLogoGradient className="size-32 mb-6" />
-        <h1 className="text-4xl font-bold mb-3 tracking-tight">Download Connnect</h1>
+        <h1 className="text-4xl font-bold mb-3 tracking-tight">Download Conar</h1>
         <p className="text-lg text-muted-foreground mb-10">
           Available for macOS and Linux (Windows coming soon)
         </p>

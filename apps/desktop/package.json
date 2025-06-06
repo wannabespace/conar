@@ -1,17 +1,17 @@
 {
-  "name": "@connnect/desktop",
+  "name": "@conar/desktop",
   "type": "module",
   "version": "0.12.0",
   "private": true,
   "description": "AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.",
-  "productName": "Connnect",
+  "productName": "Conar",
   "author": {
     "name": "Wannabe Space, LLC",
     "email": "wannabespace.llc@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/wannabespace/connnect.git"
+    "url": "https://github.com/wannabespace/conar.git"
   },
   "main": "dist-electron/main/index.js",
   "scripts": {
@@ -27,10 +27,10 @@
   },
   "devDependencies": {
     "@ai-sdk/react": "^1.2.12",
-    "@connnect/api": "workspace:*",
-    "@connnect/shared": "workspace:*",
-    "@connnect/tsconfig": "workspace:*",
-    "@connnect/ui": "workspace:*",
+    "@conar/api": "workspace:*",
+    "@conar/shared": "workspace:*",
+    "@conar/tsconfig": "workspace:*",
+    "@conar/ui": "workspace:*",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",

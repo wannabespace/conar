@@ -5,7 +5,7 @@ import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
 import { routeTree } from './routeTree.gen'
 import './monaco-worker'
-import '@connnect/ui/globals.css'
+import '@conar/ui/globals.css'
 
 if (import.meta.env.DEV) {
   import('react-scan').then(({ scan }) => {

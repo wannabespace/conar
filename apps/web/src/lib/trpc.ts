@@ -1,4 +1,4 @@
-import type { AppRouter } from '@connnect/api/src/trpc/routers'
+import type { AppRouter } from '@conar/api/src/trpc/routers'
 import { createTRPCClient, httpBatchLink } from '@trpc/client'
 import SuperJSON from 'superjson'
 

@@ -27,7 +27,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
-  storageKey = 'connnect.theme',
+  storageKey = 'conar.theme',
 }: ThemeProviderProps) {
   const isBrowser = typeof window !== 'undefined'
   const [theme, setTheme] = useState<Theme>(

@@ -1,5 +1,5 @@
 {
-  "name": "@connnect/web",
+  "name": "@conar/web",
   "type": "module",
   "private": true,
   "scripts": {
@@ -26,10 +26,10 @@
     "vinxi": "0.5.6"
   },
   "devDependencies": {
-    "@connnect/api": "workspace:*",
-    "@connnect/shared": "workspace:*",
-    "@connnect/tsconfig": "workspace:*",
-    "@connnect/ui": "workspace:*",
+    "@conar/api": "workspace:*",
+    "@conar/shared": "workspace:*",
+    "@conar/tsconfig": "workspace:*",
+    "@conar/ui": "workspace:*",
     "@remixicon/react": "^4.6.0",
     "@tailwindcss/vite": "^4.1.8",
     "@types/node": "^22.15.27",

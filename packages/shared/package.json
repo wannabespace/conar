@@ -1,5 +1,5 @@
 {
-  "name": "@connnect/shared",
+  "name": "@conar/shared",
   "type": "module",
   "peerDependencies": {
     "@trpc/client": "^11.0.0",

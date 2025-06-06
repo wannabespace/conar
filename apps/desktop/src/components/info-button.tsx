@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@connnect/ui/components/tooltip'
-import { cn } from '@connnect/ui/lib/utils'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { cn } from '@conar/ui/lib/utils'
 import { RiInformationLine } from '@remixicon/react'
 
 export function InfoButton({ children, className, ...props }: ComponentProps<'button'>) {

@@ -1,5 +1,5 @@
-import type { DatabaseType } from '@connnect/shared/enums/database-type'
-import { prepareSql } from '@connnect/shared/utils/helpers'
+import type { DatabaseType } from '@conar/shared/enums/database-type'
+import { prepareSql } from '@conar/shared/utils/helpers'
 
 export function rowsSql(schema: string, table: string, query: {
   limit: number

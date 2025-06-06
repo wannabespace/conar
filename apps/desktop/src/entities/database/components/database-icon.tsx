@@ -1,5 +1,5 @@
 import type { ComponentProps, JSX } from 'react'
-import { DatabaseType } from '@connnect/shared/enums/database-type'
+import { DatabaseType } from '@conar/shared/enums/database-type'
 import { createElement } from 'react'
 import { PostgresIcon } from '~/icons/postgres'
 

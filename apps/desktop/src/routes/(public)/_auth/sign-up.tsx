@@ -1,4 +1,4 @@
-import { AppTextLogo } from '@connnect/ui/components/brand/app-text-logo'
+import { AppTextLogo } from '@conar/ui/components/brand/app-text-logo'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { AuthForm } from './-components/auth-form'
 

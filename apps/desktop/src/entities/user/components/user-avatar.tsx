@@ -1,5 +1,5 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@connnect/ui/components/avatar'
-import { cn } from '@connnect/ui/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@conar/ui/components/avatar'
+import { cn } from '@conar/ui/lib/utils'
 import { useMemo } from 'react'
 import { authClient } from '~/lib/auth'
 

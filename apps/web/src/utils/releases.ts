@@ -80,7 +80,7 @@ export interface Release {
 
 export async function getLatestRelease(): Promise<Release> {
   const response = await fetch(
-    'https://api.github.com/repos/wannabespace/connnect/releases/latest',
+    'https://api.github.com/repos/wannabespace/conar/releases/latest',
   )
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)

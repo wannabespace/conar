@@ -1,6 +1,6 @@
-import { Badge } from '@connnect/ui/components/badge'
-import { Button } from '@connnect/ui/components/button'
-import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
+import { Badge } from '@conar/ui/components/badge'
+import { Button } from '@conar/ui/components/button'
+import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { RiExternalLinkLine } from '@remixicon/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Video } from './-components/video'
@@ -19,7 +19,7 @@ function Home() {
         <div className="flex flex-col items-center text-center gap-8">
           <Badge asChild variant="secondary">
             <a href="https://x.com/letstri/status/1912961552162103787" target="_blank" rel="noopener noreferrer">
-              Connnect is now available on macOS!
+              Conar is now available on macOS!
               <RiExternalLinkLine className="size-3 text-muted-foreground" />
             </a>
           </Badge>

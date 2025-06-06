@@ -1,6 +1,6 @@
-import type { Button } from '@connnect/ui/components/button'
-import { buttonVariants } from '@connnect/ui/components/button'
-import { cn } from '@connnect/ui/lib/utils'
+import type { Button } from '@conar/ui/components/button'
+import { buttonVariants } from '@conar/ui/components/button'
+import { cn } from '@conar/ui/lib/utils'
 
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from 'lucide-react'
 import * as React from 'react'

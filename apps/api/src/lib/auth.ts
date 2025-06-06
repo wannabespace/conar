@@ -29,7 +29,7 @@ async function loopsUpdateUser(user: User) {
 }
 
 export const auth = betterAuth({
-  appName: 'Connnect',
+  appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
   basePath: '/auth',
@@ -65,7 +65,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: [env.WEB_URL, ...(process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3002'])],
   advanced: {
-    cookiePrefix: 'connnect',
+    cookiePrefix: 'conar',
     database: {
       generateId: false,
     },

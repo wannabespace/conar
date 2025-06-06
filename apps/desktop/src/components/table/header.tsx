@@ -1,7 +1,7 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ComponentProps, CSSProperties } from 'react'
 import type { ColumnRenderer } from '.'
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import { memo } from 'react'
 import { useTableContext } from '.'
 

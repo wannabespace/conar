@@ -1,8 +1,8 @@
 import type { RefObject } from 'react'
-import { Button } from '@connnect/ui/components/button'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@connnect/ui/components/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@connnect/ui/components/popover'
-import { Separator } from '@connnect/ui/components/separator'
+import { Button } from '@conar/ui/components/button'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
+import { Separator } from '@conar/ui/components/separator'
 import { RiCloseLine, RiCornerDownLeftLine, RiDatabase2Line, RiFilterLine } from '@remixicon/react'
 import { createContext, use, useEffect, useMemo, useRef, useState } from 'react'
 

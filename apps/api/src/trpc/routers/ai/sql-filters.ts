@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google'
-import { SQL_OPERATORS_LIST } from '@connnect/shared/utils/sql'
+import { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
 import { generateObject } from 'ai'
 import { type } from 'arktype'
 import { z } from 'zod'

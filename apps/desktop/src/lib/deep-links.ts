@@ -3,7 +3,7 @@ import { bearerToken, codeChallenge, successAuthToast } from '~/lib/auth'
 import { decrypt } from './encryption'
 
 export async function handleDeepLink(url: string): Promise<{ type: 'session' | 'unknown' }> {
-  const { pathname, searchParams } = new URL(url.replace('connnect://', 'https://connnect.app/'))
+  const { pathname, searchParams } = new URL(url.replace('conar://', 'https://conar.app/'))
 
   if (pathname === '/session') {
     await handleSession(searchParams)

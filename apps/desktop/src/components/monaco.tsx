@@ -1,5 +1,5 @@
 import type { ComponentProps, RefObject } from 'react'
-import { useTheme } from '@connnect/ui/theme-provider'
+import { useTheme } from '@conar/ui/theme-provider'
 import * as monaco from 'monaco-editor'
 import ghDark from 'monaco-themes/themes/GitHub Dark.json'
 import ghLight from 'monaco-themes/themes/GitHub Light.json'
@@ -60,7 +60,7 @@ export function Monaco({
 
     if (onEnter) {
       monacoInstance.current.addAction({
-        id: 'connnect.execute-on-enter',
+        id: 'conar.execute-on-enter',
         label: 'Execute on Enter',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
         run: (e) => {

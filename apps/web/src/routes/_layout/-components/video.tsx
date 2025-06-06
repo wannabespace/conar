@@ -1,5 +1,5 @@
-import { useMediaControls } from '@connnect/ui/hookas/use-media-controls'
-import { cn } from '@connnect/ui/lib/utils'
+import { useMediaControls } from '@conar/ui/hookas/use-media-controls'
+import { cn } from '@conar/ui/lib/utils'
 import { RiPlayCircleFill } from '@remixicon/react'
 import { motion, useInView } from 'motion/react'
 import { useRef } from 'react'

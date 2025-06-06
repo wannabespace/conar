@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 
 export function DotsBg({ className, ...props }: ComponentProps<'div'>) {
   return (

@@ -1,8 +1,8 @@
-import { AppLogo } from '@connnect/ui/components/brand/app-logo'
-import { AppLogoGradient } from '@connnect/ui/components/brand/app-logo-gradient'
-import { AppTextLogo } from '@connnect/ui/components/brand/app-text-logo'
-import { Button } from '@connnect/ui/components/button'
-import { SmoothCorner } from '@connnect/ui/components/custom/smooth-corner'
+import { AppLogo } from '@conar/ui/components/brand/app-logo'
+import { AppLogoGradient } from '@conar/ui/components/brand/app-logo-gradient'
+import { AppTextLogo } from '@conar/ui/components/brand/app-text-logo'
+import { Button } from '@conar/ui/components/button'
+import { SmoothCorner } from '@conar/ui/components/custom/smooth-corner'
 import { RiGithubFill, RiTwitterXLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 
@@ -26,7 +26,7 @@ export function Navbar() {
           asChild
         >
           <a
-            href="https://x.com/connnectapp"
+            href="https://x.com/conarapp"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -40,7 +40,7 @@ export function Navbar() {
           asChild
         >
           <a
-            href="https://github.com/wannabespace/connnect"
+            href="https://github.com/wannabespace/conar"
             target="_blank"
             rel="noopener noreferrer"
           >

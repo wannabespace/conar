@@ -1,4 +1,4 @@
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import { RiLoader4Fill } from '@remixicon/react'
 
 export function LoadingContent({

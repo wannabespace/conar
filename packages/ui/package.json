@@ -1,5 +1,5 @@
 {
-  "name": "@connnect/ui",
+  "name": "@conar/ui",
   "type": "module",
   "private": true,
   "exports": {
@@ -52,7 +52,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@connnect/tsconfig": "workspace:*",
+    "@conar/tsconfig": "workspace:*",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "tailwind-scrollbar": "^4.0.2",

@@ -4,7 +4,7 @@ import { env } from '~/env'
 export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-05-28.basil',
   appInfo: {
-    name: 'Connnect',
+    name: 'Conar',
     url: env.WEB_URL,
   },
 })

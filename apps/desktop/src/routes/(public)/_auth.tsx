@@ -1,7 +1,7 @@
-import { AppLogo } from '@connnect/ui/components/brand/app-logo'
-import { AppLogoGradient } from '@connnect/ui/components/brand/app-logo-gradient'
-import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
-import { SmoothCorner } from '@connnect/ui/components/custom/smooth-corner'
+import { AppLogo } from '@conar/ui/components/brand/app-logo'
+import { AppLogoGradient } from '@conar/ui/components/brand/app-logo-gradient'
+import { DotsBg } from '@conar/ui/components/custom/dots-bg'
+import { SmoothCorner } from '@conar/ui/components/custom/smooth-corner'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/(public)/_auth')({

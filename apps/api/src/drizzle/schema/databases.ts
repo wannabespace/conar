@@ -1,5 +1,5 @@
-import { DatabaseType } from '@connnect/shared/enums/database-type'
-import { enumValues } from '@connnect/shared/utils/helpers'
+import { DatabaseType } from '@conar/shared/enums/database-type'
+import { enumValues } from '@conar/shared/utils/helpers'
 import { relations } from 'drizzle-orm'
 import { pgEnum, pgTable } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'

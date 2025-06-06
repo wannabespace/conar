@@ -1,12 +1,12 @@
-# <img src="https://connnect.app/app-logo.png" alt="Connnect Logo" width="25"/> Connnect.app
+# <img src="https://conar.app/app-logo.png" alt="Conar Logo" width="25"/> Conar.app
 
 ![image](https://github.com/user-attachments/assets/8b0985a0-f4f8-4d67-bb2b-4a88ca91757a)
 
-Connnect is an AI-powered open-source project that simplifies database interactions. Built for PostgreSQL, with support for other databases coming in the near future. Store your connections securely in our cloud and ask AI to help you write and optimize SQL queries.
+Conar is an AI-powered open-source project that simplifies database interactions. Built for PostgreSQL, with support for other databases coming in the near future. Store your connections securely in our cloud and ask AI to help you write and optimize SQL queries.
 
 <div align="center">
-  <a href="https://connnect.app/download">
-    <img src="https://img.shields.io/badge/Download-Connnect-green?style=for-the-badge" alt="Download Connnect" />
+  <a href="https://conar.app/download">
+    <img src="https://img.shields.io/badge/Download-Conar-green?style=for-the-badge" alt="Download Conar" />
   </a>
 </div>
 

@@ -1,4 +1,4 @@
-import type { DatabaseType } from '@connnect/shared/enums/database-type'
+import type { DatabaseType } from '@conar/shared/enums/database-type'
 import type { EntityTable } from 'dexie'
 import Dexie from 'dexie'
 
@@ -32,7 +32,7 @@ export interface DatabaseChat {
   }[]
 }
 
-export const indexedDb = new Dexie('connnect') as Dexie & {
+export const indexedDb = new Dexie('conar') as Dexie & {
   databases: EntityTable<Database, 'id'>
   databaseChats: EntityTable<DatabaseChat, 'id'>
 }

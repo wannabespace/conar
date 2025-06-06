@@ -1,5 +1,5 @@
 /* eslint-disable react/no-array-index-key */
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import { useMemo } from 'react'
 import { useTableContext } from '~/components/table'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'

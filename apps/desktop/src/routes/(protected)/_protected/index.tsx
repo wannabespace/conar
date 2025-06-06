@@ -1,8 +1,8 @@
-import { title } from '@connnect/shared/utils/title'
-import { Button } from '@connnect/ui/components/button'
-import { DotsBg } from '@connnect/ui/components/custom/dots-bg'
-import { LoadingContent } from '@connnect/ui/components/custom/loading-content'
-import { Separator } from '@connnect/ui/components/separator'
+import { title } from '@conar/shared/utils/title'
+import { Button } from '@conar/ui/components/button'
+import { DotsBg } from '@conar/ui/components/custom/dots-bg'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { Separator } from '@conar/ui/components/separator'
 import { RiAddLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
@@ -69,7 +69,7 @@ function DashboardPage() {
         <Separator />
         <div className="mt-3 flex gap-2 items-center">
           <a
-            href="https://connnect.app"
+            href="https://conar.app"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
@@ -77,7 +77,7 @@ function DashboardPage() {
             <RiGlobalLine className="size-4" />
           </a>
           <a
-            href="https://x.com/connnectapp"
+            href="https://x.com/conarapp"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
@@ -85,7 +85,7 @@ function DashboardPage() {
             <RiTwitterXLine className="size-4" />
           </a>
           <a
-            href="https://github.com/wannabespace/connnect"
+            href="https://github.com/wannabespace/conar"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"

@@ -4,8 +4,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@connnect/ui/components/dialog'
-import { cn } from '@connnect/ui/lib/utils'
+} from '@conar/ui/components/dialog'
+import { cn } from '@conar/ui/lib/utils'
 import { Command as CommandPrimitive } from 'cmdk'
 import { SearchIcon } from 'lucide-react'
 import * as React from 'react'

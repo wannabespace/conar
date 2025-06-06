@@ -1,5 +1,5 @@
 import type { Database } from '~/lib/indexeddb'
-import { Separator } from '@connnect/ui/components/separator'
+import { Separator } from '@conar/ui/components/separator'
 import NumberFlow from '@number-flow/react'
 import { useStore } from '@tanstack/react-store'
 import { useDatabaseTableTotal } from '~/entities/database'

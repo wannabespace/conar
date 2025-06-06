@@ -1,4 +1,4 @@
-import { decrypt, encrypt } from '@connnect/shared/encryption'
+import { decrypt, encrypt } from '@conar/shared/encryption'
 import { customType } from 'drizzle-orm/pg-core'
 import { env } from '~/env'
 

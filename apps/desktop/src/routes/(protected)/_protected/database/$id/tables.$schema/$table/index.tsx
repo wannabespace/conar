@@ -1,6 +1,6 @@
 import type { WhereFilter } from '~/entities/database'
-import { SQL_OPERATORS_LIST } from '@connnect/shared/utils/sql'
-import { title } from '@connnect/shared/utils/title'
+import { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
+import { title } from '@conar/shared/utils/title'
 import { createFileRoute } from '@tanstack/react-router'
 import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'

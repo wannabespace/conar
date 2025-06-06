@@ -1,5 +1,5 @@
-import { encrypt } from '@connnect/shared/encryption'
-import { DatabaseType } from '@connnect/shared/enums/database-type'
+import { encrypt } from '@conar/shared/encryption'
+import { DatabaseType } from '@conar/shared/enums/database-type'
 import { type } from 'arktype'
 import { databases, db } from '~/drizzle'
 import { protectedProcedure } from '~/trpc'

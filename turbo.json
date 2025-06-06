@@ -5,7 +5,7 @@
     "build": {
       "dependsOn": ["^build"]
     },
-    "@connnect/desktop#build": {
+    "@conar/desktop#build": {
       "dependsOn": ["^check-types"]
     },
     "lint": {},

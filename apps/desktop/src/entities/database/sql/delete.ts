@@ -1,5 +1,5 @@
-import type { DatabaseType } from '@connnect/shared/enums/database-type'
-import { prepareSql } from '@connnect/shared/utils/helpers'
+import type { DatabaseType } from '@conar/shared/enums/database-type'
+import { prepareSql } from '@conar/shared/utils/helpers'
 
 export function deleteRowsSql(table: string, schema: string, primaryKeys: Record<string, unknown>[]): Record<DatabaseType, string> {
   return {

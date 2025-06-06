@@ -1,4 +1,4 @@
-import type { auth } from '@connnect/api/src/lib/auth'
+import type { auth } from '@conar/api/src/lib/auth'
 import {
   inferAdditionalFields,
   magicLinkClient,
@@ -10,8 +10,8 @@ import { createAuthClient } from 'better-auth/react'
 import { toast } from 'sonner'
 import { identifyUser } from './events'
 
-export const CODE_CHALLENGE_KEY = 'connnect.code_challenge'
-export const BEARER_TOKEN_KEY = 'connnect.bearer_token'
+export const CODE_CHALLENGE_KEY = 'conar.code_challenge'
+export const BEARER_TOKEN_KEY = 'conar.bearer_token'
 
 export const bearerToken = {
   get: () => localStorage.getItem(BEARER_TOKEN_KEY),
@@ -28,7 +28,7 @@ export const codeChallenge = {
 export function successAuthToast(newUser: boolean) {
   toast.success(
     newUser
-      ? 'Welcome to Connnect! We\'re excited to help you manage your connections with ease. Get started by creating your first connection.'
+      ? 'Welcome to Conar! We\'re excited to help you manage your connections with ease. Get started by creating your first connection.'
       : 'Welcome back! Your connections are ready for you.',
     {
       duration: 10000,

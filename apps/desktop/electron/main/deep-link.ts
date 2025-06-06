@@ -2,7 +2,7 @@ import type { BrowserWindow } from 'electron'
 import path from 'node:path'
 import { app } from 'electron'
 
-const DEEPLINK_PROTOCOL = 'connnect'
+const DEEPLINK_PROTOCOL = 'conar'
 
 let deepLinkUrl: string | null = null
 let mainWindow: BrowserWindow | null = null

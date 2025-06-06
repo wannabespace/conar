@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
 import type { TableCellProps, TableHeaderCellProps } from '~/components/table'
-import { cn } from '@connnect/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useTableContext } from '~/components/table'

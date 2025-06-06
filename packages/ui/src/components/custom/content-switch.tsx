@@ -1,5 +1,5 @@
-import { useMountedEffect } from '@connnect/ui/hookas/use-mounted-effect'
-import { cn } from '@connnect/ui/lib/utils'
+import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
+import { cn } from '@conar/ui/lib/utils'
 import { useState } from 'react'
 
 export function ContentSwitch({
