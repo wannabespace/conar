@@ -15,11 +15,6 @@ import { databaseTablesAndSchemasQuery } from './queries/tables-and-schemas'
 import { databaseTableTotalQuery } from './queries/total'
 import { contextSql } from './sql/context'
 
-const DATABASES_SCHEMAS_KEY = 'databases-schemas'
-
-// TODO: remove it in future releases
-localStorage.removeItem(DATABASES_SCHEMAS_KEY)
-
 export async function fetchDatabases() {
   if (!navigator.onLine) {
     return

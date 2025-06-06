@@ -9,6 +9,7 @@ import { copy } from '@conar/ui/lib/copy'
 import { arktypeResolver } from '@hookform/resolvers/arktype'
 import { RiEyeLine, RiEyeOffLine, RiGithubFill, RiGoogleFill } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { nanoid } from 'nanoid'
 import { useEffect, useRef, useState } from 'react'
@@ -167,6 +168,7 @@ function SocialAuthForm({ type }: { type: Type }) {
 
 export function AuthForm({ type }: { type: Type }) {
   const [showPassword, setShowPassword] = useState(false)
+  const navigate = useNavigate()
   const emailRef = useRef<HTMLInputElement>(null)
 
   const form = useForm<typeof schema.infer>({
@@ -207,11 +209,14 @@ export function AuthForm({ type }: { type: Type }) {
       }
 
       if (error!.code === 'USER_ALREADY_EXISTS') {
-        // TODO: add button to redirect to sign-in
-        // {
-        //   action: <Button onClick={() => router.navigate({ to: '/sign-in' })}>Sign in</Button>,
-        // }
-        toast.error('User already exists. Please sign in or use a different email address.')
+        toast.error('User already exists. Please sign in or use a different email address.', {
+          action: {
+            label: 'Fix with AI',
+            onClick: () => {
+              navigate({ to: '/sign-in' })
+            },
+          },
+        })
       }
       else {
         handleError(error)
