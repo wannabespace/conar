@@ -12,14 +12,15 @@ export const Route = createFileRoute('/open')({
   validateSearch: type({
     'code-challenge': 'string',
     'new-user?': 'boolean',
+    'connnect?': 'boolean',
   }),
 })
 
 function RouteComponent() {
-  const { 'code-challenge': codeChallenge, 'new-user': newUser } = Route.useSearch()
+  const { 'code-challenge': codeChallenge, 'new-user': newUser, connnect } = Route.useSearch()
   const { data, isPending } = authClient.useSession()
 
-  const getUrl = (token: string, codeChallenge: string) => `conar://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
+  const getUrl = (token: string, codeChallenge: string) => `${connnect ? 'connnect' : 'conar'}://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
 
   function handleOpenSession(codeChallenge: string) {
     if (!data)
