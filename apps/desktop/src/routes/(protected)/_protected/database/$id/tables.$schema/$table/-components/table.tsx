@@ -50,7 +50,7 @@ export function TableError({ error }: { error: Error }) {
 
 export function TableEmpty({ className, title, description }: { className?: string, title: string, description: string }) {
   return (
-    <div className={cn('sticky left-0 pointer-events-none h-full flex items-center justify-center', className)}>
+    <div className={cn('sticky left-0 pointer-events-none h-[clamp(40vh,70vh,100%)] flex items-center justify-center', className)}>
       <div className="flex flex-col items-center justify-center w-full h-32">
         <div className="flex items-center justify-center rounded-full bg-muted/60 p-3 mb-4">
           <RiMoreLine className="size-6 text-muted-foreground" />

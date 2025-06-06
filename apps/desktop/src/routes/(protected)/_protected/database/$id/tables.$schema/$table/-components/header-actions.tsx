@@ -62,7 +62,7 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top" align="end">
-            Refresh data
+            Refresh rows
             <p className="text-xs text-muted-foreground">
               Last updated:
               {' '}
