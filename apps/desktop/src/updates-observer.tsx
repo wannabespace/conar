@@ -18,18 +18,18 @@ export const updatesStore = new Store<{
 })
 
 export async function checkForUpdates() {
-  await window.electron.app.checkForUpdates()
+  await window.electron?.app.checkForUpdates()
 }
 
 export function UpdatesObserver() {
   const { data: version } = useQuery({
     queryKey: ['version'],
-    queryFn: () => window.electron.versions.app(),
+    queryFn: () => window.electron?.versions.app(),
   })
   const status = useStore(updatesStore, state => state.status)
 
   useEffect(() => {
-    window.electron.app.onUpdatesStatus(({ status, message }) => {
+    window.electron?.app.onUpdatesStatus(({ status, message }) => {
       updatesStore.setState(state => ({ ...state, status, message }))
     })
   }, [])
@@ -47,7 +47,7 @@ export function UpdatesObserver() {
           id: TOAST_UPDATE_READY_ID,
           action: {
             label: 'Update now',
-            onClick: () => window.electron.app.quitAndInstall(),
+            onClick: () => window.electron?.app.quitAndInstall(),
           },
           position: 'bottom-right',
           duration: 30000,

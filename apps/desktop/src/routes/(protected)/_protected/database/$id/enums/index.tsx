@@ -1,6 +1,7 @@
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
+import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiInformationLine, RiListUnordered } from '@remixicon/react'
@@ -32,16 +33,16 @@ function DatabaseEnumsPage() {
     select: data => [...new Set(data.map(({ schema }) => schema))],
   })
 
-  const filteredEnums = enums.filter(enumItem => enumItem.schema === selectedSchema)
+  const filteredEnums = enums?.filter(enumItem => enumItem.schema === selectedSchema) ?? []
 
   return (
-    <div className="bg-background rounded-lg border h-full">
-      <div className="flex flex-col size-full mx-auto max-w-2xl min-h-full py-6 px-4">
+    <ScrollArea className="bg-background rounded-lg border h-full">
+      <div className="flex flex-col mx-auto max-w-2xl min-h-full py-6 px-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">
             Enums
           </h2>
-          {schemas?.length && schemas.length > 1 && (
+          {!!schemas?.length && schemas.length > 1 && (
             <Select value={selectedSchema} onValueChange={setSelectedSchema}>
               <SelectTrigger className="w-[180px]">
                 <div className="flex items-center gap-2">
@@ -124,6 +125,6 @@ function DatabaseEnumsPage() {
               </Card>
             )}
       </div>
-    </div>
+    </ScrollArea>
   )
 }

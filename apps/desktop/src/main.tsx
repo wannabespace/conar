@@ -13,7 +13,7 @@ if (import.meta.env.DEV) {
   })
 }
 
-window.electron.app.onDeepLink(async (url) => {
+window.electron?.app.onDeepLink(async (url) => {
   window.initialDeepLink = url
 })
 

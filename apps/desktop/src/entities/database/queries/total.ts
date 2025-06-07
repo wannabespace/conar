@@ -1,6 +1,7 @@
 import type { WhereFilter } from '../sql/where'
 import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery } from '@tanstack/react-query'
+import { dbQuery } from '~/lib/query'
 import { totalSql, totalType } from '../sql/total'
 import { whereSql } from '../sql/where'
 
@@ -26,7 +27,7 @@ export function databaseTableTotalQuery(
       },
     ],
     queryFn: async () => {
-      const [result] = await window.electron.databases.query({
+      const [result] = await dbQuery({
         type: database.type,
         connectionString: database.connectionString,
         query: totalSql(schema, table, {

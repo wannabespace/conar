@@ -62,6 +62,7 @@ function TabButton({
 }) {
   return (
     <button
+      data-mask
       type="button"
       className={cn(
         'group text-foreground flex h-full items-center gap-1 pl-2 pr-1.5 text-sm rounded-sm border border-transparent',

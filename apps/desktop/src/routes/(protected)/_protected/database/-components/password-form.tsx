@@ -10,6 +10,7 @@ import { useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { useUpdateDatabasePassword } from '~/entities/database'
+import { dbTestConnection } from '~/lib/query'
 
 export function PasswordForm({ database }: { database: Database }) {
   const router = useRouter()
@@ -17,7 +18,7 @@ export function PasswordForm({ database }: { database: Database }) {
   const [showPassword, setShowPassword] = useState(false)
   const { mutate: savePassword, isPending } = useUpdateDatabasePassword(database)
   const { mutate: testConnection, isPending: isConnecting } = useMutation({
-    mutationFn: window.electron.databases.test,
+    mutationFn: dbTestConnection,
     onSuccess: () => {
       toast.success('Connection successful. You can now save the database password.')
     },

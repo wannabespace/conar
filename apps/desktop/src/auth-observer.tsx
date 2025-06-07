@@ -49,7 +49,7 @@ export function AuthObserver() {
       window.initialDeepLink = null
     }
 
-    window.electron.app.onDeepLink(async (url) => {
+    window.electron?.app.onDeepLink(async (url) => {
       const { type } = await handleDeepLink(url)
 
       if (type === 'session') {

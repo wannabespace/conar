@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { databaseColumnsQuery, databaseTableTotalQuery, deleteRowsSql } from '~/entities/database'
+import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { usePageContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
@@ -39,7 +40,7 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      await window.electron.databases.query({
+      await dbQuery({
         type: database.type,
         connectionString: database.connectionString,
         query: deleteRowsSql(table, schema, selectedRows)[database.type],

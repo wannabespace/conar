@@ -25,6 +25,7 @@ import { Table, TableBody, TableHeader, TableProvider } from '~/components/table
 import { DANGEROUS_SQL_KEYWORDS, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, hasDangerousSqlKeywords, useDatabase } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { formatSql } from '~/lib/formatter'
+import { dbQuery } from '~/lib/query'
 import { pageHooks, pageStore, Route } from '..'
 import { chatQuery } from '../-lib'
 
@@ -187,7 +188,7 @@ export function Runner() {
   const { refetch: runQuery, data: results, status, fetchStatus: queryStatus, error } = useQuery({
     queryKey: ['sql', id],
     queryFn: async () => {
-      const result = await window.electron.databases.query({
+      const result = await dbQuery({
         type: database.type,
         connectionString: database.connectionString,
         query,

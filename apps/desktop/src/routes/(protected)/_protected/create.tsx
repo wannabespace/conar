@@ -27,6 +27,7 @@ import { createDatabase, databaseQuery, databasesQuery, prefetchDatabaseCore } f
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
+import { dbTestConnection } from '~/lib/query'
 import { queryClient } from '~/main'
 
 export const Route = createFileRoute(
@@ -210,7 +211,7 @@ function CreateConnectionPage() {
   })
 
   const { mutate: testConnection, reset, status } = useMutation({
-    mutationFn: window.electron.databases.test,
+    mutationFn: dbTestConnection,
     onSuccess: () => {
       setStep('save')
       toast.success('Connection successful. You can save the database.')

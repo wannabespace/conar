@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import { useChat } from '@ai-sdk/react'
-import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { cn } from '@conar/ui/lib/utils'
+import { useEffect } from 'react'
 import { databaseContextQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { pageStore, Route } from '..'
@@ -50,7 +50,7 @@ export function Chat({ className, ...props }: ComponentProps<'div'>) {
     })
   }
 
-  useAsyncEffect(async () => {
+  useEffect(() => {
     if (initialMessages.at(-1)?.role === 'user') {
       handleReload()
     }

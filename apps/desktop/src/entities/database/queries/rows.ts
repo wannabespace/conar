@@ -1,11 +1,12 @@
 import type { WhereFilter } from '../sql/where'
 import type { Database } from '~/lib/indexeddb'
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query'
+import { dbQuery } from '~/lib/query'
 import { rowsSql } from '../sql/rows'
 import { whereSql } from '../sql/where'
 import { DEFAULT_LIMIT } from '../utils'
 
-type Page = Awaited<ReturnType<typeof window.electron.databases.query>>[0]
+type Page = Awaited<ReturnType<typeof dbQuery>>[0]
 
 export function databaseRowsQuery(
   database: Database,
@@ -35,7 +36,7 @@ export function databaseRowsQuery(
       },
     ],
     queryFn: async ({ pageParam: offset = 0 }) => {
-      const [result] = await window.electron.databases.query({
+      const [result] = await dbQuery({
         type: database.type,
         connectionString: database.connectionString,
         query: rowsSql(schema, table, {

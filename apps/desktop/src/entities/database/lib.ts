@@ -4,6 +4,7 @@ import type { Database } from '~/lib/indexeddb'
 import { databaseContextType } from '@conar/shared/database'
 import { toast } from 'sonner'
 import { indexedDb } from '~/lib/indexeddb'
+import { dbQuery } from '~/lib/query'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
 import { databaseColumnsQuery } from './queries/columns'
@@ -168,7 +169,7 @@ export async function prefetchDatabaseTableCore(database: Database, schema: stri
 }
 
 export async function getDatabaseContext(database: Database): Promise<typeof databaseContextType.infer> {
-  const [result] = await window.electron.databases.query({
+  const [result] = await dbQuery({
     type: database.type,
     connectionString: database.connectionString,
     query: contextSql()[database.type],

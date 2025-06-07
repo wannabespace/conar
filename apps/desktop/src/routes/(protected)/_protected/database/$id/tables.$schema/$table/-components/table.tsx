@@ -10,6 +10,7 @@ import { Table, TableBody, TableHeader, TableProvider, useTableContext } from '~
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, setSql, useDatabase } from '~/entities/database'
 import { createCellUpdater } from '~/entities/database/components/cells-updater'
 import { TableCell } from '~/entities/database/components/table-cell'
+import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { Route, usePageContext } from '..'
 import { useColumnsQuery } from '../-queries/use-columns-query'
@@ -128,7 +129,7 @@ function TableComponent() {
     if (!primaryKeys || primaryKeys.length === 0)
       throw new Error('No primary keys found. Please use SQL Runner to update this row.')
 
-    await window.electron.databases.query({
+    await dbQuery({
       type: database.type,
       connectionString: database.connectionString,
       query: setSql(schema, table, columnName, primaryKeys)[database.type],

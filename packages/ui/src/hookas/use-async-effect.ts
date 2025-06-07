@@ -1,5 +1,3 @@
-'use client'
-
 import type { DependencyList } from 'react'
 import * as React from 'react'
 
