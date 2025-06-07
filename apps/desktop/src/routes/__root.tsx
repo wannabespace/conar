@@ -1,12 +1,12 @@
 import { title } from '@conar/shared/utils/title'
 import { Toaster } from '@conar/ui/components/sonner'
-import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { ThemeProvider } from '@conar/ui/theme-provider'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { AnimatePresence } from 'motion/react'
+import { useEffect, useRef } from 'react'
 import { AuthObserver } from '~/auth-observer'
 import { ErrorPage } from '~/error-page'
 import { authClient } from '~/lib/auth'
@@ -31,17 +31,21 @@ checkForUpdates()
 
 function RootDocument() {
   const { isPending } = authClient.useSession()
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  useAsyncEffect(async () => {
+  useEffect(() => {
     if (isPending)
       return
 
+    document.body.classList.remove('overflow-hidden')
+
+    // Entering app animations
     const preloader = document.getElementById('preloader')!
+    const root = document.getElementById('root')!
 
     preloader.classList.add('scale-[0.6]', 'opacity-0')
-    // Waiting animation to smooth transition
-    await sleep(80)
-    document.body.classList.remove('overflow-hidden')
+
+    sleep(100).then(() => root.classList.remove('scale-[1.2]', 'opacity-0'))
   }, [isPending])
 
   return (
@@ -53,7 +57,9 @@ function RootDocument() {
             <UpdatesObserver />
             <AuthObserver />
             <AnimatePresence>
-              {isPending ? null : <Outlet />}
+              <div ref={containerRef}>
+                <Outlet />
+              </div>
             </AnimatePresence>
             <Toaster />
             {import.meta.env.DEV && (
