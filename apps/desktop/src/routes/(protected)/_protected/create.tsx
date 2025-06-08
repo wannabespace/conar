@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@cona
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { ToggleGroup, ToggleGroupItem } from '@conar/ui/components/toggle-group'
@@ -226,7 +227,7 @@ function CreateConnectionPage() {
   const [typeValue, connectionString, name, saveInCloud] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud])
 
   return (
-    <div className="w-full">
+    <ScrollArea className="h-screen">
       <DotsBg
         className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
@@ -371,6 +372,6 @@ function CreateConnectionPage() {
           </StepperContent>
         </Stepper>
       </form>
-    </div>
+    </ScrollArea>
   )
 }

@@ -40,8 +40,7 @@ function RootDocument() {
     const preloader = document.getElementById('preloader')!
     const root = document.getElementById('root')!
 
-    preloader.classList.add('scale-[0.6]', 'opacity-0')
-
+    preloader.classList.add('scale-[0.6]', 'opacity-0', 'animate-spin')
     sleep(100).then(() => root.classList.remove('scale-[1.2]', 'opacity-0'))
   }, [isPending])
 

@@ -33,79 +33,81 @@ function DashboardPage() {
   const [version, status] = useStore(updatesStore, state => [state.version, state.status])
 
   return (
-    <ScrollArea className="flex flex-col px-6 min-h-screen mx-auto max-w-2xl py-10">
-      <DotsBg
-        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-      />
-      <h1 className="scroll-m-20 mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
-        Dashboard
-      </h1>
-      <Profile className="mb-8" />
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl lg:text-4xl font-bold">
-          Connections
-        </h2>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            disabled={isRefetching}
-            onClick={() => refetch()}
-          >
-            <LoadingContent loading={isRefetching}>
-              <ContentSwitch active={isRefetching} activeContent={<RiCheckLine className="text-success" />}>
-                <RiLoopLeftLine />
-              </ContentSwitch>
-            </LoadingContent>
-          </Button>
-          <Button onClick={() => router.navigate({ to: '/create' })}>
-            <RiAddLine className="size-4" />
-            Add new
-          </Button>
+    <ScrollArea className="h-screen">
+      <div className="min-h-full flex flex-col px-6 mx-auto max-w-2xl py-10">
+        <DotsBg
+          className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
+        />
+        <h1 className="scroll-m-20 mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
+          Dashboard
+        </h1>
+        <Profile className="mb-8" />
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl lg:text-4xl font-bold">
+            Connections
+          </h2>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              disabled={isRefetching}
+              onClick={() => refetch()}
+            >
+              <LoadingContent loading={isRefetching}>
+                <ContentSwitch active={isRefetching} activeContent={<RiCheckLine className="text-success" />}>
+                  <RiLoopLeftLine />
+                </ContentSwitch>
+              </LoadingContent>
+            </Button>
+            <Button onClick={() => router.navigate({ to: '/create' })}>
+              <RiAddLine className="size-4" />
+              Add new
+            </Button>
+          </div>
         </div>
-      </div>
-      <DatabasesList />
-      <div className="mt-auto pt-6">
-        <Separator />
-        <div className="mt-3 flex gap-2 items-center">
-          <a
-            href="https://conar.app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
-          >
-            <RiGlobalLine className="size-4" />
-          </a>
-          <a
-            href="https://x.com/conar_app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
-          >
-            <RiTwitterXLine className="size-4" />
-          </a>
-          <a
-            href="https://github.com/wannabespace/conar"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
-          >
-            <RiGithubLine className="size-4" />
-          </a>
-          <Separator orientation="vertical" className="h-4!" />
-          <button
-            type="button"
-            onClick={() => checkForUpdates()}
-            className="cursor-pointer text-xs text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors"
-          >
-            Current version
+        <DatabasesList />
+        <div className="mt-auto pt-6">
+          <Separator />
+          <div className="mt-3 flex gap-2 items-center">
+            <a
+              href="https://conar.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
+            >
+              <RiGlobalLine className="size-4" />
+            </a>
+            <a
+              href="https://x.com/conar_app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
+            >
+              <RiTwitterXLine className="size-4" />
+            </a>
+            <a
+              href="https://github.com/wannabespace/conar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
+            >
+              <RiGithubLine className="size-4" />
+            </a>
+            <Separator orientation="vertical" className="h-4!" />
+            <button
+              type="button"
+              onClick={() => checkForUpdates()}
+              className="cursor-pointer text-xs text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors"
+            >
+              Current version
+              {' '}
+              v
+              {version}
+            </button>
             {' '}
-            v
-            {version}
-          </button>
-          {' '}
-          {status === 'checking' && <RiLoader4Line className="size-3 animate-spin text-muted-foreground/50" />}
-          {status === 'downloading' && <RiDownloadLine className="size-3 animate-bounce text-muted-foreground/50" />}
+            {status === 'checking' && <RiLoader4Line className="size-3 animate-spin text-muted-foreground/50" />}
+            {status === 'downloading' && <RiDownloadLine className="size-3 animate-bounce text-muted-foreground/50" />}
+          </div>
         </div>
       </div>
     </ScrollArea>
