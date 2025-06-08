@@ -1,13 +1,14 @@
 import { title } from '@conar/shared/utils/title'
 import { Button } from '@conar/ui/components/button'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
-import { RiAddLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
+import { RiAddLine, RiCheckLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { toast } from 'sonner'
 import { fetchDatabases } from '~/entities/database'
 import { checkForUpdates, updatesStore } from '~/updates-observer'
 import { DatabasesList } from './-components/databases-list'
@@ -27,15 +28,12 @@ export const Route = createFileRoute('/(protected)/_protected/')({
 function DashboardPage() {
   const { mutate: refetch, isPending: isRefetching } = useMutation({
     mutationFn: fetchDatabases,
-    onSuccess() {
-      toast.success('Databases fetched successfully')
-    },
   })
   const router = useRouter()
   const [version, status] = useStore(updatesStore, state => [state.version, state.status])
 
   return (
-    <div className="flex flex-col w-full mx-auto max-w-2xl py-10">
+    <ScrollArea className="flex flex-col px-6 min-h-screen mx-auto max-w-2xl py-10">
       <DotsBg
         className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
@@ -55,7 +53,9 @@ function DashboardPage() {
             onClick={() => refetch()}
           >
             <LoadingContent loading={isRefetching}>
-              <RiLoopLeftLine />
+              <ContentSwitch active={isRefetching} activeContent={<RiCheckLine className="text-success" />}>
+                <RiLoopLeftLine />
+              </ContentSwitch>
             </LoadingContent>
           </Button>
           <Button onClick={() => router.navigate({ to: '/create' })}>
@@ -77,7 +77,7 @@ function DashboardPage() {
             <RiGlobalLine className="size-4" />
           </a>
           <a
-            href="https://x.com/conarapp"
+            href="https://x.com/conar_app"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
@@ -108,6 +108,6 @@ function DashboardPage() {
           {status === 'downloading' && <RiDownloadLine className="size-3 animate-bounce text-muted-foreground/50" />}
         </div>
       </div>
-    </div>
+    </ScrollArea>
   )
 }

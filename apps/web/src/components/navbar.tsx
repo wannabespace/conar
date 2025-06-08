@@ -1,22 +1,14 @@
-import { AppLogo } from '@conar/ui/components/brand/app-logo'
-import { AppLogoGradient } from '@conar/ui/components/brand/app-logo-gradient'
-import { AppTextLogo } from '@conar/ui/components/brand/app-text-logo'
+import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
-import { SmoothCorner } from '@conar/ui/components/custom/smooth-corner'
 import { RiGithubFill, RiTwitterXLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 
 export function Navbar() {
   return (
     <header className="flex p-4 items-center justify-between w-full gap-10 rounded-lg border bg-background/70 backdrop-blur-xs fixed top-10 left-1/2 -translate-x-1/2 z-50 max-w-lg mx-auto">
-      <Link to="/" className="flex items-center gap-2 text-foreground">
-        <div className="flex items-center gap-3">
-          <AppLogoGradient className="hidden size-7 dark:block" />
-          <SmoothCorner radius={7} className="flex size-7 items-center justify-center bg-primary dark:hidden">
-            <AppLogo className="size-4.5 text-white" />
-          </SmoothCorner>
-        </div>
-        <AppTextLogo className="h-4 w-22" />
+      <Link to="/" className="flex items-center gap-2 text-foreground font-semibold">
+        <AppLogoSquare className="size-7" />
+        Conar
       </Link>
       <div className="flex items-center gap-2">
         <Button
@@ -26,7 +18,7 @@ export function Navbar() {
           asChild
         >
           <a
-            href="https://x.com/conarapp"
+            href="https://x.com/conar_app"
             target="_blank"
             rel="noopener noreferrer"
           >

@@ -1,4 +1,3 @@
-import { AppTextLogo } from '@conar/ui/components/brand/app-text-logo'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { AuthForm } from './-components/auth-form'
 
@@ -11,8 +10,7 @@ function SignInPage() {
     <>
       <div className="space-y-2">
         <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-          Sign in to
-          <AppTextLogo className="translate-y-px" />
+          Sign in to Conar
         </h1>
         <p className="text-sm text-muted-foreground">
           Don't have an account?

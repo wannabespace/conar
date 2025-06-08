@@ -6,7 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { AnimatePresence } from 'motion/react'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { AuthObserver } from '~/auth-observer'
 import { ErrorPage } from '~/error-page'
 import { authClient } from '~/lib/auth'
@@ -17,7 +17,7 @@ import { checkForUpdates, UpdatesObserver } from '~/updates-observer'
 
 export const Route = createRootRoute({
   component: RootDocument,
-  errorComponent: props => <ErrorPage {...props} />,
+  errorComponent: ErrorPage,
   head: () => ({
     meta: [
       {
@@ -31,13 +31,10 @@ checkForUpdates()
 
 function RootDocument() {
   const { isPending } = authClient.useSession()
-  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isPending)
       return
-
-    document.body.classList.remove('overflow-hidden')
 
     // Entering app animations
     const preloader = document.getElementById('preloader')!
@@ -57,9 +54,7 @@ function RootDocument() {
             <UpdatesObserver />
             <AuthObserver />
             <AnimatePresence>
-              <div ref={containerRef}>
-                <Outlet />
-              </div>
+              <Outlet />
             </AnimatePresence>
             <Toaster />
             {import.meta.env.DEV && (

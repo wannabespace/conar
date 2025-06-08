@@ -23,6 +23,8 @@ export function createWindow() {
   mainWindow = new BrowserWindow({
     width,
     height,
+    minWidth: 500,
+    minHeight: 500,
     focusable: true,
     webPreferences: {
       preload: path.join(path.dirname(fileURLToPath(import.meta.url)), '../preload/index.mjs'),

@@ -113,6 +113,11 @@ html {
   color-scheme: light dark;
 }
 
+body {
+  min-height: 500px;
+  min-width: 500px;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

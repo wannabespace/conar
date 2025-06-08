@@ -1,6 +1,6 @@
 import type { OS } from '@conar/shared/utils/os'
 import { getOS } from '@conar/shared/utils/os'
-import { AppLogoGradient } from '@conar/ui/components/brand/app-logo-gradient'
+import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
 import { DotsBg } from '@conar/ui/components/custom/dots-bg'
@@ -23,7 +23,7 @@ export const Route = createFileRoute('/_layout/download')({
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted/20 text-foreground px-4 pt-40 pb-16">
         <div className="flex flex-col items-center max-w-2xl mx-auto text-center">
-          <AppLogoGradient className="size-32 mb-6" />
+          <AppLogoSquare className="size-32 mb-6" />
         </div>
       </div>
     )
@@ -131,8 +131,12 @@ function RouteComponent() {
         className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
       <div className="flex flex-col items-center max-w-2xl mx-auto text-center">
-        <AppLogoGradient className="size-32 mb-6" />
-        <h1 className="text-4xl font-bold mb-3 tracking-tight">Download Conar</h1>
+        <AppLogoSquare className="size-32 mb-6" />
+        <h1 className="text-4xl mb-3 tracking-tight font-medium">
+          Download
+          {' '}
+          <strong>Conar</strong>
+        </h1>
         <p className="text-lg text-muted-foreground mb-10">
           Available for macOS and Linux (Windows coming soon)
         </p>

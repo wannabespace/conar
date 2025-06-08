@@ -34,9 +34,9 @@ function ProtectedLayout() {
   })
 
   return (
-    <div className="min-h-full flex flex-col">
+    <>
       <ActionsCenter />
       <Outlet />
-    </div>
+    </>
   )
 }

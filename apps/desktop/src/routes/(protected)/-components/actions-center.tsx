@@ -1,3 +1,4 @@
+import type { Database } from '~/lib/indexeddb'
 import { getOS } from '@conar/shared/utils/os'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { useKeyboardEvent } from '@react-hookz/web'
@@ -6,6 +7,7 @@ import { useRouter } from '@tanstack/react-router'
 import { Store, useStore } from '@tanstack/react-store'
 import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
 import { trackEvent } from '~/lib/events'
+import { getLastOpenedTable } from '../_protected/database/-hooks/use-last-opened-table'
 
 const os = getOS()
 
@@ -30,6 +32,22 @@ export function ActionsCenter() {
     trackEvent('actions_center_open_shortcut')
   })
 
+  function onDatabaseSelect(database: Database) {
+    setIsOpen(false)
+
+    const openedTable = getLastOpenedTable(database.id)
+
+    if (openedTable) {
+      router.navigate({
+        to: '/database/$id/tables/$schema/$table',
+        params: { id: database.id, schema: openedTable.schema, table: openedTable.table },
+      })
+    }
+    else {
+      router.navigate({ to: '/database/$id/tables', params: { id: database.id } })
+    }
+  }
+
   return (
     <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
       <CommandInput placeholder="Type a command..." />
@@ -51,10 +69,7 @@ export function ActionsCenter() {
             {databases.map(database => (
               <CommandItem
                 key={database.id}
-                onSelect={() => {
-                  setIsOpen(false)
-                  router.navigate({ to: '/database/$id/tables', params: { id: database.id } })
-                }}
+                onSelect={() => onDatabaseSelect(database)}
                 onMouseOver={() => prefetchDatabaseCore(database)}
               >
                 <DatabaseIcon type={database.type} className="size-4 shrink-0" />
