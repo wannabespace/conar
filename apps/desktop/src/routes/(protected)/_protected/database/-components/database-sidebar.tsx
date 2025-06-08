@@ -6,26 +6,27 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { clickHandlers, cn } from '@conar/ui/lib/utils'
 import { RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { Link, useMatches, useNavigate, useParams } from '@tanstack/react-router'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
 import { Route } from '../$id'
+import { useLastOpenedTable } from '../-hooks/use-last-opened-table'
 
 const os = getOS()
 
 export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { id } = Route.useParams()
   const { table: tableParam, schema: schemaParam } = useParams({ strict: false })
-  const lastOpenedTableRef = useRef<{ schema: string, table: string } | null>(null)
   const navigate = useNavigate()
   const matches = useMatches({
     select: matches => matches.map(match => match.routeId),
   })
+  const [lastOpenedTable, setLastOpenedTable] = useLastOpenedTable(id)
 
   useEffect(() => {
     if (tableParam && schemaParam) {
-      lastOpenedTableRef.current = { schema: schemaParam, table: tableParam }
+      setLastOpenedTable({ schema: schemaParam, table: tableParam })
     }
   }, [tableParam, schemaParam])
 
@@ -34,17 +35,17 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
 
   function onTablesClick() {
-    if (lastOpenedTableRef.current?.schema === schemaParam && lastOpenedTableRef.current?.table === tableParam) {
-      lastOpenedTableRef.current = null
+    if (lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam) {
+      setLastOpenedTable(null)
     }
 
-    if (lastOpenedTableRef.current) {
+    if (lastOpenedTable) {
       navigate({
         to: '/database/$id/tables/$schema/$table',
         params: {
           id,
-          schema: lastOpenedTableRef.current.schema,
-          table: lastOpenedTableRef.current.table,
+          schema: lastOpenedTable.schema,
+          table: lastOpenedTable.table,
         },
       })
     }
