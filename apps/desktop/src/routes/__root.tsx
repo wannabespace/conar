@@ -42,6 +42,7 @@ function RootDocument() {
 
     preloader.classList.add('scale-[0.6]', 'opacity-0', 'animate-spin')
     sleep(100).then(() => root.classList.remove('scale-[1.2]', 'opacity-0'))
+    sleep(500).then(() => preloader.remove())
   }, [isPending])
 
   return (
