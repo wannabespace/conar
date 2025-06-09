@@ -47,6 +47,7 @@
     "target": ["AppImage", "deb", "snap", "rpm"],
     "category": "Development",
     "mimeTypes": ["x-scheme-handler/conar"],
+    "executableName": "Conar",
     "artifactName": "${productName}-Linux-${version}.${ext}"
   }
 }
