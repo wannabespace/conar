@@ -9,7 +9,7 @@ import { useInViewport } from '@conar/ui/hookas/use-in-viewport'
 import { useInitializedEffect } from '@conar/ui/hookas/use-initialized-effect'
 import { useLocalStorage } from '@conar/ui/hookas/use-local-storage'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { cn } from '@conar/ui/lib/utils'
+import { clickHandlers, cn } from '@conar/ui/lib/utils'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { restrictToHorizontalAxis } from '@dnd-kit/modifiers'
 import { arrayMove, horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
@@ -150,10 +150,10 @@ function SortableTab({
       <TabButton
         active={schemaParam === item.tab.schema && tableParam === item.tab.table}
         onClose={onClose}
-        onClick={() => router.navigate({
+        {...clickHandlers(() => router.navigate({
           to: '/database/$id/tables/$schema/$table',
           params: { id, schema: item.tab.schema, table: item.tab.table },
-        })}
+        }))}
         onMouseOver={onMouseOver}
         onDoubleClick={onDoubleClick}
       >
