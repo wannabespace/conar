@@ -44,7 +44,7 @@
     "deleteAppDataOnUninstall": false
   },
   "linux": {
-    "target": ["AppImage", "deb", "rpm"],
+    "target": ["AppImage", "deb"],
     "category": "Development",
     "mimeTypes": ["x-scheme-handler/conar"],
     "executableName": "Conar",
