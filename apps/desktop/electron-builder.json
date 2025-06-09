@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.wannabespace.conar",
+  "productName": "Conar",
   "asar": true,
   "directories": {
     "output": "release/${version}"
@@ -47,7 +48,6 @@
     "target": ["AppImage", "deb"],
     "category": "Development",
     "mimeTypes": ["x-scheme-handler/conar"],
-    "executableName": "Conar",
     "artifactName": "${productName}-Linux-${version}.${ext}"
   }
 }
