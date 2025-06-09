@@ -55,7 +55,7 @@ function DatabaseSqlPage() {
       >
         <Chat className="h-full" />
       </ResizablePanel>
-      <ResizableHandle className="w-2 bg-transparent" />
+      <ResizableHandle className="w-1 bg-transparent" />
       <ResizablePanel
         minSize={30}
         maxSize={80}

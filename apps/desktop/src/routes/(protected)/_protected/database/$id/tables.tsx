@@ -75,7 +75,7 @@ function DatabaseTablesPage() {
       >
         <Sidebar database={database} />
       </ResizablePanel>
-      <ResizableHandle className="w-2 bg-transparent" />
+      <ResizableHandle className="w-1 bg-transparent" />
       <ResizablePanel defaultSize={80} className="flex-1 border bg-background rounded-lg">
         <Content id={id} />
       </ResizablePanel>
