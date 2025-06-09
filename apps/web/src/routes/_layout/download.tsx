@@ -60,7 +60,7 @@ function RouteComponent() {
   const releaseInfo = usePromise(() => getLatestRelease())
   const assets = useMemo(() => ({
     macos: releaseInfo?.assets.filter(asset => asset.name.toLowerCase().endsWith('.dmg')) || [],
-    linux: releaseInfo?.assets.filter(asset => asset.name.toLowerCase().endsWith('.appimage')) || [],
+    linux: releaseInfo?.assets.filter(asset => asset.name.toLowerCase().endsWith('.deb')) || [],
     windows: releaseInfo?.assets.filter(asset => asset.name.toLowerCase().endsWith('.exe')) || [],
   }), [releaseInfo])
   const version = useMemo(() => releaseInfo?.tag_name, [releaseInfo])
@@ -94,12 +94,12 @@ function RouteComponent() {
     if (os === 'macos' && macIntelAsset && macSiliconAsset) {
       return [
         {
-          label: 'macOS (Intel)',
-          url: macIntelAsset.url,
-        },
-        {
           label: 'macOS (Apple Silicon)',
           url: macSiliconAsset.url,
+        },
+        {
+          label: 'macOS (Intel)',
+          url: macIntelAsset.url,
         },
       ]
     }
