@@ -1,7 +1,6 @@
 import type { UseMutateFunction } from '@tanstack/react-query'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '../table'
-import type { CellUpdaterFunction } from './cells-updater'
 import type { TableCellProps } from '~/components/table'
 import { getOS } from '@conar/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
@@ -47,7 +46,8 @@ function CellProvider({
   children,
   column,
   initialValue,
-  onUpdate,
+  onSetValue,
+  onSaveValue,
   onSaveError,
   onSaveSuccess,
   onSavePending,
@@ -55,7 +55,8 @@ function CellProvider({
   children: React.ReactNode
   column: Column
   initialValue: unknown
-  onUpdate?: ({ rowIndex, columnId, newValue, oldValue }: { rowIndex: number, columnId: string, newValue: unknown, oldValue: unknown }) => Promise<void>
+  onSetValue?: (rowIndex: number, columnName: string, value: unknown) => void
+  onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   onSaveError: (error: Error) => void
   onSaveSuccess: () => void
   onSavePending: () => void
@@ -66,19 +67,25 @@ function CellProvider({
 
   const { mutate: update } = useMutation({
     mutationFn: async ({ rowIndex, value }: { value: string | null, rowIndex: number }) => {
-      if (!onUpdate)
+      if (!onSetValue || !onSaveValue)
         return
 
       onSavePending()
 
       const _value = isJson && value ? JSON.parse(value) : value
 
-      await onUpdate({
-        rowIndex,
-        columnId: column.name,
-        newValue: _value,
-        oldValue: initialValue,
-      })
+      onSetValue(rowIndex, column.name, _value)
+      try {
+        await onSaveValue(
+          rowIndex,
+          column.name,
+          _value,
+        )
+      }
+      catch (e) {
+        onSetValue(rowIndex, column.name, initialValue)
+        throw e
+      }
     },
     onSuccess: onSaveSuccess,
     onError: onSaveError,
@@ -120,11 +127,9 @@ function TableCellMonaco({
 }) {
   const { value, initialValue, column, displayValue, isJson, setValue, update } = useCellContext()
 
-  const [isTouched, setIsTouched] = useState(false)
-
   const canEdit = !!column?.isEditable && hasUpdateFn
   const canSetNull = !!column?.isNullable && initialValue !== null
-  const canSave = isTouched && value !== displayValue
+  const canSave = value !== displayValue
 
   const setNull = () => {
     update({ value: null, rowIndex })
@@ -143,12 +148,7 @@ function TableCellMonaco({
         value={value}
         language={isJson ? 'json' : undefined}
         className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(40vh,30rem)]')}
-        onChange={(value) => {
-          setValue(value)
-
-          if (!isTouched)
-            setIsTouched(true)
-        }}
+        onChange={setValue}
         options={{
           lineNumbers: isBig ? 'on' : 'off',
           readOnly: !canEdit,
@@ -306,9 +306,11 @@ export function TableCell({
   isFirst,
   isLast,
   size,
-  onUpdate,
+  onSetValue,
+  onSaveValue,
 }: {
-  onUpdate?: CellUpdaterFunction
+  onSetValue?: (rowIndex: number, columnName: string, value: unknown) => void
+  onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
 } & TableCellProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
@@ -331,7 +333,7 @@ export function TableCell({
     isPopoverOpen && 'ring-primary/30 bg-primary/10',
     status === 'error' && 'ring-destructive/50 bg-destructive/20',
     status === 'success' && 'ring-success/50 bg-success/10',
-    status === 'saving' && 'animate-pulse',
+    status === 'saving' && 'animate-pulse bg-primary/10',
     className,
   )
 
@@ -376,7 +378,8 @@ export function TableCell({
     <CellProvider
       column={column}
       initialValue={value}
-      onUpdate={onUpdate}
+      onSetValue={onSetValue}
+      onSaveValue={onSaveValue}
       onSavePending={onSavePending}
       onSaveError={onSaveError}
       onSaveSuccess={onSaveSuccess}
@@ -426,7 +429,7 @@ export function TableCell({
             isBig={isBig}
             setIsBig={setIsBig}
             onClose={() => setIsPopoverOpen(false)}
-            hasUpdateFn={!!onUpdate}
+            hasUpdateFn={!!onSetValue && !!onSaveValue}
           />
         </PopoverContent>
       </Popover>

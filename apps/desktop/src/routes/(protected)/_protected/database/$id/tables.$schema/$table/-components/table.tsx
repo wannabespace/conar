@@ -8,7 +8,6 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef } from 'react'
 import { Table, TableBody, TableHeader, TableProvider, useTableContext } from '~/components/table'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, setSql, useDatabase } from '~/entities/database'
-import { createCellUpdater } from '~/entities/database/components/cells-updater'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
@@ -51,7 +50,7 @@ export function TableError({ error }: { error: Error }) {
 
 export function TableEmpty({ className, title, description }: { className?: string, title: string, description: string }) {
   return (
-    <div className={cn('sticky left-0 pointer-events-none h-[clamp(40vh,70vh,100%)] flex items-center justify-center', className)}>
+    <div className={cn('sticky left-0 pointer-events-none h-[50vh] flex items-center justify-center', className)}>
       <div className="flex flex-col items-center justify-center w-full h-32">
         <div className="flex items-center justify-center rounded-full bg-muted/60 p-3 mb-4">
           <RiMoreLine className="size-6 text-muted-foreground" />
@@ -100,6 +99,7 @@ function TableComponent() {
   const { data: columns, isPending: isColumnsPending } = useColumnsQuery(database, table, schema)
   const { store } = usePageContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
+  const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const rowsQueryOpts = useRowsQueryOpts()
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
@@ -107,17 +107,20 @@ function TableComponent() {
   const selectable = useMemo(() => !!primaryKeys && primaryKeys.length > 0, [primaryKeys])
 
   const setValue = (rowIndex: number, columnName: string, value: unknown) => {
-    queryClient.setQueryData(rowsQueryOpts.queryKey, (oldData) => {
-      if (!oldData)
-        return oldData
-
-      const newRows = [...oldData.pages.flatMap(page => page.rows)]
-
-      newRows[rowIndex] = { ...newRows[rowIndex] }
-      newRows[rowIndex][columnName] = value
-
-      return { ...oldData, rows: newRows }
-    })
+    queryClient.setQueryData(rowsQueryOpts.queryKey, data => data
+      ? ({
+          ...data,
+          pages: data.pages.map((page, pageIndex) => ({
+            ...page,
+            rows: page.rows.map((row, rIndex) => pageIndex * data.pages[0].rows.length + rIndex === rowIndex
+              ? ({
+                  ...row,
+                  [columnName]: value,
+                })
+              : row),
+          })),
+        })
+      : data)
   }
 
   const saveValue = async (rowIndex: number, columnName: string, value: unknown) => {
@@ -129,18 +132,18 @@ function TableComponent() {
     if (!primaryKeys || primaryKeys.length === 0)
       throw new Error('No primary keys found. Please use SQL Runner to update this row.')
 
+    const rows = data.pages.flatMap(page => page.rows)
+
     await dbQuery({
       type: database.type,
       connectionString: database.connectionString,
       query: setSql(schema, table, columnName, primaryKeys)[database.type],
-      values: [value, ...primaryKeys.map(key => data.pages.flatMap(page => page.rows)[rowIndex][key])],
+      values: [value, ...primaryKeys.map(key => rows[rowIndex][key])],
     })
-  }
 
-  const updateCell = createCellUpdater({
-    setValue,
-    saveValue,
-  })
+    if (filters.length > 0 || Object.keys(orderBy).length > 0)
+      queryClient.invalidateQueries(rowsQueryOpts)
+  }
 
   const tableColumns = useMemo(() => {
     if (!columns)
@@ -155,7 +158,8 @@ function TableComponent() {
         cell: props => (
           <TableCell
             column={column}
-            onUpdate={updateCell}
+            onSetValue={setValue}
+            onSaveValue={saveValue}
             {...props}
           />
         ),
@@ -172,7 +176,7 @@ function TableComponent() {
     }
 
     return sortedColumns
-  }, [columns, hiddenColumns, selectable])
+  }, [columns, hiddenColumns, selectable, setValue, saveValue])
 
   return (
     <TableProvider
