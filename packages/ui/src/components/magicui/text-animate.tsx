@@ -4,17 +4,17 @@ import { cn } from '@conar/ui/lib/utils'
 import { AnimatePresence, motion } from 'motion/react'
 
 type AnimationType = 'text' | 'word' | 'character' | 'line'
-type AnimationVariant =
-  | 'fadeIn'
-  | 'blurIn'
-  | 'blurInUp'
-  | 'blurInDown'
-  | 'slideUp'
-  | 'slideDown'
-  | 'slideLeft'
-  | 'slideRight'
-  | 'scaleUp'
-  | 'scaleDown'
+type AnimationVariant
+  = | 'fadeIn'
+    | 'blurIn'
+    | 'blurInUp'
+    | 'blurInDown'
+    | 'slideUp'
+    | 'slideDown'
+    | 'slideLeft'
+    | 'slideRight'
+    | 'scaleUp'
+    | 'scaleDown'
 
 interface TextAnimateProps extends MotionProps {
   /**

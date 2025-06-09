@@ -193,14 +193,14 @@ export function AuthForm({ type }: { type: Type }) {
   const submit = async (values: typeof schema.infer) => {
     const { error, data } = type === 'sign-up'
       ? await authClient.signUp.email({
-        email: values.email,
-        password: values.password,
-        name: values.name!,
-      })
+          email: values.email,
+          password: values.password,
+          name: values.name!,
+        })
       : await authClient.signIn.email({
-        email: values.email,
-        password: values.password,
-      })
+          email: values.email,
+          password: values.password,
+        })
 
     if (error || !(data && data.token)) {
       if (data && !data.token) {

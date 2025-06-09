@@ -14,7 +14,7 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.0.1",
+    "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -40,21 +40,21 @@
     "clsx": "^2.1.1",
     "cmdk": "1.1.1",
     "input-otp": "^1.4.2",
-    "lucide-react": "^0.511.0",
-    "motion": "^12.15.0",
+    "lucide-react": "^0.513.0",
+    "motion": "^12.16.0",
     "next-themes": "^0.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-hook-form": "^7.56.4",
+    "react-hook-form": "^7.57.0",
     "react-resizable-panels": "^3.0.2",
-    "sonner": "^2.0.3",
+    "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@conar/tsconfig": "workspace:*",
     "@types/react": "^19.1.6",
-    "@types/react-dom": "^19.1.5",
+    "@types/react-dom": "^19.1.6",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.1.8"
   }
