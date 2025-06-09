@@ -33,7 +33,7 @@ export const Route = createFileRoute('/_layout/download')({
 function getFileType(name: string): OS {
   if (name.toLowerCase().endsWith('.dmg'))
     return 'macos'
-  if (name.toLowerCase().endsWith('.appimage'))
+  if (name.toLowerCase().endsWith('.appimage') || name.toLowerCase().endsWith('.deb'))
     return 'linux'
   if (name.toLowerCase().endsWith('.exe'))
     return 'windows'
@@ -77,6 +77,8 @@ function RouteComponent() {
       size: asset.size,
     }))
   }, [assets])
+
+  console.log(links)
 
   const macSiliconAsset = useMemo(() =>
     links.find(link => link.type === 'macos' && link.name.toLowerCase().includes('arm64')), [links])
