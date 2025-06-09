@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@cona
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { ToggleGroup, ToggleGroupItem } from '@conar/ui/components/toggle-group'
@@ -227,7 +226,7 @@ function CreateConnectionPage() {
   const [typeValue, connectionString, name, saveInCloud] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud])
 
   return (
-    <ScrollArea className="h-screen">
+    <div className="min-h-screen flex flex-col justify-center">
       <DotsBg
         className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
@@ -236,7 +235,7 @@ function CreateConnectionPage() {
           e.preventDefault()
           form.handleSubmit()
         }}
-        className="flex py-10 flex-col w-full max-w-2xl mx-auto"
+        className="flex py-10 flex-col w-full max-w-2xl px-6 mx-auto"
       >
         <div className="flex items-center gap-2 w-full mb-6">
           <Button
@@ -372,6 +371,6 @@ function CreateConnectionPage() {
           </StepperContent>
         </Stepper>
       </form>
-    </ScrollArea>
+    </div>
   )
 }

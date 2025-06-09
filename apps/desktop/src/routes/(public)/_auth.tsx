@@ -8,7 +8,7 @@ export const Route = createFileRoute('/(public)/_auth')({
 
 function AuthLayout() {
   return (
-    <div className="flex min-h-screen bg-background items-center justify-center px-3">
+    <div className="flex min-h-[inherit] h-screen bg-background items-center justify-center px-3">
       <DotsBg
         className="absolute z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />

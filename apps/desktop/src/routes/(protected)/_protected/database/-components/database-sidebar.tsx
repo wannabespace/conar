@@ -63,7 +63,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
   )
 
   return (
-    <div className={cn('flex flex-col items-center h-screen', className)} {...props}>
+    <div className={cn('flex flex-col items-center', className)} {...props}>
       <div className="flex flex-col p-4 pb-0">
         <TooltipProvider>
           <Tooltip>

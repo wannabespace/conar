@@ -31,11 +31,11 @@ export function PasswordForm({ database }: { database: Database }) {
   }, [database.connectionString, password])
 
   return (
-    <div className="relative flex flex-col flex-1 justify-center py-10 w-full">
+    <div className="min-h-[inherit] h-screen flex flex-col justify-center">
       <DotsBg
         className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
       />
-      <div className="flex flex-col gap-6 max-w-lg mx-auto">
+      <div className="w-full flex flex-col gap-6 max-w-xl mx-auto py-10 px-6">
         <div className="flex items-center gap-2 w-full">
           <Button
             type="button"
