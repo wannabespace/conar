@@ -17,10 +17,7 @@
       "schemes": ["conar"]
     }
   ],
-  "files": [
-    "dist",
-    "dist-electron"
-  ],
+  "files": ["dist", "dist-electron"],
   "mac": {
     "category": "public.app-category.developer-tools",
     "target": [
@@ -47,7 +44,7 @@
     "deleteAppDataOnUninstall": false
   },
   "linux": {
-    "target": ["AppImage", "deb"],
+    "target": ["AppImage", "deb", "snap", "rpm"],
     "category": "Development",
     "mimeTypes": ["x-scheme-handler/conar"],
     "artifactName": "${productName}-Linux-${version}.${ext}"
