@@ -47,7 +47,7 @@
     "deleteAppDataOnUninstall": false
   },
   "linux": {
-    "target": ["AppImage", "deb", "snap"],
+    "target": ["AppImage", "deb"],
     "category": "Development",
     "mimeTypes": ["x-scheme-handler/conar"],
     "artifactName": "${productName}-Linux-${version}.${ext}"
