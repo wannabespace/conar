@@ -37,12 +37,15 @@ function RootDocument() {
       return
 
     // Entering app animations
-    const preloader = document.getElementById('preloader')!
+    const preloader = document.getElementById('preloader')
     const root = document.getElementById('root')!
 
-    preloader.classList.add('scale-[0.6]', 'opacity-0', 'animate-spin')
     sleep(100).then(() => root.classList.remove('scale-[1.2]', 'opacity-0'))
-    sleep(500).then(() => preloader.remove())
+
+    if (preloader) {
+      preloader.classList.add('scale-[0.6]', 'opacity-0', 'animate-spin')
+      sleep(500).then(() => preloader.remove())
+    }
   }, [isPending])
 
   return (
