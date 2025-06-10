@@ -5,22 +5,20 @@ export function useAsyncEffect(
   effect: () => Promise<void | (() => Promise<void> | void)>,
   deps?: DependencyList,
 ) {
-  const [destroy, setDestroy] = React.useState<
-    void | (() => Promise<void> | void) | undefined
-  >(undefined)
+  const destroyRef = React.useRef<void | (() => Promise<void> | void) | undefined>(undefined)
 
   React.useEffect(() => {
     const e = effect()
 
     async function execute() {
-      setDestroy(await e)
+      destroyRef.current = await e
     }
 
     execute()
 
     return () => {
-      if (typeof destroy === 'function')
-        destroy()
+      if (typeof destroyRef.current === 'function')
+        destroyRef.current()
     }
   }, deps)
 }

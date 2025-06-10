@@ -53,7 +53,7 @@ function Content({ id }: { id: string }) {
       <div
         key={tableParam}
         className="h-[calc(100%-theme(spacing.9))]"
-        onClick={() => tabsRef.current?.ensureTab(schemaParam, tableParam)}
+        onClick={() => tabsRef.current?.addTab(schemaParam, tableParam)}
       >
         <Outlet />
       </div>

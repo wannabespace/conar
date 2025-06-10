@@ -96,7 +96,6 @@ function SortableTab({
   item,
   showSchema,
   onClose,
-  onMouseOver,
   onDoubleClick,
   onFocus,
 }: {
@@ -104,7 +103,6 @@ function SortableTab({
   item: { id: string, tab: Tab }
   showSchema: boolean
   onClose: () => void
-  onMouseOver: () => void
   onDoubleClick: () => void
   onFocus: (ref: RefObject<HTMLDivElement | null>) => void
 }) {
@@ -154,7 +152,6 @@ function SortableTab({
           to: '/database/$id/tables/$schema/$table',
           params: { id, schema: item.tab.schema, table: item.tab.table },
         }))}
-        onMouseOver={onMouseOver}
         onDoubleClick={onDoubleClick}
       >
         {showSchema && (
@@ -170,7 +167,7 @@ function SortableTab({
 }
 
 export function TablesTabs({ ref, database, id }: {
-  ref?: RefObject<{ ensureTab: (schema: string, table: string) => void } | null>
+  ref?: RefObject<{ addTab: (schema: string, table: string) => void } | null>
   database: Database
   id: string
 }) {
@@ -195,37 +192,39 @@ export function TablesTabs({ ref, database, id }: {
     const tab = tabs.find(tab => tab.table === tableParam && tab.schema === schemaParam)
 
     if (!tab) {
-      ensureTab(schemaParam, tableParam, true)
+      addTab(schemaParam, tableParam, true)
     }
   }, [schemaParam, tableParam])
 
-  function ensureTab(schema: string, table: string, preview?: boolean) {
-    setTabs((prev) => {
-      if (preview) {
-        const existingPreviewTabIndex = prev.findIndex(tab => tab.preview)
+  function addTab(schema: string, table: string, preview?: boolean) {
+    if (preview) {
+      const existingPreviewTabIndex = tabs.findIndex(tab => tab.preview)
 
-        if (existingPreviewTabIndex !== -1) {
-          return prev.map((tab, index) => index === existingPreviewTabIndex ? { table, schema, preview: true } : tab)
-        }
-
-        return [...prev, { table, schema, preview: true }]
+      if (existingPreviewTabIndex !== -1) {
+        setTabs(prev => prev.map((tab, index) => index === existingPreviewTabIndex ? { table, schema, preview: true } : tab))
+        return
       }
 
-      return prev.map(tab => tab.table === table && tab.schema === schema ? { table, schema, preview: false } : tab)
-    })
+      setTabs(prev => [...prev, { table, schema, preview: true }])
+      return
+    }
+
+    if (!tabs.find(tab => tab.table === table && tab.schema === schema && !tab.preview)) {
+      setTabs(prev => prev.map(tab => tab.table === table && tab.schema === schema ? { table, schema, preview: false } : tab))
+    }
   }
 
   useAsyncEffect(async () => {
     for (const tab of tabs) {
       await prefetchDatabaseTableCore(database, tab.schema, tab.table, getQueryOpts(tab.table))
     }
-  }, [])
+  }, [database, tabs])
 
   useInitializedEffect(() => {
     ref!.current = {
-      ensureTab,
+      addTab,
     }
-  }, [ref, ensureTab])
+  }, [ref, addTab])
 
   function getQueryOpts(tableName: string) {
     const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
@@ -311,8 +310,7 @@ export function TablesTabs({ ref, database, id }: {
               item={item}
               showSchema={!isOneSchema}
               onClose={() => closeTab(item.tab.schema, item.tab.table)}
-              onMouseOver={() => prefetchDatabaseTableCore(database, item.tab.schema, item.tab.table, getQueryOpts(item.tab.table))}
-              onDoubleClick={() => ensureTab(item.tab.schema, item.tab.table, false)}
+              onDoubleClick={() => addTab(item.tab.schema, item.tab.table, false)}
               onFocus={(ref) => {
                 if (ref.current) {
                   ref.current.scrollIntoView({

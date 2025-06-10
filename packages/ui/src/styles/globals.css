@@ -131,3 +131,7 @@ body {
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+::selection {
+  @apply bg-primary/20 text-primary;
+}
