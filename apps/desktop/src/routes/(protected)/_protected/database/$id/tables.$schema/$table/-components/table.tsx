@@ -50,7 +50,7 @@ export function TableError({ error }: { error: Error }) {
 
 export function TableEmpty({ className, title, description }: { className?: string, title: string, description: string }) {
   return (
-    <div className={cn('sticky left-0 pointer-events-none h-[calc(100%-5rem)] flex items-center justify-center', className)}>
+    <div className={cn('sticky left-0 pointer-events-none flex items-center justify-center', className)}>
       <div className="flex flex-col items-center justify-center w-full h-32">
         <div className="flex items-center justify-center rounded-full bg-muted/60 p-3 mb-4">
           <RiMoreLine className="size-6 text-muted-foreground" />
@@ -87,7 +87,7 @@ function TableInfiniteLoader() {
       <div className="flex items-center justify-center h-[inherit]">
         {hasNextPage
           ? <RiLoaderLine className="size-10 animate-spin opacity-50" />
-          : <TableEmpty className="bottom-0" title="No more data" description="This table has no more rows" />}
+          : <TableEmpty className="bottom-0 h-full" title="No more data" description="This table has no more rows" />}
       </div>
     </div>
   )
@@ -193,9 +193,9 @@ function TableComponent() {
             : error
               ? <TableError error={error} />
               : rows?.length === 0
-                ? <TableEmpty className="bottom-0" title="Table is empty" description="There are no records to show" />
+                ? <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
                 : tableColumns.length === 0
-                  ? <TableEmpty title="No columns to show" description="Please show at least one column" />
+                  ? <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />
                   : (
                       <>
                         <TableBody data-mask className="bg-background" />
