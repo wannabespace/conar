@@ -10,234 +10,293 @@
 
 import { createFileRoute } from '@tanstack/react-router'
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as publicAuthRouteImport } from './routes/(public)/_auth'
+import { Route as protectedProtectedRouteImport } from './routes/(protected)/_protected'
+import { Route as protectedProtectedIndexRouteImport } from './routes/(protected)/_protected/index'
+import { Route as publicAuthTwoFactorRouteImport } from './routes/(public)/_auth/two-factor'
+import { Route as publicAuthSignUpRouteImport } from './routes/(public)/_auth/sign-up'
+import { Route as publicAuthSignInRouteImport } from './routes/(public)/_auth/sign-in'
+import { Route as protectedProtectedCreateRouteImport } from './routes/(protected)/_protected/create'
+import { Route as publicAuthTwoFactorSetupRouteImport } from './routes/(public)/_auth/two-factor.setup'
+import { Route as protectedProtectedDatabaseIdRouteImport } from './routes/(protected)/_protected/database/$id'
+import { Route as protectedProtectedDatabaseIdTablesRouteImport } from './routes/(protected)/_protected/database/$id/tables'
+import { Route as protectedProtectedDatabaseIdSqlIndexRouteImport } from './routes/(protected)/_protected/database/$id/sql/index'
+import { Route as protectedProtectedDatabaseIdEnumsIndexRouteImport } from './routes/(protected)/_protected/database/$id/enums/index'
+import { Route as protectedProtectedDatabaseIdTablesSchemaTableIndexRouteImport } from './routes/(protected)/_protected/database/$id/tables.$schema/$table/index'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as publicAuthImport } from './routes/(public)/_auth'
-import { Route as protectedProtectedImport } from './routes/(protected)/_protected'
-import { Route as protectedProtectedIndexImport } from './routes/(protected)/_protected/index'
-import { Route as publicAuthTwoFactorImport } from './routes/(public)/_auth/two-factor'
-import { Route as publicAuthSignUpImport } from './routes/(public)/_auth/sign-up'
-import { Route as publicAuthSignInImport } from './routes/(public)/_auth/sign-in'
-import { Route as protectedProtectedCreateImport } from './routes/(protected)/_protected/create'
-import { Route as publicAuthTwoFactorSetupImport } from './routes/(public)/_auth/two-factor.setup'
-import { Route as protectedProtectedDatabaseIdImport } from './routes/(protected)/_protected/database/$id'
-import { Route as protectedProtectedDatabaseIdTablesImport } from './routes/(protected)/_protected/database/$id/tables'
-import { Route as protectedProtectedDatabaseIdSqlIndexImport } from './routes/(protected)/_protected/database/$id/sql/index'
-import { Route as protectedProtectedDatabaseIdEnumsIndexImport } from './routes/(protected)/_protected/database/$id/enums/index'
-import { Route as protectedProtectedDatabaseIdTablesSchemaTableIndexImport } from './routes/(protected)/_protected/database/$id/tables.$schema/$table/index'
+const publicRouteImport = createFileRoute('/(public)')()
+const protectedRouteImport = createFileRoute('/(protected)')()
 
-// Create Virtual Routes
-
-const publicImport = createFileRoute('/(public)')()
-const protectedImport = createFileRoute('/(protected)')()
-
-// Create/Update Routes
-
-const publicRoute = publicImport.update({
+const publicRoute = publicRouteImport.update({
   id: '/(public)',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const protectedRoute = protectedImport.update({
+const protectedRoute = protectedRouteImport.update({
   id: '/(protected)',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const publicAuthRoute = publicAuthImport.update({
+const publicAuthRoute = publicAuthRouteImport.update({
   id: '/_auth',
   getParentRoute: () => publicRoute,
 } as any)
-
-const protectedProtectedRoute = protectedProtectedImport.update({
+const protectedProtectedRoute = protectedProtectedRouteImport.update({
   id: '/_protected',
   getParentRoute: () => protectedRoute,
 } as any)
-
-const protectedProtectedIndexRoute = protectedProtectedIndexImport.update({
+const protectedProtectedIndexRoute = protectedProtectedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => protectedProtectedRoute,
 } as any)
-
-const publicAuthTwoFactorRoute = publicAuthTwoFactorImport.update({
+const publicAuthTwoFactorRoute = publicAuthTwoFactorRouteImport.update({
   id: '/two-factor',
   path: '/two-factor',
   getParentRoute: () => publicAuthRoute,
 } as any)
-
-const publicAuthSignUpRoute = publicAuthSignUpImport.update({
+const publicAuthSignUpRoute = publicAuthSignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
   getParentRoute: () => publicAuthRoute,
 } as any)
-
-const publicAuthSignInRoute = publicAuthSignInImport.update({
+const publicAuthSignInRoute = publicAuthSignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
   getParentRoute: () => publicAuthRoute,
 } as any)
-
-const protectedProtectedCreateRoute = protectedProtectedCreateImport.update({
-  id: '/create',
-  path: '/create',
-  getParentRoute: () => protectedProtectedRoute,
-} as any)
-
-const publicAuthTwoFactorSetupRoute = publicAuthTwoFactorSetupImport.update({
-  id: '/setup',
-  path: '/setup',
-  getParentRoute: () => publicAuthTwoFactorRoute,
-} as any)
-
+const protectedProtectedCreateRoute =
+  protectedProtectedCreateRouteImport.update({
+    id: '/create',
+    path: '/create',
+    getParentRoute: () => protectedProtectedRoute,
+  } as any)
+const publicAuthTwoFactorSetupRoute =
+  publicAuthTwoFactorSetupRouteImport.update({
+    id: '/setup',
+    path: '/setup',
+    getParentRoute: () => publicAuthTwoFactorRoute,
+  } as any)
 const protectedProtectedDatabaseIdRoute =
-  protectedProtectedDatabaseIdImport.update({
+  protectedProtectedDatabaseIdRouteImport.update({
     id: '/database/$id',
     path: '/database/$id',
     getParentRoute: () => protectedProtectedRoute,
   } as any)
-
 const protectedProtectedDatabaseIdTablesRoute =
-  protectedProtectedDatabaseIdTablesImport.update({
+  protectedProtectedDatabaseIdTablesRouteImport.update({
     id: '/tables',
     path: '/tables',
     getParentRoute: () => protectedProtectedDatabaseIdRoute,
   } as any)
-
 const protectedProtectedDatabaseIdSqlIndexRoute =
-  protectedProtectedDatabaseIdSqlIndexImport.update({
+  protectedProtectedDatabaseIdSqlIndexRouteImport.update({
     id: '/sql/',
     path: '/sql/',
     getParentRoute: () => protectedProtectedDatabaseIdRoute,
   } as any)
-
 const protectedProtectedDatabaseIdEnumsIndexRoute =
-  protectedProtectedDatabaseIdEnumsIndexImport.update({
+  protectedProtectedDatabaseIdEnumsIndexRouteImport.update({
     id: '/enums/',
     path: '/enums/',
     getParentRoute: () => protectedProtectedDatabaseIdRoute,
   } as any)
-
 const protectedProtectedDatabaseIdTablesSchemaTableIndexRoute =
-  protectedProtectedDatabaseIdTablesSchemaTableIndexImport.update({
+  protectedProtectedDatabaseIdTablesSchemaTableIndexRouteImport.update({
     id: '/$schema/$table/',
     path: '/$schema/$table/',
     getParentRoute: () => protectedProtectedDatabaseIdTablesRoute,
   } as any)
 
-// Populate the FileRoutesByPath interface
+export interface FileRoutesByFullPath {
+  '/': typeof protectedProtectedIndexRoute
+  '/create': typeof protectedProtectedCreateRoute
+  '/sign-in': typeof publicAuthSignInRoute
+  '/sign-up': typeof publicAuthSignUpRoute
+  '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
+  '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
+  '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
+  '/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
+  '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
+  '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
+  '/database/$id/tables/$schema/$table': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof protectedProtectedIndexRoute
+  '/create': typeof protectedProtectedCreateRoute
+  '/sign-in': typeof publicAuthSignInRoute
+  '/sign-up': typeof publicAuthSignUpRoute
+  '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
+  '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
+  '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
+  '/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
+  '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
+  '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
+  '/database/$id/tables/$schema/$table': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/(protected)': typeof protectedRouteWithChildren
+  '/(protected)/_protected': typeof protectedProtectedRouteWithChildren
+  '/(public)': typeof publicRouteWithChildren
+  '/(public)/_auth': typeof publicAuthRouteWithChildren
+  '/(protected)/_protected/create': typeof protectedProtectedCreateRoute
+  '/(public)/_auth/sign-in': typeof publicAuthSignInRoute
+  '/(public)/_auth/sign-up': typeof publicAuthSignUpRoute
+  '/(public)/_auth/two-factor': typeof publicAuthTwoFactorRouteWithChildren
+  '/(protected)/_protected/': typeof protectedProtectedIndexRoute
+  '/(protected)/_protected/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
+  '/(public)/_auth/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
+  '/(protected)/_protected/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
+  '/(protected)/_protected/database/$id/enums/': typeof protectedProtectedDatabaseIdEnumsIndexRoute
+  '/(protected)/_protected/database/$id/sql/': typeof protectedProtectedDatabaseIdSqlIndexRoute
+  '/(protected)/_protected/database/$id/tables/$schema/$table/': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/create'
+    | '/sign-in'
+    | '/sign-up'
+    | '/two-factor'
+    | '/database/$id'
+    | '/two-factor/setup'
+    | '/database/$id/tables'
+    | '/database/$id/enums'
+    | '/database/$id/sql'
+    | '/database/$id/tables/$schema/$table'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/create'
+    | '/sign-in'
+    | '/sign-up'
+    | '/two-factor'
+    | '/database/$id'
+    | '/two-factor/setup'
+    | '/database/$id/tables'
+    | '/database/$id/enums'
+    | '/database/$id/sql'
+    | '/database/$id/tables/$schema/$table'
+  id:
+    | '__root__'
+    | '/(protected)'
+    | '/(protected)/_protected'
+    | '/(public)'
+    | '/(public)/_auth'
+    | '/(protected)/_protected/create'
+    | '/(public)/_auth/sign-in'
+    | '/(public)/_auth/sign-up'
+    | '/(public)/_auth/two-factor'
+    | '/(protected)/_protected/'
+    | '/(protected)/_protected/database/$id'
+    | '/(public)/_auth/two-factor/setup'
+    | '/(protected)/_protected/database/$id/tables'
+    | '/(protected)/_protected/database/$id/enums/'
+    | '/(protected)/_protected/database/$id/sql/'
+    | '/(protected)/_protected/database/$id/tables/$schema/$table/'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  protectedRoute: typeof protectedRouteWithChildren
+  publicRoute: typeof publicRouteWithChildren
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/(protected)': {
-      id: '/(protected)'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof protectedImport
-      parentRoute: typeof rootRoute
-    }
     '/(protected)/_protected': {
       id: '/(protected)/_protected'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof protectedProtectedImport
+      preLoaderRoute: typeof protectedProtectedRouteImport
       parentRoute: typeof protectedRoute
-    }
-    '/(public)': {
-      id: '/(public)'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof publicImport
-      parentRoute: typeof rootRoute
     }
     '/(public)/_auth': {
       id: '/(public)/_auth'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof publicAuthImport
+      preLoaderRoute: typeof publicAuthRouteImport
       parentRoute: typeof publicRoute
     }
     '/(protected)/_protected/create': {
       id: '/(protected)/_protected/create'
       path: '/create'
       fullPath: '/create'
-      preLoaderRoute: typeof protectedProtectedCreateImport
-      parentRoute: typeof protectedProtectedImport
+      preLoaderRoute: typeof protectedProtectedCreateRouteImport
+      parentRoute: typeof protectedProtectedRoute
     }
     '/(public)/_auth/sign-in': {
       id: '/(public)/_auth/sign-in'
       path: '/sign-in'
       fullPath: '/sign-in'
-      preLoaderRoute: typeof publicAuthSignInImport
-      parentRoute: typeof publicAuthImport
+      preLoaderRoute: typeof publicAuthSignInRouteImport
+      parentRoute: typeof publicAuthRoute
     }
     '/(public)/_auth/sign-up': {
       id: '/(public)/_auth/sign-up'
       path: '/sign-up'
       fullPath: '/sign-up'
-      preLoaderRoute: typeof publicAuthSignUpImport
-      parentRoute: typeof publicAuthImport
+      preLoaderRoute: typeof publicAuthSignUpRouteImport
+      parentRoute: typeof publicAuthRoute
     }
     '/(public)/_auth/two-factor': {
       id: '/(public)/_auth/two-factor'
       path: '/two-factor'
       fullPath: '/two-factor'
-      preLoaderRoute: typeof publicAuthTwoFactorImport
-      parentRoute: typeof publicAuthImport
+      preLoaderRoute: typeof publicAuthTwoFactorRouteImport
+      parentRoute: typeof publicAuthRoute
     }
     '/(protected)/_protected/': {
       id: '/(protected)/_protected/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof protectedProtectedIndexImport
-      parentRoute: typeof protectedProtectedImport
+      preLoaderRoute: typeof protectedProtectedIndexRouteImport
+      parentRoute: typeof protectedProtectedRoute
     }
     '/(protected)/_protected/database/$id': {
       id: '/(protected)/_protected/database/$id'
       path: '/database/$id'
       fullPath: '/database/$id'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdImport
-      parentRoute: typeof protectedProtectedImport
+      preLoaderRoute: typeof protectedProtectedDatabaseIdRouteImport
+      parentRoute: typeof protectedProtectedRoute
     }
     '/(public)/_auth/two-factor/setup': {
       id: '/(public)/_auth/two-factor/setup'
       path: '/setup'
       fullPath: '/two-factor/setup'
-      preLoaderRoute: typeof publicAuthTwoFactorSetupImport
-      parentRoute: typeof publicAuthTwoFactorImport
+      preLoaderRoute: typeof publicAuthTwoFactorSetupRouteImport
+      parentRoute: typeof publicAuthTwoFactorRoute
     }
     '/(protected)/_protected/database/$id/tables': {
       id: '/(protected)/_protected/database/$id/tables'
       path: '/tables'
       fullPath: '/database/$id/tables'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdTablesImport
-      parentRoute: typeof protectedProtectedDatabaseIdImport
+      preLoaderRoute: typeof protectedProtectedDatabaseIdTablesRouteImport
+      parentRoute: typeof protectedProtectedDatabaseIdRoute
     }
     '/(protected)/_protected/database/$id/enums/': {
       id: '/(protected)/_protected/database/$id/enums/'
       path: '/enums'
       fullPath: '/database/$id/enums'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdEnumsIndexImport
-      parentRoute: typeof protectedProtectedDatabaseIdImport
+      preLoaderRoute: typeof protectedProtectedDatabaseIdEnumsIndexRouteImport
+      parentRoute: typeof protectedProtectedDatabaseIdRoute
     }
     '/(protected)/_protected/database/$id/sql/': {
       id: '/(protected)/_protected/database/$id/sql/'
       path: '/sql'
       fullPath: '/database/$id/sql'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdSqlIndexImport
-      parentRoute: typeof protectedProtectedDatabaseIdImport
+      preLoaderRoute: typeof protectedProtectedDatabaseIdSqlIndexRouteImport
+      parentRoute: typeof protectedProtectedDatabaseIdRoute
     }
     '/(protected)/_protected/database/$id/tables/$schema/$table/': {
       id: '/(protected)/_protected/database/$id/tables/$schema/$table/'
       path: '/$schema/$table'
       fullPath: '/database/$id/tables/$schema/$table'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdTablesSchemaTableIndexImport
-      parentRoute: typeof protectedProtectedDatabaseIdTablesImport
+      preLoaderRoute: typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRouteImport
+      parentRoute: typeof protectedProtectedDatabaseIdTablesRoute
     }
   }
 }
-
-// Create and export the route tree
 
 interface protectedProtectedDatabaseIdTablesRouteChildren {
   protectedProtectedDatabaseIdTablesSchemaTableIndexRoute: typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
@@ -341,209 +400,10 @@ const publicRouteChildren: publicRouteChildren = {
 const publicRouteWithChildren =
   publicRoute._addFileChildren(publicRouteChildren)
 
-export interface FileRoutesByFullPath {
-  '/': typeof protectedProtectedIndexRoute
-  '/create': typeof protectedProtectedCreateRoute
-  '/sign-in': typeof publicAuthSignInRoute
-  '/sign-up': typeof publicAuthSignUpRoute
-  '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
-  '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
-  '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
-  '/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
-  '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
-  '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
-  '/database/$id/tables/$schema/$table': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
-}
-
-export interface FileRoutesByTo {
-  '/': typeof protectedProtectedIndexRoute
-  '/create': typeof protectedProtectedCreateRoute
-  '/sign-in': typeof publicAuthSignInRoute
-  '/sign-up': typeof publicAuthSignUpRoute
-  '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
-  '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
-  '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
-  '/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
-  '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
-  '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
-  '/database/$id/tables/$schema/$table': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
-}
-
-export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/(protected)': typeof protectedRouteWithChildren
-  '/(protected)/_protected': typeof protectedProtectedRouteWithChildren
-  '/(public)': typeof publicRouteWithChildren
-  '/(public)/_auth': typeof publicAuthRouteWithChildren
-  '/(protected)/_protected/create': typeof protectedProtectedCreateRoute
-  '/(public)/_auth/sign-in': typeof publicAuthSignInRoute
-  '/(public)/_auth/sign-up': typeof publicAuthSignUpRoute
-  '/(public)/_auth/two-factor': typeof publicAuthTwoFactorRouteWithChildren
-  '/(protected)/_protected/': typeof protectedProtectedIndexRoute
-  '/(protected)/_protected/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
-  '/(public)/_auth/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
-  '/(protected)/_protected/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
-  '/(protected)/_protected/database/$id/enums/': typeof protectedProtectedDatabaseIdEnumsIndexRoute
-  '/(protected)/_protected/database/$id/sql/': typeof protectedProtectedDatabaseIdSqlIndexRoute
-  '/(protected)/_protected/database/$id/tables/$schema/$table/': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
-}
-
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/create'
-    | '/sign-in'
-    | '/sign-up'
-    | '/two-factor'
-    | '/database/$id'
-    | '/two-factor/setup'
-    | '/database/$id/tables'
-    | '/database/$id/enums'
-    | '/database/$id/sql'
-    | '/database/$id/tables/$schema/$table'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/create'
-    | '/sign-in'
-    | '/sign-up'
-    | '/two-factor'
-    | '/database/$id'
-    | '/two-factor/setup'
-    | '/database/$id/tables'
-    | '/database/$id/enums'
-    | '/database/$id/sql'
-    | '/database/$id/tables/$schema/$table'
-  id:
-    | '__root__'
-    | '/(protected)'
-    | '/(protected)/_protected'
-    | '/(public)'
-    | '/(public)/_auth'
-    | '/(protected)/_protected/create'
-    | '/(public)/_auth/sign-in'
-    | '/(public)/_auth/sign-up'
-    | '/(public)/_auth/two-factor'
-    | '/(protected)/_protected/'
-    | '/(protected)/_protected/database/$id'
-    | '/(public)/_auth/two-factor/setup'
-    | '/(protected)/_protected/database/$id/tables'
-    | '/(protected)/_protected/database/$id/enums/'
-    | '/(protected)/_protected/database/$id/sql/'
-    | '/(protected)/_protected/database/$id/tables/$schema/$table/'
-  fileRoutesById: FileRoutesById
-}
-
-export interface RootRouteChildren {
-  protectedRoute: typeof protectedRouteWithChildren
-  publicRoute: typeof publicRouteWithChildren
-}
-
 const rootRouteChildren: RootRouteChildren = {
   protectedRoute: protectedRouteWithChildren,
   publicRoute: publicRouteWithChildren,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/(protected)",
-        "/(public)"
-      ]
-    },
-    "/(protected)": {
-      "filePath": "(protected)",
-      "children": [
-        "/(protected)/_protected"
-      ]
-    },
-    "/(protected)/_protected": {
-      "filePath": "(protected)/_protected.tsx",
-      "parent": "/(protected)",
-      "children": [
-        "/(protected)/_protected/create",
-        "/(protected)/_protected/",
-        "/(protected)/_protected/database/$id"
-      ]
-    },
-    "/(public)": {
-      "filePath": "(public)",
-      "children": [
-        "/(public)/_auth"
-      ]
-    },
-    "/(public)/_auth": {
-      "filePath": "(public)/_auth.tsx",
-      "parent": "/(public)",
-      "children": [
-        "/(public)/_auth/sign-in",
-        "/(public)/_auth/sign-up",
-        "/(public)/_auth/two-factor"
-      ]
-    },
-    "/(protected)/_protected/create": {
-      "filePath": "(protected)/_protected/create.tsx",
-      "parent": "/(protected)/_protected"
-    },
-    "/(public)/_auth/sign-in": {
-      "filePath": "(public)/_auth/sign-in.tsx",
-      "parent": "/(public)/_auth"
-    },
-    "/(public)/_auth/sign-up": {
-      "filePath": "(public)/_auth/sign-up.tsx",
-      "parent": "/(public)/_auth"
-    },
-    "/(public)/_auth/two-factor": {
-      "filePath": "(public)/_auth/two-factor.tsx",
-      "parent": "/(public)/_auth",
-      "children": [
-        "/(public)/_auth/two-factor/setup"
-      ]
-    },
-    "/(protected)/_protected/": {
-      "filePath": "(protected)/_protected/index.tsx",
-      "parent": "/(protected)/_protected"
-    },
-    "/(protected)/_protected/database/$id": {
-      "filePath": "(protected)/_protected/database/$id.tsx",
-      "parent": "/(protected)/_protected",
-      "children": [
-        "/(protected)/_protected/database/$id/tables",
-        "/(protected)/_protected/database/$id/enums/",
-        "/(protected)/_protected/database/$id/sql/"
-      ]
-    },
-    "/(public)/_auth/two-factor/setup": {
-      "filePath": "(public)/_auth/two-factor.setup.tsx",
-      "parent": "/(public)/_auth/two-factor"
-    },
-    "/(protected)/_protected/database/$id/tables": {
-      "filePath": "(protected)/_protected/database/$id/tables.tsx",
-      "parent": "/(protected)/_protected/database/$id",
-      "children": [
-        "/(protected)/_protected/database/$id/tables/$schema/$table/"
-      ]
-    },
-    "/(protected)/_protected/database/$id/enums/": {
-      "filePath": "(protected)/_protected/database/$id/enums/index.tsx",
-      "parent": "/(protected)/_protected/database/$id"
-    },
-    "/(protected)/_protected/database/$id/sql/": {
-      "filePath": "(protected)/_protected/database/$id/sql/index.tsx",
-      "parent": "/(protected)/_protected/database/$id"
-    },
-    "/(protected)/_protected/database/$id/tables/$schema/$table/": {
-      "filePath": "(protected)/_protected/database/$id/tables.$schema/$table/index.tsx",
-      "parent": "/(protected)/_protected/database/$id/tables"
-    }
-  }
-}
-ROUTE_MANIFEST_END */

@@ -71,9 +71,17 @@ export function ThemeProvider({
   return (
     <ThemeProviderContext value={value}>
       <ScriptOnce>
-        {`if (window.matchMedia('(prefers-color-scheme: dark)').matches && '${theme}' === 'system') {
-            document.documentElement.classList.add('dark')
-          }`}
+        {`const theme = localStorage.getItem('${storageKey}')
+
+        if (
+          theme === 'dark'
+          || (
+            (theme === null || theme === 'system')
+            && window.matchMedia('(prefers-color-scheme: dark)').matches
+          )
+        ) {
+          document.documentElement.classList.add('dark')
+        }`}
       </ScriptOnce>
       {children}
     </ThemeProviderContext>

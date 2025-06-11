@@ -8,40 +8,62 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as OpenRouteImport } from './routes/open'
+import { Route as LayoutRouteImport } from './routes/_layout'
+import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as LayoutDownloadRouteImport } from './routes/_layout/download'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as OpenImport } from './routes/open'
-import { Route as LayoutImport } from './routes/_layout'
-import { Route as LayoutIndexImport } from './routes/_layout/index'
-import { Route as LayoutDownloadImport } from './routes/_layout/download'
-
-// Create/Update Routes
-
-const OpenRoute = OpenImport.update({
+const OpenRoute = OpenRouteImport.update({
   id: '/open',
   path: '/open',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const LayoutRoute = LayoutImport.update({
+const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const LayoutIndexRoute = LayoutIndexImport.update({
+const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
-
-const LayoutDownloadRoute = LayoutDownloadImport.update({
+const LayoutDownloadRoute = LayoutDownloadRouteImport.update({
   id: '/download',
   path: '/download',
   getParentRoute: () => LayoutRoute,
 } as any)
 
-// Populate the FileRoutesByPath interface
+export interface FileRoutesByFullPath {
+  '': typeof LayoutRouteWithChildren
+  '/open': typeof OpenRoute
+  '/download': typeof LayoutDownloadRoute
+  '/': typeof LayoutIndexRoute
+}
+export interface FileRoutesByTo {
+  '/open': typeof OpenRoute
+  '/download': typeof LayoutDownloadRoute
+  '/': typeof LayoutIndexRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/_layout': typeof LayoutRouteWithChildren
+  '/open': typeof OpenRoute
+  '/_layout/download': typeof LayoutDownloadRoute
+  '/_layout/': typeof LayoutIndexRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '' | '/open' | '/download' | '/'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/open' | '/download' | '/'
+  id: '__root__' | '/_layout' | '/open' | '/_layout/download' | '/_layout/'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  LayoutRoute: typeof LayoutRouteWithChildren
+  OpenRoute: typeof OpenRoute
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
@@ -49,34 +71,32 @@ declare module '@tanstack/react-router' {
       id: '/_layout'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof LayoutImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof LayoutRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/open': {
       id: '/open'
       path: '/open'
       fullPath: '/open'
-      preLoaderRoute: typeof OpenImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof OpenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_layout/download': {
       id: '/_layout/download'
       path: '/download'
       fullPath: '/download'
-      preLoaderRoute: typeof LayoutDownloadImport
-      parentRoute: typeof LayoutImport
+      preLoaderRoute: typeof LayoutDownloadRouteImport
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/': {
       id: '/_layout/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof LayoutIndexImport
-      parentRoute: typeof LayoutImport
+      preLoaderRoute: typeof LayoutIndexRouteImport
+      parentRoute: typeof LayoutRoute
     }
   }
 }
-
-// Create and export the route tree
 
 interface LayoutRouteChildren {
   LayoutDownloadRoute: typeof LayoutDownloadRoute
@@ -91,78 +111,10 @@ const LayoutRouteChildren: LayoutRouteChildren = {
 const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
-export interface FileRoutesByFullPath {
-  '': typeof LayoutRouteWithChildren
-  '/open': typeof OpenRoute
-  '/download': typeof LayoutDownloadRoute
-  '/': typeof LayoutIndexRoute
-}
-
-export interface FileRoutesByTo {
-  '/open': typeof OpenRoute
-  '/download': typeof LayoutDownloadRoute
-  '/': typeof LayoutIndexRoute
-}
-
-export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/_layout': typeof LayoutRouteWithChildren
-  '/open': typeof OpenRoute
-  '/_layout/download': typeof LayoutDownloadRoute
-  '/_layout/': typeof LayoutIndexRoute
-}
-
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/open' | '/download' | '/'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/open' | '/download' | '/'
-  id: '__root__' | '/_layout' | '/open' | '/_layout/download' | '/_layout/'
-  fileRoutesById: FileRoutesById
-}
-
-export interface RootRouteChildren {
-  LayoutRoute: typeof LayoutRouteWithChildren
-  OpenRoute: typeof OpenRoute
-}
-
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
   OpenRoute: OpenRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/_layout",
-        "/open"
-      ]
-    },
-    "/_layout": {
-      "filePath": "_layout.tsx",
-      "children": [
-        "/_layout/download",
-        "/_layout/"
-      ]
-    },
-    "/open": {
-      "filePath": "open.tsx"
-    },
-    "/_layout/download": {
-      "filePath": "_layout/download.tsx",
-      "parent": "/_layout"
-    },
-    "/_layout/": {
-      "filePath": "_layout/index.tsx",
-      "parent": "/_layout"
-    }
-  }
-}
-ROUTE_MANIFEST_END */
