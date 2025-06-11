@@ -42,7 +42,12 @@ export function HeaderSearch() {
     Table name: ${table}
     Schema name: ${schema}
     Current filters: ${JSON.stringify(store.state.filters, null, 2)}
-    Columns: ${JSON.stringify(columns, null, 2)}
+    Columns: ${JSON.stringify(columns?.map(col => ({
+      name: col.name,
+      type: col.type,
+      default: col.default,
+      isNullable: col.isNullable,
+    })), null, 2)}
     Enums: ${JSON.stringify(enums, null, 2)}
   `.trim(), [columns, enums, schema, table])
 

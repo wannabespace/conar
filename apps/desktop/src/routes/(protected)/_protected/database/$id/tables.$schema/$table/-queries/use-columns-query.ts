@@ -11,6 +11,12 @@ export function useColumnsQuery(database: Database, table: string, schema: strin
     select: data => data.map(column => ({
       ...column,
       isPrimaryKey: !!primaryKeys?.includes(column.name),
-    })),
+    })).sort((a, b) => {
+      if (a.isPrimaryKey && !b.isPrimaryKey)
+        return -1
+      if (!a.isPrimaryKey && b.isPrimaryKey)
+        return 1
+      return a.name.localeCompare(b.name)
+    }),
   })
 }
