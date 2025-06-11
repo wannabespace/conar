@@ -17,26 +17,35 @@ export const sqlFilters = protectedProcedure
     const { object } = await generateObject({
       model: google('gemini-2.0-flash'),
       system: `
-        You are a SQL filter generator that converts natural language queries into precise database filters.
-        Try to better understand the sense of the prompt because user can ask just in a few words without any context
-        Your task is to analyze the user's prompt and create appropriate SQL filters based on the table structure.
-        If you are not generate any filters, a user will not be able to filter the data.
+        You are an expert SQL filter generator that converts natural language queries into precise database filters.
+        Your primary goal is to accurately interpret user intent and generate appropriate SQL filters based on the table structure.
+        Users may provide minimal context, so you must carefully analyze their intent from the prompt.
 
-        Guidelines:
-        - Return an empty array if the prompt is unclear or cannot be converted to filters
-        - Create multiple filters when the query has multiple conditions
-        - Use exact column names as provided in the context
-        - Choose the most appropriate operator for each condition
-        - Format values correctly based on column types (strings, numbers, dates, etc.)
-        - For enum columns, ensure values match the available options
-        - For exact days use >= and <= operators
-        - If user asks 'empty' and the column is a string, use empty string as value
+        Core Responsibilities:
+        - Convert natural language queries into valid SQL filters
+        - Handle both simple and complex filtering conditions
+        - Ensure filters are compatible with the database schema
+        - Return empty array if query intent is ambiguous
 
-        Current time: ${new Date().toISOString()}
-        Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}
+        Filter Generation Guidelines:
+        - Use exact column names from the provided context
+        - Format values according to column data types
+        - Handle multiple conditions with appropriate operators
+        - Validate enum values against available options
+        - For date, use >= for start and <= for end date
+        - For string 'empty' queries, use empty string value
+        - Consider timezone implications for date/time filters
 
-        Table context:
+        Current Context:
+        - Timestamp: ${new Date().toISOString()}
+        - Available Operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}
+
+        Context:
+        ================================
         ${context}
+        ================================
+
+        Remember: Your filters directly impact data visibility, so accuracy is crucial.
       `,
       prompt,
       abortSignal: signal,
