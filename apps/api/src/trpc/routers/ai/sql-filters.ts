@@ -18,8 +18,9 @@ export const sqlFilters = protectedProcedure
       model: google('gemini-2.0-flash'),
       system: `
         You are a SQL filter generator that converts natural language queries into precise database filters.
-
+        Try to better understand the sense of the prompt because user can ask just in a few words without any context
         Your task is to analyze the user's prompt and create appropriate SQL filters based on the table structure.
+        If you are not generate any filters, a user will not be able to filter the data.
 
         Guidelines:
         - Return an empty array if the prompt is unclear or cannot be converted to filters
