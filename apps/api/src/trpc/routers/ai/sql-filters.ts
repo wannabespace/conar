@@ -24,7 +24,7 @@ export const sqlFilters = protectedProcedure
 
         Guidelines:
         - Return an empty array if the prompt is unclear or cannot be converted to filters
-        - Create multiple filters when the query has multiple conditions (they will be combined with AND)
+        - Create multiple filters when the query has multiple conditions
         - Use exact column names as provided in the context
         - Choose the most appropriate operator for each condition
         - Format values correctly based on column types (strings, numbers, dates, etc.)
