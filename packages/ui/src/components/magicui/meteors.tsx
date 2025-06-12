@@ -1,5 +1,6 @@
+import type React from 'react'
 import { cn } from '@conar/ui/lib/utils'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface MeteorsProps {
   number?: number

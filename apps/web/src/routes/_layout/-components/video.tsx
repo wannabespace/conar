@@ -4,15 +4,15 @@ import { RiPlayCircleFill } from '@remixicon/react'
 import { motion, useInView } from 'motion/react'
 import { useRef } from 'react'
 
-export function Video({ className, ...props }: Omit<React.ComponentProps<'div'>, 'children'>) {
+export function Video() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const inView = useInView(videoRef, { amount: 'all' })
   const { isPlaying, pause, play } = useMediaControls(videoRef)
 
   return (
-    <div className={cn('max-w-[100rem] mx-auto w-full', className)} {...props}>
+    <div className="container mx-auto w-full">
       <motion.h2
-        className="text-center text-3xl font-bold mb-8 lg:text-4xl"
+        className="text-center text-3xl mb-8 lg:text-4xl text-muted-foreground`"
         transition={{ duration: 0.5 }}
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -25,7 +25,7 @@ export function Video({ className, ...props }: Omit<React.ComponentProps<'div'>,
         whileInView={{ opacity: 1, scale: 1 }}
       >
         <div
-          className="relative mx-auto aspect-video rounded-3xl border lg:w-2/3 lg:p-2"
+          className="relative aspect-video rounded-3xl"
           onClick={() => (isPlaying ? pause() : play())}
         >
           <RiPlayCircleFill

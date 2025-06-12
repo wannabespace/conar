@@ -1,8 +1,8 @@
 import type { VariantProps } from 'class-variance-authority'
+import type * as React from 'react'
 import { buttonVariants } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
-import * as React from 'react'
 
 function AlertDialog({
   ...props

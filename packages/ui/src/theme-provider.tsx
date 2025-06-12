@@ -66,7 +66,7 @@ export function ThemeProvider({
       localStorage.setItem(storageKey, theme)
       setTheme(theme)
     },
-  }), [theme, resolvedTheme])
+  }), [theme, resolvedTheme, storageKey])
 
   return (
     <ThemeProviderContext value={value}>

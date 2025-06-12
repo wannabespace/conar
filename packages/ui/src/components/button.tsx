@@ -1,8 +1,8 @@
 import type { VariantProps } from 'class-variance-authority'
+import type * as React from 'react'
 import { cn } from '@conar/ui/lib/utils'
 import { Slot } from '@radix-ui/react-slot'
 import { cva } from 'class-variance-authority'
-import * as React from 'react'
 
 const beforeClasses = 'before:absolute before:block before:rounded-full before:blur-xl before:h-full before:-top-3 before:opacity-50 before:left-1/2 before:-translate-x-1/2 before:h-5 before:w-1/3'
 

@@ -78,8 +78,6 @@ function RouteComponent() {
     }))
   }, [assets])
 
-  console.log(links)
-
   const macSiliconAsset = useMemo(() =>
     links.find(link => link.type === 'macos' && link.name.toLowerCase().includes('arm64')), [links])
 

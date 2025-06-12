@@ -1,6 +1,6 @@
+import type * as React from 'react'
 import { cn } from '@conar/ui/lib/utils'
 import { GripVerticalIcon } from 'lucide-react'
-import * as React from 'react'
 import * as ResizablePrimitive from 'react-resizable-panels'
 
 function ResizablePanelGroup({
