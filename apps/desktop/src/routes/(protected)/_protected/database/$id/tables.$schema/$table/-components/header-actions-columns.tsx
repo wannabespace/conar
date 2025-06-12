@@ -67,10 +67,10 @@ export function HeaderActionsColumns({ database, table, schema }: { database: Da
                       : [...hiddenColumns, column.name],
                   }))}
                 >
-                  <span className="size-4">
+                  <span className="size-4 shrink-0">
                     {!hiddenColumns.includes(column.name) && <RiCheckLine className="size-4 opacity-50" />}
                   </span>
-                  <RiDatabase2Line className="size-4 opacity-50" />
+                  <RiDatabase2Line className="size-4 opacity-50 shrink-0" />
                   <span className="truncate">{column.name}</span>
                 </CommandItem>
               ))}
