@@ -24,7 +24,7 @@ export const queryClient = new QueryClient({
     queries: {
       retry: 0,
       throwOnError: true,
-      staleTime: Infinity,
+      staleTime: Number.POSITIVE_INFINITY,
       placeholderData: keepPreviousData,
     },
     mutations: {

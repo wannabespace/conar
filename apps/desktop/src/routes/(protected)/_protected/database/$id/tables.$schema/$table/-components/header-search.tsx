@@ -41,7 +41,6 @@ export function HeaderSearch() {
     Filters working with AND operator.
     Table name: ${table}
     Schema name: ${schema}
-    Current filters: ${JSON.stringify(store.state.filters, null, 2)}
     Columns: ${JSON.stringify(columns?.map(col => ({
       name: col.name,
       type: col.type,
