@@ -35,11 +35,13 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
 
   function onTablesClick() {
-    if (lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam) {
+    const isSameTable = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
+
+    if (isSameTable) {
       setLastOpenedTable(null)
     }
 
-    if (lastOpenedTable) {
+    if (lastOpenedTable && !isSameTable) {
       navigate({
         to: '/database/$id/tables/$schema/$table',
         params: {
