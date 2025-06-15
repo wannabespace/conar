@@ -204,12 +204,19 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/(protected)/_protected': {
-      id: '/(protected)/_protected'
+    '/(public)': {
+      id: '/(public)'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof protectedProtectedRouteImport
-      parentRoute: typeof protectedRoute
+      preLoaderRoute: typeof publicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(protected)': {
+      id: '/(protected)'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof protectedRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/(public)/_auth': {
       id: '/(public)/_auth'
@@ -218,18 +225,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicAuthRouteImport
       parentRoute: typeof publicRoute
     }
-    '/(protected)/_protected/create': {
-      id: '/(protected)/_protected/create'
-      path: '/create'
-      fullPath: '/create'
-      preLoaderRoute: typeof protectedProtectedCreateRouteImport
+    '/(protected)/_protected': {
+      id: '/(protected)/_protected'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof protectedProtectedRouteImport
+      parentRoute: typeof protectedRoute
+    }
+    '/(protected)/_protected/': {
+      id: '/(protected)/_protected/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof protectedProtectedIndexRouteImport
       parentRoute: typeof protectedProtectedRoute
     }
-    '/(public)/_auth/sign-in': {
-      id: '/(public)/_auth/sign-in'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof publicAuthSignInRouteImport
+    '/(public)/_auth/two-factor': {
+      id: '/(public)/_auth/two-factor'
+      path: '/two-factor'
+      fullPath: '/two-factor'
+      preLoaderRoute: typeof publicAuthTwoFactorRouteImport
       parentRoute: typeof publicAuthRoute
     }
     '/(public)/_auth/sign-up': {
@@ -239,25 +253,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicAuthSignUpRouteImport
       parentRoute: typeof publicAuthRoute
     }
-    '/(public)/_auth/two-factor': {
-      id: '/(public)/_auth/two-factor'
-      path: '/two-factor'
-      fullPath: '/two-factor'
-      preLoaderRoute: typeof publicAuthTwoFactorRouteImport
+    '/(public)/_auth/sign-in': {
+      id: '/(public)/_auth/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof publicAuthSignInRouteImport
       parentRoute: typeof publicAuthRoute
     }
-    '/(protected)/_protected/': {
-      id: '/(protected)/_protected/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof protectedProtectedIndexRouteImport
-      parentRoute: typeof protectedProtectedRoute
-    }
-    '/(protected)/_protected/database/$id': {
-      id: '/(protected)/_protected/database/$id'
-      path: '/database/$id'
-      fullPath: '/database/$id'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdRouteImport
+    '/(protected)/_protected/create': {
+      id: '/(protected)/_protected/create'
+      path: '/create'
+      fullPath: '/create'
+      preLoaderRoute: typeof protectedProtectedCreateRouteImport
       parentRoute: typeof protectedProtectedRoute
     }
     '/(public)/_auth/two-factor/setup': {
@@ -267,6 +274,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicAuthTwoFactorSetupRouteImport
       parentRoute: typeof publicAuthTwoFactorRoute
     }
+    '/(protected)/_protected/database/$id': {
+      id: '/(protected)/_protected/database/$id'
+      path: '/database/$id'
+      fullPath: '/database/$id'
+      preLoaderRoute: typeof protectedProtectedDatabaseIdRouteImport
+      parentRoute: typeof protectedProtectedRoute
+    }
     '/(protected)/_protected/database/$id/tables': {
       id: '/(protected)/_protected/database/$id/tables'
       path: '/tables'
@@ -274,18 +288,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof protectedProtectedDatabaseIdTablesRouteImport
       parentRoute: typeof protectedProtectedDatabaseIdRoute
     }
-    '/(protected)/_protected/database/$id/enums/': {
-      id: '/(protected)/_protected/database/$id/enums/'
-      path: '/enums'
-      fullPath: '/database/$id/enums'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdEnumsIndexRouteImport
-      parentRoute: typeof protectedProtectedDatabaseIdRoute
-    }
     '/(protected)/_protected/database/$id/sql/': {
       id: '/(protected)/_protected/database/$id/sql/'
       path: '/sql'
       fullPath: '/database/$id/sql'
       preLoaderRoute: typeof protectedProtectedDatabaseIdSqlIndexRouteImport
+      parentRoute: typeof protectedProtectedDatabaseIdRoute
+    }
+    '/(protected)/_protected/database/$id/enums/': {
+      id: '/(protected)/_protected/database/$id/enums/'
+      path: '/enums'
+      fullPath: '/database/$id/enums'
+      preLoaderRoute: typeof protectedProtectedDatabaseIdEnumsIndexRouteImport
       parentRoute: typeof protectedProtectedDatabaseIdRoute
     }
     '/(protected)/_protected/database/$id/tables/$schema/$table/': {

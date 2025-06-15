@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import tailwindcss from '@tailwindcss/vite'
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron/simple'
@@ -23,7 +23,7 @@ export default defineConfig(({ command }) => {
           plugins: [['babel-plugin-react-compiler', { target: '19' }]],
         },
       }),
-      TanStackRouterVite(),
+      tanstackRouter(),
       electron({
         main: {
           entry: 'electron/main/index.ts',

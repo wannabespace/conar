@@ -17,7 +17,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useParams, useRouter } from '@tanstack/react-router'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
 import { getTableStoreState } from '../tables.$schema/$table'
 
@@ -109,9 +109,7 @@ function SortableTab({
   const router = useRouter()
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
-  const isVisible = useInViewport(ref, {
-    threshold: 1,
-  })
+  const isVisible = useInViewport(ref, 'full')
   const {
     attributes,
     listeners,
@@ -122,7 +120,7 @@ function SortableTab({
 
   const isActive = schemaParam === item.tab.schema && tableParam === item.tab.table
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isVisible && isActive && ref.current) {
       onFocus(ref)
     }
@@ -302,7 +300,7 @@ export function TablesTabs({ ref, database, id }: {
   return (
     <DndContext modifiers={[restrictToHorizontalAxis]} sensors={sensors} onDragEnd={handleDragEnd}>
       <SortableContext items={tabItems} strategy={horizontalListSortingStrategy}>
-        <ScrollArea ref={scrollRef} className="flex h-9 p-1 gap-1 overflow-x-auto">
+        <ScrollArea ref={scrollRef} className="flex h-9 p-1 gap-1">
           {tabItems.map(item => (
             <SortableTab
               key={item.id}
@@ -312,12 +310,10 @@ export function TablesTabs({ ref, database, id }: {
               onClose={() => closeTab(item.tab.schema, item.tab.table)}
               onDoubleClick={() => addTab(item.tab.schema, item.tab.table, false)}
               onFocus={(ref) => {
-                if (ref.current) {
-                  ref.current.scrollIntoView({
-                    block: 'nearest',
-                    inline: 'nearest',
-                  })
-                }
+                ref.current?.scrollIntoView({
+                  block: 'nearest',
+                  inline: 'nearest',
+                })
               }}
             />
           ))}

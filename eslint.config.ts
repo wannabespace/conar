@@ -14,7 +14,7 @@ export default antfu({
     '**/routeTree.gen.ts',
     '**/dist-electron/**/*',
     '**/release/**/*',
-    '**/.vinxi/**/*',
+    '**/.tanstack/**/*',
     '**/.types/**/*',
     '**/migrations/meta/*.json',
   ],

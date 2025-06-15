@@ -142,7 +142,7 @@ function TableComponent() {
     })
 
     if (filters.length > 0 || Object.keys(orderBy).length > 0)
-      queryClient.invalidateQueries(rowsQueryOpts)
+      queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
   }
 
   const tableColumns = useMemo(() => {
