@@ -1,24 +1,26 @@
+import { useInViewport } from '@conar/ui/hookas/use-in-viewport'
 import { useMediaControls } from '@conar/ui/hookas/use-media-controls'
 import { cn } from '@conar/ui/lib/utils'
 import { RiPlayCircleFill } from '@remixicon/react'
-import { motion, useInView } from 'motion/react'
-import { useRef } from 'react'
+import { motion } from 'motion/react'
+import { useEffect, useRef } from 'react'
 
 export function Video() {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const inView = useInView(videoRef, { amount: 'all' })
+  const inView = useInViewport(videoRef)
   const { isPlaying, pause, play } = useMediaControls(videoRef)
+
+  useEffect(() => {
+    if (inView) {
+      play()
+    }
+    else {
+      pause()
+    }
+  }, [inView])
 
   return (
     <div className="container mx-auto w-full">
-      <motion.h2
-        className="text-center text-3xl mb-8 lg:text-4xl text-muted-foreground`"
-        transition={{ duration: 0.5 }}
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-      >
-        Watch Our Demo
-      </motion.h2>
       <motion.div
         transition={{ duration: 0.5, delay: 0.3 }}
         initial={{ opacity: 0, scale: 0.9 }}
@@ -34,13 +36,15 @@ export function Video() {
               isPlaying && 'opacity-0',
             )}
           />
-          <div className={cn('duration-300', (!inView || !isPlaying) && 'opacity-30')}>
+          <div className={cn('duration-300', (!inView || !isPlaying) && 'opacity-70')}>
             <video
               ref={videoRef}
               muted
               loop
+              preload="auto"
+              autoPlay
               playsInline
-              className="mx-auto aspect-video size-full rounded-2xl object-cover"
+              className="mx-auto aspect-video size-full rounded-2xl object-cover shadow-xl max-h-[80svh]"
               poster="/demo.jpg"
               src="/demo.mp4"
             />

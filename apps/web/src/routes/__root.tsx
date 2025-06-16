@@ -6,6 +6,12 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { ErrorPage } from '~/error-page'
 import { seo } from '~/utils/seo'
 
+if (import.meta.env.DEV) {
+  import('react-scan').then(({ scan }) => {
+    scan()
+  })
+}
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [

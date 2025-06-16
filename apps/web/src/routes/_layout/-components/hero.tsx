@@ -6,7 +6,7 @@ const words = ['Postgres']
 
 export function Hero() {
   return (
-    <div className="container mx-auto pt-[20svh] pb-[10svh] flex justify-between items-center gap-2">
+    <div className="container mx-auto pt-[min(20svh,20rem)] pb-[10svh] flex justify-between items-center gap-2">
       <div
         className={cn(
           'text-[clamp(2rem,min(10vh,10vw),6rem)] leading-none font-medium text-balance',

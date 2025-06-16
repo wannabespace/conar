@@ -67,13 +67,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_layout': {
-      id: '/_layout'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof LayoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/open': {
       id: '/open'
       path: '/open'
@@ -81,18 +74,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_layout/download': {
-      id: '/_layout/download'
-      path: '/download'
-      fullPath: '/download'
-      preLoaderRoute: typeof LayoutDownloadRouteImport
-      parentRoute: typeof LayoutRoute
+    '/_layout': {
+      id: '/_layout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof LayoutRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_layout/': {
       id: '/_layout/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof LayoutIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/download': {
+      id: '/_layout/download'
+      path: '/download'
+      fullPath: '/download'
+      preLoaderRoute: typeof LayoutDownloadRouteImport
       parentRoute: typeof LayoutRoute
     }
   }
