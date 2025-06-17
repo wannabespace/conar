@@ -2,8 +2,8 @@
   "name": "@conar/api",
   "type": "module",
   "scripts": {
-    "dev": "tsx --env-file=.env ./src/index.ts",
-    "start": "pnpm run drizzle:migrate && tsx src/index.ts",
+    "dev": "NODE_ENV=development tsx --env-file=.env.development ./src/index.ts",
+    "start": "NODE_ENV=production pnpm run drizzle:migrate && tsx src/index.ts",
     "check-types": "tsc",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:generate-custom": "drizzle-kit generate --custom",

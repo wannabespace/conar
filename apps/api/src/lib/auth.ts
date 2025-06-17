@@ -9,7 +9,7 @@ import { loops } from '~/lib/loops'
 
 async function loopsUpdateUser(user: User) {
   try {
-    if (process.env.NODE_ENV === 'production') {
+    if (loops) {
       const [firstName, ...lastName] = user.name.split(' ')
 
       await loops.updateContact(user.email, {
@@ -78,13 +78,17 @@ export const auth = betterAuth({
     enabled: true,
   },
   socialProviders: {
-    google: {
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-    },
-    github: {
-      clientId: env.GITHUB_CLIENT_ID,
-      clientSecret: env.GITHUB_CLIENT_SECRET,
-    },
+    ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && {
+      google: {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+      },
+    }),
+    ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET && {
+      github: {
+        clientId: env.GITHUB_CLIENT_ID,
+        clientSecret: env.GITHUB_CLIENT_SECRET,
+      },
+    }),
   },
 })
