@@ -35,7 +35,6 @@ const LayoutDownloadRoute = LayoutDownloadRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '': typeof LayoutRouteWithChildren
   '/open': typeof OpenRoute
   '/download': typeof LayoutDownloadRoute
   '/': typeof LayoutIndexRoute
@@ -54,7 +53,7 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/open' | '/download' | '/'
+  fullPaths: '/open' | '/download' | '/'
   fileRoutesByTo: FileRoutesByTo
   to: '/open' | '/download' | '/'
   id: '__root__' | '/_layout' | '/open' | '/_layout/download' | '/_layout/'

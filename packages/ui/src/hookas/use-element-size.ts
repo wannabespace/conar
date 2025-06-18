@@ -41,11 +41,13 @@ export function useElementSize<T extends Element = Element>(
           const { inlineSize: width, blockSize: height }
             = entry.borderBoxSize[0]
 
-          setSize({ width, height })
+          if (width !== size.width || height !== size.height) {
+            setSize({ width, height })
+          }
         }
       })
 
-      observer.observe(element)
+      observer.observe(element, { box: 'border-box' })
       previousObserver.current = observer
     }
 
