@@ -20,37 +20,34 @@ export function Video() {
   }, [inView])
 
   return (
-    <div className="container mx-auto w-full">
-      <motion.div
-        transition={{ duration: 0.5, delay: 0.3 }}
-        initial={{ opacity: 0, scale: 0.9 }}
-        whileInView={{ opacity: 1, scale: 1 }}
+    <motion.div
+      transition={{ duration: 0.5, delay: 0.3 }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+    >
+      <div
+        className="relative rounded-3xl"
+        onClick={() => (isPlaying ? pause() : play())}
       >
-        <div
-          className="relative aspect-video rounded-3xl"
-          onClick={() => (isPlaying ? pause() : play())}
-        >
-          <RiPlayCircleFill
-            className={cn(
-              'absolute z-10 left-1/2 top-1/2 size-20 lg:size-32 -translate-x-1/2 duration-300 -translate-y-1/2 text-black/50',
-              isPlaying && 'opacity-0',
-            )}
+        <RiPlayCircleFill
+          className={cn(
+            'absolute z-10 left-1/2 top-1/2 size-20 lg:size-32 -translate-x-1/2 duration-300 -translate-y-1/2 text-black/70',
+            isPlaying && 'opacity-0',
+          )}
+        />
+        <div className={cn('duration-300', (!inView || !isPlaying) && 'opacity-60')}>
+          <video
+            ref={videoRef}
+            muted
+            loop
+            preload="auto"
+            playsInline
+            className="mx-auto dark:brightness-80 size-full rounded-2xl"
+            poster="/demo.jpg"
+            src="/demo.mp4"
           />
-          <div className={cn('duration-300', (!inView || !isPlaying) && 'opacity-70')}>
-            <video
-              ref={videoRef}
-              muted
-              loop
-              preload="auto"
-              autoPlay
-              playsInline
-              className="mx-auto aspect-video size-full rounded-2xl object-cover shadow-xl max-h-[80svh]"
-              poster="/demo.jpg"
-              src="/demo.mp4"
-            />
-          </div>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   )
 }

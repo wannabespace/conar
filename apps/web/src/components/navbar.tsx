@@ -1,11 +1,13 @@
+import type { ComponentProps } from 'react'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
+import { cn } from '@conar/ui/lib/utils'
 import { RiGithubFill, RiTwitterXLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 
-export function Navbar() {
+export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   return (
-    <header className="flex px-6 items-center justify-between w-full fixed top-6 left-1/2 -translate-x-1/2 z-50">
+    <header className={cn('flex items-center justify-between', className)} {...props}>
       <Link to="/" className="flex-1 text-foreground font-medium text-xl tracking-tighter">
         Conar
       </Link>
