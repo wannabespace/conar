@@ -4,12 +4,12 @@ import NumberFlow from '@number-flow/react'
 import { useStore } from '@tanstack/react-store'
 import { useDatabaseTableTotal } from '~/entities/database'
 import { usePageContext } from '..'
-import { useColumnsQuery } from '../-queries/use-columns-query'
+import { useTableColumns } from '../-queries/use-columns-query'
 import { HeaderActions } from './header-actions'
 import { HeaderSearch } from './header-search'
 
 export function Header({ database, table, schema }: { database: Database, table: string, schema: string }) {
-  const { data: columns } = useColumnsQuery(database, table, schema)
+  const columns = useTableColumns(database, table, schema)
   const { store } = usePageContext()
   const filters = useStore(store, state => state.filters)
   const { data: total } = useDatabaseTableTotal(database, table, schema, {

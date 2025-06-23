@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import { useDatabase, useDatabaseEnums } from '~/entities/database'
 import { trpc } from '~/lib/trpc'
 import { Route, usePageContext } from '..'
-import { useColumnsQuery } from '../-queries/use-columns-query'
+import { useTableColumns } from '../-queries/use-columns-query'
 
 export function HeaderSearch() {
   const { id, table, schema } = Route.useParams()
@@ -35,7 +35,7 @@ export function HeaderSearch() {
       }
     },
   })
-  const { data: columns } = useColumnsQuery(database, table, schema)
+  const columns = useTableColumns(database, table, schema)
   const { data: enums } = useDatabaseEnums(database)
   const context = useMemo(() => `
     Filters working with AND operator.

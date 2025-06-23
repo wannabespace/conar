@@ -7,12 +7,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { RiCheckLine, RiDatabase2Line, RiLayoutColumnLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { usePageContext } from '..'
-import { useColumnsQuery } from '../-queries/use-columns-query'
+import { useTableColumns } from '../-queries/use-columns-query'
 
 export function HeaderActionsColumns({ database, table, schema }: { database: Database, table: string, schema: string }) {
   const { store } = usePageContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
-  const { data: columns } = useColumnsQuery(database, table, schema)
+  const columns = useTableColumns(database, table, schema)
 
   return (
     <Popover>

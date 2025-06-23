@@ -12,12 +12,12 @@ import { TableCell } from '~/entities/database/components/table-cell'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { Route, usePageContext } from '..'
-import { useColumnsQuery } from '../-queries/use-columns-query'
+import { useTableColumns } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 import { TableHeaderCell } from './table-header-cell'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
-import { TableBodySkeleton, TableHeaderSkeleton } from './table-skeleton'
+import { TableBodySkeleton } from './table-skeleton'
 
 const selectSymbol = Symbol('table-selection')
 
@@ -96,7 +96,7 @@ function TableInfiniteLoader() {
 function TableComponent() {
   const { id, table, schema } = Route.useParams()
   const { data: database } = useDatabase(id)
-  const { data: columns, isPending: isColumnsPending } = useColumnsQuery(database, table, schema)
+  const columns = useTableColumns(database, table, schema)
   const { store } = usePageContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
@@ -187,8 +187,8 @@ function TableComponent() {
     >
       <div className="size-full relative bg-background">
         <Table>
-          {isColumnsPending ? <TableHeaderSkeleton selectable={selectable} /> : tableColumns.length > 0 ? <TableHeader /> : null}
-          {isRowsPending || isColumnsPending
+          <TableHeader />
+          {isRowsPending
             ? <TableBodySkeleton selectable={selectable} />
             : error
               ? <TableError error={error} />

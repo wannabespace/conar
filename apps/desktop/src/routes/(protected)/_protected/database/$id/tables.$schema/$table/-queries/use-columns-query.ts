@@ -1,14 +1,14 @@
 import type { Database } from '~/lib/indexeddb'
-import { useQuery } from '@tanstack/react-query'
-import { databaseColumnsQuery } from '~/entities/database'
+import { useMemo } from 'react'
+import { useDatabaseColumns } from '~/entities/database'
 import { usePrimaryKeysQuery } from './use-primary-keys-query'
 
-export function useColumnsQuery(database: Database, table: string, schema: string) {
+export function useTableColumns(database: Database, table: string, schema: string) {
+  const { data: columns } = useDatabaseColumns(database, table, schema)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
-  return useQuery({
-    ...databaseColumnsQuery(database, table, schema),
-    select: data => data.map(column => ({
+  return useMemo(() => {
+    return columns?.map(column => ({
       ...column,
       isPrimaryKey: !!primaryKeys?.includes(column.name),
     })).sort((a, b) => {
@@ -17,6 +17,6 @@ export function useColumnsQuery(database: Database, table: string, schema: strin
       if (!a.isPrimaryKey && b.isPrimaryKey)
         return 1
       return a.name.localeCompare(b.name)
-    }),
-  })
+    }) ?? []
+  }, [columns, primaryKeys])
 }

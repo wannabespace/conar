@@ -1,20 +1,15 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import type { WhereFilter } from './sql/where'
 import type { Database } from '~/lib/indexeddb'
-import { databaseContextType } from '@conar/shared/database'
 import { toast } from 'sonner'
 import { indexedDb } from '~/lib/indexeddb'
-import { dbQuery } from '~/lib/query'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
-import { databaseColumnsQuery } from './queries/columns'
+import { databaseContextQuery } from './queries/context'
 import { databaseQuery, databasesQuery } from './queries/database'
-import { databaseEnumsQuery } from './queries/enums'
 import { databasePrimaryKeysQuery } from './queries/primary-keys'
 import { databaseRowsQuery } from './queries/rows'
-import { databaseTablesAndSchemasQuery } from './queries/tables-and-schemas'
 import { databaseTableTotalQuery } from './queries/total'
-import { contextSql } from './sql/context'
 
 export async function fetchDatabases() {
   if (!navigator.onLine) {
@@ -148,11 +143,10 @@ export async function prefetchDatabaseCore(database: Database) {
 
   await Promise.all([
     queryClient.prefetchQuery(databaseQuery(database.id)),
-    queryClient.prefetchQuery(databaseTablesAndSchemasQuery(database)),
+    queryClient.prefetchQuery(databaseContextQuery(database)),
   ])
 
   await Promise.all([
-    queryClient.prefetchQuery(databaseEnumsQuery(database)),
     queryClient.prefetchQuery(databasePrimaryKeysQuery(database)),
   ])
 }
@@ -163,19 +157,6 @@ export async function prefetchDatabaseTableCore(database: Database, schema: stri
 }) {
   await Promise.all([
     queryClient.prefetchInfiniteQuery(databaseRowsQuery(database, table, schema, query)),
-    queryClient.prefetchQuery(databaseColumnsQuery(database, table, schema)),
     queryClient.prefetchQuery(databaseTableTotalQuery(database, table, schema, query)),
   ])
-}
-
-export async function getDatabaseContext(database: Database): Promise<typeof databaseContextType.infer> {
-  const [result] = await dbQuery({
-    type: database.type,
-    connectionString: database.connectionString,
-    query: contextSql()[database.type],
-  })
-
-  const { database_context } = result.rows[0] as { database_context: unknown }
-
-  return databaseContextType.assert(database_context)
 }

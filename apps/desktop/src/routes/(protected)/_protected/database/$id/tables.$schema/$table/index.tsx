@@ -10,7 +10,7 @@ import { prefetchDatabaseTableCore, useDatabase } from '~/entities/database'
 import { Filters } from './-components/filters'
 import { Header } from './-components/header'
 import { Table } from './-components/table'
-import { useColumnsQuery } from './-queries/use-columns-query'
+import { useTableColumns } from './-queries/use-columns-query'
 
 const storeState = type({
   selected: 'number[]',
@@ -97,7 +97,7 @@ function DatabaseTablePage() {
     })
   }, [])
 
-  const { data: columns } = useColumnsQuery(database, table, schema)
+  const columns = useTableColumns(database, table, schema)
 
   const context = useMemo(() => ({
     store,

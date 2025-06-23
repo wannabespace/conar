@@ -3,13 +3,13 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { xai } from '@ai-sdk/xai'
-import { databaseContextType } from '@conar/shared/database'
+import { databaseContextSchema } from '@conar/shared/database'
 import { AiSqlChatModel } from '@conar/shared/enums/ai-chat-model'
 import { DatabaseType } from '@conar/shared/enums/database-type'
-import { arktypeValidator } from '@hono/arktype-validator'
+import { zValidator } from '@hono/zod-validator'
 import { smoothStream, streamText } from 'ai'
-import { type } from 'arktype'
 import { Hono } from 'hono'
+import * as z from 'zod/v4'
 
 export const ai = new Hono()
 
@@ -23,7 +23,7 @@ function generateStream({
 }: {
   type: DatabaseType
   model: LanguageModelV1
-  context: typeof databaseContextType.infer
+  context: z.output<typeof databaseContextSchema>
   messages: (Omit<Message, 'id'> & { id?: string })[]
   signal: AbortSignal
   currentQuery: string
@@ -72,21 +72,21 @@ function generateStream({
   })
 }
 
-const input = type({
-  'type': type.valueOf(DatabaseType),
-  'messages': type({
-    'id?': 'string',
-    'role': 'string' as type.cast<Message['role']>,
-    'content': 'string',
-    'experimental_attachments?': type({
-      name: 'string',
-      contentType: 'string',
-      url: 'string',
-    }).array(),
+const input = z.object({
+  type: z.enum(DatabaseType),
+  messages: z.object({
+    id: z.string().optional(),
+    role: z.enum<Message['role'][]>(['user', 'assistant', 'system', 'data']),
+    content: z.string(),
+    experimental_attachments: z.object({
+      name: z.string(),
+      contentType: z.string(),
+      url: z.string(),
+    }).array().optional(),
   }).array(),
-  'context': databaseContextType,
-  'model?': type.valueOf(AiSqlChatModel).or(type.enumerated('auto')),
-  'currentQuery?': 'string',
+  context: databaseContextSchema,
+  model: z.enum(AiSqlChatModel).or(z.literal('auto')).optional(),
+  currentQuery: z.string().optional(),
 })
 
 const models: Record<AiSqlChatModel, LanguageModelV1> = {
@@ -99,7 +99,7 @@ const models: Record<AiSqlChatModel, LanguageModelV1> = {
 
 const autoModel = models[AiSqlChatModel.Claude_3_7_Sonnet]
 
-ai.post('/sql-chat', arktypeValidator('json', input), async (c) => {
+ai.post('/sql-chat', zValidator('json', input), async (c) => {
   const { type, messages, context, model, currentQuery = '' } = c.req.valid('json')
 
   try {

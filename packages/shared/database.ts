@@ -1,21 +1,22 @@
-import { type } from 'arktype'
+import * as z from 'zod/v4'
 
-export const databaseContextType = type({
-  schemas: type({
-    schema: 'string',
-    tables: type({
-      name: 'string',
-      columns: type({
-        name: 'string',
-        type: 'string',
-        nullable: 'boolean',
-        default: 'string | null',
-      }).array(),
-    }).array().or('null'),
-  }).array().or('null'),
-  enums: type({
-    schema: 'string',
-    name: 'string',
-    value: 'string',
-  }).array().or('null'),
+export const databaseContextSchema = z.object({
+  schemas: z.array(z.object({
+    schema: z.string(),
+    tables: z.array(z.object({
+      name: z.string(),
+      columns: z.array(z.object({
+        name: z.string(),
+        type: z.string(),
+        nullable: z.boolean(),
+        default: z.nullable(z.string()),
+        editable: z.boolean(),
+      })).nullable().transform(data => data ?? []),
+    })).nullable().transform(data => data ?? []),
+  })).nullable().transform(data => data ?? []),
+  enums: z.array(z.object({
+    schema: z.string(),
+    name: z.string(),
+    value: z.string(),
+  })).nullable().transform(data => data ?? []),
 })

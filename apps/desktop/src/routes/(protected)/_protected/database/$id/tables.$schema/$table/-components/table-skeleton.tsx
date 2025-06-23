@@ -4,40 +4,6 @@ import { useMemo } from 'react'
 import { useTableContext } from '~/components/table'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 
-export function TableHeaderSkeleton({ className, selectable, columnsCount = 5 }: { className?: string, selectable?: boolean, columnsCount?: number }) {
-  return (
-    <div className={cn('sticky top-0 z-10 border-y bg-background h-12 w-fit min-w-full', className)}>
-      <div className="flex bg-muted/20 h-full w-fit min-w-full items-center">
-        {selectable && (
-          <div className="p-2 pl-4">
-            <div className="size-4 bg-muted animate-pulse rounded" />
-          </div>
-        )}
-        {Array.from({ length: columnsCount }).map((_, index) => (
-          <div
-            key={index}
-            className="first:pl-4 shrink-0 px-2 py-1 h-full flex justify-between items-center"
-            style={{
-              width: `${DEFAULT_COLUMN_WIDTH}px`,
-            }}
-          >
-            <div className="flex-1 shrink-0 w-full flex flex-col gap-1">
-              <div className="shrink-0 h-4 bg-muted animate-pulse rounded w-2/3" />
-              <div className="flex items-center gap-1">
-                {index === 0 && <div className="size-3 bg-muted animate-pulse rounded" />}
-                <div className="shrink-0 w-1/2 h-4 bg-muted animate-pulse rounded" />
-              </div>
-            </div>
-            <div className="shrink-0">
-              <div className="bg-muted size-4 animate-pulse rounded" />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 const ROWS_COUNT = 20
 
 export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: { className?: string, selectable?: boolean, columnsCount?: number }) {

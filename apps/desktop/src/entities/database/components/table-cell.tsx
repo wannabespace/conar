@@ -147,7 +147,7 @@ function TableCellMonaco({
         data-mask
         value={value}
         language={isJson ? 'json' : undefined}
-        className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(40vh,30rem)]')}
+        className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(50vh,40rem)]')}
         onChange={setValue}
         options={{
           lineNumbers: isBig ? 'on' : 'off',
