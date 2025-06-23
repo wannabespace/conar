@@ -132,7 +132,7 @@ export function ChatForm({
 
   useEffect(() => {
     return pageHooks.hook('fix', async (error) => {
-      await handleSend(`Fix the following SQL error: ${error}`)
+      await handleSend(`Fix the following SQL error by correcting the current query: ${error}`)
     })
   }, [handleSend])
 
