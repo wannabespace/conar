@@ -1,0 +1,57 @@
+name: Bug report
+description: Report a problem with Conar
+labels: [bug]
+body:
+  - type: input
+    id: bug-description
+    attributes:
+      label: Bug description
+      description: A description of the bug
+      placeholder: Conar crashed when modifying a JSON entry in a PostgreSQL table
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to reproduce
+      description: Step by step instructions to reproduce the bug
+      placeholder: |
+        1. Connect to a PostgreSQL database with a JSON column
+        2. Change the value of a JSON entry
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What was supposed to happen?
+
+  - type: input
+    id: version
+    attributes:
+      label: Conar version
+      placeholder: e.g., v1.3.0
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: OS and environment
+      placeholder: e.g., macOS 15.3.2, Ubuntu 24.04 LTS
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots or logs
+      description: Paste relevant logs or attach screenshots
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Any other helpful information (e.g., network setup, database configuration, etc.)

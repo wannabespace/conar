@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a new idea or enhancement for Conar
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What problem would this feature help you solve?
+      placeholder: |
+        I'm always frustrated when ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: Describe the solution or behavior you'd like
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative solutions or workarounds
+      description: Any alternatives you've tried or considered?
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context or links
+      description: Include mockups, docs, comparisons, etc.
