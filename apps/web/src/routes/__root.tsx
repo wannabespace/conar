@@ -36,6 +36,10 @@ export const Route = createRootRoute({
         'data-domain': 'conar.app',
         'src': 'https://plausible.io/js/script.js',
       },
+      {
+        defer: true,
+        src: 'https://assets.onedollarstats.com/stonks.js',
+      },
     ],
   }),
   component: RootComponent,
