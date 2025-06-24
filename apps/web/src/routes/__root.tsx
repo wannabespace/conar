@@ -45,6 +45,7 @@ export const Route = createRootRoute({
       {
         defer: true,
         src: 'https://assets.onedollarstats.com/stonks.js',
+        ...(import.meta.env.DEV ? { 'data-debug': 'conar.app' } : {}),
       },
     ],
   }),
