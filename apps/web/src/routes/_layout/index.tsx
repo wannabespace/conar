@@ -8,12 +8,12 @@ export const Route = createFileRoute('/_layout/')({
 
 function HomePage() {
   return (
-    <div className="bg-background rounded-3xl container mx-auto">
+    <div className="bg-background rounded-3xl">
       <div>
         <Hero className="sticky top-(--navbar-height)" />
         <Demo />
       </div>
-      <div className="container mx-auto py-30 px-20 flex justify-between items-center gap-2 bg-background rounded-3xl">
+      <div className="py-30 px-20 flex justify-between items-center gap-2 bg-background rounded-3xl">
         <div className="text-2xl font-medium">
           <h2>
             <span className="text-primary">

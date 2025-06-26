@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_layout')({
   component: MainLayout,
 })
 
-export const NAVBAR_HEIGHT_BASE = 200
+const NAVBAR_HEIGHT_BASE = 200
 const NAVBAR_HEIGHT_SCROLLED = 60
 
 function MainLayout() {
@@ -24,9 +24,7 @@ function MainLayout() {
         '--navbar-height': navbarHeightPx,
       } as React.CSSProperties}
     >
-      <div
-        className="fixed top-0 w-full h-(--navbar-height) z-50 bg-gray-100 dark:bg-neutral-950"
-      >
+      <div className="fixed top-0 w-full h-(--navbar-height) z-50 bg-gray-100 dark:bg-neutral-950">
         <div className="relative h-full flex items-center w-full container mx-auto">
           <Navbar className="w-full" />
           <div className="absolute left-0 right-0 top-full w-full h-10 overflow-hidden pointer-events-none">
@@ -34,8 +32,8 @@ function MainLayout() {
           </div>
         </div>
       </div>
-      <div className="pt-[200px]">
-        <div className="sticky inset-x-0 z-30 top-0 w-full">
+      <div className="container mx-auto pt-[200px]">
+        <div className="sticky inset-x-0 z-30 top-(--navbar-height) w-full">
           <BlurGradient
             className="absolute inset-x-0 transition-all delay-300 duration-400 h-48"
           />
