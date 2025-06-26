@@ -59,7 +59,7 @@ function RootComponent() {
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="bg-gray-100 dark:bg-neutral-950">
         <ThemeProvider>
           <Outlet />
         </ThemeProvider>

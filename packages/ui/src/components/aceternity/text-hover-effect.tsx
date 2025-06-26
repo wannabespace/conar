@@ -6,10 +6,12 @@ export function TextHoverEffect({
   text,
   duration,
   className,
+  ref,
 }: {
   text: string
   duration?: number
   className?: string
+  ref?: React.RefObject<SVGSVGElement | null>
 }) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [cursor, setCursor] = useState({ x: 0, y: 0 })
@@ -31,7 +33,11 @@ export function TextHoverEffect({
 
   return (
     <svg
-      ref={svgRef}
+      ref={(e) => {
+        svgRef.current = e
+        if (ref)
+          ref.current = e
+      }}
       width="100%"
       height="100%"
       viewBox="0 0 300 100"

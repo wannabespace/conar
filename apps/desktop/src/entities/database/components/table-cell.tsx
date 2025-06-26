@@ -168,7 +168,7 @@ function TableCellMonaco({
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
-                  size="iconXs"
+                  size="icon-xs"
                   onClick={() => setIsBig(prev => !prev)}
                 >
                   {isBig ? <RiCollapseDiagonal2Line className="size-3" /> : <RiExpandDiagonal2Line className="size-3" />}
@@ -180,7 +180,7 @@ function TableCellMonaco({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="iconXs" variant="outline" onClick={() => copy(displayValue)}>
+                <Button size="icon-xs" variant="outline" onClick={() => copy(displayValue)}>
                   <RiFileCopyLine className="size-3" />
                 </Button>
               </TooltipTrigger>

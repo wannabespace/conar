@@ -95,7 +95,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
                   <Button
-                    size="iconXs"
+                    size="icon-xs"
                     variant="ghost"
                     className="w-5"
                   >
@@ -132,7 +132,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        size="iconXs"
+                        size="icon-xs"
                         variant="ghost"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -153,7 +153,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          size="iconXs"
+                          size="icon-xs"
                           variant="ghost"
                           disabled={isPreLoading}
                           onClick={(e) => {

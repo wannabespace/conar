@@ -19,7 +19,7 @@ export function ChatHeader({
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
-                size="iconSm"
+                size="icon-sm"
                 onClick={() => setMessages([])}
               >
                 <RiDeleteBinLine className="size-4" />

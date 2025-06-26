@@ -4,12 +4,12 @@ import { cn } from '@conar/ui/lib/utils'
 
 const words = ['Postgres']
 
-export function Hero() {
+export function Hero({ className }: { className?: string }) {
   return (
-    <div className="container mx-auto pt-[min(20svh,20rem)] pb-[10svh] flex justify-between items-center gap-2">
+    <div className={cn('py-20 px-10 flex justify-between items-center gap-2', className)}>
       <div
         className={cn(
-          'text-[clamp(2rem,min(10vh,10vw),6rem)] leading-none font-medium text-balance',
+          'text-[clamp(2rem,min(8vh,8vw),5rem)] leading-none font-medium text-balance',
           'bg-gradient-to-b from-foreground to-foreground/80 bg-clip-text text-transparent',
         )}
       >

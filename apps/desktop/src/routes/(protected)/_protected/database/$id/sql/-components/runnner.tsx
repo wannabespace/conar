@@ -148,7 +148,12 @@ function ResultTable({
           />
           <RiSearchLine className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground size-3.5" />
           {search && (
-            <Button variant="ghost" size="iconXs" className="absolute right-1.5 top-1/2 -translate-y-1/2" onClick={() => setSearch('')}>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2"
+              onClick={() => setSearch('')}
+            >
               <RiCloseLine className="size-4" />
             </Button>
           )}
@@ -269,7 +274,7 @@ export function Runner() {
               <TooltipTrigger asChild>
                 <Button
                   variant="secondary"
-                  size="iconSm"
+                  size="icon-sm"
                   onClick={() => pageStore.setState(state => ({
                     ...state,
                     query: '',
@@ -288,7 +293,7 @@ export function Runner() {
               <TooltipTrigger asChild>
                 <Button
                   variant="secondary"
-                  size="iconSm"
+                  size="icon-sm"
                   onClick={() => copy(query)}
                 >
                   <RiFileCopyLine />

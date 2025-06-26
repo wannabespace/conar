@@ -52,7 +52,7 @@ export function HeaderSearch() {
 
   return (
     <form
-      className="relative max-w-full w-60 has-focus-visible:w-full transition-all duration-300 ease-in-out"
+      className="relative max-w-full w-80 has-focus-visible:w-full transition-all duration-300 ease-in-out"
       onSubmit={(e) => {
         e.preventDefault()
         generateFilter({ prompt, context })
@@ -69,7 +69,7 @@ export function HeaderSearch() {
       <Button
         type="submit"
         variant="secondary"
-        size="iconXs"
+        size="icon-xs"
         disabled={isPending}
         className="absolute right-2 top-1/2 -translate-y-1/2"
       >

@@ -24,7 +24,7 @@ export function Sidebar({ database }: { database: Database }) {
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
-                  size="iconSm"
+                  size="icon-sm"
                   onClick={() => refetchTablesAndSchemas()}
                 >
                   <LoadingContent loading={isRefreshingTablesAndSchemas}>

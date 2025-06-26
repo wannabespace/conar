@@ -1,5 +1,3 @@
-'use client'
-
 import * as React from 'react'
 
 export function useIsWindowScrolled({ threshold = 10, initial = false }: { threshold?: number, initial?: boolean } = {}) {
@@ -9,8 +7,6 @@ export function useIsWindowScrolled({ threshold = 10, initial = false }: { thres
     const handleScroll = () => {
       const scrollTop = window.scrollY
       const scrollLeft = window.scrollX
-
-      console.log(scrollTop)
 
       setIsScrolled(scrollTop > threshold || scrollLeft > threshold)
     }
