@@ -1,17 +1,22 @@
 import { FlipWords } from '@conar/ui/components/aceternity/flip-words'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
+import { motion, useScroll, useTransform } from 'motion/react'
 
 const words = ['Postgres']
 
 export function Hero({ className }: { className?: string }) {
+  const { scrollYProgress } = useScroll()
+
+  const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0])
+
   return (
-    <div className={cn('py-20 px-10 flex justify-between items-center gap-2', className)}>
+    <motion.div
+      style={{ opacity }}
+      className={cn('py-20 px-10 flex justify-between items-center gap-2', className)}
+    >
       <div
-        className={cn(
-          'text-[clamp(2rem,min(8vh,8vw),5rem)] leading-none font-medium text-balance',
-          'bg-gradient-to-b from-foreground to-foreground/80 bg-clip-text text-transparent',
-        )}
+        className="text-[clamp(2rem,min(8vh,8vw),5rem)] leading-none font-medium text-balance"
       >
         Manage
         <FlipWords
@@ -29,6 +34,6 @@ export function Hero({ className }: { className?: string }) {
           Download
         </Button>
       </div>
-    </div>
+    </motion.div>
   )
 }

@@ -1,7 +1,7 @@
 import type { MotionProps } from 'motion/react'
 import type { ComponentProps } from 'react'
 import { cn } from '@conar/ui/lib/utils'
-import { motion, useScroll, useSpring, useTransform } from 'motion/react'
+import { motion, useScroll, useTransform } from 'motion/react'
 
 function imageProps(index: number) {
   return {
@@ -89,7 +89,7 @@ function Images() {
           type="dark"
         />
       ))}
-      <div className="absolute z-10 inset-x-0 bottom-0 h-full bg-gradient-to-t from-background via-background/70 to-transparent" />
+      <div className="absolute z-10 inset-x-0 bottom-0 h-full bg-gradient-to-t from-background to-transparent" />
     </div>
   )
 }
@@ -97,12 +97,13 @@ function Images() {
 export function Demo({ className }: { className?: string }) {
   const { scrollYProgress } = useScroll()
 
-  const rotateX = useSpring(useTransform(scrollYProgress, [0, 1], [10, -2]))
+  const rotateX = useTransform(scrollYProgress, [0, 1], [10, -10])
+  const scale = useTransform(scrollYProgress, [0, 1], [0.99, 0.9])
 
   return (
     <div className={cn('px-10 perspective-[1200px]', className)}>
       <motion.div
-        style={{ rotateX }}
+        style={{ rotateX, scale }}
         initial={{
           y: 100,
           opacity: 0,

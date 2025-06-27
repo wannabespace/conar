@@ -33,21 +33,17 @@ function Version() {
   const versionNumbers = data ? data.version.slice(1).split('.').map(Number) : [0, 0, 0]
 
   return (
-    <p className="text-sm text-muted-foreground">
-      Current release:
-      {' '}
-      <span className={cn('font-medium', isPending && 'text-muted-foreground/50 animate-pulse')}>
-        <NumberFlowGroup>
-          {versionNumbers.map((number, index) => (
-            <NumberFlow
-              key={index}
-              value={number}
-              prefix={index === 0 ? 'v' : ''}
-              suffix={index === versionNumbers.length - 1 ? '' : '.'}
-            />
-          ))}
-        </NumberFlowGroup>
-      </span>
+    <p className={cn('text-sm text-muted-foreground', isPending && 'animate-pulse')}>
+      <NumberFlowGroup>
+        {versionNumbers.map((number, index) => (
+          <NumberFlow
+            key={index}
+            value={number}
+            prefix={index === 0 ? 'Current version ' : ''}
+            suffix={index === versionNumbers.length - 1 ? '' : '.'}
+          />
+        ))}
+      </NumberFlowGroup>
     </p>
   )
 }
@@ -107,7 +103,7 @@ function DownloadLink() {
   if (!downloadLinks) {
     return (
       <Button disabled variant="secondary" size="lg">
-        No downloads found for this platform :(
+        No downloads found for your platform :(
       </Button>
     )
   }
@@ -246,7 +242,7 @@ function DownloadOption({ Icon, platform, arch, asset }: {
 
 function RouteComponent() {
   return (
-    <div className="flex flex-col items-center justify-center px-4 py-40">
+    <div className="flex flex-col items-center justify-center px-4 py-[10vh]">
       <div className="flex flex-col items-center max-w-2xl mx-auto text-center">
         <AppLogoSquare className="size-32 mb-6" />
         <h1 className="text-4xl mb-3 tracking-tight font-medium">

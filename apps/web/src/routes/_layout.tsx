@@ -1,6 +1,7 @@
 import { BlurGradient } from '@conar/ui/components/custom/blur-gradient'
+import { cn } from '@conar/ui/lib/utils'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { motion, useScroll, useTransform } from 'motion/react'
+import { motion, useScroll, useSpring, useTransform } from 'motion/react'
 import { Footer } from '~/components/footer'
 import { Navbar } from '~/components/navbar'
 
@@ -8,13 +9,16 @@ export const Route = createFileRoute('/_layout')({
   component: MainLayout,
 })
 
-const NAVBAR_HEIGHT_BASE = 200
-const NAVBAR_HEIGHT_SCROLLED = 60
+export const NAVBAR_HEIGHT_BASE = 150
+export const NAVBAR_HEIGHT_SCROLLED = 60
 
 function MainLayout() {
-  const { scrollYProgress } = useScroll()
-  const navbarHeight = useTransform(scrollYProgress, [0, 0.5], [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED])
+  const { scrollY } = useScroll()
+  const navbarHeight = useSpring(useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED]), {
+    damping: 15,
+  })
   const navbarHeightPx = useTransform(() => `${navbarHeight.get()}px`)
+  const blurTranslateY = useTransform(() => `${Math.min((NAVBAR_HEIGHT_BASE - scrollY.get()) * -1, 0)}px`)
 
   return (
     <motion.div
@@ -31,15 +35,30 @@ function MainLayout() {
           </div>
         </div>
       </div>
-      <div className="container mx-auto pt-[200px] bg-background rounded-3xl">
-        <div className="sticky inset-x-0 z-30 top-(--navbar-height) w-full">
+      <div
+        className="container mx-auto bg-background rounded-3xl"
+        style={{
+          paddingTop: `${NAVBAR_HEIGHT_BASE}px`,
+        }}
+      >
+        <motion.div
+          className={cn(
+            'sticky inset-x-0 z-30 top-(--navbar-height) w-full',
+          )}
+          style={{
+            translateY: blurTranslateY,
+          }}
+        >
           <BlurGradient
             className="absolute inset-x-0 transition-all delay-300 duration-400 h-48"
           />
-        </div>
+        </motion.div>
         <Outlet />
         <div className="sticky inset-x-0 z-30 bottom-0 w-full">
-          <BlurGradient className="absolute bottom-0 inset-x-0 rotate-180 h-48" />
+          <div className="z-20 relative w-full h-10 overflow-hidden pointer-events-none">
+            <div className="absolute bottom-0 inset-x-0 h-20 rounded-3xl ring-50 ring-gray-100 dark:ring-neutral-950" />
+          </div>
+          <div className="relative z-20 bg-gray-100 dark:bg-neutral-950 h-4" />
         </div>
       </div>
       <Footer />
