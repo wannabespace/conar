@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
-import { RiAppleFill, RiArrowDownSLine, RiDownloadLine } from '@remixicon/react'
+import { RiAppleFill, RiArrowDownSLine } from '@remixicon/react'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useMemo } from 'react'
@@ -56,57 +56,74 @@ function DownloadLink() {
   const os = getOS()
   const { data: { mac, linux } } = useSuspenseQuery(getLatestReleaseQuery)
 
-  const downloadLinks = useMemo((): { label: string, url: string }[] => {
+  const downloadLinks = useMemo((): { platform: string, assets: { arch: string, url: string }[] } | null => {
     if (os === 'macos' && mac.intel && mac.arm64) {
-      return [
-        {
-          label: 'macOS (Apple Silicon)',
-          url: mac.arm64.url,
-        },
-        {
-          label: 'macOS (Intel)',
-          url: mac.intel.url,
-        },
-      ]
+      return {
+        platform: 'macOS',
+        assets: [
+          {
+            arch: 'Apple Silicon',
+            url: mac.arm64.url,
+          },
+          {
+            arch: 'Intel',
+            url: mac.intel.url,
+          },
+        ],
+      }
     }
 
     if (os === 'linux' && linux.deb && linux.appimage) {
-      return [
-        {
-          label: 'Linux',
-          url: linux.deb.url,
-        },
-      ]
+      return {
+        platform: 'Linux',
+        assets: [
+          {
+            arch: 'deb',
+            url: linux.deb.url,
+          },
+          {
+            arch: 'AppImage',
+            url: linux.appimage.url,
+          },
+        ],
+      }
     }
 
     // if (os === 'windows' && windows.exe) {
-    //   return [
-    //     {
-    //       label: 'Windows',
-    //       url: windows.exe.url,
-    //     },
-    //   ]
+    //   return {
+    //     platform: 'Windows',
+    //     assets: [
+    //       {
+    //         arch: 'exe',
+    //         url: windows.exe.url,
+    //       },
+    //     ],
+    //   }
     // }
 
-    return []
+    return null
   }, [os, mac, linux])
 
-  if (downloadLinks.length === 0) {
-    return <p className="text-muted-foreground">No downloads found for this platform.</p>
+  if (!downloadLinks) {
+    return (
+      <Button disabled variant="secondary" size="lg">
+        No downloads found for this platform :(
+      </Button>
+    )
   }
 
-  if (downloadLinks.length === 1) {
+  if (downloadLinks.assets.length === 1) {
     return (
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Button
-          key={downloadLinks[0].url}
+          key={downloadLinks.assets[0].url}
           asChild
           size="lg"
         >
-          <a href={downloadLinks[0].url} download className="flex items-center justify-center gap-2">
+          <a href={downloadLinks.assets[0].url} download className="flex items-center justify-center gap-2">
             Download for
             {' '}
-            {downloadLinks[0].label}
+            {downloadLinks.platform}
           </a>
         </Button>
       </div>
@@ -119,15 +136,17 @@ function DownloadLink() {
         <Button size="lg" className="flex items-center justify-center gap-2">
           Download for
           {' '}
-          {os === 'macos' ? 'macOS' : 'Linux'}
+          {downloadLinks.platform}
           <RiArrowDownSLine />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        {downloadLinks.map(link => (
-          <DropdownMenuItem key={link.url} asChild>
-            <a href={link.url} download className="text-foreground flex gap-2">
-              {link.label}
+        {downloadLinks.assets.map(asset => (
+          <DropdownMenuItem key={asset.url} asChild>
+            <a href={asset.url} download className="text-foreground flex gap-2">
+              {downloadLinks.platform}
+              {' '}
+              {asset.arch}
             </a>
           </DropdownMenuItem>
         ))}
@@ -206,8 +225,11 @@ function DownloadOption({ Icon, platform, arch, asset }: {
             disabled={!asset}
             variant="secondary"
           >
-            <a href={asset ? asset.url : '#'} download className="flex items-center justify-center gap-1.5">
-              <RiDownloadLine />
+            <a
+              href={asset ? asset.url : '#'}
+              download
+              className="flex items-center justify-center gap-1.5"
+            >
               Download
             </a>
           </Button>
@@ -232,10 +254,13 @@ function RouteComponent() {
           {' '}
           <strong>Conar</strong>
         </h1>
-        <p className="text-lg text-muted-foreground mb-10">
-          Available for macOS and Linux (Windows coming soon)
+        <p className="text-lg text-muted-foreground">
+          Available for macOS and Linux
         </p>
-        <div className="mb-12 text-center space-y-4">
+        <p className="text-muted-foreground opacity-50 mb-10 text-xs">
+          Windows users will have to wait a bit longer :(
+        </p>
+        <div className="mb-12 text-center space-y-2">
           <MountedSuspense fallback={<div className="h-10 w-44 bg-muted animate-pulse rounded-md" />}>
             <DownloadLink />
           </MountedSuspense>
