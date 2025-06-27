@@ -2,15 +2,19 @@ import type { ComponentProps } from 'react'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
+import NumberFlow from '@number-flow/react'
 import { RiGithubFill, RiTwitterXLine } from '@remixicon/react'
+import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
+import { getRepoQuery } from '~/lib/queries'
 
 const AppLogoMotion = motion.create(AppLogo)
 
 export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   const { scrollYProgress } = useScroll()
   const scale = useTransform(scrollYProgress, [0, 0.5], [2, 1])
+  const { data } = useQuery(getRepoQuery)
 
   return (
     <header className={cn('flex items-center justify-between', className)} {...props}>
@@ -44,7 +48,7 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
         </Button>
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="sm"
           className="gap-2"
           asChild
         >
@@ -53,17 +57,20 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <RiGithubFill className="h-4 w-4" />
+            <RiGithubFill className="size-4" />
+            <NumberFlow
+              value={data?.stargazers_count || 0}
+              className={cn('tabular-nums duration-200', !data && 'animate-pulse text-muted-foreground')}
+            />
           </a>
         </Button>
         <Button
           size="sm"
-          variant="secondary"
           className="gap-2"
           asChild
         >
           <Link to="/download">
-            Get Started
+            Download
           </Link>
         </Button>
       </div>

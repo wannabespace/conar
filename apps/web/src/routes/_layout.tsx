@@ -13,7 +13,6 @@ const NAVBAR_HEIGHT_SCROLLED = 60
 
 function MainLayout() {
   const { scrollYProgress } = useScroll()
-
   const navbarHeight = useTransform(scrollYProgress, [0, 0.5], [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED])
   const navbarHeightPx = useTransform(() => `${navbarHeight.get()}px`)
 
@@ -32,7 +31,7 @@ function MainLayout() {
           </div>
         </div>
       </div>
-      <div className="container mx-auto pt-[200px]">
+      <div className="container mx-auto pt-[200px] bg-background rounded-3xl">
         <div className="sticky inset-x-0 z-30 top-(--navbar-height) w-full">
           <BlurGradient
             className="absolute inset-x-0 transition-all delay-300 duration-400 h-48"
@@ -42,8 +41,8 @@ function MainLayout() {
         <div className="sticky inset-x-0 z-30 bottom-0 w-full">
           <BlurGradient className="absolute bottom-0 inset-x-0 rotate-180 h-48" />
         </div>
-        <Footer />
       </div>
+      <Footer />
     </motion.div>
   )
 }

@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_layout/')({
 
 function HomePage() {
   return (
-    <div className="bg-background rounded-3xl">
+    <div>
       <div>
         <Hero className="sticky top-(--navbar-height)" />
         <Demo />

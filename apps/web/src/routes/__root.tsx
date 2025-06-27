@@ -1,9 +1,12 @@
 import { Toaster } from '@conar/ui/components/sonner'
 import appCss from '@conar/ui/globals.css?url'
 import { ThemeProvider } from '@conar/ui/theme-provider'
-import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
+import { type QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { ErrorPage } from '~/error-page'
+import { getLatestReleaseQuery, getRepoQuery } from '~/lib/queries'
 import { seo } from '~/utils/seo'
 
 if (import.meta.env.DEV) {
@@ -12,7 +15,15 @@ if (import.meta.env.DEV) {
   })
 }
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient
+}>()({
+  beforeLoad: async ({ context }) => {
+    if (typeof window !== 'undefined') {
+      context.queryClient.prefetchQuery(getRepoQuery)
+      context.queryClient.prefetchQuery(getLatestReleaseQuery)
+    }
+  },
   head: () => ({
     meta: [
       {
@@ -38,11 +49,6 @@ export const Route = createRootRoute({
     ],
     scripts: [
       {
-        'defer': true,
-        'data-domain': 'conar.app',
-        'src': 'https://plausible.io/js/script.js',
-      },
-      {
         defer: true,
         src: 'https://assets.onedollarstats.com/stonks.js',
         ...(import.meta.env.DEV ? { 'data-debug': 'conar.app' } : {}),
@@ -54,15 +60,20 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
+  const { queryClient } = Route.useRouteContext()
+
   return (
     <html suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body className="bg-gray-100 dark:bg-neutral-950">
-        <ThemeProvider>
-          <Outlet />
-        </ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <Outlet />
+            <ReactQueryDevtools buttonPosition="bottom-left" />
+          </ThemeProvider>
+        </QueryClientProvider>
         <Toaster />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
