@@ -27,7 +27,7 @@ interface Tab {
   preview: boolean
 }
 
-const os = getOS()
+const os = getOS(navigator.userAgent)
 
 function CloseButton({ onClick }: { onClick: (e: React.MouseEvent<SVGSVGElement>) => void }) {
   return (
@@ -41,7 +41,7 @@ function CloseButton({ onClick }: { onClick: (e: React.MouseEvent<SVGSVGElement>
         </TooltipTrigger>
         <TooltipContent side="bottom" sideOffset={12}>
           Close tab (
-          {os === 'macos' ? '⌘' : 'Ctrl'}
+          {os.type === 'macos' ? '⌘' : 'Ctrl'}
           {' '}
           + W)
         </TooltipContent>
@@ -269,7 +269,7 @@ export function TablesTabs({ ref, database, id }: {
     setTabs(tabs => tabs.filter(tab => !(tab.table === table && tab.schema === schema)))
   }
 
-  useKeyboardEvent(e => e.key === 'w' && (os === 'macos' ? e.metaKey : e.ctrlKey), (e) => {
+  useKeyboardEvent(e => e.key === 'w' && (os.type === 'macos' ? e.metaKey : e.ctrlKey), (e) => {
     e.preventDefault()
 
     if (schemaParam && tableParam) {

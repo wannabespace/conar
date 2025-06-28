@@ -13,7 +13,7 @@ import { actionsCenterStore } from '~/routes/(protected)/-components/actions-cen
 import { Route } from '../$id'
 import { useLastOpenedTable } from '../-hooks/use-last-opened-table'
 
-const os = getOS()
+const os = getOS(navigator.userAgent)
 
 export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { id } = Route.useParams()
@@ -145,7 +145,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
               <RiCommandLine className="size-4" />
             </TooltipTrigger>
             <TooltipContent side="right">
-              {os === 'macos' ? '⌘' : 'Ctrl'}
+              {os?.type === 'macos' ? '⌘' : 'Ctrl'}
               P
             </TooltipContent>
           </Tooltip>

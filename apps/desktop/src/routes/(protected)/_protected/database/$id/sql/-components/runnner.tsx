@@ -29,16 +29,16 @@ import { dbQuery } from '~/lib/query'
 import { pageHooks, pageStore, Route } from '..'
 import { chatQuery } from '../-lib'
 
-const os = getOS()
+const os = getOS(navigator.userAgent)
 
 function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void, query: string }) {
-  const os = getOS()
+  const os = getOS(navigator.userAgent)
   const uncommentedLines = query.split('\n').filter(line => !line.trim().startsWith('--')).join('\n')
   const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
   const dangerousKeywords = uncommentedLines.match(new RegExp(dangerousKeywordsPattern, 'gi')) || []
   const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map(k => k.toUpperCase()))]
 
-  useKeyboardEvent(e => (os === 'macos' ? e.metaKey : e.ctrlKey) && e.key === 'Enter' && e.shiftKey, () => {
+  useKeyboardEvent(e => (os.type === 'macos' ? e.metaKey : e.ctrlKey) && e.key === 'Enter' && e.shiftKey, () => {
     confirm()
     setOpen(false)
   })
@@ -70,7 +70,7 @@ function DangerousSqlAlert({ open, setOpen, confirm, query }: { open: boolean, s
             <span className="flex items-center gap-2">
               Run Anyway
               <kbd className="flex items-center">
-                {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
+                {os.type === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
                 <RiArrowUpLine className="size-3" />
                 <RiCornerDownLeftLine className="size-3" />
               </kbd>
@@ -329,7 +329,7 @@ export function Runner() {
               Run
               {' '}
               <kbd className="flex items-center text-xs">
-                {os === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
+                {os.type === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
                 <RiCornerDownLeftLine className="size-3" />
               </kbd>
             </div>

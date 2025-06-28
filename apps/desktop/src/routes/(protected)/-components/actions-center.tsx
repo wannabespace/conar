@@ -9,7 +9,7 @@ import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/dat
 import { trackEvent } from '~/lib/events'
 import { getLastOpenedTable } from '../_protected/database/-hooks/use-last-opened-table'
 
-const os = getOS()
+const os = getOS(navigator.userAgent)
 
 export const actionsCenterStore = new Store({
   isOpen: false,
@@ -24,7 +24,7 @@ export function ActionsCenter() {
   const isOpen = useStore(actionsCenterStore, state => state.isOpen)
   const router = useRouter()
 
-  useKeyboardEvent(e => e.key === 'p' && (os === 'macos' ? e.metaKey : e.ctrlKey), () => {
+  useKeyboardEvent(e => e.key === 'p' && (os.type === 'macos' ? e.metaKey : e.ctrlKey), () => {
     if (!databases || databases.length === 0)
       return
 

@@ -6,7 +6,7 @@ import { fetchDatabases } from '~/entities/database'
 import { authClient } from '~/lib/auth'
 import { ActionsCenter } from './-components/actions-center'
 
-const os = getOS()
+const os = getOS(navigator.userAgent)
 
 export const Route = createFileRoute('/(protected)/_protected')({
   component: ProtectedLayout,
@@ -29,7 +29,7 @@ function ProtectedLayout() {
     return () => clearInterval(interval)
   }, [data?.user])
 
-  useKeyboardEvent(e => e.key === 'n' && (os === 'macos' ? e.metaKey : e.ctrlKey), () => {
+  useKeyboardEvent(e => e.key === 'n' && (os.type === 'macos' ? e.metaKey : e.ctrlKey), () => {
     router.navigate({ to: '/create' })
   })
 

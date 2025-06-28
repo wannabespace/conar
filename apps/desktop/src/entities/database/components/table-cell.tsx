@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { sleep } from '~/lib/helpers'
 
-const os = getOS()
+const os = getOS(navigator.userAgent)
 
 function getDisplayValue(value: unknown, oneLine: boolean) {
   if (typeof value === 'object' && value !== null)
@@ -228,7 +228,7 @@ function TableCellMonaco({
               >
                 Save
                 <kbd className="flex items-center text-xs">
-                  {os === 'macos' ? <RiCommandLine className="size-2.5" /> : 'Ctrl'}
+                  {os.type === 'macos' ? <RiCommandLine className="size-2.5" /> : 'Ctrl'}
                   <RiCornerDownLeftLine className="size-2.5" />
                 </kbd>
               </Button>

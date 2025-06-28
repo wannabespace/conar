@@ -1,7 +1,7 @@
 import type { MotionProps } from 'motion/react'
 import type { ComponentProps } from 'react'
 import { cn } from '@conar/ui/lib/utils'
-import { motion, useScroll, useTransform } from 'motion/react'
+import { motion, useScroll, useSpring, useTransform } from 'motion/react'
 
 function imageProps(index: number) {
   return {
@@ -97,7 +97,9 @@ function Images() {
 export function Demo({ className }: { className?: string }) {
   const { scrollYProgress } = useScroll()
 
-  const rotateX = useTransform(scrollYProgress, [0, 1], [10, -10])
+  const rotateX = useSpring(useTransform(scrollYProgress, [0, 1], [10, -10]), {
+    damping: 15,
+  })
   const scale = useTransform(scrollYProgress, [0, 1], [0.99, 0.9])
 
   return (

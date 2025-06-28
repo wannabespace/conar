@@ -1,7 +1,7 @@
 import type { OS } from '@conar/shared/utils/os'
 import type { RemixiconComponentType } from '@remixicon/react'
 import { formatBytes } from '@conar/shared/utils/files'
-import { getOS } from '@conar/shared/utils/os'
+import { osMap } from '@conar/shared/utils/os'
 import { Badge } from '@conar/ui/components/badge'
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
@@ -17,6 +17,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { LinuxLogo } from '~/assets/linux-logo'
 import { getLatestReleaseQuery } from '~/lib/queries'
+import { getOSIsomorphic } from '~/utils/os'
 import { seo } from '~/utils/seo'
 
 export const Route = createFileRoute('/_layout/download')({
@@ -27,6 +28,8 @@ export const Route = createFileRoute('/_layout/download')({
     }),
   }),
 })
+
+const os = getOSIsomorphic()
 
 function Version() {
   const { data, isPending } = useQuery(getLatestReleaseQuery)
@@ -49,13 +52,18 @@ function Version() {
 }
 
 function DownloadLink() {
-  const os = getOS()
-  const { data: { mac, linux } } = useSuspenseQuery(getLatestReleaseQuery)
+  const { data } = useQuery(getLatestReleaseQuery)
 
-  const downloadLinks = useMemo((): { platform: string, assets: { arch: string, url: string }[] } | null => {
-    if (os === 'macos' && mac.intel && mac.arm64) {
+  const downloadLinks = useMemo(() => {
+    if (!data) {
+      return null
+    }
+
+    const { mac, linux } = data
+
+    if (os?.type === 'macos' && mac.intel && mac.arm64) {
       return {
-        platform: 'macOS',
+        platform: os.label,
         assets: [
           {
             arch: 'Apple Silicon',
@@ -69,9 +77,9 @@ function DownloadLink() {
       }
     }
 
-    if (os === 'linux' && linux.deb && linux.appimage) {
+    if (os?.type === 'linux' && linux.deb && linux.appimage) {
       return {
-        platform: 'Linux',
+        platform: os.label,
         assets: [
           {
             arch: 'deb',
@@ -85,9 +93,9 @@ function DownloadLink() {
       }
     }
 
-    // if (os === 'windows' && windows.exe) {
+    // if (os.type === 'windows' && windows.exe) {
     //   return {
-    //     platform: 'Windows',
+    //     platform: os.label,
     //     assets: [
     //       {
     //         arch: 'exe',
@@ -98,12 +106,31 @@ function DownloadLink() {
     // }
 
     return null
-  }, [os, mac, linux])
+  }, [os, data])
+
+  if (!data) {
+    return (
+      <Button
+        size="lg"
+        disabled
+      >
+        Download for
+        {' '}
+        <span className="animate-pulse">
+          {os?.label}
+        </span>
+      </Button>
+    )
+  }
 
   if (!downloadLinks) {
     return (
       <Button disabled variant="secondary" size="lg">
-        No downloads found for your platform :(
+        No downloads found for
+        {' '}
+        {os?.label}
+        {' '}
+        :(
       </Button>
     )
   }
@@ -158,25 +185,25 @@ function AllPlatforms() {
     <>
       <DownloadOption
         Icon={RiAppleFill}
-        platform="macOS"
+        type="macos"
         arch="Apple Silicon"
         asset={mac.arm64}
       />
       <DownloadOption
         Icon={RiAppleFill}
-        platform="macOS"
+        type="macos"
         arch="Intel"
         asset={mac.intel}
       />
       <DownloadOption
         Icon={LinuxLogo}
-        platform="Linux"
+        type="linux"
         arch="deb"
         asset={linux.deb}
       />
       <DownloadOption
         Icon={LinuxLogo}
-        platform="Linux"
+        type="linux"
         arch="AppImage"
         asset={linux.appimage}
       />
@@ -184,14 +211,12 @@ function AllPlatforms() {
   )
 }
 
-function DownloadOption({ Icon, platform, arch, asset }: {
+function DownloadOption({ Icon, type, arch, asset }: {
   Icon: RemixiconComponentType
-  platform: string
+  type: OS
   arch?: string
   asset?: {
-    name: string
     url: string
-    type: OS
     size: number
   }
 }) {
@@ -203,7 +228,7 @@ function DownloadOption({ Icon, platform, arch, asset }: {
         </div>
         <div className="flex flex-col items-start">
           <span className="font-medium">
-            {platform}
+            {osMap[type].label}
             {' '}
             {arch && (
               <Badge variant="outline">
@@ -257,9 +282,7 @@ function RouteComponent() {
           Windows users will have to wait a bit longer :(
         </p>
         <div className="mb-12 text-center space-y-2">
-          <MountedSuspense fallback={<div className="h-10 w-44 bg-muted animate-pulse rounded-md" />}>
-            <DownloadLink />
-          </MountedSuspense>
+          <DownloadLink />
           <Version />
         </div>
         <div className="max-w-xl w-full">
@@ -269,22 +292,22 @@ function RouteComponent() {
               <>
                 <DownloadOption
                   Icon={RiAppleFill}
-                  platform="macOS"
+                  type="macos"
                   arch="Apple Silicon"
                 />
                 <DownloadOption
                   Icon={RiAppleFill}
-                  platform="macOS"
+                  type="macos"
                   arch="Intel"
                 />
                 <DownloadOption
                   Icon={LinuxLogo}
-                  platform="Linux"
+                  type="linux"
                   arch="deb"
                 />
                 <DownloadOption
                   Icon={LinuxLogo}
-                  platform="Linux"
+                  type="linux"
                   arch="AppImage"
                 />
               </>
