@@ -114,10 +114,10 @@ function DownloadLink() {
         size="lg"
         disabled
       >
-        Download for
-        {' '}
-        <span className="animate-pulse">
-          {os?.label}
+        <span>
+          Download for
+          {' '}
+          <span className="animate-pulse">{os?.label}</span>
         </span>
       </Button>
     )
