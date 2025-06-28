@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
 
-export function LinuxLogo(props: ComponentProps<'svg'>) {
+export function Linux(props: ComponentProps<'svg'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

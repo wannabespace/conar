@@ -71,7 +71,7 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
           asChild
         >
           <Link to="/download">
-            Download
+            Get Started
           </Link>
         </Button>
       </div>

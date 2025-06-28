@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_layout/')({
 
 function HomePage() {
   return (
-    <div>
+    <>
       <div>
         <Hero className="sticky top-(--navbar-height)" />
         <Demo />
@@ -22,6 +22,6 @@ function HomePage() {
           </h2>
         </div>
       </div>
-    </div>
+    </>
   )
 }

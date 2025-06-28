@@ -24,7 +24,7 @@ const repoQuery = {
       return
 
     const persisted = JSON.parse(stored) as Persisted<Repo>
-    const threeHoursAgo = subHours(new Date(), 3).getTime()
+    const threeHoursAgo = subHours(new Date(), 1).getTime()
 
     if (persisted.timestamp < threeHoursAgo) {
       localStorage.removeItem(repoKey)
@@ -69,7 +69,7 @@ const releaseQuery = {
       return
 
     const persisted = JSON.parse(stored) as Persisted<Release>
-    const threeHoursAgo = subHours(new Date(), 3).getTime()
+    const threeHoursAgo = subHours(new Date(), 1).getTime()
 
     if (persisted.timestamp < threeHoursAgo) {
       localStorage.removeItem(releaseKey)
@@ -145,7 +145,7 @@ export const getLatestReleaseQuery = queryOptions({
     const macSiliconAsset = links.find(link => link.type === 'macos' && link.name.toLowerCase().includes('arm64'))!
     const macIntelAsset = links.find(link => link.type === 'macos' && link.name.toLowerCase().includes('x64'))!
     const linuxDebAsset = links.find(link => link.type === 'linux' && link.name.toLowerCase().endsWith('.deb'))!
-    const linuxAppimageAsset = links.find(link => link.type === 'linux' && link.name.toLowerCase().endsWith('.appimage'))!
+    const linuxAppImageAsset = links.find(link => link.type === 'linux' && link.name.toLowerCase().endsWith('.appimage'))!
     // const windowsAsset = links.find(link => link.type === 'windows')
 
     return {
@@ -156,7 +156,7 @@ export const getLatestReleaseQuery = queryOptions({
       },
       linux: {
         deb: linuxDebAsset,
-        appimage: linuxAppimageAsset,
+        appImage: linuxAppImageAsset,
       },
       // windows: {
       //   exe: windowsAsset,

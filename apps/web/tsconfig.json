@@ -12,6 +12,6 @@
       "path": "../api"
     }
   ],
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "../../packages/ui/src/components/icons/linux-logo.tsx"],
   "exclude": ["node_modules"]
 }

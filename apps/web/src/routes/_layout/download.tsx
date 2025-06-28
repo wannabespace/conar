@@ -7,17 +7,15 @@ import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
 import { MountedSuspense } from '@conar/ui/components/custom/mounted-suspense'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import { Linux } from '@conar/ui/components/icons/linux'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
-import { RiAppleFill, RiArrowDownSLine } from '@remixicon/react'
+import { RiAppleFill } from '@remixicon/react'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useMemo } from 'react'
-import { LinuxLogo } from '~/assets/linux-logo'
+import { DownloadButton } from '~/components/download-button'
 import { getLatestReleaseQuery } from '~/lib/queries'
-import { getOSIsomorphic } from '~/utils/os'
 import { seo } from '~/utils/seo'
 
 export const Route = createFileRoute('/_layout/download')({
@@ -28,8 +26,6 @@ export const Route = createFileRoute('/_layout/download')({
     }),
   }),
 })
-
-const os = getOSIsomorphic()
 
 function Version() {
   const { data, isPending } = useQuery(getLatestReleaseQuery)
@@ -51,133 +47,6 @@ function Version() {
   )
 }
 
-function DownloadLink() {
-  const { data } = useQuery(getLatestReleaseQuery)
-
-  const downloadLinks = useMemo(() => {
-    if (!data) {
-      return null
-    }
-
-    const { mac, linux } = data
-
-    if (os?.type === 'macos' && mac.intel && mac.arm64) {
-      return {
-        platform: os.label,
-        assets: [
-          {
-            arch: 'Apple Silicon',
-            url: mac.arm64.url,
-          },
-          {
-            arch: 'Intel',
-            url: mac.intel.url,
-          },
-        ],
-      }
-    }
-
-    if (os?.type === 'linux' && linux.deb && linux.appimage) {
-      return {
-        platform: os.label,
-        assets: [
-          {
-            arch: 'deb',
-            url: linux.deb.url,
-          },
-          {
-            arch: 'AppImage',
-            url: linux.appimage.url,
-          },
-        ],
-      }
-    }
-
-    // if (os.type === 'windows' && windows.exe) {
-    //   return {
-    //     platform: os.label,
-    //     assets: [
-    //       {
-    //         arch: 'exe',
-    //         url: windows.exe.url,
-    //       },
-    //     ],
-    //   }
-    // }
-
-    return null
-  }, [os, data])
-
-  if (!data) {
-    return (
-      <Button
-        size="lg"
-        disabled
-      >
-        <span>
-          Download for
-          {' '}
-          <span className="animate-pulse">{os?.label}</span>
-        </span>
-      </Button>
-    )
-  }
-
-  if (!downloadLinks) {
-    return (
-      <Button disabled variant="secondary" size="lg">
-        No downloads found for
-        {' '}
-        {os?.label}
-        {' '}
-        :(
-      </Button>
-    )
-  }
-
-  if (downloadLinks.assets.length === 1) {
-    return (
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Button
-          key={downloadLinks.assets[0].url}
-          asChild
-          size="lg"
-        >
-          <a href={downloadLinks.assets[0].url} download className="flex items-center justify-center gap-2">
-            Download for
-            {' '}
-            {downloadLinks.platform}
-          </a>
-        </Button>
-      </div>
-    )
-  }
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button size="lg" className="flex items-center justify-center gap-2">
-          Download for
-          {' '}
-          {downloadLinks.platform}
-          <RiArrowDownSLine />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {downloadLinks.assets.map(asset => (
-          <DropdownMenuItem key={asset.url} asChild>
-            <a href={asset.url} download className="text-foreground flex gap-2">
-              {downloadLinks.platform}
-              {' '}
-              {asset.arch}
-            </a>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
-
 function AllPlatforms() {
   const { data: { mac, linux } } = useSuspenseQuery(getLatestReleaseQuery)
 
@@ -196,16 +65,16 @@ function AllPlatforms() {
         asset={mac.intel}
       />
       <DownloadOption
-        Icon={LinuxLogo}
+        Icon={Linux}
         type="linux"
         arch="deb"
         asset={linux.deb}
       />
       <DownloadOption
-        Icon={LinuxLogo}
+        Icon={Linux}
         type="linux"
         arch="AppImage"
-        asset={linux.appimage}
+        asset={linux.appImage}
       />
     </>
   )
@@ -249,7 +118,6 @@ function DownloadOption({ Icon, type, arch, asset }: {
             <a
               href={asset ? asset.url : '#'}
               download
-              className="flex items-center justify-center gap-1.5"
             >
               Download
             </a>
@@ -275,14 +143,11 @@ function RouteComponent() {
           {' '}
           <strong>Conar</strong>
         </h1>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-lg text-muted-foreground mb-10">
           Available for macOS and Linux
         </p>
-        <p className="text-muted-foreground opacity-50 mb-10 text-xs">
-          Windows users will have to wait a bit longer :(
-        </p>
         <div className="mb-12 text-center space-y-2">
-          <DownloadLink />
+          <DownloadButton />
           <Version />
         </div>
         <div className="max-w-xl w-full">
@@ -301,12 +166,12 @@ function RouteComponent() {
                   arch="Intel"
                 />
                 <DownloadOption
-                  Icon={LinuxLogo}
+                  Icon={Linux}
                   type="linux"
                   arch="deb"
                 />
                 <DownloadOption
-                  Icon={LinuxLogo}
+                  Icon={Linux}
                   type="linux"
                   arch="AppImage"
                 />
