@@ -1,9 +1,10 @@
 import { Toaster } from '@conar/ui/components/sonner'
 import appCss from '@conar/ui/globals.css?url'
+import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { ThemeProvider } from '@conar/ui/theme-provider'
 import { type QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
+import { createRootRouteWithContext, HeadContent, Outlet, Scripts, useRouterState } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { ErrorPage } from '~/error-page'
 import { getLatestReleaseQuery, getRepoQuery } from '~/lib/queries'
@@ -61,6 +62,11 @@ export const Route = createRootRouteWithContext<{
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext()
+  const pathname = useRouterState({ select: state => state.location.pathname })
+
+  useMountedEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
 
   return (
     <html suppressHydrationWarning>
