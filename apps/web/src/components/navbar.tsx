@@ -6,17 +6,15 @@ import NumberFlow from '@number-flow/react'
 import { RiGithubFill, RiTwitterXLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { motion, useScroll, useSpring, useTransform } from 'motion/react'
+import { motion, useScroll, useTransform } from 'motion/react'
 import { getRepoQuery } from '~/lib/queries'
-import { NAVBAR_HEIGHT_SCROLLED } from '~/routes/_layout'
+import { NAVBAR_HEIGHT_BASE } from '~/routes/_layout'
 
 const AppLogoMotion = motion.create(AppLogo)
 
 export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   const { scrollY } = useScroll()
-  const scale = useSpring(useTransform(scrollY, [0, NAVBAR_HEIGHT_SCROLLED], [1.8, 1]), {
-    damping: 15,
-  })
+  const scale = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [1.8, 1])
   const { data } = useQuery(getRepoQuery)
 
   return (

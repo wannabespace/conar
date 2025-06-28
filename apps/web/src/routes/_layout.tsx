@@ -1,7 +1,7 @@
 import { BlurGradient } from '@conar/ui/components/custom/blur-gradient'
 import { cn } from '@conar/ui/lib/utils'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { motion, useScroll, useSpring, useTransform } from 'motion/react'
+import { motion, useScroll, useTransform } from 'motion/react'
 import { Footer } from '~/components/footer'
 import { Navbar } from '~/components/navbar'
 
@@ -14,9 +14,7 @@ export const NAVBAR_HEIGHT_SCROLLED = 60
 
 function MainLayout() {
   const { scrollY } = useScroll()
-  const navbarHeight = useSpring(useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED]), {
-    damping: 15,
-  })
+  const navbarHeight = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED])
   const navbarHeightPx = useTransform(() => `${navbarHeight.get()}px`)
   const blurTranslateY = useTransform(() => `${Math.min((NAVBAR_HEIGHT_BASE - scrollY.get()) * -1, 0)}px`)
 
