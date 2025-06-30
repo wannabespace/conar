@@ -14,10 +14,10 @@ export function Hero({ className }: { className?: string }) {
   return (
     <motion.section
       style={{ opacity }}
-      className={cn('py-30 flex justify-between items-center gap-2', className)}
+      className={cn('py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 sm:gap-8 lg:gap-12', className)}
     >
-      <div>
-        <h1 className="text-[clamp(2rem,min(8vh,8vw),5rem)] leading-none font-medium text-balance">
+      <div className="w-full lg:w-auto lg:flex-1">
+        <h1 className="text-[clamp(2.5rem,min(8vh,8vw),5rem)] leading-[0.9] font-medium text-balance">
           <motion.span
             initial={{ opacity: 0, filter: 'blur(10px)' }}
             animate={{ opacity: 1, filter: 'blur(0px)' }}
@@ -61,12 +61,12 @@ export function Hero({ className }: { className?: string }) {
           </motion.span>
         </h1>
       </div>
-      <div className="max-w-md flex flex-col items-end gap-4">
+      <div className="w-full lg:w-auto lg:flex-1 flex flex-col items-start lg:items-end gap-4 sm:gap-6">
         <motion.h2
           initial={{ opacity: 0, filter: 'blur(10px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
           transition={{ duration: 0.5, delay: 0.25 }}
-          className="text-muted-foreground text-balance text-lg text-right"
+          className="text-muted-foreground text-balance text-base sm:text-lg lg:text-xl text-left lg:text-right max-w-lg lg:max-w-none"
         >
           Conar is an AI-powered data management tool that lets you focus on working with your data while it handles the complexity
         </motion.h2>
@@ -74,13 +74,14 @@ export function Hero({ className }: { className?: string }) {
           initial={{ opacity: 0, filter: 'blur(10px)', y: 20 }}
           animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex gap-2"
+          className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full lg:w-auto"
         >
           <DownloadButton />
           <Button
             variant="secondary"
             asChild
             size="lg"
+            className="w-full sm:w-auto"
           >
             <Link to="/download">
               All platforms

@@ -94,12 +94,12 @@ function Images() {
 }
 
 export function Demo({ className }: { className?: string }) {
-  const { scrollYProgress } = useScroll()
+  const { scrollY } = useScroll()
 
-  const rotateX = useSpring(useTransform(scrollYProgress, [0, 1], [10, -10]), {
+  const rotateX = useSpring(useTransform(scrollY, [0, 600], [10, -10]), {
     damping: 15,
   })
-  const scale = useTransform(scrollYProgress, [0, 1], [0.99, 0.9])
+  const scale = useTransform(scrollY, [0, 600], [1, 0.7])
 
   return (
     <section className={cn('perspective-[1200px]', className)}>

@@ -18,25 +18,25 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   const { data } = useQuery(getRepoOptions)
 
   return (
-    <header className={cn('flex items-center justify-between', className)} {...props}>
+    <header className={cn('flex items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8', className)} {...props}>
       <div className="flex-1">
-        <Link to="/" className="text-foreground font-medium text-xl tracking-tighter">
+        <Link to="/" className="text-foreground font-medium text-base sm:text-lg lg:text-xl tracking-tighter">
           Conar
         </Link>
       </div>
       <div className="flex-1 flex justify-center">
         <Link to="/" className="text-primary">
           <AppLogoMotion
-            className="size-8"
+            className="size-5 sm:size-6 lg:size-8"
             style={{ scale }}
           />
         </Link>
       </div>
-      <div className="flex-1 flex items-center justify-end gap-2">
+      <div className="flex-1 flex items-center justify-end gap-1 sm:gap-2">
         <Button
           variant="ghost"
           size="icon-sm"
-          className="gap-2"
+          className="gap-1 sm:gap-2"
           asChild
         >
           <a
@@ -44,13 +44,13 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <RiTwitterXLine className="h-4 w-4" />
+            <RiTwitterXLine className="h-3 w-3 sm:h-4 sm:w-4" />
           </a>
         </Button>
         <Button
           variant="ghost"
           size="sm"
-          className="gap-2"
+          className="gap-1 sm:gap-2 hidden sm:flex"
           asChild
         >
           <a
@@ -58,20 +58,21 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <RiGithubFill className="size-4" />
+            <RiGithubFill className="size-3 sm:size-4" />
             <NumberFlow
               value={data?.stargazers_count || 0}
-              className={cn('tabular-nums duration-200', !data && 'animate-pulse text-muted-foreground')}
+              className={cn('tabular-nums duration-200 text-xs sm:text-sm', !data && 'animate-pulse text-muted-foreground')}
             />
           </a>
         </Button>
         <Button
           size="sm"
-          className="gap-2"
+          className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
           asChild
         >
           <Link to="/download">
-            Get Started
+            <span className="hidden sm:inline">Get Started</span>
+            <span className="sm:hidden">Download</span>
           </Link>
         </Button>
       </div>
