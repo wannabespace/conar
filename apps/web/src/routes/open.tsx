@@ -1,6 +1,5 @@
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
-import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { copy } from '@conar/ui/lib/copy'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -47,9 +46,6 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <DotsBg
-        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-      />
       <Card className="max-w-md w-full">
         {isPending
           ? (

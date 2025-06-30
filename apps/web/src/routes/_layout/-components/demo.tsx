@@ -6,7 +6,6 @@ import { motion, useScroll, useSpring, useTransform } from 'motion/react'
 function imageProps(index: number) {
   return {
     alt: `Demo part ${index + 1}`,
-    loading: 'lazy',
   } satisfies ComponentProps<'img'>
 }
 
@@ -103,7 +102,7 @@ export function Demo({ className }: { className?: string }) {
   const scale = useTransform(scrollYProgress, [0, 1], [0.99, 0.9])
 
   return (
-    <div className={cn('px-10 perspective-[1200px]', className)}>
+    <section className={cn('perspective-[1200px]', className)}>
       <motion.div
         style={{ rotateX, scale }}
         initial={{
@@ -118,6 +117,6 @@ export function Demo({ className }: { className?: string }) {
       >
         <Images />
       </motion.div>
-    </div>
+    </section>
   )
 }

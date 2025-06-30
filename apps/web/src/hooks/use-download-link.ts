@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { getLatestReleaseQuery } from '~/lib/queries'
+import { getLatestReleaseOptions } from '~/queries'
 import { getOSIsomorphic } from '~/utils/os'
 
 const os = getOSIsomorphic()
 
 export function useDownloadLinks() {
-  const { data, isPending } = useQuery(getLatestReleaseQuery)
+  const { data, isPending } = useQuery(getLatestReleaseOptions)
 
   const links = useMemo(() => {
     if (!data) {

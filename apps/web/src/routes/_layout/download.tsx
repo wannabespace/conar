@@ -15,7 +15,7 @@ import { RiAppleFill } from '@remixicon/react'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { DownloadButton } from '~/components/download-button'
-import { getLatestReleaseQuery } from '~/lib/queries'
+import { getLatestReleaseOptions } from '~/queries'
 import { seo } from '~/utils/seo'
 
 export const Route = createFileRoute('/_layout/download')({
@@ -28,7 +28,7 @@ export const Route = createFileRoute('/_layout/download')({
 })
 
 function Version() {
-  const { data, isPending } = useQuery(getLatestReleaseQuery)
+  const { data, isPending } = useQuery(getLatestReleaseOptions)
   const versionNumbers = data ? data.version.slice(1).split('.').map(Number) : [0, 0, 0]
 
   return (
@@ -48,7 +48,7 @@ function Version() {
 }
 
 function AllPlatforms() {
-  const { data: { mac, linux } } = useSuspenseQuery(getLatestReleaseQuery)
+  const { data: { mac, linux } } = useSuspenseQuery(getLatestReleaseOptions)
 
   return (
     <>

@@ -7,7 +7,7 @@ import { RiGithubFill, RiTwitterXLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
-import { getRepoQuery } from '~/lib/queries'
+import { getRepoOptions } from '~/queries'
 import { NAVBAR_HEIGHT_BASE } from '~/routes/_layout'
 
 const AppLogoMotion = motion.create(AppLogo)
@@ -15,7 +15,7 @@ const AppLogoMotion = motion.create(AppLogo)
 export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   const { scrollY } = useScroll()
   const scale = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [1.8, 1])
-  const { data } = useQuery(getRepoQuery)
+  const { data } = useQuery(getRepoOptions)
 
   return (
     <header className={cn('flex items-center justify-between', className)} {...props}>
