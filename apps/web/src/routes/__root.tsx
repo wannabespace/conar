@@ -7,7 +7,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts, useRouterState } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { ErrorPage } from '~/error-page'
-import { getLatestReleaseQuery, getRepoQuery } from '~/lib/queries'
+import { getLatestReleaseOptions, getRepoOptions, getUsersCountOptions } from '~/queries'
 import { seo } from '~/utils/seo'
 
 if (import.meta.env.DEV) {
@@ -21,8 +21,9 @@ export const Route = createRootRouteWithContext<{
 }>()({
   beforeLoad: async ({ context }) => {
     if (typeof window !== 'undefined') {
-      context.queryClient.prefetchQuery(getRepoQuery)
-      context.queryClient.prefetchQuery(getLatestReleaseQuery)
+      context.queryClient.prefetchQuery(getRepoOptions)
+      context.queryClient.prefetchQuery(getLatestReleaseOptions)
+      context.queryClient.prefetchQuery(getUsersCountOptions)
     }
   },
   head: () => ({
@@ -37,6 +38,7 @@ export const Route = createRootRouteWithContext<{
       ...seo({
         title: 'Conar.app - AI-powered connections management tool',
         description: 'AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.',
+        image: '/og-image.png',
       }),
       { name: 'apple-mobile-web-app-title', content: 'Conar' },
     ],
