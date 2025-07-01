@@ -135,7 +135,7 @@ function DownloadOption({ Icon, type, arch, asset }: {
 
 function RouteComponent() {
   return (
-    <div className="flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-[10vh] min-h-screen">
+    <div className="flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-[10vh]">
       <div className="flex flex-col items-center max-w-2xl mx-auto text-center w-full">
         <AppLogoSquare className="size-24 sm:size-32 mb-4 sm:mb-6" />
         <h1 className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3 tracking-tight font-medium px-2">
