@@ -18,13 +18,11 @@ export default defineConfig(({ command }) => {
     plugins: [
       tsconfigPaths(),
       tailwindcss(),
+      tanstackRouter(),
       react({
         babel: {
           plugins: [['babel-plugin-react-compiler', { target: '19' }]],
         },
-      }),
-      tanstackRouter({
-        autoCodeSplitting: true,
       }),
       electron({
         main: {

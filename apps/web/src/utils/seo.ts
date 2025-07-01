@@ -16,8 +16,10 @@ export function seo({
     { name: 'twitter:title', content: title },
     { name: 'twitter:description', content: description },
     { name: 'twitter:creator', content: '@letstri' },
-    { name: 'twitter:site', content: 'conar.app' },
+    { name: 'twitter:domain', content: 'conar.app' },
+    { name: 'twitter:url', content: 'https://conar.app' },
     { name: 'og:type', content: 'website' },
+    { name: 'og:url', content: 'https://conar.app' },
     { name: 'og:title', content: title },
     { name: 'og:description', content: description },
     ...(image
