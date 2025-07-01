@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as OpenRouteImport } from './routes/open'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as LayoutTermsOfServiceRouteImport } from './routes/_layout/terms-of-service'
+import { Route as LayoutPrivacyPolicyRouteImport } from './routes/_layout/privacy-policy'
 import { Route as LayoutDownloadRouteImport } from './routes/_layout/download'
 
 const OpenRoute = OpenRouteImport.update({
@@ -28,6 +30,16 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutTermsOfServiceRoute = LayoutTermsOfServiceRouteImport.update({
+  id: '/terms-of-service',
+  path: '/terms-of-service',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutPrivacyPolicyRoute = LayoutPrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutDownloadRoute = LayoutDownloadRouteImport.update({
   id: '/download',
   path: '/download',
@@ -35,14 +47,17 @@ const LayoutDownloadRoute = LayoutDownloadRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '': typeof LayoutRouteWithChildren
   '/open': typeof OpenRoute
   '/download': typeof LayoutDownloadRoute
+  '/privacy-policy': typeof LayoutPrivacyPolicyRoute
+  '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesByTo {
   '/open': typeof OpenRoute
   '/download': typeof LayoutDownloadRoute
+  '/privacy-policy': typeof LayoutPrivacyPolicyRoute
+  '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesById {
@@ -50,14 +65,28 @@ export interface FileRoutesById {
   '/_layout': typeof LayoutRouteWithChildren
   '/open': typeof OpenRoute
   '/_layout/download': typeof LayoutDownloadRoute
+  '/_layout/privacy-policy': typeof LayoutPrivacyPolicyRoute
+  '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/open' | '/download' | '/'
+  fullPaths:
+    | '/open'
+    | '/download'
+    | '/privacy-policy'
+    | '/terms-of-service'
+    | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/open' | '/download' | '/'
-  id: '__root__' | '/_layout' | '/open' | '/_layout/download' | '/_layout/'
+  to: '/open' | '/download' | '/privacy-policy' | '/terms-of-service' | '/'
+  id:
+    | '__root__'
+    | '/_layout'
+    | '/open'
+    | '/_layout/download'
+    | '/_layout/privacy-policy'
+    | '/_layout/terms-of-service'
+    | '/_layout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -88,6 +117,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/terms-of-service': {
+      id: '/_layout/terms-of-service'
+      path: '/terms-of-service'
+      fullPath: '/terms-of-service'
+      preLoaderRoute: typeof LayoutTermsOfServiceRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/privacy-policy': {
+      id: '/_layout/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof LayoutPrivacyPolicyRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/download': {
       id: '/_layout/download'
       path: '/download'
@@ -100,11 +143,15 @@ declare module '@tanstack/react-router' {
 
 interface LayoutRouteChildren {
   LayoutDownloadRoute: typeof LayoutDownloadRoute
+  LayoutPrivacyPolicyRoute: typeof LayoutPrivacyPolicyRoute
+  LayoutTermsOfServiceRoute: typeof LayoutTermsOfServiceRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutDownloadRoute: LayoutDownloadRoute,
+  LayoutPrivacyPolicyRoute: LayoutPrivacyPolicyRoute,
+  LayoutTermsOfServiceRoute: LayoutTermsOfServiceRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 

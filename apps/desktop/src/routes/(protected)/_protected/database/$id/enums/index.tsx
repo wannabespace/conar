@@ -5,10 +5,9 @@ import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiInformationLine, RiListUnordered } from '@remixicon/react'
-import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { databaseTablesAndSchemasQuery, useDatabaseEnums } from '~/entities/database'
+import { useDatabaseEnums, useDatabaseTablesAndSchemas } from '~/entities/database'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id/enums/')({
   component: DatabaseEnumsPage,
@@ -28,10 +27,8 @@ function DatabaseEnumsPage() {
   const { database } = Route.useLoaderData()
   const [selectedSchema, setSelectedSchema] = useState('public')
   const { data: enums } = useDatabaseEnums(database)
-  const { data: schemas } = useQuery({
-    ...databaseTablesAndSchemasQuery(database),
-    select: data => [...new Set(data.map(({ schema }) => schema))],
-  })
+  const { data } = useDatabaseTablesAndSchemas(database)
+  const schemas = data?.schemas.map(({ name }) => name) ?? []
 
   const filteredEnums = enums?.filter(enumItem => enumItem.schema === selectedSchema) ?? []
 
@@ -42,7 +39,7 @@ function DatabaseEnumsPage() {
           <h2 className="text-2xl font-bold">
             Enums
           </h2>
-          {!!schemas?.length && schemas.length > 1 && (
+          {schemas.length > 1 && (
             <Select value={selectedSchema} onValueChange={setSelectedSchema}>
               <SelectTrigger className="w-[180px]">
                 <div className="flex items-center gap-2">

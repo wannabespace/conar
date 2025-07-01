@@ -12,6 +12,22 @@ import { useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
 import { getTableStoreState } from '../tables.$schema/$table'
 
+function Skeleton() {
+  return (
+    <div className="space-y-3 w-full">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-2 h-5 px-2">
+          <div className="h-full w-5 shrink-0 rounded-md bg-muted animate-pulse" />
+          <div
+            className="h-full rounded-md bg-muted animate-pulse"
+            style={{ width: `${Math.random() * 40 + 60 - 30}%` }}
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function TablesTree({ database, className, search }: { database: Database, className?: string, search?: string }) {
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas(database)
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
@@ -67,14 +83,7 @@ export function TablesTree({ database, className, search }: { database: Database
         {isPending
           ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center h-full">
-                <div className="space-y-2 w-full">
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-2 px-2 h-6">
-                      <div className="h-full w-6 shrink-0 rounded-md bg-muted animate-pulse" />
-                      <div className="h-full w-full rounded-md bg-muted animate-pulse" />
-                    </div>
-                  ))}
-                </div>
+                <Skeleton />
               </div>
             )
           : filteredTablesAndSchemas.length === 0

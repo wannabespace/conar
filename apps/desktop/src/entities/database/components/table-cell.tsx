@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { sleep } from '~/lib/helpers'
 
-const os = getOS()
+const os = getOS(navigator.userAgent)
 
 function getDisplayValue(value: unknown, oneLine: boolean) {
   if (typeof value === 'object' && value !== null)
@@ -147,7 +147,7 @@ function TableCellMonaco({
         data-mask
         value={value}
         language={isJson ? 'json' : undefined}
-        className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(40vh,30rem)]')}
+        className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(50vh,40rem)]')}
         onChange={setValue}
         options={{
           lineNumbers: isBig ? 'on' : 'off',
@@ -168,7 +168,7 @@ function TableCellMonaco({
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
-                  size="iconXs"
+                  size="icon-xs"
                   onClick={() => setIsBig(prev => !prev)}
                 >
                   {isBig ? <RiCollapseDiagonal2Line className="size-3" /> : <RiExpandDiagonal2Line className="size-3" />}
@@ -180,7 +180,7 @@ function TableCellMonaco({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="iconXs" variant="outline" onClick={() => copy(displayValue)}>
+                <Button size="icon-xs" variant="outline" onClick={() => copy(displayValue)}>
                   <RiFileCopyLine className="size-3" />
                 </Button>
               </TooltipTrigger>
@@ -228,7 +228,7 @@ function TableCellMonaco({
               >
                 Save
                 <kbd className="flex items-center text-xs">
-                  {os === 'macos' ? <RiCommandLine className="size-2.5" /> : 'Ctrl'}
+                  {os.type === 'macos' ? <RiCommandLine className="size-2.5" /> : 'Ctrl'}
                   <RiCornerDownLeftLine className="size-2.5" />
                 </kbd>
               </Button>

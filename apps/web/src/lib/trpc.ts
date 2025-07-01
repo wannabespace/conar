@@ -1,4 +1,4 @@
-import type { AppRouter } from '@conar/api/src/trpc/routers'
+import type { AppRouter, RouterInputs, RouterOutputs } from '@conar/api/src/trpc/routers'
 import { createTRPCClient, httpBatchLink } from '@trpc/client'
 import SuperJSON from 'superjson'
 
@@ -10,3 +10,5 @@ export const trpc = createTRPCClient<AppRouter>({
     }),
   ],
 })
+
+export type { RouterInputs, RouterOutputs }

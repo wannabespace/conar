@@ -59,7 +59,7 @@ function SortButton({ column }: { column: Column }) {
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
-            size="iconXs"
+            size="icon-xs"
             onClick={handleClick}
             className={cn(order !== null && 'text-primary')}
           >

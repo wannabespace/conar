@@ -1,5 +1,3 @@
-import { title as titleFn } from '@conar/shared/utils/title'
-
 export function seo({
   title,
   description,
@@ -11,18 +9,16 @@ export function seo({
   image?: string
   keywords?: string
 }) {
-  const _title = titleFn(title)
-
   const tags = [
-    { title: _title },
+    { title },
     { name: 'description', content: description },
     { name: 'keywords', content: keywords },
-    { name: 'twitter:title', content: _title },
+    { name: 'twitter:title', content: title },
     { name: 'twitter:description', content: description },
     { name: 'twitter:creator', content: '@letstri' },
-    { name: 'twitter:site', content: '@letstri' },
+    { name: 'twitter:site', content: 'conar.app' },
     { name: 'og:type', content: 'website' },
-    { name: 'og:title', content: _title },
+    { name: 'og:title', content: title },
     { name: 'og:description', content: description },
     ...(image
       ? [

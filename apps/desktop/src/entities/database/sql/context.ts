@@ -3,51 +3,96 @@ import { prepareSql } from '@conar/shared/utils/helpers'
 
 export function contextSql(): Record<DatabaseType, string> {
   return {
-    // Just vibe code
     postgres: prepareSql(`
+      WITH schema_data AS (
+        SELECT
+          s.nspname as schema_name,
+          json_agg(
+            json_build_object(
+              'name', t.relname,
+              'columns', (
+                SELECT json_agg(
+                  json_build_object(
+                    'name', a.attname,
+                    'type', pg_catalog.format_type(a.atttypid, a.atttypmod),
+                    'nullable', NOT a.attnotnull,
+                    'editable', CASE
+                      WHEN a.attidentity = 'a' THEN false
+                      WHEN a.attidentity = 'd' THEN false
+                      WHEN a.attgenerated = 's' THEN false
+                      ELSE true
+                    END,
+                    'default', pg_get_expr(d.adbin, d.adrelid),
+                    'constraints', (
+                      SELECT json_agg(
+                        json_build_object(
+                          'name', c.conname,
+                          'type', c.contype,
+                          'related_column', CASE
+                            WHEN c.contype = 'f' THEN (
+                              SELECT a2.attname
+                              FROM pg_catalog.pg_attribute a2
+                              WHERE a2.attrelid = c.confrelid
+                                AND a2.attnum = c.confkey[1]
+                            )
+                            ELSE null
+                          END,
+                          'related_table', CASE
+                            WHEN c.contype = 'f' THEN (
+                              SELECT c2.relname
+                              FROM pg_catalog.pg_class c2
+                              WHERE c2.oid = c.confrelid
+                            )
+                            ELSE null
+                          END
+                        )
+                      )
+                      FROM pg_catalog.pg_constraint c
+                      WHERE c.conrelid = t.oid
+                        AND a.attnum = ANY(c.conkey)
+                    )
+                  )
+                )
+                FROM pg_catalog.pg_attribute a
+                LEFT JOIN pg_catalog.pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum
+                WHERE a.attrelid = t.oid
+                  AND a.attnum > 0
+                  AND NOT a.attisdropped
+              )
+            )
+          ) as tables
+        FROM pg_catalog.pg_namespace s
+        JOIN pg_catalog.pg_class t ON t.relnamespace = s.oid
+        WHERE s.nspname NOT IN ('pg_catalog', 'information_schema')
+          AND s.nspname NOT LIKE 'pg_toast%'
+          AND s.nspname NOT LIKE 'pg_temp%'
+          AND t.relkind = 'r'
+        GROUP BY s.nspname
+      ),
+      enum_data AS (
+        SELECT json_agg(
+          json_build_object(
+            'schema', ns.nspname,
+            'name', t.typname,
+            'value', e.enumlabel
+          )
+        ) as enums
+        FROM pg_type t
+        JOIN pg_enum e ON t.oid = e.enumtypid
+        JOIN pg_catalog.pg_namespace ns ON ns.oid = t.typnamespace
+        WHERE ns.nspname NOT IN ('pg_catalog', 'information_schema')
+      )
       SELECT json_build_object(
         'schemas', (
-          SELECT json_agg(json_build_object(
-            'schema', schemas.nspname,
-            'tables', (
-              SELECT json_agg(json_build_object(
-                'name', tables.relname,
-                'columns', (
-                  SELECT json_agg(json_build_object(
-                    'name', columns.attname,
-                    'type', pg_catalog.format_type(columns.atttypid, columns.atttypmod),
-                    'nullable', NOT columns.attnotnull,
-                    'default', pg_get_expr(defaults.adbin, defaults.adrelid)
-                  ))
-                  FROM pg_catalog.pg_attribute columns
-                  LEFT JOIN pg_catalog.pg_attrdef defaults
-                    ON defaults.adrelid = columns.attrelid AND defaults.adnum = columns.attnum
-                  WHERE columns.attrelid = tables.oid
-                    AND columns.attnum > 0
-                    AND NOT columns.attisdropped
-                )
-              ))
-              FROM pg_catalog.pg_class tables
-              WHERE tables.relnamespace = schemas.oid
-                AND tables.relkind = 'r'
+          SELECT json_agg(
+            json_build_object(
+              'schema', sd.schema_name,
+              'tables', sd.tables
             )
-          ))
-          FROM pg_catalog.pg_namespace schemas
-          WHERE schemas.nspname NOT IN ('pg_catalog', 'information_schema')
-            AND schemas.nspname NOT LIKE 'pg_toast%'
-            AND schemas.nspname NOT LIKE 'pg_temp%'
+          )
+          FROM schema_data sd
         ),
-        'enums', (
-          SELECT json_agg(json_build_object(
-            'schema', enum_schemas.nspname,
-            'name', enum_types.typname,
-            'value', enum_labels.enumlabel
-          ))
-          FROM pg_type enum_types
-          JOIN pg_enum enum_labels ON enum_types.oid = enum_labels.enumtypid
-          JOIN pg_catalog.pg_namespace enum_schemas ON enum_schemas.oid = enum_types.typnamespace
-          WHERE enum_schemas.nspname NOT IN ('pg_catalog', 'information_schema')
-        )
+        'enums', (SELECT enums FROM enum_data)
       ) AS database_context;
     `),
   }

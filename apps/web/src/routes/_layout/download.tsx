@@ -1,15 +1,21 @@
 import type { OS } from '@conar/shared/utils/os'
-import { getOS } from '@conar/shared/utils/os'
+import type { RemixiconComponentType } from '@remixicon/react'
+import { formatBytes } from '@conar/shared/utils/files'
+import { osMap } from '@conar/shared/utils/os'
+import { Badge } from '@conar/ui/components/badge'
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
-import { DotsBg } from '@conar/ui/components/custom/dots-bg'
-import { usePromise } from '@conar/ui/hookas/use-promise'
-import { RiAppleFill, RiDownloadLine, RiWindowsFill } from '@remixicon/react'
+import { MountedSuspense } from '@conar/ui/components/custom/mounted-suspense'
+import { Linux } from '@conar/ui/components/icons/linux'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { cn } from '@conar/ui/lib/utils'
+import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
+import { RiAppleFill } from '@remixicon/react'
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useMemo } from 'react'
-import { LinuxLogo } from '~/assets/linux-logo'
-import { getLatestRelease } from '~/utils/releases'
+import { DownloadButton } from '~/components/download-button'
+import { getLatestReleaseOptions } from '~/queries'
 import { seo } from '~/utils/seo'
 
 export const Route = createFileRoute('/_layout/download')({
@@ -19,234 +25,164 @@ export const Route = createFileRoute('/_layout/download')({
       title: 'Download Conar',
     }),
   }),
-  pendingComponent: () => {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted/20 text-foreground px-4 pt-40 pb-16">
-        <div className="flex flex-col items-center max-w-2xl mx-auto text-center">
-          <AppLogoSquare className="size-32 mb-6" />
-        </div>
-      </div>
-    )
-  },
 })
 
-function getFileType(name: string): OS {
-  if (name.toLowerCase().endsWith('.dmg'))
-    return 'macos'
-  if (name.toLowerCase().endsWith('.appimage') || name.toLowerCase().endsWith('.deb'))
-    return 'linux'
-  if (name.toLowerCase().endsWith('.exe'))
-    return 'windows'
-
-  return 'unknown'
-}
-
-function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0)
-    return '0 Bytes'
-
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return `${Number.parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`
-}
-
-function RouteComponent() {
-  const os = useMemo(() => getOS(), [])
-
-  const releaseInfo = usePromise(() => getLatestRelease())
-  const assets = useMemo(() => ({
-    macos: releaseInfo?.assets.filter(asset => asset.name.toLowerCase().endsWith('.dmg')) || [],
-    linux: releaseInfo?.assets.filter(asset => asset.name.toLowerCase().endsWith('.deb')) || [],
-    windows: releaseInfo?.assets.filter(asset => asset.name.toLowerCase().endsWith('.exe')) || [],
-  }), [releaseInfo])
-  const version = useMemo(() => releaseInfo?.tag_name, [releaseInfo])
-
-  const links = useMemo(() => {
-    return [
-      ...(assets.macos || []),
-      ...(assets.linux || []),
-      ...(assets.windows || []),
-    ].map(asset => ({
-      name: asset.name,
-      url: asset.browser_download_url,
-      type: getFileType(asset.name),
-      size: asset.size,
-    }))
-  }, [assets])
-
-  console.log(links)
-
-  const macSiliconAsset = useMemo(() =>
-    links.find(link => link.type === 'macos' && link.name.toLowerCase().includes('arm64')), [links])
-
-  const macIntelAsset = useMemo(() =>
-    links.find(link => link.type === 'macos' && link.name.toLowerCase().includes('x64')), [links])
-
-  const linuxAsset = useMemo(() =>
-    links.find(link => link.type === 'linux'), [links])
-
-  const windowsAsset = useMemo(() =>
-    links.find(link => link.type === 'windows'), [links])
-
-  const downloadLinks = useMemo((): { label: string, url: string }[] => {
-    if (os === 'macos' && macIntelAsset && macSiliconAsset) {
-      return [
-        {
-          label: 'macOS (Apple Silicon)',
-          url: macSiliconAsset.url,
-        },
-        {
-          label: 'macOS (Intel)',
-          url: macIntelAsset.url,
-        },
-      ]
-    }
-
-    if (os === 'linux' && linuxAsset) {
-      return [
-        {
-          label: 'Linux',
-          url: linuxAsset.url,
-        },
-      ]
-    }
-
-    if (os === 'windows' && windowsAsset) {
-      return [
-        {
-          label: 'Windows',
-          url: windowsAsset.url,
-        },
-      ]
-    }
-
-    return []
-  }, [os, macIntelAsset, macSiliconAsset, linuxAsset, windowsAsset])
+function Version() {
+  const { data, isPending } = useQuery(getLatestReleaseOptions)
+  const versionNumbers = data ? data.version.slice(1).split('.').map(Number) : [0, 0, 0]
 
   return (
-    <div className="flex flex-col items-center justify-center px-4 pt-40 pb-16">
-      <DotsBg
-        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-      />
-      <div className="flex flex-col items-center max-w-2xl mx-auto text-center">
-        <AppLogoSquare className="size-32 mb-6" />
-        <h1 className="text-4xl mb-3 tracking-tight font-medium">
-          Download
-          {' '}
-          <strong>Conar</strong>
-        </h1>
-        <p className="text-lg text-muted-foreground mb-10">
-          Available for macOS and Linux (Windows coming soon)
-        </p>
-        <div className="mb-12 text-center">
-          {downloadLinks.length > 0
-            ? (
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  {downloadLinks.map(link => (
-                    <Button
-                      key={link.url}
-                      asChild
-                      size="lg"
-                    >
-                      <a href={link.url} download className="flex items-center justify-center gap-2">
-                        <RiDownloadLine className="size-5" />
-                        {link.label}
-                      </a>
-                    </Button>
-                  ))}
-                </div>
-              )
-            : (
-                <p className="text-muted-foreground">No downloads found for this release.</p>
-              )}
-          <p className="text-sm text-muted-foreground mt-3">
-            Current release:
-            {' '}
-            <span className="font-medium">{version}</span>
-          </p>
-        </div>
-        <div className="max-w-xl">
-          <h2 className="text-2xl font-semibold text-center mb-4">All platforms</h2>
-          <div className="grid gap-4">
-            {macSiliconAsset && version && (
-              <DownloadOption
-                icon={<RiAppleFill className="text-muted-foreground" />}
-                platform="macOS (Apple Silicon)"
-                version={version}
-                asset={macSiliconAsset}
-              />
-            )}
-            {macIntelAsset && version && (
-              <DownloadOption
-                icon={<RiAppleFill className="text-muted-foreground" />}
-                platform="macOS (Intel)"
-                version={version}
-                asset={macIntelAsset}
-              />
-            )}
-            {linuxAsset && version && (
-              <DownloadOption
-                icon={<LinuxLogo className="fill-muted-foreground size-5" />}
-                platform="Linux"
-                version={version}
-                asset={linuxAsset}
-              />
-            )}
-            {windowsAsset && version && (
-              <DownloadOption
-                icon={<RiWindowsFill className="text-muted-foreground" />}
-                platform="Windows"
-                version={version}
-                asset={windowsAsset}
-              />
-            )}
-            {!macSiliconAsset && !macIntelAsset && !windowsAsset && !linuxAsset && (
-              <p className="text-muted-foreground text-center col-span-full mt-4">No downloads found for this release.</p>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+    <p className={cn('text-sm text-muted-foreground', isPending && 'animate-pulse')}>
+      <NumberFlowGroup>
+        {versionNumbers.map((number, index) => (
+          <NumberFlow
+            key={index}
+            value={number}
+            prefix={index === 0 ? 'Current version ' : ''}
+            suffix={index === versionNumbers.length - 1 ? '' : '.'}
+          />
+        ))}
+      </NumberFlowGroup>
+    </p>
   )
 }
 
-function DownloadOption({ icon, platform, version, asset }: {
-  icon: React.ReactNode
-  platform: string
-  version: string
-  asset: {
-    name: string
+function AllPlatforms() {
+  const { data: { mac, linux } } = useSuspenseQuery(getLatestReleaseOptions)
+
+  return (
+    <>
+      <DownloadOption
+        Icon={RiAppleFill}
+        type="macos"
+        arch="Apple Silicon"
+        asset={mac.arm64}
+      />
+      <DownloadOption
+        Icon={RiAppleFill}
+        type="macos"
+        arch="Intel"
+        asset={mac.intel}
+      />
+      <DownloadOption
+        Icon={Linux}
+        type="linux"
+        arch="deb"
+        asset={linux.deb}
+      />
+      <DownloadOption
+        Icon={Linux}
+        type="linux"
+        arch="AppImage"
+        asset={linux.appImage}
+      />
+    </>
+  )
+}
+
+function DownloadOption({ Icon, type, arch, asset }: {
+  Icon: RemixiconComponentType
+  type: OS
+  arch?: string
+  asset?: {
     url: string
-    type: OS
     size: number
   }
 }) {
   return (
-    <Card className="flex items-center justify-between p-4 gap-8">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center size-10 bg-muted rounded-lg">
-          {icon}
+    <Card className="flex items-center justify-between p-3 sm:p-2 gap-4 sm:gap-8 w-full">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+        <div className="flex items-center justify-center size-8 bg-muted rounded-lg flex-shrink-0">
+          <Icon className="text-muted-foreground size-4" />
         </div>
         <div className="flex flex-col items-start">
-          <span className="font-medium">{platform}</span>
-          <span className="text-sm text-muted-foreground">{version}</span>
+          <span className="font-medium text-sm sm:text-base truncate w-full">
+            {osMap[type].label}
+            {' '}
+            {arch && (
+              <Badge variant="outline" className="text-xs sm:text-sm">
+                {arch}
+              </Badge>
+            )}
+          </span>
         </div>
       </div>
-      <Button asChild size="sm" variant="outline">
-        <a href={asset.url} download className="flex items-center gap-1.5">
-          <RiDownloadLine />
-          Download
-          <span className="text-xs text-muted-foreground">
-            (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            asChild
+            size="sm"
+            disabled={!asset}
+            variant="secondary"
+          >
+            <a
+              href={asset ? asset.url : '#'}
+              download
+            >
+              Download
+            </a>
+          </Button>
+        </TooltipTrigger>
+        {asset && (
+          <TooltipContent side="right">
             {formatBytes(asset.size)}
-            )
-          </span>
-        </a>
-      </Button>
+          </TooltipContent>
+        )}
+      </Tooltip>
     </Card>
+  )
+}
+
+function RouteComponent() {
+  return (
+    <div className="flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-[10vh] min-h-screen">
+      <div className="flex flex-col items-center max-w-2xl mx-auto text-center w-full">
+        <AppLogoSquare className="size-24 sm:size-32 mb-4 sm:mb-6" />
+        <h1 className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3 tracking-tight font-medium px-2">
+          Download
+          {' '}
+          <strong>Conar</strong>
+        </h1>
+        <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-10 px-2">
+          Available for macOS and Linux
+        </p>
+        <div className="mb-8 sm:mb-12 text-center space-y-2 px-4">
+          <DownloadButton />
+          <Version />
+        </div>
+        <div className="w-full max-w-xl px-4">
+          <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4">All platforms</h2>
+          <div className="space-y-2 w-full">
+            <MountedSuspense fallback={(
+              <>
+                <DownloadOption
+                  Icon={RiAppleFill}
+                  type="macos"
+                  arch="Apple Silicon"
+                />
+                <DownloadOption
+                  Icon={RiAppleFill}
+                  type="macos"
+                  arch="Intel"
+                />
+                <DownloadOption
+                  Icon={Linux}
+                  type="linux"
+                  arch="deb"
+                />
+                <DownloadOption
+                  Icon={Linux}
+                  type="linux"
+                  arch="AppImage"
+                />
+              </>
+            )}
+            >
+              <AllPlatforms />
+            </MountedSuspense>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

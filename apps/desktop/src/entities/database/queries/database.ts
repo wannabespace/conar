@@ -1,7 +1,5 @@
-import type { Database } from '~/lib/indexeddb'
 import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { indexedDb } from '~/lib/indexeddb'
-import { getDatabaseContext } from '../lib'
 
 export function databasesQuery() {
   return queryOptions({
@@ -31,15 +29,4 @@ export function databaseQuery(id: string) {
 
 export function useDatabase(...params: Parameters<typeof databaseQuery>) {
   return useSuspenseQuery(databaseQuery(...params))
-}
-
-export function databaseContextQuery(database: Database) {
-  return queryOptions({
-    queryKey: ['database', database.id, 'context'],
-    queryFn: () => getDatabaseContext(database),
-  })
-}
-
-export function useDatabaseContext(...params: Parameters<typeof databaseContextQuery>) {
-  return useQuery(databaseContextQuery(...params))
 }

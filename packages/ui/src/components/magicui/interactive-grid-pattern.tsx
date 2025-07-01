@@ -1,5 +1,6 @@
+import type React from 'react'
 import { cn } from '@conar/ui/lib/utils'
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 /**
  * InteractiveGridPattern is a component that renders a grid pattern with interactive squares.

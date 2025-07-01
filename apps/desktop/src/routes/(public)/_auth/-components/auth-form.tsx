@@ -211,7 +211,7 @@ export function AuthForm({ type }: { type: Type }) {
       if (error!.code === 'USER_ALREADY_EXISTS') {
         toast.error('User already exists. Please sign in or use a different email address.', {
           action: {
-            label: 'Fix with AI',
+            label: 'Sign in',
             onClick: () => {
               navigate({ to: '/sign-in' })
             },

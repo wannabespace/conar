@@ -1,6 +1,6 @@
+import type * as React from 'react'
 import { cn } from '@conar/ui/lib/utils'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import * as React from 'react'
 
 function Tabs({
   className,

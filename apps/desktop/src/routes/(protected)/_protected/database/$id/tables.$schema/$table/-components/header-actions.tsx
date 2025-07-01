@@ -5,8 +5,6 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCheckLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { databaseColumnsQuery } from '~/entities/database'
-import { queryClient } from '~/main'
 import { usePageContext } from '..'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 import { HeaderActionsColumns } from './header-actions-columns'
@@ -23,10 +21,7 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
       ...state,
       page: 1,
     }))
-    await Promise.all([
-      refetch(),
-      queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table, schema).queryKey }),
-    ])
+    await refetch()
   }
 
   return (

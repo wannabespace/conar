@@ -13,7 +13,7 @@ import { actionsCenterStore } from '~/routes/(protected)/-components/actions-cen
 import { Route } from '../$id'
 import { useLastOpenedTable } from '../-hooks/use-last-opened-table'
 
-const os = getOS()
+const os = getOS(navigator.userAgent)
 
 export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { id } = Route.useParams()
@@ -35,11 +35,13 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
 
   function onTablesClick() {
-    if (lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam) {
+    const isSameTable = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
+
+    if (isSameTable) {
       setLastOpenedTable(null)
     }
 
-    if (lastOpenedTable) {
+    if (lastOpenedTable && !isSameTable) {
       navigate({
         to: '/database/$id/tables/$schema/$table',
         params: {
@@ -143,7 +145,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
               <RiCommandLine className="size-4" />
             </TooltipTrigger>
             <TooltipContent side="right">
-              {os === 'macos' ? '⌘' : 'Ctrl'}
+              {os?.type === 'macos' ? '⌘' : 'Ctrl'}
               P
             </TooltipContent>
           </Tooltip>

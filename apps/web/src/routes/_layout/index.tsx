@@ -1,54 +1,26 @@
-import { Badge } from '@conar/ui/components/badge'
-import { Button } from '@conar/ui/components/button'
-import { DotsBg } from '@conar/ui/components/custom/dots-bg'
-import { RiExternalLinkLine } from '@remixicon/react'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { Video } from './-components/video'
+import { createFileRoute } from '@tanstack/react-router'
+import { Demo } from './-components/demo'
+import { Features } from './-components/features'
+import { Hero } from './-components/hero'
+import { Pricing } from './-components/pricing'
+import { Testimonials } from './-components/testimonials'
 
 export const Route = createFileRoute('/_layout/')({
-  component: Home,
+  component: HomePage,
 })
 
-function Home() {
+function HomePage() {
   return (
-    <div className="space-y-20 py-20">
-      <DotsBg
-        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-      />
-      <div className="max-w-3xl mx-auto pt-30 pb-20 px-4">
-        <div className="flex flex-col items-center text-center gap-8">
-          <Badge asChild variant="secondary">
-            <a href="https://x.com/letstri/status/1912961552162103787" target="_blank" rel="noopener noreferrer">
-              Conar is now available on macOS!
-              <RiExternalLinkLine className="size-3 text-muted-foreground" />
-            </a>
-          </Badge>
-          <h1
-            className="text-6xl font-bold tracking-tight text-balance bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent"
-          >
-            Improve your
-            {' '}
-            <span className="text-primary">connections</span>
-            {' '}
-            management experience
-          </h1>
-          <p className="text-2xl text-muted-foreground text-balance max-w-xl">
-            AI-powered tool that makes database operations easier. Built for PostgreSQL, Modern alternative to traditional database management tools.
-          </p>
-          <div className="flex gap-3">
-            <Button
-              size="lg"
-              className="gap-2"
-              asChild
-            >
-              <Link to="/download">
-                Get Started
-              </Link>
-            </Button>
-          </div>
+    <>
+      <main className="px-4 sm:px-6 lg:px-10">
+        <div>
+          <Hero className="sticky top-(--navbar-height)" />
+          <Demo />
         </div>
-      </div>
-      <Video />
-    </div>
+        <Features />
+        <Testimonials />
+        <Pricing />
+      </main>
+    </>
   )
 }

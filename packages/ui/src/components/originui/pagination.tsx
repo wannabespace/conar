@@ -1,9 +1,9 @@
 import type { Button } from '@conar/ui/components/button'
+import type * as React from 'react'
 import { buttonVariants } from '@conar/ui/components/button'
-import { cn } from '@conar/ui/lib/utils'
 
+import { cn } from '@conar/ui/lib/utils'
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from 'lucide-react'
-import * as React from 'react'
 
 function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
   return (

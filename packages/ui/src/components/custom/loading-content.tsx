@@ -6,6 +6,7 @@ export function LoadingContent({
   className,
   loading,
   loaderClassName,
+  contentClassName,
 }: {
   children: React.ReactNode
   className?: string
@@ -20,7 +21,12 @@ export function LoadingContent({
           className={cn('animate-spin size-5', loaderClassName)}
         />
       </span>
-      <span className={cn('flex items-center gap-2 duration-150', loading ? '-translate-y-5' : 'translate-y-0')}>
+      <span className={cn(
+        'flex items-center gap-2 duration-150',
+        loading ? '-translate-y-5' : 'translate-y-0',
+        contentClassName,
+      )}
+      >
         {children}
       </span>
     </span>

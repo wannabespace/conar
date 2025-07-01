@@ -50,7 +50,7 @@ function UserMessage({ text, attachments, className, ...props }: { text: string,
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="iconXs"
+                size="icon-xs"
                 onClick={() => {
                   copy(text, 'Message copied to clipboard')
                 }}
@@ -111,7 +111,7 @@ function AssistantMessage({
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="iconXs"
+                  size="icon-xs"
                   onClick={onReload}
                 >
                   <RiRestartLine className="size-3.5 text-muted-foreground" />
@@ -126,7 +126,7 @@ function AssistantMessage({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="iconXs"
+                size="icon-xs"
                 onClick={() => {
                   copy(text, 'Message copied to clipboard')
                 }}

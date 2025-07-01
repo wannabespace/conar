@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import { useDatabase, useDatabaseEnums } from '~/entities/database'
 import { trpc } from '~/lib/trpc'
 import { Route, usePageContext } from '..'
-import { useColumnsQuery } from '../-queries/use-columns-query'
+import { useTableColumns } from '../-queries/use-columns-query'
 
 export function HeaderSearch() {
   const { id, table, schema } = Route.useParams()
@@ -35,7 +35,7 @@ export function HeaderSearch() {
       }
     },
   })
-  const { data: columns } = useColumnsQuery(database, table, schema)
+  const columns = useTableColumns(database, table, schema)
   const { data: enums } = useDatabaseEnums(database)
   const context = useMemo(() => `
     Filters working with AND operator.
@@ -52,7 +52,7 @@ export function HeaderSearch() {
 
   return (
     <form
-      className="relative max-w-full w-60 has-focus-visible:w-full transition-all duration-300 ease-in-out"
+      className="relative max-w-full w-80 has-focus-visible:w-full transition-all duration-300 ease-in-out"
       onSubmit={(e) => {
         e.preventDefault()
         generateFilter({ prompt, context })
@@ -69,7 +69,7 @@ export function HeaderSearch() {
       <Button
         type="submit"
         variant="secondary"
-        size="iconXs"
+        size="icon-xs"
         disabled={isPending}
         className="absolute right-2 top-1/2 -translate-y-1/2"
       >

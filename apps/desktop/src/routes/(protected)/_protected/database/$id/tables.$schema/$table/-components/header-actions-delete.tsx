@@ -9,7 +9,7 @@ import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseColumnsQuery, databaseTableTotalQuery, deleteRowsSql } from '~/entities/database'
+import { databaseTableTotalQuery, deleteRowsSql } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { usePageContext } from '..'
@@ -49,7 +49,6 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
     onSuccess: () => {
       toast.success(`${selectedRows.length} row${selectedRows.length === 1 ? '' : 's'} successfully deleted`)
       refetch()
-      queryClient.invalidateQueries({ queryKey: databaseColumnsQuery(database, table, schema).queryKey })
       queryClient.invalidateQueries({
         queryKey: databaseTableTotalQuery(database, table, schema, {
           filters: store.state.filters,

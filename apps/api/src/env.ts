@@ -33,18 +33,15 @@ const devOptionalEnvs = [
   'GITHUB_CLIENT_SECRET',
 ] satisfies (keyof typeof envType.infer)[]
 
-devOptionalEnvs.forEach((env) => {
-  if (!process.env[env]) {
-    console.warn(`"${env}" is not set in env file`)
-  }
-})
-
 export const env = isProduction
   ? envType.assert(process.env)
   : envType
       .merge(
         devOptionalEnvs.reduce((acc, env) => {
           acc[`${env}?`] = 'string'
+          if (!process.env[env]) {
+            console.warn(`"${env}" is not set in env file`)
+          }
           return acc
         }, {} as { [K in `${typeof devOptionalEnvs[number]}?`]: 'string' }),
       )
