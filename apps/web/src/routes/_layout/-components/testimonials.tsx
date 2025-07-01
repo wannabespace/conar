@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@conar/ui/components/avatar'
+import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
 import { RiDoubleQuotesL, RiTwitterXLine } from '@remixicon/react'
 
@@ -36,7 +37,7 @@ function Testimonial({ name, login, avatar, link, children, className }: Testimo
       rel="noopener noreferrer"
       className="block space-y-4 sm:space-y-6 transition-transform focus-visible:outline-ring/50"
     >
-      <header className={cn('flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6', className)}>
+      <header className={cn('flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6', className)}>
         <Avatar className="size-10 sm:size-12 rounded-full flex-shrink-0">
           <AvatarImage src={avatar} alt={name} />
           <AvatarFallback className="bg-primary/10 text-primary font-semibold">
@@ -44,7 +45,7 @@ function Testimonial({ name, login, avatar, link, children, className }: Testimo
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-foreground truncate mb-1 text-sm sm:text-base">{name}</h3>
+          <h3 className="font-semibold text-foreground truncate text-sm sm:text-base">{name}</h3>
           <p className="text-xs sm:text-sm text-muted-foreground">
             @
             {login}
@@ -69,15 +70,16 @@ function JoinTestimonials() {
           <RiTwitterXLine className="size-5 sm:size-6 text-primary" aria-hidden="true" />
         </div>
         <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">Want to be featured here?</h3>
-        <a
-          href="https://x.com/conar_app"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-primary font-medium text-xs sm:text-sm transition-colors"
-        >
-          Tag @conar_app on
-          <RiTwitterXLine className="size-3 sm:size-4" aria-hidden="true" />
-        </a>
+        <Button asChild variant="link">
+          <a
+            href="https://x.com/conar_app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Tag @conar_app on
+            <RiTwitterXLine className="size-3 sm:size-4" aria-hidden="true" />
+          </a>
+        </Button>
       </div>
     </div>
   )
@@ -105,6 +107,19 @@ export function Testimonials() {
             finally, a database viewer that doesn't suck
           </Testimonial>
         </TestimonialCard>
+        <TestimonialCard testimonialId="itsnoahd">
+          <Testimonial
+            name="Noah"
+            login="itsnoahd"
+            avatar="/avatars/itsnoahd.jpg"
+            link="https://x.com/itsnoahd/status/1936938123570925802"
+          >
+            HOLY CRAP WHAT???
+            @conar_app
+            where have you been? This is so much easier then pgadmin.
+            IT ALSO has some really nice micro animations and interactions wow.
+          </Testimonial>
+        </TestimonialCard>
         <TestimonialCard testimonialId="anshrathodfr">
           <Testimonial
             name="Ansh Rathod"
@@ -125,36 +140,9 @@ export function Testimonials() {
             Wow, I love this!
           </Testimonial>
         </TestimonialCard>
-        <TestimonialCard testimonialId="itsnoahd">
-          <Testimonial
-            name="Ansh Rathod"
-            login="itsnoahd"
-            avatar="/avatars/itsnoahd.jpg"
-            link="https://x.com/itsnoahd/status/1936938123570925802"
-          >
-            HOLY CRAP WHAT???
-            @conar_app
-            where have you been? This is so much easier then pgadmin.
-            IT ALSO has some really nice micro animations and interactions wow.
-          </Testimonial>
-        </TestimonialCard>
         <TestimonialCard testimonialId="join-us">
           <JoinTestimonials />
         </TestimonialCard>
-      </div>
-      <div className="flex justify-center mt-8 sm:mt-12 px-4">
-        <div className="inline-flex items-center gap-2 text-muted-foreground text-xs sm:text-sm">
-          <RiTwitterXLine className="size-3 sm:size-4" aria-hidden="true" />
-          <span>Join hundreds of users on</span>
-          <a
-            href="https://x.com/conar_app"
-            className="text-primary hover:underline font-medium"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            X
-          </a>
-        </div>
       </div>
     </section>
   )

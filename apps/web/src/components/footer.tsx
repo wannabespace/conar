@@ -1,13 +1,46 @@
-import { TextHoverEffect } from '@conar/ui/components/aceternity/text-hover-effect'
-import { useRef } from 'react'
+import { AppLogo } from '@conar/ui/components/brand/app-logo'
+import { RiGithubLine, RiTwitterXLine } from '@remixicon/react'
+import { Link } from '@tanstack/react-router'
 
 export function Footer() {
-  const ref = useRef<SVGSVGElement>(null)
-
   return (
-    <div className="container mx-auto">
-      Footer
-      <TextHoverEffect ref={ref} className="tracking-tighter" text="Conar" />
-    </div>
+    <footer className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-4 px-4 sm:px-0 gap-4 sm:gap-0">
+      <div className="flex flex-1 items-center text-muted-foreground gap-2">
+        <AppLogo className="size-4" />
+        <span className="text-sm font-medium">Conar</span>
+      </div>
+      <div className="flex flex-1 justify-center items-center gap-4">
+        <Link
+          to="/terms-of-service"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Terms of Service
+        </Link>
+        <Link
+          to="/privacy-policy"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Privacy Policy
+        </Link>
+      </div>
+      <div className="flex flex-1 items-center justify-center sm:justify-end gap-2">
+        <a
+          href="https://x.com/conar_app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <RiTwitterXLine className="size-4" />
+        </a>
+        <a
+          href="https://github.com/conar-app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <RiGithubLine className="size-4" />
+        </a>
+      </div>
+    </footer>
   )
 }

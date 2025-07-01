@@ -6,6 +6,7 @@
 @import "./animations.css";
 
 @plugin 'tailwind-scrollbar';
+@plugin '@tailwindcss/typography';
 
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../../../components/**/*.{ts,tsx}";
@@ -111,11 +112,6 @@
 
 html {
   color-scheme: light dark;
-}
-
-body {
-  min-height: 500px;
-  min-width: 500px;
 }
 
 @layer base {

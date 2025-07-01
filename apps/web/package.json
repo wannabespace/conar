@@ -33,6 +33,7 @@
     "@conar/tsconfig": "workspace:*",
     "@conar/ui": "workspace:*",
     "@remixicon/react": "^4.6.0",
+    "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.10",
     "@types/node": "^24.0.3",
     "@types/react": "^19.1.8",

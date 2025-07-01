@@ -90,17 +90,17 @@ function DownloadOption({ Icon, type, arch, asset }: {
   }
 }) {
   return (
-    <Card className="flex items-center justify-between p-2 gap-8 w-full">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center size-8 bg-muted rounded-lg">
+    <Card className="flex items-center justify-between p-3 sm:p-2 gap-4 sm:gap-8 w-full">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+        <div className="flex items-center justify-center size-8 bg-muted rounded-lg flex-shrink-0">
           <Icon className="text-muted-foreground size-4" />
         </div>
         <div className="flex flex-col items-start">
-          <span className="font-medium">
+          <span className="font-medium text-sm sm:text-base truncate w-full">
             {osMap[type].label}
             {' '}
             {arch && (
-              <Badge variant="outline">
+              <Badge variant="outline" className="text-xs sm:text-sm">
                 {arch}
               </Badge>
             )}
@@ -135,23 +135,23 @@ function DownloadOption({ Icon, type, arch, asset }: {
 
 function RouteComponent() {
   return (
-    <div className="flex flex-col items-center justify-center px-4 py-[10vh]">
-      <div className="flex flex-col items-center max-w-2xl mx-auto text-center">
-        <AppLogoSquare className="size-32 mb-6" />
-        <h1 className="text-4xl mb-3 tracking-tight font-medium">
+    <div className="flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-[10vh] min-h-screen">
+      <div className="flex flex-col items-center max-w-2xl mx-auto text-center w-full">
+        <AppLogoSquare className="size-24 sm:size-32 mb-4 sm:mb-6" />
+        <h1 className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3 tracking-tight font-medium px-2">
           Download
           {' '}
           <strong>Conar</strong>
         </h1>
-        <p className="text-lg text-muted-foreground mb-10">
+        <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-10 px-2">
           Available for macOS and Linux
         </p>
-        <div className="mb-12 text-center space-y-2">
+        <div className="mb-8 sm:mb-12 text-center space-y-2 px-4">
           <DownloadButton />
           <Version />
         </div>
-        <div className="max-w-xl w-full">
-          <h2 className="text-2xl font-semibold text-center mb-4">All platforms</h2>
+        <div className="w-full max-w-xl px-4">
+          <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4">All platforms</h2>
           <div className="space-y-2 w-full">
             <MountedSuspense fallback={(
               <>

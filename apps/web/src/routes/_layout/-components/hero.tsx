@@ -43,7 +43,7 @@ export function Hero({ className }: { className?: string }) {
           >
             quickly
           </motion.span>
-          &nbsp;
+          {' '}
           <motion.span
             initial={{ opacity: 0, filter: 'blur(10px)' }}
             animate={{ opacity: 1, filter: 'blur(0px)' }}
@@ -61,12 +61,12 @@ export function Hero({ className }: { className?: string }) {
           </motion.span>
         </h1>
       </div>
-      <div className="w-full lg:w-auto lg:flex-1 flex flex-col items-start lg:items-end gap-4 sm:gap-6">
+      <div className="w-full max-w-md lg:flex-1 flex flex-col items-start lg:items-end gap-4 sm:gap-6">
         <motion.h2
           initial={{ opacity: 0, filter: 'blur(10px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
           transition={{ duration: 0.5, delay: 0.25 }}
-          className="text-muted-foreground text-balance text-base sm:text-lg lg:text-xl text-left lg:text-right max-w-lg lg:max-w-none"
+          className="text-muted-foreground text-balance text-base sm:text-lg lg:text-xl text-left lg:text-right"
         >
           Conar is an AI-powered data management tool that lets you focus on working with your data while it handles the complexity
         </motion.h2>

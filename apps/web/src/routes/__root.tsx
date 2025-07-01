@@ -67,7 +67,9 @@ function RootComponent() {
   const pathname = useRouterState({ select: state => state.location.pathname })
 
   useMountedEffect(() => {
-    window.scrollTo(0, 0)
+    window.scrollTo({
+      top: 0,
+    })
   }, [pathname])
 
   return (

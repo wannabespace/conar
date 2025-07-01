@@ -23,7 +23,9 @@ export default defineConfig(({ command }) => {
           plugins: [['babel-plugin-react-compiler', { target: '19' }]],
         },
       }),
-      tanstackRouter(),
+      tanstackRouter({
+        autoCodeSplitting: true,
+      }),
       electron({
         main: {
           entry: 'electron/main/index.ts',

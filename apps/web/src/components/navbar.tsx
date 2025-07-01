@@ -18,7 +18,7 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   const { data } = useQuery(getRepoOptions)
 
   return (
-    <header className={cn('flex items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8', className)} {...props}>
+    <header className={cn('flex items-center justify-between px-4 sm:px-0', className)} {...props}>
       <div className="flex-1">
         <Link to="/" className="text-foreground font-medium text-base sm:text-lg lg:text-xl tracking-tighter">
           Conar
@@ -36,7 +36,7 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
         <Button
           variant="ghost"
           size="icon-sm"
-          className="gap-1 sm:gap-2"
+          className="gap-1 sm:gap-2 hidden sm:flex"
           asChild
         >
           <a

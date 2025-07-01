@@ -5,6 +5,7 @@ import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
 import { routeTree } from './routeTree.gen'
 import './monaco-worker'
+import './assets/styles.css'
 import '@conar/ui/globals.css'
 
 // if (import.meta.env.DEV) {
