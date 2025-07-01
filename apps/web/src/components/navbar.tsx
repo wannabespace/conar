@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react'
+import { Badge } from '@conar/ui/components/badge'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
@@ -19,10 +20,13 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
 
   return (
     <header className={cn('flex items-center justify-between px-4 sm:px-0', className)} {...props}>
-      <div className="flex-1">
+      <div className="flex-1 flex items-center gap-2">
         <Link to="/" className="text-foreground font-medium text-base sm:text-lg lg:text-xl tracking-tighter">
           Conar
         </Link>
+        <Badge variant="default" className="bg-warning/20 text-warning">
+          Beta
+        </Badge>
       </div>
       <div className="flex-1 flex justify-center">
         <Link to="/" className="text-primary">
