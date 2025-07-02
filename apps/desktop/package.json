@@ -81,7 +81,7 @@
     "tw-animate-css": "^1.3.4",
     "typescript": "~5.8.3",
     "uuid": "^11.1.0",
-    "vite": "^7.0.0",
+    "vite": "^6.3.5",
     "vite-plugin-electron": "^0.29.0",
     "vite-tsconfig-paths": "^5.1.4",
     "zod": "^3.25.67"
