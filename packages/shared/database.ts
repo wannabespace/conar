@@ -11,6 +11,12 @@ export const databaseContextSchema = z.object({
         nullable: z.boolean(),
         default: z.nullable(z.string()),
         editable: z.boolean(),
+        // constraints: z.array(z.object({
+        //   name: z.string(),
+        //   type: z.string(),
+        //   related_column: z.nullable(z.string()),
+        //   related_table: z.nullable(z.string()),
+        // })).nullable().transform(data => data ?? []),
       })).nullable().transform(data => data ?? []),
     })).nullable().transform(data => data ?? []),
   })).nullable().transform(data => data ?? []),

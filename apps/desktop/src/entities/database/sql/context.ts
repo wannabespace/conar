@@ -1,6 +1,35 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import { prepareSql } from '@conar/shared/utils/helpers'
 
+// 'constraints', (
+//   SELECT json_agg(
+//     json_build_object(
+//       'name', c.conname,
+//       'type', c.contype,
+//       'related_column', CASE
+//         WHEN c.contype = 'f' THEN (
+//           SELECT a2.attname
+//           FROM pg_catalog.pg_attribute a2
+//           WHERE a2.attrelid = c.confrelid
+//             AND a2.attnum = c.confkey[1]
+//         )
+//         ELSE null
+//       END,
+//       'related_table', CASE
+//         WHEN c.contype = 'f' THEN (
+//           SELECT c2.relname
+//           FROM pg_catalog.pg_class c2
+//           WHERE c2.oid = c.confrelid
+//         )
+//         ELSE null
+//       END
+//     )
+//   )
+//   FROM pg_catalog.pg_constraint c
+//   WHERE c.conrelid = t.oid
+//     AND a.attnum = ANY(c.conkey)
+// )
+
 export function contextSql(): Record<DatabaseType, string> {
   return {
     postgres: prepareSql(`
@@ -22,35 +51,7 @@ export function contextSql(): Record<DatabaseType, string> {
                       WHEN a.attgenerated = 's' THEN false
                       ELSE true
                     END,
-                    'default', pg_get_expr(d.adbin, d.adrelid),
-                    'constraints', (
-                      SELECT json_agg(
-                        json_build_object(
-                          'name', c.conname,
-                          'type', c.contype,
-                          'related_column', CASE
-                            WHEN c.contype = 'f' THEN (
-                              SELECT a2.attname
-                              FROM pg_catalog.pg_attribute a2
-                              WHERE a2.attrelid = c.confrelid
-                                AND a2.attnum = c.confkey[1]
-                            )
-                            ELSE null
-                          END,
-                          'related_table', CASE
-                            WHEN c.contype = 'f' THEN (
-                              SELECT c2.relname
-                              FROM pg_catalog.pg_class c2
-                              WHERE c2.oid = c.confrelid
-                            )
-                            ELSE null
-                          END
-                        )
-                      )
-                      FROM pg_catalog.pg_constraint c
-                      WHERE c.conrelid = t.oid
-                        AND a.attnum = ANY(c.conkey)
-                    )
+                    'default', pg_get_expr(d.adbin, d.adrelid)
                   )
                 )
                 FROM pg_catalog.pg_attribute a
