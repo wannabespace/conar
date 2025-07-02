@@ -212,7 +212,7 @@ function CloudSync() {
       />
       <div className="space-y-3 sm:space-y-4">
         <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-muted/30 to-muted/50 rounded-xl border border-border/50">
-          <div className="size-10 sm:size-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+          <div className="size-10 sm:size-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
             <RiDatabase2Line className="size-5 sm:size-6 text-primary" aria-hidden="true" />
           </div>
           <div className="flex-1 min-w-0">
@@ -225,7 +225,7 @@ function CloudSync() {
           </div>
         </div>
         <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-muted/30 to-muted/50 rounded-xl border border-border/50">
-          <div className="size-10 sm:size-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+          <div className="size-10 sm:size-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
             <RiDatabase2Line className="size-5 sm:size-6 text-primary" aria-hidden="true" />
           </div>
           <div className="flex-1 min-w-0">

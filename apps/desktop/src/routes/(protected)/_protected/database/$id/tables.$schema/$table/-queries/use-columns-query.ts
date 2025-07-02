@@ -8,15 +8,17 @@ export function useTableColumns(database: Database, table: string, schema: strin
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
   return useMemo(() => {
-    return columns?.map(column => ({
-      ...column,
-      isPrimaryKey: !!primaryKeys?.includes(column.name),
-    })).sort((a, b) => {
-      if (a.isPrimaryKey && !b.isPrimaryKey)
-        return -1
-      if (!a.isPrimaryKey && b.isPrimaryKey)
-        return 1
-      return a.name.localeCompare(b.name)
-    }) ?? []
+    return columns
+      ?.map(column => ({
+        ...column,
+        isPrimaryKey: !!primaryKeys?.includes(column.name),
+      }))
+      .toSorted((a, b) => {
+        if (a.isPrimaryKey && !b.isPrimaryKey)
+          return -1
+        if (!a.isPrimaryKey && b.isPrimaryKey)
+          return 1
+        return 0
+      }) ?? []
   }, [columns, primaryKeys])
 }
