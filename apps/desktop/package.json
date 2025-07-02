@@ -61,7 +61,7 @@
     "better-auth": "^1.2.12",
     "dayjs": "^1.11.13",
     "dexie": "^4.0.11",
-    "electron": "37.1.0",
+    "electron": "36.4.0",
     "electron-builder": "^26.0.12",
     "hookable": "^5.5.3",
     "marked": "^16.0.0",

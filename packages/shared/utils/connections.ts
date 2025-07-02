@@ -4,7 +4,7 @@ import { DatabaseType } from '../enums/database-type'
 export function parseConnectionString(type: DatabaseType, connectionString: string) {
   const map = {
     [DatabaseType.Postgres]: (str: string) => parsePg(str, {}),
-  }
+  } satisfies Record<DatabaseType, (str: string) => unknown>
 
   return map[type](connectionString)
 }
