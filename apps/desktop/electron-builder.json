@@ -28,6 +28,15 @@
     ],
     "artifactName": "${productName}-Mac-${arch}-${version}-Installer.${ext}"
   },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
+  },
   "nsis": {
     "oneClick": false,
     "perMachine": false,
