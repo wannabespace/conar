@@ -119,6 +119,19 @@ export async function removeDatabase(id: string) {
   ])
 }
 
+export async function renameDatabase(id: string, name: string) {
+  const existing = await indexedDb.databases.get(id)
+
+  if (!existing) {
+    throw new Error('Database not found')
+  }
+
+  await Promise.all([
+    trpc.databases.update.mutate({ id, name }),
+    indexedDb.databases.update(id, { name }),
+  ])
+}
+
 export async function updateDatabasePassword(id: string, password: string) {
   const database = await indexedDb.databases.get(id)
 

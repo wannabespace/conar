@@ -22,14 +22,14 @@ import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { tabsStore } from './tabs'
 
-interface RenameTableModalProps {
+interface RenameTableDIalogProps {
   ref: React.RefObject<{
     rename: (schema: string, table: string) => void
   } | null>
   database: Database
 }
 
-export function RenameTableModal({ ref, database }: RenameTableModalProps) {
+export function RenameTableDIalog({ ref, database }: RenameTableDIalogProps) {
   const router = useRouter()
   const [newTableName, setNewTableName] = useState('')
   const [schema, setSchema] = useState('')

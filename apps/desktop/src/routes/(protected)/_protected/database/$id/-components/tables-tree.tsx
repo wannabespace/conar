@@ -14,8 +14,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
 import { getTableStoreState } from '../tables.$schema/$table'
-import { DropTableModal } from './drop-table-modal'
-import { RenameTableModal } from './rename-table-modal'
+import { DropTableDialog } from './drop-table-dialog'
+import { RenameTableDIalog } from './rename-table-dialog'
 
 function Skeleton() {
   return (
@@ -38,8 +38,8 @@ export function TablesTree({ database, className, search }: { database: Database
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
-  const dropTableModalRef = useRef<ComponentRef<typeof DropTableModal>>(null)
-  const renameTableModalRef = useRef<ComponentRef<typeof RenameTableModal>>(null)
+  const DropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
+  const RenameTableDIalogRef = useRef<ComponentRef<typeof RenameTableDIalog>>(null)
 
   function getQueryOpts(tableName: string) {
     const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
@@ -76,12 +76,12 @@ export function TablesTree({ database, className, search }: { database: Database
 
   return (
     <ScrollArea ref={ref} className={cn('h-full overflow-y-auto p-2', className)}>
-      <DropTableModal
-        ref={dropTableModalRef}
+      <DropTableDialog
+        ref={DropTableDialogRef}
         database={database}
       />
-      <RenameTableModal
-        ref={renameTableModalRef}
+      <RenameTableDIalog
+        ref={RenameTableDIalogRef}
         database={database}
       />
       <Accordion
@@ -210,14 +210,14 @@ export function TablesTree({ database, className, search }: { database: Database
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                       <DropdownMenuItem
-                                        onClick={() => renameTableModalRef.current?.rename(schema.name, table)}
+                                        onClick={() => RenameTableDIalogRef.current?.rename(schema.name, table)}
                                       >
                                         <RiEditLine className="size-4" />
                                         Rename Table
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         variant="destructive"
-                                        onClick={() => dropTableModalRef.current?.drop(schema.name, table)}
+                                        onClick={() => DropTableDialogRef.current?.drop(schema.name, table)}
                                       >
                                         <RiDeleteBin7Line className="size-4" />
                                         Drop Table

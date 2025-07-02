@@ -1,18 +1,16 @@
+import type { ComponentRef } from 'react'
 import type { Database } from '~/lib/indexeddb'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Skeleton } from '@conar/ui/components/skeleton'
-import { RiDeleteBinLine, RiMoreLine } from '@remixicon/react'
-import { useMutation } from '@tanstack/react-query'
+import { RiDeleteBinLine, RiEditLine, RiMoreLine } from '@remixicon/react'
 import { Link, useRouter } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
-import { toast } from 'sonner'
-import { DatabaseIcon, databasesQuery, prefetchDatabaseCore, removeDatabase, useDatabases } from '~/entities/database'
-import { queryClient } from '~/main'
+import { useMemo, useRef } from 'react'
+import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
+import { RemoveDatabaseDialog } from './remove-database-dialog'
+import { RenameDatabaseDialog } from './rename-database-dialog'
 
-function DatabaseCard({ database, onRemove }: { database: Database, onRemove: () => void }) {
+function DatabaseCard({ database, onRemove, onRename }: { database: Database, onRemove: () => void, onRename: () => void }) {
   const connectionString = useMemo(() => {
     const url = new URL(database.connectionString)
 
@@ -42,6 +40,15 @@ function DatabaseCard({ database, onRemove }: { database: Database, onRemove: ()
           <RiMoreLine className="size-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.preventDefault()
+              onRename()
+            }}
+          >
+            <RiEditLine className="mr-2 size-4" />
+            Rename
+          </DropdownMenuItem>
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
             onClick={(e) => {
@@ -88,59 +95,15 @@ function DatabaseCardSkeleton() {
   )
 }
 
-function RemoveDatabaseDialog({ id, open, onOpenChange }: { id: string | null, open: boolean, onOpenChange: (open: boolean) => void }) {
-  const { mutate: removeDatabaseMutation, isPending } = useMutation({
-    mutationFn: async () => {
-      if (!id)
-        return
-
-      await removeDatabase(id)
-    },
-    onSuccess: () => {
-      toast.success('Database removed successfully')
-      onOpenChange(false)
-      queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
-    },
-  })
-
-  return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Remove database</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this database
-            and remove all associated data.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            onClick={(e) => {
-              e.preventDefault()
-              removeDatabaseMutation()
-            }}
-            disabled={isPending}
-          >
-            <LoadingContent loading={isPending}>
-              Remove
-            </LoadingContent>
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  )
-}
-
 export function DatabasesList() {
   const { data: databases, isPending } = useDatabases()
-  const [selected, setSelected] = useState<string | null>(null)
-  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
+  const renameDialogRef = useRef<ComponentRef<typeof RenameDatabaseDialog>>(null)
+  const removeDialogRef = useRef<ComponentRef<typeof RemoveDatabaseDialog>>(null)
 
   return (
     <div className="flex flex-col gap-6">
-      <RemoveDatabaseDialog id={selected} open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen} />
+      <RemoveDatabaseDialog ref={removeDialogRef} />
+      <RenameDatabaseDialog ref={renameDialogRef} />
       <div className="flex flex-col gap-2">
         {isPending
           ? (
@@ -156,8 +119,10 @@ export function DatabasesList() {
                   key={database.id}
                   database={database}
                   onRemove={() => {
-                    setSelected(database.id)
-                    setIsRemoveDialogOpen(true)
+                    removeDialogRef.current?.remove(database)
+                  }}
+                  onRename={() => {
+                    renameDialogRef.current?.rename(database)
                   }}
                 />
               ))

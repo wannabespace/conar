@@ -22,14 +22,14 @@ import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { tabsStore } from './tabs'
 
-interface DropTableModalProps {
+interface DropTableDialogProps {
   ref: React.RefObject<{
     drop: (schema: string, table: string) => void
   } | null>
   database: Database
 }
 
-export function DropTableModal({ ref, database }: DropTableModalProps) {
+export function DropTableDialog({ ref, database }: DropTableDialogProps) {
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')
   const [schema, setSchema] = useState('')
