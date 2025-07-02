@@ -30,7 +30,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 10.6.2
+          version: 10.12.4
 
       - name: Install Dependencies
         run: pnpm install
