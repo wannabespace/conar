@@ -7,7 +7,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { useInViewport } from '@conar/ui/hookas/use-in-viewport'
 import { useInitializedEffect } from '@conar/ui/hookas/use-initialized-effect'
-import { useLocalStorage } from '@conar/ui/hookas/use-local-storage'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { clickHandlers, cn } from '@conar/ui/lib/utils'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
@@ -17,6 +16,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useParams, useRouter } from '@tanstack/react-router'
+import { Store, useStore } from '@tanstack/react-store'
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
 import { getTableStoreState } from '../tables.$schema/$table'
@@ -164,6 +164,12 @@ function SortableTab({
   )
 }
 
+export const tabsStore = new Store<Record<string, Tab[]>>(JSON.parse(localStorage.getItem('database-tables-tabs') ?? '{}'))
+
+tabsStore.subscribe(({ currentVal }) => {
+  localStorage.setItem('database-tables-tabs', JSON.stringify(currentVal))
+})
+
 export function TablesTabs({ ref, database, id }: {
   ref?: RefObject<{ addTab: (schema: string, table: string) => void } | null>
   database: Database
@@ -172,7 +178,7 @@ export function TablesTabs({ ref, database, id }: {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const router = useRouter()
-  const [tabs, setTabs] = useLocalStorage<Tab[]>(`database-tables-tabs-${id}`, [])
+  const tabs = useStore(tabsStore, state => state[id] ?? [])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -199,16 +205,25 @@ export function TablesTabs({ ref, database, id }: {
       const existingPreviewTabIndex = tabs.findIndex(tab => tab.preview)
 
       if (existingPreviewTabIndex !== -1) {
-        setTabs(prev => prev.map((tab, index) => index === existingPreviewTabIndex ? { table, schema, preview: true } : tab))
+        tabsStore.setState(prev => ({
+          ...prev,
+          [id]: prev[id]?.map((tab, index) => index === existingPreviewTabIndex ? { table, schema, preview: true } : tab),
+        }))
         return
       }
 
-      setTabs(prev => [...prev, { table, schema, preview: true }])
+      tabsStore.setState(prev => ({
+        ...prev,
+        [id]: prev[id] ? [...prev[id], { table, schema, preview: true }] : [{ table, schema, preview: true }],
+      }))
       return
     }
 
     if (!tabs.find(tab => tab.table === table && tab.schema === schema && !tab.preview)) {
-      setTabs(prev => prev.map(tab => tab.table === table && tab.schema === schema ? { table, schema, preview: false } : tab))
+      tabsStore.setState(prev => ({
+        ...prev,
+        [id]: prev[id]?.map(tab => tab.table === table && tab.schema === schema ? { table, schema, preview: false } : tab),
+      }))
     }
   }
 
@@ -266,7 +281,10 @@ export function TablesTabs({ ref, database, id }: {
   }, [tabs.length])
 
   function closeTab(schema: string, table: string) {
-    setTabs(tabs => tabs.filter(tab => !(tab.table === table && tab.schema === schema)))
+    tabsStore.setState(prev => ({
+      ...prev,
+      [id]: prev[id]?.filter(tab => !(tab.table === table && tab.schema === schema)),
+    }))
   }
 
   useKeyboardEvent(e => e.key === 'w' && (os.type === 'macos' ? e.metaKey : e.ctrlKey), (e) => {
@@ -283,11 +301,16 @@ export function TablesTabs({ ref, database, id }: {
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     if (over && active.id !== over.id) {
-      setTabs((items) => {
+      tabsStore.setState((prev) => {
+        const items = prev[id] ?? []
+
         const oldIndex = items.findIndex(item => item.table === active.id)
         const newIndex = items.findIndex(item => item.table === over.id)
 
-        return arrayMove(items, oldIndex, newIndex)
+        return {
+          ...prev,
+          [id]: arrayMove(items, oldIndex, newIndex),
+        }
       })
     }
   }

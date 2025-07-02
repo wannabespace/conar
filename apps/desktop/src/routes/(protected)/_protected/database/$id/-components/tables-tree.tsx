@@ -1,16 +1,21 @@
+import type { ComponentRef } from 'react'
 import type { Database } from '~/lib/indexeddb'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
+import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useDebouncedCallback } from '@conar/ui/hookas/use-debounced-callback'
 import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { clickHandlers, cn } from '@conar/ui/lib/utils'
-import { RiStackLine, RiTableLine } from '@remixicon/react'
+import { RiDeleteBin7Line, RiEditLine, RiMoreLine, RiStackLine, RiTableLine } from '@remixicon/react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
 import { getTableStoreState } from '../tables.$schema/$table'
+import { DropTableModal } from './drop-table-modal'
+import { RenameTableModal } from './rename-table-modal'
 
 function Skeleton() {
   return (
@@ -33,6 +38,8 @@ export function TablesTree({ database, className, search }: { database: Database
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
+  const dropTableModalRef = useRef<ComponentRef<typeof DropTableModal>>(null)
+  const renameTableModalRef = useRef<ComponentRef<typeof RenameTableModal>>(null)
 
   function getQueryOpts(tableName: string) {
     const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
@@ -69,6 +76,14 @@ export function TablesTree({ database, className, search }: { database: Database
 
   return (
     <ScrollArea ref={ref} className={cn('h-full overflow-y-auto p-2', className)}>
+      <DropTableModal
+        ref={dropTableModalRef}
+        database={database}
+      />
+      <RenameTableModal
+        ref={renameTableModalRef}
+        database={database}
+      />
       <Accordion
         value={searchAccordionValue}
         onValueChange={(v) => {
@@ -153,7 +168,7 @@ export function TablesTree({ database, className, search }: { database: Database
                                     },
                                   }))}
                                   className={cn(
-                                    'w-full flex items-center gap-2 border border-transparent py-1.5 px-2 text-sm text-foreground rounded-md hover:bg-accent/60',
+                                    'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/60',
                                     tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
                                   )}
                                   onMouseOver={() => debouncedPrefetchDatabaseTableCore(schema.name, table)}
@@ -179,6 +194,36 @@ export function TablesTree({ database, className, search }: { database: Database
                                         )
                                       : table}
                                   </span>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon-xs"
+                                        className={cn(
+                                          'opacity-0 group-hover:opacity-100 ml-auto transition-opacity',
+                                          tableParam === table && 'hover:bg-primary/10',
+                                        )}
+                                        onClick={e => e.stopPropagation()}
+                                      >
+                                        <RiMoreLine className="size-3" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem
+                                        onClick={() => renameTableModalRef.current?.rename(schema.name, table)}
+                                      >
+                                        <RiEditLine className="size-4" />
+                                        Rename Table
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        variant="destructive"
+                                        onClick={() => dropTableModalRef.current?.drop(schema.name, table)}
+                                      >
+                                        <RiDeleteBin7Line className="size-4" />
+                                        Drop Table
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 </Link>
                               </motion.div>
                             ))}

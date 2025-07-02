@@ -23,8 +23,6 @@ export function databaseContextQuery(database: Database) {
             return -1
           if (b.schema === 'public' && a.schema !== 'public')
             return 1
-          if (a.schema !== b.schema)
-            return a.schema.localeCompare(b.schema)
           return a.schema.localeCompare(b.schema)
         }),
       }
