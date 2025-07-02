@@ -65,6 +65,9 @@ importers:
       '@ai-sdk/xai':
         specifier: ^1.2.16
         version: 1.2.16(zod@3.25.67)
+      '@hono/arktype-validator':
+        specifier: ^2.0.1
+        version: 2.0.1(arktype@2.1.20)(hono@4.8.3)
       '@hono/node-server':
         specifier: ^1.15.0
         version: 1.15.0(hono@4.8.3)
@@ -1487,6 +1490,12 @@ packages:
 
   '@hexagon/base64@1.1.28':
     resolution: {integrity: sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw==}
+
+  '@hono/arktype-validator@2.0.1':
+    resolution: {integrity: sha512-Z4PQFtzgbGneBap+TTViRIBAoUWbwEwg8PaKNqALAP6z9N2ksJI81PfcsSQNUzwtrn8LipkMvBb8/D9Pei2GJw==}
+    peerDependencies:
+      arktype: ^2.0.0-dev.14
+      hono: '*'
 
   '@hono/node-server@1.15.0':
     resolution: {integrity: sha512-MjmK4l5N4dQpZ9OSWN0tCj7ejuc7WvuWMzSKtc89bnknJykAeHxzRigXBTYZk85H6Awrii6RM59iUiUluApu2A==}
@@ -9227,6 +9236,11 @@ snapshots:
   '@gar/promisify@1.1.3': {}
 
   '@hexagon/base64@1.1.28': {}
+
+  '@hono/arktype-validator@2.0.1(arktype@2.1.20)(hono@4.8.3)':
+    dependencies:
+      arktype: 2.1.20
+      hono: 4.8.3
 
   '@hono/node-server@1.15.0(hono@4.8.3)':
     dependencies:
