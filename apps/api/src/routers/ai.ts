@@ -93,7 +93,7 @@ const models: Record<AiSqlChatModel, LanguageModelV1> = {
   [AiSqlChatModel.Claude_3_7_Sonnet]: anthropic('claude-3-7-sonnet-20250219'),
   [AiSqlChatModel.Claude_4_Opus]: anthropic('claude-4-opus-20250514'),
   [AiSqlChatModel.GPT_4o_Mini]: openai('gpt-4o-mini'),
-  [AiSqlChatModel.Gemini_2_5_Pro]: google('gemini-2.5-pro-exp-03-25'),
+  [AiSqlChatModel.Gemini_2_5_Pro]: google('gemini-2.5-pro'),
   [AiSqlChatModel.Grok_3]: xai('grok-3-latest'),
 }
 
