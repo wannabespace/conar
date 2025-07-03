@@ -85,6 +85,50 @@ function JoinTestimonials() {
   )
 }
 
+const testimonials: {
+  name: string
+  login: string
+  avatar: string
+  link: string
+  children: () => React.ReactNode
+}[] = [
+  {
+    name: 'Maze',
+    login: 'mazeincoding',
+    avatar: '/avatars/mazeincoding.jpg',
+    link: 'https://x.com/mazeincoding/status/1929612879600181555',
+    children: () => 'finally, a database viewer that doesn\'t suck',
+  },
+  {
+    name: 'Noah',
+    login: 'itsnoahd',
+    avatar: '/avatars/itsnoahd.jpg',
+    link: 'https://x.com/itsnoahd/status/1936938123570925802',
+    children: () => 'HOLY CRAP WHAT??? @conar_app where have you been? This is so much easier then pgadmin. IT ALSO has some really nice micro animations and interactions wow.',
+  },
+  {
+    name: 'Ansh Rathod',
+    login: 'anshrathodfr',
+    avatar: '/avatars/anshrathodfr.jpg',
+    link: 'https://x.com/anshrathodfr/status/1935670652289347720',
+    children: () => 'omg tried it and love this app!',
+  },
+  {
+    name: 'Tristan Rhodes',
+    login: 'tristanbob',
+    avatar: '/avatars/tristanbob.jpg',
+    link: 'https://x.com/tristanbob/status/1935675893596434817',
+    children: () => 'wow, I love this!',
+  },
+  {
+    name: 'lasse',
+    login: 'lassejlv',
+    avatar: '/avatars/lassejlv.png',
+    link: 'https://x.com/lassejlv/status/1940734263772828006',
+    children: () => '@conar_app is the best database viewer i ever used, no cap 🔥',
+  },
+]
+
 export function Testimonials() {
   return (
     <section aria-labelledby="testimonials-heading" className="py-8 sm:py-12 lg:py-16">
@@ -97,49 +141,18 @@ export function Testimonials() {
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-7xl mx-auto px-4">
-        <TestimonialCard testimonialId="mazeincoding">
-          <Testimonial
-            name="Maze"
-            login="mazeincoding"
-            avatar="/avatars/mazeincoding.jpg"
-            link="https://x.com/mazeincoding/status/1929612879600181555"
-          >
-            finally, a database viewer that doesn't suck
-          </Testimonial>
-        </TestimonialCard>
-        <TestimonialCard testimonialId="itsnoahd">
-          <Testimonial
-            name="Noah"
-            login="itsnoahd"
-            avatar="/avatars/itsnoahd.jpg"
-            link="https://x.com/itsnoahd/status/1936938123570925802"
-          >
-            HOLY CRAP WHAT???
-            @conar_app
-            where have you been? This is so much easier then pgadmin.
-            IT ALSO has some really nice micro animations and interactions wow.
-          </Testimonial>
-        </TestimonialCard>
-        <TestimonialCard testimonialId="anshrathodfr">
-          <Testimonial
-            name="Ansh Rathod"
-            login="anshrathodfr"
-            avatar="/avatars/anshrathodfr.jpg"
-            link="https://x.com/anshrathodfr/status/1935670652289347720"
-          >
-            omg tried it and love this app!
-          </Testimonial>
-        </TestimonialCard>
-        <TestimonialCard testimonialId="tristanbob">
-          <Testimonial
-            name="Tristan Rhodes"
-            login="tristanbob"
-            avatar="/avatars/tristanbob.jpg"
-            link="https://x.com/tristanbob/status/1935675893596434817"
-          >
-            Wow, I love this!
-          </Testimonial>
-        </TestimonialCard>
+        {testimonials.map(testimonial => (
+          <TestimonialCard key={testimonial.login} testimonialId={testimonial.login}>
+            <Testimonial
+              name={testimonial.name}
+              login={testimonial.login}
+              avatar={testimonial.avatar}
+              link={testimonial.link}
+            >
+              {testimonial.children()}
+            </Testimonial>
+          </TestimonialCard>
+        ))}
         <TestimonialCard testimonialId="join-us">
           <JoinTestimonials />
         </TestimonialCard>
