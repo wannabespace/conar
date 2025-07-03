@@ -20,6 +20,7 @@ export const sqlFilters = protectedProcedure
         You are a SQL filter generator that converts natural language queries into precise database filters.
         You should understand the sense of the prompt as much as possible, as users can ask with just a few words without any context.
         If you do not generate any filters, a user will not be able to filter the data.
+        Each your filters response will replace the previous filters.
 
         Guidelines:
         - Return an empty array if the prompt is unclear or cannot be converted to filters
@@ -30,6 +31,7 @@ export const sqlFilters = protectedProcedure
         - For enum columns, ensure values match the available options
         - For exact days use >= and <= operators
         - If user asks 'empty' and the column is a string, use empty string as value
+        - If context already contains a filter, you can use it as reference to generate a new filter
 
         Current time: ${new Date().toISOString()}
         Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}
