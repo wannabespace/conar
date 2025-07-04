@@ -194,6 +194,7 @@ export function Pricing({ className }: PricingSectionProps) {
                       format={{
                         style: 'currency',
                         currency: 'USD',
+                        currencyDisplay: 'narrowSymbol',
                       }}
                       suffix={tier.price.monthly === 0 ? '/forever' : isYearly ? '/year' : '/month'}
                     />
