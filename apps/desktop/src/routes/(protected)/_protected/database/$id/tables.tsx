@@ -1,16 +1,32 @@
-import type { ComponentRef } from 'react'
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
-import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
-import { useRef } from 'react'
+import { createFileRoute, Outlet, redirect, useParams } from '@tanstack/react-router'
 import { useDatabase } from '~/entities/database'
+import { getLastOpenedTable } from '../-hooks/use-last-opened-table'
 import { Sidebar } from './-components/sidebar'
 import { TablesTabs } from './-components/tabs'
+import { addTab } from './-lib/tabs'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/tables',
 )({
   component: DatabaseTablesPage,
+  beforeLoad: async ({ params, matches }) => {
+    const openedTable = matches.find(m => m.routeId === '/(protected)/_protected/database/$id/tables/$schema/$table/')
+
+    const { schema = null, table = null } = openedTable?.params || {}
+
+    if (!schema && !table) {
+      const lastOpenedTable = getLastOpenedTable(params.id)
+
+      if (lastOpenedTable) {
+        throw redirect({
+          to: '/database/$id/tables/$schema/$table',
+          params: { id: params.id, schema: lastOpenedTable.schema, table: lastOpenedTable.table },
+        })
+      }
+    }
+  },
   loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({
     meta: loaderData
@@ -25,7 +41,6 @@ export const Route = createFileRoute(
 
 function Content({ id }: { id: string }) {
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
-  const tabsRef = useRef<ComponentRef<typeof TablesTabs>>(null)
   const { data: database } = useDatabase(id)
 
   if (!schemaParam || !tableParam) {
@@ -46,14 +61,13 @@ function Content({ id }: { id: string }) {
   return (
     <>
       <TablesTabs
-        ref={tabsRef}
         database={database}
         id={id}
       />
       <div
         key={tableParam}
         className="h-[calc(100%-theme(spacing.9))]"
-        onClick={() => tabsRef.current?.addTab(schemaParam, tableParam)}
+        onClick={() => addTab(id, schemaParam, tableParam)}
       >
         <Outlet />
       </div>

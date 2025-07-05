@@ -1,7 +1,6 @@
 import type { Database } from '~/lib/indexeddb'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
-import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
 import { RiArrowLeftSLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
@@ -32,9 +31,6 @@ export function PasswordForm({ database }: { database: Database }) {
 
   return (
     <div className="min-h-[inherit] h-screen flex flex-col justify-center">
-      <DotsBg
-        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-      />
       <div className="w-full flex flex-col gap-6 max-w-xl mx-auto py-10 px-6">
         <div className="flex items-center gap-2 w-full">
           <Button

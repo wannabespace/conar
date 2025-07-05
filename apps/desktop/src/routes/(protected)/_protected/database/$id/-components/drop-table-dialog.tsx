@@ -20,7 +20,7 @@ import { toast } from 'sonner'
 import { databaseContextQuery, dropTableSql } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { tabsStore } from './tabs'
+import { closeTab } from '../-lib/tabs'
 
 interface DropTableDialogProps {
   ref: React.RefObject<{
@@ -58,10 +58,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
       setConfirmationText('')
 
       queryClient.invalidateQueries(databaseContextQuery(database))
-      tabsStore.setState(prev => ({
-        ...prev,
-        [database.id]: prev[database.id]?.filter(tab => tab.table !== table),
-      }))
+      closeTab(database.id, schema, table)
 
       if (router.state.location.pathname.startsWith(`/database/${database.id}/tables`)) {
         router.navigate({

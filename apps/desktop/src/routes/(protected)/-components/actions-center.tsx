@@ -7,7 +7,6 @@ import { useRouter } from '@tanstack/react-router'
 import { Store, useStore } from '@tanstack/react-store'
 import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
 import { trackEvent } from '~/lib/events'
-import { getLastOpenedTable } from '../_protected/database/-hooks/use-last-opened-table'
 
 const os = getOS(navigator.userAgent)
 
@@ -35,17 +34,7 @@ export function ActionsCenter() {
   function onDatabaseSelect(database: Database) {
     setIsOpen(false)
 
-    const openedTable = getLastOpenedTable(database.id)
-
-    if (openedTable) {
-      router.navigate({
-        to: '/database/$id/tables/$schema/$table',
-        params: { id: database.id, schema: openedTable.schema, table: openedTable.table },
-      })
-    }
-    else {
-      router.navigate({ to: '/database/$id/tables', params: { id: database.id } })
-    }
+    router.navigate({ to: '/database/$id/tables', params: { id: database.id } })
   }
 
   return (

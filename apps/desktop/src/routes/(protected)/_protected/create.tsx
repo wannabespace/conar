@@ -7,7 +7,6 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { Checkbox } from '@conar/ui/components/checkbox'
-import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
@@ -227,9 +226,6 @@ function CreateConnectionPage() {
 
   return (
     <div className="min-h-screen flex flex-col justify-center">
-      <DotsBg
-        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-      />
       <form
         onSubmit={(e) => {
           e.preventDefault()

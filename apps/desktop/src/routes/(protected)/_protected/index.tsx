@@ -1,7 +1,6 @@
 import { title } from '@conar/shared/utils/title'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -34,9 +33,6 @@ function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col px-6 mx-auto max-w-2xl py-10">
-      <DotsBg
-        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-      />
       <h1 className="scroll-m-20 mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Dashboard
       </h1>

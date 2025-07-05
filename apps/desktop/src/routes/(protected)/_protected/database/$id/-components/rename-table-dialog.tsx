@@ -20,7 +20,7 @@ import { toast } from 'sonner'
 import { databaseContextQuery, renameTableSql } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { tabsStore } from './tabs'
+import { renameTab } from '../-lib/tabs'
 
 interface RenameTableDIalogProps {
   ref: React.RefObject<{
@@ -58,12 +58,10 @@ export function RenameTableDIalog({ ref, database }: RenameTableDIalogProps) {
       setOpen(false)
 
       await queryClient.invalidateQueries(databaseContextQuery(database))
-      tabsStore.setState(prev => ({
-        ...prev,
-        [database.id]: prev[database.id]?.map(tab => tab.table === table ? { ...tab, table: newTableName } : tab),
-      }))
+      renameTab(database.id, schema, table, newTableName)
 
       router.navigate({
+        replace: true,
         to: '/database/$id/tables/$schema/$table',
         params: { id: database.id, schema, table: newTableName },
       })
