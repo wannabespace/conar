@@ -4,12 +4,12 @@ import { Avatar, AvatarFallback } from '@conar/ui/components/avatar'
 import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
-import { Fragment, useRef } from 'react'
+import { RiArrowDownLine, RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
+import { Fragment } from 'react'
+import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
 import { sleep } from '~/lib/helpers'
@@ -166,33 +166,12 @@ export function ChatMessages({
   ...props
 }: ComponentProps<'div'> & Pick<UseChatHelpers, 'messages' | 'status' | 'error'> & { onReload: () => void }) {
   const { id } = Route.useParams()
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const { scrollRef, contentRef, scrollToBottom, isAtBottom } = useStickToBottom({ initial: 'instant' })
 
   useMountedEffect(() => {
     chatMessages.set(id, messages)
-  }, [messages])
-
-  const firstTimeRendered = useRef(false)
-  function scrollToBottom() {
-    if (messages.length === 0 || !scrollRef.current)
-      return
-
-    if (firstTimeRendered.current) {
-      scrollRef.current?.scrollTo({
-        top: scrollRef.current?.scrollHeight,
-        behavior: 'smooth',
-      })
-    }
-    else {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-      firstTimeRendered.current = true
-    }
-  }
-
-  useAsyncEffect(async () => {
-    await sleep(0) // To wait for the messages to be rendered
     scrollToBottom()
-  }, [messages.length])
+  }, [messages])
 
   return (
     <ScrollArea
@@ -200,7 +179,7 @@ export function ChatMessages({
       className={cn('relative -mx-4', className)}
       {...props}
     >
-      <div className="flex flex-col gap-6 px-4">
+      <div ref={contentRef} className=" flex flex-col gap-6 px-4">
         {messages.map((message, index) => (
           <Fragment key={message.id}>
             {message.role === 'user'
@@ -229,6 +208,16 @@ export function ChatMessages({
           </ChatMessage>
         )}
         {error && <ErrorMessage error={error} onReload={onReload} />}
+      </div>
+      <div className={cn('sticky bottom-4 z-10 transition-opacity duration-150', isAtBottom ? 'opacity-0 pointer-events-none' : 'opacity-100')}>
+        <Button
+          size="icon-sm"
+          variant="secondary"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2"
+          onClick={() => scrollToBottom()}
+        >
+          <RiArrowDownLine />
+        </Button>
       </div>
     </ScrollArea>
   )
