@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { clickHandlers, cn } from '@conar/ui/lib/utils'
 import { RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { Link, useMatches, useNavigate, useParams } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
@@ -34,28 +34,26 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/tables')
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
 
-  function onTablesClick() {
-    const isSameTable = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
+  const isSameTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
 
-    if (isSameTable) {
-      setLastOpenedTable(null)
-    }
-
-    if (lastOpenedTable && !isSameTable) {
-      navigate({
+  const route = useMemo(() => {
+    if (!isSameTableAsLastOpened && lastOpenedTable) {
+      return {
         to: '/database/$id/tables/$schema/$table',
         params: {
           id,
           schema: lastOpenedTable.schema,
           table: lastOpenedTable.table,
         },
-      })
+      }
     }
-    else {
-      navigate({
-        to: '/database/$id/tables',
-        params: { id },
-      })
+
+    return { to: '/database/$id/tables', params: { id } }
+  }, [isSameTableAsLastOpened, lastOpenedTable])
+
+  function onTablesClick() {
+    if (isSameTableAsLastOpened && lastOpenedTable) {
+      setLastOpenedTable(null)
     }
   }
 
@@ -103,10 +101,12 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
-                    to="/database/$id/tables"
-                    params={{ id }}
                     className={classes(isActiveTables)}
-                    {...clickHandlers(onTablesClick)}
+                    {...clickHandlers(() => {
+                      onTablesClick()
+                      navigate(route)
+                    })}
+                    {...route}
                   >
                     <RiTableLine className="size-4" />
                   </Link>
