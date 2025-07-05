@@ -3,7 +3,8 @@ import type { Database } from '~/lib/indexeddb'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Skeleton } from '@conar/ui/components/skeleton'
-import { RiDeleteBinLine, RiEditLine, RiMoreLine } from '@remixicon/react'
+import { copy } from '@conar/ui/lib/copy'
+import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useMemo, useRef } from 'react'
 import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
@@ -23,17 +24,19 @@ function DatabaseCard({ database, onRemove, onRename }: { database: Database, on
 
   return (
     <Link
-      className="relative flex items-center justify-between gap-4 rounded-lg bg-card p-5 border hover:border-primary transition-all duration-150 hover:shadow-lg shadow-black/3"
+      className="relative flex items-center justify-between gap-4 rounded-lg bg-muted/30 p-5 border border-border/50 hover:border-primary transition-all duration-150"
       to="/database/$id/tables"
       params={{ id: database.id }}
       onMouseOver={() => prefetchDatabaseCore(database)}
     >
-      <div className="size-12 shrink-0 rounded-full bg-muted/50 p-3">
+      <div className="size-12 shrink-0 rounded-lg bg-primary/10 p-3">
         <DatabaseIcon type={database.type} className="size-full text-primary" />
       </div>
-      <div className="flex flex-1 flex-col gap-1 min-w-0">
-        <div className="font-medium tracking-tight truncate">{database.name}</div>
-        <div data-mask className="text-sm text-muted-foreground truncate">{connectionString.replaceAll('*', '•')}</div>
+      <div className="flex flex-1 flex-col min-w-0">
+        <div className="font-medium tracking-tight truncate flex items-center gap-2">
+          {database.name}
+        </div>
+        <div data-mask className="text-xs text-muted-foreground font-mono truncate">{connectionString.replaceAll('*', '•')}</div>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger className="rounded-md p-2 hover:bg-accent-foreground/5">
@@ -41,22 +44,22 @@ function DatabaseCard({ database, onRemove, onRename }: { database: Database, on
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem
-            onClick={(e) => {
-              e.preventDefault()
-              onRename()
+            onClick={() => {
+              copy(database.connectionString, 'Connection string copied to clipboard')
             }}
           >
-            <RiEditLine className="mr-2 size-4" />
+            <RiFileCopyLine className="size-4 opacity-50" />
+            Copy connection string
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onRename}>
+            <RiEditLine className="size-4 opacity-50" />
             Rename
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
-            onClick={(e) => {
-              e.preventDefault()
-              onRemove()
-            }}
+            onClick={onRemove}
           >
-            <RiDeleteBinLine className="mr-2 size-4" />
+            <RiDeleteBinLine className="size-4" />
             Remove
           </DropdownMenuItem>
         </DropdownMenuContent>
