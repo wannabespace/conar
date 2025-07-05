@@ -13,6 +13,7 @@ import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
+import { addTab } from '../-lib/tabs'
 import { getTableStoreState } from '../tables.$schema/$table'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDIalog } from './rename-table-dialog'
@@ -167,6 +168,7 @@ export function TablesTree({ database, className, search }: { database: Database
                                       table,
                                     },
                                   }))}
+                                  onDoubleClick={() => addTab(database.id, schema.name, table)}
                                   className={cn(
                                     'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/60',
                                     tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
