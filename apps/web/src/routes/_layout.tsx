@@ -1,8 +1,8 @@
-import { TextHoverEffect } from '@conar/ui/components/aceternity/text-hover-effect'
 import { BlurGradient } from '@conar/ui/components/custom/blur-gradient'
 import { cn } from '@conar/ui/lib/utils'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
+import AnimatedConarText from '~/components/animated-conar-text'
 import { Footer } from '~/components/footer'
 import { Navbar } from '~/components/navbar'
 
@@ -51,14 +51,8 @@ function MainLayout() {
         </div>
       </div>
       <Footer />
-      <motion.div
-        initial={{ opacity: 0, y: -100 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-        className="container mx-auto"
-      >
-        <TextHoverEffect className="tracking-tighter" text="Conar" />
-      </motion.div>
+
+      <AnimatedConarText />
     </motion.div>
   )
 }
