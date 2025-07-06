@@ -1,5 +1,5 @@
 import type { ContextSelector } from '@fluentui/react-context-selector'
-import type { ReactElement, ReactNode } from 'react'
+import type { ComponentProps, ReactElement, ReactNode } from 'react'
 import { Accordion, AccordionContent, AccordionItem } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -89,7 +89,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
         type="single"
         collapsible
       >
-        <AccordionItem value="pre" className="rounded-md border! bg-muted/30 overflow-hidden">
+        <AccordionItem value="pre" className="rounded-md border! bg-muted/50 overflow-hidden">
           <AccordionPrimitive.Trigger asChild>
             <div className="cursor-pointer select-none flex justify-between items-center gap-2 p-1">
               <div className="flex items-center gap-2">
@@ -221,18 +221,17 @@ export function Markdown({
   className,
   onEdit,
   loading = false,
+  ...props
 }: {
   content: string
-  id?: string
-  className?: string
   onEdit?: (content: string) => void
   loading?: boolean
-}) {
+} & ComponentProps<'div'>) {
   const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content])
 
   return (
     <MarkdownContext.Provider value={{ loading }}>
-      <div className={cn('typography', className)}>
+      <div className={cn('typography', className)} {...props}>
         {blocks.map((block, index) => (
           <MarkdownBase
             content={block}

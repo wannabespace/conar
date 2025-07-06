@@ -85,7 +85,15 @@ export function TableProvider({
     virtualColumns,
     tableHeight,
     tableWidth,
-  }), [scrollRef, rows, columns, virtualRows, virtualColumns, tableHeight, tableWidth])
+  }), [
+    scrollRef,
+    rows,
+    columns,
+    virtualRows,
+    virtualColumns,
+    tableHeight,
+    tableWidth,
+  ])
 
   return (
     <TableContext.Provider value={context}>

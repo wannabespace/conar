@@ -132,6 +132,7 @@ html {
   @apply bg-primary/30 text-primary;
 }
 
-.bg-primary::selection {
+.bg-primary::selection,
+.bg-primary *::selection {
   @apply bg-white/90 text-primary;
 }

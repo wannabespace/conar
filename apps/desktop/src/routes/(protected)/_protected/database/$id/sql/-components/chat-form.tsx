@@ -73,7 +73,7 @@ export function ChatForm({
   const statusRef = useRef(status)
 
   useEffect(() => {
-    // I don't know why but the status is not updating in function below
+    // status variable is cached due to memoization inside tiptap
     statusRef.current = status
   }, [status])
 
@@ -86,7 +86,7 @@ export function ChatForm({
       return
     }
 
-    const cachedValue = value
+    const cachedValue = value.trim()
     const cachedFiles = [...pageStore.state.files]
 
     try {
@@ -97,6 +97,8 @@ export function ChatForm({
         ...state,
         files: [],
       }))
+
+      pageHooks.callHook('sendMessage')
 
       await append({
         role: 'user',

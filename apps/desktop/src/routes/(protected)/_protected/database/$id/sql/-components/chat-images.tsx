@@ -12,7 +12,7 @@ export function ChatImages({
   onRemove?: (index: number) => void
 }) {
   return (
-    <div className="flex flex-wrap gap-3 border bg-background rounded-md p-2">
+    <div className="flex flex-wrap gap-3 border bg-muted/50 rounded-md p-2">
       {images.map((image, index) => (
         // eslint-disable-next-line react/no-array-index-key
         <TooltipProvider key={`${image.name}-${index}`}>

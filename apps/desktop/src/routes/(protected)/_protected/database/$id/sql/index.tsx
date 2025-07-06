@@ -16,6 +16,7 @@ export const pageStore = new Store({
 
 export const pageHooks = createHooks<{
   fix: (error: string) => Promise<void>
+  sendMessage: () => void
   focusRunner: () => void
 }>()
 

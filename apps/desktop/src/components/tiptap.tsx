@@ -3,7 +3,7 @@ import type { ComponentProps, RefObject } from 'react'
 import Placeholder from '@tiptap/extension-placeholder'
 import { EditorContent, Extension, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { useEffect } from 'react'
+import { useEffect, useImperativeHandle } from 'react'
 import './tiptap.css'
 
 export function TipTap({
@@ -63,13 +63,9 @@ export function TipTap({
     onUpdate: ({ editor }) => setValue(editor.getText()),
   }, [className])
 
-  useEffect(() => {
-    if (ref) {
-      ref.current = {
-        editor,
-      }
-    }
-  }, [editor, ref])
+  useImperativeHandle(ref, () => ({
+    editor,
+  }), [editor])
 
   useEffect(() => {
     if (editor && value !== editor.getText()) {

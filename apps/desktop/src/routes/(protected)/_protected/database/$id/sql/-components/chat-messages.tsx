@@ -7,8 +7,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
-import { Fragment } from 'react'
+import { RiArrowDownLine, RiArrowDownSLine, RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
@@ -31,10 +31,44 @@ function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
 }
 
 function UserMessage({ text, attachments, className, ...props }: { text: string, attachments?: attachment[] } & ComponentProps<'div'>) {
+  const [isVisible, setIsVisible] = useState(false)
+  const [contentHeight, setContentHeight] = useState(0)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setContentHeight(contentRef.current.scrollHeight)
+    }
+  }, [text])
+
+  const shouldHide = contentHeight > 200
+
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
-      <UserAvatar className="size-6" />
-      <Markdown content={text} />
+      <UserAvatar className="size-7" />
+      <div>
+        <div
+          className={cn(
+            'relative inline-flex bg-primary text-primary-foreground rounded-lg px-2 py-1 overflow-hidden',
+            shouldHide && !isVisible && 'max-h-[100px]',
+          )}
+        >
+          <Markdown ref={contentRef} content={text} />
+          {shouldHide && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="shrink-0 text-primary-foreground! hover:bg-primary-foreground/10! -mr-1"
+                onClick={() => setIsVisible(!isVisible)}
+              >
+                <RiArrowDownSLine className={cn('duration-100', isVisible ? 'rotate-180' : 'rotate-0')} />
+              </Button>
+              {!isVisible && <div className="absolute z-10 bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-primary to-transparent pointer-events-none" />}
+            </>
+          )}
+        </div>
+      </div>
       {!!attachments && attachments.length > 0 && (
         <ChatImages
           images={attachments.map(attachment => ({
@@ -44,31 +78,13 @@ function UserMessage({ text, attachments, className, ...props }: { text: string,
           imageClassName="size-8"
         />
       )}
-      <div className="flex items-center -ml-1 -mt-1 gap-1 opacity-0 group-hover/message:opacity-100 transition-opacity duration-150">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => {
-                  copy(text, 'Message copied to clipboard')
-                }}
-              >
-                <RiFileCopyLine className="size-3.5 text-muted-foreground" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Copy message</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
     </ChatMessage>
   )
 }
 
 function AssistantAvatar() {
   return (
-    <Avatar className="size-6">
+    <Avatar className="size-7">
       <AvatarFallback className="text-xs">AI</AvatarFallback>
     </Avatar>
   )
@@ -127,9 +143,7 @@ function AssistantMessage({
               <Button
                 variant="ghost"
                 size="icon-xs"
-                onClick={() => {
-                  copy(text, 'Message copied to clipboard')
-                }}
+                onClick={() => copy(text, 'Message copied to clipboard')}
               >
                 <RiFileCopyLine className="size-3.5 text-muted-foreground" />
               </Button>
@@ -170,8 +184,13 @@ export function ChatMessages({
 
   useMountedEffect(() => {
     chatMessages.set(id, messages)
-    scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    pageHooks.hook('sendMessage', () => {
+      scrollToBottom()
+    })
+  }, [])
 
   return (
     <ScrollArea
@@ -179,7 +198,7 @@ export function ChatMessages({
       className={cn('relative -mx-4', className)}
       {...props}
     >
-      <div ref={contentRef} className=" flex flex-col gap-6 px-4">
+      <div ref={contentRef} className="relative flex flex-col gap-8 px-4">
         {messages.map((message, index) => (
           <Fragment key={message.id}>
             {message.role === 'user'
