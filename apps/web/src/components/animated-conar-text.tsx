@@ -1,113 +1,112 @@
 'use client'
 
-import { motion, useMotionValue, useSpring, useTransform } from 'motion/react'
-import React from 'react'
+import { animate, motion, useMotionValue, useSpring } from 'motion/react'
+import React, { useEffect, useRef, useState } from 'react'
 
-// Animation speed controls
-const MOVEMENT_SPEED = 1 // Pixels per frame (lower = slower) [try 1-5]
-const TIME_STEP = 0.02 // Time increment (lower = slower) [try 0.005-0.02]
-const VERTICAL_SPEED = 0.5 // Vertical movement speed multiplier [try 0.3-1]
-const CONTAINER_WIDTH = 673 // Total Width of svg
-const LIGHTOPACITY = 0.5 // light opacity
-const GRADIENTS = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'red'] // types of gradinet u need in concial gradient
+const LIGHT_OPACITY = 0.5
+const LIGHT_CIRCLE_RADIUS = 70
 
 function AnimatedConarText() {
-  // Create smooth animated values for the gradient position
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isHovered, setIsHovered] = useState(false)
 
-  // Add spring animation for smoother movement
-  const springX = useSpring(mouseX, { stiffness: 100, damping: 35 })
-  const springY = useSpring(mouseY, { stiffness: 100, damping: 35 })
+  const svgViewBox = { width: 637, height: 213 }
 
-  // Transform spring values to CSS translate values
-  const translateX = useTransform(springX, value => `${value}px`)
-  const translateY = useTransform(springY, value => `${value}px`)
+  const x = useMotionValue(svgViewBox.width / 2)
+  const y = useMotionValue(svgViewBox.height / 2)
 
-  // Automatic gradient animation that starts on page load and resumes when not hovering
-  const [isHovering, setIsHovering] = React.useState(false)
-  const animationRef = React.useRef<number | null>(null)
-  const lastMousePosition = React.useRef({ x: 0, y: 0 })
-  const time = React.useRef(0)
-  const direction = React.useRef(1) // 1 for right, -1 for left
+  const springConfig = { damping: 100, stiffness: 120 }
+  const smoothX = useSpring(x, springConfig)
+  const smoothY = useSpring(y, springConfig)
 
-  // Animation function that creates a flowing gradient movement
-  const animateGradient = React.useCallback(() => {
-    // Increment time for animation
-    time.current += TIME_STEP
+  const loopingAnimX = useRef<ReturnType<typeof animate> | null>(null)
+  const loopingAnimY = useRef<ReturnType<typeof animate> | null>(null)
 
-    const width = CONTAINER_WIDTH / 2 // Width of movement is half of container width
+  useEffect(() => {
+    let initialAnimX: ReturnType<typeof animate> | undefined
+    let initialAnimY: ReturnType<typeof animate> | undefined
 
-    const currentX = lastMousePosition.current.x
+    if (!isHovered) {
+      const fromX = x.get()
+      const toX = svgViewBox.width
+      const fullDurationX = 10
+      const durationX = fullDurationX * (Math.abs(toX - fromX) / svgViewBox.width)
 
-    // Create a moving position that goes back and forth
-    const newX = currentX + direction.current * MOVEMENT_SPEED
+      initialAnimX = animate(x, toX, {
+        duration: durationX,
+        ease: 'linear',
+        onComplete: () => {
+          loopingAnimX.current = animate(x, [toX, 0], {
+            duration: fullDurationX,
+            repeat: Infinity,
+            repeatType: 'reverse',
+            ease: 'linear',
+          })
+        },
+      })
 
-    // Change direction when reaching bounds
-    if (Math.abs(newX) > width) {
-      direction.current *= -1 // Reverse direction
+      const fromY = y.get()
+      const toY = svgViewBox.height * 0.8
+      const waypointA = svgViewBox.height * 0.8
+      const waypointB = svgViewBox.height * 0.2
+      const fullDurationY = 8
+      const durationY = fullDurationY * (Math.abs(toY - fromY) / Math.abs(waypointA - waypointB))
+
+      initialAnimY = animate(y, toY, {
+        duration: durationY,
+        ease: 'linear',
+        onComplete: () => {
+          loopingAnimY.current = animate(y, [toY, waypointB], {
+            duration: fullDurationY,
+            repeat: Infinity,
+            repeatType: 'reverse',
+            ease: 'linear',
+          })
+        },
+      })
     }
 
-    // Add some vertical movement using sine wave
-    const verticalRange = 90
-    const newY = lastMousePosition.current.y + Math.sin(time.current * VERTICAL_SPEED) * verticalRange
-
-    // Update last position
-    lastMousePosition.current.x = newX
-
-    // Update motion values with some randomness
-    mouseX.set(newX + (Math.random() - 0.5) * 10) // Reduced random jitter
-    mouseY.set(newY + (Math.random() - 0.5) * 10)
-
-    // Continue animation loop if not hovering
-    if (!isHovering) {
-      animationRef.current = requestAnimationFrame(animateGradient)
-    }
-  }, [isHovering, mouseX, mouseY])
-
-  // Start animation on component mount and handle cleanup
-  React.useEffect(() => {
-    // Start the animation immediately
-    animationRef.current = requestAnimationFrame(animateGradient)
-
-    // Cleanup on unmount
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-      }
+      initialAnimX?.stop()
+      initialAnimY?.stop()
+      loopingAnimX.current?.stop()
+      loopingAnimX.current = null
+      loopingAnimY.current?.stop()
+      loopingAnimY.current = null
     }
-  }, [isHovering, animateGradient])
+  }, [isHovered, x, y, svgViewBox.width, svgViewBox.height])
 
-  // Modified mouse handlers to work with the automatic animation
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    setIsHovering(true)
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      const mouseX = e.clientX - rect.left
+      const mouseY = e.clientY - rect.top
 
-    const rect = e.currentTarget.getBoundingClientRect()
-    // Get mouse position relative to container center
-    const centerX = rect.width / 2
-    const centerY = rect.height / 2
-    const x = e.clientX - rect.left - centerX
-    const y = e.clientY - rect.top - centerY
+      const svgX = (mouseX / rect.width) * svgViewBox.width
+      const svgY = (mouseY / rect.height) * svgViewBox.height
 
-    // Store the current position
-    lastMousePosition.current = { x, y }
+      x.set(svgX)
+      y.set(svgY)
+    }
+  }
 
-    mouseX.set(x)
-    mouseY.set(y)
+  const handleMouseOver = () => {
+    setIsHovered(true)
   }
 
   const handleMouseOut = () => {
-    setIsHovering(false)
-
-    // Resume the automatic animation
-    if (!animationRef.current) {
-      animationRef.current = requestAnimationFrame(animateGradient)
-    }
+    setIsHovered(false)
   }
 
   return (
 
-    <div onMouseMove={handleMouseMove} onMouseOut={handleMouseOut} className="w-fit px-4 mx-auto">
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
+      className="w-fit px-4 mx-auto"
+    >
       <svg className="w-full sm:h-[300px] h-[200px]" viewBox="0 0 637 213" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g stroke="#26262650" strokeLinejoin="round">
           <path d="M304 35H285L278 42.5H296.5L304 35ZM304 35L362.5 121" />
@@ -123,31 +122,33 @@ function AnimatedConarText() {
           />
           <path d="M 120.375 84.625 H 100.875 C 100.125 80.4583 98.7292 76.7917 96.6875 73.625 C 94.6458 70.4583 92.1458 67.7708 89.1875 65.5625 C 86.2292 63.3542 82.9167 61.6875 79.25 60.5625 C 75.625 59.4375 71.7708 58.875 67.6875 58.875 C 60.3125 58.875 53.7083 60.7292 47.875 64.4375 C 42.0833 68.1458 37.5 73.5833 34.125 80.75 C 30.7917 87.9167 29.125 96.6667 29.125 107 C 29.125 117.417 30.7917 126.208 34.125 133.375 C 37.5 140.542 42.1042 145.958 47.9375 149.625 C 53.7708 153.292 60.3333 155.125 67.625 155.125 C 71.6667 155.125 75.5 154.583 79.125 153.5 C 82.7917 152.375 86.1042 150.729 89.0625 148.562 C 92.0208 146.396 94.5208 143.75 96.5625 140.625 C 98.6458 137.458 100.083 133.833 100.875 129.75 L 120.375 129.812 C 119.333 136.104 117.313 141.896 114.313 147.187 C 111.354 152.438 107.542 156.979 102.875 160.812 C 98.25 164.604 92.9583 167.542 87 169.625 C 81.0417 171.708 74.5417 172.75 67.5 172.75 C 56.4167 172.75 46.5417 170.125 37.875 164.875 C 29.2083 159.583 22.375 152.021 17.375 142.187 C 12.4167 132.354 9.9375 120.625 9.9375 107 C 9.9375 93.3333 12.4375 81.6042 17.4375 71.8125 C 22.4375 61.9792 29.2708 54.4375 37.9375 49.1875 C 46.6042 43.8958 56.4583 41.25 67.5 41.25 C 74.2917 41.25 80.625 42.2292 86.5 44.1875 C 92.4167 46.1042 97.7292 48.9375 102.438 52.6875 C 107.146 56.3958 111.042 60.9375 114.125 66.3125 C 117.208 71.6458 119.292 77.75 120.375 84.625 Z M 254.672 107 C 254.672 120.667 252.172 132.417 247.172 142.25 C 242.172 152.042 235.318 159.583 226.609 164.875 C 217.943 170.125 208.089 172.75 197.047 172.75 C 185.964 172.75 176.068 170.125 167.359 164.875 C 158.693 159.583 151.859 152.021 146.859 142.187 C 141.859 132.354 139.359 120.625 139.359 107 C 139.359 93.3333 141.859 81.6042 146.859 71.8125 C 151.859 61.9792 158.693 54.4375 167.359 49.1875 C 176.068 43.8958 185.964 41.25 197.047 41.25 C 208.089 41.25 217.943 43.8958 226.609 49.1875 C 235.318 54.4375 242.172 61.9792 247.172 71.8125 C 252.172 81.6042 254.672 93.3333 254.672 107 Z M 235.547 107 C 235.547 96.5833 233.859 87.8125 230.484 80.6875 C 227.151 73.5208 222.568 68.1042 216.734 64.4375 C 210.943 60.7292 204.38 58.875 197.047 58.875 C 189.672 58.875 183.089 60.7292 177.297 64.4375 C 171.505 68.1042 166.922 73.5208 163.547 80.6875 C 160.214 87.8125 158.547 96.5833 158.547 107 C 158.547 117.417 160.214 126.208 163.547 133.375 C 166.922 140.5 171.505 145.917 177.297 149.625 C 183.089 153.292 189.672 155.125 197.047 155.125 C 204.38 155.125 210.943 153.292 216.734 149.625 C 222.568 145.917 227.151 140.5 230.484 133.375 C 233.859 126.208 235.547 117.417 235.547 107 Z M 382.063 43 V 171 H 364.312 L 299.25 77.125 H 298.063 V 171 H 278.75 V 43 H 296.625 L 361.75 137 H 362.937 V 43 H 382.063 Z M 421.047 171 H 400.547 L 446.609 43 H 468.922 L 514.984 171 H 494.484 L 458.297 66.25 H 457.297 L 421.047 171 Z M 439.05 119 H 476.5 V 119 L 482.4 136 L 433.15 136 V 136 Z M 533.469 171 V 43 H 579.094 C 589.01 43 597.24 44.7083 603.781 48.125 C 610.365 51.5417 615.281 56.2708 618.531 62.3125 C 621.781 68.3125 623.406 75.25 623.406 83.125 C 623.406 90.9583 621.76 97.8542 618.469 103.813 C 615.219 109.729 610.302 114.333 603.719 117.625 C 597.177 120.917 588.948 122.563 579.031 122.563 H 552.8 V 105.937 H 577.281 C 583.531 105.937 588.615 105.042 592.531 103.25 C 596.49 101.458 599.385 98.8542 601.219 95.4375 C 603.052 92.0208 603.969 87.9167 603.969 83.125 C 603.969 78.2917 603.031 74.1042 601.156 70.5625 C 599.323 67.0208 596.427 64.3125 592.469 62.4375 C 588.552 60.5208 583.406 59.5625 577.031 59.5625 H 552.781 V 171 H 533.469 Z M 601 118.85 L 628.281 171 H 606.281 L 579 122.56 H 579 C 588.9 122.55 597.18 120.7 601 118.85 Z" />
         </g>
-        <foreignObject x="0" y="0" width="100%" height="100%" overflow="visible" mask="url(#stroke-mask)">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <motion.div
-              className="h-50 w-50 rounded-full blur-2xl"
-              style={{
-                background: `conic-gradient(from 0deg, ${GRADIENTS.join(',')})`,
-                x: translateX,
-                y: translateY,
-              }}
-              animate={{
-                rotate: 360,
-              }}
-              transition={{
-                rotate: {
-                  duration: 8,
-                  repeat: Infinity,
-                  ease: 'linear',
-                },
-              }}
-            />
-          </div>
-        </foreignObject>
+        <g mask="url(#stroke-mask)">
+          <motion.circle
+            id="animation-circle"
+            animate={{
+              rotate: 360,
+            }}
+            transition={{
+              rotate: {
+                duration: 8,
+                repeat: Infinity,
+                ease: 'linear',
+              },
+            }}
+            cx={smoothX}
+            cy={smoothY}
+            r={LIGHT_CIRCLE_RADIUS}
+            fill="url(#circle-rgb-gradient)"
+            filter="url(#blur-filter)"
+            overflow="visible"
+          />
+        </g>
         <defs>
+          <filter id="blur-filter" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="25" />
+          </filter>
           <mask id="stroke-mask">
-            <g stroke="white" strokeLinejoin="round" fill="none" opacity={LIGHTOPACITY}>
+            <g stroke="white" strokeLinejoin="round" fill="none" opacity={LIGHT_OPACITY}>
               <path d="M304 35H285L278 42.5H296.5L304 35ZM304 35L362.5 121" />
               <path d="M298.5 171.5L306 165V88" />
               <path d="M362 42.5L368 35H389M389 35L382.5 42.5M389 35V166L382.5 171.5" />
@@ -168,6 +169,16 @@ function AnimatedConarText() {
           >
             <stop stopColor="#070708" />
             <stop offset="1" stopColor="#0F0F0F" />
+          </linearGradient>
+          <linearGradient id="circle-rgb-gradient" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0.125" stopColor="#FF0000" />
+            <stop offset="0.26" stopColor="#FFA500" />
+            <stop offset="0.39" stopColor="#FFFF00" />
+            <stop offset="0.52" stopColor="#008000" />
+            <stop offset="0.65" stopColor="#0000FF" />
+            <stop offset="0.78" stopColor="#4B0082" />
+            <stop offset="0.91" stopColor="#EE82EE" />
+            <stop offset="1" stopColor="#FF0000" />
           </linearGradient>
         </defs>
       </svg>
