@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@conar/ui/components/avatar'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
+import { constants } from '@conar/web/src/utils/constants'
 import { RiDoubleQuotesL, RiTwitterXLine } from '@remixicon/react'
 
 interface TestimonialCardProps extends ComponentProps<'article'> {
@@ -72,7 +73,7 @@ function JoinTestimonials() {
         <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">Want to be featured here?</h3>
         <Button asChild variant="link">
           <a
-            href="https://x.com/conar_app"
+            href={constants.TWITTER_URL}
             target="_blank"
             rel="noopener noreferrer"
           >
