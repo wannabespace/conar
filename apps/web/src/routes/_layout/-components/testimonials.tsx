@@ -131,7 +131,7 @@ const testimonials: {
   {
     name: 'Dominik',
     login: 'DominikDoesDev',
-    avatar: '/avatars/dominikdoesdev.png',
+    avatar: '/avatars/dominikdoesdev.jpg',
     link: 'https://x.com/DominikDoesDev/status/1942986868758372850',
     children: () => 'Not gonna lie I was looking for something like @conar_app a while ago but couldn\'t find it until now. I think I am in love with this 😍',
   },
