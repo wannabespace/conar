@@ -3,6 +3,7 @@ import { Badge } from '@conar/ui/components/badge'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
+import { constants } from '@conar/web/src/utils/constants'
 import NumberFlow from '@number-flow/react'
 import { RiGithubFill, RiTwitterXLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
@@ -44,7 +45,7 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
           asChild
         >
           <a
-            href="https://x.com/conar_app"
+            href={constants.TWITTER_URL}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -58,7 +59,7 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
           asChild
         >
           <a
-            href="https://github.com/wannabespace/conar"
+            href={constants.GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
           >

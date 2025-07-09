@@ -5,6 +5,7 @@ import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { constants } from '@conar/web/src/utils/constants'
 import { RiAddLine, RiCheckLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
@@ -77,7 +78,7 @@ function DashboardPage() {
             <RiGlobalLine className="size-4" />
           </a>
           <a
-            href="https://x.com/conar_app"
+            href={constants.TWITTER_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
@@ -85,7 +86,7 @@ function DashboardPage() {
             <RiTwitterXLine className="size-4" />
           </a>
           <a
-            href="https://github.com/wannabespace/conar"
+            href={constants.TWITTER_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"

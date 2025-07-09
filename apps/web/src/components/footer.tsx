@@ -1,4 +1,5 @@
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
+import { constants } from '@conar/web/src/utils/constants'
 import { RiGithubLine, RiTwitterXLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 
@@ -25,7 +26,7 @@ export function Footer() {
       </div>
       <div className="flex flex-1 items-center justify-center sm:justify-end gap-2">
         <a
-          href="https://x.com/conar_app"
+          href={constants.TWITTER_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="text-muted-foreground hover:text-foreground transition-colors"
@@ -33,7 +34,7 @@ export function Footer() {
           <RiTwitterXLine className="size-4" />
         </a>
         <a
-          href="https://github.com/conar-app"
+          href={constants.GITHUB_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="text-muted-foreground hover:text-foreground transition-colors"
