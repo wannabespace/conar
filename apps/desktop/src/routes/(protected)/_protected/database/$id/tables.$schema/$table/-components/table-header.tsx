@@ -102,7 +102,7 @@ function Header() {
                   left.length > 0 ? 'opacity-100' : 'pointer-events-none',
                 )}
               >
-                <RiArrowLeftDoubleLine className="relative z-10 size-4" />
+                <RiArrowLeftDoubleLine className="relative z-10 size-4 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="start">
@@ -130,7 +130,7 @@ function Header() {
                   right.length > 0 ? 'opacity-100' : 'pointer-events-none',
                 )}
               >
-                <RiArrowRightDoubleLine className="relative z-10 size-4" />
+                <RiArrowRightDoubleLine className="relative z-10 size-4 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="end">

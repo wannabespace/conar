@@ -29,7 +29,7 @@ function DatabaseCard({ database, onRemove, onRename }: { database: Database, on
       params={{ id: database.id }}
       onMouseOver={() => prefetchDatabaseCore(database)}
     >
-      <div className="size-12 shrink-0 rounded-lg bg-primary/10 p-3">
+      <div className="size-12 shrink-0 rounded-lg bg-muted/70 p-3">
         <DatabaseIcon type={database.type} className="size-full text-primary" />
       </div>
       <div className="flex flex-1 flex-col min-w-0">
@@ -44,20 +44,29 @@ function DatabaseCard({ database, onRemove, onRename }: { database: Database, on
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation()
               copy(database.connectionString, 'Connection string copied to clipboard')
             }}
           >
             <RiFileCopyLine className="size-4 opacity-50" />
             Copy connection string
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={onRename}>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation()
+              onRename()
+            }}
+          >
             <RiEditLine className="size-4 opacity-50" />
             Rename
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
-            onClick={onRemove}
+            onClick={(e) => {
+              e.stopPropagation()
+              onRemove()
+            }}
           >
             <RiDeleteBinLine className="size-4" />
             Remove

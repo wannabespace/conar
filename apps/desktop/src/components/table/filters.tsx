@@ -252,7 +252,7 @@ export function FilterItem({
   }, [filter.operator])
 
   return (
-    <div className="flex items-center border rounded-sm overflow-hidden h-6 bg-input/30">
+    <div className="flex items-center border rounded-sm overflow-hidden h-6 bg-card">
       <Popover>
         <PopoverTrigger className="text-xs flex items-center gap-1 px-2 h-full hover:bg-accent/50 transition-colors font-medium">
           <RiDatabase2Line className="size-3 text-primary/70" />
