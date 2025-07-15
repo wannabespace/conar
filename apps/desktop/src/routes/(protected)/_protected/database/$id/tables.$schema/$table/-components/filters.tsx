@@ -59,8 +59,9 @@ export function Filters() {
         </Popover>
       </div>
       <Button
-        variant="destructive"
+        variant="ghost"
         size="xs"
+        className="text-destructive!"
         onClick={() => store.setState(state => ({
           ...state,
           filters: [],

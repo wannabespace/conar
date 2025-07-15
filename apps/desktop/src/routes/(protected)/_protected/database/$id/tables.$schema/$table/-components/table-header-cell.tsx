@@ -2,9 +2,11 @@ import type { TableHeaderCellProps } from '~/components/table'
 import type { Column } from '~/entities/database/table'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { useInViewport } from '@conar/ui/hookas/use-in-viewport'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiKey2Line } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
+import { useRef } from 'react'
 import { usePageContext } from '..'
 
 type SortOrder = 'ASC' | 'DESC'
@@ -94,6 +96,7 @@ export function TableHeaderCell({ column, isFirst, isLast, className, style }: {
         className,
       )}
       style={style}
+      data-column-name={column.name}
     >
       <div className="text-xs overflow-hidden">
         <div

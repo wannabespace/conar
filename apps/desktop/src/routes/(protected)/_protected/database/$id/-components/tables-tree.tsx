@@ -39,8 +39,8 @@ export function TablesTree({ database, className, search }: { database: Database
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
-  const DropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
-  const RenameTableDIalogRef = useRef<ComponentRef<typeof RenameTableDIalog>>(null)
+  const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
+  const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDIalog>>(null)
 
   function getQueryOpts(tableName: string) {
     const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
@@ -78,11 +78,11 @@ export function TablesTree({ database, className, search }: { database: Database
   return (
     <ScrollArea ref={ref} className={cn('h-full overflow-y-auto p-2', className)}>
       <DropTableDialog
-        ref={DropTableDialogRef}
+        ref={dropTableDialogRef}
         database={database}
       />
       <RenameTableDIalog
-        ref={RenameTableDIalogRef}
+        ref={renameTableDialogRef}
         database={database}
       />
       <Accordion
@@ -212,14 +212,20 @@ export function TablesTree({ database, className, search }: { database: Database
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                       <DropdownMenuItem
-                                        onClick={() => RenameTableDIalogRef.current?.rename(schema.name, table)}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          renameTableDialogRef.current?.rename(schema.name, table)
+                                        }}
                                       >
                                         <RiEditLine className="size-4" />
                                         Rename Table
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         variant="destructive"
-                                        onClick={() => DropTableDialogRef.current?.drop(schema.name, table)}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          dropTableDialogRef.current?.drop(schema.name, table)
+                                        }}
                                       >
                                         <RiDeleteBin7Line className="size-4" />
                                         Drop Table

@@ -1,3 +1,4 @@
+import type { ScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
 import type { ContextSelector } from '@fluentui/react-context-selector'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ReactNode, RefObject } from 'react'
@@ -9,6 +10,7 @@ import { useMemo, useRef } from 'react'
 
 interface TableContextType {
   scrollRef: RefObject<HTMLDivElement | null>
+  scrollDirection: ScrollDirection
   rows: Record<string, unknown>[]
   columns: ColumnRenderer[]
   virtualRows: VirtualItem[]
@@ -79,6 +81,7 @@ export function TableProvider({
 
   const context = useMemo(() => ({
     scrollRef,
+    scrollDirection,
     rows,
     columns,
     virtualRows,
@@ -87,6 +90,7 @@ export function TableProvider({
     tableWidth,
   }), [
     scrollRef,
+    scrollDirection,
     rows,
     columns,
     virtualRows,
