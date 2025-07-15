@@ -22,10 +22,9 @@ import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { createDatabase, databaseQuery, databasesQuery, prefetchDatabaseCore } from '~/entities/database'
+import { createDatabase, DatabaseIcon, databaseQuery, databasesQuery, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
-import { PostgresIcon } from '~/icons/postgres'
 import { dbTestConnection } from '~/lib/query'
 import { queryClient } from '~/main'
 
@@ -64,7 +63,7 @@ function StepType({ type, setType }: { type: DatabaseType, setType: (type: Datab
           onValueChange={value => setType(value as DatabaseType)}
         >
           <ToggleGroupItem value={DatabaseType.Postgres} aria-label="Postgres">
-            <PostgresIcon />
+            <DatabaseIcon type={DatabaseType.Postgres} className="size-4 shrink-0 text-primary" />
             {databaseLabels[DatabaseType.Postgres]}
           </ToggleGroupItem>
           <ToggleGroupItem value="" disabled aria-label="MySQL">
