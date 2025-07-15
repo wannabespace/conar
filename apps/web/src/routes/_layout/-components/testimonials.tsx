@@ -135,6 +135,13 @@ const testimonials: {
     link: 'https://x.com/DominikDoesDev/status/1942986868758372850',
     children: () => 'Not gonna lie I was looking for something like @conar_app a while ago but couldn\'t find it until now. I think I am in love with this 😍',
   },
+  {
+    name: 'Sorin Curescu',
+    login: 'en3sis',
+    avatar: '/avatars/en3sis.jpg',
+    link: 'https://x.com/en3sis/status/1945158382396010955',
+    children: () => 'If you’re reading this, go download @conar_app now and thank me later! ;)',
+  },
 ]
 
 export function Testimonials() {
