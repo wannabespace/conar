@@ -3,6 +3,8 @@ import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { DefaultChatTransport } from 'ai'
+import { databaseContextQuery } from '~/entities/database'
+import { queryClient } from '~/main'
 import { chatMessages, chatQuery } from './-chat'
 import { Chat as ChatComponent } from './-components/chat'
 import { Runner } from './-components/runner'
@@ -23,6 +25,12 @@ export const Route = createFileRoute(
       transport: new DefaultChatTransport({
         api: `${import.meta.env.VITE_PUBLIC_API_URL}/ai/v2/sql-chat`,
         credentials: 'include',
+        body: async () => ({
+          type: context.database.type,
+          model: pageStore.state.model,
+          currentQuery: pageStore.state.query,
+          context: await queryClient.ensureQueryData(databaseContextQuery(context.database)),
+        }),
       }),
       messages: await chatMessages.get(params.id),
     })

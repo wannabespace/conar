@@ -10,8 +10,6 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
-import { databaseContextQuery } from '~/entities/database'
-import { queryClient } from '~/main'
 import { Route } from '..'
 import { chatInput } from '../-chat'
 import { pageHooks, pageStore } from '../-lib'
@@ -66,18 +64,11 @@ export function ChatForm() {
     }
   }, [ref])
 
-  const statusRef = useRef(status)
-
-  useEffect(() => {
-    // status variable is cached due to memoization inside tiptap
-    statusRef.current = status
-  }, [status])
-
   const handleSend = async (value: string) => {
     if (
       value.trim() === ''
-      || statusRef.current === 'streaming'
-      || statusRef.current === 'submitted'
+      || chat.status === 'streaming'
+      || chat.status === 'submitted'
     ) {
       return
     }
@@ -109,13 +100,6 @@ export function ChatForm() {
             mediaType: 'image/png',
           })),
         ],
-      }, {
-        body: {
-          type: database.type,
-          model: pageStore.state.model,
-          currentQuery: pageStore.state.query,
-          context: await queryClient.ensureQueryData(databaseContextQuery(database)),
-        },
       })
     }
     catch (error) {

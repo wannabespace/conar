@@ -61,7 +61,7 @@ export function TipTap({
     immediatelyRender: true,
     content: value,
     onUpdate: ({ editor }) => setValue(editor.getText()),
-  }, [className])
+  }, [className, onEnter, placeholder, setValue])
 
   useImperativeHandle(ref, () => ({
     editor,
