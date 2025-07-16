@@ -1,7 +1,8 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import { useIsScrolled } from '@conar/ui/hookas/use-is-scrolled'
 import { useThrottledCallback } from '@conar/ui/hookas/use-throttled-callback'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowLeftDoubleLine, RiArrowRightDoubleLine } from '@remixicon/react'
+import { RiArrowLeftDoubleLine, RiArrowRightDoubleLine, RiDatabase2Line, RiTableLine } from '@remixicon/react'
 import { animate } from 'motion'
 import { useEffect, useState } from 'react'
 
@@ -43,23 +44,32 @@ function getNotVisibleColumns(element: HTMLDivElement) {
 function Header() {
   const scrollRef = useTableContext(state => state.scrollRef)
   const direction = useTableContext(state => state.scrollDirection)
+  const columns = useTableContext(state => state.columns)
+  const isScrolled = useIsScrolled(scrollRef, { direction: 'vertical' })
   const [{ left, right }, setNotVisibleColumns] = useState<{ left: HeaderColumn[], right: HeaderColumn[] }>({ left: [], right: [] })
 
-  function scrollToColumn(el: HTMLElement) {
+  function scrollToColumn(column: HeaderColumn, direction: 'left' | 'right') {
     const scrollEl = scrollRef.current
 
     if (!scrollEl)
       return
 
-    const columnCenter = el.offsetLeft + el.offsetWidth / 2
-    const targetScrollLeft = columnCenter - scrollEl.clientWidth / 2
+    const isFirst = column.el.getAttribute('data-first') === 'true'
+    const isLast = column.el.getAttribute('data-last') === 'true'
+    const extraSpace = isFirst || isLast ? 0 : direction === 'left' ? -50 : 50
+    const targetScrollLeft = (direction === 'left'
+      ? column.el.offsetLeft
+      : column.el.offsetLeft + column.el.offsetWidth - scrollEl.clientWidth
+    ) + extraSpace
 
     animate(scrollEl.scrollLeft, targetScrollLeft, {
       onUpdate: (latest) => {
         scrollEl.scrollLeft = latest
       },
-      duration: 0.5,
+      duration: 0.7,
       ease: 'easeInOut',
+      damping: 17,
+      type: isFirst || isLast ? 'tween' : 'spring',
     })
   }
 
@@ -85,11 +95,17 @@ function Header() {
       el.removeEventListener('resize', updateScrollLeft)
       el.removeEventListener('scroll', updateScrollLeft)
     }
-  }, [scrollRef.current, updateScrollLeft])
+  }, [scrollRef, updateScrollLeft])
+
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      scrollRef.current?.dispatchEvent(new Event('scroll'))
+    })
+  }, [scrollRef, columns])
 
   return (
     <TableHeader
-      className="flex"
+      className={cn('flex transition-shadow duration-300', isScrolled && 'shadow-lg shadow-black/3')}
       before={(
         <div className="sticky z-20 left-0 inset-y-0 w-0 flex items-center">
           <DropdownMenu>
@@ -97,21 +113,24 @@ function Header() {
               <button
                 type="button"
                 className={cn(
-                  'absolute inset-y-0 left-0 h-full flex items-center justify-center w-10 opacity-0 transition-opacity cursor-pointer outline-none',
+                  'group absolute inset-y-0 left-0 h-full flex items-center justify-center w-10 opacity-0 transition-opacity cursor-pointer outline-none',
                   'before:absolute before:inset-y-0 before:left-0 before:w-20 before:bg-gradient-to-r before:from-card before:via-card/80 before:to-transparent before:z-10 before:pointer-events-none',
                   left.length > 0 ? 'opacity-100' : 'pointer-events-none',
                 )}
               >
-                <RiArrowLeftDoubleLine className="relative z-10 size-4 text-muted-foreground" />
+                <RiArrowLeftDoubleLine className="relative z-10 size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="start">
-              {left.map(({ name, el }) => (
+            <DropdownMenuContent side="bottom" align="start" className="min-w-[12rem]">
+              <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {left.map(column => (
                 <DropdownMenuItem
-                  key={name}
-                  onClick={() => scrollToColumn(el)}
+                  key={column.name}
+                  onClick={() => scrollToColumn(column, 'left')}
                 >
-                  {name}
+                  <RiDatabase2Line className="size-4 text-muted-foreground" />
+                  {column.name}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -125,21 +144,24 @@ function Header() {
               <button
                 type="button"
                 className={cn(
-                  'absolute inset-y-0 right-0 h-full flex items-center justify-center w-10 opacity-0 transition-opacity cursor-pointer outline-none',
+                  'group absolute inset-y-0 right-0 h-full flex items-center justify-center w-10 opacity-0 transition-opacity cursor-pointer outline-none',
                   'before:absolute before:inset-y-0 before:right-0 before:w-20 before:bg-gradient-to-l before:from-card before:via-card/80 before:to-transparent before:z-10 before:pointer-events-none',
                   right.length > 0 ? 'opacity-100' : 'pointer-events-none',
                 )}
               >
-                <RiArrowRightDoubleLine className="relative z-10 size-4 text-muted-foreground" />
+                <RiArrowRightDoubleLine className="relative z-10 size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="end">
-              {right.map(({ name, el }) => (
+            <DropdownMenuContent side="bottom" align="end" className="min-w-[12rem]">
+              <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {right.map(column => (
                 <DropdownMenuItem
-                  key={name}
-                  onClick={() => scrollToColumn(el)}
+                  key={column.name}
+                  onClick={() => scrollToColumn(column, 'right')}
                 >
-                  {name}
+                  <RiDatabase2Line className="size-4 text-muted-foreground" />
+                  {column.name}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>

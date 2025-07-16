@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-export function useInViewport(ref: React.RefObject<Element | null>, visibility: 'full' | 'some' | 'half' | number = 'some') {
+export function useIsInViewport(ref: React.RefObject<Element | null>, visibility: 'full' | 'some' | 'half' | number = 'some') {
   const [isVisible, setIsVisible] = React.useState(false)
 
   React.useLayoutEffect(() => {

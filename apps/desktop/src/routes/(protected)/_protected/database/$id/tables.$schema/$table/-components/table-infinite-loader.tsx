@@ -1,4 +1,4 @@
-import { useInViewport } from '@conar/ui/hookas/use-in-viewport'
+import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiLoaderLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
@@ -13,7 +13,7 @@ export function TableInfiniteLoader() {
   const rowsQueryOpts = useRowsQueryOpts()
   const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(rowsQueryOpts)
   const loaderRef = useRef<HTMLDivElement>(null)
-  const isVisible = useInViewport(loaderRef)
+  const isVisible = useIsInViewport(loaderRef)
   const { store } = usePageContext()
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
 
