@@ -1,10 +1,10 @@
-import type { UseChatHelpers } from '@ai-sdk/react'
+import type { UIMessage } from '@ai-sdk/react'
 import type { ComponentProps } from 'react'
+import { useChat } from '@ai-sdk/react'
 import { Avatar, AvatarFallback } from '@conar/ui/components/avatar'
 import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiArrowDownSLine, RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
@@ -13,14 +13,9 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
 import { sleep } from '~/lib/helpers'
-import { pageHooks, pageStore, Route } from '..'
-import { chatMessages } from '../-lib'
+import { Route } from '..'
+import { pageHooks, pageStore } from '../-lib'
 import { ChatImages } from './chat-images'
-
-interface attachment {
-  name?: string
-  url: string
-}
 
 function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   return (
@@ -30,16 +25,49 @@ function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   )
 }
 
-function UserMessage({ text, attachments, className, ...props }: { text: string, attachments?: attachment[] } & ComponentProps<'div'>) {
+function ChatMessagePart({ parts, onEdit, loading }: { parts: UIMessage['parts'], onEdit?: (query: string) => void, loading?: boolean }) {
+  return parts.map((part, index) => {
+    if (part.type === 'text') {
+      return (
+        <Markdown
+          key={index}
+          content={part.text}
+          onEdit={onEdit}
+          loading={loading}
+        />
+      )
+    }
+    if (part.type === 'reasoning') {
+      return (
+        <div key={index} className="text-muted-foreground">
+          <p className="text-xs font-medium">Reasoning</p>
+          <p className="text-xs">{part.text}</p>
+        </div>
+      )
+    }
+    if (part.type === 'source-url') {
+      return (
+        <div key={index} className="text-muted-foreground">
+          <p className="text-xs font-medium">Source URL</p>
+          <p className="text-xs">{part.url}</p>
+        </div>
+      )
+    }
+    return null
+  })
+}
+
+function UserMessage({ message, className, ...props }: { message: UIMessage } & ComponentProps<'div'>) {
   const [isVisible, setIsVisible] = useState(false)
   const [contentHeight, setContentHeight] = useState(0)
   const contentRef = useRef<HTMLDivElement>(null)
+  const images = message.parts.filter(part => part.type === 'file').map(part => part.url)
 
   useEffect(() => {
     if (contentRef.current) {
       setContentHeight(contentRef.current.scrollHeight)
     }
-  }, [text])
+  }, [message.parts])
 
   const shouldHide = contentHeight > 200
 
@@ -48,12 +76,13 @@ function UserMessage({ text, attachments, className, ...props }: { text: string,
       <UserAvatar className="size-7" />
       <div>
         <div
+          ref={contentRef}
           className={cn(
             'relative inline-flex bg-primary text-primary-foreground rounded-lg px-2 py-1 overflow-hidden',
             shouldHide && !isVisible && 'max-h-[100px]',
           )}
         >
-          <Markdown ref={contentRef} content={text} />
+          <ChatMessagePart parts={message.parts} />
           {shouldHide && (
             <>
               <Button
@@ -69,11 +98,11 @@ function UserMessage({ text, attachments, className, ...props }: { text: string,
           )}
         </div>
       </div>
-      {!!attachments && attachments.length > 0 && (
+      {images.length > 0 && (
         <ChatImages
-          images={attachments.map(attachment => ({
-            name: attachment.name ?? '',
-            url: attachment.url,
+          images={images.map((image, index) => ({
+            name: `Image #${index + 1}`,
+            url: image,
           }))}
           imageClassName="size-8"
         />
@@ -91,14 +120,14 @@ function AssistantAvatar() {
 }
 
 function AssistantMessage({
-  text,
+  message,
   last,
   loading,
   onReload,
   className,
   ...props
 }: {
-  text: string
+  message: UIMessage
   last: boolean
   onReload: () => void
   loading?: boolean
@@ -115,8 +144,8 @@ function AssistantMessage({
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
       <AssistantAvatar />
-      <Markdown
-        content={text}
+      <ChatMessagePart
+        parts={message.parts}
         onEdit={handleEdit}
         loading={loading && last}
       />
@@ -143,7 +172,7 @@ function AssistantMessage({
               <Button
                 variant="ghost"
                 size="icon-xs"
-                onClick={() => copy(text, 'Message copied to clipboard')}
+                onClick={() => copy(message.parts.filter(part => part.type === 'text').map(part => part.text).join('\n'), 'Message copied to clipboard')}
               >
                 <RiFileCopyLine className="size-3.5 text-muted-foreground" />
               </Button>
@@ -173,18 +202,11 @@ function ErrorMessage({ error, onReload, ...props }: { error: Error, onReload: (
 
 export function ChatMessages({
   className,
-  messages,
-  status,
-  error,
-  onReload,
   ...props
-}: ComponentProps<'div'> & Pick<UseChatHelpers, 'messages' | 'status' | 'error'> & { onReload: () => void }) {
-  const { id } = Route.useParams()
+}: ComponentProps<'div'>) {
+  const { chat } = Route.useLoaderData()
   const { scrollRef, contentRef, scrollToBottom, isAtBottom } = useStickToBottom({ initial: 'instant' })
-
-  useMountedEffect(() => {
-    chatMessages.set(id, messages)
-  }, [messages])
+  const { messages, status, error, regenerate } = useChat({ chat })
 
   useEffect(() => {
     pageHooks.hook('sendMessage', () => {
@@ -203,17 +225,14 @@ export function ChatMessages({
           <Fragment key={message.id}>
             {message.role === 'user'
               ? (
-                  <UserMessage
-                    text={message.content}
-                    attachments={message.experimental_attachments}
-                  />
+                  <UserMessage message={message} />
                 )
               : (
                   <AssistantMessage
-                    text={message.content}
+                    message={message}
                     last={index === messages.length - 1}
                     loading={status === 'submitted' || status === 'streaming'}
-                    onReload={onReload}
+                    onReload={regenerate}
                   />
                 )}
           </Fragment>
@@ -226,7 +245,7 @@ export function ChatMessages({
             </p>
           </ChatMessage>
         )}
-        {error && <ErrorMessage error={error} onReload={onReload} />}
+        {error && <ErrorMessage error={error} onReload={regenerate} />}
       </div>
       <div className={cn('sticky bottom-4 z-10 transition-opacity duration-150', isAtBottom ? 'opacity-0 pointer-events-none' : 'opacity-100')}>
         <Button

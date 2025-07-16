@@ -1,8 +1,35 @@
 import type { Database } from '~/lib/indexeddb'
-import { databaseContextSchema } from '@conar/shared/database'
 import { queryOptions, useQuery } from '@tanstack/react-query'
+import * as z from 'zod'
 import { dbQuery } from '~/lib/query'
 import { contextSql } from '../sql/context'
+
+const databaseContextSchema = z.object({
+  schemas: z.array(z.object({
+    schema: z.string(),
+    tables: z.array(z.object({
+      name: z.string(),
+      columns: z.array(z.object({
+        name: z.string(),
+        type: z.string(),
+        nullable: z.boolean(),
+        default: z.nullable(z.string()),
+        editable: z.boolean(),
+        // constraints: z.array(z.object({
+        //   name: z.string(),
+        //   type: z.string(),
+        //   related_column: z.nullable(z.string()),
+        //   related_table: z.nullable(z.string()),
+        // })).nullable().transform(data => data ?? []),
+      })).nullable().transform(data => data ?? []),
+    })).nullable().transform(data => data ?? []),
+  })).nullable().transform(data => data ?? []),
+  enums: z.array(z.object({
+    schema: z.string(),
+    name: z.string(),
+    value: z.string(),
+  })).nullable().transform(data => data ?? []),
+})
 
 export function databaseContextQuery(database: Database) {
   return queryOptions({

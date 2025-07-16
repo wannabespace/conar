@@ -17,18 +17,18 @@ export interface DatabaseChat {
   databaseId: string
   messages: {
     id: string
-    content: string
-    createdAt?: Date
-    experimental_attachments?: {
-      name: string
-      contentType: string
-      url: string
-    }[]
     role: 'user' | 'assistant'
-    parts?: {
-      type: 'text'
-      text: string
-    }[]
+    parts: (
+      {
+        type: 'text'
+        text: string
+      }
+      | {
+        type: 'file'
+        url: string
+        mediaType: string
+      }
+    )[]
   }[]
 }
 
@@ -49,4 +49,38 @@ indexedDb.version(1).stores({
 indexedDb.version(2).stores({
   databases: '++id, name, type, createdAt, connectionString, isPasswordExists, isPasswordPopulated',
   databaseChats: '++id, databaseId, messages',
+})
+
+indexedDb.version(3).stores({
+  databases: '++id, name, type, createdAt, connectionString, isPasswordExists, isPasswordPopulated',
+  databaseChats: '++id, databaseId, messages',
+}).upgrade((tx) => {
+  tx.table('databaseChats').toCollection().modify((chat) => {
+    chat.messages = chat.messages.map((message: {
+      id: string
+      content: string
+      createdAt?: Date
+      experimental_attachments?: {
+        name: string
+        contentType: string
+        url: string
+      }[]
+      role: 'user' | 'assistant'
+      parts?: { type: 'text', text: string }[]
+    }) => ({
+      id: message.id,
+      role: message.role,
+      parts: [
+        {
+          type: 'text',
+          text: message.content,
+        },
+        ...(message.experimental_attachments?.map(attachment => ({
+          type: 'file',
+          url: attachment.url,
+          mediaType: attachment.contentType,
+        })) ?? []),
+      ],
+    }))
+  })
 })

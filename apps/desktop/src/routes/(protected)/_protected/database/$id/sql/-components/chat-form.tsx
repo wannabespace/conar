@@ -1,6 +1,5 @@
-import type { UseChatHelpers } from '@ai-sdk/react'
 import type { ComponentRef } from 'react'
-import type { Database } from '~/lib/indexeddb'
+import { useChat } from '@ai-sdk/react'
 import { AiSqlChatModel } from '@conar/shared/enums/ai-chat-model'
 import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { Button } from '@conar/ui/components/button'
@@ -8,13 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiCornerDownLeftLine, RiStopCircleLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { databaseContextQuery } from '~/entities/database'
 import { queryClient } from '~/main'
-import { pageHooks, pageStore } from '..'
-import { chatInput } from '../-lib'
+import { Route } from '..'
+import { chatInput } from '../-chat'
+import { pageHooks, pageStore } from '../-lib'
 import { ChatImages } from './chat-images'
 
 function ModelSelector() {
@@ -44,20 +44,16 @@ function ModelSelector() {
         <SelectItem value={AiSqlChatModel.Claude_4_Opus}>Claude 4 Opus</SelectItem>
         <SelectItem value={AiSqlChatModel.GPT_4o_Mini}>GPT-4o Mini</SelectItem>
         <SelectItem value={AiSqlChatModel.Gemini_2_5_Pro}>Gemini 2.5 Pro</SelectItem>
-        <SelectItem value={AiSqlChatModel.Grok_3}>Grok 3</SelectItem>
+        <SelectItem value={AiSqlChatModel.Grok_4}>Grok 4</SelectItem>
       </SelectContent>
     </Select>
   )
 }
 
-export function ChatForm({
-  database,
-  append,
-  stop,
-  status,
-  input,
-  setInput,
-}: Pick<UseChatHelpers, 'status' | 'append' | 'stop' | 'input' | 'setInput'> & { database: Database }) {
+export function ChatForm() {
+  const { chat, database } = Route.useLoaderData()
+  const [input, setInput] = useState('')
+  const { status, sendMessage, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const files = useStore(pageStore, state => state.files.map(file => ({
     name: file.name,
@@ -100,16 +96,24 @@ export function ChatForm({
 
       pageHooks.callHook('sendMessage')
 
-      await append({
+      await sendMessage({
         role: 'user',
-        content: cachedValue,
+        parts: [
+          {
+            type: 'text',
+            text: cachedValue,
+          },
+          ...filesBase64.map(base64 => ({
+            type: 'file' as const,
+            url: base64,
+            mediaType: 'image/png',
+          })),
+        ],
       }, {
-        experimental_attachments: filesBase64.map((base64, index) => ({
-          name: `attachment-${index + 1}.png`,
-          contentType: 'image/png',
-          url: base64,
-        })),
         body: {
+          type: database.type,
+          model: pageStore.state.model,
+          currentQuery: pageStore.state.query,
           context: await queryClient.ensureQueryData(databaseContextQuery(database)),
         },
       })

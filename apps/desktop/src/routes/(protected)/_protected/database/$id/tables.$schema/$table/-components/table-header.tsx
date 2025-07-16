@@ -2,7 +2,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useIsScrolled } from '@conar/ui/hookas/use-is-scrolled'
 import { useThrottledCallback } from '@conar/ui/hookas/use-throttled-callback'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowLeftDoubleLine, RiArrowRightDoubleLine, RiDatabase2Line, RiTableLine } from '@remixicon/react'
+import { RiArrowLeftDoubleLine, RiArrowRightDoubleLine, RiDatabase2Line } from '@remixicon/react'
 import { animate } from 'motion'
 import { useEffect, useState } from 'react'
 
@@ -66,7 +66,7 @@ function Header() {
       onUpdate: (latest) => {
         scrollEl.scrollLeft = latest
       },
-      duration: 0.7,
+      duration: 0.5,
       ease: 'easeInOut',
       damping: 17,
       type: isFirst || isLast ? 'tween' : 'spring',
@@ -88,11 +88,9 @@ function Header() {
     if (!el)
       return
 
-    el.addEventListener('resize', updateScrollLeft)
     el.addEventListener('scroll', updateScrollLeft)
 
     return () => {
-      el.removeEventListener('resize', updateScrollLeft)
       el.removeEventListener('scroll', updateScrollLeft)
     }
   }, [scrollRef, updateScrollLeft])

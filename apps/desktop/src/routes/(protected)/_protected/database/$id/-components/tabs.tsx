@@ -6,7 +6,7 @@ import { getOS } from '@conar/shared/utils/os'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
-import { useInViewport } from '@conar/ui/hookas/use-in-viewport'
+import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { clickHandlers, cn } from '@conar/ui/lib/utils'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
@@ -103,7 +103,7 @@ function SortableTab({
   const router = useRouter()
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
-  const isVisible = useInViewport(ref, 'full')
+  const isVisible = useIsInViewport(ref, 'full')
   const {
     attributes,
     listeners,

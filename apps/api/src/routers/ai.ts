@@ -1,15 +1,14 @@
-import type { LanguageModelV1, Message } from 'ai'
+import type { LanguageModel, UIMessage } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { xai } from '@ai-sdk/xai'
-import { databaseContextSchema } from '@conar/shared/database'
 import { AiSqlChatModel } from '@conar/shared/enums/ai-chat-model'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { zValidator } from '@hono/zod-validator'
-import { smoothStream, streamText } from 'ai'
+import { convertToModelMessages, smoothStream, streamText } from 'ai'
 import { Hono } from 'hono'
-import * as z from 'zod/v4'
+import * as z from 'zod'
 
 export const ai = new Hono()
 
@@ -22,9 +21,10 @@ function generateStream({
   currentQuery,
 }: {
   type: DatabaseType
-  model: LanguageModelV1
-  context: z.output<typeof databaseContextSchema>
-  messages: (Omit<Message, 'id'> & { id?: string })[]
+  model: LanguageModel
+  // eslint-disable-next-line ts/no-explicit-any
+  context: any
+  messages: Omit<UIMessage, 'id'>[]
   signal: AbortSignal
   currentQuery: string
 }) {
@@ -58,7 +58,7 @@ function generateStream({
         ----------------
       `.trim(),
       },
-      ...messages,
+      ...convertToModelMessages(messages),
     ],
     abortSignal: signal,
     model,
@@ -75,71 +75,52 @@ function generateStream({
 const input = z.object({
   type: z.enum(DatabaseType),
   messages: z.object({
-    id: z.string().optional(),
-    role: z.enum<Message['role'][]>(['user', 'assistant', 'system', 'data']),
-    content: z.string(),
+    role: z.enum<UIMessage['role'][]>(['user', 'assistant']),
+    parts: z.array(z.any()),
+
+    // Legacy for backward compatibility
+    content: z.string().optional(),
     experimental_attachments: z.object({
       name: z.string(),
       contentType: z.string(),
       url: z.string(),
     }).array().optional(),
+
   }).array(),
-  context: databaseContextSchema,
+  context: z.any(),
   model: z.enum(AiSqlChatModel).or(z.literal('auto')).optional(),
   currentQuery: z.string().optional(),
 })
 
-const models: Record<AiSqlChatModel, LanguageModelV1> = {
+const models = {
   [AiSqlChatModel.Claude_3_7_Sonnet]: anthropic('claude-3-7-sonnet-20250219'),
   [AiSqlChatModel.Claude_4_Opus]: anthropic('claude-4-opus-20250514'),
   [AiSqlChatModel.GPT_4o_Mini]: openai('gpt-4o-mini'),
   [AiSqlChatModel.Gemini_2_5_Pro]: google('gemini-2.5-pro'),
-  [AiSqlChatModel.Grok_3]: xai('grok-3-latest'),
-}
+  [AiSqlChatModel.Grok_4]: xai('grok-4'),
+
+  // Legacy for backward compatibility
+  [AiSqlChatModel.Grok_3]: xai('grok-3'),
+} satisfies Record<AiSqlChatModel, LanguageModel>
 
 const autoModel = models[AiSqlChatModel.Claude_3_7_Sonnet]
 
 ai.post('/sql-chat', zValidator('json', input), async (c) => {
-  const { type, messages, context, model, currentQuery = '' } = c.req.valid('json')
+  const { type, messages: uiMessages, context, model, currentQuery = '' } = c.req.valid('json')
 
-  try {
-    const result = generateStream({
-      type,
-      model: !model || model === 'auto' ? autoModel : models[model],
-      context,
-      messages,
-      currentQuery,
-      signal: c.req.raw.signal,
-    })
+  const messages = uiMessages.map(message => ({
+    role: message.role,
+    parts: message.parts as UIMessage['parts'],
+  }))
 
-    return result.toDataStreamResponse({
-      headers: {
-        'Transfer-Encoding': 'chunked',
-      },
-    })
-  }
-  catch (error) {
-    const isOverloaded = error instanceof Error && error.message.includes('Overloaded')
+  const result = generateStream({
+    type,
+    model: !model || model === 'auto' ? autoModel : models[model],
+    context,
+    messages,
+    currentQuery,
+    signal: c.req.raw.signal,
+  })
 
-    if (isOverloaded) {
-      console.log('Request overloaded, trying to use fallback model')
-
-      const result = generateStream({
-        type,
-        model: !model || model === 'auto' ? anthropic('claude-3-5-haiku-latest') : models[model],
-        context,
-        messages,
-        currentQuery,
-        signal: c.req.raw.signal,
-      })
-
-      return result.toDataStreamResponse({
-        headers: {
-          'Transfer-Encoding': 'chunked',
-        },
-      })
-    }
-
-    throw error
-  }
+  return result.toUIMessageStreamResponse()
 })
