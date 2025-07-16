@@ -3,6 +3,5 @@ export enum AiSqlChatModel {
   Claude_3_7_Sonnet = 'claude-3-7-sonnet',
   Claude_4_Opus = 'claude-4-opus',
   Gemini_2_5_Pro = 'gemini-2.5-pro',
-  Grok_3 = 'grok-3',
   Grok_4 = 'grok-4',
 }

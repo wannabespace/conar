@@ -5,7 +5,8 @@ import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { env } from './env'
 import { auth } from './lib/auth'
-import { ai } from './routers/ai'
+import { ai as aiV1 } from './routers/ai/v1'
+import { ai as aiV2 } from './routers/ai/v2'
 import { createContext } from './trpc/context'
 import { appRouter } from './trpc/routers'
 
@@ -29,7 +30,8 @@ app.use(
   }),
 )
 
-app.route('/ai', ai)
+app.route('/ai', aiV1)
+app.route('/ai/v2', aiV2)
 
 serve({
   fetch: app.fetch,

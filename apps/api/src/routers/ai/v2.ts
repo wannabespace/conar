@@ -12,25 +12,38 @@ import * as z from 'zod'
 
 export const ai = new Hono()
 
-function generateStream({
-  type,
-  model,
-  context,
-  signal,
-  messages,
-  currentQuery,
-}: {
-  type: DatabaseType
-  model: LanguageModel
-  // eslint-disable-next-line ts/no-explicit-any
-  context: any
-  messages: Omit<UIMessage, 'id'>[]
-  signal: AbortSignal
-  currentQuery: string
-}) {
+const inputV2 = z.object({
+  type: z.enum(DatabaseType),
+  context: z.any(),
+  model: z.enum(AiSqlChatModel).or(z.literal('auto')).optional(),
+  currentQuery: z.string().optional(),
+  messages: z.object({
+    role: z.enum<UIMessage['role'][]>(['user', 'assistant']),
+    parts: z.array(z.any()),
+  }).array(),
+})
+
+const models = {
+  [AiSqlChatModel.Claude_3_7_Sonnet]: anthropic('claude-3-7-sonnet-20250219'),
+  [AiSqlChatModel.Claude_4_Opus]: anthropic('claude-4-opus-20250514'),
+  [AiSqlChatModel.GPT_4o_Mini]: openai('gpt-4o-mini'),
+  [AiSqlChatModel.Gemini_2_5_Pro]: google('gemini-2.5-pro'),
+  [AiSqlChatModel.Grok_4]: xai('grok-4'),
+} satisfies Record<AiSqlChatModel, LanguageModel>
+
+const autoModel = models[AiSqlChatModel.Claude_3_7_Sonnet]
+
+ai.post('/sql-chat', zValidator('json', inputV2), async (c) => {
+  const { type, messages: uiMessages, context, model, currentQuery = '' } = c.req.valid('json')
+
+  const messages = uiMessages.map(message => ({
+    role: message.role,
+    parts: message.parts as UIMessage['parts'],
+  }))
+
   console.info('messages', messages)
 
-  return streamText({
+  const result = streamText({
     messages: [
       {
         role: 'system',
@@ -60,8 +73,8 @@ function generateStream({
       },
       ...convertToModelMessages(messages),
     ],
-    abortSignal: signal,
-    model,
+    abortSignal: c.req.raw.signal,
+    model: !model || model === 'auto' ? autoModel : models[model],
     experimental_transform: smoothStream(),
     onFinish: (result) => {
       console.info('result', result)
@@ -69,57 +82,6 @@ function generateStream({
     onError: (error) => {
       console.error('error', error)
     },
-  })
-}
-
-const input = z.object({
-  type: z.enum(DatabaseType),
-  messages: z.object({
-    role: z.enum<UIMessage['role'][]>(['user', 'assistant']),
-    parts: z.array(z.any()),
-
-    // Legacy for backward compatibility
-    content: z.string().optional(),
-    experimental_attachments: z.object({
-      name: z.string(),
-      contentType: z.string(),
-      url: z.string(),
-    }).array().optional(),
-
-  }).array(),
-  context: z.any(),
-  model: z.enum(AiSqlChatModel).or(z.literal('auto')).optional(),
-  currentQuery: z.string().optional(),
-})
-
-const models = {
-  [AiSqlChatModel.Claude_3_7_Sonnet]: anthropic('claude-3-7-sonnet-20250219'),
-  [AiSqlChatModel.Claude_4_Opus]: anthropic('claude-4-opus-20250514'),
-  [AiSqlChatModel.GPT_4o_Mini]: openai('gpt-4o-mini'),
-  [AiSqlChatModel.Gemini_2_5_Pro]: google('gemini-2.5-pro'),
-  [AiSqlChatModel.Grok_4]: xai('grok-4'),
-
-  // Legacy for backward compatibility
-  [AiSqlChatModel.Grok_3]: xai('grok-3'),
-} satisfies Record<AiSqlChatModel, LanguageModel>
-
-const autoModel = models[AiSqlChatModel.Claude_3_7_Sonnet]
-
-ai.post('/sql-chat', zValidator('json', input), async (c) => {
-  const { type, messages: uiMessages, context, model, currentQuery = '' } = c.req.valid('json')
-
-  const messages = uiMessages.map(message => ({
-    role: message.role,
-    parts: message.parts as UIMessage['parts'],
-  }))
-
-  const result = generateStream({
-    type,
-    model: !model || model === 'auto' ? autoModel : models[model],
-    context,
-    messages,
-    currentQuery,
-    signal: c.req.raw.signal,
   })
 
   return result.toUIMessageStreamResponse()

@@ -21,7 +21,7 @@ export const Route = createFileRoute(
     const chat = new Chat({
       id: params.id,
       transport: new DefaultChatTransport({
-        api: `${import.meta.env.VITE_PUBLIC_API_URL}/ai/sql-chat`,
+        api: `${import.meta.env.VITE_PUBLIC_API_URL}/ai/v2/sql-chat`,
         credentials: 'include',
       }),
       messages: await chatMessages.get(params.id),
