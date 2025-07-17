@@ -1,4 +1,4 @@
-import type { ToolUI } from '@conar/shared/ai'
+import type { UITools } from '@conar/shared/ai'
 import type { ToolUIPart } from 'ai'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Badge } from '@conar/ui/components/badge'
@@ -6,7 +6,7 @@ import { Card } from '@conar/ui/components/card'
 import { RiCheckLine, RiErrorWarningLine, RiHammerLine, RiLoader4Line } from '@remixicon/react'
 import { Monaco } from '~/components/monaco'
 
-function getToolLabel(tool: ToolUIPart<ToolUI>) {
+function getToolLabel(tool: ToolUIPart<UITools>) {
   if (tool.type === 'tool-columns') {
     if (tool.input) {
       return `Get columns for ${tool.input.tableName}`
@@ -20,7 +20,7 @@ function getToolLabel(tool: ToolUIPart<ToolUI>) {
   throw new Error(`Unknown tool: ${tool}`)
 }
 
-const TOOL_DESCRIPTIONS: Record<`tool-${keyof ToolUI}`, string> = {
+const TOOL_DESCRIPTIONS: Record<`tool-${keyof UITools}`, string> = {
   'tool-columns': 'Agent called a tool to get table columns.',
   'tool-enums': 'Agent called a tool to get database enums.',
 }
@@ -52,7 +52,7 @@ function ToolStateBadge({ state }: { state: ToolUIPart['state'] }) {
 }
 
 export function ChatMessageTool({ part }: { part: ToolUIPart }) {
-  const tool = part as ToolUIPart<ToolUI>
+  const tool = part as ToolUIPart<UITools>
   const label = getToolLabel(tool)
   const description = TOOL_DESCRIPTIONS[tool.type] || 'Agent called a tool.'
 

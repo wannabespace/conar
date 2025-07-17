@@ -26,6 +26,10 @@ export function createWindow() {
     minWidth: 500,
     minHeight: 500,
     focusable: true,
+    // titleBarStyle: 'default',
+    // vibrancy: 'fullscreen-ui', // on MacOS
+    // backgroundMaterial: 'acrylic', // on Windows 11
+    // visualEffectState: 'active',
     webPreferences: {
       preload: path.join(path.dirname(fileURLToPath(import.meta.url)), '../preload/index.mjs'),
     },

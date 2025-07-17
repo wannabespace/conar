@@ -12,7 +12,6 @@ import { ChatPlaceholder } from './chat-placeholder'
 
 export function Chat({ className, ...props }: ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()
-
   const { messages, error, regenerate } = useChat({ chat })
 
   useMountedEffect(() => {

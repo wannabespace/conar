@@ -22,4 +22,4 @@ export const tools = {
 
 export type ToolCall = ToolCallUnion<typeof tools>
 export type ToolResult = ToolResultUnion<typeof tools>
-export type ToolUI = InferUITools<typeof tools>
+export type UITools = InferUITools<typeof tools>
