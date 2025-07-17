@@ -1,9 +1,9 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import { prepareSql } from '@conar/shared/utils/helpers'
-import { type } from 'arktype'
+import * as z from 'zod'
 
-export const totalType = type({
-  total: 'string.numeric',
+export const totalSchema = z.object({
+  total: z.coerce.number(),
 })
 
 export function totalSql(schema: string, table: string, query: {

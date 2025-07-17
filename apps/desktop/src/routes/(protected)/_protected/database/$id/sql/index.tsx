@@ -1,9 +1,10 @@
+import type { ToolCall } from '@conar/shared/ai'
 import { Chat } from '@ai-sdk/react'
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { DefaultChatTransport } from 'ai'
-import { databaseContextQuery } from '~/entities/database'
+import { columnsQuery, databaseEnumsQuery, tablesAndSchemasQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { chatMessages, chatQuery } from './-chat'
 import { Chat as ChatComponent } from './-components/chat'
@@ -29,10 +30,26 @@ export const Route = createFileRoute(
           type: context.database.type,
           model: pageStore.state.model,
           currentQuery: pageStore.state.query,
-          context: await queryClient.ensureQueryData(databaseContextQuery(context.database)),
+          context: await queryClient.ensureQueryData(tablesAndSchemasQuery(context.database)),
         }),
       }),
       messages: await chatMessages.get(params.id),
+      maxSteps: 20,
+      onToolCall: async ({ toolCall }) => {
+        const call = toolCall as Pick<ToolCall, 'toolName' | 'input'>
+
+        if (call.toolName === 'columns') {
+          return queryClient.ensureQueryData(columnsQuery(
+            context.database,
+            call.input.tableName,
+            call.input.schemaName,
+          ))
+        }
+
+        if (call.toolName === 'enums') {
+          return queryClient.ensureQueryData(databaseEnumsQuery(context.database))
+        }
+      },
     })
 
     return {

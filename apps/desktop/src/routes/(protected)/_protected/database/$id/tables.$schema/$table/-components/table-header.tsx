@@ -68,8 +68,6 @@ function Header() {
       },
       duration: 0.5,
       ease: 'easeInOut',
-      damping: 17,
-      type: isFirst || isLast ? 'tween' : 'spring',
     })
   }
 

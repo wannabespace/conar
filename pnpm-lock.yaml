@@ -77,6 +77,9 @@ importers:
       '@ai-sdk/xai1':
         specifier: npm:@ai-sdk/xai@^1.2.18
         version: '@ai-sdk/xai@1.2.18(zod@4.0.5)'
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@hono/arktype-validator':
         specifier: ^2.0.1
         version: 2.0.1(arktype@2.1.20)(hono@4.8.5)
@@ -135,9 +138,6 @@ importers:
         specifier: ^4.0.5
         version: 4.0.5
     devDependencies:
-      '@conar/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       drizzle-kit:
         specifier: ^0.31.4
         version: 0.31.4
@@ -441,20 +441,7 @@ importers:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.8.3)(vite@7.0.4(@types/node@24.0.14)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
 
-  packages/shared:
-    dependencies:
-      '@trpc/client':
-        specifier: ^11.0.0
-        version: 11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3)
-      permix:
-        specifier: ^1.0.4
-        version: 1.0.4(@trpc/server@11.4.3(typescript@5.8.3))(hono@4.8.5)(react@19.1.0)
-      pg-connection-string:
-        specifier: ^2.9.1
-        version: 2.9.1
-      sonner:
-        specifier: ^1.7.2
-        version: 1.7.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+  packages/shared: {}
 
   packages/tsconfig: {}
 
@@ -6620,30 +6607,6 @@ packages:
   perfect-debounce@1.0.0:
     resolution: {integrity: sha512-xCy9V055GLEqoFaHoC1SoLIaLmWctgCUaBaWxDZ7/Zx4CTyX7cJQLJOok/orfjZAh9kEYpjJa4d0KcJmCbctZA==}
 
-  permix@1.0.4:
-    resolution: {integrity: sha512-0C50jyV6ac+krkNWQwxnwXI2UfADK5zeNzMN5W+gyYgOqmb12CEDGu9GLstaxQHwtQuC7ZaRqi11xevSFHFYeQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      '@trpc/server': '>=10'
-      express: '>=4'
-      hono: '>=4'
-      nuxt: '>=3'
-      react: '>=18'
-      vue: '>=3'
-    peerDependenciesMeta:
-      '@trpc/server':
-        optional: true
-      express:
-        optional: true
-      hono:
-        optional: true
-      nuxt:
-        optional: true
-      react:
-        optional: true
-      vue:
-        optional: true
-
   pg-cloudflare@1.2.7:
     resolution: {integrity: sha512-YgCtzMH0ptvZJslLM1ffsY4EuGaU0cx4XSdXLRFae8bPP4dS5xL1tNB3k2o/N64cHJpwU7dxKli/nZ2lUa5fLg==}
 
@@ -7359,12 +7322,6 @@ packages:
 
   solid-js@1.9.7:
     resolution: {integrity: sha512-/saTKi8iWEM233n5OSi1YHCCuh66ZIQ7aK2hsToPe4tqGm7qAejU1SwNuTPivbWAYq7SjuHVVYxxuZQNRbICiw==}
-
-  sonner@1.7.4:
-    resolution: {integrity: sha512-DIS8z4PfJRbIyfVFDVnK9rO3eYDtse4Omcm6bt0oEr5/jtLgysmjuBl1frJ9E/EQZrFmKx2A8m/s5s9CRXIzhw==}
-    peerDependencies:
-      react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
-      react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
 
   sonner@2.0.6:
     resolution: {integrity: sha512-yHFhk8T/DK3YxjFQXIrcHT1rGEeTLliVzWbO0xN8GberVun2RiBnxAjXAYpZrqwEVHBG9asI/Li8TAAhN9m59Q==}
@@ -15207,12 +15164,6 @@ snapshots:
 
   perfect-debounce@1.0.0: {}
 
-  permix@1.0.4(@trpc/server@11.4.3(typescript@5.8.3))(hono@4.8.5)(react@19.1.0):
-    optionalDependencies:
-      '@trpc/server': 11.4.3(typescript@5.8.3)
-      hono: 4.8.5
-      react: 19.1.0
-
   pg-cloudflare@1.2.7:
     optional: true
 
@@ -16023,11 +15974,6 @@ snapshots:
       csstype: 3.1.3
       seroval: 1.3.2
       seroval-plugins: 1.3.2(seroval@1.3.2)
-
-  sonner@1.7.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
-    dependencies:
-      react: 19.1.0
-      react-dom: 19.1.0(react@19.1.0)
 
   sonner@2.0.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:

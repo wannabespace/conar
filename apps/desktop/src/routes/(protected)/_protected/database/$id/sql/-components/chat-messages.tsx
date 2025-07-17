@@ -8,7 +8,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiArrowDownSLine, RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { isToolUIPart } from 'ai'
+import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
@@ -16,6 +17,7 @@ import { sleep } from '~/lib/helpers'
 import { Route } from '..'
 import { pageHooks, pageStore } from '../-lib'
 import { ChatImages } from './chat-images'
+import { ChatMessageTool } from './chat-message-tools'
 
 function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   return (
@@ -45,14 +47,10 @@ function ChatMessagePart({ parts, onEdit, loading }: { parts: UIMessage['parts']
         </div>
       )
     }
-    if (part.type === 'source-url') {
-      return (
-        <div key={index} className="text-muted-foreground">
-          <p className="text-xs font-medium">Source URL</p>
-          <p className="text-xs">{part.url}</p>
-        </div>
-      )
+    if (isToolUIPart(part)) {
+      return <ChatMessageTool key={index} part={part} />
     }
+
     return null
   })
 }
@@ -209,7 +207,7 @@ export function ChatMessages({
   const { messages, status, error, regenerate } = useChat({ chat })
 
   useEffect(() => {
-    pageHooks.hook('sendMessage', () => {
+    return pageHooks.hook('sendMessage', () => {
       scrollToBottom()
     })
   }, [])
@@ -222,20 +220,17 @@ export function ChatMessages({
     >
       <div ref={contentRef} className="relative flex flex-col gap-8 px-4">
         {messages.map((message, index) => (
-          <Fragment key={message.id}>
-            {message.role === 'user'
-              ? (
-                  <UserMessage message={message} />
-                )
-              : (
-                  <AssistantMessage
-                    message={message}
-                    last={index === messages.length - 1}
-                    loading={status === 'submitted' || status === 'streaming'}
-                    onReload={regenerate}
-                  />
-                )}
-          </Fragment>
+          message.role === 'user'
+            ? <UserMessage key={message.id} message={message} />
+            : (
+                <AssistantMessage
+                  key={message.id}
+                  message={message}
+                  last={index === messages.length - 1}
+                  loading={status === 'submitted' || status === 'streaming'}
+                  onReload={regenerate}
+                />
+              )
         ))}
         {status === 'submitted' && (
           <ChatMessage className="flex flex-col items-start gap-2">

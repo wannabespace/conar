@@ -1,4 +1,4 @@
-import type { ComponentProps, RefObject } from 'react'
+import type { RefObject } from 'react'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { useTheme } from '@conar/ui/theme-provider'
 import * as monaco from 'monaco-editor'
@@ -24,8 +24,10 @@ export function Monaco({
   options,
   onEnter,
   ...props
-}: Omit<ComponentProps<'div'>, 'onChange' | 'ref'> & {
+}: {
   ref?: RefObject<monaco.editor.IStandaloneCodeEditor | null>
+  className?: string
+  style?: React.CSSProperties
   value: string
   language?: string
   onChange?: (value: string) => void
@@ -46,7 +48,7 @@ export function Monaco({
       return
 
     monacoInstance.current = monaco.editor.create(elementRef.current, {
-      value,
+      value: language === 'json' ? JSON.stringify(JSON.parse(value), null, 2) : value,
       language,
       automaticLayout: true,
       minimap: { enabled: false },

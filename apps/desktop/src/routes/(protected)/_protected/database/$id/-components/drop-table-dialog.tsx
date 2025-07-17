@@ -1,4 +1,5 @@
 import type { Database } from '~/lib/indexeddb'
+import { dropTableSql } from '@conar/shared/sql/drop-table'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -17,7 +18,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseContextQuery, dropTableSql } from '~/entities/database'
+import { tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { closeTab } from '../-lib/tabs'
@@ -57,7 +58,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
       setOpen(false)
       setConfirmationText('')
 
-      queryClient.invalidateQueries(databaseContextQuery(database))
+      queryClient.invalidateQueries(tablesAndSchemasQuery(database))
       closeTab(database.id, schema, table)
 
       if (router.state.location.pathname.startsWith(`/database/${database.id}/tables`)) {

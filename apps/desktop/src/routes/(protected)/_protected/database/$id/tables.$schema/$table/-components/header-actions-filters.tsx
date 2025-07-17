@@ -1,4 +1,4 @@
-import type { WhereFilter } from '~/entities/database'
+import type { WhereFilter } from '@conar/shared/sql/where'
 import { Button } from '@conar/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'

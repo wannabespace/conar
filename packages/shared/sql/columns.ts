@@ -1,15 +1,19 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import { prepareSql } from '@conar/shared/utils/helpers'
-import { type } from 'arktype'
+import * as z from 'zod'
 
-export const columnType = type({
-  table: 'string',
-  name: 'string',
-  type: 'string',
-  editable: 'boolean',
-  default: 'string | null',
-  nullable: 'boolean',
-})
+export const columnSchema = z.object({
+  table: z.string(),
+  name: z.string(),
+  type: z.string(),
+  editable: z.boolean(),
+  default: z.string().nullable(),
+  nullable: z.boolean(),
+}).transform(({ editable, nullable, ...rest }) => ({
+  ...rest,
+  isEditable: editable,
+  isNullable: nullable,
+}))
 
 export function columnsSql(schema: string, table: string): Record<DatabaseType, string> {
   return {

@@ -1,7 +1,7 @@
 import type { Database } from '~/lib/indexeddb'
+import { primaryKeySchema, primaryKeysSql } from '@conar/shared/sql/primary-keys'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
-import { primaryKeysSql, primaryKeyType } from '../sql/primary-keys'
 
 export function databasePrimaryKeysQuery(database: Database) {
   return queryOptions({
@@ -13,10 +13,7 @@ export function databasePrimaryKeysQuery(database: Database) {
         query: primaryKeysSql()[database.type],
       })
 
-      return result.rows.map(row => primaryKeyType.assert(row)).map(row => ({
-        ...row,
-        primaryKeys: row.primary_keys.split(',').map(key => key.trim()),
-      }))
+      return result.rows.map(row => primaryKeySchema.parse(row))
     },
   })
 }

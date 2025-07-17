@@ -1,25 +1,23 @@
 import type { Database } from '~/lib/indexeddb'
-import { useQuery } from '@tanstack/react-query'
-import { databaseContextQuery } from './context'
+import { columnSchema, columnsSql } from '@conar/shared/sql/columns'
+import { queryOptions, useQuery } from '@tanstack/react-query'
+import { dbQuery } from '~/lib/query'
 
-export function useDatabaseColumns(
-  database: Database,
-  table: string,
-  schema: string,
-) {
-  return useQuery({
-    ...databaseContextQuery(database),
-    select: (data) => {
-      const columns = data.schemas.find(({ schema: s }) => s === schema)?.tables.find(({ name }) => name === table)?.columns
+export function columnsQuery(database: Database, table: string, schema: string) {
+  return queryOptions({
+    queryKey: ['database', database.id, 'columns', schema, table],
+    queryFn: async () => {
+      const [result] = await dbQuery({
+        type: database.type,
+        connectionString: database.connectionString,
+        query: columnsSql(schema, table)[database.type],
+      })
 
-      if (!columns)
-        return []
-
-      return columns.map(({ editable, nullable, ...column }) => ({
-        ...column,
-        isEditable: editable,
-        isNullable: nullable,
-      }))
+      return result.rows.map(col => columnSchema.parse(col))
     },
   })
+}
+
+export function useDatabaseColumns(...params: Parameters<typeof columnsQuery>) {
+  return useQuery(columnsQuery(...params))
 }

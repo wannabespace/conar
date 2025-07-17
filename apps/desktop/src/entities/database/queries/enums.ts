@@ -1,23 +1,23 @@
-import { useQuery } from '@tanstack/react-query'
-import { databaseContextQuery } from './context'
+import type { Database } from '~/lib/indexeddb'
+import { enumsSchema, enumsSql } from '@conar/shared/sql/enums'
+import { queryOptions, useQuery } from '@tanstack/react-query'
+import { dbQuery } from '~/lib/query'
 
-export function useDatabaseEnums(...params: Parameters<typeof databaseContextQuery>) {
-  return useQuery({
-    ...databaseContextQuery(...params),
-    select: (data) => {
-      const groupedEnums = data.enums.reduce((acc, { schema, name, value }) => {
-        const key = `${schema}.${name}`
+export function databaseEnumsQuery(database: Database) {
+  return queryOptions({
+    queryKey: ['database', database.id, 'enums'],
+    queryFn: async () => {
+      const [result] = await dbQuery({
+        type: database.type,
+        connectionString: database.connectionString,
+        query: enumsSql()[database.type],
+      })
 
-        if (!acc[key]) {
-          acc[key] = { schema, name, values: [] }
-        }
-
-        acc[key].values.push(value)
-
-        return acc
-      }, {} as Record<string, { schema: string, name: string, values: string[] }>)
-
-      return Object.values(groupedEnums)
+      return enumsSchema.parse(result.rows)
     },
   })
+}
+
+export function useDatabaseEnums(...params: Parameters<typeof databaseEnumsQuery>) {
+  return useQuery(databaseEnumsQuery(...params))
 }

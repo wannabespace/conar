@@ -21,7 +21,7 @@ const os = getOS(navigator.userAgent)
 
 function getDisplayValue(value: unknown, oneLine: boolean) {
   if (typeof value === 'object' && value !== null)
-    return oneLine ? JSON.stringify(value).replaceAll('\n', ' ') : JSON.stringify(value, null, 2)
+    return oneLine ? JSON.stringify(value).replaceAll('\n', ' ') : JSON.stringify(value)
 
   return oneLine ? String(value ?? '').replaceAll('\n', ' ') : String(value ?? '')
 }

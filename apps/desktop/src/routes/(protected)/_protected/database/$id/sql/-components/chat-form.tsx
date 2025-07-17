@@ -50,8 +50,8 @@ function ModelSelector() {
 
 export function ChatForm() {
   const { chat, database } = Route.useLoaderData()
-  const [input, setInput] = useState('')
-  const { status, sendMessage, stop } = useChat({ chat })
+  const [input, setInput] = useState(chatInput.get(database.id))
+  const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const files = useStore(pageStore, state => state.files.map(file => ({
     name: file.name,
@@ -60,6 +60,7 @@ export function ChatForm() {
 
   useEffect(() => {
     if (ref.current) {
+      // TODO: fix focus
       ref.current.editor.commands.focus('end')
     }
   }, [ref])
@@ -87,7 +88,7 @@ export function ChatForm() {
 
       pageHooks.callHook('sendMessage')
 
-      await sendMessage({
+      await chat.sendMessage({
         role: 'user',
         parts: [
           {

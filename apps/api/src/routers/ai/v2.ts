@@ -3,6 +3,7 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { xai } from '@ai-sdk/xai'
+import { tools } from '@conar/shared/ai'
 import { AiSqlChatModel } from '@conar/shared/enums/ai-chat-model'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { zValidator } from '@hono/zod-validator'
@@ -12,7 +13,7 @@ import * as z from 'zod'
 
 export const ai = new Hono()
 
-const inputV2 = z.object({
+const input = z.object({
   type: z.enum(DatabaseType),
   context: z.any(),
   model: z.enum(AiSqlChatModel).or(z.literal('auto')).optional(),
@@ -33,7 +34,7 @@ const models = {
 
 const autoModel = models[AiSqlChatModel.Claude_3_7_Sonnet]
 
-ai.post('/sql-chat', zValidator('json', inputV2), async (c) => {
+ai.post('/sql-chat', zValidator('json', input), async (c) => {
   const { type, messages: uiMessages, context, model, currentQuery = '' } = c.req.valid('json')
 
   const messages = uiMessages.map(message => ({
@@ -56,7 +57,7 @@ ai.post('/sql-chat', zValidator('json', inputV2), async (c) => {
         - Consider performance implications for complex queries
         - The SQL code will be executed directly in a production database editor
         - Generate SQL query only for the provided schemas, tables, columns and enums
-        - Answer in markdown and paste the SQL code in a code block
+        - Answer in markdown and paste the SQL code in a code block, do not use headings
         - Answer in the same language as the user's message
         - Use quotes for table and column names to prevent SQL errors with case sensitivity
 
@@ -76,13 +77,16 @@ ai.post('/sql-chat', zValidator('json', inputV2), async (c) => {
     abortSignal: c.req.raw.signal,
     model: !model || model === 'auto' ? autoModel : models[model],
     experimental_transform: smoothStream(),
+    tools,
+  })
+
+  return result.toUIMessageStreamResponse({
     onFinish: (result) => {
       console.info('result', result)
     },
     onError: (error) => {
       console.error('error', error)
+      return error instanceof Error ? error.message : 'Unknown error'
     },
   })
-
-  return result.toUIMessageStreamResponse()
 })

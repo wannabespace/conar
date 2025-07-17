@@ -1,12 +1,4 @@
 {
   "name": "@conar/shared",
-  "type": "module",
-  "peerDependencies": {
-    "@trpc/client": "^11.0.0",
-    "permix": "^1.0.4",
-    "sonner": "^1.7.2"
-  },
-  "dependencies": {
-    "pg-connection-string": "^2.9.1"
-  }
+  "type": "module"
 }

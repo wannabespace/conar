@@ -1,12 +1,15 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import { prepareSql } from '@conar/shared/utils/helpers'
-import { type } from 'arktype'
+import * as z from 'zod'
 
-export const primaryKeyType = type({
-  table: 'string',
-  schema: 'string',
-  primary_keys: 'string',
-})
+export const primaryKeySchema = z.object({
+  table: z.string(),
+  schema: z.string(),
+  primary_keys: z.string(),
+}).transform(({ primary_keys, ...rest }) => ({
+  ...rest,
+  primaryKeys: primary_keys.split(',').map(key => key.trim()),
+}))
 
 export function primaryKeysSql(): Record<DatabaseType, string> {
   return {

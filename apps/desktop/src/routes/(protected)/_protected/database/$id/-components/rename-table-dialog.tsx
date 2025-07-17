@@ -1,4 +1,5 @@
 import type { Database } from '~/lib/indexeddb'
+import { renameTableSql } from '@conar/shared/sql/rename-table'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -17,7 +18,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseContextQuery, renameTableSql } from '~/entities/database'
+import { tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { renameTab } from '../-lib/tabs'
@@ -57,7 +58,7 @@ export function RenameTableDIalog({ ref, database }: RenameTableDIalogProps) {
       toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)
       setOpen(false)
 
-      await queryClient.invalidateQueries(databaseContextQuery(database))
+      await queryClient.invalidateQueries(tablesAndSchemasQuery(database))
       renameTab(database.id, schema, table, newTableName)
 
       router.navigate({

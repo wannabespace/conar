@@ -1,11 +1,11 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
-import type { WhereFilter } from './sql/where'
+import type { WhereFilter } from '@conar/shared/sql/where'
 import type { Database } from '~/lib/indexeddb'
 import { toast } from 'sonner'
 import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
-import { databaseContextQuery } from './queries/context'
+import { tablesAndSchemasQuery } from './queries/context'
 import { databaseQuery, databasesQuery } from './queries/database'
 import { databasePrimaryKeysQuery } from './queries/primary-keys'
 import { databaseRowsQuery } from './queries/rows'
@@ -156,7 +156,7 @@ export async function prefetchDatabaseCore(database: Database) {
 
   await Promise.all([
     queryClient.prefetchQuery(databaseQuery(database.id)),
-    queryClient.prefetchQuery(databaseContextQuery(database)),
+    queryClient.prefetchQuery(tablesAndSchemasQuery(database)),
   ])
 
   await Promise.all([

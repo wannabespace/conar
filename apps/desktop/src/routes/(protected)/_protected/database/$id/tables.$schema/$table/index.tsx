@@ -1,4 +1,4 @@
-import type { WhereFilter } from '~/entities/database'
+import type { WhereFilter } from '@conar/shared/sql/where'
 import { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
 import { title } from '@conar/shared/utils/title'
 import { createFileRoute } from '@tanstack/react-router'

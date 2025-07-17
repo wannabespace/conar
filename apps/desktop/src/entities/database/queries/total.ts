@@ -1,9 +1,9 @@
-import type { WhereFilter } from '../sql/where'
+import type { WhereFilter } from '@conar/shared/sql/where'
 import type { Database } from '~/lib/indexeddb'
+import { totalSchema, totalSql } from '@conar/shared/sql/total'
+import { whereSql } from '@conar/shared/sql/where'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
-import { totalSql, totalType } from '../sql/total'
-import { whereSql } from '../sql/where'
 
 export function databaseTableTotalQuery(
   database: Database,
@@ -35,7 +35,7 @@ export function databaseTableTotalQuery(
         })[database.type],
       })
 
-      return Number(totalType.assert(result.rows[0]).total || 0)
+      return totalSchema.parse(result.rows[0]).total
     },
     throwOnError: false,
   })
