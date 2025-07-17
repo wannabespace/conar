@@ -2,6 +2,7 @@ import type { ContextSelector } from '@fluentui/react-context-selector'
 import type { ComponentProps, ReactElement, ReactNode } from 'react'
 import { Accordion, AccordionContent, AccordionItem } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
+import { Card } from '@conar/ui/components/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { copy } from '@conar/ui/lib/copy'
@@ -19,7 +20,7 @@ import { toast } from 'sonner'
 import { trackEvent } from '~/lib/events'
 import { Monaco } from './monaco'
 
-const langsMap: Record<string, string> = {
+const langsMap = {
   text: 'Text',
   json: 'JSON',
   yaml: 'YAML',
@@ -50,7 +51,7 @@ function useMarkdownContext<T>(selector: ContextSelector<MarkdownContextType, T>
 function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: string) => void }) {
   const childrenProps = (typeof children === 'object' && (children as ReactElement<{ children?: ReactNode, className?: string }>)?.props) || null
   const content = childrenProps?.children?.toString().trim() || null
-  const lang = childrenProps?.className?.split('-')[1] || 'text'
+  const lang = (childrenProps?.className?.split('-')[1] || 'text') as keyof typeof langsMap
   const [isPreLoading, setIsPreLoading] = useState(false)
   const loading = useMarkdownContext(state => state.loading)
   const [opened, setOpened] = useState<'pre' | ''>('')
@@ -82,15 +83,15 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
   const lines = content.split('\n').length
 
   return (
-    <div className="typography-disabled relative my-6 first:mt-0 last:mb-0">
+    <Card className="typography-disabled relative my-6 first:mt-0 last:mb-0">
       <Accordion
         value={opened}
         onValueChange={value => setOpened(value as 'pre')}
         type="single"
         collapsible
       >
-        <AccordionItem value="pre" className="rounded-md border! bg-muted/50 overflow-hidden">
-          <AccordionPrimitive.Trigger asChild>
+        <AccordionItem value="pre" className="overflow-hidden">
+          <AccordionPrimitive.Trigger className="px-4 py-2" asChild>
             <div className="cursor-pointer select-none flex justify-between items-center gap-2 p-1">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
@@ -102,7 +103,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                     <RiArrowRightSLine className={cn('size-4 duration-150', opened === 'pre' && 'rotate-90')} />
                   </Button>
                   <span className="font-medium">
-                    {langsMap[lang as keyof typeof langsMap] || lang}
+                    {langsMap[lang] || lang}
                   </span>
                 </div>
                 <span className="text-xs text-muted-foreground">
@@ -148,7 +149,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                {onEdit && (
+                {onEdit && lang === 'sql' && (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -192,7 +193,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-    </div>
+    </Card>
   )
 }
 

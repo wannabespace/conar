@@ -36,7 +36,7 @@ export const Route = createFileRoute(
       messages: await chatMessages.get(params.id),
       maxSteps: 20,
       onToolCall: async ({ toolCall }) => {
-        const call = toolCall as Pick<ToolCall, 'toolName' | 'input'>
+        const call = toolCall as ToolCall
 
         if (call.toolName === 'columns') {
           return queryClient.ensureQueryData(columnsQuery(

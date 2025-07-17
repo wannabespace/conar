@@ -15,7 +15,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --radius: 0.7rem;
+  --radius: 0.6rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
@@ -24,7 +24,7 @@
   --popover-foreground: oklch(0.129 0.042 264.695);
   --primary: oklch(0.5995 0.18 264);
   --primary-foreground: oklch(0.984 0.003 255.508);
-  --secondary: oklch(94% 0.003 255.508);
+  --secondary: oklch(96% 0.003 255.508);
   --secondary-foreground: oklch(0.208 0.042 265.755);
   --muted: oklch(96% 0.003 255.508);
   --muted-foreground: oklch(0.554 0.046 257.417);
@@ -44,7 +44,7 @@
 .dark {
   --background: oklch(0.21 0.0042 264);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.23 0.0042 264);
+  --card: oklch(0.24 0.0042 264);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.26 0.0042 264);
   --popover-foreground: oklch(0.985 0 0);

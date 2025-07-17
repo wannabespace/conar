@@ -101,7 +101,7 @@ export function Runner() {
           setOpen={setIsAlertVisible}
           confirm={() => runQuery()}
         />
-        <CardHeader className="dark:bg-input/30 py-3">
+        <CardHeader className="bg-card py-3">
           <CardTitle className="flex items-center gap-2">
             SQL Runner
           </CardTitle>
