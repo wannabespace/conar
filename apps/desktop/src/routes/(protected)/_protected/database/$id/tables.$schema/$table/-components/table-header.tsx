@@ -1,8 +1,9 @@
+import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { useIsScrolled } from '@conar/ui/hookas/use-is-scrolled'
 import { useThrottledCallback } from '@conar/ui/hookas/use-throttled-callback'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowLeftDoubleLine, RiArrowRightDoubleLine, RiDatabase2Line } from '@remixicon/react'
+import { RiArrowLeftSLine, RiArrowRightSLine, RiDatabase2Line } from '@remixicon/react'
 import { animate } from 'motion'
 import { useEffect, useState } from 'react'
 
@@ -56,7 +57,7 @@ function Header() {
 
     const isFirst = column.el.getAttribute('data-first') === 'true'
     const isLast = column.el.getAttribute('data-last') === 'true'
-    const extraSpace = isFirst || isLast ? 0 : direction === 'left' ? -50 : 50
+    const extraSpace = isFirst || isLast ? 0 : direction === 'left' ? -40 : 40
     const targetScrollLeft = (direction === 'left'
       ? column.el.offsetLeft
       : column.el.offsetLeft + column.el.offsetWidth - scrollEl.clientWidth
@@ -106,16 +107,16 @@ function Header() {
         <div className="sticky z-20 left-0 inset-y-0 w-0 flex items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                size="icon-sm"
                 className={cn(
-                  'group absolute inset-y-0 left-0 h-full flex items-center justify-center w-10 opacity-0 transition-opacity cursor-pointer outline-none',
-                  'before:absolute before:inset-y-0 before:left-0 before:w-20 before:bg-gradient-to-r before:from-card before:via-card/80 before:to-transparent before:z-10 before:pointer-events-none',
+                  'group absolute top-1/2 -translate-y-1/2 left-2 opacity-0 transition-opacity shadow-none',
                   left.length > 0 ? 'opacity-100' : 'pointer-events-none',
                 )}
               >
-                <RiArrowLeftDoubleLine className="relative z-10 size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
-              </button>
+                <RiArrowLeftSLine className="relative z-10 size-4" />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="start" className="min-w-[12rem]">
               <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
@@ -137,16 +138,16 @@ function Header() {
         <div className="sticky z-20 right-0 inset-y-0 w-0 flex items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                size="icon-sm"
                 className={cn(
-                  'group absolute inset-y-0 right-0 h-full flex items-center justify-center w-10 opacity-0 transition-opacity cursor-pointer outline-none',
-                  'before:absolute before:inset-y-0 before:right-0 before:w-20 before:bg-gradient-to-l before:from-card before:via-card/80 before:to-transparent before:z-10 before:pointer-events-none',
+                  'group absolute top-1/2 -translate-y-1/2 right-2 opacity-0 transition-opacity shadow-none',
                   right.length > 0 ? 'opacity-100' : 'pointer-events-none',
                 )}
               >
-                <RiArrowRightDoubleLine className="relative z-10 size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
-              </button>
+                <RiArrowRightSLine className="relative z-10 size-4" />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="end" className="min-w-[12rem]">
               <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
