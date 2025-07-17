@@ -3,7 +3,7 @@ import { columnSchema, columnsSql } from '@conar/shared/sql/columns'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
 
-export function columnsQuery(database: Database, table: string, schema: string) {
+export function databaseTableColumnsQuery(database: Database, table: string, schema: string) {
   return queryOptions({
     queryKey: ['database', database.id, 'columns', schema, table],
     queryFn: async () => {
@@ -18,6 +18,6 @@ export function columnsQuery(database: Database, table: string, schema: string) 
   })
 }
 
-export function useDatabaseColumns(...params: Parameters<typeof columnsQuery>) {
-  return useQuery(columnsQuery(...params))
+export function useDatabaseTableColumns(...params: Parameters<typeof databaseTableColumnsQuery>) {
+  return useQuery(databaseTableColumnsQuery(...params))
 }

@@ -4,7 +4,7 @@ import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { DefaultChatTransport } from 'ai'
-import { columnsQuery, databaseEnumsQuery, tablesAndSchemasQuery } from '~/entities/database'
+import { databaseEnumsQuery, databaseTableColumnsQuery, tablesAndSchemasQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { chatMessages, chatQuery } from './-chat'
 import { Chat as ChatComponent } from './-components/chat'
@@ -39,7 +39,7 @@ export const Route = createFileRoute(
         const call = toolCall as ToolCall
 
         if (call.toolName === 'columns') {
-          return queryClient.ensureQueryData(columnsQuery(
+          return queryClient.ensureQueryData(databaseTableColumnsQuery(
             context.database,
             call.input.tableName,
             call.input.schemaName,

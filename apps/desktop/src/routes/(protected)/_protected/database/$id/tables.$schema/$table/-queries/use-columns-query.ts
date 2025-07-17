@@ -1,10 +1,10 @@
 import type { Database } from '~/lib/indexeddb'
 import { useMemo } from 'react'
-import { useDatabaseColumns } from '~/entities/database'
+import { useDatabaseTableColumns } from '~/entities/database'
 import { usePrimaryKeysQuery } from './use-primary-keys-query'
 
 export function useTableColumns(database: Database, table: string, schema: string) {
-  const { data: columns } = useDatabaseColumns(database, table, schema)
+  const { data: columns } = useDatabaseTableColumns(database, table, schema)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
   return useMemo(() => {
