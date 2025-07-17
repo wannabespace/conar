@@ -61,7 +61,7 @@ function CellProvider({
   onSaveSuccess: () => void
   onSavePending: () => void
 }) {
-  const isJson = !!column?.type?.includes('json')
+  const isJson = column?.type === 'json'
   const displayValue = getDisplayValue(initialValue, false)
   const [value, setValue] = useState<string>(() => initialValue === null ? '' : displayValue)
 
