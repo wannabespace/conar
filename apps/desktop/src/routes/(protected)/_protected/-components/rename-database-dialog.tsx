@@ -67,7 +67,6 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
             <Button
               variant="outline"
               onClick={() => database && setNewName(database.name)}
-              className="rounded-lg border border-input bg-background hover:bg-muted/70 text-foreground font-medium px-5 py-2 transition-all focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
             >
               Cancel
             </Button>
@@ -75,7 +74,6 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
           <Button
             onClick={() => rename()}
             disabled={!canConfirm || isPending}
-            className="rounded-lg bg-primary text-primary-foreground font-semibold px-5 py-2 hover:bg-primary/90 transition-all focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
           >
             <LoadingContent loading={isPending}>
               Rename Database

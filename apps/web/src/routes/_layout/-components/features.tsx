@@ -49,7 +49,7 @@ interface FilterItemProps {
 
 function FilterItem({ name, operator, value, onRemove }: FilterItemProps) {
   return (
-    <div className="flex items-center border rounded-md overflow-hidden h-7 dark:bg-input/40 transition-colors">
+    <div className="flex items-center border rounded-md overflow-hidden h-7 dark:bg-input/30 transition-colors">
       <div className="text-xs flex items-center gap-1 px-2 h-full font-medium text-foreground">
         <RiDatabase2Line className="size-3 text-primary/70" aria-hidden="true" />
         {name}

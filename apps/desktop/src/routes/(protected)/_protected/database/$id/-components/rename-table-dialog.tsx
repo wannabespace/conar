@@ -113,7 +113,6 @@ export function RenameTableDIalog({ ref, database }: RenameTableDIalogProps) {
             <Button
               variant="outline"
               onClick={() => setNewTableName('')}
-              className="rounded-lg border border-input bg-background hover:bg-muted/70 text-foreground font-medium px-5 py-2 transition-all focus:ring-2 focus:ring-primary/20"
             >
               Cancel
             </Button>
@@ -121,7 +120,6 @@ export function RenameTableDIalog({ ref, database }: RenameTableDIalogProps) {
           <Button
             onClick={() => renameTable()}
             disabled={!canConfirm || isPending}
-            className="rounded-lg bg-primary text-primary-foreground font-semibold px-5 py-2 hover:bg-primary/90 transition-all focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
           >
             <LoadingContent loading={isPending}>
               Rename Table
