@@ -5,8 +5,10 @@ import { toast } from 'sonner'
 import { indexedDb } from '~/lib/indexeddb'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
+import { columnsQuery } from './queries/columns'
 import { tablesAndSchemasQuery } from './queries/context'
 import { databaseQuery, databasesQuery } from './queries/database'
+import { databaseEnumsQuery } from './queries/enums'
 import { databasePrimaryKeysQuery } from './queries/primary-keys'
 import { databaseRowsQuery } from './queries/rows'
 import { databaseTableTotalQuery } from './queries/total'
@@ -161,6 +163,7 @@ export async function prefetchDatabaseCore(database: Database) {
 
   await Promise.all([
     queryClient.prefetchQuery(databasePrimaryKeysQuery(database)),
+    queryClient.prefetchQuery(databaseEnumsQuery(database)),
   ])
 }
 
@@ -171,5 +174,6 @@ export async function prefetchDatabaseTableCore(database: Database, schema: stri
   await Promise.all([
     queryClient.prefetchInfiniteQuery(databaseRowsQuery(database, table, schema, query)),
     queryClient.prefetchQuery(databaseTableTotalQuery(database, table, schema, query)),
+    queryClient.prefetchQuery(columnsQuery(database, table, schema)),
   ])
 }
