@@ -111,8 +111,8 @@ function Header() {
                 variant="outline"
                 size="icon-sm"
                 className={cn(
-                  'group absolute top-1/2 -translate-y-1/2 left-2 opacity-0 transition-opacity shadow-none',
-                  left.length > 0 ? 'opacity-100' : 'pointer-events-none',
+                  'group absolute top-1/2 -translate-y-1/2 duration-150 transition-[left,opacity] shadow-none',
+                  left.length > 0 ? 'opacity-100 left-2' : 'opacity-0 left-0 pointer-events-none',
                 )}
               >
                 <RiArrowLeftSLine className="relative z-10 size-4" />
@@ -142,8 +142,8 @@ function Header() {
                 variant="outline"
                 size="icon-sm"
                 className={cn(
-                  'group absolute top-1/2 -translate-y-1/2 right-2 opacity-0 transition-opacity shadow-none',
-                  right.length > 0 ? 'opacity-100' : 'pointer-events-none',
+                  'group absolute top-1/2 -translate-y-1/2 duration-150 transition-[right,opacity] shadow-none',
+                  right.length > 0 ? 'opacity-100 right-2' : 'opacity-0 right-0 pointer-events-none',
                 )}
               >
                 <RiArrowRightSLine className="relative z-10 size-4" />
