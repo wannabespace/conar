@@ -71,7 +71,7 @@ export function TablesTree({ database, className, search }: { database: Database
     ),
   })).filter(schema => schema.tables.length) || [], [search, tablesAndSchemas])
 
-  const [accordionValue, setAccordionValue] = useSessionStorage<string[]>(`database-tables-accordion-value-${database.id}`, () => schemaParam ? [schemaParam] : ['public'])
+  const [accordionValue, setAccordionValue] = useSessionStorage<string[]>(`database-tables-accordion-value-${database.id}`, () => schemaParam ? [schemaParam] : [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
 
   const searchAccordionValue = useMemo(() => search ? filteredTablesAndSchemas.map(schema => schema.name) : accordionValue, [search, filteredTablesAndSchemas, accordionValue])
 
