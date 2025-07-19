@@ -71,7 +71,7 @@ export function ChatMessageTool({ part }: { part: ToolUIPart }) {
             <div className="text-xs text-muted-foreground mb-4 px-4">{description}</div>
             {tool.state === 'output-available' && (
               <Monaco
-                value={JSON.stringify(tool.output, null, 2)}
+                value={JSON.stringify(tool.output)}
                 language="json"
                 options={{
                   readOnly: true,
