@@ -68,7 +68,7 @@ export function ChatMessageTool({ part }: { part: ToolUIPart }) {
             </span>
           </AccordionTrigger>
           <AccordionContent className="pb-2">
-            <div className="mb-2 text-xs text-muted-foreground px-4">{description}</div>
+            <div className="text-xs text-muted-foreground mb-4 px-4">{description}</div>
             {tool.state === 'output-available' && (
               <Monaco
                 value={JSON.stringify(tool.output, null, 2)}
@@ -78,7 +78,7 @@ export function ChatMessageTool({ part }: { part: ToolUIPart }) {
                   scrollBeyondLastLine: false,
                   minimap: { enabled: false },
                 }}
-                className="h-[200px] "
+                className="h-[200px]"
               />
             )}
             {tool.state === 'input-streaming' && (
