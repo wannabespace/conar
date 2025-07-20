@@ -30,7 +30,6 @@ interface CellContextValue {
   value: string
   setValue: Dispatch<SetStateAction<string>>
   column: Column
-  isJson: boolean
   initialValue: unknown
   displayValue: string
   update: UseMutateFunction<void, Error, { value: string | null, rowIndex: number }>
@@ -61,7 +60,6 @@ function CellProvider({
   onSaveSuccess: () => void
   onSavePending: () => void
 }) {
-  const isJson = !!column?.type?.includes('json')
   const displayValue = getDisplayValue(initialValue, false)
   const [value, setValue] = useState<string>(() => initialValue === null ? '' : displayValue)
 
@@ -72,14 +70,12 @@ function CellProvider({
 
       onSavePending()
 
-      const _value = isJson && value ? JSON.parse(value) : value
-
-      onSetValue(rowIndex, column.name, _value)
+      onSetValue(rowIndex, column.name, value)
       try {
         await onSaveValue(
           rowIndex,
           column.name,
-          _value,
+          value,
         )
       }
       catch (e) {
@@ -97,7 +93,6 @@ function CellProvider({
     column,
     initialValue,
     displayValue,
-    isJson,
     update,
   }), [
     value,
@@ -105,7 +100,6 @@ function CellProvider({
     column,
     initialValue,
     displayValue,
-    isJson,
     update,
   ])
 
@@ -125,7 +119,7 @@ function TableCellMonaco({
   onClose: () => void
   hasUpdateFn: boolean
 }) {
-  const { value, initialValue, column, displayValue, isJson, setValue, update } = useCellContext()
+  const { value, initialValue, column, displayValue, setValue, update } = useCellContext()
 
   const canEdit = !!column?.isEditable && hasUpdateFn
   const canSetNull = !!column?.isNullable && initialValue !== null
@@ -146,7 +140,7 @@ function TableCellMonaco({
       <Monaco
         data-mask
         value={value}
-        language={isJson ? 'json' : undefined}
+        language={['json', 'jsonb'].includes(column?.type ?? '') ? 'json' : undefined}
         className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(50vh,40rem)]')}
         onChange={setValue}
         options={{
