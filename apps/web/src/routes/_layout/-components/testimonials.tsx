@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@conar/ui/components/avatar'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
+import { constants } from '@conar/web/src/utils/constants'
 import { RiDoubleQuotesL, RiTwitterXLine } from '@remixicon/react'
 
 interface TestimonialCardProps extends ComponentProps<'article'> {
@@ -72,7 +73,7 @@ function JoinTestimonials() {
         <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">Want to be featured here?</h3>
         <Button asChild variant="link">
           <a
-            href="https://x.com/conar_app"
+            href={constants.TWITTER_URL}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -126,6 +127,20 @@ const testimonials: {
     avatar: '/avatars/lassejlv.png',
     link: 'https://x.com/lassejlv/status/1940734263772828006',
     children: () => '@conar_app is the best database viewer i ever used, no cap 🔥',
+  },
+  {
+    name: 'Dominik',
+    login: 'DominikDoesDev',
+    avatar: '/avatars/dominikdoesdev.jpg',
+    link: 'https://x.com/DominikDoesDev/status/1942986868758372850',
+    children: () => 'Not gonna lie I was looking for something like @conar_app a while ago but couldn\'t find it until now. I think I am in love with this 😍',
+  },
+  {
+    name: 'Sorin Curescu',
+    login: 'en3sis',
+    avatar: '/avatars/en3sis.jpg',
+    link: 'https://x.com/en3sis/status/1945158382396010955',
+    children: () => 'If you’re reading this, go download @conar_app now and thank me later! ;)',
   },
 ]
 
