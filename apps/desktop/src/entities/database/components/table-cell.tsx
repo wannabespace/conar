@@ -5,7 +5,6 @@ import type { TableCellProps } from '~/components/table'
 import { getOS } from '@conar/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
-import { Checkbox } from '@conar/ui/components/checkbox'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
@@ -15,6 +14,7 @@ import { useMutation } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { CellCheckbox } from '~/components/cell-checkbox'
 import { Monaco } from '~/components/monaco'
 import { sleep } from '~/lib/helpers'
 
@@ -141,7 +141,11 @@ function TableCellMonaco({
       {column?.type === 'boolean'
         ? (
             <div className="p-2">
-              <Checkbox checked={value === 'true'} onCheckedChange={checked => setValue(checked ? 'true' : 'false')} />
+              <CellCheckbox
+                checked={value === 'true'}
+                onChange={checked => setValue(checked.toString())}
+                onSave={save}
+              />
             </div>
           )
         : (
