@@ -14,6 +14,7 @@ import { useMutation } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { CellCheckbox } from '~/components/cell-checkbox'
 import { Monaco } from '~/components/monaco'
 import { sleep } from '~/lib/helpers'
 
@@ -139,10 +140,14 @@ function TableCellMonaco({
     <>
       {column?.type === 'boolean'
         ? (
-          <div className="p-2">
-            <Checkbox checked={value === 'true'} onCheckedChange={checked => setValue(checked ? 'true' : 'false')} />
-          </div>
-        )
+            <div className="p-2">
+              <CellCheckbox
+                checked={value === 'true'}
+                onChange={checked => setValue(checked.toString())}
+                onSave={save}
+              />
+            </div>
+          )
         : (
           <Monaco
             data-mask
