@@ -3,10 +3,10 @@ import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiDeleteBinLine } from '@remixicon/react'
-import { Route } from '..'
+import { useChatContext } from './chat-provider'
 
 export function ChatHeader() {
-  const { chat } = Route.useLoaderData()
+  const chat = useChatContext()
   const { messages, setMessages } = useChat({ chat })
 
   return (

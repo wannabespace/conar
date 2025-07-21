@@ -14,10 +14,10 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
 import { sleep } from '~/lib/helpers'
-import { Route } from '..'
 import { pageHooks, pageStore } from '../-lib'
 import { ChatImages } from './chat-images'
 import { ChatMessageTool } from './chat-message-tools'
+import { useChatContext } from './chat-provider'
 
 function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   return (
@@ -202,7 +202,7 @@ export function ChatMessages({
   className,
   ...props
 }: ComponentProps<'div'>) {
-  const { chat } = Route.useLoaderData()
+  const chat = useChatContext()
   const { scrollRef, contentRef, scrollToBottom, isAtBottom } = useStickToBottom({ initial: 'instant' })
   const { messages, status, error, regenerate } = useChat({ chat })
 

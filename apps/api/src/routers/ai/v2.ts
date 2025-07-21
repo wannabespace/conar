@@ -33,10 +33,23 @@ const models = {
 } satisfies Record<AiSqlChatModel, LanguageModel>
 
 const autoModel = models[AiSqlChatModel.Claude_3_7_Sonnet]
+const fallbackModel = anthropic('claude-3-5-haiku-latest')
 
-ai.post('/sql-chat', zValidator('json', input), async (c) => {
-  const { type, messages: uiMessages, context, model, currentQuery = '' } = c.req.valid('json')
-
+function generateStream({
+  messages: uiMessages,
+  type,
+  context,
+  currentQuery,
+  model,
+  signal,
+}: {
+  messages: z.infer<typeof input>['messages']
+  type: z.infer<typeof input>['type']
+  context: z.infer<typeof input>['context']
+  currentQuery?: string
+  model: LanguageModel
+  signal: AbortSignal
+}) {
   const messages = uiMessages.map(message => ({
     role: message.role,
     parts: message.parts as UIMessage['parts'],
@@ -74,8 +87,8 @@ ai.post('/sql-chat', zValidator('json', input), async (c) => {
       },
       ...convertToModelMessages(messages),
     ],
-    abortSignal: c.req.raw.signal,
-    model: !model || model === 'auto' ? autoModel : models[model],
+    abortSignal: signal,
+    model,
     experimental_transform: smoothStream(),
     tools,
   })
@@ -89,4 +102,37 @@ ai.post('/sql-chat', zValidator('json', input), async (c) => {
       return error instanceof Error ? error.message : 'Unknown error'
     },
   })
+}
+
+ai.post('/sql-chat', zValidator('json', input), async (c) => {
+  const { type, messages, context, model, currentQuery = '' } = c.req.valid('json')
+
+  try {
+    return generateStream({
+      type,
+      model: !model || model === 'auto' ? autoModel : models[model],
+      context,
+      messages,
+      currentQuery,
+      signal: c.req.raw.signal,
+    })
+  }
+  catch (error) {
+    const isOverloaded = error instanceof Error && error.message.includes('Overloaded') && model === 'auto'
+
+    if (isOverloaded) {
+      console.log('Request overloaded, trying to use fallback model')
+
+      return generateStream({
+        type,
+        model: !model || model === 'auto' ? fallbackModel : models[model],
+        context,
+        messages,
+        currentQuery,
+        signal: c.req.raw.signal,
+      })
+    }
+
+    throw error
+  }
 })

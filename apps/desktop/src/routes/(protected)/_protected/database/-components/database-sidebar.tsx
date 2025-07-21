@@ -34,10 +34,10 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/tables')
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
 
-  const isSameTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
+  const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
 
   const route = useMemo(() => {
-    if (!isSameTableAsLastOpened && lastOpenedTable) {
+    if (!isCurrentTableAsLastOpened && lastOpenedTable) {
       return {
         to: '/database/$id/tables/$schema/$table',
         params: {
@@ -49,10 +49,10 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
     }
 
     return { to: '/database/$id/tables', params: { id } }
-  }, [isSameTableAsLastOpened, lastOpenedTable])
+  }, [isCurrentTableAsLastOpened, lastOpenedTable])
 
   function onTablesClick() {
-    if (isSameTableAsLastOpened && lastOpenedTable) {
+    if (isCurrentTableAsLastOpened && lastOpenedTable) {
       setLastOpenedTable(null)
     }
   }

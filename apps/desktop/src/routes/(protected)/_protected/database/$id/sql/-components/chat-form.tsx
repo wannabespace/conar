@@ -14,6 +14,7 @@ import { Route } from '..'
 import { chatInput } from '../-chat'
 import { pageHooks, pageStore } from '../-lib'
 import { ChatImages } from './chat-images'
+import { useChatContext } from './chat-provider'
 
 function ModelSelector() {
   const model = useStore(pageStore, state => state.model)
@@ -49,7 +50,8 @@ function ModelSelector() {
 }
 
 export function ChatForm() {
-  const { chat, database } = Route.useLoaderData()
+  const chat = useChatContext()
+  const { database } = Route.useLoaderData()
   const [input, setInput] = useState(chatInput.get(database.id))
   const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)

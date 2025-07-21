@@ -41,6 +41,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
     drop: (schema: string, table: string) => {
       setSchema(schema)
       setTable(table)
+      setConfirmationText('')
       setOpen(true)
     },
   }))

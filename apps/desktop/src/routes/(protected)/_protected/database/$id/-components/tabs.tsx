@@ -16,7 +16,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useParams, useRouter } from '@tanstack/react-router'
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
 import { addTab, closeTab, moveTab, useTabs } from '../-lib/tabs'
 import { getTableStoreState } from '../tables.$schema/$table'
@@ -114,7 +114,7 @@ function SortableTab({
 
   const isActive = schemaParam === item.tab.schema && tableParam === item.tab.table
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!isVisible && isActive && ref.current) {
       onFocus(ref)
     }
