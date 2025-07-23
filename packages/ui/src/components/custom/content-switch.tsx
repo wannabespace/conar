@@ -21,7 +21,9 @@ export function ContentSwitch({
     }
 
     const timeout = setTimeout(() => {
-      setIsActive(false)
+      if (!active) {
+        setIsActive(false)
+      }
     }, 1500)
 
     return () => clearTimeout(timeout)

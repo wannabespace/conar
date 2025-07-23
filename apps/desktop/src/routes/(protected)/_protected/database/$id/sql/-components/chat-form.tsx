@@ -3,13 +3,18 @@ import { useChat } from '@ai-sdk/react'
 import { AiSqlChatModel } from '@conar/shared/enums/ai-chat-model'
 import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { Button } from '@conar/ui/components/button'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { RiCornerDownLeftLine, RiStopCircleLine } from '@remixicon/react'
+import { RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
+import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
+import { trpc } from '~/lib/trpc'
 import { Route } from '..'
 import { chatInput } from '../-chat'
 import { pageHooks, pageStore } from '../-lib'
@@ -129,6 +134,31 @@ export function ChatForm() {
     })
   }, [handleSend])
 
+  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation({
+    mutationFn: trpc.ai.sqlEnhancePrompt.mutate,
+    onSuccess: (data) => {
+      if (data === input) {
+        toast.info('Prompt cannot be enhanced', {
+          description: 'The prompt is already clear and specific',
+        })
+      }
+      else {
+        setInput(data)
+      }
+    },
+  })
+
+  const enhance = async () => {
+    if (input.length < 10) {
+      return
+    }
+
+    enhancePrompt({
+      prompt: input,
+      messages: chat.messages,
+    })
+  }
+
   return (
     <div className="flex flex-col gap-1">
       {files.length > 0 && (
@@ -163,10 +193,35 @@ export function ChatForm() {
             <ModelSelector />
           </div>
           <div className="flex gap-2 pointer-events-auto">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon-xs"
+                  variant="outline"
+                  className={input.length < 10 ? 'opacity-50 cursor-default' : ''}
+                  disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt}
+                  onClick={enhance}
+                >
+                  <LoadingContent
+                    loading={isEnhancingPrompt}
+                    loaderClassName="size-3"
+                  >
+                    <ContentSwitch
+                      active={isEnhancingPrompt}
+                      activeContent={<RiCheckLine className="size-3 text-success" />}
+                    >
+                      <RiMagicLine className="size-3" />
+                    </ContentSwitch>
+                  </LoadingContent>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {input.length < 10 ? 'Prompt is too short to enhance' : 'Enhance prompt'}
+              </TooltipContent>
+            </Tooltip>
             {(status === 'streaming' || status === 'submitted')
               ? (
                   <Button
-                    type="button"
                     size="xs"
                     variant="outline"
                     disabled={status === 'submitted'}
