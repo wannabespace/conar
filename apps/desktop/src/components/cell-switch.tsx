@@ -1,8 +1,8 @@
 import { getOS } from '@conar/shared/utils/os'
-import { Checkbox } from '@conar/ui/components/checkbox'
+import { Switch } from '@conar/ui/components/switch'
 import { useKeyboardEvent } from '@react-hookz/web'
 
-export function CellCheckbox({
+export function CellSwitch({
   checked,
   onChange,
   onSave,
@@ -15,6 +15,10 @@ export function CellCheckbox({
   useKeyboardEvent(e => e.key === 'Enter' && (os.type === 'macos' ? e.metaKey : e.ctrlKey), () => onSave(checked ? 'true' : 'false'))
 
   return (
-    <Checkbox checked={checked} onCheckedChange={onChange} />
+    <div className="flex gap-2 items-center text-xs">
+      <Switch checked={checked} onCheckedChange={onChange} />
+      <code className="font-mono">{checked.toString()}</code>
+
+    </div>
   )
 }
