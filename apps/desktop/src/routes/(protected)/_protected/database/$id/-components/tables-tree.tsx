@@ -7,8 +7,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useDebouncedCallback } from '@conar/ui/hookas/use-debounced-callback'
 import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
+import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { clickHandlers, cn } from '@conar/ui/lib/utils'
-import { RiDeleteBin7Line, RiEditLine, RiMoreLine, RiStackLine, RiTableLine } from '@remixicon/react'
+import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiStackLine, RiTableLine } from '@remixicon/react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
@@ -210,7 +211,7 @@ export function TablesTree({ database, className, search }: { database: Database
                                         <RiMoreLine className="size-3" />
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
+                                    <DropdownMenuContent align="end" className="min-w-48">
                                       <DropdownMenuItem
                                         onClick={(e) => {
                                           e.stopPropagation()
@@ -219,6 +220,15 @@ export function TablesTree({ database, className, search }: { database: Database
                                       >
                                         <RiEditLine className="size-4" />
                                         Rename Table
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          copyToClipboard(table, 'Table name copied')
+                                        }}
+                                      >
+                                        <RiFileCopyLine className="size-4" />
+                                        Copy Table Name
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         variant="destructive"

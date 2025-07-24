@@ -1,16 +1,14 @@
 import type { ContextSelector } from '@fluentui/react-context-selector'
 import type { ComponentProps, ReactElement, ReactNode } from 'react'
-import { Accordion, AccordionContent, AccordionItem } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
-import { Card } from '@conar/ui/components/card'
+import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 import NumberFlow from '@number-flow/react'
-import * as AccordionPrimitive from '@radix-ui/react-accordion'
-import { RiArrowRightDoubleLine, RiArrowRightSLine, RiFileCopyLine } from '@remixicon/react'
+import { RiArrowRightDoubleLine, RiFileCopyLine } from '@remixicon/react'
 import { marked } from 'marked'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
@@ -54,7 +52,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
   const lang = (childrenProps?.className?.split('-')[1] || 'text') as keyof typeof langsMap
   const [isPreLoading, setIsPreLoading] = useState(false)
   const loading = useMarkdownContext(state => state.loading)
-  const [opened, setOpened] = useState<'pre' | ''>('')
+  const [opened, setOpened] = useState(false)
 
   useEffect(() => {
     if (!loading) {
@@ -73,7 +71,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
 
   useMountedEffect(() => {
     if (!isPreLoading && content && content.split('\n').length < 10) {
-      setOpened('pre')
+      setOpened(true)
     }
   }, [isPreLoading])
 
@@ -83,117 +81,106 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
   const lines = content.split('\n').length
 
   return (
-    <Card className="typography-disabled relative my-6 first:mt-0 last:mb-0">
-      <Accordion
-        value={opened}
-        onValueChange={value => setOpened(value as 'pre')}
-        type="single"
-        collapsible
+    <div className="typography-disabled relative my-4 first:mt-0 last:mb-0">
+      <SingleAccordion
+        open={opened}
+        onOpenChange={setOpened}
       >
-        <AccordionItem value="pre" className="overflow-hidden">
-          <AccordionPrimitive.Trigger className="px-4 py-2" asChild>
-            <div className="cursor-pointer select-none flex justify-between items-center gap-2 p-1">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <Button
-                    size="icon-xs"
-                    variant="ghost"
-                    className="w-5"
-                  >
-                    <RiArrowRightSLine className={cn('size-4 duration-150', opened === 'pre' && 'rotate-90')} />
-                  </Button>
-                  <span className="font-medium">
-                    {langsMap[lang] || lang}
-                  </span>
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  <NumberFlow className="tabular-nums" value={lines} />
-                  {' '}
-                  line
-                  {lines === 1 ? '' : 's'}
+        <SingleAccordionTrigger className="py-1.5" asChild>
+          <div className="flex justify-between items-center w-full">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <span className="font-medium">
+                  {langsMap[lang] || lang}
                 </span>
-                <AnimatePresence>
-                  {isPreLoading && (
-                    <motion.span
-                      className="text-xs text-muted-foreground mt-0.5"
-                      initial={{ opacity: 0, x: 3 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 3 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <span className="animate-pulse">
-                        Generating...
-                      </span>
-                    </motion.span>
-                  )}
-                </AnimatePresence>
               </div>
-              <div className="flex gap-1">
+              <span className="text-xs text-muted-foreground">
+                <NumberFlow className="tabular-nums" value={lines} />
+                {' '}
+                line
+                {lines === 1 ? '' : 's'}
+              </span>
+              <AnimatePresence>
+                {isPreLoading && (
+                  <motion.span
+                    className="text-xs text-muted-foreground mt-0.5"
+                    initial={{ opacity: 0, x: 3 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 3 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <span className="animate-pulse">
+                      Generating...
+                    </span>
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
+            <div className="flex gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon-xs"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        copy(content, 'Copied to clipboard')
+                        trackEvent('markdown_copy_to_clipboard')
+                      }}
+                    >
+                      <RiFileCopyLine className="size-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Copy to clipboard
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              {onEdit && lang === 'sql' && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         size="icon-xs"
                         variant="ghost"
+                        disabled={isPreLoading}
                         onClick={(e) => {
                           e.stopPropagation()
-                          copy(content, 'Copied to clipboard')
-                          trackEvent('markdown_copy_to_clipboard')
+                          onEdit(content)
+                          toast.success('Moved to runner')
+                          trackEvent('markdown_move_to_runner')
                         }}
                       >
-                        <RiFileCopyLine className="size-3.5" />
+                        <RiArrowRightDoubleLine className="size-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Copy to clipboard
+                      Move to runner
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                {onEdit && lang === 'sql' && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="icon-xs"
-                          variant="ghost"
-                          disabled={isPreLoading}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onEdit(content)
-                            toast.success('Moved to runner')
-                            trackEvent('markdown_move_to_runner')
-                          }}
-                        >
-                          <RiArrowRightDoubleLine className="size-3.5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Move to runner
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
+              )}
             </div>
-          </AccordionPrimitive.Trigger>
-          <AccordionContent className="overflow-hidden p-0">
-            <Monaco
-              data-mask
-              value={content}
-              language={lang}
-              options={{
-                readOnly: true,
-                lineNumbers: 'off',
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                folding: false,
-              }}
-              style={{ height: `${Math.min(content.split('\n').length * 19, 400)}px` }}
-            />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-    </Card>
+          </div>
+        </SingleAccordionTrigger>
+        <SingleAccordionContent>
+          <Monaco
+            data-mask
+            value={content}
+            language={lang}
+            options={{
+              readOnly: true,
+              lineNumbers: 'off',
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              folding: false,
+            }}
+            style={{ height: `${Math.min(content.split('\n').length * 19, 400)}px` }}
+          />
+        </SingleAccordionContent>
+      </SingleAccordion>
+    </div>
   )
 }
 

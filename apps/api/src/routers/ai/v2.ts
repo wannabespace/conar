@@ -55,7 +55,7 @@ function generateStream({
     parts: message.parts as UIMessage['parts'],
   }))
 
-  console.info('messages', messages)
+  console.info('messages', JSON.stringify(messages, null, 2))
 
   const result = streamText({
     messages: [
@@ -119,6 +119,8 @@ ai.post('/sql-chat', zValidator('json', input), async (c) => {
   }
   catch (error) {
     const isOverloaded = error instanceof Error && error.message.includes('Overloaded') && model === 'auto'
+
+    console.log('isOverloaded', error instanceof Error, model)
 
     if (isOverloaded) {
       console.log('Request overloaded, trying to use fallback model')
