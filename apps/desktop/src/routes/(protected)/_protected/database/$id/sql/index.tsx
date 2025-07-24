@@ -87,7 +87,7 @@ function DatabaseSqlPage() {
             orderBy: call.input.orderBy,
             where: whereSql(call.input.whereFilters, call.input.whereConcatOperator)[database.type],
           })[database.type],
-        })
+        }).then(results => results.map(r => r.rows).flat())
       }
     },
   }))

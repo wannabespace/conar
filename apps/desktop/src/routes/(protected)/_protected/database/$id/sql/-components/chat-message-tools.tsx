@@ -47,8 +47,12 @@ function getToolDescription(tool: ToolUIPart<UITools>): ReactNode {
               { name: 'Table', value: `${tool.input.schemaName}.${tool.input.tableName}` },
               { name: 'Limit', value: tool.input.limit },
               { name: 'Offset', value: tool.input.offset },
-              { name: 'Order by', value: Object.keys(tool.input.orderBy || {}).length > 0 ? Object.entries(tool.input.orderBy!).map(([col, dir]) => `${col} ${dir}`).join(', ') : null },
-              { name: 'Where', value: tool.input.whereFilters ? tool.input.whereFilters.map(w => w ? `${w.column} ${w.operator} ${w.value}` : '').filter(Boolean).join(' ') : null },
+              { name: 'Order by', value: tool.input.orderBy && Object.keys(tool.input.orderBy).length
+                ? Object.entries(tool.input.orderBy).map(([col, dir]) => `${col} ${dir}`).join(', ')
+                : null },
+              { name: 'Where', value: tool.input.whereFilters && Object.keys(tool.input.whereFilters).length
+                ? tool.input.whereFilters.map(w => w ? `${w.column} ${w.operator} ${w.value}` : '').filter(Boolean).join(' ')
+                : null },
             ]}
           />
         )}
@@ -61,7 +65,7 @@ function getToolDescription(tool: ToolUIPart<UITools>): ReactNode {
 
 const STATE_ICONS: Record<ToolUIPart['state'], (props: { className?: string }) => React.ReactNode> = {
   'input-streaming': ({ className, ...props }) => <RiLoader4Line className={cn('text-yellow-600 animate-spin', className)} {...props} />,
-  'input-available': ({ className, ...props }) => <RiCheckLine className={cn('text-green-600', className)} {...props} />,
+  'input-available': ({ className, ...props }) => <RiCheckLine className={cn('text-yellow-600', className)} {...props} />,
   'output-available': ({ className, ...props }) => <RiCheckLine className={cn('text-green-600', className)} {...props} />,
   'output-error': ({ className, ...props }) => <RiErrorWarningLine className={cn('text-red-600', className)} {...props} />,
 }
@@ -112,7 +116,7 @@ export function ChatMessageTool({ part }: { part: ToolUIPart }) {
               lineNumbers: 'off',
               minimap: { enabled: false },
             }}
-            className="h-[200px] max-h-[50vh]"
+            className="h-[200px] max-h-[50vh] -mx-2"
           />
         )}
         {tool.state === 'input-streaming' && (
