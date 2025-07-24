@@ -2,6 +2,14 @@ import type { ContextSelector } from '@fluentui/react-context-selector'
 import type { ComponentProps, ReactElement, ReactNode } from 'react'
 import { Button } from '@conar/ui/components/button'
 import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@conar/ui/components/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { copy } from '@conar/ui/lib/copy'
@@ -184,6 +192,23 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
   )
 }
 
+function MarkdownTable({ children }: { children?: ReactNode }) {
+  return (
+    <div className="overflow-x-auto my-4">
+      <Table className="w-full text-sm">
+        {children}
+      </Table>
+    </div>
+  )
+}
+
+function MarkdownTableCell({ isHeader, children }: { isHeader?: boolean, children?: ReactNode }) {
+  if (isHeader) {
+    return <TableHead>{children}</TableHead>
+  }
+  return <TableCell>{children}</TableCell>
+}
+
 function MarkdownBase({ content, onEdit }: { content: string, onEdit?: (content: string) => void }) {
   const processedContent = content.replace(/\n/g, '  \n')
 
@@ -192,6 +217,12 @@ function MarkdownBase({ content, onEdit }: { content: string, onEdit?: (content:
       remarkPlugins={[remarkGfm]}
       components={{
         pre: preProps => <Pre {...preProps} onEdit={onEdit} />,
+        table: MarkdownTable,
+        thead: TableHeader,
+        tbody: TableBody,
+        tr: TableRow,
+        th: props => <MarkdownTableCell isHeader {...props} />,
+        td: props => <MarkdownTableCell {...props} />,
       }}
       children={processedContent}
     />

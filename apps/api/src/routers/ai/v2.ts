@@ -1,10 +1,6 @@
 import type { LanguageModel, UIMessage } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
-import { google } from '@ai-sdk/google'
-import { openai } from '@ai-sdk/openai'
-import { xai } from '@ai-sdk/xai'
 import { tools } from '@conar/shared/ai'
-import { AiSqlChatModel } from '@conar/shared/enums/ai-chat-model'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { zValidator } from '@hono/zod-validator'
 import { convertToModelMessages, smoothStream, streamText } from 'ai'
@@ -16,7 +12,6 @@ export const ai = new Hono()
 const input = z.object({
   type: z.enum(DatabaseType),
   context: z.any(),
-  model: z.enum(AiSqlChatModel).or(z.literal('auto')).optional(),
   currentQuery: z.string().optional(),
   messages: z.object({
     role: z.enum<UIMessage['role'][]>(['user', 'assistant']),
@@ -24,15 +19,7 @@ const input = z.object({
   }).array(),
 })
 
-const models = {
-  [AiSqlChatModel.Claude_3_7_Sonnet]: anthropic('claude-3-7-sonnet-20250219'),
-  [AiSqlChatModel.Claude_4_Opus]: anthropic('claude-4-opus-20250514'),
-  [AiSqlChatModel.GPT_4o_Mini]: openai('gpt-4o-mini'),
-  [AiSqlChatModel.Gemini_2_5_Pro]: google('gemini-2.5-pro'),
-  [AiSqlChatModel.Grok_4]: xai('grok-4'),
-} satisfies Record<AiSqlChatModel, LanguageModel>
-
-const autoModel = models[AiSqlChatModel.Claude_3_7_Sonnet]
+const mainModel = anthropic('claude-3-7-sonnet-20250219')
 const fallbackModel = anthropic('claude-3-5-haiku-latest')
 
 function generateStream({
@@ -105,12 +92,12 @@ function generateStream({
 }
 
 ai.post('/sql-chat', zValidator('json', input), async (c) => {
-  const { type, messages, context, model, currentQuery = '' } = c.req.valid('json')
+  const { type, messages, context, currentQuery = '' } = c.req.valid('json')
 
   try {
     return generateStream({
       type,
-      model: !model || model === 'auto' ? autoModel : models[model],
+      model: mainModel,
       context,
       messages,
       currentQuery,
@@ -118,16 +105,14 @@ ai.post('/sql-chat', zValidator('json', input), async (c) => {
     })
   }
   catch (error) {
-    const isOverloaded = error instanceof Error && error.message.includes('Overloaded') && model === 'auto'
-
-    console.log('isOverloaded', error instanceof Error, model)
+    const isOverloaded = error instanceof Error && error.message.includes('Overloaded')
 
     if (isOverloaded) {
       console.log('Request overloaded, trying to use fallback model')
 
       return generateStream({
         type,
-        model: !model || model === 'auto' ? fallbackModel : models[model],
+        model: fallbackModel,
         context,
         messages,
         currentQuery,

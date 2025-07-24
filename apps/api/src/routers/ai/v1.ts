@@ -3,7 +3,6 @@ import { anthropic, anthropic as anthropic1 } from '@ai-sdk/anthropic1'
 import { google as google1 } from '@ai-sdk/google1'
 import { openai as openai1 } from '@ai-sdk/openai1'
 import { xai as xai1 } from '@ai-sdk/xai1'
-import { AiSqlChatModel } from '@conar/shared/enums/ai-chat-model'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { zValidator } from '@hono/zod-validator'
 import { smoothStream, streamText } from 'ai4'
@@ -97,7 +96,7 @@ const input = z.object({
   currentQuery: z.string().optional(),
 })
 
-const autoModel = models[AiSqlChatModel.Claude_3_7_Sonnet]
+const autoModel = models['claude-3-7-sonnet']
 
 ai.post('/sql-chat', zValidator('json', input), async (c) => {
   const { type, messages, context, model, currentQuery = '' } = c.req.valid('json')

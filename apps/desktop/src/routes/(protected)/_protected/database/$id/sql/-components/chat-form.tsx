@@ -1,14 +1,12 @@
-import type { ComponentRef } from 'react'
+import type { ChangeEvent, ComponentRef } from 'react'
 import { useChat } from '@ai-sdk/react'
-import { AiSqlChatModel } from '@conar/shared/enums/ai-chat-model'
 import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
+import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
@@ -20,39 +18,6 @@ import { chatInput } from '../-chat'
 import { pageHooks, pageStore } from '../-lib'
 import { ChatImages } from './chat-images'
 import { useChatContext } from './chat-provider'
-
-function ModelSelector() {
-  const model = useStore(pageStore, state => state.model)
-
-  return (
-    <Select
-      value={model}
-      onValueChange={value => pageStore.setState(state => ({
-        ...state,
-        model: value as AiSqlChatModel | 'auto',
-      }))}
-    >
-      <SelectTrigger size="xs">
-        <div className="flex items-center gap-1">
-          {model === 'auto' && (
-            <span className="text-muted-foreground">
-              Model
-            </span>
-          )}
-          <SelectValue placeholder="Select model" />
-        </div>
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="auto">Auto</SelectItem>
-        <SelectItem value={AiSqlChatModel.Claude_3_7_Sonnet}>Claude 3.7 Sonnet</SelectItem>
-        <SelectItem value={AiSqlChatModel.Claude_4_Opus}>Claude 4 Opus</SelectItem>
-        <SelectItem value={AiSqlChatModel.GPT_4o_Mini}>GPT-4o Mini</SelectItem>
-        <SelectItem value={AiSqlChatModel.Gemini_2_5_Pro}>Gemini 2.5 Pro</SelectItem>
-        <SelectItem value={AiSqlChatModel.Grok_4}>Grok 4</SelectItem>
-      </SelectContent>
-    </Select>
-  )
-}
 
 export function ChatForm() {
   const chat = useChatContext()
@@ -159,6 +124,22 @@ export function ChatForm() {
     })
   }
 
+  // Handler for file input change
+  const handleFileAttach = (e: ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files
+
+    if (!fileList || fileList.length === 0)
+      return
+
+    const fileArr = Array.from(fileList)
+
+    pageStore.setState(state => ({
+      ...state,
+      files: [...state.files, ...fileArr],
+    }))
+    e.target.value = ''
+  }
+
   return (
     <div className="flex flex-col gap-1">
       {files.length > 0 && (
@@ -188,9 +169,28 @@ export function ChatForm() {
             }))
           }}
         />
-        <div className="px-2 pb-2 flex justify-between pointer-events-none">
+        <div className="px-2 pb-2 flex justify-between items-end pointer-events-none">
           <div className="pointer-events-auto">
-            <ModelSelector />
+            <Button
+              type="button"
+              size="icon-xs"
+              variant="outline"
+              asChild
+            >
+              <label htmlFor="chat-file-upload">
+                <RiAttachment2 className="size-3" />
+                <input
+                  id="chat-file-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileAttach}
+                  tabIndex={-1}
+                  aria-label="Attach files"
+                />
+              </label>
+            </Button>
           </div>
           <div className="flex gap-2 pointer-events-auto">
             <Tooltip>

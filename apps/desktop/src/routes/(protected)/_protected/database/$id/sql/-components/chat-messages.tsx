@@ -218,7 +218,7 @@ export function ChatMessages({
       className={cn('relative -mx-4', className)}
       {...props}
     >
-      <div ref={contentRef} className="relative flex flex-col gap-8 px-4">
+      <div ref={contentRef} className="relative px-4 flex flex-col gap-8">
         {messages.map((message, index) => (
           message.role === 'user'
             ? <UserMessage key={message.id} message={message} />
@@ -232,7 +232,7 @@ export function ChatMessages({
                 />
               )
         ))}
-        {status === 'submitted' && (
+        {(status === 'submitted' || status === 'streaming') && (
           <ChatMessage className="flex flex-col items-start gap-2">
             <AssistantAvatar />
             <p className="text-muted-foreground animate-pulse">
