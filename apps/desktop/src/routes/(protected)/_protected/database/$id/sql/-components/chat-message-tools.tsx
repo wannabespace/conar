@@ -5,6 +5,7 @@ import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiErrorWarningLine, RiHammerLine, RiLoader4Line } from '@remixicon/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
 
@@ -62,7 +63,7 @@ function getToolDescription(tool: ToolUIPart<UITools>): ReactNode {
 const STATE_ICONS: Record<ToolUIPart['state'], (props: { className?: string }) => React.ReactNode> = {
   'input-streaming': ({ className, ...props }) => <RiLoader4Line className={cn('text-yellow-600 animate-spin', className)} {...props} />,
   'input-available': ({ className, ...props }) => <RiCheckLine className={cn('text-green-600', className)} {...props} />,
-  'output-available': ({ className, ...props }) => <RiCheckLine className={cn('text-green-600', className)} {...props} />,
+  'output-available': ({ className, ...props }) => <RiHammerLine className={cn('text-muted-foreground', className)} {...props} />,
   'output-error': ({ className, ...props }) => <RiErrorWarningLine className={cn('text-red-600', className)} {...props} />,
 }
 
@@ -83,9 +84,17 @@ export function ChatMessageTool({ part }: { part: ToolUIPart }) {
     <SingleAccordion className="my-2">
       <SingleAccordionTrigger>
         <span className="flex items-center gap-2">
-          {tool.state === 'output-available'
-            ? <RiHammerLine className="text-muted-foreground size-4 shrink-0" />
-            : (
+          {/* Animate icon transitions */}
+          <span className="relative flex items-center justify-center size-4 shrink-0">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={tool.state}
+                initial={{ opacity: 0, scale: 0.7, rotate: 20 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, scale: 0.7, rotate: -20 }}
+                transition={{ duration: 0.1 }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -96,11 +105,13 @@ export function ChatMessageTool({ part }: { part: ToolUIPart }) {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              )}
+              </motion.span>
+            </AnimatePresence>
+          </span>
           {label}
         </span>
       </SingleAccordionTrigger>
-      <SingleAccordionContent>
+      <SingleAccordionContent className="pt-2">
         <div className="text-xs text-muted-foreground mb-4">{description}</div>
         {tool.state === 'output-available' && (
           <Monaco

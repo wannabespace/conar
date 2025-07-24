@@ -20,7 +20,7 @@ export const tools = {
     outputSchema: z.array(enumSchema),
   }),
   query: tool({
-    description: 'Use this tool to execute a SQL query if you need to get data from the database',
+    description: 'Use this tool to execute a SQL query if you need to get data from the database. Do not include any sensitive data.',
     inputSchema: z.object({
       whereConcatOperator: z.enum(['AND', 'OR']).describe('The operator to use to concatenate the where clauses'),
       whereFilters: z.array(z.object({
