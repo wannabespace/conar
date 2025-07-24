@@ -164,7 +164,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
             </div>
           </div>
         </SingleAccordionTrigger>
-        <SingleAccordionContent>
+        <SingleAccordionContent className="p-0">
           <Monaco
             data-mask
             value={content}
