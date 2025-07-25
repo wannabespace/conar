@@ -15,6 +15,8 @@ export default antfu({
     '**/dist-electron/**/*',
     '**/release/**/*',
     '**/.tanstack/**/*',
+    '**/.nitro/**/*',
+    '**/.output/**/*',
     '**/.types/**/*',
     '**/migrations/meta/*.json',
   ],

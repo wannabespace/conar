@@ -1,5 +1,5 @@
-import { ScriptOnce } from '@tanstack/react-router'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
+import { FunctionOnce } from './lib/function-once'
 
 export type ResolvedTheme = 'dark' | 'light'
 export type Theme = ResolvedTheme | 'system'
@@ -71,9 +71,9 @@ export function ThemeProvider({
 
   return (
     <ThemeProviderContext value={value}>
-      <ScriptOnce>
-        {`(${((storageKey: string) => {
-          const theme = localStorage.getItem(storageKey)
+      <FunctionOnce param={storageKey}>
+        {(storageKey) => {
+          const theme: string | null = localStorage.getItem(storageKey)
 
           if (
             theme === 'dark'
@@ -84,8 +84,8 @@ export function ThemeProvider({
           ) {
             document.documentElement.classList.add('dark')
           }
-        }).toString()})('${storageKey}')`}
-      </ScriptOnce>
+        }}
+      </FunctionOnce>
       {children}
     </ThemeProviderContext>
   )

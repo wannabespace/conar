@@ -2,19 +2,19 @@ node_modules
 package-lock.json
 yarn.lock
 .tanstack
+.nitro
 
 .DS_Store
 .cache
 .env
 .vercel
 .output
-.vinxi
 
 /build/
 /api/
 /server/build
 /public/build
-.vinxi
+
 # Sentry Config File
 .env.sentry-build-plugin
 /test-results/
