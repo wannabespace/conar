@@ -24,12 +24,13 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
+const isBrowser = typeof window !== 'undefined'
+
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
   storageKey = 'conar.theme',
 }: ThemeProviderProps) {
-  const isBrowser = typeof window !== 'undefined'
   const [theme, setTheme] = useState<Theme>(
     () => (isBrowser ? (localStorage.getItem(storageKey) as Theme) : defaultTheme) || defaultTheme,
   )
@@ -71,17 +72,19 @@ export function ThemeProvider({
   return (
     <ThemeProviderContext value={value}>
       <ScriptOnce>
-        {`const theme = localStorage.getItem('${storageKey}')
+        {`(${((storageKey: string) => {
+          const theme = localStorage.getItem(storageKey)
 
-        if (
-          theme === 'dark'
-          || (
-            (theme === null || theme === 'system')
-            && window.matchMedia('(prefers-color-scheme: dark)').matches
-          )
-        ) {
-          document.documentElement.classList.add('dark')
-        }`}
+          if (
+            theme === 'dark'
+            || (
+              (theme === null || theme === 'system')
+              && window.matchMedia('(prefers-color-scheme: dark)').matches
+            )
+          ) {
+            document.documentElement.classList.add('dark')
+          }
+        }).toString()})('${storageKey}')`}
       </ScriptOnce>
       {children}
     </ThemeProviderContext>
