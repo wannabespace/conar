@@ -29,7 +29,7 @@ function getToolLabel(tool: ToolUIPart<UITools>) {
   //   return 'Select data from ...'
   // }
 
-  throw new Error(`Unknown tool: ${tool}`)
+  return 'Unknown tool'
 }
 
 function getToolDescription(tool: ToolUIPart<UITools>): ReactNode {
@@ -122,7 +122,7 @@ export function ChatMessageTool({ part }: { part: ToolUIPart }) {
         </span>
       </SingleAccordionTrigger>
       <SingleAccordionContent className="pb-0">
-        <div className="text-xs text-muted-foreground mb-4">{description}</div>
+        {description && <div className="text-xs text-muted-foreground mb-4">{description}</div>}
         {tool.state === 'output-available' && (
           <Monaco
             value={JSON.stringify(tool.output)}
