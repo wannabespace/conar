@@ -1,5 +1,5 @@
 import { createContext, use, useEffect, useMemo, useState } from 'react'
-import { FunctionOnce } from './lib/script-once'
+import { FunctionOnce } from './lib/function-once'
 
 export type ResolvedTheme = 'dark' | 'light'
 export type Theme = ResolvedTheme | 'system'
