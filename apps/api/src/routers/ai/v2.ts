@@ -20,7 +20,7 @@ const input = z.object({
 })
 
 const mainModel = anthropic('claude-3-7-sonnet-20250219')
-const fallbackModel = anthropic('claude-3-5-haiku-latest')
+// const fallbackModel = anthropic('claude-3-5-haiku-latest')
 
 function generateStream({
   messages: uiMessages,
@@ -94,32 +94,33 @@ function generateStream({
 ai.post('/sql-chat', zValidator('json', input), async (c) => {
   const { type, messages, context, currentQuery = '' } = c.req.valid('json')
 
-  try {
-    return generateStream({
-      type,
-      model: mainModel,
-      context,
-      messages,
-      currentQuery,
-      signal: c.req.raw.signal,
-    })
-  }
-  catch (error) {
-    const isOverloaded = error instanceof Error && error.message.includes('Overloaded')
+  // TODO: handle overloaded error
+  // try {
+  return generateStream({
+    type,
+    model: mainModel,
+    context,
+    messages,
+    currentQuery,
+    signal: c.req.raw.signal,
+  })
+  // }
+  // catch (error) {
+  //   const isOverloaded = error instanceof Error && error.message.includes('Overloaded')
 
-    if (isOverloaded) {
-      console.log('Request overloaded, trying to use fallback model')
+  //   if (isOverloaded) {
+  //     console.log('Request overloaded, trying to use fallback model')
 
-      return generateStream({
-        type,
-        model: fallbackModel,
-        context,
-        messages,
-        currentQuery,
-        signal: c.req.raw.signal,
-      })
-    }
+  //     return generateStream({
+  //       type,
+  //       model: fallbackModel,
+  //       context,
+  //       messages,
+  //       currentQuery,
+  //       signal: c.req.raw.signal,
+  //     })
+  //   }
 
-    throw error
-  }
+  //   throw error
+  // }
 })
