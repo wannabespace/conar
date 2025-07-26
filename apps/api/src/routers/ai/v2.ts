@@ -86,7 +86,7 @@ function generateStream({
     },
     onError: (error) => {
       console.error('error', error)
-      return error instanceof Error ? error.message : 'Unknown error'
+      return 'Sorry, I was unable to generate a response due to an error. Please try again.'
     },
   })
 }

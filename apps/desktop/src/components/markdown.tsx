@@ -11,15 +11,16 @@ import {
   TableRow,
 } from '@conar/ui/components/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 import NumberFlow from '@number-flow/react'
-import { RiArrowRightDoubleLine, RiFileCopyLine } from '@remixicon/react'
+import { RiArrowRightDoubleLine, RiCodeLine, RiFileCopyLine, RiText } from '@remixicon/react'
 import { marked } from 'marked'
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
@@ -45,7 +46,7 @@ const langsMap = {
 }
 
 interface MarkdownContextType {
-  loading: boolean
+  withAnimation?: boolean
 }
 
 const MarkdownContext = createContext<MarkdownContextType>(null!)
@@ -55,33 +56,29 @@ function useMarkdownContext<T>(selector: ContextSelector<MarkdownContextType, T>
 }
 
 function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: string) => void }) {
+  const withAnimation = useMarkdownContext(c => c.withAnimation)
   const childrenProps = (typeof children === 'object' && (children as ReactElement<{ children?: ReactNode, className?: string }>)?.props) || null
   const content = childrenProps?.children?.toString().trim() || null
   const lang = (childrenProps?.className?.split('-')[1] || 'text') as keyof typeof langsMap
-  const [isPreLoading, setIsPreLoading] = useState(false)
-  const loading = useMarkdownContext(state => state.loading)
-  const [opened, setOpened] = useState(false)
-
-  useEffect(() => {
-    if (!loading) {
-      setIsPreLoading(false)
-      return
-    }
-
-    setIsPreLoading(true)
-
-    const timeout = setTimeout(() => {
-      setIsPreLoading(false)
-    }, 1000)
-
-    return () => clearTimeout(timeout)
-  }, [content, loading])
+  const [isLoading, setIsLoading] = useState(false)
+  const [opened, setOpened] = useState(content ? content.split('\n').length < 10 : false)
 
   useMountedEffect(() => {
-    if (!isPreLoading && content && content.split('\n').length < 10) {
+    if (!isLoading)
+      setIsLoading(true)
+
+    const timeout = setTimeout(() => {
+      setIsLoading(false)
+    }, 500)
+
+    return () => clearTimeout(timeout)
+  }, [content])
+
+  useMountedEffect(() => {
+    if (!isLoading && content && content.split('\n').length < 10) {
       setOpened(true)
     }
-  }, [isPreLoading])
+  }, [isLoading])
 
   if (!content)
     return null
@@ -89,7 +86,13 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
   const lines = content.split('\n').length
 
   return (
-    <div className="typography-disabled relative my-4 first:mt-0 last:mb-0">
+    <motion.div
+      className="typography-disabled relative my-4 first:mt-0 last:mb-0"
+      initial={withAnimation ? { opacity: 0, height: 0 } : false}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.2 }}
+    >
       <SingleAccordion
         open={opened}
         onOpenChange={setOpened}
@@ -97,32 +100,19 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
         <SingleAccordionTrigger className="py-1.5" asChild>
           <div className="flex justify-between items-center w-full">
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
+                {lang === 'text' ? <RiText className="size-4 text-muted-foreground" /> : <RiCodeLine className="size-4 text-muted-foreground" />}
                 <span className="font-medium">
                   {langsMap[lang] || lang}
                 </span>
               </div>
               <span className="text-xs text-muted-foreground">
-                <NumberFlow className="tabular-nums" value={lines} />
-                {' '}
-                line
-                {lines === 1 ? '' : 's'}
+                <NumberFlow
+                  className="tabular-nums"
+                  value={lines}
+                  suffix={lines === 1 ? ' line' : ' lines'}
+                />
               </span>
-              <AnimatePresence>
-                {isPreLoading && (
-                  <motion.span
-                    className="text-xs text-muted-foreground mt-0.5"
-                    initial={{ opacity: 0, x: 3 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 3 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <span className="animate-pulse">
-                      Generating...
-                    </span>
-                  </motion.span>
-                )}
-              </AnimatePresence>
             </div>
             <div className="flex gap-1">
               <TooltipProvider>
@@ -152,7 +142,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                       <Button
                         size="icon-xs"
                         variant="ghost"
-                        disabled={isPreLoading}
+                        disabled={isLoading}
                         onClick={(e) => {
                           e.stopPropagation()
                           onEdit(content)
@@ -188,13 +178,13 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
           />
         </SingleAccordionContent>
       </SingleAccordion>
-    </div>
+    </motion.div>
   )
 }
 
-function MarkdownTable({ children }: { children?: ReactNode }) {
+function MarkdownTable({ children, className, ...props }: ComponentProps<'div'>) {
   return (
-    <div className="overflow-x-auto my-4">
+    <div className={cn('overflow-x-auto my-4', className)} {...props}>
       <Table className="w-full text-sm">
         {children}
       </Table>
@@ -202,27 +192,106 @@ function MarkdownTable({ children }: { children?: ReactNode }) {
   )
 }
 
-function MarkdownTableCell({ isHeader, children }: { isHeader?: boolean, children?: ReactNode }) {
-  if (isHeader) {
-    return <TableHead>{children}</TableHead>
+function P({ children, className }: { children?: ReactNode, className?: string }) {
+  const withAnimation = useMarkdownContext(c => c.withAnimation)
+  const ref = useRef<HTMLSpanElement>(null)
+  const { height } = useElementSize(ref, {
+    width: 0,
+    height: 0,
+  })
+
+  if (typeof children === 'string') {
+    return (
+      <motion.p
+        className={className}
+        initial={withAnimation ? { opacity: 0, height: 0 } : false}
+        animate={withAnimation ? { opacity: 1, height } : false}
+        exit={{ opacity: 0, height: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        {withAnimation
+          ? (
+              <span ref={ref} className="block">
+                {children.split('').map((char, index) => (
+                  <span
+                    key={index}
+                    className={cn(withAnimation && 'animate-in fade-in duration-200')}
+                  >
+                    {char}
+                  </span>
+                ))}
+              </span>
+            )
+          : children}
+      </motion.p>
+    )
   }
-  return <TableCell>{children}</TableCell>
+
+  return (
+    <motion.p
+      className={className}
+      initial={withAnimation ? { opacity: 0, height: 0 } : false}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      {children}
+    </motion.p>
+  )
 }
 
 function MarkdownBase({ content, onEdit }: { content: string, onEdit?: (content: string) => void }) {
+  const withAnimation = useMarkdownContext(c => c.withAnimation)
   const processedContent = content.replace(/\n/g, '  \n')
 
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        pre: preProps => <Pre {...preProps} onEdit={onEdit} />,
+        pre: ({ children }) => <Pre children={children} onEdit={onEdit} />,
         table: MarkdownTable,
         thead: TableHeader,
         tbody: TableBody,
         tr: TableRow,
-        th: props => <MarkdownTableCell isHeader {...props} />,
-        td: props => <MarkdownTableCell {...props} />,
+        p: P,
+        ul: ({ children }) => withAnimation
+          ? (
+              <motion.ul
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {children}
+              </motion.ul>
+            )
+          : <ul>{children}</ul>,
+        ol: ({ children }) => withAnimation
+          ? (
+              <motion.ol
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {children}
+              </motion.ol>
+            )
+          : <ol>{children}</ol>,
+        li: ({ children }) => withAnimation
+          ? (
+              <motion.li
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {children}
+              </motion.li>
+            )
+          : <li>{children}</li>,
+        th: TableHead,
+        td: TableCell,
       }}
       children={processedContent}
     />
@@ -234,30 +303,38 @@ function parseMarkdownIntoBlocks(markdown: string) {
   return tokens.map(token => token.raw)
 }
 
+const MarkdownBaseMotion = motion.create(MarkdownBase)
+
 export function Markdown({
   content,
   id,
   className,
   onEdit,
-  loading = false,
+  withAnimation,
   ...props
 }: {
   content: string
   onEdit?: (content: string) => void
-  loading?: boolean
+  withAnimation?: boolean
 } & ComponentProps<'div'>) {
   const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content])
 
   return (
-    <MarkdownContext.Provider value={{ loading }}>
+    <MarkdownContext.Provider value={{ withAnimation }}>
       <div className={cn('typography', className)} {...props}>
-        {blocks.map((block, index) => (
-          <MarkdownBase
-            content={block}
-            onEdit={onEdit}
-            key={id ? `${id}-block_${index}` : `block_${index}`}
-          />
-        ))}
+        <AnimatePresence>
+          {blocks.map((block, index) => (
+            <MarkdownBaseMotion
+              key={id ? `${id}-block_${index}` : `block_${index}`}
+              initial={withAnimation ? { opacity: 0, height: 0 } : false}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              content={block}
+              onEdit={onEdit}
+            />
+          ))}
+        </AnimatePresence>
       </div>
     </MarkdownContext.Provider>
   )

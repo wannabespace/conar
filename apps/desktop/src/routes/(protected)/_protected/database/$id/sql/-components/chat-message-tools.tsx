@@ -6,12 +6,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { cn } from '@conar/ui/lib/utils'
 import { RiErrorWarningLine, RiHammerLine, RiLoader4Line } from '@remixicon/react'
 import { AnimatePresence, motion } from 'motion/react'
+import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
 
 function getToolLabel(tool: ToolUIPart<UITools>) {
   if (tool.type === 'tool-columns') {
     if (tool.input) {
-      const schema = tool.input.schemaName ? tool.input.schemaName === 'public' ? '' : tool.input.schemaName : '...'
+      const schema = tool.input.schemaName ? tool.input.schemaName === 'public' ? '' : tool.input.schemaName : ''
 
       return `Get columns from ${schema ? `"${schema}".` : ''}${tool.input.tableName ? `"${tool.input.tableName}"` : '...'}`
     }
@@ -20,14 +21,14 @@ function getToolLabel(tool: ToolUIPart<UITools>) {
   if (tool.type === 'tool-enums') {
     return 'Get enums'
   }
-  // if (tool.type === 'tool-sqlSelect') {
-  //   if (tool.input) {
-  //     const schema = tool.input.schemaName ? tool.input.schemaName === 'public' ? '' : tool.input.schemaName : '...'
+  if (tool.type === 'tool-select') {
+    if (tool.input) {
+      const schema = tool.input.schemaName ? tool.input.schemaName === 'public' ? '' : tool.input.schemaName : ''
 
-  //     return `Select data from ${schema ? `"${schema}".` : ''}${tool.input.tableName ? `"${tool.input.tableName}"` : '...'}`
-  //   }
-  //   return 'Select data from ...'
-  // }
+      return `Select data from ${schema ? `"${schema}".` : ''}${tool.input.tableName ? `"${tool.input.tableName}"` : '...'}`
+    }
+    return 'Select data from ...'
+  }
 
   return 'Unknown tool'
 }
@@ -39,33 +40,33 @@ function getToolDescription(tool: ToolUIPart<UITools>): ReactNode {
   if (tool.type === 'tool-enums') {
     return 'Agent called a tool to get database enums.'
   }
-  // if (tool.type === 'tool-sqlSelect') {
-  //   return (
-  //     <div className="flex flex-col gap-2">
-  //       <div className="font-medium mb-1">
-  //         Agent called a tool to get data from the database.
-  //       </div>
-  //       {tool.input && (
-  //         <InfoTable
-  //           data={[
-  //             { name: 'Select', value: tool.input.select?.length
-  //               ? tool.input.select.join(', ')
-  //               : null },
-  //             { name: 'From', value: `${tool.input.schemaName}.${tool.input.tableName}` },
-  //             { name: 'Where', value: tool.input.whereFilters && Object.keys(tool.input.whereFilters).length
-  //               ? tool.input.whereFilters.map(w => w ? `${w.column} ${w.operator} ${w.value}` : '').filter(Boolean).join(' ')
-  //               : null },
-  //             { name: 'Order by', value: tool.input.orderBy && Object.keys(tool.input.orderBy).length
-  //               ? Object.entries(tool.input.orderBy).map(([col, dir]) => `${col} ${dir}`).join(', ')
-  //               : null },
-  //             { name: 'Limit', value: tool.input.limit },
-  //             { name: 'Offset', value: tool.input.offset || null },
-  //           ]}
-  //         />
-  //       )}
-  //     </div>
-  //   )
-  // }
+  if (tool.type === 'tool-select') {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="font-medium mb-1">
+          Agent called a tool to get data from the database.
+        </div>
+        {tool.input && (
+          <InfoTable
+            data={[
+              { name: 'Select', value: tool.input.select?.length
+                ? tool.input.select.join(', ')
+                : null },
+              { name: 'From', value: `${tool.input.schemaName}.${tool.input.tableName}` },
+              { name: 'Where', value: tool.input.whereFilters && Object.keys(tool.input.whereFilters).length
+                ? tool.input.whereFilters.map(w => w ? `${w.column} ${w.operator} ${w.value}` : '').filter(Boolean).join(' ')
+                : null },
+              { name: 'Order by', value: tool.input.orderBy && Object.keys(tool.input.orderBy).length
+                ? Object.entries(tool.input.orderBy).map(([col, dir]) => `${col} ${dir}`).join(', ')
+                : null },
+              { name: 'Limit', value: tool.input.limit },
+              { name: 'Offset', value: tool.input.offset || null },
+            ]}
+          />
+        )}
+      </div>
+    )
+  }
 
   return null
 }
@@ -94,7 +95,6 @@ export function ChatMessageTool({ part }: { part: ToolUIPart }) {
     <SingleAccordion className="my-2">
       <SingleAccordionTrigger>
         <span className="flex items-center gap-2">
-          {/* Animate icon transitions */}
           <span className="relative flex items-center justify-center size-4 shrink-0">
             <AnimatePresence mode="wait" initial={false}>
               <motion.span

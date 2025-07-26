@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ComponentProps } from 'react'
 import { cn } from '@conar/ui/lib/utils'
 import * as AccordionPrimitive from '@radix-ui/react-accordion'
 import { ChevronDownIcon } from 'lucide-react'
@@ -35,7 +35,7 @@ export function SingleAccordionContent({ children, className, ...props }: React.
   )
 }
 
-export function SingleAccordion({ open, onOpenChange, children, className }: { open?: boolean, onOpenChange?: (open: boolean) => void, children: ReactNode, className?: string }) {
+export function SingleAccordion({ open, onOpenChange, children, className, ...props }: { open?: boolean, onOpenChange?: (open: boolean) => void } & Omit<ComponentProps<typeof AccordionPrimitive.Root>, 'type' | 'collapsible' | 'value' | 'defaultValue' | 'onValueChange'>) {
   return (
     <AccordionPrimitive.Root
       type="single"
@@ -45,6 +45,7 @@ export function SingleAccordion({ open, onOpenChange, children, className }: { o
       onValueChange={(value) => {
         onOpenChange?.(value === 'accordion-item')
       }}
+      {...props}
     >
       <AccordionPrimitive.Item value="accordion-item">
         {children}

@@ -3,6 +3,7 @@ import { tool } from 'ai'
 import * as z from 'zod'
 import { columnSchema } from './sql/columns'
 import { enumSchema } from './sql/enums'
+import { SQL_OPERATORS } from './utils/sql'
 
 export const tools = {
   columns: tool({
@@ -18,24 +19,24 @@ export const tools = {
     inputSchema: z.object({}),
     outputSchema: z.array(enumSchema),
   }),
-  // sqlSelect: tool({
-  //   description: 'Use this tool select data from the database to improve your response. Do not include any sensitive data.',
-  //   inputSchema: z.object({
-  //     whereConcatOperator: z.enum(['AND', 'OR']).describe('The operator to use to concatenate the where clauses'),
-  //     whereFilters: z.array(z.object({
-  //       column: z.string(),
-  //       operator: z.enum(SQL_OPERATORS).describe('The operator to use in the where clause'),
-  //       value: z.string().optional().describe('The value to use in the where clause. If the operator does not require a value, this should be undefined'),
-  //     })).describe('The columns to use in the where clause'),
-  //     select: z.array(z.string()).optional().describe('The columns to select. If not provided, all columns will be selected'),
-  //     limit: z.number().describe('The number of rows to return. Do not ask for more than 100 rows.'),
-  //     offset: z.number().describe('The number of rows to skip'),
-  //     orderBy: z.record(z.string(), z.enum(['ASC', 'DESC'])).optional().describe('The columns to order by'),
-  //     tableName: z.string().describe('The name of the table to query'),
-  //     schemaName: z.string().describe('The name of the schema to query'),
-  //   }),
-  //   outputSchema: z.string(),
-  // }),
+  select: tool({
+    description: 'Use this tool select data from the database to improve your response. Do not select any sensitive data, avoid columns like password, token, secret, etc.',
+    inputSchema: z.object({
+      whereConcatOperator: z.enum(['AND', 'OR']).describe('The operator to use to concatenate the where clauses'),
+      whereFilters: z.array(z.object({
+        column: z.string(),
+        operator: z.enum(SQL_OPERATORS).describe('The operator to use in the where clause'),
+        value: z.string().optional().describe('The value to use in the where clause. If the operator does not require a value, this should be undefined'),
+      })).describe('The columns to use in the where clause'),
+      select: z.array(z.string()).optional().describe('The columns to select. If not provided, all columns will be selected'),
+      limit: z.number().describe('The number of rows to return. Do not ask for more than 100 rows.'),
+      offset: z.number().describe('The number of rows to skip'),
+      orderBy: z.record(z.string(), z.enum(['ASC', 'DESC'])).optional().describe('The columns to order by'),
+      tableName: z.string().describe('The name of the table to query'),
+      schemaName: z.string().describe('The name of the schema to query'),
+    }),
+    outputSchema: z.string(),
+  }),
 }
 
 export type ToolCall = ToolCallUnion<typeof tools>
