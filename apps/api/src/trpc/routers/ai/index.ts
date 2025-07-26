@@ -1,8 +1,12 @@
 import { router } from '~/trpc'
-import { sqlEnhancePrompt } from './sql-enhance-prompt'
-import { sqlFilters } from './sql-filters'
+import { enhancePrompt } from './enhance-prompt'
+import { filters } from './filters'
 
 export const aiRouter = router({
-  sqlFilters,
-  sqlEnhancePrompt,
+  /**
+   * @deprecated Use filters instead
+   */
+  sqlFilters: filters,
+  filters,
+  enhancePrompt,
 })

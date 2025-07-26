@@ -100,7 +100,7 @@ export function ChatForm() {
   }, [handleSend])
 
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation({
-    mutationFn: trpc.ai.sqlEnhancePrompt.mutate,
+    mutationFn: trpc.ai.enhancePrompt.mutate,
     onSuccess: (data) => {
       if (data === input) {
         toast.info('Prompt cannot be enhanced', {

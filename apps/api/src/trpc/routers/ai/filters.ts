@@ -5,7 +5,7 @@ import { type } from 'arktype'
 import { z } from 'zod'
 import { protectedProcedure } from '~/trpc'
 
-export const sqlFilters = protectedProcedure
+export const filters = protectedProcedure
   .input(type({
     prompt: 'string',
     context: 'string',

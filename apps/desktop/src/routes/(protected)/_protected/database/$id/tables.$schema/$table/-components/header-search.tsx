@@ -19,7 +19,7 @@ export function HeaderSearch() {
   const { store } = usePageContext()
   const prompt = useStore(store, state => state.prompt)
   const { mutate: generateFilter, isPending } = useMutation({
-    mutationFn: trpc.ai.sqlFilters.mutate,
+    mutationFn: trpc.ai.filters.mutate,
     onSuccess: (data) => {
       store.setState(state => ({
         ...state,
