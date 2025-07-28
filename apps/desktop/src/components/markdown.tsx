@@ -11,7 +11,6 @@ import {
   TableRow,
 } from '@conar/ui/components/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -19,8 +18,7 @@ import { createContext, useContextSelector } from '@fluentui/react-context-selec
 import NumberFlow from '@number-flow/react'
 import { RiArrowRightDoubleLine, RiCodeLine, RiFileCopyLine, RiText } from '@remixicon/react'
 import { marked } from 'marked'
-import { AnimatePresence, motion } from 'motion/react'
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
@@ -86,13 +84,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
   const lines = content.split('\n').length
 
   return (
-    <motion.div
-      className="typography-disabled relative my-4 first:mt-0 last:mb-0"
-      initial={withAnimation ? { opacity: 0, height: 0 } : false}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.2 }}
-    >
+    <div className={cn(withAnimation && 'animate-in fade-in duration-200', 'typography-disabled relative my-4 first:mt-0 last:mb-0')}>
       <SingleAccordion
         open={opened}
         onOpenChange={setOpened}
@@ -178,7 +170,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
           />
         </SingleAccordionContent>
       </SingleAccordion>
-    </motion.div>
+    </div>
   )
 }
 
@@ -194,54 +186,30 @@ function MarkdownTable({ children, className, ...props }: ComponentProps<'div'>)
 
 function P({ children, className }: { children?: ReactNode, className?: string }) {
   const withAnimation = useMarkdownContext(c => c.withAnimation)
-  const ref = useRef<HTMLSpanElement>(null)
-  const { height } = useElementSize(ref, {
-    width: 0,
-    height: 0,
-  })
 
   if (typeof children === 'string') {
     return (
-      <motion.p
-        className={className}
-        initial={withAnimation ? { opacity: 0, height: 0 } : false}
-        animate={withAnimation ? { opacity: 1, height } : false}
-        exit={{ opacity: 0, height: 0 }}
-        transition={{ duration: 0.2 }}
-      >
-        {withAnimation
-          ? (
-              <span ref={ref} className="block">
-                {children.split('').map((char, index) => (
-                  <span
-                    key={index}
-                    className={cn(withAnimation && 'animate-in fade-in duration-200')}
-                  >
-                    {char}
-                  </span>
-                ))}
-              </span>
-            )
-          : children}
-      </motion.p>
+      <p className={className}>
+        {children.split('').map((char, index) => (
+          <span
+            key={index}
+            className={cn(withAnimation && 'animate-in fade-in duration-200')}
+          >
+            {char}
+          </span>
+        ))}
+      </p>
     )
   }
 
   return (
-    <motion.p
-      className={className}
-      initial={withAnimation ? { opacity: 0, height: 0 } : false}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.2 }}
-    >
+    <p className={cn(withAnimation && 'animate-in fade-in duration-200', className)}>
       {children}
-    </motion.p>
+    </p>
   )
 }
 
 function MarkdownBase({ content, onEdit }: { content: string, onEdit?: (content: string) => void }) {
-  const withAnimation = useMarkdownContext(c => c.withAnimation)
   const processedContent = content.replace(/\n/g, '  \n')
 
   return (
@@ -254,42 +222,6 @@ function MarkdownBase({ content, onEdit }: { content: string, onEdit?: (content:
         tbody: TableBody,
         tr: TableRow,
         p: P,
-        ul: ({ children }) => withAnimation
-          ? (
-              <motion.ul
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {children}
-              </motion.ul>
-            )
-          : <ul>{children}</ul>,
-        ol: ({ children }) => withAnimation
-          ? (
-              <motion.ol
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {children}
-              </motion.ol>
-            )
-          : <ol>{children}</ol>,
-        li: ({ children }) => withAnimation
-          ? (
-              <motion.li
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {children}
-              </motion.li>
-            )
-          : <li>{children}</li>,
         th: TableHead,
         td: TableCell,
       }}
@@ -302,8 +234,6 @@ function parseMarkdownIntoBlocks(markdown: string) {
   const tokens = marked.lexer(markdown)
   return tokens.map(token => token.raw)
 }
-
-const MarkdownBaseMotion = motion.create(MarkdownBase)
 
 export function Markdown({
   content,
@@ -321,20 +251,14 @@ export function Markdown({
 
   return (
     <MarkdownContext.Provider value={{ withAnimation }}>
-      <div className={cn('typography', className)} {...props}>
-        <AnimatePresence>
-          {blocks.map((block, index) => (
-            <MarkdownBaseMotion
-              key={id ? `${id}-block_${index}` : `block_${index}`}
-              initial={withAnimation ? { opacity: 0, height: 0 } : false}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              content={block}
-              onEdit={onEdit}
-            />
-          ))}
-        </AnimatePresence>
+      <div className={cn('typography', withAnimation && 'animate-in fade-in duration-200', className)} {...props}>
+        {blocks.map((block, index) => (
+          <MarkdownBase
+            key={id ? `${id}-block_${index}` : `block_${index}`}
+            content={block}
+            onEdit={onEdit}
+          />
+        ))}
       </div>
     </MarkdownContext.Provider>
   )

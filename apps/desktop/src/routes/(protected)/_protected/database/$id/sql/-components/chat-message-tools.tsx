@@ -85,24 +85,24 @@ const STATE_LABELS: Record<ToolUIPart['state'], string> = {
   'output-error': 'Tool call failed',
 }
 
-export function ChatMessageTool({ part }: { part: ToolUIPart }) {
+export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
   const tool = part as ToolUIPart<UITools>
   const label = getToolLabel(tool)
   const description = getToolDescription(tool)
   const Icon = STATE_ICONS[tool.state]
 
   return (
-    <SingleAccordion className="my-2">
+    <SingleAccordion className={cn('my-4', className)}>
       <SingleAccordionTrigger>
         <span className="flex items-center gap-2">
           <span className="relative flex items-center justify-center size-4 shrink-0">
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
                 key={tool.state}
-                initial={{ opacity: 0, scale: 0.7, rotate: 20 }}
+                initial={{ opacity: 0, scale: 0.8, rotate: 10 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 0.7, rotate: -20 }}
-                transition={{ duration: 0.1 }}
+                exit={{ opacity: 0, scale: 0.8, rotate: -10 }}
+                transition={{ duration: 0.15 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
                 <TooltipProvider>

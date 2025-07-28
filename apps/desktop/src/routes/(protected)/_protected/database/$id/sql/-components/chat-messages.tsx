@@ -5,13 +5,13 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { useIsMounted } from '@conar/ui/hookas/use-is-mounted'
 import { useIsScrolled } from '@conar/ui/hookas/use-is-scrolled'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiArrowDownSLine, RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
 import { isToolUIPart } from 'ai'
-import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
@@ -50,60 +50,43 @@ function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick
   )
 }
 
-const MarkdownMotion = motion.create(Markdown)
-
 function ChatMessageParts({ parts, loading, onEdit }: { parts: UIMessage['parts'], loading?: boolean, onEdit?: (query: string) => void }) {
-  return (
-    <AnimatePresence>
-      {parts.map((part, index) => {
-        if (part.type === 'text') {
-          return (
-            <MarkdownMotion
-              key={index}
-              initial={loading ? { opacity: 0, height: 0 } : false}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              content={part.text}
-              withAnimation={loading}
-              onEdit={onEdit}
-            />
-          )
-        }
+  return parts.map((part, index) => {
+    if (part.type === 'text') {
+      return (
+        <Markdown
+          key={index}
+          content={part.text}
+          withAnimation={loading}
+          onEdit={onEdit}
+        />
+      )
+    }
 
-        if (part.type === 'reasoning') {
-          return (
-            <motion.div
-              key={index}
-              initial={loading ? { opacity: 0, height: 0 } : false}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <p className="text-xs font-medium">Reasoning</p>
-              <p className="text-xs">{part.text}</p>
-            </motion.div>
-          )
-        }
+    if (part.type === 'reasoning') {
+      return (
+        <div
+          key={index}
+          className={cn(loading && 'animate-in fade-in duration-200')}
+        >
+          <p className="text-xs font-medium">Reasoning</p>
+          <p className="text-xs">{part.text}</p>
+        </div>
+      )
+    }
 
-        if (isToolUIPart(part)) {
-          return (
-            <motion.div
-              key={index}
-              initial={loading ? { opacity: 0, height: 0 } : false}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <ChatMessageTool part={part} />
-            </motion.div>
-          )
-        }
+    if (isToolUIPart(part)) {
+      return (
+        <ChatMessageTool
+          key={index}
+          className={cn(loading && 'animate-in fade-in duration-200')}
+          part={part}
+        />
+      )
+    }
 
-        return null
-      })}
-    </AnimatePresence>
-  )
+    return null
+  })
 }
 
 function UserMessage({ message, className, ...props }: { message: UIMessage } & ComponentProps<'div'>) {
@@ -169,6 +152,8 @@ function AssistantMessageLoader({ children, className, ...props }: ComponentProp
 function AssistantMessage({ message, index, className, ...props }: { message: UIMessage, index: number } & ComponentProps<'div'>) {
   const chat = useChatContext()
   const { messages, status } = useChat({ chat })
+  const ref = useRef<HTMLDivElement>(null)
+  const { height } = useElementSize(ref)
 
   async function handleEdit(query: string) {
     pageStore.setState(state => ({
@@ -181,15 +166,24 @@ function AssistantMessage({ message, index, className, ...props }: { message: UI
 
   const isLast = index === messages.length - 1
 
+  const isLoading = isLast ? status === 'streaming' || status === 'submitted' : false
+
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
-      <ChatMessageParts
-        parts={message.parts}
-        loading={index === messages.length - 1 ? status === 'streaming' || status === 'submitted' : undefined}
-        onEdit={handleEdit}
-      />
+      <div
+        style={{ height: height ? `${height}px` : undefined }}
+        className="duration-150"
+      >
+        <div ref={ref}>
+          <ChatMessageParts
+            parts={message.parts}
+            loading={isLoading}
+            onEdit={handleEdit}
+          />
+        </div>
+      </div>
       <div className="sticky bottom-0 z-30 flex items-center justify-between -mr-1 mt-2 gap-1">
-        <div className={cn('duration-150', isLast && (status === 'streaming' || status === 'submitted') ? 'opacity-100' : 'opacity-0')}>
+        <div className={cn('duration-150', isLoading ? 'opacity-100' : 'opacity-0')}>
           <AssistantMessageLoader>
             {status === 'submitted' ? 'Thinking...' : 'Writing...'}
           </AssistantMessageLoader>
@@ -214,11 +208,11 @@ function AssistantMessage({ message, index, className, ...props }: { message: UI
   )
 }
 
-function ErrorMessage({ error, ...props }: { error: Error } & ComponentProps<'div'>) {
+function ErrorMessage({ error, className, ...props }: { error: Error } & ComponentProps<'div'>) {
   const chat = useChatContext()
 
   return (
-    <ChatMessage {...props}>
+    <ChatMessage className={cn('relative z-20', className)} {...props}>
       <p className="text-red-500">{error.message}</p>
       <div>
         <Button variant="outline" size="xs" onClick={() => chat.regenerate()}>
@@ -232,10 +226,7 @@ function ErrorMessage({ error, ...props }: { error: Error } & ComponentProps<'di
 
 const MESSAGES_GAP = 32
 
-export function ChatMessages({
-  className,
-  ...props
-}: ComponentProps<'div'>) {
+export function ChatMessages({ className }: ComponentProps<'div'>) {
   const chat = useChatContext()
   const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
   const isScrolled = useIsScrolled(scrollRef, { threshold: 50 })
@@ -253,7 +244,7 @@ export function ChatMessages({
     if (userMessageRef.current) {
       setPlaceholderHeight((scrollRef.current?.offsetHeight || 0) - (userMessageRef.current?.offsetHeight || 0) - MESSAGES_GAP - 30) // 30px for the gradient
     }
-  }, [messages.length])
+  }, [userMessageRef, messages.length])
 
   const isLastMessageFromUser = messages.at(-1)?.role === 'user'
 
@@ -261,12 +252,15 @@ export function ChatMessages({
     <ScrollArea
       ref={scrollRef}
       className={cn('relative -mx-4', className)}
-      {...props}
     >
       <div className="sticky z-10 top-0">
         <div className={cn('absolute top-0 inset-x-0 h-12 bg-gradient-to-b from-background to-transparent pointer-events-none opacity-0 duration-150', isScrolled && 'opacity-100')}></div>
       </div>
-      <div ref={contentRef} className="relative px-4 flex flex-col" style={{ gap: `${MESSAGES_GAP}px` }}>
+      <div
+        ref={contentRef}
+        className="relative px-4 flex flex-col"
+        style={{ gap: `${MESSAGES_GAP}px` }}
+      >
         {messages.map((message, index) => (
           message.role === 'user'
             ? (

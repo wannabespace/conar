@@ -64,7 +64,7 @@ function generateStream({
         Additional information:
         - Current date and time: ${new Date().toISOString()}
 
-        Current query in the SQL runner that user is writing:
+        Current code in the SQL runner that user is editing:
         ${currentQuery || 'Empty'}
 
         Database Context:
@@ -86,6 +86,11 @@ function generateStream({
     },
     onError: (error) => {
       console.error('error', error)
+
+      // eslint-disable-next-line ts/no-explicit-any
+      if (typeof error === 'object' && (error as any).type === 'overloaded_error') {
+        return 'Sorry, I was unable to generate a response due to high load. Please try again later.'
+      }
       return 'Sorry, I was unable to generate a response due to an error. Please try again.'
     },
   })
