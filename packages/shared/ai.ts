@@ -1,4 +1,4 @@
-import type { InferUITools, ToolCallUnion, ToolResultUnion } from 'ai'
+import type { InferUITools, UIDataTypes, UIMessage } from 'ai'
 import { tool } from 'ai'
 import * as z from 'zod'
 import { columnSchema } from './sql/columns'
@@ -35,10 +35,12 @@ export const tools = {
       tableName: z.string().describe('The name of the table to query'),
       schemaName: z.string().describe('The name of the schema to query'),
     }),
-    outputSchema: z.string(),
+    outputSchema: z.record(z.string(), z.any()),
   }),
 }
 
-export type ToolCall = ToolCallUnion<typeof tools>
-export type ToolResult = ToolResultUnion<typeof tools>
-export type UITools = InferUITools<typeof tools>
+export type AppUIMessage = UIMessage<
+  unknown,
+  UIDataTypes,
+  InferUITools<typeof tools>
+>

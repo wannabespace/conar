@@ -1,3 +1,4 @@
+import type { AppUIMessage } from '@conar/shared/ai'
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import type { EntityTable } from 'dexie'
 import Dexie from 'dexie'
@@ -15,21 +16,7 @@ export interface Database {
 export interface DatabaseChat {
   id: string
   databaseId: string
-  messages: {
-    id: string
-    role: 'user' | 'assistant'
-    parts: (
-      {
-        type: 'text'
-        text: string
-      }
-      | {
-        type: 'file'
-        url: string
-        mediaType: string
-      }
-    )[]
-  }[]
+  messages: AppUIMessage[]
 }
 
 export const indexedDb = new Dexie('conar') as Dexie & {

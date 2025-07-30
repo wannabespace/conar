@@ -1,5 +1,5 @@
-import type { UITools } from '@conar/shared/ai'
-import type { ToolUIPart } from 'ai'
+import type { tools } from '@conar/shared/ai'
+import type { InferUITools, ToolUIPart } from 'ai'
 import type { ReactNode } from 'react'
 import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
 
-function getToolLabel(tool: ToolUIPart<UITools>) {
+function getToolLabel(tool: ToolUIPart<InferUITools<typeof tools>>) {
   if (tool.type === 'tool-columns') {
     if (tool.input) {
       const schema = tool.input.schemaName ? tool.input.schemaName === 'public' ? '' : tool.input.schemaName : ''
@@ -33,7 +33,7 @@ function getToolLabel(tool: ToolUIPart<UITools>) {
   return 'Unknown tool'
 }
 
-function getToolDescription(tool: ToolUIPart<UITools>): ReactNode {
+function getToolDescription(tool: ToolUIPart<InferUITools<typeof tools>>): ReactNode {
   if (tool.type === 'tool-columns') {
     return 'Agent called a tool to get table columns.'
   }
@@ -86,7 +86,7 @@ const STATE_LABELS: Record<ToolUIPart['state'], string> = {
 }
 
 export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
-  const tool = part as ToolUIPart<UITools>
+  const tool = part as ToolUIPart<InferUITools<typeof tools>>
   const label = getToolLabel(tool)
   const description = getToolDescription(tool)
   const Icon = STATE_ICONS[tool.state]

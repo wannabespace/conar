@@ -8,7 +8,7 @@ function Toaster() {
     <Sonner
       theme={resolvedTheme}
       className="toaster group"
-      position="top-right"
+      position="top-center"
       closeButton
       richColors
       toastOptions={{

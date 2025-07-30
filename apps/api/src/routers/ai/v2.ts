@@ -3,7 +3,7 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { tools } from '@conar/shared/ai'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { zValidator } from '@hono/zod-validator'
-import { convertToModelMessages, smoothStream, streamText } from 'ai'
+import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { Hono } from 'hono'
 import * as z from 'zod'
 
@@ -74,6 +74,7 @@ function generateStream({
       },
       ...convertToModelMessages(messages),
     ],
+    stopWhen: stepCountIs(20),
     abortSignal: signal,
     model,
     experimental_transform: smoothStream(),

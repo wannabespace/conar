@@ -1,11 +1,12 @@
-import type { ToolCall } from '@conar/shared/ai'
+import type { tools } from '@conar/shared/ai'
+import type { InferToolInput } from 'ai'
 import { Chat } from '@ai-sdk/react'
 import { rowsSql } from '@conar/shared/sql/rows'
 import { whereSql } from '@conar/shared/sql/where'
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
-import { DefaultChatTransport } from 'ai'
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { useState } from 'react'
 import { databaseEnumsQuery, databaseTableColumnsQuery, tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
@@ -47,6 +48,7 @@ function DatabaseSqlPage() {
   const { messages, database } = Route.useLoaderData()
   const [chat] = useState(() => new Chat({
     id,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     transport: new DefaultChatTransport({
       api: `${import.meta.env.VITE_PUBLIC_API_URL}/ai/v2/sql-chat`,
       credentials: 'include',
@@ -57,34 +59,49 @@ function DatabaseSqlPage() {
       }),
     }),
     messages,
-    maxSteps: 20,
     onToolCall: async ({ toolCall }) => {
-      const call = toolCall as ToolCall
+      if (toolCall.toolName === 'columns') {
+        const input = toolCall.input as InferToolInput<typeof tools.columns>
 
-      if (call.toolName === 'columns') {
-        return queryClient.fetchQuery(databaseTableColumnsQuery(
-          database,
-          call.input.tableName,
-          call.input.schemaName,
-        ))
+        chat.addToolResult({
+          tool: 'columns',
+          toolCallId: toolCall.toolCallId,
+          output: await queryClient.fetchQuery(databaseTableColumnsQuery(
+            database,
+            input.tableName,
+            input.schemaName,
+          )),
+        })
       }
-
-      if (call.toolName === 'enums') {
-        return queryClient.fetchQuery(databaseEnumsQuery(database))
+      else if (toolCall.toolName === 'enums') {
+        chat.addToolResult({
+          tool: 'enums',
+          toolCallId: toolCall.toolCallId,
+          output: await queryClient.fetchQuery(databaseEnumsQuery(database)).then(results => results.flatMap(r => r.values.map(v => ({
+            schema: r.schema,
+            name: r.name,
+            value: v,
+          })))),
+        })
       }
+      else if (toolCall.toolName === 'select') {
+        const input = toolCall.input as InferToolInput<typeof tools.select>
 
-      if (call.toolName === 'select') {
-        return dbQuery({
-          type: database.type,
-          connectionString: database.connectionString,
-          query: rowsSql(call.input.schemaName, call.input.tableName, {
-            limit: call.input.limit,
-            offset: call.input.offset,
-            orderBy: call.input.orderBy,
-            select: call.input.select,
-            where: whereSql(call.input.whereFilters, call.input.whereConcatOperator)[database.type],
-          })[database.type],
-        }).then(results => results.map(r => r.rows).flat())
+        chat.addToolResult({
+          tool: 'select',
+          toolCallId: toolCall.toolCallId,
+          output: await dbQuery({
+            type: database.type,
+            connectionString: database.connectionString,
+            query: rowsSql(input.schemaName, input.tableName, {
+              limit: input.limit,
+              offset: input.offset,
+              orderBy: input.orderBy,
+              select: input.select,
+              where: whereSql(input.whereFilters, input.whereConcatOperator)[database.type],
+            })[database.type],
+          }).then(results => results.map(r => r.rows).flat()),
+        })
       }
     },
   }))

@@ -1,4 +1,4 @@
-import type { UIMessage } from '@ai-sdk/react'
+import type { AppUIMessage } from '@conar/shared/ai'
 import { indexedDb } from '~/lib/indexeddb'
 
 export const chatQuery = {
@@ -43,21 +43,19 @@ export const chatMessages = {
     const chat = await indexedDb.databaseChats.get({ databaseId: id })
     return chat?.messages || []
   },
-  async set(id: string, messages: UIMessage[]) {
+  async set(id: string, messages: AppUIMessage[]) {
     const chat = await indexedDb.databaseChats.get({ databaseId: id })
-    const formattedMessages = messages
-      .filter(message => message.role === 'user' || message.role === 'assistant') as Extract<UIMessage, { role: 'system' | 'data' }>[]
 
     if (chat) {
       await indexedDb.databaseChats.update(chat.id, {
-        messages: formattedMessages,
+        messages,
       })
     }
     else {
       await indexedDb.databaseChats.add({
         id: crypto.randomUUID(),
         databaseId: id,
-        messages: formattedMessages,
+        messages,
       })
     }
   },

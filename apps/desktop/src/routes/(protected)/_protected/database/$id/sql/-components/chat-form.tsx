@@ -224,7 +224,6 @@ export function ChatForm() {
                   <Button
                     size="xs"
                     variant="outline"
-                    disabled={status === 'submitted'}
                     onClick={stop}
                   >
                     <RiStopCircleLine className="size-3" />
