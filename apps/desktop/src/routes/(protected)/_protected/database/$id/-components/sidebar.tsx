@@ -30,7 +30,7 @@ export function Sidebar({ database }: { database: Database }) {
                   <LoadingContent loading={isRefreshingTablesAndSchemas}>
                     <ContentSwitch
                       activeContent={<RiCheckLine className="text-success" />}
-                      active={!isRefreshingTablesAndSchemas}
+                      active={isRefreshingTablesAndSchemas}
                     >
                       <RiLoopLeftLine />
                     </ContentSwitch>
