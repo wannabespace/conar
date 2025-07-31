@@ -14,6 +14,7 @@ import { useMutation } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
 import { sleep } from '~/lib/helpers'
 
@@ -137,99 +138,114 @@ function TableCellMonaco({
 
   return (
     <>
-      <Monaco
-        data-mask
-        value={value}
-        language={['json', 'jsonb'].includes(column?.type ?? '') ? 'json' : undefined}
-        className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(50vh,40rem)]')}
-        onChange={setValue}
-        options={{
-          lineNumbers: isBig ? 'on' : 'off',
-          readOnly: !canEdit,
-          scrollBeyondLastLine: false,
-          folding: isBig,
-          scrollbar: {
-            horizontalScrollbarSize: 5,
-            verticalScrollbarSize: 5,
-          },
-        }}
-        onEnter={save}
-      />
-      <div className="flex justify-between items-center gap-2 p-2 border-t">
-        <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon-xs"
-                  onClick={() => setIsBig(prev => !prev)}
-                >
-                  {isBig ? <RiCollapseDiagonal2Line className="size-3" /> : <RiExpandDiagonal2Line className="size-3" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Toggle size</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon-xs" variant="outline" onClick={() => copy(displayValue)}>
-                  <RiFileCopyLine className="size-3" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Copy value</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <div className="flex gap-2">
-          {canEdit && (
-            <>
-              {canSetNull && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="xs"
-                      variant="secondary"
-                    >
-                      Set
-                      {' '}
-                      <span className="font-mono">null</span>
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Set value to null?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will set the cell value to
-                        {' '}
-                        <code className="font-mono">null</code>
-                        .
-                        This action can be undone by editing the cell again.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => setNull()}>Set to null</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-              <Button
-                size="xs"
-                disabled={!canSave}
-                onClick={() => save(value)}
-              >
-                Save
-                <kbd className="flex items-center text-xs">
-                  {os.type === 'macos' ? <RiCommandLine className="size-2.5" /> : 'Ctrl'}
-                  <RiCornerDownLeftLine className="size-2.5" />
-                </kbd>
-              </Button>
-            </>
+      {column?.type === 'boolean'
+        ? (
+            <div className="p-2">
+              <CellSwitch
+                checked={value === 'true'}
+                onChange={checked => setValue(checked.toString())}
+                onSave={save}
+              />
+            </div>
+          )
+        : (
+            <Monaco
+              data-mask
+              value={value}
+              language={['json', 'jsonb'].includes(column?.type ?? '') ? 'json' : undefined}
+              className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(50vh,40rem)]')}
+              onChange={setValue}
+              options={{
+                lineNumbers: isBig ? 'on' : 'off',
+                readOnly: !canEdit,
+                scrollBeyondLastLine: false,
+                folding: isBig,
+                scrollbar: {
+                  horizontalScrollbarSize: 5,
+                  verticalScrollbarSize: 5,
+                },
+              }}
+              onEnter={save}
+            />
           )}
+      <>
+
+        <div className="flex justify-between items-center gap-2 p-2 border-t">
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon-xs"
+                    onClick={() => setIsBig(prev => !prev)}
+                  >
+                    {isBig ? <RiCollapseDiagonal2Line className="size-3" /> : <RiExpandDiagonal2Line className="size-3" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Toggle size</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon-xs" variant="outline" onClick={() => copy(displayValue)}>
+                    <RiFileCopyLine className="size-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Copy value</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex gap-2">
+            {canEdit && (
+              <>
+                {canSetNull && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        size="xs"
+                        variant="secondary"
+                      >
+                        Set
+                        {' '}
+                        <span className="font-mono">null</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Set value to null?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will set the cell value to
+                          {' '}
+                          <code className="font-mono">null</code>
+                          .
+                          This action can be undone by editing the cell again.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => setNull()}>Set to null</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+                <Button
+                  size="xs"
+                  disabled={!canSave}
+                  onClick={() => save(value)}
+                >
+                  Save
+                  <kbd className="flex items-center text-xs">
+                    {os.type === 'macos' ? <RiCommandLine className="size-2.5" /> : 'Ctrl'}
+                    <RiCornerDownLeftLine className="size-2.5" />
+                  </kbd>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      </>
     </>
   )
 }
