@@ -10,8 +10,10 @@ catalog:
   '@tanstack/react-router-devtools': ^1.130.8
   '@types/react': ^19.1.9
   '@types/react-dom': ^19.1.7
-  ai: 5.0.0-beta.32
+  ai: 5.0.0-beta.33
   babel-plugin-react-compiler: 19.1.0-rc.2
+  drizzle-kit: ^0.31.4
+  drizzle-orm: ^0.44.4
   react: ^19.1.1
   react-dom: ^19.1.1
   sonner: ^2.0.6

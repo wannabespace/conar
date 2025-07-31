@@ -214,10 +214,26 @@ function ErrorMessage({ error, className, ...props }: { error: Error } & Compone
   return (
     <ChatMessage className={cn('relative z-20', className)} {...props}>
       <p className="text-red-500">{error.message}</p>
-      <div>
-        <Button variant="outline" size="xs" onClick={() => chat.regenerate()}>
-          <RiRefreshLine className="size-3" />
-          Try again
+      <div className="flex gap-2 items-center">
+        <RiRefreshLine className="size-3" />
+        <Button
+          variant="secondary"
+          size="xs"
+          onClick={() => chat.regenerate()}
+        >
+          Regenerate
+        </Button>
+        <span>or</span>
+        <Button
+          variant="outline"
+          size="xs"
+          onClick={() => chat.regenerate({
+            body: {
+              fallback: true,
+            },
+          })}
+        >
+          Use fallback model
         </Button>
       </div>
     </ChatMessage>

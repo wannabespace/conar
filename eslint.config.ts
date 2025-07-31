@@ -19,5 +19,6 @@ export default antfu({
     '**/.output/**/*',
     '**/.types/**/*',
     '**/migrations/meta/*.json',
+    '**/migrations.json',
   ],
 })

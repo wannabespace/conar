@@ -7,7 +7,7 @@ import { SQL_OPERATORS } from './utils/sql'
 
 export const tools = {
   columns: tool({
-    description: 'Use this tool to get the schema of columns in a table',
+    description: 'Use this tool if you need to get the list of columns in a table.',
     inputSchema: z.object({
       tableName: z.string(),
       schemaName: z.string(),
@@ -15,12 +15,12 @@ export const tools = {
     outputSchema: z.array(columnSchema),
   }),
   enums: tool({
-    description: 'Use this tool to get the schema of enums in a database',
+    description: 'Use this tool if you need to get the list of enums in a database',
     inputSchema: z.object({}),
     outputSchema: z.array(enumSchema),
   }),
   select: tool({
-    description: 'Use this tool select data from the database to improve your response. Do not select any sensitive data, avoid columns like password, token, secret, etc.',
+    description: 'Use this tool to select data from the database to improve your response. Do not select any sensitive data, avoid columns like password, token, secret, etc.',
     inputSchema: z.object({
       whereConcatOperator: z.enum(['AND', 'OR']).describe('The operator to use to concatenate the where clauses'),
       whereFilters: z.array(z.object({

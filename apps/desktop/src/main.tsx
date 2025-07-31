@@ -1,6 +1,7 @@
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
+import { runMigrations } from './drizzle'
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
 import { routeTree } from './routeTree.gen'
@@ -49,4 +50,4 @@ declare module '@tanstack/react-router' {
 
 const root = createRoot(document.getElementById('root')!)
 
-root.render(<RouterProvider router={router} />)
+runMigrations().then(() => root.render(<RouterProvider router={router} />))
