@@ -104,10 +104,10 @@ async function ensureChat(id: string, userId: string, databaseId: string) {
 }
 
 export const sqlChat = orpc
-  .route({ path: '/sql-chat' })
   .use(authMiddleware)
   .input(chatInputType)
   .handler(async ({ input, context, signal }) => {
+    console.log('sqlChat', input, context, signal)
     await ensureChat(input.id, context.user.id, input.databaseId)
 
     const messages = [...await getMessages(input.id), input.prompt]

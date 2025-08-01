@@ -10,7 +10,7 @@ import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { eventIteratorToStream } from '@orpc/client'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { v7 as uuid } from 'uuid'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { databaseEnumsQuery, databaseTableColumnsQuery, tablesAndSchemasQuery } from '~/entities/database'
@@ -71,14 +71,16 @@ function createChat({ id, database, messages }: { id: string | undefined, databa
         }
 
         await db.transaction(async (tx) => {
-          await tx.insert(chats).values({ id: options.chatId, databaseId: database.id }).onConflictDoNothing()
-          await tx.insert(chatsMessages).values({
-            ...lastMessage,
-            chatId: options.chatId,
-          }).onConflictDoUpdate({ // If regenerating, update the message
-            target: [chatsMessages.id],
-            set: lastMessage,
-          })
+          await Promise.all([
+            tx.insert(chats).values({ id: options.chatId, databaseId: database.id }).onConflictDoNothing(),
+            tx.insert(chatsMessages).values({
+              ...lastMessage,
+              chatId: options.chatId,
+            }).onConflictDoUpdate({ // If regenerating, update the message
+              target: [chatsMessages.id],
+              set: lastMessage,
+            }),
+          ])
         })
 
         return eventIteratorToStream(await orpc.ai.sqlChat({
@@ -162,10 +164,6 @@ function DatabaseSqlPage() {
   const { messages, database } = Route.useLoaderData()
   const [chat] = useState(() => createChat({ id: chatId, database, messages }))
   const { id, status } = useChat({ chat })
-
-  useEffect(() => {
-    console.log('chat', chat)
-  }, [chat])
 
   useMountedEffect(() => {
     if (!chatId && status === 'submitted' && chatId !== id) {
