@@ -1,4 +1,4 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import { useUpdateDatabasePassword } from '~/entities/database'
 import { dbTestConnection } from '~/lib/query'
 
-export function PasswordForm({ database }: { database: Database }) {
+export function PasswordForm({ database }: { database: typeof databases.$inferSelect }) {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)

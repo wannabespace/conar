@@ -183,7 +183,7 @@ function AssistantMessage({ message, index, className, ...props }: { message: UI
         </div>
       </div>
       <div className="sticky bottom-0 z-30 flex items-center justify-between -mr-1 mt-2 gap-1">
-        <div className={cn('duration-150', isLoading ? 'opacity-100' : 'opacity-0')}>
+        <div className={cn('duration-150', isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
           <AssistantMessageLoader>
             {status === 'submitted' ? 'Thinking...' : 'Writing...'}
           </AssistantMessageLoader>

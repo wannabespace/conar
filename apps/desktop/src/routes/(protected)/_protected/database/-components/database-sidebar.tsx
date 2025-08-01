@@ -30,7 +30,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
     }
   }, [tableParam, schemaParam])
 
-  const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
+  const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/{-$chatId}')
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/tables')
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
 
@@ -83,11 +83,11 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
-                    to="/database/$id/sql"
+                    to="/database/$id/sql/{-$chatId}"
                     params={{ id }}
                     className={classes(isActiveSql)}
                     {...clickHandlers(() => navigate({
-                      to: '/database/$id/sql',
+                      to: '/database/$id/sql/{-$chatId}',
                       params: { id },
                     }))}
                   >

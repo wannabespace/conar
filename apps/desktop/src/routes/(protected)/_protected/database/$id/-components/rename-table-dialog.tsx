@@ -1,4 +1,4 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { renameTableSql } from '@conar/shared/sql/rename-table'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
@@ -27,7 +27,7 @@ interface RenameTableDIalogProps {
   ref: React.RefObject<{
     rename: (schema: string, table: string) => void
   } | null>
-  database: Database
+  database: typeof databases.$inferSelect
 }
 
 export function RenameTableDIalog({ ref, database }: RenameTableDIalogProps) {

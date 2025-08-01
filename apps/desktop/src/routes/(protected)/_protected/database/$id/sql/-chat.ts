@@ -1,5 +1,6 @@
 import type { AppUIMessage } from '@conar/shared/ai'
-import { indexedDb } from '~/lib/indexeddb'
+import { eq } from 'drizzle-orm'
+import { chatsMessages, db } from '~/drizzle'
 
 export const chatQuery = {
   get(id: string) {
@@ -39,24 +40,27 @@ export const chatInput = {
 }
 
 export const chatMessages = {
-  async get(id: string) {
-    const chat = await indexedDb.databaseChats.get({ databaseId: id })
-    return chat?.messages || []
+  get(chatId: string) {
+    return db.select().from(chatsMessages).where(eq(chatsMessages.chatId, chatId))
   },
-  async set(id: string, messages: AppUIMessage[]) {
-    const chat = await indexedDb.databaseChats.get({ databaseId: id })
+  async set(chatId: string, message: AppUIMessage) {
+    await db.insert(chatsMessages).values({ chatId, ...message }).onConflictDoUpdate({
+      target: [chatsMessages.id],
+      set: message,
+    })
+  },
+}
 
-    if (chat) {
-      await indexedDb.databaseChats.update(chat.id, {
-        messages,
-      })
+export const lastOpenedChatId = {
+  get() {
+    return sessionStorage.getItem('sql-last-chat-id')
+  },
+  set(id: string | null) {
+    if (id) {
+      sessionStorage.setItem('sql-last-chat-id', id)
     }
     else {
-      await indexedDb.databaseChats.add({
-        id: crypto.randomUUID(),
-        databaseId: id,
-        messages,
-      })
+      sessionStorage.removeItem('sql-last-chat-id')
     }
   },
 }

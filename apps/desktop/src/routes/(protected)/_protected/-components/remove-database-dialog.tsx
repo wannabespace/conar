@@ -1,4 +1,4 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { useMutation } from '@tanstack/react-query'
@@ -9,16 +9,16 @@ import { queryClient } from '~/main'
 
 interface RemoveDatabaseDialogProps {
   ref?: React.RefObject<{
-    remove: (database: Database) => void
+    remove: (database: typeof databases.$inferSelect) => void
   } | null>
 }
 
 export function RemoveDatabaseDialog({ ref }: RemoveDatabaseDialogProps) {
   const [open, setOpen] = useState(false)
-  const [database, setDatabase] = useState<Database | null>(null)
+  const [database, setDatabase] = useState<typeof databases.$inferSelect | null>(null)
 
   useImperativeHandle(ref, () => ({
-    remove: (db: Database) => {
+    remove: (db: typeof databases.$inferSelect) => {
       setDatabase(db)
       setOpen(true)
     },

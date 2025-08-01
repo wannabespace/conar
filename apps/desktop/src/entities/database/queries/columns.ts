@@ -1,9 +1,9 @@
-import type { Database } from '~/lib/indexeddb'
-import { columnSchema, columnsSql } from '@conar/shared/sql/columns'
+import type { databases } from '~/drizzle'
+import { columnsSql, columnType } from '@conar/shared/sql/columns'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
 
-export function databaseTableColumnsQuery(database: Database, table: string, schema: string) {
+export function databaseTableColumnsQuery(database: typeof databases.$inferSelect, table: string, schema: string) {
   return queryOptions({
     queryKey: ['database', database.id, 'columns', schema, table],
     queryFn: async () => {
@@ -13,7 +13,7 @@ export function databaseTableColumnsQuery(database: Database, table: string, sch
         query: columnsSql(schema, table)[database.type],
       })
 
-      return result.rows.map(col => columnSchema.parse(col))
+      return result.rows.map(col => columnType.assert(col))
     },
   })
 }

@@ -10,7 +10,7 @@ export const databaseType = pgEnum('database_type', enumValues(DatabaseType))
 
 export const databases = pgTable('databases', ({ uuid, text, boolean }) => ({
   ...baseTable,
-  userId: uuid().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
   type: databaseType().notNull(),
   name: text().notNull(),
   connectionString: encryptedText().notNull(),

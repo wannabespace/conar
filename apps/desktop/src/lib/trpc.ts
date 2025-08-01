@@ -12,6 +12,7 @@ export const trpc = createTRPCClient<AppRouter>({
       async fetch(input, init) {
         const response = await fetch(input, {
           ...init,
+          body: init?.body as BodyInit,
           credentials: 'include',
         })
 

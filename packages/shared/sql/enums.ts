@@ -1,14 +1,14 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import { prepareSql } from '@conar/shared/utils/helpers'
-import * as z from 'zod'
+import { type } from 'arktype'
 
-export const enumSchema = z.object({
-  schema: z.string(),
-  name: z.string(),
-  value: z.string(),
+export const enumType = type({
+  schema: 'string',
+  name: 'string',
+  value: 'string',
 })
 
-export const enumsSchema = enumSchema.array().transform((rows) => {
+export const enumsType = enumType.array().pipe((rows) => {
   const map = new Map<string, { schema: string, name: string, values: string[] }>()
 
   for (const { schema, name, value } of rows) {

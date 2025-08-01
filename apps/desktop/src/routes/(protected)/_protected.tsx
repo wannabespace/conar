@@ -21,12 +21,7 @@ function ProtectedLayout() {
       return
 
     fetchDatabases()
-
-    const interval = setInterval(() => {
-      fetchDatabases()
-    }, 1000 * 60 * 5)
-
-    return () => clearInterval(interval)
+    // fetchChats()
   }, [data?.user])
 
   useKeyboardEvent(e => e.key === 'n' && (os.type === 'macos' ? e.metaKey : e.ctrlKey), () => {

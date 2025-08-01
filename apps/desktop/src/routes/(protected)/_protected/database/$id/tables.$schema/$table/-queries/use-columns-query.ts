@@ -1,9 +1,9 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { useMemo } from 'react'
 import { useDatabaseTableColumns } from '~/entities/database'
 import { usePrimaryKeysQuery } from './use-primary-keys-query'
 
-export function useTableColumns(database: Database, table: string, schema: string) {
+export function useTableColumns(database: typeof databases.$inferSelect, table: string, schema: string) {
   const { data: columns } = useDatabaseTableColumns(database, table, schema)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 

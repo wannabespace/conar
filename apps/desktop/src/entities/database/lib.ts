@@ -1,8 +1,8 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import type { WhereFilter } from '@conar/shared/sql/where'
-import type { Database } from '~/lib/indexeddb'
+import { eq } from 'drizzle-orm'
 import { toast } from 'sonner'
-import { indexedDb } from '~/lib/indexeddb'
+import { databases, db } from '~/drizzle'
 import { trpc } from '~/lib/trpc'
 import { queryClient } from '~/main'
 import { databaseTableColumnsQuery } from './queries/columns'
@@ -21,7 +21,7 @@ export async function fetchDatabases() {
   try {
     const [fetchedDatabases, existingDatabases] = await Promise.all([
       trpc.databases.list.query(),
-      indexedDb.databases.toArray(),
+      db.select().from(databases),
     ])
     const existingMap = new Map(existingDatabases.map(d => [d.id, d]))
     const fetchedMap = new Map(fetchedDatabases.map(d => [d.id, d]))
@@ -39,7 +39,7 @@ export async function fetchDatabases() {
       .filter(d => !!existingMap.get(d.id))
       .map((d) => {
         const existing = existingMap.get(d.id)!
-        const changes: Partial<Database> = {}
+        const changes: Partial<typeof databases.$inferSelect> = {}
 
         if (existing.name !== d.name) {
           changes.name = d.name
@@ -57,25 +57,26 @@ export async function fetchDatabases() {
         }
 
         return {
-          key: d.id,
+          id: d.id,
           changes,
         }
       })
+      .filter(d => Object.keys(d.changes).length > 0)
 
     await Promise.all([
-      indexedDb.databases.bulkDelete(toDelete),
-      indexedDb.databases.bulkAdd(toAdd),
-      indexedDb.databases.bulkUpdate(toUpdate),
+      ...toDelete.map(id => db.delete(databases).where(eq(databases.id, id))),
+      ...toAdd.map(d => db.insert(databases).values(d)),
+      ...toUpdate.map(d => db.update(databases).set(d.changes).where(eq(databases.id, d.id))),
     ]);
 
     [
       ...toDelete,
       ...toAdd.map(d => d.id),
-      ...toUpdate.filter(d => Object.keys(d.changes).length > 0).map(d => d.key),
+      ...toUpdate.filter(d => Object.keys(d.changes).length > 0).map(d => d.id),
     ].forEach((id) => {
-      queryClient.invalidateQueries({ queryKey: databaseQuery(id).queryKey })
+      queryClient.invalidateQueries(databaseQuery(id))
     })
-    queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
+    queryClient.invalidateQueries(databasesQuery())
   }
   catch (e) {
     console.error(e)
@@ -103,7 +104,7 @@ export async function createDatabase({ saveInCloud, ...database }: {
     isPasswordExists,
   })
 
-  await indexedDb.databases.add({
+  await db.insert(databases).values({
     ...database,
     id,
     isPasswordExists,
@@ -117,12 +118,12 @@ export async function createDatabase({ saveInCloud, ...database }: {
 export async function removeDatabase(id: string) {
   await Promise.all([
     trpc.databases.remove.mutate({ id }),
-    indexedDb.databases.delete(id),
+    db.delete(databases).where(eq(databases.id, id)),
   ])
 }
 
 export async function renameDatabase(id: string, name: string) {
-  const existing = await indexedDb.databases.get(id)
+  const [existing] = await db.select().from(databases).where(eq(databases.id, id)).limit(1)
 
   if (!existing) {
     throw new Error('Database not found')
@@ -130,12 +131,12 @@ export async function renameDatabase(id: string, name: string) {
 
   await Promise.all([
     trpc.databases.update.mutate({ id, name }),
-    indexedDb.databases.update(id, { name }),
+    db.update(databases).set({ name }).where(eq(databases.id, id)),
   ])
 }
 
 export async function updateDatabasePassword(id: string, password: string) {
-  const database = await indexedDb.databases.get(id)
+  const [database] = await db.select().from(databases).where(eq(databases.id, id)).limit(1)
 
   if (!database) {
     throw new Error('Database not found')
@@ -144,13 +145,14 @@ export async function updateDatabasePassword(id: string, password: string) {
   const url = new URL(database.connectionString)
 
   url.password = password
-  database.connectionString = url.toString()
-  database.isPasswordPopulated = true
 
-  await indexedDb.databases.put(database)
+  await db.update(databases).set({
+    connectionString: url.toString(),
+    isPasswordPopulated: true,
+  }).where(eq(databases.id, id))
 }
 
-export async function prefetchDatabaseCore(database: Database) {
+export async function prefetchDatabaseCore(database: typeof databases.$inferSelect) {
   if (database.isPasswordExists && !database.isPasswordPopulated) {
     await queryClient.prefetchQuery(databaseQuery(database.id))
     return
@@ -167,7 +169,7 @@ export async function prefetchDatabaseCore(database: Database) {
   ])
 }
 
-export async function prefetchDatabaseTableCore(database: Database, schema: string, table: string, query: {
+export async function prefetchDatabaseTableCore(database: typeof databases.$inferSelect, schema: string, table: string, query: {
   filters: WhereFilter[]
   orderBy: Record<string, 'ASC' | 'DESC'>
 }) {

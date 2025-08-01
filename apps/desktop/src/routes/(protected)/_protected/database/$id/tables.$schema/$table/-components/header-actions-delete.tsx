@@ -1,4 +1,4 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { deleteRowsSql } from '@conar/shared/sql/delete'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
@@ -17,7 +17,7 @@ import { usePageContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
-export function HeaderActionsDelete({ table, schema, database }: { table: string, schema: string, database: Database }) {
+export function HeaderActionsDelete({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
   const rowsQueryOpts = useRowsQueryOpts()
   const { data: rows, refetch } = useInfiniteQuery(rowsQueryOpts)
   const [isOpened, setIsOpened] = useState(false)

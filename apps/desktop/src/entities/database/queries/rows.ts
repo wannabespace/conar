@@ -1,5 +1,5 @@
 import type { WhereFilter } from '@conar/shared/sql/where'
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { rowsSql } from '@conar/shared/sql/rows'
 import { whereSql } from '@conar/shared/sql/where'
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query'
@@ -9,7 +9,7 @@ import { DEFAULT_LIMIT } from '../utils'
 type Page = Awaited<ReturnType<typeof dbQuery>>[0]
 
 export function databaseRowsQuery(
-  database: Database,
+  database: typeof databases.$inferSelect,
   table: string,
   schema: string,
   query: {

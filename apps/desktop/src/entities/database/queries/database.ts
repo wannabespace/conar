@@ -1,10 +1,11 @@
 import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
-import { indexedDb } from '~/lib/indexeddb'
+import { desc, eq } from 'drizzle-orm'
+import { databases, db } from '~/drizzle'
 
 export function databasesQuery() {
   return queryOptions({
     queryKey: ['databases'],
-    queryFn: () => indexedDb.databases.orderBy('createdAt').reverse().toArray(),
+    queryFn: () => db.select().from(databases).orderBy(desc(databases.createdAt)),
   })
 }
 
@@ -16,7 +17,7 @@ export function databaseQuery(id: string) {
   return queryOptions({
     queryKey: ['database', id],
     queryFn: async () => {
-      const database = await indexedDb.databases.get(id)
+      const [database] = await db.select().from(databases).where(eq(databases.id, id)).limit(1)
 
       if (!database) {
         throw new Error('Database not found')

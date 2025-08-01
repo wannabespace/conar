@@ -1,4 +1,4 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
@@ -10,7 +10,7 @@ import { RiCheckLine, RiCloseLine, RiLoopLeftLine } from '@remixicon/react'
 import { useDatabaseTablesAndSchemas } from '~/entities/database'
 import { TablesTree } from './tables-tree'
 
-export function Sidebar({ database }: { database: Database }) {
+export function Sidebar({ database }: { database: typeof databases.$inferSelect }) {
   const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useDatabaseTablesAndSchemas(database)
   const [search, setSearch] = useSessionStorage(`database-tables-search-${database.id}`, '')
 

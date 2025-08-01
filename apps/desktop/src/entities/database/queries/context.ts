@@ -1,9 +1,9 @@
-import type { Database } from '~/lib/indexeddb'
-import { tablesAndSchemasSchema, tablesAndSchemasSql } from '@conar/shared/sql/tables-and-schemas'
+import type { databases } from '~/drizzle'
+import { tablesAndSchemasSql, tablesAndSchemasType } from '@conar/shared/sql/tables-and-schemas'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
 
-export function tablesAndSchemasQuery(database: Database) {
+export function tablesAndSchemasQuery(database: typeof databases.$inferSelect) {
   return queryOptions({
     queryKey: ['database', database.id, 'tables-and-schemas'],
     queryFn: async () => {
@@ -13,7 +13,7 @@ export function tablesAndSchemasQuery(database: Database) {
         query: tablesAndSchemasSql()[database.type],
       })
 
-      const parsed = tablesAndSchemasSchema.parse(result.rows[0].database_context)
+      const parsed = tablesAndSchemasType.assert(result.rows[0].tables_and_schemas)
 
       return {
         ...parsed,

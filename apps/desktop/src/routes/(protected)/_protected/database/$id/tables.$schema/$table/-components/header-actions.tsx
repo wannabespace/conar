@@ -1,4 +1,4 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -11,7 +11,7 @@ import { HeaderActionsColumns } from './header-actions-columns'
 import { HeaderActionsDelete } from './header-actions-delete'
 import { HeaderActionsFilters } from './header-actions-filters'
 
-export function HeaderActions({ table, schema, database }: { table: string, schema: string, database: Database }) {
+export function HeaderActions({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
   const { store } = usePageContext()
   const rowsQueryOpts = useRowsQueryOpts()
   const { isFetching, dataUpdatedAt, refetch } = useInfiniteQuery(rowsQueryOpts)

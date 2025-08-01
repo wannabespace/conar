@@ -1,11 +1,16 @@
 import { PGlite } from '@electric-sql/pglite'
+import { live } from '@electric-sql/pglite/live'
 import { drizzle } from 'drizzle-orm/pglite'
 import migrations from './migrations.json'
-// import { live } from '@electric-sql/pglite/live'
+import * as chats from './schema/chats'
+import * as databases from './schema/databases'
+
+export * from './schema/chats'
+export * from './schema/databases'
 
 export const pglite = new PGlite('idb://conar', {
   extensions: {
-    // live,
+    live,
   },
 })
 
@@ -14,7 +19,22 @@ if (import.meta.env.DEV) {
   window.db = pglite
 }
 
-export const db = drizzle({ client: pglite, casing: 'snake_case' })
+export const db = drizzle({
+  client: pglite,
+  casing: 'snake_case',
+  logger: import.meta.env.DEV,
+  schema: {
+    ...databases,
+    ...chats,
+  },
+})
+
+export async function clearDb() {
+  return Promise.all([
+    db.delete(databases.databases),
+    db.delete(chats.chats),
+  ])
+}
 
 async function ensureMigrationsTable() {
   await db.execute('CREATE SCHEMA IF NOT EXISTS drizzle')

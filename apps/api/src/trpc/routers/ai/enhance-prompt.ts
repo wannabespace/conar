@@ -1,4 +1,4 @@
-import type { UIMessage } from 'ai'
+import type { AppUIMessage } from '@conar/shared/ai'
 import { google } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { type } from 'arktype'
@@ -7,7 +7,7 @@ import { protectedProcedure } from '~/trpc'
 export const enhancePrompt = protectedProcedure
   .input(type({
     prompt: 'string >= 10',
-    messages: 'object[]' as type.cast<UIMessage[]>,
+    messages: 'object[]' as type.cast<AppUIMessage[]>,
   }))
   .mutation(async ({ input, signal }) => {
     const { text } = await generateText({

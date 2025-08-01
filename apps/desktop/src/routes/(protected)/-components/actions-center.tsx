@@ -1,4 +1,4 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases as databasesTable } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { useKeyboardEvent } from '@react-hookz/web'
@@ -31,7 +31,7 @@ export function ActionsCenter() {
     trackEvent('actions_center_open_shortcut')
   })
 
-  function onDatabaseSelect(database: Database) {
+  function onDatabaseSelect(database: typeof databasesTable.$inferSelect) {
     setIsOpen(false)
 
     router.navigate({ to: '/database/$id/tables', params: { id: database.id } })

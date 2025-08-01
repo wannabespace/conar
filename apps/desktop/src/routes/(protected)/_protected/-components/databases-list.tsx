@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Skeleton } from '@conar/ui/components/skeleton'
@@ -11,7 +11,7 @@ import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/dat
 import { RemoveDatabaseDialog } from './remove-database-dialog'
 import { RenameDatabaseDialog } from './rename-database-dialog'
 
-function DatabaseCard({ database, onRemove, onRename }: { database: Database, onRemove: () => void, onRename: () => void }) {
+function DatabaseCard({ database, onRemove, onRename }: { database: typeof databases.$inferSelect, onRemove: () => void, onRename: () => void }) {
   const connectionString = useMemo(() => {
     const url = new URL(database.connectionString)
 

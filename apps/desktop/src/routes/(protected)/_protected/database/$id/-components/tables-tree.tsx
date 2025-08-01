@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -35,7 +35,7 @@ function Skeleton() {
   )
 }
 
-export function TablesTree({ database, className, search }: { database: Database, className?: string, search?: string }) {
+export function TablesTree({ database, className, search }: { database: typeof databases.$inferSelect, className?: string, search?: string }) {
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas(database)
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)

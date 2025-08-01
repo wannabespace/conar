@@ -1,9 +1,18 @@
 import type { InferUITools, UIDataTypes, UIMessage } from 'ai'
 import { tool } from 'ai'
+import { type } from 'arktype'
 import * as z from 'zod'
-import { columnSchema } from './sql/columns'
-import { enumSchema } from './sql/enums'
+import { DatabaseType } from './enums/database-type'
 import { SQL_OPERATORS } from './utils/sql'
+
+export const chatInputType = type({
+  id: 'string.uuid.v7',
+  type: type.valueOf(DatabaseType),
+  context: 'unknown',
+  prompt: 'object' as type.cast<AppUIMessage>,
+  databaseId: 'string.uuid.v7',
+  currentQuery: 'string?',
+})
 
 export const tools = {
   columns: tool({
@@ -12,12 +21,23 @@ export const tools = {
       tableName: z.string(),
       schemaName: z.string(),
     }),
-    outputSchema: z.array(columnSchema),
+    outputSchema: z.array(z.object({
+      isEditable: z.boolean(),
+      isNullable: z.boolean(),
+      table: z.string(),
+      name: z.string(),
+      type: z.string(),
+      default: z.string().nullable(),
+    })),
   }),
   enums: tool({
     description: 'Use this tool if you need to get the list of enums in a database',
     inputSchema: z.object({}),
-    outputSchema: z.array(enumSchema),
+    outputSchema: z.array(z.object({
+      schema: z.string(),
+      name: z.string(),
+      value: z.string(),
+    })),
   }),
   select: tool({
     description: 'Use this tool to select data from the database to improve your response. Do not select any sensitive data, avoid columns like password, token, secret, etc.',

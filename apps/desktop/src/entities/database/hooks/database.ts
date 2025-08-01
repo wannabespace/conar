@@ -1,11 +1,11 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { queryClient } from '~/main'
 import { updateDatabasePassword } from '../lib'
 import { databaseQuery } from '../queries/database'
 
-export function useUpdateDatabasePassword(database: Database) {
+export function useUpdateDatabasePassword(database: typeof databases.$inferSelect) {
   return useMutation({
     mutationFn: async (password: string) => {
       await updateDatabasePassword(database.id, password)

@@ -1,4 +1,4 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
@@ -12,17 +12,17 @@ import { queryClient } from '~/main'
 
 interface RenameDatabaseDialogProps {
   ref?: React.RefObject<{
-    rename: (database: Database) => void
+    rename: (database: typeof databases.$inferSelect) => void
   } | null>
 }
 
 export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
   const [open, setOpen] = useState(false)
-  const [database, setDatabase] = useState<Database | null>(null)
+  const [database, setDatabase] = useState<typeof databases.$inferSelect | null>(null)
   const [newName, setNewName] = useState('')
 
   useImperativeHandle(ref, () => ({
-    rename: (db: Database) => {
+    rename: (db: typeof databases.$inferSelect) => {
       setDatabase(db)
       setNewName(db.name)
       setOpen(true)

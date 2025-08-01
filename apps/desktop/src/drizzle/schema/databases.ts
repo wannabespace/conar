@@ -11,4 +11,5 @@ export const databases = pgTable('databases', ({ text, boolean }) => ({
   name: text().notNull(),
   connectionString: text().notNull(),
   isPasswordExists: boolean('password_exists').notNull(),
-})).enableRLS()
+  isPasswordPopulated: boolean('password_populated').notNull(),
+}))

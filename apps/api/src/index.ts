@@ -1,14 +1,15 @@
 import { serve } from '@hono/node-server'
 import { trpcServer } from '@hono/trpc-server'
+import { RPCHandler } from '@orpc/server/fetch'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { env } from './env'
 import { auth } from './lib/auth'
-import { ai as aiV1 } from './routers/ai/v1'
-import { ai as aiV2 } from './routers/ai/v2'
+import { router } from './orpc/routers'
+import { ai } from './routers/ai'
 import { createContext } from './trpc/context'
-import { appRouter } from './trpc/routers'
+import { trpcRouter } from './trpc/routers'
 
 const app = new Hono()
 
@@ -25,13 +26,27 @@ app.on(['GET', 'POST'], '/auth/*', (c) => {
 app.use(
   '/trpc/*',
   trpcServer({
-    router: appRouter,
+    router: trpcRouter,
     createContext: (_, c) => createContext(c),
   }),
 )
 
-app.route('/ai', aiV1)
-app.route('/ai/v2', aiV2)
+const handler = new RPCHandler(router)
+
+app.use('/rpc/*', async (c, next) => {
+  const { matched, response } = await handler.handle(c.req.raw, {
+    prefix: '/rpc',
+    context: createContext(c),
+  })
+
+  if (matched) {
+    return c.newResponse(response.body, response)
+  }
+
+  await next()
+})
+
+app.route('/ai', ai)
 
 serve({
   fetch: app.fetch,

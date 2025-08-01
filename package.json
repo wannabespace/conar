@@ -1,7 +1,7 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.13.1",
+  "packageManager": "pnpm@10.14.0",
   "engines": {
     "node": ">=22.0.0"
   },
@@ -18,7 +18,7 @@
     "drizzle:generate": "turbo run drizzle:generate",
     "drizzle:migrate": "turbo run drizzle:migrate",
     "check-types": "turbo run check-types",
-    "update": "taze -r"
+    "update": "taze -r -I major"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^5.0.0",

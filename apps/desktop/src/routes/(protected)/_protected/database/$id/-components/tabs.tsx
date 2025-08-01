@@ -1,7 +1,7 @@
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { ComponentProps, RefObject } from 'react'
 import type { Tab } from '../-lib/tabs'
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -159,7 +159,7 @@ function SortableTab({
 }
 
 export function TablesTabs({ database, id }: {
-  database: Database
+  database: typeof databases.$inferSelect
   id: string
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)

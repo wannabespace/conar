@@ -7,13 +7,28 @@ import { databases } from './databases'
 export const chats = pgTable('chats', {
   ...baseTable,
   databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }),
-  title: text().notNull(),
-  messages: jsonb().array().$type<AppUIMessage[]>().notNull(),
-}).enableRLS()
+  title: text(),
+})
 
-export const chatsRelations = relations(chats, ({ one }) => ({
+export const chatsMessages = pgTable('chats_messages', {
+  ...baseTable,
+  chatId: uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
+  parts: jsonb().array().$type<AppUIMessage['parts']>().notNull(),
+  role: text().$type<AppUIMessage['role']>().notNull(),
+  metadata: jsonb().$type<AppUIMessage['metadata']>(),
+})
+
+export const chatsRelations = relations(chats, ({ one, many }) => ({
   database: one(databases, {
     fields: [chats.databaseId],
     references: [databases.id],
+  }),
+  messages: many(chatsMessages),
+}))
+
+export const chatsMessagesRelations = relations(chatsMessages, ({ one }) => ({
+  chat: one(chats, {
+    fields: [chatsMessages.chatId],
+    references: [chats.id],
   }),
 }))

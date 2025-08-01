@@ -1,4 +1,4 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@conar/ui/components/command'
 import { Indicator } from '@conar/ui/components/custom/indicator'
@@ -9,7 +9,7 @@ import { useStore } from '@tanstack/react-store'
 import { usePageContext } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 
-export function HeaderActionsColumns({ database, table, schema }: { database: Database, table: string, schema: string }) {
+export function HeaderActionsColumns({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
   const { store } = usePageContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const columns = useTableColumns(database, table, schema)

@@ -1,12 +1,12 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import { prepareSql } from '@conar/shared/utils/helpers'
-import * as z from 'zod'
+import { type } from 'arktype'
 
-export const tablesAndSchemasSchema = z.object({
-  schemas: z.array(z.object({
-    name: z.string(),
-    tables: z.array(z.string()),
-  })).nullable().transform(data => data ?? []),
+export const tablesAndSchemasType = type({
+  schemas: type({
+    name: 'string',
+    tables: 'string[]',
+  }).array().or('null').pipe(data => data ?? []),
 })
 
 export function tablesAndSchemasSql(): Record<DatabaseType, string> {
@@ -33,7 +33,7 @@ export function tablesAndSchemasSql(): Record<DatabaseType, string> {
             GROUP BY s.nspname
           ) sub
         )
-      ) AS database_context;
+      ) AS tables_and_schemas;
     `),
   }
 }
