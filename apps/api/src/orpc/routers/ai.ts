@@ -107,7 +107,6 @@ export const sqlChat = orpc
   .use(authMiddleware)
   .input(chatInputType)
   .handler(async ({ input, context, signal }) => {
-    console.log('sqlChat', input, context, signal)
     await ensureChat(input.id, context.user.id, input.databaseId)
 
     const messages = [...await getMessages(input.id), input.prompt]
@@ -122,24 +121,24 @@ export const sqlChat = orpc
     })
 
     return streamToEventIterator(result.toUIMessageStream({
-      originalMessages: messages as AppUIMessage[],
+      originalMessages: messages,
       generateMessageId: () => v7(),
       onFinish: async (result) => {
-        console.log('stream finished', JSON.stringify(result.responseMessage, null, 2))
+        console.info('stream finished', JSON.stringify(result.responseMessage, null, 2))
 
         await db.transaction(async (tx) => {
           await tx.insert(chatsMessages).values({
             ...result.responseMessage,
             chatId: input.id,
           })
-          await tx.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
+          // await tx.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
         }).catch((error) => {
           console.error('error onFinish transaction', error)
           throw error
         })
       },
       onError: (error) => {
-        console.error('error', error)
+        console.error('error toUIMessageStream onError', error)
 
         return handleError(error)
       },

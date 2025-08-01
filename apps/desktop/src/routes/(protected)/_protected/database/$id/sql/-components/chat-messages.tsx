@@ -214,6 +214,7 @@ function ErrorMessage({ error, className, ...props }: { error: Error } & Compone
   return (
     <ChatMessage className={cn('relative z-20', className)} {...props}>
       <p className="text-red-500">{error.message}</p>
+      {/* <p className="text-red-500">{error.stack}</p> */}
       <div className="flex gap-2 items-center">
         <RiRefreshLine className="size-3" />
         <Button
