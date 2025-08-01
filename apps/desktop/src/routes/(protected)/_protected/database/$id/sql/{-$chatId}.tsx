@@ -87,7 +87,7 @@ function createChat({ id, database, messages }: { id: string | undefined, databa
           id: options.chatId,
           type: database.type,
           currentQuery: pageStore.state.query,
-          context: (await queryClient.ensureQueryData(tablesAndSchemasQuery(database))).schemas,
+          context: await queryClient.ensureQueryData(tablesAndSchemasQuery(database)),
           databaseId: database.id,
           prompt: lastMessage,
         }, { signal: options.abortSignal }))
