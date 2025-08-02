@@ -8,9 +8,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { useDebouncedCallback } from '@conar/ui/hookas/use-debounced-callback'
 import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
-import { clickHandlers, cn } from '@conar/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiStackLine, RiTableLine } from '@remixicon/react'
-import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { Link, useParams } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
@@ -39,7 +39,6 @@ export function TablesTree({ database, className, search }: { database: typeof d
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas(database)
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDIalog>>(null)
 
@@ -161,14 +160,6 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                     schema: schema.name,
                                     table,
                                   }}
-                                  {...clickHandlers(() => navigate({
-                                    to: '/database/$id/tables/$schema/$table',
-                                    params: {
-                                      id: database.id,
-                                      schema: schema.name,
-                                      table,
-                                    },
-                                  }))}
                                   onDoubleClick={() => addTab(database.id, schema.name, table)}
                                   className={cn(
                                     'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/60',

@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { clickHandlers, cn } from '@conar/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { restrictToHorizontalAxis } from '@dnd-kit/modifiers'
 import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
@@ -140,10 +140,10 @@ function SortableTab({
       <TabButton
         active={schemaParam === item.tab.schema && tableParam === item.tab.table}
         onClose={onClose}
-        {...clickHandlers(() => router.navigate({
+        onClick={() => router.navigate({
           to: '/database/$id/tables/$schema/$table',
           params: { id, schema: item.tab.schema, table: item.tab.table },
-        }))}
+        })}
         onDoubleClick={onDoubleClick}
       >
         {showSchema && (

@@ -17,10 +17,10 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
 import { sleep } from '~/lib/helpers'
+import { Route } from '..'
 import { pageHooks, pageStore } from '../-lib'
 import { ChatImages } from './chat-images'
 import { ChatMessageTool } from './chat-message-tools'
-import { useChatContext } from './chat-provider'
 
 function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   return (
@@ -150,7 +150,7 @@ function AssistantMessageLoader({ children, className, ...props }: ComponentProp
 }
 
 function AssistantMessage({ message, index, className, ...props }: { message: UIMessage, index: number } & ComponentProps<'div'>) {
-  const chat = useChatContext()
+  const { chat } = Route.useLoaderData()
   const { messages, status } = useChat({ chat })
   const ref = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(ref)
@@ -209,7 +209,7 @@ function AssistantMessage({ message, index, className, ...props }: { message: UI
 }
 
 function ErrorMessage({ error, className, ...props }: { error: Error } & ComponentProps<'div'>) {
-  const chat = useChatContext()
+  const { chat } = Route.useLoaderData()
 
   return (
     <ChatMessage className={cn('relative z-20', className)} {...props}>
@@ -244,7 +244,7 @@ function ErrorMessage({ error, className, ...props }: { error: Error } & Compone
 const MESSAGES_GAP = 32
 
 export function ChatMessages({ className }: ComponentProps<'div'>) {
-  const chat = useChatContext()
+  const { chat } = Route.useLoaderData()
   const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
   const isScrolled = useIsScrolled(scrollRef, { threshold: 50 })
   const { messages, error, status } = useChat({ chat })

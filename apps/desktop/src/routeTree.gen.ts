@@ -21,8 +21,8 @@ import { Route as protectedProtectedCreateRouteImport } from './routes/(protecte
 import { Route as publicAuthTwoFactorSetupRouteImport } from './routes/(public)/_auth/two-factor.setup'
 import { Route as protectedProtectedDatabaseIdRouteImport } from './routes/(protected)/_protected/database/$id'
 import { Route as protectedProtectedDatabaseIdTablesRouteImport } from './routes/(protected)/_protected/database/$id/tables'
+import { Route as protectedProtectedDatabaseIdSqlIndexRouteImport } from './routes/(protected)/_protected/database/$id/sql/index'
 import { Route as protectedProtectedDatabaseIdEnumsIndexRouteImport } from './routes/(protected)/_protected/database/$id/enums/index'
-import { Route as protectedProtectedDatabaseIdSqlChar123ChatIdChar125RouteImport } from './routes/(protected)/_protected/database/$id/sql/{-$chatId}'
 import { Route as protectedProtectedDatabaseIdTablesSchemaTableIndexRouteImport } from './routes/(protected)/_protected/database/$id/tables.$schema/$table/index'
 
 const publicRouteImport = createFileRoute('/(public)')()
@@ -88,16 +88,16 @@ const protectedProtectedDatabaseIdTablesRoute =
     path: '/tables',
     getParentRoute: () => protectedProtectedDatabaseIdRoute,
   } as any)
+const protectedProtectedDatabaseIdSqlIndexRoute =
+  protectedProtectedDatabaseIdSqlIndexRouteImport.update({
+    id: '/sql/',
+    path: '/sql/',
+    getParentRoute: () => protectedProtectedDatabaseIdRoute,
+  } as any)
 const protectedProtectedDatabaseIdEnumsIndexRoute =
   protectedProtectedDatabaseIdEnumsIndexRouteImport.update({
     id: '/enums/',
     path: '/enums/',
-    getParentRoute: () => protectedProtectedDatabaseIdRoute,
-  } as any)
-const protectedProtectedDatabaseIdSqlChar123ChatIdChar125Route =
-  protectedProtectedDatabaseIdSqlChar123ChatIdChar125RouteImport.update({
-    id: '/sql/{-$chatId}',
-    path: '/sql/{-$chatId}',
     getParentRoute: () => protectedProtectedDatabaseIdRoute,
   } as any)
 const protectedProtectedDatabaseIdTablesSchemaTableIndexRoute =
@@ -116,8 +116,8 @@ export interface FileRoutesByFullPath {
   '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
-  '/database/$id/sql/{-$chatId}': typeof protectedProtectedDatabaseIdSqlChar123ChatIdChar125Route
   '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
+  '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
   '/database/$id/tables/$schema/$table': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
 }
 export interface FileRoutesByTo {
@@ -129,8 +129,8 @@ export interface FileRoutesByTo {
   '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
   '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
-  '/database/$id/sql/{-$chatId}': typeof protectedProtectedDatabaseIdSqlChar123ChatIdChar125Route
   '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
+  '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
   '/database/$id/tables/$schema/$table': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
 }
 export interface FileRoutesById {
@@ -147,8 +147,8 @@ export interface FileRoutesById {
   '/(protected)/_protected/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
   '/(public)/_auth/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
   '/(protected)/_protected/database/$id/tables': typeof protectedProtectedDatabaseIdTablesRouteWithChildren
-  '/(protected)/_protected/database/$id/sql/{-$chatId}': typeof protectedProtectedDatabaseIdSqlChar123ChatIdChar125Route
   '/(protected)/_protected/database/$id/enums/': typeof protectedProtectedDatabaseIdEnumsIndexRoute
+  '/(protected)/_protected/database/$id/sql/': typeof protectedProtectedDatabaseIdSqlIndexRoute
   '/(protected)/_protected/database/$id/tables/$schema/$table/': typeof protectedProtectedDatabaseIdTablesSchemaTableIndexRoute
 }
 export interface FileRouteTypes {
@@ -162,8 +162,8 @@ export interface FileRouteTypes {
     | '/database/$id'
     | '/two-factor/setup'
     | '/database/$id/tables'
-    | '/database/$id/sql/{-$chatId}'
     | '/database/$id/enums'
+    | '/database/$id/sql'
     | '/database/$id/tables/$schema/$table'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -175,8 +175,8 @@ export interface FileRouteTypes {
     | '/database/$id'
     | '/two-factor/setup'
     | '/database/$id/tables'
-    | '/database/$id/sql/{-$chatId}'
     | '/database/$id/enums'
+    | '/database/$id/sql'
     | '/database/$id/tables/$schema/$table'
   id:
     | '__root__'
@@ -192,8 +192,8 @@ export interface FileRouteTypes {
     | '/(protected)/_protected/database/$id'
     | '/(public)/_auth/two-factor/setup'
     | '/(protected)/_protected/database/$id/tables'
-    | '/(protected)/_protected/database/$id/sql/{-$chatId}'
     | '/(protected)/_protected/database/$id/enums/'
+    | '/(protected)/_protected/database/$id/sql/'
     | '/(protected)/_protected/database/$id/tables/$schema/$table/'
   fileRoutesById: FileRoutesById
 }
@@ -288,18 +288,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof protectedProtectedDatabaseIdTablesRouteImport
       parentRoute: typeof protectedProtectedDatabaseIdRoute
     }
+    '/(protected)/_protected/database/$id/sql/': {
+      id: '/(protected)/_protected/database/$id/sql/'
+      path: '/sql'
+      fullPath: '/database/$id/sql'
+      preLoaderRoute: typeof protectedProtectedDatabaseIdSqlIndexRouteImport
+      parentRoute: typeof protectedProtectedDatabaseIdRoute
+    }
     '/(protected)/_protected/database/$id/enums/': {
       id: '/(protected)/_protected/database/$id/enums/'
       path: '/enums'
       fullPath: '/database/$id/enums'
       preLoaderRoute: typeof protectedProtectedDatabaseIdEnumsIndexRouteImport
-      parentRoute: typeof protectedProtectedDatabaseIdRoute
-    }
-    '/(protected)/_protected/database/$id/sql/{-$chatId}': {
-      id: '/(protected)/_protected/database/$id/sql/{-$chatId}'
-      path: '/sql/{-$chatId}'
-      fullPath: '/database/$id/sql/{-$chatId}'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdSqlChar123ChatIdChar125RouteImport
       parentRoute: typeof protectedProtectedDatabaseIdRoute
     }
     '/(protected)/_protected/database/$id/tables/$schema/$table/': {
@@ -329,18 +329,18 @@ const protectedProtectedDatabaseIdTablesRouteWithChildren =
 
 interface protectedProtectedDatabaseIdRouteChildren {
   protectedProtectedDatabaseIdTablesRoute: typeof protectedProtectedDatabaseIdTablesRouteWithChildren
-  protectedProtectedDatabaseIdSqlChar123ChatIdChar125Route: typeof protectedProtectedDatabaseIdSqlChar123ChatIdChar125Route
   protectedProtectedDatabaseIdEnumsIndexRoute: typeof protectedProtectedDatabaseIdEnumsIndexRoute
+  protectedProtectedDatabaseIdSqlIndexRoute: typeof protectedProtectedDatabaseIdSqlIndexRoute
 }
 
 const protectedProtectedDatabaseIdRouteChildren: protectedProtectedDatabaseIdRouteChildren =
   {
     protectedProtectedDatabaseIdTablesRoute:
       protectedProtectedDatabaseIdTablesRouteWithChildren,
-    protectedProtectedDatabaseIdSqlChar123ChatIdChar125Route:
-      protectedProtectedDatabaseIdSqlChar123ChatIdChar125Route,
     protectedProtectedDatabaseIdEnumsIndexRoute:
       protectedProtectedDatabaseIdEnumsIndexRoute,
+    protectedProtectedDatabaseIdSqlIndexRoute:
+      protectedProtectedDatabaseIdSqlIndexRoute,
   }
 
 const protectedProtectedDatabaseIdRouteWithChildren =

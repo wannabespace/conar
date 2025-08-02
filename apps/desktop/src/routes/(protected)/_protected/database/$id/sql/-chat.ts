@@ -1,6 +1,19 @@
-import type { AppUIMessage } from '@conar/shared/ai'
+import type { AppUIMessage, tools } from '@conar/shared/ai'
+import type { InferToolInput, InferToolOutput } from 'ai'
+import type { databases } from '~/drizzle'
+import { Chat } from '@ai-sdk/react'
+import { rowsSql } from '@conar/shared/sql/rows'
+import { whereSql } from '@conar/shared/sql/where'
+import { eventIteratorToStream } from '@orpc/client'
+import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { eq } from 'drizzle-orm'
-import { chatsMessages, db } from '~/drizzle'
+import { v7 as uuid } from 'uuid'
+import { chats, chatsMessages, db } from '~/drizzle'
+import { databaseEnumsQuery, databaseTableColumnsQuery, tablesAndSchemasQuery } from '~/entities/database'
+import { orpc } from '~/lib/orpc'
+import { dbQuery } from '~/lib/query'
+import { queryClient } from '~/main'
+import { pageStore } from './-lib'
 
 export const chatQuery = {
   get(id: string) {
@@ -63,4 +76,106 @@ export const lastOpenedChatId = {
       sessionStorage.removeItem('sql-last-chat-id')
     }
   },
+}
+
+export function createChat({ id = uuid(), database, messages }: { id?: string, database: typeof databases.$inferSelect, messages: AppUIMessage[] }) {
+  const chat = new Chat({
+    id,
+    generateId: uuid,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+    transport: {
+      async sendMessages(options) {
+        const lastMessage = options.messages.at(-1)
+
+        if (!lastMessage) {
+          throw new Error('User message not found')
+        }
+
+        await db.transaction(async (tx) => {
+          // Ensure the chat exists
+          await tx.insert(chats).values({ id: options.chatId, databaseId: database.id }).onConflictDoNothing()
+          await tx.insert(chatsMessages).values({
+            ...lastMessage,
+            chatId: options.chatId,
+          }).onConflictDoUpdate({ // If regenerating, update the message
+            target: [chatsMessages.id],
+            set: lastMessage,
+          })
+        })
+
+        return eventIteratorToStream(await orpc.ai.sqlChat({
+          id: options.chatId,
+          type: database.type,
+          currentQuery: pageStore.state.query,
+          context: await queryClient.ensureQueryData(tablesAndSchemasQuery(database)),
+          databaseId: database.id,
+          prompt: lastMessage,
+        }, { signal: options.abortSignal }))
+      },
+      reconnectToStream() {
+        throw new Error('Unsupported')
+      },
+    },
+    messages,
+    onFinish: async ({ message }) => {
+      await chatMessages.set(id, message)
+    },
+    onToolCall: async ({ toolCall }) => {
+      if (toolCall.toolName === 'columns') {
+        const input = toolCall.input as InferToolInput<typeof tools.columns>
+        const output = await queryClient.fetchQuery(databaseTableColumnsQuery(
+          database,
+          input.tableName,
+          input.schemaName,
+        )) satisfies InferToolOutput<typeof tools.columns>
+
+        chat.addToolResult({
+          tool: 'columns',
+          toolCallId: toolCall.toolCallId,
+          output,
+        })
+      }
+      else if (toolCall.toolName === 'enums') {
+        const output = await queryClient.fetchQuery(databaseEnumsQuery(database)).then(results => results.flatMap(r => r.values.map(v => ({
+          schema: r.schema,
+          name: r.name,
+          value: v,
+        })))) satisfies InferToolOutput<typeof tools.enums>
+
+        chat.addToolResult({
+          tool: 'enums',
+          toolCallId: toolCall.toolCallId,
+          output,
+        })
+      }
+      else if (toolCall.toolName === 'select') {
+        const input = toolCall.input as InferToolInput<typeof tools.select>
+        const output = await dbQuery({
+          type: database.type,
+          connectionString: database.connectionString,
+          query: rowsSql(input.schemaName, input.tableName, {
+            limit: input.limit,
+            offset: input.offset,
+            orderBy: input.orderBy,
+            select: input.select,
+            where: whereSql(input.whereFilters, input.whereConcatOperator)[database.type],
+          })[database.type],
+        }).then(results => results.map(r => r.rows).flat()) satisfies InferToolOutput<typeof tools.select>
+
+        chat.addToolResult({
+          tool: 'select',
+          toolCallId: toolCall.toolCallId,
+          output,
+        })
+      }
+    },
+  })
+
+  if (chat.messages.at(-1)?.role === 'user') {
+    setTimeout(() => {
+      chat.regenerate()
+    }, 0)
+  }
+
+  return chat
 }

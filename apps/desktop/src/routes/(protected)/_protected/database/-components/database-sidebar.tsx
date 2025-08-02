@@ -3,9 +3,9 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { clickHandlers, cn } from '@conar/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import { RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
-import { Link, useMatches, useNavigate, useParams } from '@tanstack/react-router'
+import { Link, useMatches, useParams } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
@@ -18,7 +18,6 @@ const os = getOS(navigator.userAgent)
 export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { id } = Route.useParams()
   const { table: tableParam, schema: schemaParam } = useParams({ strict: false })
-  const navigate = useNavigate()
   const matches = useMatches({
     select: matches => matches.map(match => match.routeId),
   })
@@ -30,7 +29,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
     }
   }, [tableParam, schemaParam])
 
-  const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/{-$chatId}')
+  const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/tables')
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
 
@@ -83,13 +82,9 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
-                    to="/database/$id/sql/{-$chatId}"
+                    to="/database/$id/sql"
                     params={{ id }}
                     className={classes(isActiveSql)}
-                    {...clickHandlers(() => navigate({
-                      to: '/database/$id/sql/{-$chatId}',
-                      params: { id },
-                    }))}
                   >
                     <RiPlayLargeLine className="size-4" />
                   </Link>
@@ -102,10 +97,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
                 <TooltipTrigger asChild>
                   <Link
                     className={classes(isActiveTables)}
-                    {...clickHandlers(() => {
-                      onTablesClick()
-                      navigate(route)
-                    })}
+                    onClick={onTablesClick}
                     {...route}
                   >
                     <RiTableLine className="size-4" />
@@ -121,10 +113,6 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
                     to="/database/$id/enums"
                     params={{ id }}
                     className={classes(isActiveEnums)}
-                    {...clickHandlers(() => navigate({
-                      to: '/database/$id/enums',
-                      params: { id },
-                    }))}
                   >
                     <RiListUnordered className="size-4" />
                   </Link>

@@ -8,20 +8,20 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
+import { useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { trpc } from '~/lib/trpc'
+import { Route } from '..'
 import { chatInput } from '../-chat'
 import { pageHooks, pageStore } from '../-lib'
-import { Route } from '../{-$chatId}'
 import { ChatImages } from './chat-images'
-import { useChatContext } from './chat-provider'
 
 export function ChatForm() {
-  const chat = useChatContext()
-  const { database } = Route.useLoaderData()
+  const { database, chat } = Route.useLoaderData()
+  const router = useRouter()
   const [input, setInput] = useState(chatInput.get(database.id))
   const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
@@ -59,6 +59,12 @@ export function ChatForm() {
       }))
 
       pageHooks.callHook('sendMessage')
+
+      router.navigate({
+        to: '/database/$id/sql',
+        params: { id: database.id },
+        search: { chatId: chat.id },
+      })
 
       await chat.sendMessage({
         role: 'user',

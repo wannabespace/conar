@@ -4,9 +4,11 @@
 import type { BuildRelationalQueryResult, TableRelationalConfig, TablesRelationalConfig } from 'drizzle-orm'
 import type { PgRelationalQuery } from 'drizzle-orm/pg-core/query-builders/query'
 import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
+import { useQuery } from '@tanstack/react-query'
 import { Column, is, One, SQL } from 'drizzle-orm'
-import { useState } from 'react'
+import { useMemo } from 'react'
 import { db as drizzle, pg } from '~/drizzle'
+import { queryClient } from '~/main'
 
 function mapRelationalRow(
   tablesConfig: TablesRelationalConfig,
@@ -63,7 +65,7 @@ function mapRelationalRow(
   return result
 }
 
-function processQueryResults<T>(query: T, rawRows: any[]): Record<string, any>[] {
+function processQueryResults<T>(query: T, rawRows: any[]) {
   return rawRows.map((row) => {
     return mapRelationalRow(
       (query as any).schema,
@@ -75,26 +77,18 @@ function processQueryResults<T>(query: T, rawRows: any[]): Record<string, any>[]
 }
 
 export function useDrizzleLive<T extends PgRelationalQuery<unknown>>(query: (db: typeof drizzle) => T) {
-  const [result, setResult] = useState<{
-    status: 'loading'
-    data: null
-  } | {
-    status: 'ready'
-    data: NonNullable<T['_']['result']>
-  }>({
-    status: 'loading',
-    data: null,
+  const q = useMemo(() => query(drizzle), [query])
+  const sql = q.toSQL()
+  const key = useMemo(() => ['drizzle-live', sql.sql, sql.params], [sql.sql, sql.params])
+  const tanstackQuery = useQuery({
+    queryKey: key,
+    queryFn: () => [] as NonNullable<T['_']['result']>,
+    enabled: false,
   })
 
   useAsyncEffect(async () => {
-    const q = query(drizzle)
-    const sql = q.toSQL()
-
     const live = await pg.live.query(sql.sql, sql.params, (results) => {
-      setResult({
-        status: 'ready',
-        data: processQueryResults(q, results?.rows || []),
-      })
+      queryClient.setQueryData(key, processQueryResults(q, results?.rows || []))
     })
 
     return () => {
@@ -102,5 +96,5 @@ export function useDrizzleLive<T extends PgRelationalQuery<unknown>>(query: (db:
     }
   }, [query])
 
-  return result
+  return tanstackQuery
 }
