@@ -8,7 +8,8 @@ import * as databases from './schema/databases'
 export * from './schema/chats'
 export * from './schema/databases'
 
-export const pglite = new PGlite('idb://conar', {
+// eslint-disable-next-line antfu/no-top-level-await
+export const pg = await PGlite.create('idb://conar', {
   extensions: {
     live,
   },
@@ -16,11 +17,11 @@ export const pglite = new PGlite('idb://conar', {
 
 if (import.meta.env.DEV) {
   // @ts-expect-error - window.db is not typed
-  window.db = pglite
+  window.db = pg
 }
 
 export const db = drizzle({
-  client: pglite,
+  client: pg,
   casing: 'snake_case',
   logger: import.meta.env.DEV,
   schema: {

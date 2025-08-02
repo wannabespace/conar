@@ -106,6 +106,12 @@ async function ensureChat(id: string, userId: string, databaseId: string) {
 export const sqlChat = orpc
   .use(authMiddleware)
   .input(chatInputType)
+  .use(async ({ context, next }) => {
+    context.setHeader('Transfer-Encoding', 'chunked')
+    context.setHeader('Connection', 'keep-alive')
+
+    return next()
+  })
   .handler(async ({ input, context, signal }) => {
     await ensureChat(input.id, context.user.id, input.databaseId)
 

@@ -1,20 +1,24 @@
-import { useChat } from '@ai-sdk/react'
-import { Button } from '@conar/ui/components/button'
+// import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiDeleteBinLine } from '@remixicon/react'
-import { useChatContext } from './chat-provider'
+// import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+// import { RiDeleteBinLine } from '@remixicon/react'
+import { useDrizzleLive } from '~/hooks/use-drizzle-live'
 
 export function ChatHeader() {
-  const chat = useChatContext()
-  const { messages, setMessages } = useChat({ chat })
+  const { data, status } = useDrizzleLive(db => db.query.chats.findMany({
+    with: {
+      messages: true,
+    },
+  }))
+
+  console.log(data, status)
 
   return (
     <div className="flex justify-between items-center h-8">
       <CardTitle className="flex items-center gap-2">
         AI Assistant
       </CardTitle>
-      {messages.length > 0 && (
+      {/* {messages.length > 0 && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -31,7 +35,7 @@ export function ChatHeader() {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      )}
+      )} */}
     </div>
   )
 }

@@ -14,6 +14,9 @@ export async function createContext(c: HonoContext) {
 
   return {
     headers: h,
+    setHeader: (key: string, value: string) => {
+      c.res.headers.set(key, value)
+    },
   }
 }
 
