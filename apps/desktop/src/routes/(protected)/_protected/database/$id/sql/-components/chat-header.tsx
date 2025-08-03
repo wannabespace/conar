@@ -1,4 +1,4 @@
-import type { chats, chatsMessages } from '~/drizzle'
+import type { chats } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -17,10 +17,6 @@ import { useDrizzleLive } from '~/hooks/use-drizzle-live'
 import { Route } from '..'
 import { lastOpenedChatId } from '../-chat'
 
-type Chat = typeof chats.$inferSelect & {
-  messages: typeof chatsMessages.$inferSelect[]
-}
-
 type Group = 'today' | 'yesterday' | 'week' | 'month' | 'older'
 
 const groupLabelMap: Record<Group, string> = {
@@ -31,8 +27,8 @@ const groupLabelMap: Record<Group, string> = {
   older: 'Older',
 }
 
-function groupChats(chats: Chat[]) {
-  const groups: Record<Group, Chat[]> = {
+function groupChats(data: typeof chats.$inferSelect[]) {
+  const groups: Record<Group, typeof chats.$inferSelect[]> = {
     today: [],
     yesterday: [],
     week: [],
@@ -45,7 +41,7 @@ function groupChats(chats: Chat[]) {
   const thisMonth = now.month()
   const thisYear = now.year()
 
-  for (const chat of chats) {
+  for (const chat of data) {
     const chatDate = dayjs(chat.createdAt)
 
     if (chatDate.isToday()) {
@@ -73,9 +69,7 @@ function groupChats(chats: Chat[]) {
 export function ChatHeader() {
   const { id } = Route.useParams()
   const { data = [] } = useDrizzleLive(db => db.query.chats.findMany({
-    with: {
-      messages: true,
-    },
+    orderBy: (chatsMessages, { desc }) => [desc(chatsMessages.createdAt)],
   }))
 
   const grouped = groupChats(data)

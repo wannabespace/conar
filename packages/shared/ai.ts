@@ -12,6 +12,8 @@ export const chatInputType = type({
   prompt: 'object' as type.cast<AppUIMessage>,
   databaseId: 'string.uuid.v7',
   fallback: 'boolean?',
+  trigger: '"submit-message" | "regenerate-message"',
+  messageId: 'string.uuid.v7?',
 })
 
 export const tools = {
@@ -60,7 +62,9 @@ export const tools = {
 }
 
 export type AppUIMessage = UIMessage<
-  unknown,
+  {
+    createdAt: number
+  },
   UIDataTypes,
   InferUITools<typeof tools>
 >

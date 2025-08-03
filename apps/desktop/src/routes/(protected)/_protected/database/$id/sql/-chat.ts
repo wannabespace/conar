@@ -82,39 +82,46 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         const lastMessage = options.messages.at(-1)
 
         if (!lastMessage) {
-          throw new Error('User message not found')
+          throw new Error('Last message not found')
         }
 
         await db.transaction(async (tx) => {
-          // Ensure the chat exists
-          await tx.insert(chats).values({ id: options.chatId, databaseId: database.id }).onConflictDoNothing()
-          await tx.insert(chatsMessages).values({
-            ...lastMessage,
-            chatId: options.chatId,
-          }).onConflictDoUpdate({ // If regenerating, update the message
-            target: [chatsMessages.id],
-            set: lastMessage,
-          })
+          if (options.trigger === 'submit-message') {
+            await tx.insert(chats).values({ id: options.chatId, databaseId: database.id }).onConflictDoNothing()
+            await tx.insert(chatsMessages).values({
+              ...lastMessage,
+              chatId: options.chatId,
+            })
+          }
+
+          if (options.trigger === 'regenerate-message' && options.messageId) {
+            await tx.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId))
+          }
         })
 
         return eventIteratorToStream(await orpc.ai.chat({
           ...options.body,
           id: options.chatId,
           type: database.type,
-          context: `Current query in the SQL runner: ${pageStore.state.query}
-          Database schemas and tables: ${await queryClient.ensureQueryData(tablesAndSchemasQuery(database))}`,
           databaseId: database.id,
           prompt: lastMessage,
+          trigger: options.trigger,
+          messageId: options.messageId,
+          context: `Current query in the SQL runner: ${pageStore.state.query}
+          Database schemas and tables: ${await queryClient.ensureQueryData(tablesAndSchemasQuery(database))}`,
         }, { signal: options.abortSignal }))
       },
       reconnectToStream() {
         throw new Error('Unsupported')
       },
     },
-    messages: await db.select().from(chatsMessages).where(eq(chatsMessages.chatId, id)).orderBy(asc(chatsMessages.createdAt)),
+    messages: await db.select().from(chatsMessages).where(eq(chatsMessages.chatId, id)).orderBy(asc(chatsMessages.createdAt)).then(rows => rows.map(row => ({
+      ...row,
+      metadata: row.metadata || undefined,
+    }))) satisfies AppUIMessage[],
     onFinish: async ({ message }) => {
       await db.insert(chatsMessages).values({ chatId: id, ...message }).onConflictDoUpdate({
-        target: [chatsMessages.id],
+        target: chatsMessages.id,
         set: message,
       })
     },

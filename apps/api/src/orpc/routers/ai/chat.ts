@@ -4,7 +4,7 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { chatInputType, tools } from '@conar/shared/ai'
 import { streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
-import { eq } from 'drizzle-orm'
+import { asc, eq } from 'drizzle-orm'
 // import { createResumableStreamContext } from 'resumable-stream'
 import { v7 } from 'uuid'
 import { chats, chatsMessages, db } from '~/drizzle'
@@ -22,15 +22,6 @@ function handleError(error: unknown) {
     return 'Sorry, I was unable to generate a response due to high load. Please try again later.'
   }
   return 'Sorry, I was unable to generate a response due to an error. Please try again.'
-}
-
-async function getMessages(chatId: string) {
-  const rows = await db.select().from(chatsMessages).where(eq(chatsMessages.chatId, chatId))
-
-  return rows.map(row => ({
-    ...row,
-    metadata: row.metadata || undefined,
-  })) satisfies AppUIMessage[]
 }
 
 function generateStream({
@@ -85,21 +76,21 @@ function generateStream({
   })
 }
 
-async function ensureChat(id: string, userId: string, databaseId: string) {
-  const [chat] = await db.select()
-    .from(chats)
-    .where(eq(chats.id, id))
+// async function ensureChat(id: string, userId: string, databaseId: string) {
+//   const [chat] = await db.select()
+//     .from(chats)
+//     .where(eq(chats.id, id))
 
-  if (chat) {
-    return chat
-  }
+//   if (chat) {
+//     return chat
+//   }
 
-  const [createdChat] = await db.insert(chats)
-    .values({ id, userId, databaseId })
-    .returning()
+//   const [createdChat] = await db.insert(chats)
+//     .values({ id, userId, databaseId })
+//     .returning()
 
-  return createdChat
-}
+//   return createdChat
+// }
 
 // async function _generateTitle(messages: AppUIMessage[]) {
 //   const { text } = await generateText({
@@ -130,9 +121,24 @@ export const chat = orpc
   })
   .input(chatInputType)
   .handler(async ({ input, context, signal }) => {
-    await ensureChat(input.id, context.user.id, input.databaseId)
+    await db.transaction(async (tx) => {
+      if (input.trigger === 'submit-message') {
+        await tx.insert(chats).values({ id: input.id, userId: context.user.id, databaseId: input.databaseId }).onConflictDoNothing()
+        await tx.insert(chatsMessages).values({
+          chatId: input.id,
+          ...input.prompt,
+        })
+      }
 
-    const messages = [...await getMessages(input.id), input.prompt]
+      if (input.trigger === 'regenerate-message' && input.messageId) {
+        await tx.delete(chatsMessages).where(eq(chatsMessages.id, input.messageId))
+      }
+    })
+
+    const messages = await db.select().from(chatsMessages).where(eq(chatsMessages.chatId, input.id)).orderBy(asc(chatsMessages.createdAt)).then(rows => rows.map(row => ({
+      ...row,
+      metadata: row.metadata || undefined,
+    }))) satisfies AppUIMessage[]
 
     const result = generateStream({
       type: input.type,
@@ -153,9 +159,6 @@ export const chat = orpc
             await tx.insert(chatsMessages).values({
               ...result.responseMessage,
               chatId: input.id,
-            }).onConflictDoUpdate({ // if regenerated
-              target: chatsMessages.id,
-              set: result.responseMessage,
             })
             // await tx.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
           })

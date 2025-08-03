@@ -1,4 +1,5 @@
 import type { UIMessage } from '@ai-sdk/react'
+import type { ChatStatus } from 'ai'
 import type { ComponentProps, ReactNode } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
@@ -150,9 +151,8 @@ function AssistantMessageLoader({ children, className, ...props }: ComponentProp
   )
 }
 
-function AssistantMessage({ message, index, className, ...props }: { message: UIMessage, index: number } & ComponentProps<'div'>) {
+function AssistantMessage({ message, isLast, status, className, ...props }: { message: UIMessage, isLast: boolean, status: ChatStatus } & ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()
-  const { messages, status } = useChat({ chat })
   const ref = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(ref)
 
@@ -164,8 +164,6 @@ function AssistantMessage({ message, index, className, ...props }: { message: UI
     await sleep(0)
     pageHooks.callHook('focusRunner')
   }
-
-  const isLast = index === messages.length - 1
 
   const isLoading = isLast ? status === 'streaming' || status === 'submitted' : false
 
@@ -195,7 +193,7 @@ function AssistantMessage({ message, index, className, ...props }: { message: UI
               icon={<RiRestartLine className="size-4 text-muted-foreground" />}
               tooltip="Regenerate message"
               disabled={status === 'streaming' || status === 'submitted'}
-              onClick={() => chat.regenerate()}
+              onClick={() => chat.regenerate({ messageId: message.id })}
             />
           )}
           <ChatMessageFooterButton
@@ -208,6 +206,7 @@ function AssistantMessage({ message, index, className, ...props }: { message: UI
     </ChatMessage>
   )
 }
+
 function ErrorMessage({ error, className, ...props }: { error: Error } & ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()
 
@@ -295,7 +294,8 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
                 <AssistantMessage
                   key={message.id}
                   message={message}
-                  index={index}
+                  isLast={index === messages.length - 1}
+                  status={status}
                   style={{
                     minHeight: index === messages.length - 1 ? `${placeholderHeight}px` : undefined,
                   }}
