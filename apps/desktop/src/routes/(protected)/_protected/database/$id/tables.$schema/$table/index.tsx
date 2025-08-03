@@ -21,7 +21,7 @@ const storeState = type({
   }).array(),
   hiddenColumns: 'string[]',
   orderBy: {
-    '[string]': 'string' as type.cast<'ASC' | 'DESC'>,
+    '[string]': '"ASC" | "DESC"',
   },
   prompt: 'string',
 })

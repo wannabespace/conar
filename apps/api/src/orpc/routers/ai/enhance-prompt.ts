@@ -2,14 +2,15 @@ import type { AppUIMessage } from '@conar/shared/ai'
 import { google } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { type } from 'arktype'
-import { protectedProcedure } from '~/trpc'
+import { authMiddleware, orpc } from '~/orpc'
 
-export const enhancePrompt = protectedProcedure
+export const enhancePrompt = orpc
+  .use(authMiddleware)
   .input(type({
-    prompt: 'string >= 10',
+    prompt: 'string',
     messages: 'object[]' as type.cast<AppUIMessage[]>,
   }))
-  .mutation(async ({ input, signal }) => {
+  .handler(async ({ input, signal }) => {
     const { text } = await generateText({
       model: google('gemini-2.5-flash'),
       system: `

@@ -8,12 +8,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
+import { useLocation, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
-import { trpc } from '~/lib/trpc'
+import { orpc } from '~/lib/orpc'
 import { Route } from '..'
 import { chatInput } from '../-chat'
 import { pageHooks, pageStore } from '../-lib'
@@ -22,6 +22,7 @@ import { ChatImages } from './chat-images'
 export function ChatForm() {
   const { database, chat } = Route.useLoaderData()
   const router = useRouter()
+  const location = useLocation()
   const [input, setInput] = useState(chatInput.get(database.id))
   const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
@@ -32,7 +33,6 @@ export function ChatForm() {
 
   useEffect(() => {
     if (ref.current) {
-      // TODO: fix focus
       ref.current.editor.commands.focus('end')
     }
   }, [ref])
@@ -60,11 +60,14 @@ export function ChatForm() {
 
       pageHooks.callHook('sendMessage')
 
-      router.navigate({
-        to: '/database/$id/sql',
-        params: { id: database.id },
-        search: { chatId: chat.id },
-      })
+      if (location.search.chatId !== chat.id) {
+        router.navigate({
+          to: '/database/$id/sql',
+          params: { id: database.id },
+          search: { chatId: chat.id },
+          replace: true,
+        })
+      }
 
       await chat.sendMessage({
         role: 'user',
@@ -106,7 +109,7 @@ export function ChatForm() {
   }, [handleSend])
 
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation({
-    mutationFn: trpc.ai.enhancePrompt.mutate,
+    mutationFn: orpc.ai.enhancePrompt,
     onSuccess: (data) => {
       if (data === input) {
         toast.info('Prompt cannot be enhanced', {

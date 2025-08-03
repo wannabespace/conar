@@ -8,10 +8,10 @@ import { eq } from 'drizzle-orm'
 // import { createResumableStreamContext } from 'resumable-stream'
 import { v7 } from 'uuid'
 import { chats, chatsMessages, db } from '~/drizzle'
-import { authMiddleware, orpc } from '..'
+import { authMiddleware, orpc } from '~/orpc'
 
-const mainModel = anthropic('claude-3-7-sonnet-20250219')
-// const fallbackModel = anthropic('claude-3-5-haiku-latest')
+const mainModel = anthropic('claude-sonnet-4-20250514')
+const fallbackModel = anthropic('claude-opus-4-20250514')
 
 // const streamContext = createResumableStreamContext({
 //   waitUntil: null,
@@ -37,14 +37,12 @@ function generateStream({
   messages,
   type,
   context,
-  currentQuery,
   model,
   signal,
 }: {
   messages: AppUIMessage[]
   type: typeof chatInputType.infer['type']
   context: typeof chatInputType.infer['context']
-  currentQuery?: string
   model: LanguageModel
   signal?: AbortSignal
 }) {
@@ -70,11 +68,11 @@ function generateStream({
         Additional information:
         - Current date and time: ${new Date().toISOString()}
 
-        Current code in the SQL runner that user is editing:
-        ${currentQuery || 'Empty'}
+        You can use the following tools to help you generate the SQL code:
+        - ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}
 
-        Database Context:
-        ${JSON.stringify(context, null, 2)}
+        User provided context:
+        ${context}
       `.trim(),
       },
       ...convertToModelMessages(messages),
@@ -103,15 +101,34 @@ async function ensureChat(id: string, userId: string, databaseId: string) {
   return createdChat
 }
 
-export const sqlChat = orpc
+// async function _generateTitle(messages: AppUIMessage[]) {
+//   const { text } = await generateText({
+//     model: google('gemini-2.5-flash'),
+//     messages: [
+//       {
+//         role: 'system',
+//         content: `
+//           You are a title generator that generates a title for a chat.
+//           The title should be a short, descriptive title for the chat.
+//           The title should be in the same language as the user's message.
+//         `,
+//       },
+//       ...convertToModelMessages(messages),
+//     ],
+//   })
+
+//   return text
+// }
+
+export const chat = orpc
   .use(authMiddleware)
-  .input(chatInputType)
   .use(async ({ context, next }) => {
     context.setHeader('Transfer-Encoding', 'chunked')
     context.setHeader('Connection', 'keep-alive')
 
     return next()
   })
+  .input(chatInputType)
   .handler(async ({ input, context, signal }) => {
     await ensureChat(input.id, context.user.id, input.databaseId)
 
@@ -119,10 +136,9 @@ export const sqlChat = orpc
 
     const result = generateStream({
       type: input.type,
-      model: mainModel,
+      model: input.fallback ? fallbackModel : mainModel,
       context: input.context,
       messages,
-      currentQuery: input.currentQuery,
       signal,
     })
 
@@ -132,16 +148,22 @@ export const sqlChat = orpc
       onFinish: async (result) => {
         console.info('stream finished', JSON.stringify(result.responseMessage, null, 2))
 
-        await db.transaction(async (tx) => {
-          await tx.insert(chatsMessages).values({
-            ...result.responseMessage,
-            chatId: input.id,
+        try {
+          await db.transaction(async (tx) => {
+            await tx.insert(chatsMessages).values({
+              ...result.responseMessage,
+              chatId: input.id,
+            }).onConflictDoUpdate({ // if regenerated
+              target: chatsMessages.id,
+              set: result.responseMessage,
+            })
+            // await tx.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
           })
-          // await tx.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
-        }).catch((error) => {
+        }
+        catch (error) {
           console.error('error onFinish transaction', error)
           throw error
-        })
+        }
       },
       onError: (error) => {
         console.error('error toUIMessageStream onError', error)

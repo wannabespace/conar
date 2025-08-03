@@ -1,6 +1,7 @@
 import type { UIMessage } from '@ai-sdk/react'
 import type { ComponentProps, ReactNode } from 'react'
 import { useChat } from '@ai-sdk/react'
+import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -10,7 +11,7 @@ import { useIsMounted } from '@conar/ui/hookas/use-is-mounted'
 import { useIsScrolled } from '@conar/ui/hookas/use-is-scrolled'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiArrowDownSLine, RiFileCopyLine, RiRefreshLine, RiRestartLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiFileCopyLine, RiRestartLine } from '@remixicon/react'
 import { isToolUIPart } from 'ai'
 import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
@@ -207,36 +208,39 @@ function AssistantMessage({ message, index, className, ...props }: { message: UI
     </ChatMessage>
   )
 }
-
 function ErrorMessage({ error, className, ...props }: { error: Error } & ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()
 
   return (
-    <ChatMessage className={cn('relative z-20', className)} {...props}>
-      <p className="text-red-500">{error.message}</p>
-      {/* <p className="text-red-500">{error.stack}</p> */}
-      <div className="flex gap-2 items-center">
-        <RiRefreshLine className="size-3" />
-        <Button
-          variant="secondary"
-          size="xs"
-          onClick={() => chat.regenerate()}
-        >
-          Regenerate
-        </Button>
-        <span>or</span>
-        <Button
-          variant="outline"
-          size="xs"
-          onClick={() => chat.regenerate({
-            body: {
-              fallback: true,
-            },
-          })}
-        >
-          Use fallback model
-        </Button>
-      </div>
+    <ChatMessage
+      className={cn(
+        'relative z-20 flex justify-center',
+        className,
+      )}
+      {...props}
+    >
+      <Alert>
+        <RiAlertLine />
+        <AlertTitle>Error generating response</AlertTitle>
+        <AlertDescription>
+          <p>{error.message}</p>
+          <div className="flex gap-2 mt-2">
+            <Button
+              size="sm"
+              onClick={() => chat.regenerate()}
+            >
+              Retry
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => chat.regenerate({ body: { fallback: true } })}
+            >
+              Retry with fallback model
+            </Button>
+          </div>
+        </AlertDescription>
+      </Alert>
     </ChatMessage>
   )
 }

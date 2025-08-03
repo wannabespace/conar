@@ -9,7 +9,7 @@ import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { useDatabase, useDatabaseEnums } from '~/entities/database'
-import { trpc } from '~/lib/trpc'
+import { orpc } from '~/lib/orpc'
 import { Route, usePageContext } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 
@@ -19,7 +19,7 @@ export function HeaderSearch() {
   const { store } = usePageContext()
   const prompt = useStore(store, state => state.prompt)
   const { mutate: generateFilter, isPending } = useMutation({
-    mutationFn: trpc.ai.filters.mutate,
+    mutationFn: orpc.ai.filters,
     onSuccess: (data) => {
       store.setState(state => ({
         ...state,

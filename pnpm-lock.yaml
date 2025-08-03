@@ -6,18 +6,57 @@ settings:
 
 catalogs:
   default:
+    '@remixicon/react':
+      specifier: ^4.6.0
+      version: 4.6.0
+    '@tanstack/react-query':
+      specifier: ^5.84.1
+      version: 5.84.1
+    '@tanstack/react-query-devtools':
+      specifier: ^5.84.1
+      version: 5.84.1
+    '@tanstack/react-router':
+      specifier: ^1.130.12
+      version: 1.130.12
+    '@tanstack/react-router-devtools':
+      specifier: ^1.130.13
+      version: 1.130.13
+    '@types/react':
+      specifier: ^19.1.9
+      version: 19.1.9
+    '@types/react-dom':
+      specifier: ^19.1.7
+      version: 19.1.7
     ai:
       specifier: ^5.0.0
       version: 5.0.0
     arktype:
       specifier: ^2.1.20
       version: 2.1.20
+    babel-plugin-react-compiler:
+      specifier: 19.1.0-rc.2
+      version: 19.1.0-rc.2
     drizzle-kit:
       specifier: ^0.31.4
       version: 0.31.4
     drizzle-orm:
       specifier: ^0.44.4
       version: 0.44.4
+    react:
+      specifier: ^19.1.1
+      version: 19.1.1
+    react-dom:
+      specifier: ^19.1.1
+      version: 19.1.1
+    sonner:
+      specifier: ^2.0.7
+      version: 2.0.7
+    tailwindcss:
+      specifier: ^4.1.11
+      version: 4.1.11
+    typescript:
+      specifier: ^5.9.2
+      version: 5.9.2
     uuid:
       specifier: ^11.1.0
       version: 11.1.0
@@ -117,8 +156,8 @@ importers:
         specifier: ^0.7.2
         version: 0.7.2(hono@4.8.12)(zod@4.0.14)
       '@orpc/server':
-        specifier: ^1.7.8
-        version: 1.7.8(crossws@0.3.5)
+        specifier: ^1.7.9
+        version: 1.7.9(crossws@0.3.5)
       '@trpc/server':
         specifier: ^11.4.3
         version: 11.4.3(typescript@5.9.2)
@@ -232,12 +271,9 @@ importers:
       '@number-flow/react':
         specifier: ^0.5.10
         version: 0.5.10(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@orpc/client':
-        specifier: ^1.7.8
-        version: 1.7.8
       '@orpc/server':
-        specifier: ^1.7.8
-        version: 1.7.8(crossws@0.3.5)
+        specifier: ^1.7.9
+        version: 1.7.9(crossws@0.3.5)
       '@react-hookz/web':
         specifier: ^25.1.1
         version: 25.1.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -362,8 +398,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
       sonner:
-        specifier: ^2.0.6
-        version: 2.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: 'catalog:'
+        version: 2.0.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       sql-formatter:
         specifier: ^15.6.6
         version: 15.6.6
@@ -440,8 +476,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.1.9)(react@19.1.1)
       sonner:
-        specifier: ^2.0.6
-        version: 2.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^2.0.7
+        version: 2.0.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       superjson:
         specifier: ^2.2.2
         version: 2.2.2
@@ -601,8 +637,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       sonner:
-        specifier: ^2.0.6
-        version: 2.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^2.0.7
+        version: 2.0.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.3.1
@@ -2003,14 +2039,14 @@ packages:
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
 
-  '@orpc/client@1.7.8':
-    resolution: {integrity: sha512-12yL6SV1keyzSeUBke8YLPu7WR9XohTX2t34iigpBBoMir9rEDaGx0fFtf0tZSM/dlSpywQkwFnkXsqKF056Tg==}
+  '@orpc/client@1.7.9':
+    resolution: {integrity: sha512-yuhrOl3SIGxGm66Q4uSic8hl5dniKJYOCD5tmyQdGDrZuiP8zSjEK6tTPYHODmbagf2KdlblqoMte5A/MmRBCw==}
 
-  '@orpc/contract@1.7.8':
-    resolution: {integrity: sha512-v74KnmBmhcd852wHe2V7LUrTZm3WaqLSrq6/k0hlRfhWzuBxJ9OjFwNfDCBBGTk45hTMCnbA/pHClN2X7R/gzw==}
+  '@orpc/contract@1.7.9':
+    resolution: {integrity: sha512-fU1K9DxRMl9lb1h/ek66qcIgnJ0iKhTd07i/5Ukf9fzq4dphOAKlsqAlJG7Mw7vdOKpUvTVO1uigjVjvdxsPXw==}
 
-  '@orpc/server@1.7.8':
-    resolution: {integrity: sha512-A+4RQvX+DO+Mz5UuYmJeTsGItfrTFwDP2v/h7iXDEFCrzRySpfHgpzbdt2maM/t+VqkoTlm7MjrKbCDULIO+7Q==}
+  '@orpc/server@1.7.9':
+    resolution: {integrity: sha512-iTa22o62XsuJeS0pKRy0ItRQlqCnaaDGlnHguntxehU6mdjNV0Sh8Wtvf5jB73UgMM5BfijFxSx8RnLbn55+tw==}
     peerDependencies:
       crossws: '>=0.3.4'
       ws: '>=8.18.1'
@@ -2020,23 +2056,23 @@ packages:
       ws:
         optional: true
 
-  '@orpc/shared@1.7.8':
-    resolution: {integrity: sha512-gHigqS9lSAJd83TjpSXq74rq8R2+6ZEyZHOyO133qsbqBipNWfQgu5HHa9UfjWB4av70fFqy1yyVqrWSZ3TNCA==}
+  '@orpc/shared@1.7.9':
+    resolution: {integrity: sha512-G9wKRhwjvOQG+Scs4TI4GbPIrsFXMqd7AMVbn0ycB6xVMc9OE39Sjoilo/wBshLdMWs/bszzoqgvYHjG0y76wQ==}
 
-  '@orpc/standard-server-aws-lambda@1.7.8':
-    resolution: {integrity: sha512-v40tghWFijR8egZ76ky5qKEw8UQRo7hhlMHxTZxUjkebCHiUXqjp8nvJFtwzRrRjAmWhe6nKN1AIri1qlUG/mw==}
+  '@orpc/standard-server-aws-lambda@1.7.9':
+    resolution: {integrity: sha512-Vebxh0t1mm0Fckx0coGVpYXoOMCSoFxFJrvqkVH2GJgmuILokbTE9gfrbImj1dx9pizBR1m+qic8xTHomfuTog==}
 
-  '@orpc/standard-server-fetch@1.7.8':
-    resolution: {integrity: sha512-Qgj3sqZki4Qn4TsLiLiWfF4CsBt5v1+kLAkPQ0nEfyLdIFzz654VK/7t2PQZ7r1PNVhm/mNxKML3q1RCevuN3g==}
+  '@orpc/standard-server-fetch@1.7.9':
+    resolution: {integrity: sha512-5xyft5K3UZZwm1RjmdER58IJCtjqXhMEW6NauEdmd0jiNIFHWt40PSBbCEKNC6zy4SkHvSv2WT6Cv1gJzkoIrA==}
 
-  '@orpc/standard-server-node@1.7.8':
-    resolution: {integrity: sha512-OdKC/U8uX2K1VGrnc5muwnJ2QXawUcjNWoMP08TAE8ccJpmvWTDDIuIN6mQgmFqmcJ7n7P9bisFHLk7BtIjBDA==}
+  '@orpc/standard-server-node@1.7.9':
+    resolution: {integrity: sha512-ivHFYxX/G/H+Fc+lb9PTLR8WPYZevPYRpq91SJZYnd87JnlXOc9WMSVuOkiU/UK9Q1qxWif0lMU1pbL5NBg5Ww==}
 
-  '@orpc/standard-server-peer@1.7.8':
-    resolution: {integrity: sha512-Cs+PubIEhu7YxmSp4PT5q7itQUyaDuq56wcZ98DQNATt7FNKnd+3KIk7YdbIQfVMf2BOYj08binpsPE8LaT4cw==}
+  '@orpc/standard-server-peer@1.7.9':
+    resolution: {integrity: sha512-bl5LsgefiBGFqZxJI472j3JTyf3NI4CXNdN+/TTn3mDt+FxWmWaQRMlVefP/WxHwF+k9dcIb6rn+U2pfJCBfFw==}
 
-  '@orpc/standard-server@1.7.8':
-    resolution: {integrity: sha512-EXnqfRK9Im4u7See34WGpyTlYuMzosgVhfqB4MqDgiJfmudO5uSxs5xeCm4713EEeOkxT8fANoRFb5bLsKYQxw==}
+  '@orpc/standard-server@1.7.9':
+    resolution: {integrity: sha512-KPF5EAaVM2ghaJgD8iAG5BZNferliEbcS/LCS6gK9Ao56oOaA9JlwpZSIy68zATSLGS5sqvyn9O55mLUbWw3WQ==}
 
   '@parcel/watcher-android-arm64@2.5.1':
     resolution: {integrity: sha512-KF8+j9nNbUN8vzOFDpRMsaKBHZ/mcjEjMToVMJOhTozkDonQFFrRcfdLWn6yWKCmJKmdVxSgHiYvTCef4/qcBA==}
@@ -7614,8 +7650,8 @@ packages:
   solid-js@1.9.7:
     resolution: {integrity: sha512-/saTKi8iWEM233n5OSi1YHCCuh66ZIQ7aK2hsToPe4tqGm7qAejU1SwNuTPivbWAYq7SjuHVVYxxuZQNRbICiw==}
 
-  sonner@2.0.6:
-    resolution: {integrity: sha512-yHFhk8T/DK3YxjFQXIrcHT1rGEeTLliVzWbO0xN8GberVun2RiBnxAjXAYpZrqwEVHBG9asI/Li8TAAhN9m59Q==}
+  sonner@2.0.7:
+    resolution: {integrity: sha512-W6ZN4p58k8aDKA4XPcx2hpIQXBRAgyiWVkYhT7CvK6D3iAu7xjvVyhQHg2/iaKJZ1XVJ4r7XuwGL+WGEK37i9w==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
@@ -10010,65 +10046,65 @@ snapshots:
 
   '@opentelemetry/api@1.9.0': {}
 
-  '@orpc/client@1.7.8':
+  '@orpc/client@1.7.9':
     dependencies:
-      '@orpc/shared': 1.7.8
-      '@orpc/standard-server': 1.7.8
-      '@orpc/standard-server-fetch': 1.7.8
-      '@orpc/standard-server-peer': 1.7.8
+      '@orpc/shared': 1.7.9
+      '@orpc/standard-server': 1.7.9
+      '@orpc/standard-server-fetch': 1.7.9
+      '@orpc/standard-server-peer': 1.7.9
 
-  '@orpc/contract@1.7.8':
+  '@orpc/contract@1.7.9':
     dependencies:
-      '@orpc/client': 1.7.8
-      '@orpc/shared': 1.7.8
+      '@orpc/client': 1.7.9
+      '@orpc/shared': 1.7.9
       '@standard-schema/spec': 1.0.0
       openapi-types: 12.1.3
 
-  '@orpc/server@1.7.8(crossws@0.3.5)':
+  '@orpc/server@1.7.9(crossws@0.3.5)':
     dependencies:
-      '@orpc/client': 1.7.8
-      '@orpc/contract': 1.7.8
-      '@orpc/shared': 1.7.8
-      '@orpc/standard-server': 1.7.8
-      '@orpc/standard-server-aws-lambda': 1.7.8
-      '@orpc/standard-server-fetch': 1.7.8
-      '@orpc/standard-server-node': 1.7.8
-      '@orpc/standard-server-peer': 1.7.8
+      '@orpc/client': 1.7.9
+      '@orpc/contract': 1.7.9
+      '@orpc/shared': 1.7.9
+      '@orpc/standard-server': 1.7.9
+      '@orpc/standard-server-aws-lambda': 1.7.9
+      '@orpc/standard-server-fetch': 1.7.9
+      '@orpc/standard-server-node': 1.7.9
+      '@orpc/standard-server-peer': 1.7.9
       cookie: 1.0.2
     optionalDependencies:
       crossws: 0.3.5
 
-  '@orpc/shared@1.7.8':
+  '@orpc/shared@1.7.9':
     dependencies:
       radash: 12.1.1
       type-fest: 4.41.0
 
-  '@orpc/standard-server-aws-lambda@1.7.8':
+  '@orpc/standard-server-aws-lambda@1.7.9':
     dependencies:
-      '@orpc/shared': 1.7.8
-      '@orpc/standard-server': 1.7.8
-      '@orpc/standard-server-fetch': 1.7.8
-      '@orpc/standard-server-node': 1.7.8
+      '@orpc/shared': 1.7.9
+      '@orpc/standard-server': 1.7.9
+      '@orpc/standard-server-fetch': 1.7.9
+      '@orpc/standard-server-node': 1.7.9
 
-  '@orpc/standard-server-fetch@1.7.8':
+  '@orpc/standard-server-fetch@1.7.9':
     dependencies:
-      '@orpc/shared': 1.7.8
-      '@orpc/standard-server': 1.7.8
+      '@orpc/shared': 1.7.9
+      '@orpc/standard-server': 1.7.9
 
-  '@orpc/standard-server-node@1.7.8':
+  '@orpc/standard-server-node@1.7.9':
     dependencies:
-      '@orpc/shared': 1.7.8
-      '@orpc/standard-server': 1.7.8
-      '@orpc/standard-server-fetch': 1.7.8
+      '@orpc/shared': 1.7.9
+      '@orpc/standard-server': 1.7.9
+      '@orpc/standard-server-fetch': 1.7.9
 
-  '@orpc/standard-server-peer@1.7.8':
+  '@orpc/standard-server-peer@1.7.9':
     dependencies:
-      '@orpc/shared': 1.7.8
-      '@orpc/standard-server': 1.7.8
+      '@orpc/shared': 1.7.9
+      '@orpc/standard-server': 1.7.9
 
-  '@orpc/standard-server@1.7.8':
+  '@orpc/standard-server@1.7.9':
     dependencies:
-      '@orpc/shared': 1.7.8
+      '@orpc/shared': 1.7.9
 
   '@parcel/watcher-android-arm64@2.5.1':
     optional: true
@@ -16462,7 +16498,7 @@ snapshots:
       seroval: 1.3.2
       seroval-plugins: 1.3.2(seroval@1.3.2)
 
-  sonner@2.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  sonner@2.0.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)

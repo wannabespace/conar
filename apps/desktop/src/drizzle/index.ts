@@ -31,10 +31,12 @@ export const db = drizzle({
 })
 
 export async function clearDb() {
-  return Promise.all([
-    db.delete(databases.databases),
-    db.delete(chats.chats),
-  ])
+  await db.transaction(async (tx) => {
+    await Promise.all([
+      tx.delete(databases.databases),
+      tx.delete(chats.chats),
+    ])
+  })
 }
 
 async function ensureMigrationsTable() {

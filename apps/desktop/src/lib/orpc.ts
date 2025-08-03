@@ -1,5 +1,4 @@
-import type { router } from '@conar/api/src/orpc/routers'
-import type { RouterClient } from '@orpc/server'
+import type { ORPCRouter } from '@conar/api/src/orpc/routers'
 import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { bearerToken } from './auth'
@@ -32,4 +31,4 @@ const link = new RPCLink({
   },
 })
 
-export const orpc: RouterClient<typeof router> = createORPCClient(link)
+export const orpc: ORPCRouter = createORPCClient(link)

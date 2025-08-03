@@ -14,8 +14,6 @@ export const authMiddleware = orpc.middleware(async ({ context, next }) => {
   }
 
   return next({
-    context: {
-      ...session,
-    },
+    context: session,
   })
 })

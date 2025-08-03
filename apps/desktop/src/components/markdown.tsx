@@ -202,11 +202,7 @@ function P({ children, className }: { children?: ReactNode, className?: string }
     )
   }
 
-  return (
-    <p className={cn(withAnimation && 'animate-in fade-in duration-200', className)}>
-      {children}
-    </p>
-  )
+  return <p className={className}>{children}</p>
 }
 
 function MarkdownBase({ content, onEdit }: { content: string, onEdit?: (content: string) => void }) {

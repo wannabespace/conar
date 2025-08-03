@@ -8,10 +8,10 @@ import { SQL_OPERATORS } from './utils/sql'
 export const chatInputType = type({
   id: 'string.uuid.v7',
   type: type.valueOf(DatabaseType),
-  context: 'unknown',
+  context: 'string?',
   prompt: 'object' as type.cast<AppUIMessage>,
   databaseId: 'string.uuid.v7',
-  currentQuery: 'string?',
+  fallback: 'boolean?',
 })
 
 export const tools = {

@@ -1,8 +1,9 @@
+import type { RouterClient } from '@orpc/server'
 import { orpc } from '..'
-import { sqlChat } from './ai'
+import { ai } from './ai'
 
 export const router = orpc.router({
-  ai: {
-    sqlChat,
-  },
+  ai,
 })
+
+export type ORPCRouter = RouterClient<typeof router>

@@ -6,7 +6,7 @@ import { rowsSql } from '@conar/shared/sql/rows'
 import { whereSql } from '@conar/shared/sql/where'
 import { eventIteratorToStream } from '@orpc/client'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
-import { eq } from 'drizzle-orm'
+import { asc, eq } from 'drizzle-orm'
 import { v7 as uuid } from 'uuid'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { databaseEnumsQuery, databaseTableColumnsQuery, tablesAndSchemasQuery } from '~/entities/database'
@@ -52,18 +52,6 @@ export const chatInput = {
   },
 }
 
-export const chatMessages = {
-  get(chatId: string) {
-    return db.select().from(chatsMessages).where(eq(chatsMessages.chatId, chatId))
-  },
-  async set(chatId: string, message: AppUIMessage) {
-    await db.insert(chatsMessages).values({ chatId, ...message }).onConflictDoUpdate({
-      target: [chatsMessages.id],
-      set: message,
-    })
-  },
-}
-
 export const lastOpenedChatId = {
   get() {
     return sessionStorage.getItem('sql-last-chat-id')
@@ -78,8 +66,14 @@ export const lastOpenedChatId = {
   },
 }
 
-export function createChat({ id = uuid(), database, messages }: { id?: string, database: typeof databases.$inferSelect, messages: AppUIMessage[] }) {
-  const chat = new Chat({
+const chatsMap = new Map<string, Chat<AppUIMessage>>()
+
+export async function createChat({ id = uuid(), database }: { id?: string, database: typeof databases.$inferSelect }) {
+  if (chatsMap.has(id)) {
+    return chatsMap.get(id)!
+  }
+
+  const chat = new Chat<AppUIMessage>({
     id,
     generateId: uuid,
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
@@ -103,11 +97,12 @@ export function createChat({ id = uuid(), database, messages }: { id?: string, d
           })
         })
 
-        return eventIteratorToStream(await orpc.ai.sqlChat({
+        return eventIteratorToStream(await orpc.ai.chat({
+          ...options.body,
           id: options.chatId,
           type: database.type,
-          currentQuery: pageStore.state.query,
-          context: await queryClient.ensureQueryData(tablesAndSchemasQuery(database)),
+          context: `Current query in the SQL runner: ${pageStore.state.query}
+          Database schemas and tables: ${await queryClient.ensureQueryData(tablesAndSchemasQuery(database))}`,
           databaseId: database.id,
           prompt: lastMessage,
         }, { signal: options.abortSignal }))
@@ -116,9 +111,12 @@ export function createChat({ id = uuid(), database, messages }: { id?: string, d
         throw new Error('Unsupported')
       },
     },
-    messages,
+    messages: await db.select().from(chatsMessages).where(eq(chatsMessages.chatId, id)).orderBy(asc(chatsMessages.createdAt)),
     onFinish: async ({ message }) => {
-      await chatMessages.set(id, message)
+      await db.insert(chatsMessages).values({ chatId: id, ...message }).onConflictDoUpdate({
+        target: [chatsMessages.id],
+        set: message,
+      })
     },
     onToolCall: async ({ toolCall }) => {
       if (toolCall.toolName === 'columns') {
@@ -176,6 +174,8 @@ export function createChat({ id = uuid(), database, messages }: { id?: string, d
       chat.regenerate()
     }, 0)
   }
+
+  chatsMap.set(id, chat)
 
   return chat
 }

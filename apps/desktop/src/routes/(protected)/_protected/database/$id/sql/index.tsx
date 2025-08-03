@@ -2,7 +2,7 @@ import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { chatMessages, chatQuery, createChat } from './-chat'
+import { chatQuery, createChat } from './-chat'
 import { Chat as ChatComponent } from './-components/chat'
 import { Runner } from './-components/runner'
 import { pageStore } from './-lib'
@@ -12,11 +12,8 @@ export const Route = createFileRoute(
 )({
   component: DatabaseSqlPage,
   validateSearch: type({
-    'chatId?': 'string',
+    'chatId?': 'string.uuid.v7',
   }),
-  // The route shouldn't refresh due to have always the same chat instance,
-  // otherwise the chat will have an issue with a message stream
-  staleTime: Infinity,
   loaderDeps: ({ search }) => ({ chatId: search.chatId }),
   loader: async ({ params, context, deps }) => {
     pageStore.setState(state => ({
@@ -24,14 +21,11 @@ export const Route = createFileRoute(
       query: chatQuery.get(params.id),
     }))
 
-    console.log('deps.chatId', deps.chatId)
-
     return {
       database: context.database,
-      chat: createChat({
+      chat: await createChat({
         id: deps.chatId,
         database: context.database,
-        messages: deps.chatId ? await chatMessages.get(deps.chatId) : [],
       }),
     }
   },
