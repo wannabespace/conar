@@ -15,6 +15,7 @@ import { RiAddLine, RiHistoryLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import { eq } from 'drizzle-orm'
+import { useMemo } from 'react'
 import { chats, db } from '~/drizzle'
 import { useDrizzleLive } from '~/hooks/use-drizzle-live'
 import { orpc } from '~/lib/orpc'
@@ -81,7 +82,7 @@ export function ChatHeader() {
       },
     }),
   })
-  const currentChat = data?.find(chat => chat.id === chatId)
+  const currentChat = useMemo(() => data?.find(chat => chat.id === chatId), [data, chatId])
   const shouldGenerateTitle = !!currentChat && currentChat.title === null
 
   useAsyncEffect(async () => {
@@ -103,7 +104,7 @@ export function ChatHeader() {
     <div className="flex justify-between items-center h-8">
       <CardTitle className="flex items-center gap-2">
         {chatId
-          ? <>{currentChat && currentChat.title ? currentChat.title : <span className="animate-pulse bg-muted rounded-md w-20 h-4" />}</>
+          ? <>{currentChat && currentChat.title ? currentChat.title : <span className="animate-pulse bg-muted rounded-md w-30 h-4" />}</>
           : 'New Chat'}
       </CardTitle>
       <div className="flex items-center gap-2">
@@ -152,7 +153,7 @@ export function ChatHeader() {
                               search={{ chatId: chat.id }}
                               className="text-foreground"
                             >
-                              {chat.title || `Chat #${chat.id}`}
+                              {chat.title || <span className="animate-pulse bg-muted rounded-md w-30 h-4" />}
                             </Link>
                           </DropdownMenuItem>
                         ))}

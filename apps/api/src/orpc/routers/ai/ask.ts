@@ -44,6 +44,8 @@ function generateStream({
       {
         role: 'system',
         content: `You are an SQL tool that generates valid SQL code for ${type} database.
+        You can use several tools to improve response.
+        You can generate select queries using the tools to get data directly from the database.
 
         Requirements:
         - Ensure the SQL is 100% valid and optimized for ${type} database
