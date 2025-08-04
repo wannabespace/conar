@@ -2,7 +2,7 @@ import type { AppUIMessage } from '@conar/shared/ai'
 import type { LanguageModel } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
 import { chatInputType, tools } from '@conar/shared/ai'
-import { streamToEventIterator } from '@orpc/server'
+import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { asc, eq } from 'drizzle-orm'
 // import { createResumableStreamContext } from 'resumable-stream'
@@ -120,15 +120,15 @@ export const ask = orpc
       throw error
     })
 
-    const result = generateStream({
-      type: input.type,
-      model: input.fallback ? fallbackModel : mainModel,
-      context: input.context,
-      messages,
-      signal,
-    })
-
     try {
+      const result = generateStream({
+        type: input.type,
+        model: input.fallback ? fallbackModel : mainModel,
+        context: input.context,
+        messages,
+        signal,
+      })
+
       const stream = result.toUIMessageStream({
         originalMessages: messages,
         generateMessageId: () => v7(),
@@ -173,6 +173,8 @@ export const ask = orpc
     }
     catch (error) {
       console.error('error on ask', error)
-      throw error
+      throw new ORPCError('INTERNAL_SERVER_ERROR', {
+        message: error instanceof Error ? error.message : 'Sorry, I was unable to generate a response due to an error. Please try again.',
+      })
     }
   })

@@ -14,10 +14,10 @@ import { useTableColumns } from './-queries/use-columns-query'
 
 const storeState = type({
   selected: 'number[]',
-  filters: type<WhereFilter>({
+  filters: type({
     column: 'string',
-    operator: 'string',
-    value: 'string',
+    operator: 'string' as type.cast<WhereFilter['operator']>,
+    values: 'string[]',
   }).array(),
   hiddenColumns: 'string[]',
   orderBy: {

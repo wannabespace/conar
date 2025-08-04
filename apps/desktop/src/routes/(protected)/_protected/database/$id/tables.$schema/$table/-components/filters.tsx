@@ -21,16 +21,16 @@ export function Filters() {
       <div className="flex gap-2 flex-wrap">
         {filters.map(filter => (
           <FilterItem
-            key={`${filter.column}-${filter.operator}-${filter.value}`}
+            key={`${filter.column}-${filter.operator}-${filter.values?.join(',')}`}
             filter={filter}
             onRemove={() => store.setState(state => ({
               ...state,
               filters: state.filters.filter(f => f !== filter),
             }))}
-            onEdit={({ column, operator, value }) => store.setState(state => ({
+            onEdit={({ column, operator, values }) => store.setState(state => ({
               ...state,
               filters: state.filters.map(f => f === filter
-                ? { ...f, column, operator: operator as WhereFilter['operator'], value }
+                ? { ...f, column, operator, values }
                 : f),
             }))}
           />

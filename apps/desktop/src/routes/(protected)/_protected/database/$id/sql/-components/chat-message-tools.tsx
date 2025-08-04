@@ -1,6 +1,8 @@
 import type { tools } from '@conar/shared/ai'
 import type { InferUITools, ToolUIPart } from 'ai'
 import type { ReactNode } from 'react'
+import type { databases } from '~/drizzle'
+import { whereSql } from '@conar/shared/sql/where'
 import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
@@ -8,13 +10,14 @@ import { RiErrorWarningLine, RiHammerLine, RiLoader4Line } from '@remixicon/reac
 import { AnimatePresence, motion } from 'motion/react'
 import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
+import { Route } from '..'
 
 function getToolLabel(tool: ToolUIPart<InferUITools<typeof tools>>) {
   if (tool.type === 'tool-columns') {
     if (tool.input) {
-      const schema = tool.input.schemaName ? tool.input.schemaName === 'public' ? '' : tool.input.schemaName : ''
+      const schema = tool.input.tableAndSchema?.schemaName ? tool.input.tableAndSchema.schemaName === 'public' ? '' : tool.input.tableAndSchema.schemaName : ''
 
-      return `Get columns from ${schema ? `"${schema}".` : ''}${tool.input.tableName ? `"${tool.input.tableName}"` : '...'}`
+      return `Get columns from ${schema ? `"${schema}".` : ''}${tool.input.tableAndSchema?.tableName ? `"${tool.input.tableAndSchema.tableName}"` : '...'}`
     }
     return 'Get columns from ...'
   }
@@ -23,9 +26,9 @@ function getToolLabel(tool: ToolUIPart<InferUITools<typeof tools>>) {
   }
   if (tool.type === 'tool-select') {
     if (tool.input) {
-      const schema = tool.input.schemaName ? tool.input.schemaName === 'public' ? '' : tool.input.schemaName : ''
+      const schema = tool.input.tableAndSchema?.schemaName ? tool.input.tableAndSchema.schemaName === 'public' ? '' : tool.input.tableAndSchema.schemaName : ''
 
-      return `Select data from ${schema ? `"${schema}".` : ''}${tool.input.tableName ? `"${tool.input.tableName}"` : '...'}`
+      return `Select data from ${schema ? `"${schema}".` : ''}${tool.input.tableAndSchema?.tableName ? `"${tool.input.tableAndSchema.tableName}"` : '...'}`
     }
     return 'Select data from ...'
   }
@@ -33,7 +36,7 @@ function getToolLabel(tool: ToolUIPart<InferUITools<typeof tools>>) {
   return 'Unknown tool'
 }
 
-function getToolDescription(tool: ToolUIPart<InferUITools<typeof tools>>): ReactNode {
+function getToolDescription(tool: ToolUIPart<InferUITools<typeof tools>>, database: typeof databases.$inferSelect): ReactNode {
   if (tool.type === 'tool-columns') {
     return 'Agent called a tool to get table columns.'
   }
@@ -52,9 +55,9 @@ function getToolDescription(tool: ToolUIPart<InferUITools<typeof tools>>): React
               { name: 'Select', value: tool.input.select?.length
                 ? tool.input.select.join(', ')
                 : null },
-              { name: 'From', value: `${tool.input.schemaName}.${tool.input.tableName}` },
-              { name: 'Where', value: tool.input.whereFilters && Object.keys(tool.input.whereFilters).length
-                ? tool.input.whereFilters.map(w => w ? `${w.column} ${w.operator} ${w.value}` : '').filter(Boolean).join(' ')
+              { name: 'From', value: tool.input.tableAndSchema ? `${tool.input.tableAndSchema.schemaName}.${tool.input.tableAndSchema?.tableName}` : null },
+              { name: 'Where', value: tool.state === 'input-available' && tool.input.whereFilters?.length
+                ? whereSql(tool.input.whereFilters)[database.type]
                 : null },
               { name: 'Order by', value: tool.input.orderBy && Object.keys(tool.input.orderBy).length
                 ? Object.entries(tool.input.orderBy).map(([col, dir]) => `${col} ${dir}`).join(', ')
@@ -86,9 +89,10 @@ const STATE_LABELS: Record<ToolUIPart['state'], string> = {
 }
 
 export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
+  const { database } = Route.useRouteContext()
   const tool = part as ToolUIPart<InferUITools<typeof tools>>
   const label = getToolLabel(tool)
-  const description = getToolDescription(tool)
+  const description = getToolDescription(tool, database)
   const Icon = STATE_ICONS[tool.state]
 
   return (

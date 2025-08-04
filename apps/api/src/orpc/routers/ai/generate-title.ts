@@ -19,7 +19,8 @@ export const generateTitle = orpc
         You are a title generator that generates a title for a chat.
         The title should be in the same language as the user's message.
         Title should be a single sentence between 2 and 10 words.
-        Title should be properly formatted, example: "Update component in React"
+        Title should be properly formatted, example: "Update component in React".
+        Do not use dots, commas, etc.
 
         Here are the messages in the chat:
         ${input.messages.map(message => `${message.role}: ${message.parts.map(part => part.type === 'text' ? part.text : '').filter(Boolean).join('\n')}`).join('\n\n')}

@@ -135,11 +135,9 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         const input = toolCall.input as InferToolInput<typeof tools.columns>
         const output = await queryClient.fetchQuery(databaseTableColumnsQuery(
           database,
-          input.tableName,
-          input.schemaName,
+          input.tableAndSchema.tableName,
+          input.tableAndSchema.schemaName,
         )) satisfies InferToolOutput<typeof tools.columns>
-
-        console.log('output', toolCall, output)
 
         chat.addToolResult({
           tool: 'columns',
@@ -165,14 +163,26 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         const output = await dbQuery({
           type: database.type,
           connectionString: database.connectionString,
-          query: rowsSql(input.schemaName, input.tableName, {
+          query: rowsSql(input.tableAndSchema.schemaName, input.tableAndSchema.tableName, {
             limit: input.limit,
             offset: input.offset,
             orderBy: input.orderBy,
             select: input.select,
             where: whereSql(input.whereFilters, input.whereConcatOperator)[database.type],
           })[database.type],
-        }).then(results => results.map(r => r.rows).flat()) satisfies InferToolOutput<typeof tools.select>
+        })
+        .then(results => results.map(r => r.rows).flat())
+        .catch(error => ({
+          error: error instanceof Error ? error.message : 'Error during the query execution',
+        })) satisfies InferToolOutput<typeof tools.select>
+
+        console.log(rowsSql(input.tableAndSchema.schemaName, input.tableAndSchema.tableName, {
+          limit: input.limit,
+          offset: input.offset,
+          orderBy: input.orderBy,
+          select: input.select,
+          where: whereSql(input.whereFilters, input.whereConcatOperator)[database.type],
+        })[database.type])
 
         chat.addToolResult({
           tool: 'select',
