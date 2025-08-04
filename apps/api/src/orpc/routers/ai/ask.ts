@@ -76,42 +76,14 @@ function generateStream({
   })
 }
 
-// async function ensureChat(id: string, userId: string, databaseId: string) {
-//   const [chat] = await db.select()
-//     .from(chats)
-//     .where(eq(chats.id, id))
+export async function getMessages(chatId: string) {
+  return await db.select().from(chatsMessages).where(eq(chatsMessages.chatId, chatId)).orderBy(asc(chatsMessages.createdAt)).then(rows => rows.map(row => ({
+    ...row,
+    metadata: row.metadata || undefined,
+  }))) satisfies AppUIMessage[]
+}
 
-//   if (chat) {
-//     return chat
-//   }
-
-//   const [createdChat] = await db.insert(chats)
-//     .values({ id, userId, databaseId })
-//     .returning()
-
-//   return createdChat
-// }
-
-// async function _generateTitle(messages: AppUIMessage[]) {
-//   const { text } = await generateText({
-//     model: google('gemini-2.5-flash'),
-//     messages: [
-//       {
-//         role: 'system',
-//         content: `
-//           You are a title generator that generates a title for a chat.
-//           The title should be a short, descriptive title for the chat.
-//           The title should be in the same language as the user's message.
-//         `,
-//       },
-//       ...convertToModelMessages(messages),
-//     ],
-//   })
-
-//   return text
-// }
-
-export const chat = orpc
+export const ask = orpc
   .use(authMiddleware)
   .use(async ({ context, next }) => {
     context.setHeader('Transfer-Encoding', 'chunked')
@@ -122,23 +94,31 @@ export const chat = orpc
   .input(chatInputType)
   .handler(async ({ input, context, signal }) => {
     await db.transaction(async (tx) => {
+      // To ensure that the chat is created
+      await tx.insert(chats).values({ id: input.id, userId: context.user.id, databaseId: input.databaseId }).onConflictDoNothing()
+
       if (input.trigger === 'submit-message') {
-        await tx.insert(chats).values({ id: input.id, userId: context.user.id, databaseId: input.databaseId }).onConflictDoNothing()
         await tx.insert(chatsMessages).values({
           chatId: input.id,
           ...input.prompt,
+        }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
+          target: chatsMessages.id,
+          set: input.prompt,
         })
       }
 
       if (input.trigger === 'regenerate-message' && input.messageId) {
         await tx.delete(chatsMessages).where(eq(chatsMessages.id, input.messageId))
       }
+    }).catch((error) => {
+      console.error('error onFinish transaction', error)
+      throw error
     })
 
-    const messages = await db.select().from(chatsMessages).where(eq(chatsMessages.chatId, input.id)).orderBy(asc(chatsMessages.createdAt)).then(rows => rows.map(row => ({
-      ...row,
-      metadata: row.metadata || undefined,
-    }))) satisfies AppUIMessage[]
+    const messages = await getMessages(input.id).catch((error) => {
+      console.error('error on getMessages', error)
+      throw error
+    })
 
     const result = generateStream({
       type: input.type,
@@ -148,42 +128,51 @@ export const chat = orpc
       signal,
     })
 
-    return streamToEventIterator(result.toUIMessageStream({
-      originalMessages: messages,
-      generateMessageId: () => v7(),
-      onFinish: async (result) => {
-        console.info('stream finished', JSON.stringify(result.responseMessage, null, 2))
+    try {
+      const stream = result.toUIMessageStream({
+        originalMessages: messages,
+        generateMessageId: () => v7(),
+        onFinish: async (result) => {
+          console.info('stream finished', JSON.stringify(result.responseMessage, null, 2))
 
-        try {
-          await db.transaction(async (tx) => {
-            await tx.insert(chatsMessages).values({
+          try {
+            await db.insert(chatsMessages).values({
               ...result.responseMessage,
               chatId: input.id,
+            }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
+              target: chatsMessages.id,
+              set: result.responseMessage,
             })
-            // await tx.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
-          })
-        }
-        catch (error) {
-          console.error('error onFinish transaction', error)
-          throw error
-        }
-      },
-      onError: (error) => {
-        console.error('error toUIMessageStream onError', error)
+            // await db.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
+          }
+          catch (error) {
+            console.error('error onFinish transaction', error)
+            throw error
+          }
+        },
+        onError: (error) => {
+          console.error('error toUIMessageStream onError', error)
 
-        return handleError(error)
-      },
-      // consumeSseStream: async ({ stream }) => {
-      //   const streamId = v7()
+          return handleError(error)
+        },
+        // consumeSseStream: async ({ stream }) => {
+        //   const streamId = v7()
 
-      //   try {
-      //     console.log('create new resumable stream', streamId, id)
-      //     await streamContext.createNewResumableStream(streamId, () => stream)
-      //     await db.update(chats).set({ activeStreamId: streamId }).where(eq(chats.id, id))
-      //   }
-      //   catch (error) {
-      //     console.error('consume stream error', error)
-      //   }
-      // },
-    }))
+        //   try {
+        //     console.log('create new resumable stream', streamId, id)
+        //     await streamContext.createNewResumableStream(streamId, () => stream)
+        //     await db.update(chats).set({ activeStreamId: streamId }).where(eq(chats.id, id))
+        //   }
+        //   catch (error) {
+        //     console.error('consume stream error', error)
+        //   }
+        // },
+      })
+
+      return streamToEventIterator(stream)
+    }
+    catch (error) {
+      console.error('error on ask', error)
+      throw error
+    }
   })

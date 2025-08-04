@@ -86,11 +86,16 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         }
 
         await db.transaction(async (tx) => {
+          // To ensure that the chat is created
+          await tx.insert(chats).values({ id: options.chatId, databaseId: database.id }).onConflictDoNothing()
+
           if (options.trigger === 'submit-message') {
-            await tx.insert(chats).values({ id: options.chatId, databaseId: database.id }).onConflictDoNothing()
             await tx.insert(chatsMessages).values({
               ...lastMessage,
               chatId: options.chatId,
+            }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
+              target: chatsMessages.id,
+              set: lastMessage,
             })
           }
 
@@ -99,7 +104,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           }
         })
 
-        return eventIteratorToStream(await orpc.ai.chat({
+        return eventIteratorToStream(await orpc.ai.ask({
           ...options.body,
           id: options.chatId,
           type: database.type,
@@ -120,7 +125,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       metadata: row.metadata || undefined,
     }))) satisfies AppUIMessage[],
     onFinish: async ({ message }) => {
-      await db.insert(chatsMessages).values({ chatId: id, ...message }).onConflictDoUpdate({
+      await db.insert(chatsMessages).values({ chatId: id, ...message }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
         target: chatsMessages.id,
         set: message,
       })
@@ -133,6 +138,8 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           input.tableName,
           input.schemaName,
         )) satisfies InferToolOutput<typeof tools.columns>
+
+        console.log('output', toolCall, output)
 
         chat.addToolResult({
           tool: 'columns',
@@ -175,12 +182,6 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       }
     },
   })
-
-  if (chat.messages.at(-1)?.role === 'user') {
-    setTimeout(() => {
-      chat.regenerate()
-    }, 0)
-  }
 
   chatsMap.set(id, chat)
 

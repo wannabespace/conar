@@ -43,12 +43,14 @@ export const filters = orpc
       prompt,
       abortSignal: signal,
       schema: z.object({
-        column: z.string(),
-        operator: z.enum(SQL_OPERATORS_LIST.map(operator => operator.value) as [string, ...string[]]),
-        value: z.string(),
-      }),
+        filters: z.object({
+          column: z.string().describe('The column name to filter by'),
+          operator: z.enum(SQL_OPERATORS_LIST.map(operator => operator.value) as [string, ...string[]]).describe('The operator to use for the filter'),
+          value: z.string().describe('The value to filter by'),
+        }).array(),
+      }).describe('An object with a single property "filters" that is an array of filters'),
       schemaDescription: 'An array of objects with the following properties: column, operator, value where the operator is one of the SQL operators available',
-      output: 'array',
+      output: 'object',
     })
 
     console.info('sql filters result object', object)

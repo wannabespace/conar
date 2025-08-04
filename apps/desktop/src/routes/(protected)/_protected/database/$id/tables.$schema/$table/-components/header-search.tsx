@@ -23,14 +23,14 @@ export function HeaderSearch() {
     onSuccess: (data) => {
       store.setState(state => ({
         ...state,
-        filters: data.map(filter => ({
+        filters: data.filters.map(filter => ({
           column: filter.column,
           operator: filter.operator as typeof SQL_OPERATORS_LIST[number]['value'],
           value: filter.value,
         })),
       }))
 
-      if (data.length === 0) {
+      if (data.filters.length === 0) {
         toast.info('No filters were generated, please try again with a different prompt')
       }
     },

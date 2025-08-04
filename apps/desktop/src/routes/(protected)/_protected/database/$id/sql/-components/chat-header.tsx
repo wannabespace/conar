@@ -1,4 +1,4 @@
-import type { chats } from '~/drizzle'
+import type { AppUIMessage } from '@conar/shared/ai'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -10,10 +10,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@conar/ui/components/dropdown-menu'
+import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { RiAddLine, RiHistoryLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
+import { eq } from 'drizzle-orm'
+import { chats, db } from '~/drizzle'
 import { useDrizzleLive } from '~/hooks/use-drizzle-live'
+import { orpc } from '~/lib/orpc'
 import { Route } from '..'
 import { lastOpenedChatId } from '../-chat'
 
@@ -68,31 +72,56 @@ function groupChats(data: typeof chats.$inferSelect[]) {
 
 export function ChatHeader() {
   const { id } = Route.useParams()
-  const { data = [] } = useDrizzleLive(db => db.query.chats.findMany({
-    orderBy: (chatsMessages, { desc }) => [desc(chatsMessages.createdAt)],
-  }))
+  const { chatId } = Route.useSearch()
+  const { data } = useDrizzleLive({
+    fn: query => query.chats.findMany({
+      orderBy: (chatsMessages, { desc }) => [desc(chatsMessages.createdAt)],
+      with: {
+        messages: true,
+      },
+    }),
+  })
+  const currentChat = data?.find(chat => chat.id === chatId)
+  const shouldGenerateTitle = !!currentChat && currentChat.title === null
 
-  const grouped = groupChats(data)
+  useAsyncEffect(async () => {
+    if (!shouldGenerateTitle) {
+      return
+    }
+
+    const title = await orpc.ai.generateTitle({
+      chatId: currentChat.id,
+      messages: currentChat.messages as AppUIMessage[],
+    })
+
+    await db.update(chats).set({ title }).where(eq(chats.id, currentChat.id))
+  }, [shouldGenerateTitle])
+
+  const grouped = data ? groupChats(data) : {} as ReturnType<typeof groupChats>
 
   return (
     <div className="flex justify-between items-center h-8">
       <CardTitle className="flex items-center gap-2">
-        New Chat
+        {chatId
+          ? <>{currentChat && currentChat.title ? currentChat.title : <span className="animate-pulse bg-muted rounded-md w-20 h-4" />}</>
+          : 'New Chat'}
       </CardTitle>
       <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="icon-sm"
-          asChild
-          onClick={() => lastOpenedChatId.set(null)}
-        >
-          <Link
-            to="/database/$id/sql"
-            params={{ id }}
+        {chatId && (
+          <Button
+            variant="outline"
+            size="icon-sm"
+            asChild
+            onClick={() => lastOpenedChatId.set(null)}
           >
-            <RiAddLine className="size-4" />
-          </Link>
-        </Button>
+            <Link
+              to="/database/$id/sql"
+              params={{ id }}
+            >
+              <RiAddLine className="size-4" />
+            </Link>
+          </Button>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -106,7 +135,7 @@ export function ChatHeader() {
             <DropdownMenuLabel>Chats</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <ScrollArea className="max-h-[70vh]">
-              {data.length === 0
+              {data && data.length === 0
                 ? <DropdownMenuItem disabled>No chats found</DropdownMenuItem>
                 : (
                     Object.entries(grouped).map(([group, chats], idx) => (

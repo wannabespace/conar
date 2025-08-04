@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { cn } from '@conar/ui/lib/utils'
+import { useEffect } from 'react'
 import { Route } from '..'
 import { ChatForm } from './chat-form'
 import { ChatHeader } from './chat-header'
@@ -10,6 +11,12 @@ import { ChatPlaceholder } from './chat-placeholder'
 export function Chat({ className, ...props }: ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()
   const { messages, error } = useChat({ chat })
+
+  useEffect(() => {
+    if (messages.at(-1)?.role === 'user') {
+      chat.regenerate()
+    }
+  }, [])
 
   return (
     <div key={chat.id} className={cn('relative flex flex-col justify-between gap-4 p-4', className)} {...props}>

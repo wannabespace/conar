@@ -4,11 +4,10 @@
 import type { BuildRelationalQueryResult, TableRelationalConfig, TablesRelationalConfig } from 'drizzle-orm'
 import type { PgRelationalQuery } from 'drizzle-orm/pg-core/query-builders/query'
 import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
-import { useQuery } from '@tanstack/react-query'
+import { Store, useStore } from '@tanstack/react-store'
 import { Column, is, One, SQL } from 'drizzle-orm'
 import { useMemo } from 'react'
 import { db as drizzle, pg } from '~/drizzle'
-import { queryClient } from '~/main'
 
 function mapRelationalRow(
   tablesConfig: TablesRelationalConfig,
@@ -76,25 +75,37 @@ function processQueryResults<T>(query: T, rawRows: any[]) {
   })
 }
 
-export function useDrizzleLive<T extends PgRelationalQuery<unknown>>(query: (db: typeof drizzle) => T) {
-  const q = useMemo(() => query(drizzle), [query])
+const drizzleStore = new Store<{
+  [key: string]: unknown
+}>({})
+
+export function useDrizzleLive<T extends PgRelationalQuery<unknown>>({ fn, enabled }: {
+  fn: (db: typeof drizzle['query']) => T
+  enabled?: boolean
+}) {
+  const q = useMemo(() => fn(drizzle.query), [fn])
   const sql = q.toSQL()
-  const key = useMemo(() => ['drizzle-live', sql.sql, sql.params], [sql.sql, sql.params])
-  const tanstackQuery = useQuery({
-    queryKey: key,
-    queryFn: () => [] as NonNullable<T['_']['result']>,
-    enabled: false,
-  })
+  const key = useMemo(() => ['drizzle-live', sql.sql, sql.params.map(String).join('-')].join('-'), [sql.sql, sql.params])
+  const data = useStore(drizzleStore, state => state[key] as T['_']['result'] || null)
 
   useAsyncEffect(async () => {
+    if (enabled === false) {
+      return
+    }
+
     const live = await pg.live.query(sql.sql, sql.params, (results) => {
-      queryClient.setQueryData(key, processQueryResults(q, results?.rows || []))
+      const processed = processQueryResults(q, results.rows)
+
+      drizzleStore.setState(state => ({
+        ...state,
+        [key]: (q as unknown as { mode: string }).mode === 'first' ? processed[0] : processed,
+      }))
     })
 
     return () => {
       live.unsubscribe()
     }
-  }, [query])
+  }, [fn, enabled])
 
-  return tanstackQuery
+  return { data }
 }

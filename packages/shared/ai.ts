@@ -42,7 +42,13 @@ export const tools = {
     })),
   }),
   select: tool({
-    description: 'Use this tool to select data from the database to improve your response. Do not select any sensitive data, avoid columns like password, token, secret, etc.',
+    description: `
+      Use this tool to select data from the database to improve your response.
+      Do not select any sensitive data, avoid columns like password, token, secret, etc.
+      tableName and schemaName will be concatenated to "schemaName.tableName".
+      Do not use any tables and schemas that are not provided in the input.
+      For tableName use only table without schema prefix.
+    `,
     inputSchema: z.object({
       whereConcatOperator: z.enum(['AND', 'OR']).describe('The operator to use to concatenate the where clauses'),
       whereFilters: z.array(z.object({

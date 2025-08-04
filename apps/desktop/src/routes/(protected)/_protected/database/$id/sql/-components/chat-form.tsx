@@ -111,6 +111,10 @@ export function ChatForm() {
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation({
     mutationFn: orpc.ai.enhancePrompt,
     onSuccess: (data) => {
+      if (input.length < 10) {
+        return
+      }
+
       if (data === input) {
         toast.info('Prompt cannot be enhanced', {
           description: 'The prompt is already clear and specific',
@@ -121,17 +125,6 @@ export function ChatForm() {
       }
     },
   })
-
-  const enhance = async () => {
-    if (input.length < 10) {
-      return
-    }
-
-    enhancePrompt({
-      prompt: input,
-      messages: chat.messages,
-    })
-  }
 
   // Handler for file input change
   const handleFileAttach = (e: ChangeEvent<HTMLInputElement>) => {
@@ -209,7 +202,10 @@ export function ChatForm() {
                   variant="outline"
                   className={input.length < 10 ? 'opacity-50 cursor-default' : ''}
                   disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt}
-                  onClick={enhance}
+                  onClick={() => enhancePrompt({
+                    prompt: input,
+                    chatId: chat.id,
+                  })}
                 >
                   <LoadingContent
                     loading={isEnhancingPrompt}
