@@ -79,13 +79,58 @@ const drizzleStore = new Store<{
   [key: string]: unknown
 }>({})
 
+function formatQuery(fn: (query: typeof drizzle['query']) => PgRelationalQuery<unknown>) {
+  const q = fn(drizzle.query)
+  const sql = q.toSQL()
+
+  return {
+    key: ['drizzle-live', sql.sql, sql.params.map(String).join('-')].join('-'),
+    query: q,
+    sql,
+  }
+}
+
+export async function fetchDrizzleQuery<T extends PgRelationalQuery<unknown>>(fn: (query: typeof drizzle['query']) => T) {
+  const { key, sql, query } = formatQuery(fn)
+
+  const results = await pg.query(sql.sql, sql.params)
+  const processed = processQueryResults(query, results.rows)
+
+  drizzleStore.setState(state => ({
+    ...state,
+    [key]: (query as unknown as { mode: string }).mode === 'first' ? processed[0] : processed,
+  }))
+
+  return drizzleStore.state[key] as NonNullable<T['_']['result']>
+}
+
+export function drizzleFn<T extends PgRelationalQuery<unknown>>(fn: (query: typeof drizzle['query']) => T) {
+  return fn
+}
+
+export async function ensureDrizzleQuery<T extends PgRelationalQuery<unknown>>(fn: (query: typeof drizzle['query']) => T) {
+  const { key, sql, query } = formatQuery(fn)
+
+  if (drizzleStore.state[key]) {
+    return (drizzleStore.state[key] as T['_']['result']) || null
+  }
+
+  const results = await pg.query(sql.sql, sql.params)
+  const processed = processQueryResults(query, results.rows)
+
+  drizzleStore.setState(state => ({
+    ...state,
+    [key]: (query as unknown as { mode: string }).mode === 'first' ? processed[0] : processed,
+  }))
+
+  return (drizzleStore.state[key] as T['_']['result']) || null
+}
+
 export function useDrizzleLive<T extends PgRelationalQuery<unknown>>({ fn, enabled }: {
-  fn: (db: typeof drizzle['query']) => T
+  fn: (query: typeof drizzle['query']) => T
   enabled?: boolean
 }) {
-  const q = useMemo(() => fn(drizzle.query), [fn])
-  const sql = q.toSQL()
-  const key = useMemo(() => ['drizzle-live', sql.sql, sql.params.map(String).join('-')].join('-'), [sql.sql, sql.params])
+  const { key, sql, query: q } = useMemo(() => formatQuery(fn), [fn])
   const data = useStore(drizzleStore, state => state[key] as T['_']['result'] || null)
 
   useAsyncEffect(async () => {

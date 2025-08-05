@@ -7,8 +7,7 @@ import { Label } from '@conar/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databasesQuery, renameDatabase } from '~/entities/database'
-import { queryClient } from '~/main'
+import { renameDatabase } from '~/entities/database'
 
 interface RenameDatabaseDialogProps {
   ref?: React.RefObject<{
@@ -34,15 +33,14 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
     onSuccess: () => {
       toast.success(`Database renamed to "${newName.trim()}"`)
       setOpen(false)
-      queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
     },
   })
 
-  const canConfirm = newName.trim() !== '' && newName.trim() !== database?.name
+  const canConfirm = newName.trim() !== '' && newName.trim() !== database?.name && !isPending
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+      <DialogContent asChild>
         <DialogHeader>
           <DialogTitle>Rename Database</DialogTitle>
           <div className="space-y-4">
@@ -53,27 +51,32 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
               <Input
                 id="newDatabaseName"
                 value={newName}
-                onChange={e => setNewName(e.target.value)}
                 placeholder="Enter new database name"
                 spellCheck={false}
                 autoComplete="off"
-                autoFocus
+                onChange={e => setNewName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && canConfirm) {
+                    rename()
+                  }
+                }}
               />
             </div>
           </div>
         </DialogHeader>
         <DialogFooter className="mt-4 flex gap-2">
           <DialogClose asChild>
-            <Button
-              variant="outline"
-              onClick={() => database && setNewName(database.name)}
-            >
+            <Button variant="outline">
               Cancel
             </Button>
           </DialogClose>
           <Button
-            onClick={() => rename()}
-            disabled={!canConfirm || isPending}
+            disabled={!canConfirm}
+            onClick={() => {
+              if (canConfirm) {
+                rename()
+              }
+            }}
           >
             <LoadingContent loading={isPending}>
               Rename Database

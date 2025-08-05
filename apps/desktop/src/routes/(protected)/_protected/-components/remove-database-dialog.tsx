@@ -4,8 +4,7 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databasesQuery, removeDatabase } from '~/entities/database'
-import { queryClient } from '~/main'
+import { removeDatabase } from '~/entities/database'
 
 interface RemoveDatabaseDialogProps {
   ref?: React.RefObject<{
@@ -29,7 +28,6 @@ export function RemoveDatabaseDialog({ ref }: RemoveDatabaseDialogProps) {
     onSuccess: () => {
       toast.success('Database removed successfully')
       setOpen(false)
-      queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
     },
   })
 

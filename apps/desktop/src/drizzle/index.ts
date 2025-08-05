@@ -4,9 +4,11 @@ import { drizzle } from 'drizzle-orm/pglite'
 import migrations from './migrations.json'
 import * as chats from './schema/chats'
 import * as databases from './schema/databases'
+import * as queries from './schema/queries'
 
 export * from './schema/chats'
 export * from './schema/databases'
+export * from './schema/queries'
 
 // eslint-disable-next-line antfu/no-top-level-await
 export const pg = await PGlite.create('idb://conar', {
@@ -27,6 +29,7 @@ export const db = drizzle({
   schema: {
     ...databases,
     ...chats,
+    ...queries,
   },
 })
 

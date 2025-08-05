@@ -7,7 +7,7 @@ import { copy } from '@conar/ui/lib/copy'
 import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useMemo, useRef } from 'react'
-import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
+import { DatabaseIcon, prefetchDatabaseCore, useDatabasesLive } from '~/entities/database'
 import { RemoveDatabaseDialog } from './remove-database-dialog'
 import { RenameDatabaseDialog } from './rename-database-dialog'
 
@@ -108,7 +108,7 @@ function DatabaseCardSkeleton() {
 }
 
 export function DatabasesList() {
-  const { data: databases, isPending } = useDatabases()
+  const { data: databases } = useDatabasesLive()
   const renameDialogRef = useRef<ComponentRef<typeof RenameDatabaseDialog>>(null)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveDatabaseDialog>>(null)
 
@@ -117,7 +117,7 @@ export function DatabasesList() {
       <RemoveDatabaseDialog ref={removeDialogRef} />
       <RenameDatabaseDialog ref={renameDialogRef} />
       <div className="flex flex-col gap-2">
-        {isPending
+        {!databases
           ? (
               <>
                 <DatabaseCardSkeleton />

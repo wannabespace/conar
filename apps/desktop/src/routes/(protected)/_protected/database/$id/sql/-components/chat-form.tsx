@@ -5,6 +5,7 @@ import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -21,6 +22,7 @@ import { ChatImages } from './chat-images'
 
 export function ChatForm() {
   const { database, chat } = Route.useLoaderData()
+  const { error } = Route.useSearch()
   const router = useRouter()
   const location = useLocation()
   const [input, setInput] = useState(chatInput.get(database.id))
@@ -98,15 +100,27 @@ export function ChatForm() {
     }
   }
 
+  useAsyncEffect(async () => {
+    if (!error) {
+      return
+    }
+
+    await handleSend(`Fix the following SQL error by correcting the current query: ${error}`)
+  }, [error, handleSend])
+
   useMountedEffect(() => {
     chatInput.set(database.id, input)
   }, [input])
 
   useEffect(() => {
     return pageHooks.hook('fix', async (error) => {
-      await handleSend(`Fix the following SQL error by correcting the current query: ${error}`)
+      await router.navigate({
+        to: '/database/$id/sql',
+        params: { id: database.id },
+        search: { error },
+      })
     })
-  }, [handleSend])
+  }, [router])
 
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation({
     mutationFn: orpc.ai.enhancePrompt,

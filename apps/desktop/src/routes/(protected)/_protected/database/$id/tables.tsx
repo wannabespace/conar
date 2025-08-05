@@ -1,7 +1,6 @@
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute, Outlet, redirect, useParams } from '@tanstack/react-router'
-import { useDatabase } from '~/entities/database'
 import { getLastOpenedTable } from '../-hooks/use-last-opened-table'
 import { Sidebar } from './-components/sidebar'
 import { TablesTabs } from './-components/tabs'
@@ -41,7 +40,7 @@ export const Route = createFileRoute(
 
 function Content({ id }: { id: string }) {
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
-  const { data: database } = useDatabase(id)
+  const { database } = Route.useLoaderData()
 
   if (!schemaParam || !tableParam) {
     return (
@@ -60,10 +59,7 @@ function Content({ id }: { id: string }) {
 
   return (
     <>
-      <TablesTabs
-        database={database}
-        id={id}
-      />
+      <TablesTabs database={database} id={id} />
       <div
         key={tableParam}
         className="h-[calc(100%-theme(spacing.9))]"
@@ -77,7 +73,7 @@ function Content({ id }: { id: string }) {
 
 function DatabaseTablesPage() {
   const { id } = Route.useParams()
-  const { data: database } = useDatabase(id)
+  const { database } = Route.useLoaderData()
 
   return (
     <ResizablePanelGroup autoSaveId={`database-layout-${id}`} direction="horizontal" className="flex">

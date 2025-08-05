@@ -11,6 +11,7 @@ import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
 import { Route } from '../$id'
+import { lastOpenedChatId } from '../$id/sql/-chat'
 import { useLastOpenedTable } from '../-hooks/use-last-opened-table'
 
 const os = getOS(navigator.userAgent)
@@ -84,6 +85,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
                   <Link
                     to="/database/$id/sql"
                     params={{ id }}
+                    search={{ chatId: lastOpenedChatId.get() || undefined }}
                     className={classes(isActiveSql)}
                   >
                     <RiPlayLargeLine className="size-4" />

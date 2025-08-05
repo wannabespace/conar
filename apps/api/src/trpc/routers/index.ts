@@ -4,13 +4,11 @@ import { aiRouter } from './ai'
 import { databasesRouter } from './databases'
 import { profileRouter } from './profile'
 import { usersRouter } from './users'
-import { workspacesRouter } from './workspaces'
 
 export const trpcRouter = router({
   ai: aiRouter,
   profile: profileRouter,
   databases: databasesRouter,
-  workspaces: workspacesRouter,
   users: usersRouter,
 })
 

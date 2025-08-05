@@ -8,14 +8,14 @@ import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
-import { useDatabase, useDatabaseEnums } from '~/entities/database'
+import { useDatabaseEnums } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { Route, usePageContext } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 
 export function HeaderSearch() {
-  const { id, table, schema } = Route.useParams()
-  const { data: database } = useDatabase(id)
+  const { table, schema } = Route.useParams()
+  const { database } = Route.useLoaderData()
   const { store } = usePageContext()
   const prompt = useStore(store, state => state.prompt)
   const { mutate: generateFilter, isPending } = useMutation({

@@ -17,7 +17,7 @@ import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entiti
 import { addTab } from '../-lib/tabs'
 import { getTableStoreState } from '../tables.$schema/$table'
 import { DropTableDialog } from './drop-table-dialog'
-import { RenameTableDIalog } from './rename-table-dialog'
+import { RenameTableDialog } from './rename-table-dialog'
 
 function Skeleton() {
   return (
@@ -40,7 +40,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
-  const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDIalog>>(null)
+  const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
 
   function getQueryOpts(tableName: string) {
     const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
@@ -81,7 +81,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
         ref={dropTableDialogRef}
         database={database}
       />
-      <RenameTableDIalog
+      <RenameTableDialog
         ref={renameTableDialogRef}
         database={database}
       />

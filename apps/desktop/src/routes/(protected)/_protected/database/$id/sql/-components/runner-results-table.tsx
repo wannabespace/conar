@@ -11,7 +11,7 @@ import { Table, TableBody, TableHeader, TableProvider } from '~/components/table
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 
-export function RunnerTable({
+export function RunnerResultsTable({
   result,
   columns,
 }: {

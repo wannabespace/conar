@@ -8,14 +8,21 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { useUpdateDatabasePassword } from '~/entities/database'
+import { updateDatabasePassword } from '~/entities/database'
 import { dbTestConnection } from '~/lib/query'
 
 export function PasswordForm({ database }: { database: typeof databases.$inferSelect }) {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const { mutate: savePassword, isPending } = useUpdateDatabasePassword(database)
+  const { mutate: savePassword, isPending } = useMutation({
+    mutationFn: async (password: string) => {
+      await updateDatabasePassword(database.id, password)
+    },
+    onSuccess: () => {
+      toast.success('Password successfully saved!')
+    },
+  })
   const { mutate: testConnection, isPending: isConnecting } = useMutation({
     mutationFn: dbTestConnection,
     onSuccess: () => {

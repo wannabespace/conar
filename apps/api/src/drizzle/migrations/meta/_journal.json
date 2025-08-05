@@ -22,6 +22,13 @@
       "when": 1754001680084,
       "tag": "0002_blushing_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1754340533277,
+      "tag": "0003_slippery_vertigo",
+      "breakpoints": true
     }
   ]
 }

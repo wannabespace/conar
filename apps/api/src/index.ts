@@ -1,5 +1,6 @@
 import { serve } from '@hono/node-server'
 import { trpcServer } from '@hono/trpc-server'
+import { onError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
@@ -31,7 +32,13 @@ app.use(
   }),
 )
 
-const handler = new RPCHandler(router)
+const handler = new RPCHandler(router, {
+  interceptors: [
+    onError((error) => {
+      console.error(error)
+    }),
+  ],
+})
 
 app.use('/rpc/*', async (c, next) => {
   const { matched, response } = await handler.handle(c.req.raw, {

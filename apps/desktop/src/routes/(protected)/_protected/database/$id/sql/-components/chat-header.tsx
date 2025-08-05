@@ -11,13 +11,14 @@ import {
   DropdownMenuTrigger,
 } from '@conar/ui/components/dropdown-menu'
 import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
+import { cn } from '@conar/ui/lib/utils'
 import { RiAddLine, RiHistoryLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import { eq } from 'drizzle-orm'
 import { useMemo } from 'react'
 import { chats, db } from '~/drizzle'
-import { useDrizzleLive } from '~/hooks/use-drizzle-live'
+import { useChatsLive } from '~/entities/chat/lib/fetching'
 import { orpc } from '~/lib/orpc'
 import { Route } from '..'
 import { lastOpenedChatId } from '../-chat'
@@ -74,14 +75,7 @@ function groupChats(data: typeof chats.$inferSelect[]) {
 export function ChatHeader() {
   const { id } = Route.useParams()
   const { chatId } = Route.useSearch()
-  const { data } = useDrizzleLive({
-    fn: query => query.chats.findMany({
-      orderBy: (chatsMessages, { desc }) => [desc(chatsMessages.createdAt)],
-      with: {
-        messages: true,
-      },
-    }),
-  })
+  const { data } = useChatsLive(id)
   const currentChat = useMemo(() => data?.find(chat => chat.id === chatId), [data, chatId])
   const shouldGenerateTitle = !!currentChat && currentChat.title === null
 
@@ -151,7 +145,7 @@ export function ChatHeader() {
                               to="/database/$id/sql"
                               params={{ id }}
                               search={{ chatId: chat.id }}
-                              className="text-foreground"
+                              className={cn('text-foreground', chat.id === chatId && 'bg-accent')}
                             >
                               {chat.title || <span className="animate-pulse bg-muted rounded-md w-30 h-4" />}
                             </Link>

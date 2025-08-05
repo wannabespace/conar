@@ -22,11 +22,10 @@ import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { createDatabase, DatabaseIcon, databaseQuery, databasesQuery, prefetchDatabaseCore } from '~/entities/database'
+import { createDatabase, DatabaseIcon, ensureDatabase, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { dbTestConnection } from '~/lib/query'
-import { queryClient } from '~/main'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/create',
@@ -182,8 +181,12 @@ function CreateConnectionPage() {
     mutationFn: createDatabase,
     onSuccess: async ({ id }) => {
       toast.success('Connection created successfully 🎉')
-      queryClient.ensureQueryData(databaseQuery(id)).then(prefetchDatabaseCore)
-      queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
+      const database = await ensureDatabase(id)
+
+      if (database) {
+        prefetchDatabaseCore(database)
+      }
+
       router.navigate({ to: '/database/$id/tables', params: { id } })
     },
   })

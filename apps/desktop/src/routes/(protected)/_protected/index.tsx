@@ -9,7 +9,7 @@ import { RiAddLine, RiCheckLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiL
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { fetchDatabases } from '~/entities/database'
+import { syncDatabases } from '~/entities/database'
 import { checkForUpdates, updatesStore } from '~/updates-observer'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
@@ -27,7 +27,7 @@ export const Route = createFileRoute('/(protected)/_protected/')({
 
 function DashboardPage() {
   const { mutate: refetch, isPending: isRefetching } = useMutation({
-    mutationFn: fetchDatabases,
+    mutationFn: syncDatabases,
   })
   const router = useRouter()
   const [version, status] = useStore(updatesStore, state => [state.version, state.status])

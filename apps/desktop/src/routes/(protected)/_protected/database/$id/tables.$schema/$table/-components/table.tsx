@@ -5,7 +5,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, useDatabase } from '~/entities/database'
+  import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
@@ -50,8 +50,8 @@ export function TableError({ error }: { error: Error }) {
 }
 
 function TableComponent() {
-  const { id, table, schema } = Route.useParams()
-  const { data: database } = useDatabase(id)
+  const { table, schema } = Route.useParams()
+  const { database } = Route.useLoaderData()
   const columns = useTableColumns(database, table, schema)
   const { store } = usePageContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)

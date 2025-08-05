@@ -2,7 +2,8 @@ import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { chatQuery, createChat } from './-chat'
+import { ensureQueries } from '~/entities/query/lib/fetching'
+import { chatQuery, createChat, lastOpenedChatId } from './-chat'
 import { Chat as ChatComponent } from './-components/chat'
 import { Runner } from './-components/runner'
 import { pageStore } from './-lib'
@@ -13,20 +14,28 @@ export const Route = createFileRoute(
   component: DatabaseSqlPage,
   validateSearch: type({
     'chatId?': 'string.uuid.v7',
+    'error?': 'string',
   }),
   loaderDeps: ({ search }) => ({ chatId: search.chatId }),
   loader: async ({ params, context, deps }) => {
+    lastOpenedChatId.set(deps.chatId || null)
+
     pageStore.setState(state => ({
       ...state,
       query: chatQuery.get(params.id),
     }))
 
-    return {
-      database: context.database,
-      chat: await createChat({
+    const [chat] = await Promise.all([
+      await createChat({
         id: deps.chatId,
         database: context.database,
       }),
+      await ensureQueries(params.id),
+    ])
+
+    return {
+      database: context.database,
+      chat,
     }
   },
   head: ({ loaderData }) => ({

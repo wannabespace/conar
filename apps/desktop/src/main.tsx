@@ -8,9 +8,10 @@ import isYesterday from 'dayjs/plugin/isYesterday'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { createRoot } from 'react-dom/client'
 import { runMigrations } from './drizzle'
+import { ensureDatabases } from './entities/database'
+
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
-
 import { routeTree } from './routeTree.gen'
 import './monaco-worker'
 import './assets/styles.css'
@@ -63,4 +64,7 @@ declare module '@tanstack/react-router' {
 
 const root = createRoot(document.getElementById('root')!)
 
-runMigrations().then(() => root.render(<RouterProvider router={router} />))
+runMigrations().then(() => {
+  root.render(<RouterProvider router={router} />)
+  ensureDatabases()
+})

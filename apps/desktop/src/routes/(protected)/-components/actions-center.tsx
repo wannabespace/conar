@@ -5,7 +5,7 @@ import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine, RiDashboardLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { Store, useStore } from '@tanstack/react-store'
-import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
+import { DatabaseIcon, prefetchDatabaseCore, useDatabasesLive } from '~/entities/database'
 import { trackEvent } from '~/lib/events'
 
 const os = getOS(navigator.userAgent)
@@ -19,7 +19,7 @@ function setIsOpen(isOpen: boolean) {
 }
 
 export function ActionsCenter() {
-  const { data: databases } = useDatabases()
+  const { data: databases } = useDatabasesLive()
   const isOpen = useStore(actionsCenterStore, state => state.isOpen)
   const router = useRouter()
 

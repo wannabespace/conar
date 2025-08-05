@@ -113,7 +113,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           trigger: options.trigger,
           messageId: options.messageId,
           context: `Current query in the SQL runner: ${pageStore.state.query}
-          Database schemas and tables: ${await queryClient.ensureQueryData(tablesAndSchemasQuery(database))}`,
+          Database schemas and tables: ${JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery(database)), null, 2)}`,
         }, { signal: options.abortSignal }))
       },
       reconnectToStream() {
@@ -133,7 +133,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
     onToolCall: async ({ toolCall }) => {
       if (toolCall.toolName === 'columns') {
         const input = toolCall.input as InferToolInput<typeof tools.columns>
-        const output = await queryClient.fetchQuery(databaseTableColumnsQuery(
+        const output = await queryClient.ensureQueryData(databaseTableColumnsQuery(
           database,
           input.tableAndSchema.tableName,
           input.tableAndSchema.schemaName,
@@ -146,7 +146,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         })
       }
       else if (toolCall.toolName === 'enums') {
-        const output = await queryClient.fetchQuery(databaseEnumsQuery(database)).then(results => results.flatMap(r => r.values.map(v => ({
+        const output = await queryClient.ensureQueryData(databaseEnumsQuery(database)).then(results => results.flatMap(r => r.values.map(v => ({
           schema: r.schema,
           name: r.name,
           value: v,
@@ -171,18 +171,10 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
             where: whereSql(input.whereFilters, input.whereConcatOperator)[database.type],
           })[database.type],
         })
-        .then(results => results.map(r => r.rows).flat())
-        .catch(error => ({
-          error: error instanceof Error ? error.message : 'Error during the query execution',
-        })) satisfies InferToolOutput<typeof tools.select>
-
-        console.log(rowsSql(input.tableAndSchema.schemaName, input.tableAndSchema.tableName, {
-          limit: input.limit,
-          offset: input.offset,
-          orderBy: input.orderBy,
-          select: input.select,
-          where: whereSql(input.whereFilters, input.whereConcatOperator)[database.type],
-        })[database.type])
+          .then(results => results.map(r => r.rows).flat())
+          .catch(error => ({
+            error: error instanceof Error ? error.message : 'Error during the query execution',
+          })) satisfies InferToolOutput<typeof tools.select>
 
         chat.addToolResult({
           tool: 'select',

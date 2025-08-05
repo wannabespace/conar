@@ -6,7 +6,7 @@ import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { FiltersProvider } from '~/components/table'
-import { prefetchDatabaseTableCore, useDatabase } from '~/entities/database'
+import { prefetchDatabaseTableCore } from '~/entities/database'
 import { Filters } from './-components/filters'
 import { Header } from './-components/header'
 import { Table } from './-components/table'
@@ -76,8 +76,8 @@ export const Route = createFileRoute(
 })
 
 function DatabaseTablePage() {
-  const { id, table, schema } = Route.useParams()
-  const { data: database } = useDatabase(id)
+  const { table, schema } = Route.useParams()
+  const { database } = Route.useLoaderData()
   const [store] = useState(() => {
     const state = getTableStoreState(schema, table)
 
