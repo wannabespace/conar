@@ -1,12 +1,12 @@
-import type { WhereFilter } from '../sql/where'
-import type { Database } from '~/lib/indexeddb'
+import type { WhereFilter } from '@conar/shared/sql/where'
+import type { databases } from '~/drizzle'
+import { totalSql, totalType } from '@conar/shared/sql/total'
+import { whereSql } from '@conar/shared/sql/where'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
-import { totalSql, totalType } from '../sql/total'
-import { whereSql } from '../sql/where'
 
 export function databaseTableTotalQuery(
-  database: Database,
+  database: typeof databases.$inferSelect,
   table: string,
   schema: string,
   query: {
@@ -35,7 +35,7 @@ export function databaseTableTotalQuery(
         })[database.type],
       })
 
-      return Number(totalType.assert(result.rows[0]).total || 0)
+      return totalType.assert(result.rows[0]).total
     },
     throwOnError: false,
   })

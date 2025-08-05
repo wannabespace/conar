@@ -1,13 +1,11 @@
 import type { ColumnRenderer } from '~/components/table'
-import { useInViewport } from '@conar/ui/hookas/use-in-viewport'
-import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { cn } from '@conar/ui/lib/utils'
-import { RiErrorWarningLine, RiLoaderLine, RiMoreLine } from '@remixicon/react'
+import { setSql } from '@conar/shared/sql/set'
+import { RiErrorWarningLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useMemo, useRef } from 'react'
-import { Table, TableBody, TableHeader, TableProvider, useTableContext } from '~/components/table'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, setSql, useDatabase } from '~/entities/database'
+import { useMemo } from 'react'
+import { Table, TableBody, TableProvider } from '~/components/table'
+  import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
@@ -15,7 +13,10 @@ import { Route, usePageContext } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
+import { TableEmpty } from './table-empty'
+import { TableHeader } from './table-header'
 import { TableHeaderCell } from './table-header-cell'
+import { TableInfiniteLoader } from './table-infinite-loader'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
 import { TableBodySkeleton } from './table-skeleton'
 
@@ -48,54 +49,9 @@ export function TableError({ error }: { error: Error }) {
   )
 }
 
-export function TableEmpty({ className, title, description }: { className?: string, title: string, description: string }) {
-  return (
-    <div className={cn('sticky left-0 pointer-events-none flex items-center justify-center', className)}>
-      <div className="flex flex-col items-center justify-center w-full h-32">
-        <div className="flex items-center justify-center rounded-full bg-muted/60 p-3 mb-4">
-          <RiMoreLine className="size-6 text-muted-foreground" />
-        </div>
-        <span className="text-muted-foreground font-medium">{title}</span>
-        <span className="text-xs text-muted-foreground/70">{description}</span>
-      </div>
-    </div>
-  )
-}
-
-function TableInfiniteLoader() {
-  const rowsQueryOpts = useRowsQueryOpts()
-  const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(rowsQueryOpts)
-  const loaderRef = useRef<HTMLDivElement>(null)
-  const isVisible = useInViewport(loaderRef)
-  const { store } = usePageContext()
-  const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
-
-  useEffect(() => {
-    if (isVisible && hasNextPage && !isFetching) {
-      fetchNextPage()
-    }
-  }, [isVisible])
-
-  const scrollRef = useTableContext(state => state.scrollRef)
-  useMountedEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [filters, orderBy])
-
-  return (
-    <div className="sticky left-0 h-[50vh] pointer-events-none">
-      <div ref={loaderRef} className="absolute h-[calc(50vh+50rem)] bottom-0 inset-x-0" />
-      <div className="flex items-center justify-center h-[inherit]">
-        {hasNextPage
-          ? <RiLoaderLine className="size-10 animate-spin opacity-50" />
-          : <TableEmpty className="bottom-0 h-full" title="No more data" description="This table has no more rows" />}
-      </div>
-    </div>
-  )
-}
-
 function TableComponent() {
-  const { id, table, schema } = Route.useParams()
-  const { data: database } = useDatabase(id)
+  const { table, schema } = Route.useParams()
+  const { database } = Route.useLoaderData()
   const columns = useTableColumns(database, table, schema)
   const { store } = usePageContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)

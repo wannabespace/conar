@@ -37,7 +37,7 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       ...seo({
-        title: 'Conar.app - AI-powered connections management tool',
+        title: 'Conar.app - AI-powered modern alternative to DBeaver and pgAdmin',
         description: 'AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.',
         image: '/og-image.png',
       }),

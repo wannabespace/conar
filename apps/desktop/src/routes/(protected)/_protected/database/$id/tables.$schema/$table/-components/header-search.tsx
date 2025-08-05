@@ -8,29 +8,29 @@ import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
-import { useDatabase, useDatabaseEnums } from '~/entities/database'
-import { trpc } from '~/lib/trpc'
+import { useDatabaseEnums } from '~/entities/database'
+import { orpc } from '~/lib/orpc'
 import { Route, usePageContext } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 
 export function HeaderSearch() {
-  const { id, table, schema } = Route.useParams()
-  const { data: database } = useDatabase(id)
+  const { table, schema } = Route.useParams()
+  const { database } = Route.useLoaderData()
   const { store } = usePageContext()
   const prompt = useStore(store, state => state.prompt)
   const { mutate: generateFilter, isPending } = useMutation({
-    mutationFn: trpc.ai.sqlFilters.mutate,
+    mutationFn: orpc.ai.filters,
     onSuccess: (data) => {
       store.setState(state => ({
         ...state,
-        filters: data.map(filter => ({
+        filters: data.filters.map(filter => ({
           column: filter.column,
           operator: filter.operator as typeof SQL_OPERATORS_LIST[number]['value'],
           value: filter.value,
         })),
       }))
 
-      if (data.length === 0) {
+      if (data.filters.length === 0) {
         toast.info('No filters were generated, please try again with a different prompt')
       }
     },

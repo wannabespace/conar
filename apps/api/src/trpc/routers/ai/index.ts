@@ -1,6 +1,6 @@
 import { router } from '~/trpc'
-import { sqlFilters } from './sql-filters'
+import { filters } from './filters'
 
 export const aiRouter = router({
-  sqlFilters,
+  sqlFilters: filters,
 })

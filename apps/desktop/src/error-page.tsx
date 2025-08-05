@@ -1,7 +1,6 @@
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
-import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Toaster } from '@conar/ui/components/sonner'
 import { ThemeProvider } from '@conar/ui/theme-provider'
@@ -23,9 +22,6 @@ export function ErrorPage({ error }: ErrorComponentProps) {
     <EventsProvider>
       <ThemeProvider>
         <div className="flex items-center justify-center min-h-screen p-4">
-          <DotsBg
-            className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-          />
           <div className="relative z-20 w-full max-w-lg">
             <Card>
               <CardHeader className="text-center">

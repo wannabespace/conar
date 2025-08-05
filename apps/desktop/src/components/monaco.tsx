@@ -1,5 +1,4 @@
-import type { ComponentProps, RefObject } from 'react'
-import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
+import type { RefObject } from 'react'
 import { useTheme } from '@conar/ui/theme-provider'
 import * as monaco from 'monaco-editor'
 import ghDark from 'monaco-themes/themes/GitHub Dark.json'
@@ -24,8 +23,10 @@ export function Monaco({
   options,
   onEnter,
   ...props
-}: Omit<ComponentProps<'div'>, 'onChange' | 'ref'> & {
+}: {
   ref?: RefObject<monaco.editor.IStandaloneCodeEditor | null>
+  className?: string
+  style?: React.CSSProperties
   value: string
   language?: string
   onChange?: (value: string) => void
@@ -33,20 +34,20 @@ export function Monaco({
   onEnter?: (value: string) => void
 }) {
   const elementRef = useRef<HTMLDivElement>(null)
+  const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
   const { resolvedTheme } = useTheme()
+  const preventTriggerChangeEvent = useRef(false)
 
   useEffect(() => {
     monaco.editor.setTheme(resolvedTheme === 'dark' ? 'github-dark' : 'github-light')
   }, [resolvedTheme])
-
-  const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
 
   useEffect(() => {
     if (!elementRef.current)
       return
 
     monacoInstance.current = monaco.editor.create(elementRef.current, {
-      value,
+      value: language === 'json' ? JSON.stringify(JSON.parse(value), null, 2) : value,
       language,
       automaticLayout: true,
       minimap: { enabled: false },
@@ -70,14 +71,19 @@ export function Monaco({
       })
     }
 
+    let subscription: monaco.IDisposable | undefined
+
     if (onChange) {
-      monacoInstance.current.onDidChangeModelContent(() => {
-        const value = monacoInstance.current?.getValue()
-        onChange(value ?? '')
+      subscription = monacoInstance.current.onDidChangeModelContent(() => {
+        if (!preventTriggerChangeEvent.current) {
+          const val = monacoInstance.current?.getValue()
+          onChange(val ?? '')
+        }
       })
     }
 
     return () => {
+      subscription?.dispose()
       monacoInstance.current?.dispose()
     }
   }, [elementRef, language])
@@ -85,24 +91,36 @@ export function Monaco({
   useEffect(() => {
     if (!monacoInstance.current || !options)
       return
-
     monacoInstance.current.updateOptions(options)
   }, [options])
 
-  useMountedEffect(() => {
-    if (monacoInstance.current && monacoInstance.current.getValue() !== value) {
+  useEffect(() => {
+    if (!monacoInstance.current)
+      return
+
+    const editor = monacoInstance.current
+    const model = editor.getModel()
+
+    if (!model)
+      return
+
+    const currentValue = editor.getValue()
+
+    if (currentValue !== value) {
       if (options?.readOnly || !onChange) {
-        monacoInstance.current.setValue(value)
+        editor.setValue(value)
       }
       else {
-        monacoInstance.current.executeEdits('', [
+        preventTriggerChangeEvent.current = true
+        editor.executeEdits('', [
           {
-            range: monacoInstance.current.getModel()!.getFullModelRange(),
+            range: model.getFullModelRange(),
             text: value,
             forceMoveMarkers: true,
           },
         ])
-        monacoInstance.current.pushUndoStop()
+        editor.pushUndoStop()
+        preventTriggerChangeEvent.current = false
       }
     }
   }, [value])

@@ -1,4 +1,5 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
+import { dropTableSql } from '@conar/shared/sql/drop-table'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -14,19 +15,19 @@ import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { RiAlertLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
+import { useMatches, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseContextQuery, dropTableSql } from '~/entities/database'
+import { tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { tabsStore } from './tabs'
+import { closeTab } from '../-lib/tabs'
 
 interface DropTableDialogProps {
   ref: React.RefObject<{
     drop: (schema: string, table: string) => void
   } | null>
-  database: Database
+  database: typeof databases.$inferSelect
 }
 
 export function DropTableDialog({ ref, database }: DropTableDialogProps) {
@@ -35,11 +36,19 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
   const [schema, setSchema] = useState('')
   const [table, setTable] = useState('')
   const [open, setOpen] = useState(false)
+  const isCurrentTable = useMatches({
+    select: matches => matches
+      .some(match => match.routeId === '/(protected)/_protected/database/$id/tables/$schema/$table/'
+        && match.params.schema === schema
+        && match.params.table === table,
+      ),
+  })
 
   useImperativeHandle(ref, () => ({
     drop: (schema: string, table: string) => {
       setSchema(schema)
       setTable(table)
+      setConfirmationText('')
       setOpen(true)
     },
   }))
@@ -57,13 +66,10 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
       setOpen(false)
       setConfirmationText('')
 
-      queryClient.invalidateQueries(databaseContextQuery(database))
-      tabsStore.setState(prev => ({
-        ...prev,
-        [database.id]: prev[database.id]?.filter(tab => tab.table !== table),
-      }))
+      queryClient.invalidateQueries(tablesAndSchemasQuery(database))
+      closeTab(database.id, schema, table)
 
-      if (router.state.location.pathname.startsWith(`/database/${database.id}/tables`)) {
+      if (isCurrentTable) {
         router.navigate({
           to: '/database/$id/tables',
           params: { id: database.id },

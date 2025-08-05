@@ -9,6 +9,7 @@ const envType = type({
   ENCRYPTION_SECRET: 'string',
   BETTER_AUTH_SECRET: 'string',
   STRIPE_SECRET_KEY: 'string',
+  REDIS_URL: 'string',
   LOOPS_API_KEY: 'string',
   OPENAI_API_KEY: 'string',
   ANTHROPIC_API_KEY: 'string',
@@ -22,6 +23,7 @@ const envType = type({
 
 const devOptionalEnvs = [
   'STRIPE_SECRET_KEY',
+  'REDIS_URL',
   'LOOPS_API_KEY',
   'OPENAI_API_KEY',
   'ANTHROPIC_API_KEY',

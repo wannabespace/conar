@@ -1,4 +1,4 @@
-import type { WhereFilter } from '~/entities/database'
+import type { WhereFilter } from '@conar/shared/sql/where'
 import { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
 import { title } from '@conar/shared/utils/title'
 import { createFileRoute } from '@tanstack/react-router'
@@ -6,7 +6,7 @@ import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { FiltersProvider } from '~/components/table'
-import { prefetchDatabaseTableCore, useDatabase } from '~/entities/database'
+import { prefetchDatabaseTableCore } from '~/entities/database'
 import { Filters } from './-components/filters'
 import { Header } from './-components/header'
 import { Table } from './-components/table'
@@ -14,14 +14,14 @@ import { useTableColumns } from './-queries/use-columns-query'
 
 const storeState = type({
   selected: 'number[]',
-  filters: type<WhereFilter>({
+  filters: type({
     column: 'string',
-    operator: 'string',
-    value: 'string',
+    operator: 'string' as type.cast<WhereFilter['operator']>,
+    values: 'string[]',
   }).array(),
   hiddenColumns: 'string[]',
   orderBy: {
-    '[string]': 'string' as type.cast<'ASC' | 'DESC'>,
+    '[string]': '"ASC" | "DESC"',
   },
   prompt: 'string',
 })
@@ -76,8 +76,8 @@ export const Route = createFileRoute(
 })
 
 function DatabaseTablePage() {
-  const { id, table, schema } = Route.useParams()
-  const { data: database } = useDatabase(id)
+  const { table, schema } = Route.useParams()
+  const { database } = Route.useLoaderData()
   const [store] = useState(() => {
     const state = getTableStoreState(schema, table)
 

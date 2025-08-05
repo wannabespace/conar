@@ -5,7 +5,6 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { AnimatePresence } from 'motion/react'
 import { useEffect } from 'react'
 import { AuthObserver } from '~/auth-observer'
 import { ErrorPage } from '~/error-page'
@@ -59,9 +58,7 @@ function RootDocument() {
           <QueryClientProvider client={queryClient}>
             <UpdatesObserver />
             <AuthObserver />
-            <AnimatePresence>
-              <Outlet />
-            </AnimatePresence>
+            <Outlet />
             <Toaster />
             {import.meta.env.DEV && (
               <>

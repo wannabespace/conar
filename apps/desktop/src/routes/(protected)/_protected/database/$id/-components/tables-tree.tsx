@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -7,15 +7,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useDebouncedCallback } from '@conar/ui/hookas/use-debounced-callback'
 import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
-import { clickHandlers, cn } from '@conar/ui/lib/utils'
-import { RiDeleteBin7Line, RiEditLine, RiMoreLine, RiStackLine, RiTableLine } from '@remixicon/react'
-import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { copy as copyToClipboard } from '@conar/ui/lib/copy'
+import { cn } from '@conar/ui/lib/utils'
+import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiStackLine, RiTableLine } from '@remixicon/react'
+import { Link, useParams } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
+import { addTab } from '../-lib/tabs'
 import { getTableStoreState } from '../tables.$schema/$table'
 import { DropTableDialog } from './drop-table-dialog'
-import { RenameTableDIalog } from './rename-table-dialog'
+import { RenameTableDialog } from './rename-table-dialog'
 
 function Skeleton() {
   return (
@@ -33,13 +35,12 @@ function Skeleton() {
   )
 }
 
-export function TablesTree({ database, className, search }: { database: Database, className?: string, search?: string }) {
+export function TablesTree({ database, className, search }: { database: typeof databases.$inferSelect, className?: string, search?: string }) {
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas(database)
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
-  const DropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
-  const RenameTableDIalogRef = useRef<ComponentRef<typeof RenameTableDIalog>>(null)
+  const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
+  const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
 
   function getQueryOpts(tableName: string) {
     const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
@@ -70,18 +71,18 @@ export function TablesTree({ database, className, search }: { database: Database
     ),
   })).filter(schema => schema.tables.length) || [], [search, tablesAndSchemas])
 
-  const [accordionValue, setAccordionValue] = useSessionStorage<string[]>(`database-tables-accordion-value-${database.id}`, () => schemaParam ? [schemaParam] : ['public'])
+  const [accordionValue, setAccordionValue] = useSessionStorage<string[]>(`database-tables-accordion-value-${database.id}`, () => schemaParam ? [schemaParam] : [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
 
   const searchAccordionValue = useMemo(() => search ? filteredTablesAndSchemas.map(schema => schema.name) : accordionValue, [search, filteredTablesAndSchemas, accordionValue])
 
   return (
     <ScrollArea ref={ref} className={cn('h-full overflow-y-auto p-2', className)}>
       <DropTableDialog
-        ref={DropTableDialogRef}
+        ref={dropTableDialogRef}
         database={database}
       />
-      <RenameTableDIalog
-        ref={RenameTableDIalogRef}
+      <RenameTableDialog
+        ref={renameTableDialogRef}
         database={database}
       />
       <Accordion
@@ -159,14 +160,7 @@ export function TablesTree({ database, className, search }: { database: Database
                                     schema: schema.name,
                                     table,
                                   }}
-                                  {...clickHandlers(() => navigate({
-                                    to: '/database/$id/tables/$schema/$table',
-                                    params: {
-                                      id: database.id,
-                                      schema: schema.name,
-                                      table,
-                                    },
-                                  }))}
+                                  onDoubleClick={() => addTab(database.id, schema.name, table)}
                                   className={cn(
                                     'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/60',
                                     tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
@@ -208,16 +202,31 @@ export function TablesTree({ database, className, search }: { database: Database
                                         <RiMoreLine className="size-3" />
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
+                                    <DropdownMenuContent align="end" className="min-w-48">
                                       <DropdownMenuItem
-                                        onClick={() => RenameTableDIalogRef.current?.rename(schema.name, table)}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          renameTableDialogRef.current?.rename(schema.name, table)
+                                        }}
                                       >
                                         <RiEditLine className="size-4" />
                                         Rename Table
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          copyToClipboard(table, 'Table name copied')
+                                        }}
+                                      >
+                                        <RiFileCopyLine className="size-4" />
+                                        Copy Table Name
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
                                         variant="destructive"
-                                        onClick={() => DropTableDialogRef.current?.drop(schema.name, table)}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          dropTableDialogRef.current?.drop(schema.name, table)
+                                        }}
                                       >
                                         <RiDeleteBin7Line className="size-4" />
                                         Drop Table

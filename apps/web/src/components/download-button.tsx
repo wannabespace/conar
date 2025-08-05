@@ -55,8 +55,6 @@ export function DownloadButton({ fallback }: { fallback?: React.ReactNode }) {
           {links.assets.map(asset => (
             <DropdownMenuItem key={asset.url} asChild>
               <a href={asset.url} download className="text-foreground flex gap-2">
-                {links.platform}
-                {' '}
                 {asset.arch}
               </a>
             </DropdownMenuItem>

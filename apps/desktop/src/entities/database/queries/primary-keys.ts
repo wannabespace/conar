@@ -1,9 +1,9 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
+import { primaryKeysSql, primaryKeyType } from '@conar/shared/sql/primary-keys'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
-import { primaryKeysSql, primaryKeyType } from '../sql/primary-keys'
 
-export function databasePrimaryKeysQuery(database: Database) {
+export function databasePrimaryKeysQuery(database: typeof databases.$inferSelect) {
   return queryOptions({
     queryKey: ['database', database.id, 'primaryKeys'],
     queryFn: async () => {
@@ -13,10 +13,7 @@ export function databasePrimaryKeysQuery(database: Database) {
         query: primaryKeysSql()[database.type],
       })
 
-      return result.rows.map(row => primaryKeyType.assert(row)).map(row => ({
-        ...row,
-        primaryKeys: row.primary_keys.split(',').map(key => key.trim()),
-      }))
+      return result.rows.map(row => primaryKeyType.assert(row))
     },
   })
 }

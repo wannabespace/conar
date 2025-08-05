@@ -1,4 +1,4 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Separator } from '@conar/ui/components/separator'
 import NumberFlow from '@number-flow/react'
 import { useStore } from '@tanstack/react-store'
@@ -8,7 +8,7 @@ import { useTableColumns } from '../-queries/use-columns-query'
 import { HeaderActions } from './header-actions'
 import { HeaderSearch } from './header-search'
 
-export function Header({ database, table, schema }: { database: Database, table: string, schema: string }) {
+export function Header({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
   const columns = useTableColumns(database, table, schema)
   const { store } = usePageContext()
   const filters = useStore(store, state => state.filters)

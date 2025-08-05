@@ -1,4 +1,5 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
+import { deleteRowsSql } from '@conar/shared/sql/delete'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -9,14 +10,14 @@ import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseTableTotalQuery, deleteRowsSql } from '~/entities/database'
+import { databaseTableTotalQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { usePageContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
-export function HeaderActionsDelete({ table, schema, database }: { table: string, schema: string, database: Database }) {
+export function HeaderActionsDelete({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
   const rowsQueryOpts = useRowsQueryOpts()
   const { data: rows, refetch } = useInfiniteQuery(rowsQueryOpts)
   const [isOpened, setIsOpened] = useState(false)

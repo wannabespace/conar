@@ -1,31 +1,25 @@
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { ComponentProps, RefObject } from 'react'
-import type { Database } from '~/lib/indexeddb'
+import type { Tab } from '../-lib/tabs'
+import type { databases } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
-import { useInViewport } from '@conar/ui/hookas/use-in-viewport'
-import { useInitializedEffect } from '@conar/ui/hookas/use-initialized-effect'
+import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { clickHandlers, cn } from '@conar/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { restrictToHorizontalAxis } from '@dnd-kit/modifiers'
-import { arrayMove, horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
+import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useParams, useRouter } from '@tanstack/react-router'
-import { Store, useStore } from '@tanstack/react-store'
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
+import { addTab, closeTab, moveTab, useTabs } from '../-lib/tabs'
 import { getTableStoreState } from '../tables.$schema/$table'
-
-interface Tab {
-  table: string
-  schema: string
-  preview: boolean
-}
 
 const os = getOS(navigator.userAgent)
 
@@ -109,7 +103,7 @@ function SortableTab({
   const router = useRouter()
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
-  const isVisible = useInViewport(ref, 'full')
+  const isVisible = useIsInViewport(ref, 'full')
   const {
     attributes,
     listeners,
@@ -120,7 +114,7 @@ function SortableTab({
 
   const isActive = schemaParam === item.tab.schema && tableParam === item.tab.table
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!isVisible && isActive && ref.current) {
       onFocus(ref)
     }
@@ -146,10 +140,10 @@ function SortableTab({
       <TabButton
         active={schemaParam === item.tab.schema && tableParam === item.tab.table}
         onClose={onClose}
-        {...clickHandlers(() => router.navigate({
+        onClick={() => router.navigate({
           to: '/database/$id/tables/$schema/$table',
           params: { id, schema: item.tab.schema, table: item.tab.table },
-        }))}
+        })}
         onDoubleClick={onDoubleClick}
       >
         {showSchema && (
@@ -164,21 +158,14 @@ function SortableTab({
   )
 }
 
-export const tabsStore = new Store<Record<string, Tab[]>>(JSON.parse(localStorage.getItem('database-tables-tabs') ?? '{}'))
-
-tabsStore.subscribe(({ currentVal }) => {
-  localStorage.setItem('database-tables-tabs', JSON.stringify(currentVal))
-})
-
-export function TablesTabs({ ref, database, id }: {
-  ref?: RefObject<{ addTab: (schema: string, table: string) => void } | null>
-  database: Database
+export function TablesTabs({ database, id }: {
+  database: typeof databases.$inferSelect
   id: string
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
   const router = useRouter()
-  const tabs = useStore(tabsStore, state => state[id] ?? [])
+  const tabs = useTabs(id)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -196,48 +183,15 @@ export function TablesTabs({ ref, database, id }: {
     const tab = tabs.find(tab => tab.table === tableParam && tab.schema === schemaParam)
 
     if (!tab) {
-      addTab(schemaParam, tableParam, true)
+      addTab(id, schemaParam, tableParam, true)
     }
   }, [schemaParam, tableParam])
-
-  function addTab(schema: string, table: string, preview?: boolean) {
-    if (preview) {
-      const existingPreviewTabIndex = tabs.findIndex(tab => tab.preview)
-
-      if (existingPreviewTabIndex !== -1) {
-        tabsStore.setState(prev => ({
-          ...prev,
-          [id]: prev[id]?.map((tab, index) => index === existingPreviewTabIndex ? { table, schema, preview: true } : tab),
-        }))
-        return
-      }
-
-      tabsStore.setState(prev => ({
-        ...prev,
-        [id]: prev[id] ? [...prev[id], { table, schema, preview: true }] : [{ table, schema, preview: true }],
-      }))
-      return
-    }
-
-    if (!tabs.find(tab => tab.table === table && tab.schema === schema && !tab.preview)) {
-      tabsStore.setState(prev => ({
-        ...prev,
-        [id]: prev[id]?.map(tab => tab.table === table && tab.schema === schema ? { table, schema, preview: false } : tab),
-      }))
-    }
-  }
 
   useAsyncEffect(async () => {
     for (const tab of tabs) {
       await prefetchDatabaseTableCore(database, tab.schema, tab.table, getQueryOpts(tab.table))
     }
   }, [database, tabs])
-
-  useInitializedEffect(() => {
-    ref!.current = {
-      addTab,
-    }
-  }, [ref, addTab])
 
   function getQueryOpts(tableName: string) {
     const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
@@ -280,18 +234,11 @@ export function TablesTabs({ ref, database, id }: {
     navigateToAvailableRoute()
   }, [tabs.length])
 
-  function closeTab(schema: string, table: string) {
-    tabsStore.setState(prev => ({
-      ...prev,
-      [id]: prev[id]?.filter(tab => !(tab.table === table && tab.schema === schema)),
-    }))
-  }
-
   useKeyboardEvent(e => e.key === 'w' && (os.type === 'macos' ? e.metaKey : e.ctrlKey), (e) => {
     e.preventDefault()
 
     if (schemaParam && tableParam) {
-      closeTab(schemaParam, tableParam)
+      closeTab(id, schemaParam, tableParam)
     }
   })
 
@@ -301,17 +248,7 @@ export function TablesTabs({ ref, database, id }: {
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     if (over && active.id !== over.id) {
-      tabsStore.setState((prev) => {
-        const items = prev[id] ?? []
-
-        const oldIndex = items.findIndex(item => item.table === active.id)
-        const newIndex = items.findIndex(item => item.table === over.id)
-
-        return {
-          ...prev,
-          [id]: arrayMove(items, oldIndex, newIndex),
-        }
-      })
+      moveTab(id, active.id, over.id)
     }
   }
 
@@ -330,8 +267,8 @@ export function TablesTabs({ ref, database, id }: {
               id={database.id}
               item={item}
               showSchema={!isOneSchema}
-              onClose={() => closeTab(item.tab.schema, item.tab.table)}
-              onDoubleClick={() => addTab(item.tab.schema, item.tab.table, false)}
+              onClose={() => closeTab(id, item.tab.schema, item.tab.table)}
+              onDoubleClick={() => addTab(id, item.tab.schema, item.tab.table, false)}
               onFocus={(ref) => {
                 ref.current?.scrollIntoView({
                   block: 'nearest',

@@ -2,7 +2,9 @@ import { getOS } from '@conar/shared/utils/os'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { fetchDatabases } from '~/entities/database'
+import { syncChats } from '~/entities/chat/lib/sync'
+import { syncDatabases } from '~/entities/database'
+import { syncQueries } from '~/entities/query/lib/sync'
 import { authClient } from '~/lib/auth'
 import { ActionsCenter } from './-components/actions-center'
 
@@ -20,13 +22,9 @@ function ProtectedLayout() {
     if (!data?.user)
       return
 
-    fetchDatabases()
-
-    const interval = setInterval(() => {
-      fetchDatabases()
-    }, 1000 * 60 * 5)
-
-    return () => clearInterval(interval)
+    syncDatabases()
+    syncChats()
+    syncQueries()
   }, [data?.user])
 
   useKeyboardEvent(e => e.key === 'n' && (os.type === 'macos' ? e.metaKey : e.ctrlKey), () => {

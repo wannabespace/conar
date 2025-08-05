@@ -2,5 +2,26 @@ packages:
   - packages/*
   - apps/*
 
+catalog:
+  '@remixicon/react': ^4.6.0
+  '@tanstack/react-query': ^5.84.1
+  '@tanstack/react-query-devtools': ^5.84.1
+  '@tanstack/react-router': ^1.130.12
+  '@tanstack/react-router-devtools': ^1.130.13
+  '@types/react': ^19.1.9
+  '@types/react-dom': ^19.1.7
+  ai: ^5.0.2
+  arktype: ^2.1.20
+  babel-plugin-react-compiler: 19.1.0-rc.2
+  drizzle-kit: ^0.31.4
+  drizzle-orm: ^0.44.4
+  react: ^19.1.1
+  react-dom: ^19.1.1
+  sonner: ^2.0.7
+  tailwindcss: ^4.1.11
+  typescript: ^5.9.2
+  uuid: ^11.1.0
+  zod: ^4.0.14
+
 onlyBuiltDependencies:
   - electron

@@ -8,6 +8,7 @@ export default antfu({
     'no-console': 'warn',
     'react-hooks/exhaustive-deps': 'off',
     'prefer-arrow-callback': 'off',
+    'style/indent': 'off', // temporary due to bug
     'react/no-context-provider': 'off', // Due to context selector
   },
   ignores: [
@@ -19,5 +20,6 @@ export default antfu({
     '**/.output/**/*',
     '**/.types/**/*',
     '**/migrations/meta/*.json',
+    '**/migrations.json',
   ],
 })

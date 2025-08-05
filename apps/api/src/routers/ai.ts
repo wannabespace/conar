@@ -1,15 +1,13 @@
-import type { LanguageModelV1, Message } from 'ai'
-import { anthropic } from '@ai-sdk/anthropic'
-import { google } from '@ai-sdk/google'
-import { openai } from '@ai-sdk/openai'
-import { xai } from '@ai-sdk/xai'
-import { databaseContextSchema } from '@conar/shared/database'
-import { AiSqlChatModel } from '@conar/shared/enums/ai-chat-model'
+import type { LanguageModelV1, Message } from 'ai4'
+import { anthropic, anthropic as anthropic1 } from '@ai-sdk/anthropic1'
+import { google as google1 } from '@ai-sdk/google1'
+import { openai as openai1 } from '@ai-sdk/openai1'
+import { xai as xai1 } from '@ai-sdk/xai1'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { zValidator } from '@hono/zod-validator'
-import { smoothStream, streamText } from 'ai'
+import { smoothStream, streamText } from 'ai4'
 import { Hono } from 'hono'
-import * as z from 'zod/v4'
+import * as z from 'zod'
 
 export const ai = new Hono()
 
@@ -23,7 +21,8 @@ function generateStream({
 }: {
   type: DatabaseType
   model: LanguageModelV1
-  context: z.output<typeof databaseContextSchema>
+  // eslint-disable-next-line ts/no-explicit-any
+  context: any
   messages: (Omit<Message, 'id'> & { id?: string })[]
   signal: AbortSignal
   currentQuery: string
@@ -72,6 +71,14 @@ function generateStream({
   })
 }
 
+const models = {
+  'claude-3-7-sonnet': anthropic1('claude-3-7-sonnet-20250219'),
+  'claude-4-opus': anthropic1('claude-4-opus-20250514'),
+  'gpt-4o-mini': openai1('gpt-4o-mini'),
+  'gemini-2.5-pro': google1('gemini-2.5-pro'),
+  'grok-3': xai1('grok-3'),
+}
+
 const input = z.object({
   type: z.enum(DatabaseType),
   messages: z.object({
@@ -84,20 +91,12 @@ const input = z.object({
       url: z.string(),
     }).array().optional(),
   }).array(),
-  context: databaseContextSchema,
-  model: z.enum(AiSqlChatModel).or(z.literal('auto')).optional(),
+  context: z.any(),
+  model: z.enum(Object.keys(models) as [keyof typeof models, ...(keyof typeof models)[]]).or(z.literal('auto')).optional(),
   currentQuery: z.string().optional(),
 })
 
-const models: Record<AiSqlChatModel, LanguageModelV1> = {
-  [AiSqlChatModel.Claude_3_7_Sonnet]: anthropic('claude-3-7-sonnet-20250219'),
-  [AiSqlChatModel.Claude_4_Opus]: anthropic('claude-4-opus-20250514'),
-  [AiSqlChatModel.GPT_4o_Mini]: openai('gpt-4o-mini'),
-  [AiSqlChatModel.Gemini_2_5_Pro]: google('gemini-2.5-pro'),
-  [AiSqlChatModel.Grok_3]: xai('grok-3-latest'),
-}
-
-const autoModel = models[AiSqlChatModel.Claude_3_7_Sonnet]
+const autoModel = models['claude-3-7-sonnet']
 
 ai.post('/sql-chat', zValidator('json', input), async (c) => {
   const { type, messages, context, model, currentQuery = '' } = c.req.valid('json')

@@ -1,12 +1,18 @@
 import * as React from 'react'
 
+export type ScrollDirection = 'vertical' | 'horizontal' | 'both'
+
 export function useIsScrolled(
   ref: React.RefObject<Element | null>,
-  { threshold = 10, initial = false }: { threshold?: number, initial?: boolean } = {},
-): boolean {
+  {
+    threshold = 10,
+    initial = false,
+    direction = 'both',
+  }: { threshold?: number, initial?: boolean, direction?: ScrollDirection } = {},
+) {
   const [isScrolled, setIsScrolled] = React.useState(initial)
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     const element = ref.current
 
     if (!element)
@@ -16,7 +22,18 @@ export function useIsScrolled(
       const scrollTop = element.scrollTop
       const scrollLeft = element.scrollLeft
 
-      setIsScrolled(scrollTop > threshold || scrollLeft > threshold)
+      let scrolled = false
+      if (direction === 'vertical') {
+        scrolled = scrollTop > threshold
+      }
+      else if (direction === 'horizontal') {
+        scrolled = scrollLeft > threshold
+      }
+      else {
+        scrolled = scrollTop > threshold || scrollLeft > threshold
+      }
+
+      setIsScrolled(scrolled)
     }
 
     handleScroll()
@@ -26,7 +43,7 @@ export function useIsScrolled(
     return () => {
       element.removeEventListener('scroll', handleScroll)
     }
-  }, [ref, threshold])
+  }, [ref, threshold, direction])
 
   return isScrolled
 }

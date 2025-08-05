@@ -1,4 +1,5 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
+import { renameTableSql } from '@conar/shared/sql/rename-table'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -17,19 +18,19 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseContextQuery, renameTableSql } from '~/entities/database'
+import { tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { tabsStore } from './tabs'
+import { renameTab } from '../-lib/tabs'
 
-interface RenameTableDIalogProps {
+interface RenameTableDialogProps {
   ref: React.RefObject<{
     rename: (schema: string, table: string) => void
   } | null>
-  database: Database
+  database: typeof databases.$inferSelect
 }
 
-export function RenameTableDIalog({ ref, database }: RenameTableDIalogProps) {
+export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
   const router = useRouter()
   const [newTableName, setNewTableName] = useState('')
   const [schema, setSchema] = useState('')
@@ -57,20 +58,18 @@ export function RenameTableDIalog({ ref, database }: RenameTableDIalogProps) {
       toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)
       setOpen(false)
 
-      await queryClient.invalidateQueries(databaseContextQuery(database))
-      tabsStore.setState(prev => ({
-        ...prev,
-        [database.id]: prev[database.id]?.map(tab => tab.table === table ? { ...tab, table: newTableName } : tab),
-      }))
+      await queryClient.invalidateQueries(tablesAndSchemasQuery(database))
+      renameTab(database.id, schema, table, newTableName)
 
       router.navigate({
+        replace: true,
         to: '/database/$id/tables/$schema/$table',
         params: { id: database.id, schema, table: newTableName },
       })
     },
   })
 
-  const canConfirm = newTableName.trim() !== '' && newTableName.trim() !== table
+  const canConfirm = newTableName.trim() !== '' && newTableName.trim() !== table && !isPending
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -100,29 +99,32 @@ export function RenameTableDIalog({ ref, database }: RenameTableDIalogProps) {
               <Input
                 id="newTableName"
                 value={newTableName}
-                onChange={e => setNewTableName(e.target.value)}
                 placeholder="Enter new table name"
                 spellCheck={false}
                 autoComplete="off"
-                autoFocus
+                onChange={e => setNewTableName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && canConfirm) {
+                    renameTable()
+                  }
+                }}
               />
             </div>
           </div>
         </DialogHeader>
         <DialogFooter className="mt-4 flex gap-2">
           <DialogClose asChild>
-            <Button
-              variant="outline"
-              onClick={() => setNewTableName('')}
-              className="rounded-lg border border-input bg-background hover:bg-muted/70 text-foreground font-medium px-5 py-2 transition-all focus:ring-2 focus:ring-primary/20"
-            >
+            <Button variant="outline">
               Cancel
             </Button>
           </DialogClose>
           <Button
-            onClick={() => renameTable()}
-            disabled={!canConfirm || isPending}
-            className="rounded-lg bg-primary text-primary-foreground font-semibold px-5 py-2 hover:bg-primary/90 transition-all focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+            disabled={!canConfirm}
+            onClick={() => {
+              if (canConfirm) {
+                renameTable()
+              }
+            }}
           >
             <LoadingContent loading={isPending}>
               Rename Table

@@ -1,4 +1,3 @@
-import type { WhereFilter } from '~/entities/database'
 import { Button } from '@conar/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -33,7 +32,7 @@ export function HeaderActionsFilters() {
             setIsFiltersOpened(false)
             store.setState(state => ({
               ...state,
-              filters: [...state.filters, filter as WhereFilter],
+              filters: [...state.filters, filter],
             }))
           }}
         />

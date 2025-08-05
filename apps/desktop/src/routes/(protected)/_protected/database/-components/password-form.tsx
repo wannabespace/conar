@@ -1,7 +1,6 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
-import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
 import { RiArrowLeftSLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
@@ -9,14 +8,21 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { useUpdateDatabasePassword } from '~/entities/database'
+import { updateDatabasePassword } from '~/entities/database'
 import { dbTestConnection } from '~/lib/query'
 
-export function PasswordForm({ database }: { database: Database }) {
+export function PasswordForm({ database }: { database: typeof databases.$inferSelect }) {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const { mutate: savePassword, isPending } = useUpdateDatabasePassword(database)
+  const { mutate: savePassword, isPending } = useMutation({
+    mutationFn: async (password: string) => {
+      await updateDatabasePassword(database.id, password)
+    },
+    onSuccess: () => {
+      toast.success('Password successfully saved!')
+    },
+  })
   const { mutate: testConnection, isPending: isConnecting } = useMutation({
     mutationFn: dbTestConnection,
     onSuccess: () => {
@@ -32,9 +38,6 @@ export function PasswordForm({ database }: { database: Database }) {
 
   return (
     <div className="min-h-[inherit] h-screen flex flex-col justify-center">
-      <DotsBg
-        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-      />
       <div className="w-full flex flex-col gap-6 max-w-xl mx-auto py-10 px-6">
         <div className="flex items-center gap-2 w-full">
           <Button

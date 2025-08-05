@@ -84,7 +84,7 @@ function SortButton({ column }: { column: Column }) {
   )
 }
 
-export function TableHeaderCell({ column, isFirst, isLast, className, style }: { column: Column } & TableHeaderCellProps) {
+export function TableHeaderCell({ column, isFirst, isLast, columnIndex, className, style }: { column: Column } & TableHeaderCellProps) {
   return (
     <div
       className={cn(
@@ -94,6 +94,10 @@ export function TableHeaderCell({ column, isFirst, isLast, className, style }: {
         className,
       )}
       style={style}
+      data-last={isLast}
+      data-first={isFirst}
+      data-index={columnIndex}
+      data-column-name={column.name}
     >
       <div className="text-xs overflow-hidden">
         <div
