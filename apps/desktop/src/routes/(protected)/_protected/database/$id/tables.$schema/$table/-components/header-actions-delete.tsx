@@ -50,11 +50,9 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
     onSuccess: () => {
       toast.success(`${selectedRows.length} row${selectedRows.length === 1 ? '' : 's'} successfully deleted`)
       refetch()
-      queryClient.invalidateQueries({
-        queryKey: databaseTableTotalQuery(database, table, schema, {
-          filters: store.state.filters,
-        }).queryKey,
-      })
+      queryClient.invalidateQueries(databaseTableTotalQuery(database, table, schema, {
+        filters: store.state.filters,
+      }))
       store.setState(state => ({
         ...state,
         selected: [],
