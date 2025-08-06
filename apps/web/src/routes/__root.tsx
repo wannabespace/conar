@@ -8,7 +8,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts, useRouterState } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { ErrorPage } from '~/error-page'
-import { getLatestReleaseOptions, getRepoOptions, getUsersCountOptions } from '~/queries'
+import { getLatestReleaseOptions, getRepoOptions } from '~/queries'
 import { seo } from '~/utils/seo'
 
 if (import.meta.env.DEV) {
@@ -24,7 +24,6 @@ export const Route = createRootRouteWithContext<{
     if (typeof window !== 'undefined') {
       context.queryClient.prefetchQuery(getRepoOptions)
       context.queryClient.prefetchQuery(getLatestReleaseOptions)
-      context.queryClient.prefetchQuery(getUsersCountOptions)
     }
   },
   head: () => ({
