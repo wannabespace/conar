@@ -21,7 +21,7 @@ import { toast } from 'sonner'
 import { tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { renameTab } from '../-lib/tabs'
+import { renameTab } from '../-lib'
 
 interface RenameTableDialogProps {
   ref: React.RefObject<{
@@ -63,8 +63,9 @@ export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
 
       router.navigate({
         replace: true,
-        to: '/database/$id/tables/$schema/$table',
-        params: { id: database.id, schema, table: newTableName },
+        to: '/database/$id/table',
+        params: { id: database.id },
+        search: { schema, table: newTableName },
       })
     },
   })

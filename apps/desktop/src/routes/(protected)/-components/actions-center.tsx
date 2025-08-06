@@ -34,7 +34,7 @@ export function ActionsCenter() {
   function onDatabaseSelect(database: typeof databasesTable.$inferSelect) {
     setIsOpen(false)
 
-    router.navigate({ to: '/database/$id/tables', params: { id: database.id } })
+    router.navigate({ to: '/database/$id/table', params: { id: database.id } })
   }
 
   return (

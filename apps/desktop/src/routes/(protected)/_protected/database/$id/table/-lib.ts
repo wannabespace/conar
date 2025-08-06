@@ -1,3 +1,4 @@
+import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { arrayMove } from '@dnd-kit/sortable'
 import { Store, useStore } from '@tanstack/react-store'
 
@@ -72,4 +73,13 @@ export function moveTab(id: string, activeId: string | number, overId: string | 
       [id]: arrayMove(items, oldIndex, newIndex),
     }
   })
+}
+
+interface LastOpenedTable {
+  schema: string
+  table: string
+}
+
+export function useLastOpenedTable(id: string) {
+  return useSessionStorage<LastOpenedTable | null>(`last-opened-table-${id}`, null)
 }

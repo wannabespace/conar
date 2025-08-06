@@ -10,7 +10,7 @@ catalog:
   '@tanstack/react-router-devtools': ^1.130.13
   '@types/react': ^19.1.9
   '@types/react-dom': ^19.1.7
-  ai: ^5.0.4
+  ai: ^5.0.5
   arktype: ^2.1.20
   babel-plugin-react-compiler: 19.1.0-rc.2
   drizzle-kit: ^0.31.4

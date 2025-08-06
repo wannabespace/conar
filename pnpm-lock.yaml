@@ -28,8 +28,8 @@ catalogs:
       specifier: ^19.1.7
       version: 19.1.7
     ai:
-      specifier: ^5.0.4
-      version: 5.0.4
+      specifier: ^5.0.5
+      version: 5.0.5
     arktype:
       specifier: ^2.1.20
       version: 2.1.20
@@ -130,7 +130,7 @@ importers:
         version: '@ai-sdk/google@1.2.22(zod@4.0.15)'
       '@ai-sdk/openai':
         specifier: ^2.0.3
-        version: 2.0.3(zod@4.0.15)
+        version: 2.0.4(zod@4.0.15)
       '@ai-sdk/openai1':
         specifier: npm:@ai-sdk/openai@1.3.23
         version: '@ai-sdk/openai@1.3.23(zod@4.0.15)'
@@ -163,7 +163,7 @@ importers:
         version: 11.4.4(typescript@5.9.2)
       ai:
         specifier: 'catalog:'
-        version: 5.0.4(zod@4.0.15)
+        version: 5.0.5(zod@4.0.15)
       ai4:
         specifier: npm:ai@4.3.19
         version: ai@4.3.19(react@19.1.1)(zod@4.0.15)
@@ -234,16 +234,16 @@ importers:
     devDependencies:
       '@ai-sdk/react':
         specifier: ^2.0.4
-        version: 2.0.4(react@19.1.1)(zod@4.0.15)
+        version: 2.0.5(react@19.1.1)(zod@4.0.15)
       '@conar/api':
         specifier: workspace:*
         version: link:../api
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../../packages/configs
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@conar/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
       '@conar/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -336,7 +336,7 @@ importers:
         version: 4.7.0(vite@7.0.6(@types/node@24.2.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
       ai:
         specifier: 'catalog:'
-        version: 5.0.4(zod@4.0.15)
+        version: 5.0.5(zod@4.0.15)
       arktype:
         specifier: 'catalog:'
         version: 2.1.20
@@ -485,12 +485,12 @@ importers:
       '@conar/api':
         specifier: workspace:*
         version: link:../api
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../../packages/configs
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@conar/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
       '@conar/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -528,9 +528,9 @@ importers:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.9.2)(vite@7.0.6(@types/node@24.2.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
 
-  packages/shared: {}
+  packages/configs: {}
 
-  packages/tsconfig: {}
+  packages/shared: {}
 
   packages/ui:
     dependencies:
@@ -643,9 +643,9 @@ importers:
         specifier: 'catalog:'
         version: 11.1.0
     devDependencies:
-      '@conar/tsconfig':
+      '@conar/configs':
         specifier: workspace:*
-        version: link:../tsconfig
+        version: link:../configs
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@4.1.11)
@@ -679,8 +679,8 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4
 
-  '@ai-sdk/gateway@1.0.2':
-    resolution: {integrity: sha512-RCE6v6/7JMzSHmjB0R7oWT54y/VYeEv+6NYLtkQKdxN871UawFFHpL7TW7IRnn+/SHdRlr7XoWxxGdHEaGRKiA==}
+  '@ai-sdk/gateway@1.0.3':
+    resolution: {integrity: sha512-QRGz2vH1WR9NvCv8gWocoebAKiXcuqj22mug6i8COeVsp33x5K5cK2DT4TwiQx5SfYbqJbVoBT+UqnHF7A3PHA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -715,8 +715,8 @@ packages:
     peerDependencies:
       zod: ^3.0.0
 
-  '@ai-sdk/openai@2.0.3':
-    resolution: {integrity: sha512-W8n024wj8fZ3zZR92xueNP+zCHhpBh86+Z/Gkk4d0lLakVeOhEK7TbqZd08iJI5ba+dBWc3GCe5NP/4iLJ01YQ==}
+  '@ai-sdk/openai@2.0.4':
+    resolution: {integrity: sha512-PnVUFosX2zWk6emiX4SulZrGvGw79YJjh/DgxahpAcBpz71GlQyzVNTFAQx7ycFGLBg/YniJr1M2WJybYZZ3ug==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -751,8 +751,8 @@ packages:
       zod:
         optional: true
 
-  '@ai-sdk/react@2.0.4':
-    resolution: {integrity: sha512-l8UkmogLx3vwIs4n7KbPLaaAq2DynSqCX78yVKbrQESYxv/0mdw0+qe+EVMPPxvG2fBjFLlImUxc33l0Dhb19w==}
+  '@ai-sdk/react@2.0.5':
+    resolution: {integrity: sha512-rXcraxZ+cAwKWS/wbCIx9gl1Ep7DNmOXTtB/U2WPSEpez4kc+A/2dwibJqRQ9wujbRv05jsTTVLUjE92Ovzhyg==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
@@ -3833,8 +3833,8 @@ packages:
       react:
         optional: true
 
-  ai@5.0.4:
-    resolution: {integrity: sha512-nizyqRxFlJShCAh/xPqor9EYpuaiGqCcYqau9A2GaSL+di+Qf6pA+Hos5x1orlodmT+EciZfoC2Sq+I12OmIUg==}
+  ai@5.0.5:
+    resolution: {integrity: sha512-NPQ8Yv4lR7o/1rM+HQ0JT18zKxVFy/DrFDpvxlBQqmemSwsf3FlLNTK0asWXo9YtDAc0BOFL/y4kB56Hffi4yg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -8612,7 +8612,7 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.1(zod@4.0.15)
       zod: 4.0.15
 
-  '@ai-sdk/gateway@1.0.2(zod@4.0.15)':
+  '@ai-sdk/gateway@1.0.3(zod@4.0.15)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.1(zod@4.0.15)
@@ -8648,7 +8648,7 @@ snapshots:
       '@ai-sdk/provider-utils': 2.2.8(zod@4.0.15)
       zod: 4.0.15
 
-  '@ai-sdk/openai@2.0.3(zod@4.0.15)':
+  '@ai-sdk/openai@2.0.4(zod@4.0.15)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.1(zod@4.0.15)
@@ -8687,10 +8687,10 @@ snapshots:
     optionalDependencies:
       zod: 4.0.15
 
-  '@ai-sdk/react@2.0.4(react@19.1.1)(zod@4.0.15)':
+  '@ai-sdk/react@2.0.5(react@19.1.1)(zod@4.0.15)':
     dependencies:
       '@ai-sdk/provider-utils': 3.0.1(zod@4.0.15)
-      ai: 5.0.4(zod@4.0.15)
+      ai: 5.0.5(zod@4.0.15)
       react: 19.1.1
       swr: 2.3.4(react@19.1.1)
       throttleit: 2.1.0
@@ -9308,7 +9308,7 @@ snapshots:
   '@es-joy/jsdoccomment@0.50.2':
     dependencies:
       '@types/estree': 1.0.8
-      '@typescript-eslint/types': 8.38.0
+      '@typescript-eslint/types': 8.39.0
       comment-parser: 1.4.1
       esquery: 1.6.0
       jsdoc-type-pratt-parser: 4.1.0
@@ -9316,7 +9316,7 @@ snapshots:
   '@es-joy/jsdoccomment@0.52.0':
     dependencies:
       '@types/estree': 1.0.8
-      '@typescript-eslint/types': 8.38.0
+      '@typescript-eslint/types': 8.39.0
       comment-parser: 1.4.1
       esquery: 1.6.0
       jsdoc-type-pratt-parser: 4.1.0
@@ -10991,7 +10991,7 @@ snapshots:
   '@stylistic/eslint-plugin@5.2.2(eslint@9.32.0(jiti@2.5.1))':
     dependencies:
       '@eslint-community/eslint-utils': 4.7.0(eslint@9.32.0(jiti@2.5.1))
-      '@typescript-eslint/types': 8.38.0
+      '@typescript-eslint/types': 8.39.0
       eslint: 9.32.0(jiti@2.5.1)
       eslint-visitor-keys: 4.2.1
       espree: 10.4.0
@@ -11997,7 +11997,7 @@ snapshots:
 
   '@vitest/eslint-plugin@1.3.4(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.2.0)(happy-dom@18.0.1)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))':
     dependencies:
-      '@typescript-eslint/utils': 8.38.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)
+      '@typescript-eslint/utils': 8.39.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)
       eslint: 9.32.0(jiti@2.5.1)
     optionalDependencies:
       typescript: 5.9.2
@@ -12161,9 +12161,9 @@ snapshots:
     optionalDependencies:
       react: 19.1.1
 
-  ai@5.0.4(zod@4.0.15):
+  ai@5.0.5(zod@4.0.15):
     dependencies:
-      '@ai-sdk/gateway': 1.0.2(zod@4.0.15)
+      '@ai-sdk/gateway': 1.0.3(zod@4.0.15)
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.1(zod@4.0.15)
       '@opentelemetry/api': 1.9.0
@@ -13416,7 +13416,7 @@ snapshots:
   eslint-plugin-import-lite@0.3.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2):
     dependencies:
       '@eslint-community/eslint-utils': 4.7.0(eslint@9.32.0(jiti@2.5.1))
-      '@typescript-eslint/types': 8.38.0
+      '@typescript-eslint/types': 8.39.0
       eslint: 9.32.0(jiti@2.5.1)
     optionalDependencies:
       typescript: 5.9.2
@@ -13470,8 +13470,8 @@ snapshots:
 
   eslint-plugin-perfectionist@4.15.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2):
     dependencies:
-      '@typescript-eslint/types': 8.38.0
-      '@typescript-eslint/utils': 8.38.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)
+      '@typescript-eslint/types': 8.39.0
+      '@typescript-eslint/utils': 8.39.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2)
       eslint: 9.32.0(jiti@2.5.1)
       natural-orderby: 5.0.0
     transitivePeerDependencies:

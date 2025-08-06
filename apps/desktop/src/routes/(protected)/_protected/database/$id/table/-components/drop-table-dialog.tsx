@@ -15,13 +15,14 @@ import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { RiAlertLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { useMatches, useRouter } from '@tanstack/react-router'
+import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { closeTab } from '../-lib/tabs'
+import { Route } from '..'
+import { closeTab } from '../-lib'
 
 interface DropTableDialogProps {
   ref: React.RefObject<{
@@ -31,18 +32,13 @@ interface DropTableDialogProps {
 }
 
 export function DropTableDialog({ ref, database }: DropTableDialogProps) {
+  const { schema: schemaFromSearch, table: tableFromSearch } = Route.useSearch()
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')
   const [schema, setSchema] = useState('')
   const [table, setTable] = useState('')
   const [open, setOpen] = useState(false)
-  const isCurrentTable = useMatches({
-    select: matches => matches
-      .some(match => match.routeId === '/(protected)/_protected/database/$id/tables/$schema/$table/'
-        && match.params.schema === schema
-        && match.params.table === table,
-      ),
-  })
+  const isCurrentTable = schema === schemaFromSearch && table === tableFromSearch
 
   useImperativeHandle(ref, () => ({
     drop: (schema: string, table: string) => {
@@ -71,7 +67,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
 
       if (isCurrentTable) {
         router.navigate({
-          to: '/database/$id/tables',
+          to: '/database/$id/table',
           params: { id: database.id },
         })
       }

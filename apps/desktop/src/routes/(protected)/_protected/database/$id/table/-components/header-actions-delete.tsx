@@ -13,15 +13,15 @@ import { toast } from 'sonner'
 import { databaseTableTotalQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { usePageContext } from '..'
+import { usePageStoreContext } from '..'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 
 export function HeaderActionsDelete({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
-  const rowsQueryOpts = useRowsQueryOpts()
+  const rowsQueryOpts = useRowsQueryOpts({ table, schema })
   const { data: rows, refetch } = useInfiniteQuery(rowsQueryOpts)
   const [isOpened, setIsOpened] = useState(false)
-  const { store } = usePageContext()
+  const store = usePageStoreContext()
   const selected = useStore(store, state => state.selected)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 

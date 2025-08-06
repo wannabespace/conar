@@ -5,15 +5,15 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCheckLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { usePageContext } from '..'
+import { usePageStoreContext } from '..'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 import { HeaderActionsColumns } from './header-actions-columns'
 import { HeaderActionsDelete } from './header-actions-delete'
 import { HeaderActionsFilters } from './header-actions-filters'
 
 export function HeaderActions({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
-  const { store } = usePageContext()
-  const rowsQueryOpts = useRowsQueryOpts()
+  const store = usePageStoreContext()
+  const rowsQueryOpts = useRowsQueryOpts({ table, schema })
   const { isFetching, dataUpdatedAt, refetch } = useInfiniteQuery(rowsQueryOpts)
 
   async function handleRefresh() {

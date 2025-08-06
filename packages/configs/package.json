@@ -1,5 +1,5 @@
 {
-  "name": "@conar/tsconfig",
+  "name": "@conar/configs",
   "type": "module",
   "private": true
 }

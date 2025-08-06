@@ -8,7 +8,6 @@
     "@conar/desktop#build": {
       "dependsOn": ["^check-types"]
     },
-    "lint": {},
     "check-types": {
       "dependsOn": ["^check-types"]
     },

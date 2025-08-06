@@ -5,11 +5,11 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
-  import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { Route, usePageContext } from '..'
+import { Route, usePageStoreContext } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
@@ -49,14 +49,13 @@ export function TableError({ error }: { error: Error }) {
   )
 }
 
-function TableComponent() {
-  const { table, schema } = Route.useParams()
+function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { database } = Route.useLoaderData()
   const columns = useTableColumns(database, table, schema)
-  const { store } = usePageContext()
+  const store = usePageStoreContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
-  const rowsQueryOpts = useRowsQueryOpts()
+  const rowsQueryOpts = useRowsQueryOpts({ table, schema })
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
@@ -155,7 +154,7 @@ function TableComponent() {
                   : (
                       <>
                         <TableBody data-mask className="bg-background" />
-                        <TableInfiniteLoader />
+                        <TableInfiniteLoader table={table} schema={schema} />
                       </>
                     )}
         </Table>

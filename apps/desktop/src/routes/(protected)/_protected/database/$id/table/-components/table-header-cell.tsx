@@ -5,14 +5,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiKey2Line } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { usePageContext } from '..'
+import { usePageStoreContext } from '..'
 
 type SortOrder = 'ASC' | 'DESC'
 
 const CANNOT_SORT_TYPES = ['json']
 
 function SortButton({ column }: { column: Column }) {
-  const { store } = usePageContext()
+  const store = usePageStoreContext()
   const order = useStore(store, state => state.orderBy?.[column.name] ?? null)
 
   if (column.type && CANNOT_SORT_TYPES.includes(column.type))

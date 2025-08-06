@@ -3,14 +3,14 @@ import { Separator } from '@conar/ui/components/separator'
 import NumberFlow from '@number-flow/react'
 import { useStore } from '@tanstack/react-store'
 import { useDatabaseTableTotal } from '~/entities/database'
-import { usePageContext } from '..'
+import { usePageStoreContext } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { HeaderActions } from './header-actions'
 import { HeaderSearch } from './header-search'
 
 export function Header({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
   const columns = useTableColumns(database, table, schema)
-  const { store } = usePageContext()
+  const store = usePageStoreContext()
   const filters = useStore(store, state => state.filters)
   const { data: total } = useDatabaseTableTotal(database, table, schema, {
     filters,
@@ -56,7 +56,7 @@ export function Header({ database, table, schema }: { database: typeof databases
           </p>
         </div>
         <Separator orientation="vertical" className="h-6!" />
-        <HeaderSearch />
+        <HeaderSearch table={table} schema={schema} />
       </div>
       <HeaderActions
         table={table}

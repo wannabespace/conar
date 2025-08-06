@@ -10,13 +10,12 @@ import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { useDatabaseEnums } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
-import { Route, usePageContext } from '..'
+import { Route, usePageStoreContext } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 
-export function HeaderSearch() {
-  const { table, schema } = Route.useParams()
+export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
   const { database } = Route.useLoaderData()
-  const { store } = usePageContext()
+  const store = usePageStoreContext()
   const prompt = useStore(store, state => state.prompt)
   const { mutate: generateFilter, isPending } = useMutation({
     mutationFn: orpc.ai.filters,

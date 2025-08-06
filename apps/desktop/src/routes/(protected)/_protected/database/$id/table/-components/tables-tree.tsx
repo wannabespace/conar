@@ -10,12 +10,12 @@ import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiStackLine, RiTableLine } from '@remixicon/react'
-import { Link, useParams } from '@tanstack/react-router'
+import { Link, useSearch } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
-import { addTab } from '../-lib/tabs'
-import { getTableStoreState } from '../tables.$schema/$table'
+import { addTab } from '../-lib'
+import { getTableStoreState } from '../index'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 
@@ -37,7 +37,7 @@ function Skeleton() {
 
 export function TablesTree({ database, className, search }: { database: typeof databases.$inferSelect, className?: string, search?: string }) {
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas(database)
-  const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
+  const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const ref = useRef<HTMLDivElement>(null)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
@@ -154,9 +154,9 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                 transition={{ duration: 0.2 }}
                               >
                                 <Link
-                                  to="/database/$id/tables/$schema/$table"
-                                  params={{
-                                    id: database.id,
+                                  to="/database/$id/table"
+                                  params={{ id: database.id }}
+                                  search={{
                                     schema: schema.name,
                                     table,
                                   }}

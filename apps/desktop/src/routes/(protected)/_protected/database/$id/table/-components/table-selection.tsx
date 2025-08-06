@@ -4,7 +4,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useTableContext } from '~/components/table'
-import { usePageContext } from '..'
+import { usePageStoreContext } from '..'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -39,7 +39,7 @@ function IndeterminateCheckbox({
 
 export function SelectionHeaderCell({ columnIndex, className, size }: TableHeaderCellProps) {
   const rows = useTableContext(state => state.rows)
-  const { store } = usePageContext()
+  const store = usePageStoreContext()
   const [checked, indeterminate] = useStore(store, state => [
     !!rows && rows.length > 0 && state.selected.length === rows.length,
     state.selected.length > 0,
@@ -71,7 +71,7 @@ export function SelectionHeaderCell({ columnIndex, className, size }: TableHeade
 }
 
 export function SelectionCell({ rowIndex, columnIndex, className, size }: TableCellProps) {
-  const { store } = usePageContext()
+  const store = usePageStoreContext()
   const isSelected = useStore(store, state => state.selected.includes(rowIndex))
 
   return (

@@ -5,16 +5,16 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef } from 'react'
 import { useTableContext } from '~/components/table'
-import { usePageContext } from '..'
+import { usePageStoreContext } from '..'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 import { TableEmpty } from './table-empty'
 
-export function TableInfiniteLoader() {
-  const rowsQueryOpts = useRowsQueryOpts()
+export function TableInfiniteLoader({ table, schema }: { table: string, schema: string }) {
+  const rowsQueryOpts = useRowsQueryOpts({ table, schema })
   const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(rowsQueryOpts)
   const loaderRef = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(loaderRef)
-  const { store } = usePageContext()
+  const store = usePageStoreContext()
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
 
   useEffect(() => {

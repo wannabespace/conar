@@ -1,5 +1,5 @@
 {
-  "extends": "@conar/tsconfig/react.json",
+  "extends": "@conar/configs/ts/react.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {

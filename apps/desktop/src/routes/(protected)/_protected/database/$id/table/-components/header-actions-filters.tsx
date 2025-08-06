@@ -4,11 +4,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { RiFilterLine } from '@remixicon/react'
 import { useState } from 'react'
 import { FilterForm } from '~/components/table'
-import { usePageContext } from '..'
+import { usePageStoreContext } from '..'
 
 export function HeaderActionsFilters() {
   const [isFiltersOpened, setIsFiltersOpened] = useState(false)
-  const { store } = usePageContext()
+  const store = usePageStoreContext()
 
   return (
     <Popover open={isFiltersOpened} onOpenChange={setIsFiltersOpened}>

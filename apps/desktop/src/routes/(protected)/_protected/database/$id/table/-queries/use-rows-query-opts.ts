@@ -1,12 +1,11 @@
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { databaseRowsQuery } from '~/entities/database'
-import { Route, usePageContext } from '..'
+import { Route, usePageStoreContext } from '..'
 
-export function useRowsQueryOpts() {
-  const { table, schema } = Route.useParams()
+export function useRowsQueryOpts({ table, schema }: { table: string, schema: string }) {
   const { database } = Route.useLoaderData()
-  const { store } = usePageContext()
+  const store = usePageStoreContext()
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
 
   return useMemo(() => ({

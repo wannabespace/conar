@@ -1,6 +1,6 @@
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { ComponentProps, RefObject } from 'react'
-import type { Tab } from '../-lib/tabs'
+import type { Tab } from '../-lib'
 import type { databases } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -15,11 +15,11 @@ import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dn
 import { CSS } from '@dnd-kit/utilities'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
-import { useParams, useRouter } from '@tanstack/react-router'
+import { useRouter, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
-import { addTab, closeTab, moveTab, useTabs } from '../-lib/tabs'
-import { getTableStoreState } from '../tables.$schema/$table'
+import { addTab, closeTab, moveTab, useTabs } from '../-lib'
+import { getTableStoreState } from '../index'
 
 const os = getOS(navigator.userAgent)
 
@@ -101,7 +101,7 @@ function SortableTab({
   onFocus: (ref: RefObject<HTMLDivElement | null>) => void
 }) {
   const router = useRouter()
-  const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
+  const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const ref = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(ref, 'full')
   const {
@@ -141,8 +141,9 @@ function SortableTab({
         active={schemaParam === item.tab.schema && tableParam === item.tab.table}
         onClose={onClose}
         onClick={() => router.navigate({
-          to: '/database/$id/tables/$schema/$table',
-          params: { id, schema: item.tab.schema, table: item.tab.table },
+          to: '/database/$id/table',
+          params: { id },
+          search: { schema: item.tab.schema, table: item.tab.table },
         })}
         onDoubleClick={onDoubleClick}
       >
@@ -163,7 +164,7 @@ export function TablesTabs({ database, id }: {
   id: string
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const { schema: schemaParam, table: tableParam } = useParams({ strict: false })
+  const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const router = useRouter()
   const tabs = useTabs(id)
 
@@ -218,13 +219,14 @@ export function TablesTabs({ database, id }: {
       const prevTab = tabs.at(-1)!
 
       router.navigate({
-        to: '/database/$id/tables/$schema/$table',
-        params: { id, schema: prevTab.schema, table: prevTab.table },
+        to: '/database/$id/table',
+        params: { id },
+        search: { schema: prevTab.schema, table: prevTab.table },
       })
     }
     else {
       router.navigate({
-        to: '/database/$id/tables',
+        to: '/database/$id/table',
         params: { id },
       })
     }

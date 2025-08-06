@@ -187,7 +187,7 @@ function CreateConnectionPage() {
         prefetchDatabaseCore(database)
       }
 
-      router.navigate({ to: '/database/$id/tables', params: { id } })
+      router.navigate({ to: '/database/$id/table', params: { id } })
     },
   })
 

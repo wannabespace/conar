@@ -28,8 +28,8 @@
   },
   "devDependencies": {
     "@conar/api": "workspace:*",
+    "@conar/configs": "workspace:*",
     "@conar/shared": "workspace:*",
-    "@conar/tsconfig": "workspace:*",
     "@conar/ui": "workspace:*",
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "^4.1.11",
