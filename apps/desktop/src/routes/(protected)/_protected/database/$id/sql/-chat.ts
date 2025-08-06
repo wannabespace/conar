@@ -53,15 +53,15 @@ export const chatInput = {
 }
 
 export const lastOpenedChatId = {
-  get() {
-    return sessionStorage.getItem('sql-last-chat-id')
+  get(databaseId: string) {
+    return sessionStorage.getItem(`sql-last-chat-id-${databaseId}`)
   },
-  set(id: string | null) {
+  set(databaseId: string, id: string | null) {
     if (id) {
-      sessionStorage.setItem('sql-last-chat-id', id)
+      sessionStorage.setItem(`sql-last-chat-id-${databaseId}`, id)
     }
     else {
-      sessionStorage.removeItem('sql-last-chat-id')
+      sessionStorage.removeItem(`sql-last-chat-id-${databaseId}`)
     }
   },
 }

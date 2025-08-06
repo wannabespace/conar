@@ -27,7 +27,7 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@ai-sdk/react": "^2.0.2",
+    "@ai-sdk/react": "^2.0.4",
     "@conar/api": "workspace:*",
     "@conar/shared": "workspace:*",
     "@conar/tsconfig": "workspace:*",
@@ -44,7 +44,7 @@
     "@react-hookz/web": "^25.1.1",
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "^4.1.11",
-    "@tanstack/react-form": "^1.16.0",
+    "@tanstack/react-form": "^1.18.0",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
     "@tanstack/react-router": "catalog:",
@@ -68,7 +68,7 @@
     "dayjs": "^1.11.13",
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
-    "electron": "^37.2.5",
+    "electron": "^37.2.6",
     "electron-builder": "^26.0.12",
     "hookable": "^5.5.3",
     "marked": "^16.1.2",

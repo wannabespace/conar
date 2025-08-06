@@ -85,7 +85,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
                   <Link
                     to="/database/$id/sql"
                     params={{ id }}
-                    search={{ chatId: lastOpenedChatId.get() || undefined }}
+                    search={{ chatId: lastOpenedChatId.get(id) || undefined }}
                     className={classes(isActiveSql)}
                   >
                     <RiPlayLargeLine className="size-4" />

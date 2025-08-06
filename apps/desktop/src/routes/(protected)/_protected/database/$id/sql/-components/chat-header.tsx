@@ -107,7 +107,7 @@ export function ChatHeader() {
             variant="outline"
             size="icon-sm"
             asChild
-            onClick={() => lastOpenedChatId.set(null)}
+            onClick={() => lastOpenedChatId.set(id, null)}
           >
             <Link
               to="/database/$id/sql"

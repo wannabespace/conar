@@ -10,7 +10,7 @@ catalog:
   '@tanstack/react-router-devtools': ^1.130.13
   '@types/react': ^19.1.9
   '@types/react-dom': ^19.1.7
-  ai: ^5.0.2
+  ai: ^5.0.4
   arktype: ^2.1.20
   babel-plugin-react-compiler: 19.1.0-rc.2
   drizzle-kit: ^0.31.4
@@ -21,7 +21,7 @@ catalog:
   tailwindcss: ^4.1.11
   typescript: ^5.9.2
   uuid: ^11.1.0
-  zod: ^4.0.14
+  zod: ^4.0.15
 
 onlyBuiltDependencies:
   - electron

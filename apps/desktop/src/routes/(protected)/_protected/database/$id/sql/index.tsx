@@ -18,7 +18,7 @@ export const Route = createFileRoute(
   }),
   loaderDeps: ({ search }) => ({ chatId: search.chatId }),
   loader: async ({ params, context, deps }) => {
-    lastOpenedChatId.set(deps.chatId || null)
+    lastOpenedChatId.set(params.id, deps.chatId || null)
 
     pageStore.setState(state => ({
       ...state,
