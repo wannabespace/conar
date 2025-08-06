@@ -1,5 +1,5 @@
 import type { ColumnRenderer } from '~/components/table'
-import { setSql } from '@conar/shared/sql/set'
+import { setSql } from '@conar/shared'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
@@ -7,8 +7,8 @@ import { useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
   import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
-import { dbQuery } from '~/lib/query'
-import { queryClient } from '~/main'
+import { dbQuery } from '~/lib/db-query'
+import { queryClient } from '~/lib/react-query'
 import { Route, usePageContext } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
@@ -19,19 +19,8 @@ import { TableHeaderCell } from './table-header-cell'
 import { TableInfiniteLoader } from './table-infinite-loader'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
 import { TableBodySkeleton } from './table-skeleton'
-
-const selectSymbol = Symbol('table-selection')
-
-const columnsSizeMap = new Map<string, number>([
-  ['boolean', 150],
-  ['number', 150],
-  ['integer', 120],
-  ['bigint', 160],
-  ['timestamp', 240],
-  ['timestamptz', 240],
-  ['float', 150],
-  ['uuid', 290],
-])
+import { columnsSizeMap, DEFAULT_COLUMN_WIDTH, selectSymbol } from '../-lib/constants'
+import { findRowIndexByPrimaryKey } from '../-lib/primary-keys'
 
 export function TableError({ error }: { error: Error }) {
   return (
@@ -62,24 +51,29 @@ function TableComponent() {
 
   const selectable = useMemo(() => !!primaryKeys && primaryKeys.length > 0, [primaryKeys])
 
-  const setValue = (rowIndex: number, columnName: string, value: unknown) => {
-    queryClient.setQueryData(rowsQueryOpts.queryKey, data => data
-      ? ({
-          ...data,
-          pages: data.pages.map((page, pageIndex) => ({
-            ...page,
-            rows: page.rows.map((row, rIndex) => pageIndex * data.pages[0].rows.length + rIndex === rowIndex
-              ? ({
-                  ...row,
-                  [columnName]: value,
-                })
-              : row),
-          })),
-        })
-      : data)
+  const setValue = (primaryKey: Record<string, unknown>, columnName: string, value: unknown) => {
+    if (!primaryKeys) return
+    
+    queryClient.setQueryData(rowsQueryOpts.queryKey, data => {
+      if (!data) return data
+      
+      return {
+        ...data,
+        pages: data.pages.map((page) => ({
+          ...page,
+          rows: page.rows.map((row) => {
+            // Check if this row matches the primary key
+            const rowMatches = primaryKeys.every(key => row[key] === primaryKey[key])
+            return rowMatches
+              ? { ...row, [columnName]: value }
+              : row
+          }),
+        })),
+      }
+    })
   }
 
-  const saveValue = async (rowIndex: number, columnName: string, value: unknown) => {
+  const saveValue = async (primaryKey: Record<string, unknown>, columnName: string, value: unknown) => {
     const data = queryClient.getQueryData(rowsQueryOpts.queryKey)
 
     if (!data)
@@ -88,13 +82,11 @@ function TableComponent() {
     if (!primaryKeys || primaryKeys.length === 0)
       throw new Error('No primary keys found. Please use SQL Runner to update this row.')
 
-    const rows = data.pages.flatMap(page => page.rows)
-
     await dbQuery({
       type: database.type,
       connectionString: database.connectionString,
       query: setSql(schema, table, columnName, primaryKeys)[database.type],
-      values: [value, ...primaryKeys.map(key => rows[rowIndex][key])],
+      values: [value, ...primaryKeys.map(key => primaryKey[key])],
     })
 
     if (filters.length > 0 || Object.keys(orderBy).length > 0)
@@ -114,8 +106,30 @@ function TableComponent() {
         cell: props => (
           <TableCell
             column={column}
-            onSetValue={setValue}
-            onSaveValue={saveValue}
+            onSetValue={(rowIndex, columnName, value) => {
+              // Convert rowIndex to primary key
+              const flatRows = rows ? rows.flatMap(page => page.rows) : []
+              const row = flatRows[rowIndex]
+              if (row && primaryKeys) {
+                const rowPrimaryKey = primaryKeys.reduce((acc, key) => {
+                  acc[key] = row[key]
+                  return acc
+                }, {} as Record<string, unknown>)
+                setValue(rowPrimaryKey, columnName, value)
+              }
+            }}
+            onSaveValue={async (rowIndex, columnName, value) => {
+              // Convert rowIndex to primary key
+              const flatRows = rows ? rows.flatMap(page => page.rows) : []
+              const row = flatRows[rowIndex]
+              if (row && primaryKeys) {
+                const rowPrimaryKey = primaryKeys.reduce((acc, key) => {
+                  acc[key] = row[key]
+                  return acc
+                }, {} as Record<string, unknown>)
+                await saveValue(rowPrimaryKey, columnName, value)
+              }
+            }}
             {...props}
           />
         ),
@@ -132,7 +146,7 @@ function TableComponent() {
     }
 
     return sortedColumns
-  }, [columns, hiddenColumns, selectable, setValue, saveValue])
+  }, [columns, hiddenColumns, selectable, setValue, saveValue, rows, primaryKeys])
 
   return (
     <TableProvider

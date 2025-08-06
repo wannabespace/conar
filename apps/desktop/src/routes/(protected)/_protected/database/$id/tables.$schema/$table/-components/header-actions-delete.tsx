@@ -25,19 +25,13 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
   const selected = useStore(store, state => state.selected)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
+  // selectedRows is now just the selected primary key objects directly from the store
   const selectedRows = useMemo(() => {
-    if (!primaryKeys?.length || !rows)
+    if (!primaryKeys?.length) {
       return []
-
-    return selected.map((index) => {
-      const row = rows[index]
-
-      return primaryKeys.reduce((acc, key) => {
-        acc[key] = row[key]
-        return acc
-      }, {} as Record<string, unknown>)
-    })
-  }, [selected, primaryKeys, rows])
+    }
+    return selected // selected is already an array of primary key objects
+  }, [selected, primaryKeys])
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {

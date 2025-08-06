@@ -36,7 +36,7 @@ export function getTableStoreState(schema: string, table: string) {
 }
 
 interface PageStore {
-  selected: number[]
+  selected: Record<string, unknown>[] // Changed from number[] to primary key objects
   filters: WhereFilter[]
   hiddenColumns: string[]
   orderBy: Record<string, 'ASC' | 'DESC'>

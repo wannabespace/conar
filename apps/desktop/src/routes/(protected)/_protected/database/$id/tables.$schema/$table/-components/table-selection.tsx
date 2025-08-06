@@ -1,10 +1,19 @@
 import type { ComponentProps } from 'react'
 import type { TableCellProps, TableHeaderCellProps } from '~/components/table'
+import { useMemo, useRef } from 'react'
+import { useStore } from '@tanstack/react-store'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
-import { useStore } from '@tanstack/react-store'
-import { useTableContext } from '~/components/table'
 import { usePageContext } from '..'
+import { useTableContext } from '~/components/table'
+import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
+import { Route } from '..'
+import { 
+  extractPrimaryKey, 
+  isPrimaryKeySelected, 
+  addPrimaryKeyToSelection, 
+  removePrimaryKeyFromSelection 
+} from '../-lib/primary-keys'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -40,18 +49,24 @@ function IndeterminateCheckbox({
 export function SelectionHeaderCell({ columnIndex, className, size }: TableHeaderCellProps) {
   const rows = useTableContext(state => state.rows)
   const { store } = usePageContext()
+  const { table, schema } = Route.useParams()
+  const { database } = Route.useLoaderData()
+  const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
+  
   const [checked, indeterminate] = useStore(store, state => [
-    !!rows && rows.length > 0 && state.selected.length === rows.length,
+    !!rows && rows.length > 0 && primaryKeys && state.selected.length === rows.length,
     state.selected.length > 0,
   ])
 
   return (
     <div className={cn('flex items-center w-fit', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
       <IndeterminateCheckbox
-        disabled={!rows || rows.length === 0}
+        disabled={!rows || rows.length === 0 || !primaryKeys}
         checked={checked}
         indeterminate={indeterminate}
         onChange={() => {
+          if (!primaryKeys) return
+          
           if (checked) {
             store.setState(state => ({
               ...state,
@@ -61,7 +76,7 @@ export function SelectionHeaderCell({ columnIndex, className, size }: TableHeade
           else {
             store.setState(state => ({
               ...state,
-              selected: rows?.map((_, index) => index) ?? [],
+              selected: rows?.map(row => extractPrimaryKey(row, primaryKeys)) ?? [],
             }))
           }
         }}
@@ -72,23 +87,38 @@ export function SelectionHeaderCell({ columnIndex, className, size }: TableHeade
 
 export function SelectionCell({ rowIndex, columnIndex, className, size }: TableCellProps) {
   const { store } = usePageContext()
-  const isSelected = useStore(store, state => state.selected.includes(rowIndex))
+  const rows = useTableContext(state => state.rows)
+  const { table, schema } = Route.useParams()
+  const { database } = Route.useLoaderData()
+  const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
+  
+  const row = rows[rowIndex]
+  const rowPrimaryKey = useMemo(() => {
+    return primaryKeys && row ? extractPrimaryKey(row, primaryKeys) : null
+  }, [row, primaryKeys])
+  
+  const isSelected = useStore(store, state => 
+    rowPrimaryKey ? isPrimaryKeySelected(rowPrimaryKey, state.selected) : false
+  )
 
   return (
     <div className={cn('flex items-center w-fit', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
       <IndeterminateCheckbox
         checked={isSelected}
+        disabled={!rowPrimaryKey}
         onChange={() => {
+          if (!rowPrimaryKey) return
+          
           if (isSelected) {
             store.setState(state => ({
               ...state,
-              selected: store.state.selected.filter(i => i !== rowIndex),
+              selected: removePrimaryKeyFromSelection(state.selected, rowPrimaryKey),
             }))
           }
           else {
             store.setState(state => ({
               ...state,
-              selected: [...state.selected, rowIndex],
+              selected: addPrimaryKeyToSelection(state.selected, rowPrimaryKey),
             }))
           }
         }}
