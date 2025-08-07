@@ -51,7 +51,7 @@ function FilterColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLInputElem
             >
               <RiDatabase2Line className="size-4 opacity-50" />
               <span>{column.name}</span>
-              <span className="ml-auto text-xs text-muted-foreground">{column.type}</span>
+              <span className="ml-auto text-xs text-muted-foreground text-right">{column.type}</span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -130,7 +130,7 @@ function FilterOperatorSelector({
               >
                 <RiFilterLine className="size-4 opacity-50" />
                 <span>{operator.label}</span>
-                <span className="ml-auto text-xs text-muted-foreground">{operator.value}</span>
+                <span className="ml-auto text-xs text-muted-foreground text-right">{operator.value}</span>
               </CommandItem>
             ))}
           </CommandGroup>
