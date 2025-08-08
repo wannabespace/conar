@@ -10,9 +10,10 @@ import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiStackLine, RiTableLine } from '@remixicon/react'
-import { Link, useSearch } from '@tanstack/react-router'
+import { useSearch } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
+import { MousedownLink } from '~/components/mousedown-link'
 import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
 import { addTab } from '../-lib'
 import { getTableStoreState } from '../index'
@@ -153,7 +154,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                 exit={{ opacity: 0, height: 0 }}
                                 transition={{ duration: 0.2 }}
                               >
-                                <Link
+                                <MousedownLink
                                   to="/database/$id/table"
                                   params={{ id: database.id }}
                                   search={{
@@ -233,7 +234,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
-                                </Link>
+                                </MousedownLink>
                               </motion.div>
                             ))}
                           </AnimatePresence>

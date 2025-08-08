@@ -5,8 +5,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from '@conar/ui/components/skeleton'
 import { copy } from '@conar/ui/lib/copy'
 import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
-import { Link, useRouter } from '@tanstack/react-router'
+import { useRouter } from '@tanstack/react-router'
 import { useMemo, useRef } from 'react'
+import { MousedownLink } from '~/components/mousedown-link'
 import { DatabaseIcon, prefetchDatabaseCore, useDatabasesLive } from '~/entities/database'
 import { useLastOpenedTable } from '../database/$id/table/-lib'
 import { RemoveDatabaseDialog } from './remove-database-dialog'
@@ -26,7 +27,7 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
   const [lastOpenedTable] = useLastOpenedTable(database.id)
 
   return (
-    <Link
+    <MousedownLink
       className="relative flex items-center justify-between gap-4 rounded-lg bg-muted/30 p-5 border border-border/50 hover:border-primary transition-all duration-150"
       to="/database/$id/table"
       params={{ id: database.id }}
@@ -77,7 +78,7 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    </Link>
+    </MousedownLink>
   )
 }
 

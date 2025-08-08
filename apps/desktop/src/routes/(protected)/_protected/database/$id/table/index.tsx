@@ -74,7 +74,8 @@ export const Route = createFileRoute(
 
     return {
       database: context.database,
-      ...deps,
+      schema: deps.schema ?? null,
+      table: deps.table ?? null,
     }
   },
   head: ({ loaderData }) => ({
