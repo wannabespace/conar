@@ -77,7 +77,7 @@ function setupDev() {
 }
 
 // Run the setup if this script is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (__filename === process.argv[1]) {
   setupDev()
 }
 

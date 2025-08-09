@@ -52,13 +52,6 @@ Conar is an AI-powered open-source project that simplifies database interactions
   pnpm install
   ```
 
-- **🔧 Prepare Development Environment**
-
-  This script sets up Husky hooks and prepares `.env` files in the `apps` directory.
-  ```bash
-  pnpm run prepare
-  ```
-
 - **🐳 Start Database with Docker Compose**
 
   This will start the PostgreSQL database in the background.
