@@ -6,9 +6,8 @@ import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
-import { useMatches, useSearch } from '@tanstack/react-router'
+import { Link, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
-import { MousedownLink } from '~/components/mousedown-link'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
@@ -67,9 +66,9 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <MousedownLink to="/" className="p-2">
+              <Link to="/" className="p-2">
                 <AppLogo className="size-6 text-primary" />
-              </MousedownLink>
+              </Link>
             </TooltipTrigger>
             <TooltipContent side="right">Dashboard</TooltipContent>
           </Tooltip>
@@ -81,14 +80,14 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <MousedownLink
+                  <Link
                     to="/database/$id/sql"
                     params={{ id }}
                     search={lastOpenedChatId.get(id) ? { chatId: lastOpenedChatId.get(id)! } : undefined}
                     className={classes(isActiveSql)}
                   >
                     <RiPlayLargeLine className="size-4" />
-                  </MousedownLink>
+                  </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right">SQL Runner</TooltipContent>
               </Tooltip>
@@ -96,13 +95,13 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <MousedownLink
+                  <Link
                     className={classes(isActiveTables)}
                     onClick={onTablesClick}
                     {...route}
                   >
                     <RiTableLine className="size-4" />
-                  </MousedownLink>
+                  </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right">Tables</TooltipContent>
               </Tooltip>
@@ -110,13 +109,13 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <MousedownLink
+                  <Link
                     to="/database/$id/enums"
                     params={{ id }}
                     className={classes(isActiveEnums)}
                   >
                     <RiListUnordered className="size-4" />
-                  </MousedownLink>
+                  </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right">Enums</TooltipContent>
               </Tooltip>
