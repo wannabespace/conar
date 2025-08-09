@@ -45,9 +45,37 @@ Conar is an AI-powered open-source project that simplifies database interactions
 - PostHog
 - Loops
 
+## Development Setup
+
+- **📦 Package Installation**
+  ```bash
+  pnpm install
+  ```
+
+- **🐳 Start Database with Docker Compose**
+
+  This will start the PostgreSQL database in the background.
+  ```bash
+  docker-compose -f docker-compose.dev.yml up -d
+  ```
+
+- **🗄️ Prepare Database**
+
+  This will run database migrations to set up the required tables and schema.
+  ```bash
+  pnpm run drizzle:migrate
+  ```
+
+- **🚀 Run the Project**
+
+  This will start all development servers using Turbo.
+  ```bash
+  pnpm run dev
+  ```
+
 ## License
 
-This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache-2.0 License — see the [LICENSE](LICENSE) file for details.
 
 <div align="center">
   <sub>Built with ❤️</sub>
