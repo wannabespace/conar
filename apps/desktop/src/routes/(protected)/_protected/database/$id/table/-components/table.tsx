@@ -33,6 +33,13 @@ const columnsSizeMap = new Map<string, number>([
   ['uuid', 290],
 ])
 
+function prepareValue(value: unknown, type?: string): unknown {
+  if (!type)
+    return value
+
+  return typeof value === 'string' && type.endsWith('[]') ? JSON.parse(value) : value
+}
+
 export function TableError({ error }: { error: Error }) {
   return (
     <div className="sticky left-0 pointer-events-none h-full flex items-center pb-10 justify-center">
@@ -89,12 +96,17 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     const rows = data.pages.flatMap(page => page.rows)
 
-    await dbQuery({
+    const { 0: { rows: { 0: { [columnName]: realValue } } } } = await dbQuery({
       type: database.type,
       connectionString: database.connectionString,
       query: setSql(schema, table, columnName, primaryKeys)[database.type],
-      values: [value, ...primaryKeys.map(key => rows[rowIndex][key])],
+      values: [
+        prepareValue(value, columns?.find(column => column.name === columnName)?.type),
+        ...primaryKeys.map(key => rows[rowIndex][key]),
+      ],
     })
+
+    setValue(rowIndex, columnName, realValue)
 
     if (filters.length > 0 || Object.keys(orderBy).length > 0)
       queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
