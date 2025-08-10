@@ -6,8 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/po
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCheckLine, RiDatabase2Line, RiLayoutColumnLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { usePageStoreContext } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
+import { usePageStoreContext } from '../-store'
 
 export function HeaderActionsColumns({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
   const store = usePageStoreContext()

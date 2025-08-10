@@ -10,8 +10,9 @@ import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { useDatabaseEnums } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
-import { Route, usePageStoreContext } from '..'
+import { Route } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
+import { usePageStoreContext } from '../-store'
 
 export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
   const { database } = Route.useLoaderData()

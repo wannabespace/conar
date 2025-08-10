@@ -19,7 +19,7 @@ import { useRouter, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
 import { addTab, closeTab, moveTab, useTabs } from '../-lib'
-import { getTableStoreState } from '../index'
+import { getTableStoreState } from '../-store'
 
 const os = getOS(navigator.userAgent)
 

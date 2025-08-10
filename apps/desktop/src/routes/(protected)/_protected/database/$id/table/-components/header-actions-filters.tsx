@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { RiFilterLine } from '@remixicon/react'
 import { useState } from 'react'
 import { FilterForm } from '~/components/table'
-import { usePageStoreContext } from '..'
+import { usePageStoreContext } from '../-store'
 
 export function HeaderActionsFilters() {
   const [isFiltersOpened, setIsFiltersOpened] = useState(false)

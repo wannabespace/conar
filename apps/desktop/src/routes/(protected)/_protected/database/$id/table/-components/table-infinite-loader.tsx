@@ -5,8 +5,8 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef } from 'react'
 import { useTableContext } from '~/components/table'
-import { usePageStoreContext } from '..'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
+import { usePageStoreContext } from '../-store'
 import { TableEmpty } from './table-empty'
 
 export function TableInfiniteLoader({ table, schema }: { table: string, schema: string }) {

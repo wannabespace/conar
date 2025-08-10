@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiKey2Line } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { usePageStoreContext } from '..'
+import { usePageStoreContext } from '../-store'
 
 type SortOrder = 'ASC' | 'DESC'
 
