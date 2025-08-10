@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 
+// @ts-check
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'

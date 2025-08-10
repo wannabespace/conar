@@ -5,7 +5,7 @@ import { useToggle } from '@conar/ui/hookas/use-toggle'
 import { RiAddLine, RiFilterOffLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { FilterForm, FilterItem } from '~/components/table'
-import { usePageStoreContext } from '..'
+import { usePageStoreContext } from '../-store'
 
 export function Filters() {
   const store = usePageStoreContext()

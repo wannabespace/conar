@@ -15,7 +15,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
 import { addTab } from '../-lib'
-import { getTableStoreState } from '../index'
+import { getTableStoreState } from '../-store'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 

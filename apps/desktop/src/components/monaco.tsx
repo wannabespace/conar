@@ -1,4 +1,5 @@
 import type { RefObject } from 'react'
+import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { useTheme } from '@conar/ui/theme-provider'
 import * as monaco from 'monaco-editor'
 import ghDark from 'monaco-themes/themes/GitHub Dark.json'
@@ -94,7 +95,7 @@ export function Monaco({
     monacoInstance.current.updateOptions(options)
   }, [options])
 
-  useEffect(() => {
+  useMountedEffect(() => {
     if (!monacoInstance.current)
       return
 

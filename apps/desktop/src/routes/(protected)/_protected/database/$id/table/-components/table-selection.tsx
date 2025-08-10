@@ -4,7 +4,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useTableContext } from '~/components/table'
-import { usePageStoreContext } from '..'
+import { usePageStoreContext } from '../-store'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -37,7 +37,7 @@ function IndeterminateCheckbox({
   )
 }
 
-export function SelectionHeaderCell({ columnIndex, className, size }: TableHeaderCellProps) {
+export function SelectionHeaderCell({ columnIndex, className, size, keys }: TableHeaderCellProps & { keys: string[] }) {
   const rows = useTableContext(state => state.rows)
   const store = usePageStoreContext()
   const [checked, indeterminate] = useStore(store, state => [
@@ -61,7 +61,7 @@ export function SelectionHeaderCell({ columnIndex, className, size }: TableHeade
           else {
             store.setState(state => ({
               ...state,
-              selected: rows?.map((_, index) => index) ?? [],
+              selected: rows?.map(row => keys.reduce((acc, key) => ({ ...acc, [key]: row[key] }), {})) ?? [],
             }))
           }
         }}
@@ -70,9 +70,10 @@ export function SelectionHeaderCell({ columnIndex, className, size }: TableHeade
   )
 }
 
-export function SelectionCell({ rowIndex, columnIndex, className, size }: TableCellProps) {
+export function SelectionCell({ rowIndex, columnIndex, className, size, keys }: TableCellProps & { keys: string[] }) {
   const store = usePageStoreContext()
-  const isSelected = useStore(store, state => state.selected.includes(rowIndex))
+  const rows = useTableContext(state => state.rows)
+  const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex][key])))
 
   return (
     <div className={cn('flex items-center w-fit', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
@@ -82,13 +83,13 @@ export function SelectionCell({ rowIndex, columnIndex, className, size }: TableC
           if (isSelected) {
             store.setState(state => ({
               ...state,
-              selected: store.state.selected.filter(i => i !== rowIndex),
+              selected: store.state.selected.filter(row => !keys.every(key => row[key] === rows[rowIndex][key])),
             }))
           }
           else {
             store.setState(state => ({
               ...state,
-              selected: [...state.selected, rowIndex],
+              selected: [...state.selected, keys.reduce((acc, key) => ({ ...acc, [key]: rows[rowIndex][key] }), {})],
             }))
           }
         }}

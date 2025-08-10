@@ -1,11 +1,11 @@
-import type { WhereFilter } from '@conar/shared/sql/where'
+import type { PageStore } from './-store'
 import { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
-import { createContext, use, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FiltersProvider } from '~/components/table'
 import { prefetchDatabaseTableCore } from '~/entities/database'
 import { Filters } from './-components/filters'
@@ -15,43 +15,7 @@ import { Table } from './-components/table'
 import { TablesTabs } from './-components/tabs'
 import { addTab, useLastOpenedTable } from './-lib'
 import { useTableColumns } from './-queries/use-columns-query'
-
-const storeState = type({
-  selected: 'number[]',
-  filters: type({
-    column: 'string',
-    operator: 'string' as type.cast<WhereFilter['operator']>,
-    values: 'string[]',
-  }).array(),
-  hiddenColumns: 'string[]',
-  orderBy: {
-    '[string]': '"ASC" | "DESC"',
-  },
-  prompt: 'string',
-})
-
-export function getTableStoreState(schema: string, table: string) {
-  const parsed = storeState(JSON.parse(sessionStorage.getItem(`${schema}.${table}-store`) ?? '{}'))
-
-  if (parsed instanceof type.errors)
-    return null
-
-  return parsed
-}
-
-interface PageStore {
-  selected: number[]
-  filters: WhereFilter[]
-  hiddenColumns: string[]
-  orderBy: Record<string, 'ASC' | 'DESC'>
-  prompt: string
-}
-
-const PageStoreContext = createContext<Store<PageStore>>(null!)
-
-export function usePageStoreContext() {
-  return use(PageStoreContext)
-}
+import { getTableStoreState, PageStoreContext } from './-store'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/table/',
@@ -61,7 +25,7 @@ export const Route = createFileRoute(
     'table?': 'string',
   }),
   component: DatabaseTablesPage,
-  loaderDeps: ({ search }) => ({ schema: search.schema, table: search.table }),
+  loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => {
     if (deps.schema && deps.table) {
       const parsed = getTableStoreState(deps.schema, deps.table)

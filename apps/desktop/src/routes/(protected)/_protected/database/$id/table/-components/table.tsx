@@ -3,16 +3,17 @@ import { setSql } from '@conar/shared/sql/set'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { Route, usePageStoreContext } from '..'
+import { Route } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
+import { usePageStoreContext } from '../-store'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
 import { TableHeaderCell } from './table-header-cell'
@@ -66,7 +67,25 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(rowsQueryOpts)
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
-  const selectable = useMemo(() => !!primaryKeys && primaryKeys.length > 0, [primaryKeys])
+  useEffect(() => {
+    if (!rows || !primaryKeys)
+      return
+
+    if (store.state.selected.length > 0) {
+      const validSelected = store.state.selected.filter(selectedRow =>
+        rows.some(row => primaryKeys.every(key => row[key] === selectedRow[key])),
+      )
+
+      if (validSelected.length !== store.state.selected.length) {
+        store.setState(state => ({
+          ...state,
+          selected: validSelected,
+        }))
+      }
+    }
+  }, [rows, primaryKeys])
+
+  const selectable = !!primaryKeys && primaryKeys.length > 0
 
   const setValue = (rowIndex: number, columnName: string, value: unknown) => {
     queryClient.setQueryData(rowsQueryOpts.queryKey, data => data
@@ -137,8 +156,8 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     if (selectable && hiddenColumns.length !== columns.length) {
       sortedColumns.unshift({
         id: String(selectSymbol),
-        cell: SelectionCell,
-        header: SelectionHeaderCell,
+        cell: props => <SelectionCell keys={primaryKeys} {...props} />,
+        header: props => <SelectionHeaderCell keys={primaryKeys} {...props} />,
         size: 40,
       } satisfies ColumnRenderer)
     }

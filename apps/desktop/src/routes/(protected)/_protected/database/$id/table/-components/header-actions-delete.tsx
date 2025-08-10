@@ -5,51 +5,34 @@ import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import NumberFlow from '@number-flow/react'
 import { RiDeleteBin7Line } from '@remixicon/react'
-import { useInfiniteQuery, useMutation } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { databaseTableTotalQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { usePageStoreContext } from '..'
-import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
+import { usePageStoreContext } from '../-store'
 
 export function HeaderActionsDelete({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
   const rowsQueryOpts = useRowsQueryOpts({ table, schema })
-  const { data: rows, refetch } = useInfiniteQuery(rowsQueryOpts)
   const [isOpened, setIsOpened] = useState(false)
   const store = usePageStoreContext()
   const selected = useStore(store, state => state.selected)
-  const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
-
-  const selectedRows = useMemo(() => {
-    if (!primaryKeys?.length || !rows)
-      return []
-
-    return selected.map((index) => {
-      const row = rows[index]
-
-      return primaryKeys.reduce((acc, key) => {
-        acc[key] = row[key]
-        return acc
-      }, {} as Record<string, unknown>)
-    })
-  }, [selected, primaryKeys, rows])
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
       await dbQuery({
         type: database.type,
         connectionString: database.connectionString,
-        query: deleteRowsSql(table, schema, selectedRows)[database.type],
+        query: deleteRowsSql(table, schema, selected)[database.type],
       })
     },
     onSuccess: () => {
-      toast.success(`${selectedRows.length} row${selectedRows.length === 1 ? '' : 's'} successfully deleted`)
-      refetch()
+      toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
+      queryClient.invalidateQueries(rowsQueryOpts)
       queryClient.invalidateQueries(databaseTableTotalQuery(database, table, schema, {
         filters: store.state.filters,
       }))
@@ -72,16 +55,16 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
           <AlertDialogHeader>
             <AlertDialogTitle>
               Confirm row
-              {selectedRows.length === 1 ? '' : 's'}
+              {selected.length === 1 ? '' : 's'}
               {' '}
               deletion
             </AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the selected
               {' '}
-              {selectedRows.length}
+              {selected.length}
               {' '}
-              {selectedRows.length === 1 ? 'row' : 'rows'}
+              {selected.length === 1 ? 'row' : 'rows'}
               {' '}
               from the database.
             </AlertDialogDescription>
@@ -92,17 +75,17 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
               <LoadingContent loading={isDeleting}>
                 Delete
                 {' '}
-                {selectedRows.length}
+                {selected.length}
                 {' '}
                 selected row
-                {selectedRows.length === 1 ? '' : 's'}
+                {selected.length === 1 ? '' : 's'}
               </LoadingContent>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
       <AnimatePresence>
-        {selectedRows.length > 0 && (
+        {selected.length > 0 && (
           <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
@@ -116,7 +99,7 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
                 (
                 <NumberFlow
                   spinTiming={{ duration: 200 }}
-                  value={selectedRows.length}
+                  value={selected.length}
                   className="tabular-nums"
                 />
                 )

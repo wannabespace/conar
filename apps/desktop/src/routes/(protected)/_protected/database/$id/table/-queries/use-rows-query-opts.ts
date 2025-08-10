@@ -1,7 +1,8 @@
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { databaseRowsQuery } from '~/entities/database'
-import { Route, usePageStoreContext } from '..'
+import { Route } from '..'
+import { usePageStoreContext } from '../-store'
 
 export function useRowsQueryOpts({ table, schema }: { table: string, schema: string }) {
   const { database } = Route.useLoaderData()
