@@ -31,7 +31,7 @@ export const filters = orpc
         - Format values correctly based on column types (strings, numbers, dates, etc.)
         - For enum columns, ensure values match the available options
         - For exact days use >= and <= operators
-        - If user asks 'empty' and the column is a string, use empty string as value
+        - If user asks 'empty' and the column is a string, use empty string as item in values array
         - If context already contains a filter, you can use it as reference to generate a new filter
 
         Current time: ${new Date().toISOString()}
@@ -46,7 +46,7 @@ export const filters = orpc
         filters: z.object({
           column: z.string().describe('The column name to filter by'),
           operator: z.enum(SQL_OPERATORS_LIST.map(operator => operator.value) as [string, ...string[]]).describe('The operator to use for the filter'),
-          value: z.array(z.string()).describe('The value to filter by'),
+          values: z.array(z.string()).describe('The values to filter by'),
         }).array(),
       }).describe('An object with a single property "filters" that is an array of filters'),
       schemaDescription: 'An array of objects with the following properties: column, operator, value where the operator is one of the SQL operators available',

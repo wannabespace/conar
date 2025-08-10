@@ -26,7 +26,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         filters: data.filters.map(filter => ({
           column: filter.column,
           operator: filter.operator as typeof SQL_OPERATORS_LIST[number]['value'],
-          value: filter.value,
+          values: filter.values,
         })),
       }))
 

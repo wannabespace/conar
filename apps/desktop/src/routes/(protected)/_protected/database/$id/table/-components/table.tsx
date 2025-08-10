@@ -68,21 +68,17 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
   useEffect(() => {
-    if (!rows || !primaryKeys)
+    if (!rows || !primaryKeys || !store.state.selected)
       return
 
-    if (store.state.selected.length > 0) {
-      const validSelected = store.state.selected.filter(selectedRow =>
-        rows.some(row => primaryKeys.every(key => row[key] === selectedRow[key])),
-      )
+    const validSelected = store.state.selected.filter(selectedRow =>
+      rows.some(row => primaryKeys.every(key => row[key] === selectedRow[key])),
+    )
 
-      if (validSelected.length !== store.state.selected.length) {
-        store.setState(state => ({
-          ...state,
-          selected: validSelected,
-        }))
-      }
-    }
+    store.setState(state => ({
+      ...state,
+      selected: validSelected,
+    }))
   }, [rows, primaryKeys])
 
   const selectable = !!primaryKeys && primaryKeys.length > 0

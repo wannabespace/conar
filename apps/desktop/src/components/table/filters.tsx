@@ -282,7 +282,7 @@ export function FilterItem({
             <PopoverTrigger className="text-xs px-2 h-full hover:bg-accent/50 transition-colors">
               <div className="font-mono truncate max-w-60">
                 {filter.values?.join(', ')}
-                {!filter.values?.length && <span className="opacity-30">Empty</span>}
+                {(filter.values?.length === 0 || filter.values?.every(value => value === '')) && <span className="opacity-30">Empty</span>}
               </div>
             </PopoverTrigger>
             <PopoverContent className="p-0 shadow-md max-h-[calc(100vh-10rem)]">

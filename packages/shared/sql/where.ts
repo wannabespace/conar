@@ -20,7 +20,7 @@ export function whereSql(filters: WhereFilter[], concatOperator: 'AND' | 'OR' = 
         return `"${filter.column}" ${filter.operator}`
       }
 
-      if (filter.values) {
+      if (filter.values && filter.values.length > 0) {
         if (operator.value.toLowerCase().includes('in')) {
           return `"${filter.column}" ${filter.operator} (${filter.values.map(v => `'${v.trim()}'`).join(', ')})`
         }
