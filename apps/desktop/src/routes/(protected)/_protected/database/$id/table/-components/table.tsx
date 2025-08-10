@@ -96,7 +96,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     const rows = data.pages.flatMap(page => page.rows)
 
-    const { 0: { rows: { 0: { [columnName]: realValue } } } } = await dbQuery({
+    const [{ rows: [{ [columnName]: realValue }] }] = await dbQuery({
       type: database.type,
       connectionString: database.connectionString,
       query: setSql(schema, table, columnName, primaryKeys)[database.type],
@@ -106,7 +106,8 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       ],
     })
 
-    setValue(rowIndex, columnName, realValue)
+    if (value !== realValue)
+      setValue(rowIndex, columnName, realValue)
 
     if (filters.length > 0 || Object.keys(orderBy).length > 0)
       queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
