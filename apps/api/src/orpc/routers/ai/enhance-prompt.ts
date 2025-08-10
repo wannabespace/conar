@@ -1,4 +1,4 @@
-import { google } from '@ai-sdk/google'
+import { openai } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { authMiddleware, orpc } from '~/orpc'
@@ -14,7 +14,7 @@ export const enhancePrompt = orpc
     const messages = await getMessages(input.chatId)
 
     const { text } = await generateText({
-      model: google('gemini-2.5-flash'),
+      model: openai('gpt-4o-mini'),
       messages: [
         {
           role: 'system',
@@ -27,9 +27,13 @@ export const enhancePrompt = orpc
             '- The prompt may be related to SQL.',
             '- Do not invent or assume any information that is not present in the original prompt or chat messages.',
             '- Do not add details, context, or requirements that are not explicitly stated by the user.',
+            '- If the prompt is already clear and specific, make minimal changes',
+            '- Maintain the user\'s original tone and intent',
             '',
-            'Current messages in the chat:',
-            JSON.stringify(messages),
+            'Context from current chat conversation:',
+            JSON.stringify(messages, null, 2),
+            '',
+            'Please rewrite the following user prompt to be more effective:',
           ].join('\n'),
         },
         {
