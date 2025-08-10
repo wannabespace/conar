@@ -1,0 +1,1 @@
+ALTER TABLE "chats_messages" ENABLE ROW LEVEL SECURITY;

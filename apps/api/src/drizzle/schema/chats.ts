@@ -20,7 +20,7 @@ export const chatsMessages = pgTable('chats_messages', {
   parts: encryptedJson().array().$type<AppUIMessage['parts']>().notNull(),
   role: text().$type<AppUIMessage['role']>().notNull(),
   metadata: encryptedJson().$type<NonNullable<AppUIMessage['metadata']>>(),
-})
+}).enableRLS()
 
 export const chatsRelations = relations(chats, ({ one, many }) => ({
   user: one(users, {

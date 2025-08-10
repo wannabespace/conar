@@ -29,6 +29,13 @@
       "when": 1754340533277,
       "tag": "0003_slippery_vertigo",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1754861170807,
+      "tag": "0004_sudden_talos",
+      "breakpoints": true
     }
   ]
 }
