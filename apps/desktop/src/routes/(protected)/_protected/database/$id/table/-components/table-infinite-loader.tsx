@@ -1,3 +1,4 @@
+import type { databases } from '~/drizzle'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiLoaderLine } from '@remixicon/react'
@@ -5,17 +6,18 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef } from 'react'
 import { useTableContext } from '~/components/table'
-import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
+import { getRowsQueryOpts } from '../-lib'
 import { usePageStoreContext } from '../-store'
 import { TableEmpty } from './table-empty'
 
-export function TableInfiniteLoader({ table, schema }: { table: string, schema: string }) {
-  const rowsQueryOpts = useRowsQueryOpts({ table, schema })
-  const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(rowsQueryOpts)
-  const loaderRef = useRef<HTMLDivElement>(null)
-  const isVisible = useIsInViewport(loaderRef)
+export function TableInfiniteLoader({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
   const store = usePageStoreContext()
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
+  const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(
+    getRowsQueryOpts({ database, table, schema, filters, orderBy }),
+  )
+  const loaderRef = useRef<HTMLDivElement>(null)
+  const isVisible = useIsInViewport(loaderRef)
 
   useEffect(() => {
     if (isVisible && hasNextPage && !isFetching) {

@@ -1,6 +1,10 @@
+import type { WhereFilter } from '@conar/shared/sql/where'
+import type { databases } from '~/drizzle'
 import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { arrayMove } from '@dnd-kit/sortable'
+import { infiniteQueryOptions } from '@tanstack/react-query'
 import { Store, useStore } from '@tanstack/react-store'
+import { databaseRowsQuery } from '~/entities/database'
 
 export interface Tab {
   table: string
@@ -82,4 +86,31 @@ interface LastOpenedTable {
 
 export function useLastOpenedTable(id: string) {
   return useSessionStorage<LastOpenedTable | null>(`last-opened-table-${id}`, null)
+}
+
+export function getRowsQueryOpts({
+  database,
+  table,
+  schema,
+  filters,
+  orderBy,
+ }: {
+  database: typeof databases.$inferSelect
+  table: string
+  schema: string
+  filters: WhereFilter[]
+  orderBy: Record<string, 'ASC' | 'DESC'>
+ }) {
+  return infiniteQueryOptions({
+    ...databaseRowsQuery(
+      database,
+      table,
+      schema,
+      {
+        filters,
+        orderBy,
+      },
+    ),
+    throwOnError: false,
+  })
 }

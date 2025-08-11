@@ -10,9 +10,9 @@ import { TableCell } from '~/entities/database/components/table-cell'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { Route } from '..'
+import { getRowsQueryOpts } from '../-lib'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
-import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
 import { usePageStoreContext } from '../-store'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
@@ -63,8 +63,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const store = usePageStoreContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
-  const rowsQueryOpts = useRowsQueryOpts({ table, schema })
-  const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(rowsQueryOpts)
+  const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(
+    getRowsQueryOpts({ database, table, schema, filters, orderBy }),
+  )
   const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
 
   useEffect(() => {
@@ -84,6 +85,14 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const selectable = !!primaryKeys && primaryKeys.length > 0
 
   const setValue = (rowIndex: number, columnName: string, value: unknown) => {
+    const rowsQueryOpts = getRowsQueryOpts({
+      database,
+      table,
+      schema,
+      filters: store.state.filters,
+      orderBy: store.state.orderBy,
+    })
+
     queryClient.setQueryData(rowsQueryOpts.queryKey, data => data
       ? ({
           ...data,
@@ -101,6 +110,14 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   }
 
   const saveValue = async (rowIndex: number, columnName: string, value: unknown) => {
+    const rowsQueryOpts = getRowsQueryOpts({
+      database,
+      table,
+      schema,
+      filters: store.state.filters,
+      orderBy: store.state.orderBy,
+    })
+
     const data = queryClient.getQueryData(rowsQueryOpts.queryKey)
 
     if (!data)
@@ -159,7 +176,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     }
 
     return sortedColumns
-  }, [columns, hiddenColumns, selectable, setValue, saveValue])
+  }, [columns, hiddenColumns, selectable])
 
   return (
     <TableProvider
@@ -182,7 +199,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
                   : (
                       <>
                         <TableBody data-mask className="bg-background" />
-                        <TableInfiniteLoader table={table} schema={schema} />
+                        <TableInfiniteLoader table={table} schema={schema} database={database} />
                       </>
                     )}
         </Table>

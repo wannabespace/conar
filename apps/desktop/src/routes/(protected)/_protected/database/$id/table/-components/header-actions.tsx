@@ -5,7 +5,8 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCheckLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
+import { useStore } from '@tanstack/react-store'
+import { getRowsQueryOpts } from '../-lib'
 import { usePageStoreContext } from '../-store'
 import { HeaderActionsColumns } from './header-actions-columns'
 import { HeaderActionsDelete } from './header-actions-delete'
@@ -13,8 +14,10 @@ import { HeaderActionsFilters } from './header-actions-filters'
 
 export function HeaderActions({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
   const store = usePageStoreContext()
-  const rowsQueryOpts = useRowsQueryOpts({ table, schema })
-  const { isFetching, dataUpdatedAt, refetch } = useInfiniteQuery(rowsQueryOpts)
+  const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
+  const { isFetching, dataUpdatedAt, refetch } = useInfiniteQuery(
+    getRowsQueryOpts({ database, table, schema, filters, orderBy }),
+  )
 
   async function handleRefresh() {
     store.setState(state => ({

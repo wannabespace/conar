@@ -13,11 +13,10 @@ import { toast } from 'sonner'
 import { databaseTableTotalQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { useRowsQueryOpts } from '../-queries/use-rows-query-opts'
+import { getRowsQueryOpts } from '../-lib'
 import { usePageStoreContext } from '../-store'
 
 export function HeaderActionsDelete({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
-  const rowsQueryOpts = useRowsQueryOpts({ table, schema })
   const [isOpened, setIsOpened] = useState(false)
   const store = usePageStoreContext()
   const selected = useStore(store, state => state.selected)
@@ -32,7 +31,7 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
     },
     onSuccess: () => {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
-      queryClient.invalidateQueries(rowsQueryOpts)
+      queryClient.invalidateQueries(getRowsQueryOpts({ database, table, schema, filters: store.state.filters, orderBy: store.state.orderBy }))
       queryClient.invalidateQueries(databaseTableTotalQuery(database, table, schema, {
         filters: store.state.filters,
       }))
