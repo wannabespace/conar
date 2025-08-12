@@ -5,7 +5,7 @@ import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useState } from 'react'
 
 export function ConnectionDetails({ className, connectionString, type }: { className?: string, connectionString: string, type: DatabaseType }) {
-  const connection = parseConnectionString(type, connectionString)
+  const connection = parseConnectionString(connectionString)
   const [showPassword, setShowPassword] = useState(false)
 
   return (
@@ -46,11 +46,18 @@ export function ConnectionDetails({ className, connectionString, type }: { class
           <td className="py-1 pr-4 text-muted-foreground">Database</td>
           <td data-mask>{connection.database}</td>
         </tr>
-        {connection.options && (
-          <tr>
-            <td className="py-1 pr-4 text-muted-foreground">Options</td>
-            <td data-mask>{connection.options}</td>
-          </tr>
+        {Object.keys(connection.options).length > 0 && (
+          <>
+            <tr>
+              <td className="py-1 pr-4 text-muted-foreground">Options</td>
+            </tr>
+            {Object.entries(connection.options).map(([key, value]) => (
+              <tr key={key}>
+                <td className="py-1 pr-4 text-muted-foreground">{key}</td>
+                <td data-mask>{value}</td>
+              </tr>
+            ))}
+          </>
         )}
       </tbody>
     </table>

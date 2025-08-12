@@ -1,12 +1,16 @@
-import { parse as parsePg } from 'pg-connection-string'
 import { DatabaseType } from '../enums/database-type'
 
-export function parseConnectionString(type: DatabaseType, connectionString: string) {
-  const map = {
-    [DatabaseType.Postgres]: (str: string) => parsePg(str, {}),
-  } satisfies Record<DatabaseType, (str: string) => unknown>
+export function parseConnectionString(connectionString: string) {
+  const url = new URL(connectionString)
 
-  return map[type](connectionString)
+  return {
+    host: url.hostname,
+    port: url.port,
+    user: url.username,
+    password: url.password,
+    database: url.pathname.slice(1),
+    options: Object.fromEntries(url.searchParams.entries()),
+  }
 }
 
 export const protocolMap: Record<DatabaseType, string[]> = {
