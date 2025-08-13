@@ -40,7 +40,7 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent asChild>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Rename Database</DialogTitle>
           <div className="space-y-4">
