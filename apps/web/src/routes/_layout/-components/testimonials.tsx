@@ -156,6 +156,13 @@ const testimonials: {
     link: 'https://x.com/alex_holovach/status/1950707905440727087',
     children: () => 'wow I can query data at the speed of thought with @conar_app',
   },
+  {
+    name: 'Iza',
+    login: 'izadoesdev',
+    avatar: '/avatars/izadoesdev.jpg',
+    link: 'https://x.com/izadoesdev/status/1955604787585802722',
+    children: () => 'okay why did nobody tell me how sexy @conar_app is',
+  },
 ]
 
 export function Testimonials() {
