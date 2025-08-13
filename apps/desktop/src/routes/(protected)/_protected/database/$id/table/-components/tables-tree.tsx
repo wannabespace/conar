@@ -36,7 +36,7 @@ function Skeleton() {
 }
 
 export function TablesTree({ database, className, search }: { database: typeof databases.$inferSelect, className?: string, search?: string }) {
-  const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas(database)
+  const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas({ database })
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const ref = useRef<HTMLDivElement>(null)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)

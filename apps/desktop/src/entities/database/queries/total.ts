@@ -5,14 +5,17 @@ import { whereSql } from '@conar/shared/sql/where'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
 
-export function databaseTableTotalQuery(
-  database: typeof databases.$inferSelect,
-  table: string,
-  schema: string,
-  query: {
-    filters: WhereFilter[]
-  },
-) {
+export function databaseTableTotalQuery({
+  database,
+  table,
+  schema,
+  query,
+}: {
+  database: typeof databases.$inferSelect
+  table: string
+  schema: string
+  query: { filters: WhereFilter[] }
+}) {
   return queryOptions({
     queryKey: [
       'database',

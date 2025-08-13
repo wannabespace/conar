@@ -59,14 +59,14 @@ export function TableError({ error }: { error: Error }) {
 
 function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { database } = Route.useLoaderData()
-  const columns = useTableColumns(database, table, schema)
+  const columns = useTableColumns({ database, table, schema })
   const store = usePageStoreContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(
     getRowsQueryOpts({ database, table, schema, filters, orderBy }),
   )
-  const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
+  const { data: primaryKeys } = usePrimaryKeysQuery({ database, table, schema })
 
   useEffect(() => {
     if (!rows || !primaryKeys || !store.state.selected)

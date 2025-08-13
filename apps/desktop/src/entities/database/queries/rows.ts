@@ -8,15 +8,17 @@ import { DEFAULT_LIMIT } from '../utils'
 
 type Page = Awaited<ReturnType<typeof dbQuery>>[0]
 
-export function databaseRowsQuery(
-  database: typeof databases.$inferSelect,
-  table: string,
-  schema: string,
-  query: {
-    orderBy: Record<string, 'ASC' | 'DESC'>
-    filters: WhereFilter[]
-  },
-) {
+export function databaseRowsQuery({
+  database,
+  table,
+  schema,
+  query,
+}: {
+  database: typeof databases.$inferSelect
+  table: string
+  schema: string
+  query: { orderBy: Record<string, 'ASC' | 'DESC'>, filters: WhereFilter[] }
+}) {
   return infiniteQueryOptions({
     initialPageParam: 0,
     getNextPageParam: (lastPage: Page, _allPages: Page[], lastPageParam: number) => {

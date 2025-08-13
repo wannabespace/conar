@@ -3,7 +3,7 @@ import { primaryKeysSql, primaryKeyType } from '@conar/shared/sql/primary-keys'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
 
-export function databasePrimaryKeysQuery(database: typeof databases.$inferSelect) {
+export function databasePrimaryKeysQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
     queryKey: ['database', database.id, 'primaryKeys'],
     queryFn: async () => {

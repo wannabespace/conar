@@ -42,12 +42,12 @@ export async function prefetchDatabaseCore(database: typeof databases.$inferSele
   await Promise.all([
     ensureDatabase(database.id),
     ensureChats(database.id),
-    queryClient.prefetchQuery(tablesAndSchemasQuery(database)),
+    queryClient.prefetchQuery(tablesAndSchemasQuery({ database })),
   ])
 
   await Promise.all([
-    queryClient.prefetchQuery(databasePrimaryKeysQuery(database)),
-    queryClient.prefetchQuery(databaseEnumsQuery(database)),
+    queryClient.prefetchQuery(databasePrimaryKeysQuery({ database })),
+    queryClient.prefetchQuery(databaseEnumsQuery({ database })),
   ])
 }
 
@@ -56,8 +56,8 @@ export async function prefetchDatabaseTableCore(database: typeof databases.$infe
   orderBy: Record<string, 'ASC' | 'DESC'>
 }) {
   await Promise.all([
-    queryClient.prefetchInfiniteQuery(databaseRowsQuery(database, table, schema, query)),
-    queryClient.prefetchQuery(databaseTableTotalQuery(database, table, schema, query)),
-    queryClient.prefetchQuery(databaseTableColumnsQuery(database, table, schema)),
+    queryClient.prefetchInfiniteQuery(databaseRowsQuery({ database, table, schema, query })),
+    queryClient.prefetchQuery(databaseTableTotalQuery({ database, table, schema, query })),
+    queryClient.prefetchQuery(databaseTableColumnsQuery({ database, table, schema })),
   ])
 }

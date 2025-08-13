@@ -35,8 +35,8 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       }
     },
   })
-  const columns = useTableColumns(database, table, schema)
-  const { data: enums } = useDatabaseEnums(database)
+  const columns = useTableColumns({ database, table, schema })
+  const { data: enums } = useDatabaseEnums({ database })
   const context = useMemo(() => `
     Filters working with AND operator.
     Table name: ${table}

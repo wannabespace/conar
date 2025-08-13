@@ -3,7 +3,7 @@ import { tablesAndSchemasSql, tablesAndSchemasType } from '@conar/shared/sql/tab
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
 
-export function tablesAndSchemasQuery(database: typeof databases.$inferSelect) {
+export function tablesAndSchemasQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
     queryKey: ['database', database.id, 'tables-and-schemas'],
     queryFn: async () => {

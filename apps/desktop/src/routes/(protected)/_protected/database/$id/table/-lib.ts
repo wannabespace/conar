@@ -102,15 +102,7 @@ export function getRowsQueryOpts({
   orderBy: Record<string, 'ASC' | 'DESC'>
  }) {
   return infiniteQueryOptions({
-    ...databaseRowsQuery(
-      database,
-      table,
-      schema,
-      {
-        filters,
-        orderBy,
-      },
-    ),
+    ...databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }),
     throwOnError: false,
   })
 }

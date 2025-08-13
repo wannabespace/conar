@@ -9,12 +9,10 @@ import { HeaderActions } from './header-actions'
 import { HeaderSearch } from './header-search'
 
 export function Header({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
-  const columns = useTableColumns(database, table, schema)
+  const columns = useTableColumns({ database, table, schema })
   const store = usePageStoreContext()
   const filters = useStore(store, state => state.filters)
-  const { data: total } = useDatabaseTableTotal(database, table, schema, {
-    filters,
-  })
+  const { data: total } = useDatabaseTableTotal({ database, table, schema, query: { filters } })
 
   const columnsCount = columns?.length ?? 0
 

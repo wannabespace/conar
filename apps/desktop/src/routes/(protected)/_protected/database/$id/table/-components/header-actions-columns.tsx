@@ -12,7 +12,7 @@ import { usePageStoreContext } from '../-store'
 export function HeaderActionsColumns({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
   const store = usePageStoreContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
-  const columns = useTableColumns(database, table, schema)
+  const columns = useTableColumns({ database, table, schema })
 
   return (
     <Popover>

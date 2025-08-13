@@ -130,7 +130,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           trigger: options.trigger,
           messageId: options.messageId,
           context: `Current query in the SQL runner: ${pageStore.state.query}
-          Database schemas and tables: ${JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery(database)), null, 2)}`,
+          Database schemas and tables: ${JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database })), null, 2)}`,
         }, { signal: options.abortSignal }))
       },
       reconnectToStream() {
@@ -150,11 +150,11 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
     onToolCall: async ({ toolCall }) => {
       if (toolCall.toolName === 'columns') {
         const input = toolCall.input as InferToolInput<typeof tools.columns>
-        const output = await queryClient.ensureQueryData(databaseTableColumnsQuery(
+        const output = await queryClient.ensureQueryData(databaseTableColumnsQuery({
           database,
-          input.tableAndSchema.tableName,
-          input.tableAndSchema.schemaName,
-        )) satisfies InferToolOutput<typeof tools.columns>
+          table: input.tableAndSchema.tableName,
+          schema: input.tableAndSchema.schemaName,
+        })) satisfies InferToolOutput<typeof tools.columns>
 
         chat.addToolResult({
           tool: 'columns',
@@ -163,7 +163,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         })
       }
       else if (toolCall.toolName === 'enums') {
-        const output = await queryClient.ensureQueryData(databaseEnumsQuery(database)).then(results => results.flatMap(r => r.values.map(v => ({
+        const output = await queryClient.ensureQueryData(databaseEnumsQuery({ database })).then(results => results.flatMap(r => r.values.map(v => ({
           schema: r.schema,
           name: r.name,
           value: v,

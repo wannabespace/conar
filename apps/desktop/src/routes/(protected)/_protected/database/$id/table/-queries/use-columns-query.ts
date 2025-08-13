@@ -3,9 +3,9 @@ import { useMemo } from 'react'
 import { useDatabaseTableColumns } from '~/entities/database'
 import { usePrimaryKeysQuery } from './use-primary-keys-query'
 
-export function useTableColumns(database: typeof databases.$inferSelect, table: string, schema: string) {
-  const { data: columns } = useDatabaseTableColumns(database, table, schema)
-  const { data: primaryKeys } = usePrimaryKeysQuery(database, table, schema)
+export function useTableColumns({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
+  const { data: columns } = useDatabaseTableColumns({ database, table, schema })
+  const { data: primaryKeys } = usePrimaryKeysQuery({ database, table, schema })
 
   return useMemo(() => {
     return columns

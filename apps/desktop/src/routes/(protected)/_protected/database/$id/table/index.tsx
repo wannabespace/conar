@@ -79,7 +79,31 @@ function TableContent({ id, table, schema }: { id: string, table: string, schema
     })
   }, [schema, table])
 
-  const columns = useTableColumns(database, table, schema)
+  const columns = useTableColumns({ database, table, schema })
+
+  // Watch for orderBy entries that reference non-existent columns and remove them
+  useEffect(() => {
+    if (!columns || columns.length === 0)
+return
+
+    const columnNames = new Set(columns.map(col => col.name))
+    const currentOrderBy = store.state.orderBy
+    const invalidOrderByKeys = Object.keys(currentOrderBy).filter(
+      key => !columnNames.has(key),
+    )
+
+    if (invalidOrderByKeys.length > 0) {
+      const newOrderBy = { ...currentOrderBy }
+      invalidOrderByKeys.forEach((key) => {
+        delete newOrderBy[key]
+      })
+
+      store.setState(state => ({
+        ...state,
+        orderBy: newOrderBy,
+      }))
+    }
+  }, [columns, store])
 
   return (
     <>

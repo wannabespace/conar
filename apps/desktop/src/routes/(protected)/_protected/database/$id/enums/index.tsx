@@ -25,8 +25,8 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id/enums
 
 function DatabaseEnumsPage() {
   const { database } = Route.useLoaderData()
-  const { data: enums } = useDatabaseEnums(database)
-  const { data } = useDatabaseTablesAndSchemas(database)
+  const { data: enums } = useDatabaseEnums({ database })
+  const { data } = useDatabaseTablesAndSchemas({ database })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0] ?? 'public')
 

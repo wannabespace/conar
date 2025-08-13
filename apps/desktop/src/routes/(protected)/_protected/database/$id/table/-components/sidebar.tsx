@@ -11,7 +11,7 @@ import { useDatabaseTablesAndSchemas } from '~/entities/database'
 import { TablesTree } from './tables-tree'
 
 export function Sidebar({ database }: { database: typeof databases.$inferSelect }) {
-  const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useDatabaseTablesAndSchemas(database)
+  const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useDatabaseTablesAndSchemas({ database })
   const [search, setSearch] = useSessionStorage(`database-tables-search-${database.id}`, '')
 
   return (

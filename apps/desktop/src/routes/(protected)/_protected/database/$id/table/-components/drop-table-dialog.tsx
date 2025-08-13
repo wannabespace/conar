@@ -62,7 +62,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
       setOpen(false)
       setConfirmationText('')
 
-      queryClient.invalidateQueries(tablesAndSchemasQuery(database))
+      queryClient.invalidateQueries(tablesAndSchemasQuery({ database }))
       closeTab(database.id, schema, table)
 
       if (isCurrentTable) {

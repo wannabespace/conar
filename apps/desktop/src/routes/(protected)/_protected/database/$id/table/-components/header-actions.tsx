@@ -6,6 +6,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { RiCheckLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
+import { databaseTableColumnsQuery } from '~/entities/database'
+import { queryClient } from '~/main'
 import { getRowsQueryOpts } from '../-lib'
 import { usePageStoreContext } from '../-store'
 import { HeaderActionsColumns } from './header-actions-columns'
@@ -24,7 +26,10 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
       ...state,
       page: 1,
     }))
-    await refetch()
+    await Promise.all([
+      refetch(),
+      queryClient.invalidateQueries(databaseTableColumnsQuery({ database, table, schema })),
+    ])
   }
 
   return (
