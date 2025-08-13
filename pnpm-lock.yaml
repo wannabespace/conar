@@ -436,6 +436,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@databuddy/sdk':
+        specifier: ^1.4.1
+        version: 1.4.1
       '@octokit/rest':
         specifier: ^22.0.0
         version: 22.0.0
@@ -1100,6 +1103,9 @@ packages:
 
   '@dabh/diagnostics@2.0.3':
     resolution: {integrity: sha512-hrlQOIi7hAfzsMqlGSFyVucrx38O+j6wiGOf//H2ecvIEqYN4ADBSS2iLMh5UFyDunCNniUIPk/q3riFv45xRA==}
+
+  '@databuddy/sdk@1.4.1':
+    resolution: {integrity: sha512-odhCVh00GXdXIYpEZT8HP+5Wbjm00hb3hqeEm9tu3SOPdTt0dGtWuTo2jkC3ExG1z1WE0+qEs2qCbtV1DUwrZw==}
 
   '@dependents/detective-less@5.0.1':
     resolution: {integrity: sha512-Y6+WUMsTFWE5jb20IFP4YGa5IrGY/+a/FbOSjDF/wz9gepU2hwCYSXRHP/vPwBvwcY3SVMASt4yXxbXNXigmZQ==}
@@ -9159,6 +9165,8 @@ snapshots:
       colorspace: 1.1.4
       enabled: 2.0.0
       kuler: 2.0.0
+
+  '@databuddy/sdk@1.4.1': {}
 
   '@dependents/detective-less@5.0.1':
     dependencies:
