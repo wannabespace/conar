@@ -60,7 +60,7 @@ export const tools = {
         values: z.array(z.string()).describe('The value to use in the where clause. If the operator does not require a value, this should be empty array.'),
       })).describe('The columns to use in the where clause'),
       select: z.array(z.string()).optional().describe('The columns to select. If not provided, all columns will be selected'),
-      limit: z.number().describe('The number of rows to return. Do not ask for more than 100 rows.'),
+      limit: z.number().describe('The number of rows to return.'),
       offset: z.number().describe('The number of rows to skip'),
       orderBy: z.record(z.string(), z.enum(['ASC', 'DESC'])).optional().describe('The columns to order by'),
       tableAndSchema: z.object({
