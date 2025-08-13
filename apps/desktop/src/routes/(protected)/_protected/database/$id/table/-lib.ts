@@ -94,13 +94,13 @@ export function getRowsQueryOpts({
   schema,
   filters,
   orderBy,
- }: {
+}: {
   database: typeof databases.$inferSelect
   table: string
   schema: string
   filters: WhereFilter[]
   orderBy: Record<string, 'ASC' | 'DESC'>
- }) {
+}) {
   return infiniteQueryOptions({
     ...databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }),
     throwOnError: false,

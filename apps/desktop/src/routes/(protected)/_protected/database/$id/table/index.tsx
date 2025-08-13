@@ -52,15 +52,15 @@ export const Route = createFileRoute(
   head: ({ loaderData }) => ({
     meta: loaderData
       ? [
-        {
-          title: title(
-            loaderData.schema && loaderData.table
-              ? `${loaderData.schema}.${loaderData.table}`
-              : 'Tables',
-            loaderData.database.name,
-          ),
-        },
-      ]
+          {
+            title: title(
+              loaderData.schema && loaderData.table
+                ? `${loaderData.schema}.${loaderData.table}`
+                : 'Tables',
+              loaderData.database.name,
+            ),
+          },
+        ]
       : [],
   }),
 })
@@ -146,17 +146,17 @@ function DatabaseTablesPage() {
         {schema && table && store
           ? <TableContent id={id} table={table} schema={schema} store={store} />
           : (
-            <div className="p-4 flex items-center justify-center h-full">
-              <div className="text-center space-y-4">
-                <div className="text-lg font-medium">
-                  No table selected
+              <div className="p-4 flex items-center justify-center h-full">
+                <div className="text-center space-y-4">
+                  <div className="text-lg font-medium">
+                    No table selected
+                  </div>
+                  <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                    Select a schema from the dropdown and choose a table from the sidebar to view and manage your data.
+                  </p>
                 </div>
-                <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                  Select a schema from the dropdown and choose a table from the sidebar to view and manage your data.
-                </p>
               </div>
-            </div>
-          )}
+            )}
       </ResizablePanel>
     </ResizablePanelGroup>
   )

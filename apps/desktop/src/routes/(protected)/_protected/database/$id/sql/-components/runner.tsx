@@ -39,18 +39,18 @@ export function Runner() {
             <RunnerEditor className="h-[calc(100%-theme(spacing.14))] flex-1" />
           </ResizablePanel>
           {queriesOpen && (
-<>
-            <ResizableHandle withHandle />
-            <ResizablePanel maxSize={50} minSize={20} defaultSize={30}>
-              <CardHeader className="py-3 h-14">
-                <CardTitle className="flex items-center gap-2 justify-between">
-                  Saved Queries
-                </CardTitle>
-              </CardHeader>
-              <RunnerQueries className="h-[calc(100%-theme(spacing.14))] w-full" />
-            </ResizablePanel>
-</>
-)}
+            <>
+              <ResizableHandle withHandle />
+              <ResizablePanel maxSize={50} minSize={20} defaultSize={30}>
+                <CardHeader className="py-3 h-14">
+                  <CardTitle className="flex items-center gap-2 justify-between">
+                    Saved Queries
+                  </CardTitle>
+                </CardHeader>
+                <RunnerQueries className="h-[calc(100%-theme(spacing.14))] w-full" />
+              </ResizablePanel>
+            </>
+          )}
         </ResizablePanelGroup>
       </ResizablePanel>
       <ResizableHandle withHandle />
