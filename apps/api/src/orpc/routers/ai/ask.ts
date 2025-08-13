@@ -97,8 +97,15 @@ export const ask = orpc
   .input(chatInputType)
   .handler(async ({ input, context, signal }) => {
     await db.transaction(async (tx) => {
-      // To ensure that the chat is created
-      await tx.insert(chats).values({ id: input.id, userId: context.user.id, databaseId: input.databaseId }).onConflictDoNothing()
+      const [existingChat] = await tx.select().from(chats).where(eq(chats.id, input.id)).limit(1)
+
+      if (!existingChat) {
+        await tx.insert(chats).values({
+          id: input.id,
+          userId: context.user.id,
+          databaseId: input.databaseId,
+        })
+      }
 
       if (input.trigger === 'submit-message') {
         await tx.insert(chatsMessages).values({
@@ -115,6 +122,16 @@ export const ask = orpc
       }
     }).catch((error) => {
       console.error('error onFinish transaction', error)
+
+      // Handle foreign key constraint violations specifically
+      if (error.message?.includes('violates foreign key constraint')
+        || error.message?.includes('chats_messages_chat_id_chats_id_fk')) {
+        console.error('Foreign key constraint violation: Chat does not exist', { chatId: input.id })
+        throw new ORPCError('BAD_REQUEST', {
+          message: 'Chat not found. Please try creating a new chat.',
+        })
+      }
+
       throw error
     })
 
