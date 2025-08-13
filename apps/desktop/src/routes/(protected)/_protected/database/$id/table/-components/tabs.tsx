@@ -19,7 +19,7 @@ import { useRouter, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
 import { addTab, closeTab, moveTab, useTabs } from '../-lib'
-import { getTableStoreState } from '../-store'
+import { getPageStoreState } from '../-store'
 
 const os = getOS(navigator.userAgent)
 
@@ -190,12 +190,12 @@ export function TablesTabs({ database, id }: {
 
   useAsyncEffect(async () => {
     for (const tab of tabs) {
-      await prefetchDatabaseTableCore(database, tab.schema, tab.table, getQueryOpts(tab.table))
+      await prefetchDatabaseTableCore({ database, schema: tab.schema, table: tab.table, query: getQueryOpts(tab.table) })
     }
   }, [database, tabs])
 
   function getQueryOpts(tableName: string) {
-    const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
+    const state = schemaParam ? getPageStoreState(schemaParam, tableName) : null
 
     if (state) {
       return {

@@ -1,15 +1,15 @@
 import type { WhereFilter } from '@conar/shared/sql/where'
-import type { Store } from '@tanstack/react-store'
+import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
 
-const storeState = type({
+export const storeState = type({
   selected: 'Record<string, string>[]',
   filters: type({
     column: 'string',
-    operator: 'string' as type.cast<WhereFilter['operator']>,
+    operator: 'string',
     values: 'string[]',
-  }).array(),
+  }).array() as type.cast<WhereFilter[]>,
   hiddenColumns: 'string[]',
   orderBy: {
     '[string]': '"ASC" | "DESC"',
@@ -17,7 +17,7 @@ const storeState = type({
   prompt: 'string',
 })
 
-export function getTableStoreState(schema: string, table: string) {
+export function getPageStoreState(schema: string, table: string) {
   const parsed = storeState(JSON.parse(sessionStorage.getItem(`${schema}.${table}-store`) ?? '{}'))
 
   if (parsed instanceof type.errors)
@@ -26,15 +26,24 @@ export function getTableStoreState(schema: string, table: string) {
   return parsed
 }
 
-export interface PageStore {
-  selected: Record<string, string>[]
-  filters: WhereFilter[]
-  hiddenColumns: string[]
-  orderBy: Record<string, 'ASC' | 'DESC'>
-  prompt: string
+export function createPageStore({ schema, table }: { schema: string, table: string }) {
+  const store = new Store<typeof storeState.infer>(getPageStoreState(schema, table)
+    ?? {
+      selected: [],
+      filters: [],
+      prompt: '',
+      hiddenColumns: [],
+      orderBy: {},
+    })
+
+  store.subscribe((state) => {
+    sessionStorage.setItem(`${schema}.${table}-store`, JSON.stringify(state.currentVal))
+  })
+
+  return store
 }
 
-export const PageStoreContext = createContext<Store<PageStore>>(null!)
+export const PageStoreContext = createContext<Store<typeof storeState.infer>>(null!)
 
 export function usePageStoreContext() {
   return use(PageStoreContext)

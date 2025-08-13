@@ -51,9 +51,14 @@ export async function prefetchDatabaseCore(database: typeof databases.$inferSele
   ])
 }
 
-export async function prefetchDatabaseTableCore(database: typeof databases.$inferSelect, schema: string, table: string, query: {
-  filters: WhereFilter[]
-  orderBy: Record<string, 'ASC' | 'DESC'>
+export async function prefetchDatabaseTableCore({ database, schema, table, query }: {
+  database: typeof databases.$inferSelect
+  schema: string
+  table: string
+  query: {
+    filters: WhereFilter[]
+    orderBy: Record<string, 'ASC' | 'DESC'>
+  }
 }) {
   await Promise.all([
     queryClient.prefetchInfiniteQuery(databaseRowsQuery({ database, table, schema, query })),

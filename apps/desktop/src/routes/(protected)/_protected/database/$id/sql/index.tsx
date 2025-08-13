@@ -16,6 +16,7 @@ export const Route = createFileRoute(
     'chatId?': 'string.uuid.v7',
     'error?': 'string',
   }),
+  staleTime: Number.POSITIVE_INFINITY,
   loaderDeps: ({ search }) => ({ chatId: search.chatId }),
   loader: async ({ params, context, deps }) => {
     lastOpenedChatId.set(params.id, deps.chatId || null)

@@ -15,7 +15,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
 import { addTab } from '../-lib'
-import { getTableStoreState } from '../-store'
+import { getPageStoreState } from '../-store'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 
@@ -43,7 +43,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
 
   function getQueryOpts(tableName: string) {
-    const state = schemaParam ? getTableStoreState(schemaParam, tableName) : null
+    const state = schemaParam ? getPageStoreState(schemaParam, tableName) : null
 
     if (state) {
       return {
@@ -59,7 +59,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
   }
 
   const debouncedPrefetchDatabaseTableCore = useDebouncedCallback(
-    (schema: string, tableName: string) => prefetchDatabaseTableCore(database, schema, tableName, getQueryOpts(tableName)),
+    (schema: string, tableName: string) => prefetchDatabaseTableCore({ database, schema, table: tableName, query: getQueryOpts(tableName) }),
     [database.id],
     100,
   )

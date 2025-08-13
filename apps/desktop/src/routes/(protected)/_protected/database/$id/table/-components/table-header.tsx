@@ -100,6 +100,9 @@ function Header() {
     })
   }, [scrollRef, columns])
 
+  if (columns.length === 0)
+    return null
+
   return (
     <TableHeader
       className={cn('flex transition-shadow duration-300', isScrolled && 'shadow-lg shadow-black/3')}
