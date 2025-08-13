@@ -88,7 +88,7 @@ function RootComponent() {
         <Toaster />
         <Databuddy
           clientId="4cWwAbS06aDNledzhodgS"
-          enableBatching={true}
+          enableBatching
           disabled={import.meta.env.DEV}
         />
         <TanStackRouterDevtools position="bottom-right" />
