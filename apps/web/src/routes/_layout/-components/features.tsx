@@ -49,7 +49,7 @@ interface FilterItemProps {
 
 function FilterItem({ name, operator, value, onRemove }: FilterItemProps) {
   return (
-    <div className="flex items-center border rounded-md overflow-hidden h-7 dark:bg-input/40 transition-colors">
+    <div className="flex items-center border rounded-md overflow-hidden h-7 dark:bg-input/30 transition-colors">
       <div className="text-xs flex items-center gap-1 px-2 h-full font-medium text-foreground">
         <RiDatabase2Line className="size-3 text-primary/70" aria-hidden="true" />
         {name}
@@ -212,7 +212,7 @@ function CloudSync() {
       />
       <div className="space-y-3 sm:space-y-4">
         <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-muted/30 to-muted/50 rounded-xl border border-border/50">
-          <div className="size-10 sm:size-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="size-10 sm:size-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-md flex items-center justify-center flex-shrink-0">
             <RiDatabase2Line className="size-5 sm:size-6 text-primary" aria-hidden="true" />
           </div>
           <div className="flex-1 min-w-0">
@@ -225,7 +225,7 @@ function CloudSync() {
           </div>
         </div>
         <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-muted/30 to-muted/50 rounded-xl border border-border/50">
-          <div className="size-10 sm:size-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="size-10 sm:size-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-md flex items-center justify-center flex-shrink-0">
             <RiDatabase2Line className="size-5 sm:size-6 text-primary" aria-hidden="true" />
           </div>
           <div className="flex-1 min-w-0">

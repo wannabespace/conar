@@ -14,7 +14,7 @@ interface Column {
 interface Filter {
   column: string
   operator: string
-  value?: string
+  values?: string[]
 }
 
 interface Operator {
@@ -51,7 +51,7 @@ function FilterColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLInputElem
             >
               <RiDatabase2Line className="size-4 opacity-50" />
               <span>{column.name}</span>
-              <span className="ml-auto text-xs text-muted-foreground">{column.type}</span>
+              <span className="ml-auto text-xs text-muted-foreground text-right">{column.type}</span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -130,7 +130,7 @@ function FilterOperatorSelector({
               >
                 <RiFilterLine className="size-4 opacity-50" />
                 <span>{operator.label}</span>
-                <span className="ml-auto text-xs text-muted-foreground">{operator.value}</span>
+                <span className="ml-auto text-xs text-muted-foreground text-right">{operator.value}</span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -144,7 +144,7 @@ function FilterValueSelector({
   ref,
   column,
   operator,
-  value,
+  values,
   onChange,
   onApply,
   onBackspace,
@@ -152,8 +152,8 @@ function FilterValueSelector({
   ref?: RefObject<HTMLInputElement | null>
   column: string
   operator: string
-  value: string
-  onChange: (value: string) => void
+  values: string[]
+  onChange: (value: string[]) => void
   onApply: () => void
   onBackspace?: () => void
 }) {
@@ -162,8 +162,8 @@ function FilterValueSelector({
       <div>
         <CommandInput
           ref={ref}
-          value={value}
-          onValueChange={onChange}
+          value={values[0]} // Temp due to the current implementation where available only 1 value
+          onValueChange={value => onChange([value])}
           placeholder={`Enter value for ${column}...`}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -242,9 +242,9 @@ export function FilterItem({
 }: {
   filter: Filter
   onRemove: () => void
-  onEdit: (params: { column: string, operator: string, value: string }) => void
+  onEdit: (params: { column: string, operator: string, values: string[] }) => void
 }) {
-  const [value, setValue] = useState(filter.value ?? '')
+  const [values, setValues] = useState(filter.values ?? [])
   const { operators } = useInternalContext()
   const showValue = useMemo(() => {
     const operator = operators.find(operator => operator.value === filter.operator)
@@ -252,7 +252,7 @@ export function FilterItem({
   }, [filter.operator])
 
   return (
-    <div className="flex items-center border rounded-sm overflow-hidden h-6 bg-input/30">
+    <div className="flex items-center border rounded-sm overflow-hidden h-6 bg-card">
       <Popover>
         <PopoverTrigger className="text-xs flex items-center gap-1 px-2 h-full hover:bg-accent/50 transition-colors font-medium">
           <RiDatabase2Line className="size-3 text-primary/70" />
@@ -260,7 +260,7 @@ export function FilterItem({
         </PopoverTrigger>
         <PopoverContent className="p-0 shadow-md">
           <FilterColumnSelector
-            onSelect={column => onEdit({ column, operator: filter.operator, value })}
+            onSelect={column => onEdit({ column, operator: filter.operator, values })}
           />
         </PopoverContent>
       </Popover>
@@ -271,7 +271,7 @@ export function FilterItem({
         </PopoverTrigger>
         <PopoverContent className="p-0 shadow-md">
           <FilterOperatorSelector
-            onSelect={operator => onEdit({ column: filter.column, operator, value })}
+            onSelect={operator => onEdit({ column: filter.column, operator, values })}
           />
         </PopoverContent>
       </Popover>
@@ -281,17 +281,17 @@ export function FilterItem({
           <Popover>
             <PopoverTrigger className="text-xs px-2 h-full hover:bg-accent/50 transition-colors">
               <div className="font-mono truncate max-w-60">
-                {filter.value}
-                {filter.value === '' && <span className="opacity-30">Empty</span>}
+                {filter.values?.join(', ')}
+                {(filter.values?.length === 0 || filter.values?.every(value => value === '')) && <span className="opacity-30">Empty</span>}
               </div>
             </PopoverTrigger>
             <PopoverContent className="p-0 shadow-md max-h-[calc(100vh-10rem)]">
               <FilterValueSelector
                 column={filter.column}
                 operator={filter.operator}
-                value={value}
-                onChange={setValue}
-                onApply={() => onEdit({ column: filter.column, operator: filter.operator, value })}
+                values={values} // Temp due to the current implementation where available only 1 value
+                onChange={setValues}
+                onApply={() => onEdit({ column: filter.column, operator: filter.operator, values })}
               />
             </PopoverContent>
           </Popover>
@@ -313,7 +313,7 @@ export function FilterItem({
 export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
   const [selectedColumn, setSelectedColumn] = useState<string | null>(null)
   const [selectedOperator, setSelectedOperator] = useState<string | null>(null)
-  const [value, setValue] = useState('')
+  const [values, setValues] = useState<string[]>([])
   const { columns, operators } = useInternalContext()
 
   const operatorRef = useRef<HTMLInputElement>(null)
@@ -351,7 +351,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
           ref={operatorRef}
           onSelect={setSelectedOperator}
           onBackspace={() => {
-            if (value === '') {
+            if (values.length === 0) {
               setSelectedColumn(null)
             }
           }}
@@ -362,11 +362,11 @@ export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
           ref={valueRef}
           column={column.name}
           operator={selectedOperator}
-          value={value}
-          onChange={setValue}
-          onApply={() => onAdd({ column: column.name, operator: selectedOperator, value })}
+          values={values}
+          onChange={setValues}
+          onApply={() => onAdd({ column: column.name, operator: selectedOperator, values })}
           onBackspace={() => {
-            if (value === '') {
+            if (values.length === 0) {
               setSelectedOperator(null)
             }
           }}

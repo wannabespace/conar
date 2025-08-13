@@ -1,35 +1,36 @@
-import type { Database } from '~/lib/indexeddb'
-import { databaseContextSchema } from '@conar/shared/database'
+import type { databases } from '~/drizzle'
+import { tablesAndSchemasSql, tablesAndSchemasType } from '@conar/shared/sql/tables-and-schemas'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
-import { contextSql } from '../sql/context'
 
-export function databaseContextQuery(database: Database) {
+export function tablesAndSchemasQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
-    queryKey: ['database', database.id, 'context'],
+    queryKey: ['database', database.id, 'tables-and-schemas'],
     queryFn: async () => {
       const [result] = await dbQuery({
         type: database.type,
         connectionString: database.connectionString,
-        query: contextSql()[database.type],
+        query: tablesAndSchemasSql()[database.type],
       })
 
-      const parsed = databaseContextSchema.parse(result.rows[0].database_context)
+      const parsed = tablesAndSchemasType.assert(result.rows[0].tables_and_schemas)
 
       return {
         ...parsed,
+        totalSchemas: parsed.schemas.length,
+        totalTables: parsed.schemas.reduce((acc, { tables }) => acc + tables.length, 0),
         schemas: parsed.schemas.toSorted((a, b) => {
-          if (a.schema === 'public' && b.schema !== 'public')
+          if (a.name === 'public' && b.name !== 'public')
             return -1
-          if (b.schema === 'public' && a.schema !== 'public')
+          if (b.name === 'public' && a.name !== 'public')
             return 1
-          return a.schema.localeCompare(b.schema)
+          return a.name.localeCompare(b.name)
         }),
       }
     },
   })
 }
 
-export function useDatabaseContext(...params: Parameters<typeof databaseContextQuery>) {
-  return useQuery(databaseContextQuery(...params))
+export function useDatabaseTablesAndSchemas(...params: Parameters<typeof tablesAndSchemasQuery>) {
+  return useQuery(tablesAndSchemasQuery(...params))
 }

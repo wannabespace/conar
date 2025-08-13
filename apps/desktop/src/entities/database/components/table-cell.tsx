@@ -21,7 +21,7 @@ const os = getOS(navigator.userAgent)
 
 function getDisplayValue(value: unknown, oneLine: boolean) {
   if (typeof value === 'object' && value !== null)
-    return oneLine ? JSON.stringify(value).replaceAll('\n', ' ') : JSON.stringify(value, null, 2)
+    return oneLine ? JSON.stringify(value).replaceAll('\n', ' ') : JSON.stringify(value)
 
   return oneLine ? String(value ?? '').replaceAll('\n', ' ') : String(value ?? '')
 }
@@ -140,7 +140,7 @@ function TableCellMonaco({
       <Monaco
         data-mask
         value={value}
-        language={['json', 'jsonb'].includes(column?.type ?? '') ? 'json' : undefined}
+        language={column?.type?.includes('json') ? 'json' : undefined}
         className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(50vh,40rem)]')}
         onChange={setValue}
         options={{

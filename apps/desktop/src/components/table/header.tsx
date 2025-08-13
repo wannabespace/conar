@@ -1,5 +1,5 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
-import type { ComponentProps, CSSProperties } from 'react'
+import type { ComponentProps, CSSProperties, ReactNode } from 'react'
 import type { ColumnRenderer } from '.'
 import { cn } from '@conar/ui/lib/utils'
 import { memo } from 'react'
@@ -31,6 +31,7 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   return (
     <column.header
       key={virtualColumn.key}
+      id={column.id}
       columnIndex={virtualColumn.index}
       isFirst={virtualColumn.index === 0}
       isLast={isLast}
@@ -44,7 +45,16 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   )
 })
 
-export function TableHeader({ className, style, ...props }: ComponentProps<'div'>) {
+export function TableHeader({
+  className,
+  style,
+  before,
+  after,
+  ...props
+}: ComponentProps<'div'> & {
+  before?: ReactNode
+  after?: ReactNode
+}) {
   const virtualColumns = useTableContext(context => context.virtualColumns)
   const tableWidth = useTableContext(context => context.tableWidth)
   const columns = useTableContext(context => context.columns)
@@ -58,7 +68,8 @@ export function TableHeader({ className, style, ...props }: ComponentProps<'div'
       style={{ width: `${tableWidth}px`, ...style }}
       {...props}
     >
-      <div className="flex bg-muted/30 h-full w-fit min-w-full items-center">
+      {before}
+      <div className="flex bg-card h-full w-fit min-w-full items-center">
         <div
           aria-hidden="true"
           className="shrink-0 w-(--table-scroll-left-offset) will-change-[height]"
@@ -78,6 +89,7 @@ export function TableHeader({ className, style, ...props }: ComponentProps<'div'
           style={spacerStyle}
         />
       </div>
+      {after}
     </div>
   )
 }

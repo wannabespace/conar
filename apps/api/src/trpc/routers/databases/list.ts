@@ -12,6 +12,7 @@ export const list = protectedProcedure
         type: databases.type,
         isPasswordExists: databases.isPasswordExists,
         createdAt: databases.createdAt,
+        updatedAt: databases.updatedAt,
         connectionString: databases.connectionString,
       })
       .from(databases)

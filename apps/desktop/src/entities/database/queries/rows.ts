@@ -1,22 +1,24 @@
-import type { WhereFilter } from '../sql/where'
-import type { Database } from '~/lib/indexeddb'
+import type { WhereFilter } from '@conar/shared/sql/where'
+import type { databases } from '~/drizzle'
+import { rowsSql } from '@conar/shared/sql/rows'
+import { whereSql } from '@conar/shared/sql/where'
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query'
 import { dbQuery } from '~/lib/query'
-import { rowsSql } from '../sql/rows'
-import { whereSql } from '../sql/where'
 import { DEFAULT_LIMIT } from '../utils'
 
 type Page = Awaited<ReturnType<typeof dbQuery>>[0]
 
-export function databaseRowsQuery(
-  database: Database,
-  table: string,
-  schema: string,
-  query: {
-    orderBy: Record<string, 'ASC' | 'DESC'>
-    filters: WhereFilter[]
-  },
-) {
+export function databaseRowsQuery({
+  database,
+  table,
+  schema,
+  query,
+}: {
+  database: typeof databases.$inferSelect
+  table: string
+  schema: string
+  query: { orderBy: Record<string, 'ASC' | 'DESC'>, filters: WhereFilter[] }
+}) {
   return infiniteQueryOptions({
     initialPageParam: 0,
     getNextPageParam: (lastPage: Page, _allPages: Page[], lastPageParam: number) => {

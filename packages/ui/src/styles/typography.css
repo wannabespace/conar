@@ -12,7 +12,7 @@
   }
 
   .typography:not(.typography-disabled) p {
-    @apply leading-[1.7] [&:not(:first-child)]:mt-4 [&:not(:last-child)]:mb-4;
+    @apply leading-[1.5] [&:not(:first-child)]:mt-4 [&:not(:last-child)]:mb-4;
   }
 
   .typography:not(.typography-disabled) blockquote {

@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { clearDb } from '~/drizzle'
 import { authClient, fullSignOut } from '~/lib/auth'
-import { clearIndexedDb } from '~/lib/indexeddb'
 import { queryClient } from '~/main'
 
 export function useSignOut() {
@@ -17,7 +17,7 @@ export function useSignOut() {
 
       // Timeout to wait transition to auth page
       setTimeout(() => {
-        clearIndexedDb()
+        clearDb()
         queryClient.invalidateQueries()
       }, 1000)
     },

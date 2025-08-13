@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-type ScrollDirection = 'up' | 'down' | 'left' | 'right' | null
+export type ScrollDirection = 'up' | 'down' | 'left' | 'right' | null
 
 export function useScrollDirection(ref?: React.RefObject<HTMLElement | null>, delay = 500) {
   const [scrollDirection, setScrollDirection] = React.useState<ScrollDirection>(null)

@@ -1,63 +1,32 @@
-import type { UseChatHelpers } from '@ai-sdk/react'
-import type { ComponentRef } from 'react'
-import type { Database } from '~/lib/indexeddb'
-import { AiSqlChatModel } from '@conar/shared/enums/ai-chat-model'
+import type { ChangeEvent, ComponentRef } from 'react'
+import { useChat } from '@ai-sdk/react'
 import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { Button } from '@conar/ui/components/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { RiCornerDownLeftLine, RiStopCircleLine } from '@remixicon/react'
+import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
+import { useMutation } from '@tanstack/react-query'
+import { useLocation, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
-import { databaseContextQuery } from '~/entities/database'
-import { queryClient } from '~/main'
-import { pageHooks, pageStore } from '..'
-import { chatInput } from '../-lib'
+import { orpc } from '~/lib/orpc'
+import { Route } from '..'
+import { chatInput } from '../-chat'
+import { pageHooks, pageStore } from '../-lib'
 import { ChatImages } from './chat-images'
 
-function ModelSelector() {
-  const model = useStore(pageStore, state => state.model)
-
-  return (
-    <Select
-      value={model}
-      onValueChange={value => pageStore.setState(state => ({
-        ...state,
-        model: value as AiSqlChatModel | 'auto',
-      }))}
-    >
-      <SelectTrigger size="xs">
-        <div className="flex items-center gap-1">
-          {model === 'auto' && (
-            <span className="text-muted-foreground">
-              Model
-            </span>
-          )}
-          <SelectValue placeholder="Select model" />
-        </div>
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="auto">Auto</SelectItem>
-        <SelectItem value={AiSqlChatModel.Claude_3_7_Sonnet}>Claude 3.7 Sonnet</SelectItem>
-        <SelectItem value={AiSqlChatModel.Claude_4_Opus}>Claude 4 Opus</SelectItem>
-        <SelectItem value={AiSqlChatModel.GPT_4o_Mini}>GPT-4o Mini</SelectItem>
-        <SelectItem value={AiSqlChatModel.Gemini_2_5_Pro}>Gemini 2.5 Pro</SelectItem>
-        <SelectItem value={AiSqlChatModel.Grok_3}>Grok 3</SelectItem>
-      </SelectContent>
-    </Select>
-  )
-}
-
-export function ChatForm({
-  database,
-  append,
-  stop,
-  status,
-  input,
-  setInput,
-}: Pick<UseChatHelpers, 'status' | 'append' | 'stop' | 'input' | 'setInput'> & { database: Database }) {
+export function ChatForm() {
+  const { database, chat } = Route.useLoaderData()
+  const { error } = Route.useSearch()
+  const router = useRouter()
+  const location = useLocation()
+  const [input, setInput] = useState(chatInput.get(database.id))
+  const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const files = useStore(pageStore, state => state.files.map(file => ({
     name: file.name,
@@ -70,23 +39,16 @@ export function ChatForm({
     }
   }, [ref])
 
-  const statusRef = useRef(status)
-
-  useEffect(() => {
-    // I don't know why but the status is not updating in function below
-    statusRef.current = status
-  }, [status])
-
   const handleSend = async (value: string) => {
     if (
       value.trim() === ''
-      || statusRef.current === 'streaming'
-      || statusRef.current === 'submitted'
+      || chat.status === 'streaming'
+      || chat.status === 'submitted'
     ) {
       return
     }
 
-    const cachedValue = value
+    const cachedValue = value.trim()
     const cachedFiles = [...pageStore.state.files]
 
     try {
@@ -98,18 +60,30 @@ export function ChatForm({
         files: [],
       }))
 
-      await append({
+      pageHooks.callHook('sendMessage')
+
+      if (location.search.chatId !== chat.id) {
+        router.navigate({
+          to: '/database/$id/sql',
+          params: { id: database.id },
+          search: { chatId: chat.id },
+          replace: true,
+        })
+      }
+
+      await chat.sendMessage({
         role: 'user',
-        content: cachedValue,
-      }, {
-        experimental_attachments: filesBase64.map((base64, index) => ({
-          name: `attachment-${index + 1}.png`,
-          contentType: 'image/png',
-          url: base64,
-        })),
-        body: {
-          context: await queryClient.ensureQueryData(databaseContextQuery(database)),
-        },
+        parts: [
+          {
+            type: 'text',
+            text: cachedValue,
+          },
+          ...filesBase64.map(base64 => ({
+            type: 'file' as const,
+            url: base64,
+            mediaType: 'image/png',
+          })),
+        ],
       })
     }
     catch (error) {
@@ -126,15 +100,61 @@ export function ChatForm({
     }
   }
 
+  useAsyncEffect(async () => {
+    if (!error) {
+      return
+    }
+
+    await handleSend(`Fix the following SQL error by correcting the current query: ${error}`)
+  }, [error, handleSend])
+
   useMountedEffect(() => {
     chatInput.set(database.id, input)
   }, [input])
 
   useEffect(() => {
     return pageHooks.hook('fix', async (error) => {
-      await handleSend(`Fix the following SQL error by correcting the current query: ${error}`)
+      await router.navigate({
+        to: '/database/$id/sql',
+        params: { id: database.id },
+        search: { error },
+      })
     })
-  }, [handleSend])
+  }, [router])
+
+  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation({
+    mutationFn: orpc.ai.enhancePrompt,
+    onSuccess: (data) => {
+      if (input.length < 10) {
+        return
+      }
+
+      if (data === input) {
+        toast.info('Prompt cannot be enhanced', {
+          description: 'The prompt is already clear and specific',
+        })
+      }
+      else {
+        setInput(data)
+      }
+    },
+  })
+
+  // Handler for file input change
+  const handleFileAttach = (e: ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files
+
+    if (!fileList || fileList.length === 0)
+      return
+
+    const fileArr = Array.from(fileList)
+
+    pageStore.setState(state => ({
+      ...state,
+      files: [...state.files, ...fileArr],
+    }))
+    e.target.value = ''
+  }
 
   return (
     <div className="flex flex-col gap-1">
@@ -165,18 +185,64 @@ export function ChatForm({
             }))
           }}
         />
-        <div className="px-2 pb-2 flex justify-between pointer-events-none">
+        <div className="px-2 pb-2 flex justify-between items-end pointer-events-none">
           <div className="pointer-events-auto">
-            <ModelSelector />
+            <Button
+              type="button"
+              size="icon-xs"
+              variant="outline"
+              asChild
+            >
+              <label htmlFor="chat-file-upload">
+                <RiAttachment2 className="size-3" />
+                <input
+                  id="chat-file-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileAttach}
+                  tabIndex={-1}
+                  aria-label="Attach files"
+                />
+              </label>
+            </Button>
           </div>
           <div className="flex gap-2 pointer-events-auto">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon-xs"
+                  variant="outline"
+                  className={input.length < 10 ? 'opacity-50 cursor-default' : ''}
+                  disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt}
+                  onClick={() => enhancePrompt({
+                    prompt: input,
+                    chatId: chat.id,
+                  })}
+                >
+                  <LoadingContent
+                    loading={isEnhancingPrompt}
+                    loaderClassName="size-3"
+                  >
+                    <ContentSwitch
+                      active={isEnhancingPrompt}
+                      activeContent={<RiCheckLine className="size-3 text-success" />}
+                    >
+                      <RiMagicLine className="size-3" />
+                    </ContentSwitch>
+                  </LoadingContent>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {input.length < 10 ? 'Prompt is too short to enhance' : 'Enhance prompt'}
+              </TooltipContent>
+            </Tooltip>
             {(status === 'streaming' || status === 'submitted')
               ? (
                   <Button
-                    type="button"
                     size="xs"
                     variant="outline"
-                    disabled={status === 'submitted'}
                     onClick={stop}
                   >
                     <RiStopCircleLine className="size-3" />

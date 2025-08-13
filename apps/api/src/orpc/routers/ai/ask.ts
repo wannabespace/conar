@@ -1,0 +1,200 @@
+import type { AppUIMessage } from '@conar/shared/ai'
+import type { LanguageModel } from 'ai'
+import { anthropic } from '@ai-sdk/anthropic'
+import { chatInputType, tools } from '@conar/shared/ai'
+import { ORPCError, streamToEventIterator } from '@orpc/server'
+import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
+import { asc, eq } from 'drizzle-orm'
+// import { createResumableStreamContext } from 'resumable-stream'
+import { v7 } from 'uuid'
+import { chats, chatsMessages, db } from '~/drizzle'
+import { authMiddleware, orpc } from '~/orpc'
+
+const mainModel = anthropic('claude-sonnet-4-20250514')
+const fallbackModel = anthropic('claude-opus-4-20250514')
+
+// const streamContext = createResumableStreamContext({
+//   waitUntil: null,
+// })
+
+function handleError(error: unknown) {
+  if (typeof error === 'object' && (error as { type?: string }).type === 'overloaded_error') {
+    return 'Sorry, I was unable to generate a response due to high load. Please try again later.'
+  }
+  return 'Sorry, I was unable to generate a response due to an error. Please try again.'
+}
+
+function generateStream({
+  messages,
+  type,
+  context,
+  model,
+  signal,
+}: {
+  messages: AppUIMessage[]
+  type: typeof chatInputType.infer['type']
+  context: typeof chatInputType.infer['context']
+  model: LanguageModel
+  signal?: AbortSignal
+}) {
+  console.info('messages', JSON.stringify(messages, null, 2))
+
+  return streamText({
+    messages: [
+      {
+        role: 'system',
+        content: [
+          `You are an SQL tool that generates valid SQL code for ${type} database.`,
+          'You can use several tools to improve response.',
+          'You can generate select queries using the tools to get data directly from the database.',
+          '',
+          'Requirements:',
+          `- Ensure the SQL is 100% valid and optimized for ${type} database`,
+          '- Use proper table and column names exactly as provided in the context',
+          '- Use 2 spaces for indentation and consistent formatting',
+          '- Consider performance implications for complex queries',
+          '- The SQL code will be executed directly in a production database editor',
+          '- Generate SQL query only for the provided schemas, tables, columns and enums',
+          '- Answer in markdown and paste the SQL code in a code block, do not use headings',
+          '- Answer in the same language as the user\'s message',
+          '- Use quotes for table and column names to prevent SQL errors with case sensitivity',
+          '',
+          'Additional information:',
+          `- Current date and time: ${new Date().toISOString()}`,
+          '',
+          'You can use the following tools to help you generate the SQL code:',
+          `- ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}`,
+          '',
+          'User provided context:',
+          context,
+        ].join('\n'),
+      },
+      ...convertToModelMessages(messages),
+    ],
+    stopWhen: stepCountIs(20),
+    abortSignal: signal,
+    model,
+    experimental_transform: smoothStream(),
+    tools,
+  })
+}
+
+export async function getMessages(chatId: string) {
+  return await db.select().from(chatsMessages).where(eq(chatsMessages.chatId, chatId)).orderBy(asc(chatsMessages.createdAt)).then(rows => rows.map(row => ({
+    ...row,
+    metadata: row.metadata || undefined,
+  }))) satisfies AppUIMessage[]
+}
+
+export const ask = orpc
+  .use(authMiddleware)
+  .use(async ({ context, next }) => {
+    context.setHeader('Transfer-Encoding', 'chunked')
+    context.setHeader('Connection', 'keep-alive')
+
+    return next()
+  })
+  .input(chatInputType)
+  .handler(async ({ input, context, signal }) => {
+    await db.transaction(async (tx) => {
+      const [existingChat] = await tx.select().from(chats).where(eq(chats.id, input.id)).limit(1)
+
+      if (!existingChat) {
+        await tx.insert(chats).values({
+          id: input.id,
+          userId: context.user.id,
+          databaseId: input.databaseId,
+        })
+      }
+
+      if (input.trigger === 'submit-message') {
+        await tx.insert(chatsMessages).values({
+          chatId: input.id,
+          ...input.prompt,
+        }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
+          target: chatsMessages.id,
+          set: input.prompt,
+        })
+      }
+
+      if (input.trigger === 'regenerate-message' && input.messageId) {
+        await tx.delete(chatsMessages).where(eq(chatsMessages.id, input.messageId))
+      }
+    }).catch((error) => {
+      console.error('error onFinish transaction', error)
+
+      // Handle foreign key constraint violations specifically
+      if (error.message?.includes('violates foreign key constraint')
+        || error.message?.includes('chats_messages_chat_id_chats_id_fk')) {
+        console.error('Foreign key constraint violation: Chat does not exist', { chatId: input.id })
+        throw new ORPCError('BAD_REQUEST', {
+          message: 'Chat not found. Please try creating a new chat.',
+        })
+      }
+
+      throw error
+    })
+
+    const messages = await getMessages(input.id).catch((error) => {
+      console.error('error on getMessages', error)
+      throw error
+    })
+
+    try {
+      const result = generateStream({
+        type: input.type,
+        model: input.fallback ? fallbackModel : mainModel,
+        context: input.context,
+        messages,
+        signal,
+      })
+
+      const stream = result.toUIMessageStream({
+        originalMessages: messages,
+        generateMessageId: () => v7(),
+        onFinish: async (result) => {
+          console.info('stream finished', JSON.stringify(result.responseMessage, null, 2))
+
+          try {
+            await db.insert(chatsMessages).values({
+              ...result.responseMessage,
+              chatId: input.id,
+            }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
+              target: chatsMessages.id,
+              set: result.responseMessage,
+            })
+            // await db.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
+          }
+          catch (error) {
+            console.error('error onFinish transaction', error)
+            throw error
+          }
+        },
+        onError: (error) => {
+          console.error('error toUIMessageStream onError', error)
+
+          return handleError(error)
+        },
+        // consumeSseStream: async ({ stream }) => {
+        //   const streamId = v7()
+
+        //   try {
+        //     console.log('create new resumable stream', streamId, id)
+        //     await streamContext.createNewResumableStream(streamId, () => stream)
+        //     await db.update(chats).set({ activeStreamId: streamId }).where(eq(chats.id, id))
+        //   }
+        //   catch (error) {
+        //     console.error('consume stream error', error)
+        //   }
+        // },
+      })
+
+      return streamToEventIterator(stream)
+    }
+    catch (error) {
+      console.error('error on ask', error)
+      throw new ORPCError('INTERNAL_SERVER_ERROR', {
+        message: error instanceof Error ? error.message : 'Sorry, I was unable to generate a response due to an error. Please try again.',
+      })
+    }
+  })

@@ -1,12 +1,12 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.12.4",
+  "packageManager": "pnpm@10.14.0",
   "engines": {
     "node": ">=22.0.0"
   },
   "scripts": {
-    "prepare": "husky",
+    "prepare": "husky && node scripts/setup-dev.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
@@ -17,22 +17,25 @@
     "start:api": "cd apps/api && pnpm run start",
     "drizzle:generate": "turbo run drizzle:generate",
     "drizzle:migrate": "turbo run drizzle:migrate",
-    "check-types": "turbo run check-types"
+    "check-types": "turbo run check-types",
+    "update": "taze -r -I major"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^4.16.2",
+    "@antfu/eslint-config": "^5.2.0",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "@eslint-react/eslint-plugin": "^1.52.2",
-    "eslint": "^9.30.1",
+    "@eslint-react/eslint-plugin": "^1.52.3",
+    "cross-env": "^10.0.0",
+    "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "happy-dom": "^18.0.1",
     "husky": "^9.1.7",
     "npm-run-all2": "^8.0.4",
+    "taze": "^19.1.0",
     "tsx": "^4.20.3",
-    "turbo": "^2.5.4",
-    "typescript": "^5.8.3",
+    "turbo": "^2.5.5",
+    "typescript": "catalog:",
     "vitest": "^3.2.4"
   }
 }

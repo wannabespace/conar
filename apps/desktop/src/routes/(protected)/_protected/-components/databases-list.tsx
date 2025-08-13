@@ -1,16 +1,18 @@
 import type { ComponentRef } from 'react'
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Skeleton } from '@conar/ui/components/skeleton'
-import { RiDeleteBinLine, RiEditLine, RiMoreLine } from '@remixicon/react'
+import { copy } from '@conar/ui/lib/copy'
+import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useMemo, useRef } from 'react'
-import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
+import { DatabaseIcon, prefetchDatabaseCore, useDatabasesLive } from '~/entities/database'
+import { useLastOpenedTable } from '../database/$id/table/-lib'
 import { RemoveDatabaseDialog } from './remove-database-dialog'
 import { RenameDatabaseDialog } from './rename-database-dialog'
 
-function DatabaseCard({ database, onRemove, onRename }: { database: Database, onRemove: () => void, onRename: () => void }) {
+function DatabaseCard({ database, onRemove, onRename }: { database: typeof databases.$inferSelect, onRemove: () => void, onRename: () => void }) {
   const connectionString = useMemo(() => {
     const url = new URL(database.connectionString)
 
@@ -21,19 +23,24 @@ function DatabaseCard({ database, onRemove, onRename }: { database: Database, on
     return url.toString()
   }, [database.connectionString])
 
+  const [lastOpenedTable] = useLastOpenedTable(database.id)
+
   return (
     <Link
-      className="relative flex items-center justify-between gap-4 rounded-lg bg-card p-5 border hover:border-primary transition-all duration-150 hover:shadow-lg shadow-black/3"
-      to="/database/$id/tables"
+      className="relative flex items-center justify-between gap-4 rounded-lg bg-muted/30 p-5 border border-border/50 hover:border-primary transition-all duration-150"
+      to="/database/$id/table"
       params={{ id: database.id }}
+      search={lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined}
       onMouseOver={() => prefetchDatabaseCore(database)}
     >
-      <div className="size-12 shrink-0 rounded-full bg-muted/50 p-3">
+      <div className="size-12 shrink-0 rounded-lg bg-muted/70 p-3">
         <DatabaseIcon type={database.type} className="size-full text-primary" />
       </div>
-      <div className="flex flex-1 flex-col gap-1 min-w-0">
-        <div className="font-medium tracking-tight truncate">{database.name}</div>
-        <div data-mask className="text-sm text-muted-foreground truncate">{connectionString.replaceAll('*', '•')}</div>
+      <div className="flex flex-1 flex-col min-w-0">
+        <div className="font-medium tracking-tight truncate flex items-center gap-2">
+          {database.name}
+        </div>
+        <div data-mask className="text-xs text-muted-foreground font-mono truncate">{connectionString.replaceAll('*', '•')}</div>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger className="rounded-md p-2 hover:bg-accent-foreground/5">
@@ -42,21 +49,30 @@ function DatabaseCard({ database, onRemove, onRename }: { database: Database, on
         <DropdownMenuContent align="end">
           <DropdownMenuItem
             onClick={(e) => {
-              e.preventDefault()
+              e.stopPropagation()
+              copy(database.connectionString, 'Connection string copied to clipboard')
+            }}
+          >
+            <RiFileCopyLine className="size-4 opacity-50" />
+            Copy connection string
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation()
               onRename()
             }}
           >
-            <RiEditLine className="mr-2 size-4" />
+            <RiEditLine className="size-4 opacity-50" />
             Rename
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
             onClick={(e) => {
-              e.preventDefault()
+              e.stopPropagation()
               onRemove()
             }}
           >
-            <RiDeleteBinLine className="mr-2 size-4" />
+            <RiDeleteBinLine className="size-4" />
             Remove
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -96,7 +112,7 @@ function DatabaseCardSkeleton() {
 }
 
 export function DatabasesList() {
-  const { data: databases, isPending } = useDatabases()
+  const { data: databases } = useDatabasesLive()
   const renameDialogRef = useRef<ComponentRef<typeof RenameDatabaseDialog>>(null)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveDatabaseDialog>>(null)
 
@@ -105,7 +121,7 @@ export function DatabasesList() {
       <RemoveDatabaseDialog ref={removeDialogRef} />
       <RenameDatabaseDialog ref={renameDialogRef} />
       <div className="flex flex-col gap-2">
-        {isPending
+        {!databases
           ? (
               <>
                 <DatabaseCardSkeleton />

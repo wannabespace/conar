@@ -142,6 +142,20 @@ const testimonials: {
     link: 'https://x.com/en3sis/status/1945158382396010955',
     children: () => 'If you’re reading this, go download @conar_app now and thank me later! ;)',
   },
+  {
+    name: 'Berke',
+    login: 'chef_berke',
+    avatar: '/avatars/chef_berke.jpg',
+    link: 'https://x.com/chef_berke/status/1949880848246853733',
+    children: () => 'found my new favorite db tool if you work with postgresql, definitely check this out @conar_app',
+  },
+  {
+    name: 'Alex Holovach',
+    login: 'alex_holovach',
+    avatar: '/avatars/alex_holovach.jpg',
+    link: 'https://x.com/alex_holovach/status/1950707905440727087',
+    children: () => 'wow I can query data at the speed of thought with @conar_app',
+  },
 ]
 
 export function Testimonials() {

@@ -1,6 +1,6 @@
 import type { Context as HonoContext } from 'hono'
 
-export async function createContext(c: HonoContext) {
+export function createContext(c: HonoContext) {
   const cookie = c.req.header('Cookie')
   const authorization = c.req.header('Authorization')
 
@@ -14,6 +14,9 @@ export async function createContext(c: HonoContext) {
 
   return {
     headers: h,
+    setHeader: (key: string, value: string) => {
+      c.res.headers.set(key, value)
+    },
   }
 }
 

@@ -1,5 +1,5 @@
 {
-  "extends": "@conar/tsconfig/react.json",
+  "extends": "@conar/configs/ts/react.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
@@ -12,5 +12,5 @@
       "path": "../api"
     }
   ],
-  "include": ["."]
+  "include": [".", "../../packages/sql/columns.ts", "../../packages/sql/delete.ts", "../../packages/sql/drop-table.ts", "../../packages/sql/enums.ts", "../../packages/sql/primary-keys.ts", "../../packages/sql/rename-table.ts", "../../packages/sql/rows.ts", "../../packages/sql/set.ts", "../../packages/sql/tables-and-schemas.ts", "../../packages/sql/total.ts", "../../packages/sql/where.ts"]
 }

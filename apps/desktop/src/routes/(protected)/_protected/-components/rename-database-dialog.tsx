@@ -1,4 +1,4 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
@@ -7,22 +7,21 @@ import { Label } from '@conar/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databasesQuery, renameDatabase } from '~/entities/database'
-import { queryClient } from '~/main'
+import { renameDatabase } from '~/entities/database'
 
 interface RenameDatabaseDialogProps {
   ref?: React.RefObject<{
-    rename: (database: Database) => void
+    rename: (database: typeof databases.$inferSelect) => void
   } | null>
 }
 
 export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
   const [open, setOpen] = useState(false)
-  const [database, setDatabase] = useState<Database | null>(null)
+  const [database, setDatabase] = useState<typeof databases.$inferSelect | null>(null)
   const [newName, setNewName] = useState('')
 
   useImperativeHandle(ref, () => ({
-    rename: (db: Database) => {
+    rename: (db: typeof databases.$inferSelect) => {
       setDatabase(db)
       setNewName(db.name)
       setOpen(true)
@@ -34,11 +33,10 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
     onSuccess: () => {
       toast.success(`Database renamed to "${newName.trim()}"`)
       setOpen(false)
-      queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
     },
   })
 
-  const canConfirm = newName.trim() !== '' && newName.trim() !== database?.name
+  const canConfirm = newName.trim() !== '' && newName.trim() !== database?.name && !isPending
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -53,29 +51,32 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
               <Input
                 id="newDatabaseName"
                 value={newName}
-                onChange={e => setNewName(e.target.value)}
                 placeholder="Enter new database name"
                 spellCheck={false}
                 autoComplete="off"
-                autoFocus
+                onChange={e => setNewName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && canConfirm) {
+                    rename()
+                  }
+                }}
               />
             </div>
           </div>
         </DialogHeader>
         <DialogFooter className="mt-4 flex gap-2">
           <DialogClose asChild>
-            <Button
-              variant="outline"
-              onClick={() => database && setNewName(database.name)}
-              className="rounded-lg border border-input bg-background hover:bg-muted/70 text-foreground font-medium px-5 py-2 transition-all focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
-            >
+            <Button variant="outline">
               Cancel
             </Button>
           </DialogClose>
           <Button
-            onClick={() => rename()}
-            disabled={!canConfirm || isPending}
-            className="rounded-lg bg-primary text-primary-foreground font-semibold px-5 py-2 hover:bg-primary/90 transition-all focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+            disabled={!canConfirm}
+            onClick={() => {
+              if (canConfirm) {
+                rename()
+              }
+            }}
           >
             <LoadingContent loading={isPending}>
               Rename Database

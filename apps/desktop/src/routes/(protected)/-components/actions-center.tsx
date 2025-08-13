@@ -1,13 +1,12 @@
-import type { Database } from '~/lib/indexeddb'
+import type { databases as databasesTable } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine, RiDashboardLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { Store, useStore } from '@tanstack/react-store'
-import { DatabaseIcon, prefetchDatabaseCore, useDatabases } from '~/entities/database'
+import { DatabaseIcon, prefetchDatabaseCore, useDatabasesLive } from '~/entities/database'
 import { trackEvent } from '~/lib/events'
-import { getLastOpenedTable } from '../_protected/database/-hooks/use-last-opened-table'
 
 const os = getOS(navigator.userAgent)
 
@@ -20,7 +19,7 @@ function setIsOpen(isOpen: boolean) {
 }
 
 export function ActionsCenter() {
-  const { data: databases } = useDatabases()
+  const { data: databases } = useDatabasesLive()
   const isOpen = useStore(actionsCenterStore, state => state.isOpen)
   const router = useRouter()
 
@@ -32,20 +31,10 @@ export function ActionsCenter() {
     trackEvent('actions_center_open_shortcut')
   })
 
-  function onDatabaseSelect(database: Database) {
+  function onDatabaseSelect(database: typeof databasesTable.$inferSelect) {
     setIsOpen(false)
 
-    const openedTable = getLastOpenedTable(database.id)
-
-    if (openedTable) {
-      router.navigate({
-        to: '/database/$id/tables/$schema/$table',
-        params: { id: database.id, schema: openedTable.schema, table: openedTable.table },
-      })
-    }
-    else {
-      router.navigate({ to: '/database/$id/tables', params: { id: database.id } })
-    }
+    router.navigate({ to: '/database/$id/table', params: { id: database.id } })
   }
 
   return (

@@ -7,7 +7,6 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { Checkbox } from '@conar/ui/components/checkbox'
-import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
@@ -23,12 +22,10 @@ import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { createDatabase, databaseQuery, databasesQuery, prefetchDatabaseCore } from '~/entities/database'
+import { createDatabase, DatabaseIcon, ensureDatabase, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
-import { PostgresIcon } from '~/icons/postgres'
 import { dbTestConnection } from '~/lib/query'
-import { queryClient } from '~/main'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/create',
@@ -65,7 +62,7 @@ function StepType({ type, setType }: { type: DatabaseType, setType: (type: Datab
           onValueChange={value => setType(value as DatabaseType)}
         >
           <ToggleGroupItem value={DatabaseType.Postgres} aria-label="Postgres">
-            <PostgresIcon />
+            <DatabaseIcon type={DatabaseType.Postgres} className="size-4 shrink-0 text-primary" />
             {databaseLabels[DatabaseType.Postgres]}
           </ToggleGroupItem>
           <ToggleGroupItem value="" disabled aria-label="MySQL">
@@ -184,9 +181,13 @@ function CreateConnectionPage() {
     mutationFn: createDatabase,
     onSuccess: async ({ id }) => {
       toast.success('Connection created successfully 🎉')
-      queryClient.ensureQueryData(databaseQuery(id)).then(prefetchDatabaseCore)
-      queryClient.invalidateQueries({ queryKey: databasesQuery().queryKey })
-      router.navigate({ to: '/database/$id/tables', params: { id } })
+      const database = await ensureDatabase(id)
+
+      if (database) {
+        prefetchDatabaseCore(database)
+      }
+
+      router.navigate({ to: '/database/$id/table', params: { id } })
     },
   })
 
@@ -227,9 +228,6 @@ function CreateConnectionPage() {
 
   return (
     <div className="min-h-screen flex flex-col justify-center">
-      <DotsBg
-        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-      />
       <form
         onSubmit={(e) => {
           e.preventDefault()

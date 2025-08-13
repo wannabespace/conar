@@ -53,6 +53,9 @@ export default defineConfig(({ command }) => {
         },
       }),
     ],
+    optimizeDeps: {
+      exclude: ['@electric-sql/pglite'],
+    },
     server: {
       port: 3002,
       strictPort: true,

@@ -1,7 +1,6 @@
 import { title } from '@conar/shared/utils/title'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { DotsBg } from '@conar/ui/components/custom/dots-bg'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -10,7 +9,7 @@ import { RiAddLine, RiCheckLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiL
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { fetchDatabases } from '~/entities/database'
+import { syncDatabases } from '~/entities/database'
 import { checkForUpdates, updatesStore } from '~/updates-observer'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
@@ -28,16 +27,13 @@ export const Route = createFileRoute('/(protected)/_protected/')({
 
 function DashboardPage() {
   const { mutate: refetch, isPending: isRefetching } = useMutation({
-    mutationFn: fetchDatabases,
+    mutationFn: syncDatabases,
   })
   const router = useRouter()
   const [version, status] = useStore(updatesStore, state => [state.version, state.status])
 
   return (
     <div className="min-h-screen flex flex-col px-6 mx-auto max-w-2xl py-10">
-      <DotsBg
-        className="absolute -z-10 inset-0 [mask-image:linear-gradient(to_bottom_left,white,transparent,transparent)]"
-      />
       <h1 className="scroll-m-20 mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Dashboard
       </h1>

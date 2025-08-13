@@ -3,12 +3,13 @@ import { Toaster } from '@conar/ui/components/sonner'
 import appCss from '@conar/ui/globals.css?url'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { ThemeProvider } from '@conar/ui/theme-provider'
+import { Databuddy } from '@databuddy/sdk'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts, useRouterState } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { ErrorPage } from '~/error-page'
-import { getLatestReleaseOptions, getRepoOptions, getUsersCountOptions } from '~/queries'
+import { getLatestReleaseOptions, getRepoOptions } from '~/queries'
 import { seo } from '~/utils/seo'
 
 if (import.meta.env.DEV) {
@@ -24,7 +25,6 @@ export const Route = createRootRouteWithContext<{
     if (typeof window !== 'undefined') {
       context.queryClient.prefetchQuery(getRepoOptions)
       context.queryClient.prefetchQuery(getLatestReleaseOptions)
-      context.queryClient.prefetchQuery(getUsersCountOptions)
     }
   },
   head: () => ({
@@ -37,7 +37,7 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       ...seo({
-        title: 'Conar.app - AI-powered connections management tool',
+        title: 'Conar.app - AI-powered modern alternative to DBeaver and pgAdmin',
         description: 'AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.',
         image: '/og-image.png',
       }),
@@ -86,6 +86,11 @@ function RootComponent() {
           </ThemeProvider>
         </QueryClientProvider>
         <Toaster />
+        <Databuddy
+          clientId="4cWwAbS06aDNledzhodgS"
+          enableBatching
+          disabled={import.meta.env.DEV}
+        />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>

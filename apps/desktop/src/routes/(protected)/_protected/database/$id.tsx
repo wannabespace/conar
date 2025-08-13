@@ -1,14 +1,17 @@
 import { title } from '@conar/shared/utils/title'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { databaseQuery, prefetchDatabaseCore, useDatabase } from '~/entities/database'
-import { queryClient } from '~/main'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { ensureDatabase, prefetchDatabaseCore } from '~/entities/database'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: DatabasePage,
   beforeLoad: async ({ params }) => {
-    const database = await queryClient.ensureQueryData(databaseQuery(params.id))
+    const database = await ensureDatabase(params.id)
+
+    if (!database) {
+      throw redirect({ to: '/' })
+    }
 
     prefetchDatabaseCore(database)
 
@@ -27,8 +30,7 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
 })
 
 function DatabasePage() {
-  const { id } = Route.useParams()
-  const { data: database } = useDatabase(id)
+  const { database } = Route.useLoaderData()
 
   if (database.isPasswordExists && !database.isPasswordPopulated) {
     return <PasswordForm database={database} />
