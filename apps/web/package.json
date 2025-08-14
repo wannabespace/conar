@@ -9,13 +9,13 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@databuddy/sdk": "^1.4.1",
+    "@databuddy/sdk": "^1.4.2",
     "@octokit/rest": "^22.0.0",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
     "@tanstack/react-router": "catalog:",
     "@tanstack/react-router-devtools": "catalog:",
-    "@tanstack/react-start": "^1.131.10",
+    "@tanstack/react-start": "^1.131.11",
     "@trpc/client": "^11.4.4",
     "date-fns": "^4.1.0",
     "motion": "^12.23.12",
