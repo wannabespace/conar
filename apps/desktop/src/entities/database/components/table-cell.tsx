@@ -149,25 +149,25 @@ function TableCellMonaco({
             </div>
           )
         : (
-          <Monaco
-            data-mask
-            value={value}
-            language={column?.type?.includes('json') ? 'json' : undefined}
-            className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(50vh,40rem)]')}
-            onChange={setValue}
-            options={{
-              lineNumbers: isBig ? 'on' : 'off',
-              readOnly: !canEdit,
-              scrollBeyondLastLine: false,
-              folding: isBig,
-              scrollbar: {
-                horizontalScrollbarSize: 5,
-                verticalScrollbarSize: 5,
-              },
-            }}
-            onEnter={save}
-          />
-        )}
+            <Monaco
+              data-mask
+              value={value}
+              language={column?.type?.includes('json') ? 'json' : undefined}
+              className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(50vh,40rem)]')}
+              onChange={setValue}
+              options={{
+                lineNumbers: isBig ? 'on' : 'off',
+                readOnly: !canEdit,
+                scrollBeyondLastLine: false,
+                folding: isBig,
+                scrollbar: {
+                  horizontalScrollbarSize: 5,
+                  verticalScrollbarSize: 5,
+                },
+              }}
+              onEnter={save}
+            />
+          )}
       <div className="flex justify-between items-center gap-2 p-2 border-t">
         <div className="flex items-center gap-2">
           <TooltipProvider>
