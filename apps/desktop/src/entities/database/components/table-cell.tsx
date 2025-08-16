@@ -107,7 +107,7 @@ function CellProvider({
   return <CellContext.Provider value={context}>{children}</CellContext.Provider>
 }
 
-function TableCellMonaco({
+function TableCellContent({
   rowIndex,
   isBig,
   setIsBig,
@@ -431,7 +431,7 @@ export function TableCell({
           className={cn('p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
           onAnimationEnd={() => !isPopoverOpen && setCanInteract(false)}
         >
-          <TableCellMonaco
+          <TableCellContent
             rowIndex={rowIndex}
             isBig={isBig}
             setIsBig={setIsBig}
