@@ -33,7 +33,7 @@ export async function syncQueries() {
         if (q.query !== existing.query) {
           changes.query = q.query
         }
-        if (q.updatedAt !== existing.updatedAt) {
+        if (q.updatedAt.getTime() !== existing.updatedAt.getTime()) {
           changes.updatedAt = q.updatedAt
         }
 

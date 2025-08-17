@@ -31,9 +31,6 @@ export async function syncDatabases() {
         if (existing.name !== d.name) {
           changes.name = d.name
         }
-        if (existing.updatedAt !== d.updatedAt) {
-          changes.updatedAt = d.updatedAt
-        }
 
         const existingUrl = new URL(existing.connectionString)
         existingUrl.password = ''

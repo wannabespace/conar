@@ -54,7 +54,7 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
             }}
           >
             <RiFileCopyLine className="size-4 opacity-50" />
-            Copy connection string
+            Copy Connection String
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={(e) => {

@@ -1,3 +1,4 @@
+import { isDeeplyEqual } from '@conar/shared/utils/helpers'
 import { eq } from 'drizzle-orm'
 import { toast } from 'sonner'
 import { chats, chatsMessages, db } from '~/drizzle'
@@ -34,9 +35,6 @@ export async function syncChats() {
         if (existing.title !== c.title) {
           changes.title = c.title
         }
-        if (existing.updatedAt !== c.updatedAt) {
-          changes.updatedAt = c.updatedAt
-        }
 
         return {
           id: c.id,
@@ -69,19 +67,16 @@ export async function syncChats() {
       const existing = existingMap.get(m.id)!
       const changes: Partial<typeof m> = {}
 
-      if (JSON.stringify(existing.parts) !== JSON.stringify(m.parts)) {
+      if (!isDeeplyEqual(existing.parts, m.parts)) {
         changes.parts = m.parts
       }
       if (existing.role !== m.role) {
         changes.role = m.role
       }
-      if (existing.updatedAt !== m.updatedAt) {
-        changes.updatedAt = m.updatedAt
-      }
       if (existing.chatId !== m.chatId) {
         changes.chatId = m.chatId
       }
-      if (JSON.stringify(existing.metadata) !== JSON.stringify(m.metadata)) {
+      if (existing.metadata && m.metadata && !isDeeplyEqual(existing.metadata, m.metadata)) {
         changes.metadata = m.metadata
       }
 

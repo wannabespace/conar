@@ -206,20 +206,20 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                       <DropdownMenuItem
                                         onClick={(e) => {
                                           e.stopPropagation()
-                                          renameTableDialogRef.current?.rename(schema.name, table)
-                                        }}
-                                      >
-                                        <RiEditLine className="size-4" />
-                                        Rename Table
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation()
                                           copyToClipboard(table, 'Table name copied')
                                         }}
                                       >
                                         <RiFileCopyLine className="size-4" />
-                                        Copy Table Name
+                                        Copy Name
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          renameTableDialogRef.current?.rename(schema.name, table)
+                                        }}
+                                      >
+                                        <RiEditLine className="size-4" />
+                                        Rename
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         variant="destructive"
@@ -229,7 +229,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                         }}
                                       >
                                         <RiDeleteBin7Line className="size-4" />
-                                        Drop Table
+                                        Drop
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
