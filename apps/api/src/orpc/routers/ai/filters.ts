@@ -16,7 +16,7 @@ export const filters = orpc
     const { prompt, context } = input
 
     const { object } = await generateObject({
-      model: google('gemini-2.5-flash'),
+      model: google('gemini-2.0-flash'),
       system: `
         You are a SQL filter generator that converts natural language queries into precise database filters.
         You should understand the sense of the prompt as much as possible, as users can ask with just a few words without any context.

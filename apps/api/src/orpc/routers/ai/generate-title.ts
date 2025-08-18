@@ -14,7 +14,7 @@ export const generateTitle = orpc
   }))
   .handler(async ({ input, signal }) => {
     const { text } = await generateText({
-      model: google('gemini-2.5-flash'),
+      model: google('gemini-2.0-flash'),
       prompt: `
         You are a title generator that generates a title for a chat.
         The title should be in the same language as the user's message.
