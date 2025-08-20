@@ -40,11 +40,11 @@ export const env = isProduction
   : envType
       .merge(
         devOptionalEnvs.reduce((acc, env) => {
-          acc[`${env}?`] = 'string'
+          acc[env] = 'string?'
           if (!process.env[env]) {
             console.warn(`"${env}" is not set in env file`)
           }
           return acc
-        }, {} as { [K in `${typeof devOptionalEnvs[number]}?`]: 'string' }),
+        }, {} as { [K in typeof devOptionalEnvs[number]]: 'string?' }),
       )
       .assert(process.env)
