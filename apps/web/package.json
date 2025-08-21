@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "vite dev --port 3001",
+    "dev": "vite dev",
     "build": "vite build",
     "start": "node .output/server/index.mjs",
     "check-types": "tsc"
