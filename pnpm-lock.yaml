@@ -322,9 +322,6 @@ importers:
       '@tiptap/starter-kit':
         specifier: ^3.2.1
         version: 3.2.1
-      '@trpc/client':
-        specifier: ^11.5.0
-        version: 11.5.0(@trpc/server@11.5.0(typescript@5.9.2))(typescript@5.9.2)
       '@types/electron-squirrel-startup':
         specifier: ^1.0.2
         version: 1.0.2
@@ -386,8 +383,8 @@ importers:
         specifier: ^5.1.5
         version: 5.1.5
       posthog-js:
-        specifier: ^1.260.1
-        version: 1.260.1
+        specifier: ^1.260.2
+        version: 1.260.2
       react:
         specifier: 'catalog:'
         version: 19.1.1
@@ -7093,8 +7090,8 @@ packages:
     resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
     engines: {node: '>=12'}
 
-  posthog-js@1.260.1:
-    resolution: {integrity: sha512-DD8ZSRpdScacMqtqUIvMFme8lmOWkOvExG8VvjONE7Cm3xpRH5xXpfrwMJE4bayTGWKMx4ij6SfphK6dm/o2ug==}
+  posthog-js@1.260.2:
+    resolution: {integrity: sha512-2Q+QUz9j9+uG16wp0WcOEbezVsLZCobZyTX8NvWPMGKyPaf2lOsjbPjznsq5JiIt324B6NAqzpWYZTzvhn9k9Q==}
     peerDependencies:
       '@rrweb/types': 2.0.0-alpha.17
       rrweb-snapshot: 2.0.0-alpha.17
@@ -15925,7 +15922,7 @@ snapshots:
 
   postgres@3.4.7: {}
 
-  posthog-js@1.260.1:
+  posthog-js@1.260.2:
     dependencies:
       core-js: 3.45.0
       fflate: 0.4.8

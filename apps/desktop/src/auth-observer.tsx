@@ -38,24 +38,22 @@ export function AuthObserver() {
     }
   }, [isPending, data?.user, location.pathname])
 
+  async function handle(url: string) {
+    const { type } = await handleDeepLink(url)
+
+    if (type === 'session') {
+      refetch()
+    }
+  }
+
   useAsyncEffect(async () => {
     if (window.initialDeepLink) {
-      const { type } = await handleDeepLink(window.initialDeepLink)
-
-      if (type === 'session') {
-        refetch()
-      }
+      handle(window.initialDeepLink)
 
       window.initialDeepLink = null
     }
 
-    window.electron?.app.onDeepLink(async (url) => {
-      const { type } = await handleDeepLink(url)
-
-      if (type === 'session') {
-        refetch()
-      }
-    })
+    window.electron?.app.onDeepLink(handle)
   }, [])
 
   return <></>
