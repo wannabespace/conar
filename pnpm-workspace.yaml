@@ -4,14 +4,14 @@ packages:
 
 catalog:
   '@remixicon/react': ^4.6.0
-  '@tanstack/react-query': ^5.85.3
-  '@tanstack/react-query-devtools': ^5.85.3
-  '@tanstack/react-router': ^1.131.22
-  '@tanstack/react-router-devtools': ^1.131.22
+  '@tanstack/react-query': ^5.85.5
+  '@tanstack/react-query-devtools': ^5.85.5
+  '@tanstack/react-router': ^1.131.27
+  '@tanstack/react-router-devtools': ^1.131.27
   '@types/react': ^19.1.10
   '@types/react-dom': ^19.1.7
-  '@vitejs/plugin-react': ^5.0.0
-  ai: ^5.0.15
+  '@vitejs/plugin-react': ^5.0.1
+  ai: ^5.0.21
   arktype: ^2.1.20
   babel-plugin-react-compiler: 19.1.0-rc.2
   drizzle-kit: ^0.31.4
