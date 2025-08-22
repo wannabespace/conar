@@ -33,6 +33,7 @@
     "drizzle-orm": "catalog:",
     "hono": "^4.9.2",
     "ioredis": "^5.7.0",
+    "ioredis-mock": "^8.9.0",
     "loops": "^5.0.1",
     "nanoid": "^5.1.5",
     "postgres": "^3.4.7",
