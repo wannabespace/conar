@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-
 // @ts-check
 import fs from 'node:fs'
 import path from 'node:path'
@@ -18,6 +17,9 @@ function findEnvExampleFiles(dir, results = []) {
   const items = fs.readdirSync(dir)
 
   for (const item of items) {
+    if (['node_modules'].includes(item)) {
+      continue
+    }
     const fullPath = path.join(dir, item)
     const stats = fs.statSync(fullPath)
 
@@ -70,11 +72,11 @@ function setupDev() {
     return
   }
 
-  for (const envExampleFile of envExampleFiles) {
-    createEnvFile(envExampleFile)
-  }
+  const created = envExampleFiles.map(createEnvFile)
 
-  console.log(`Development environment setup complete!`)
+  if (created.filter(Boolean).length > 0) {
+    console.log(`Development environment setup complete!`)
+  }
 }
 
 // Run the setup if this script is executed directly
