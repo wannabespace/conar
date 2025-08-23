@@ -26,7 +26,8 @@ const link = new RPCLink({
     const token = bearerToken.get()
 
     return {
-      Authorization: token ? `Bearer ${token}` : undefined,
+      'Authorization': token ? `Bearer ${token}` : undefined,
+      'x-desktop': 'true',
     }
   },
 })

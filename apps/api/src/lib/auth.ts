@@ -1,8 +1,8 @@
-import type { User } from 'better-auth'
+import type { BetterAuthPlugin, User } from 'better-auth'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { bearer, twoFactor } from 'better-auth/plugins'
+import { bearer, createAuthMiddleware, twoFactor } from 'better-auth/plugins'
 import { db } from '~/drizzle'
 import { env } from '~/env'
 import { loops } from '~/lib/loops'
@@ -28,6 +28,35 @@ async function loopsUpdateUser(user: User) {
   }
 }
 
+/**
+ * Plugin to prevent setting the "set-cookie" header in responses.
+ * We used it to prevent the cookie from being set in the desktop app because it uses bearer token instead of cookies.
+ */
+function noSetCookiePlugin() {
+  return {
+    id: 'no-set-cookie',
+    hooks: {
+      after: [
+        {
+          matcher: ctx => !!ctx.request?.headers.get('x-desktop'),
+          handler: createAuthMiddleware(async (ctx) => {
+            const headers = ctx.context.responseHeaders
+
+            if (headers instanceof Headers) {
+              const setCookies = headers?.get('set-cookie')
+
+              if (!setCookies)
+                return
+
+              headers.delete('set-cookie')
+            }
+          }),
+        },
+      ],
+    },
+  } satisfies BetterAuthPlugin
+}
+
 export const auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
@@ -44,6 +73,7 @@ export const auth = betterAuth({
     //   },
     // }),
     emailHarmony(),
+    noSetCookiePlugin(),
   ],
   user: {
     additionalFields: {

@@ -51,6 +51,9 @@ export const authClient = createAuthClient({
       type: 'Bearer',
       token: () => bearerToken.get() ?? undefined,
     },
+    headers: {
+      'x-desktop': 'true',
+    },
     async onError({ error }) {
       if (error.status === 401) {
         fullSignOut()

@@ -154,6 +154,7 @@ function SocialAuthForm({ type }: { type: Type }) {
           </button>
           {isManualAuthOpen && (
             <Input
+              autoFocus
               value={manualAuthUrl}
               onChange={e => setManualAuthUrl(e.target.value)}
               placeholder="Paste authentication URL here"

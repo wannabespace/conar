@@ -94,10 +94,13 @@ function RouteComponent() {
               )
             : (
                 <>
+                  <CardHeader>
+                    <CardTitle>
+                      Authentication failed
+                    </CardTitle>
+                  </CardHeader>
                   <CardContent>
-                    <p className="mb-4">
-                      Your session has expired or is invalid. Please sign in again to continue.
-                    </p>
+                    Your session has expired or is invalid. Please sign in again to continue.
                   </CardContent>
                 </>
               )}
