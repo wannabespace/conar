@@ -12,11 +12,14 @@ async function loopsUpdateUser(user: User) {
     if (loops) {
       const [firstName, ...lastName] = user.name.split(' ')
 
-      await loops.updateContact(user.email, {
-        name: user.name,
+      await loops.updateContact({
+        email: user.email,
         userId: user.id,
-        firstName,
-        lastName: lastName.join(' '),
+        properties: {
+          name: user.name,
+          firstName,
+          lastName: lastName.join(' '),
+        },
       })
     }
   }
@@ -30,7 +33,7 @@ async function loopsUpdateUser(user: User) {
 
 /**
  * Plugin to prevent setting the "set-cookie" header in responses.
- * We used it to prevent the cookie from being set in the desktop app because it uses bearer token instead of cookies.
+ * We use it to prevent the cookie from being set in the desktop app because it uses bearer token instead of cookies.
  */
 function noSetCookiePlugin() {
   return {
@@ -43,7 +46,7 @@ function noSetCookiePlugin() {
             const headers = ctx.context.responseHeaders
 
             if (headers instanceof Headers) {
-              const setCookies = headers?.get('set-cookie')
+              const setCookies = headers.get('set-cookie')
 
               if (!setCookies)
                 return

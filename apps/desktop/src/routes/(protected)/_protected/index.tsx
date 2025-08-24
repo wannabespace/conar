@@ -1,10 +1,10 @@
+import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { title } from '@conar/shared/utils/title'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { constants } from '@conar/web/src/utils/constants'
 import { RiAddLine, RiCheckLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
@@ -74,7 +74,7 @@ function DashboardPage() {
             <RiGlobalLine className="size-4" />
           </a>
           <a
-            href={constants.TWITTER_URL}
+            href={SOCIAL_LINKS.TWITTER}
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
@@ -82,7 +82,7 @@ function DashboardPage() {
             <RiTwitterXLine className="size-4" />
           </a>
           <a
-            href={constants.TWITTER_URL}
+            href={SOCIAL_LINKS.GITHUB}
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"

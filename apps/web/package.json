@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@databuddy/sdk": "^2.0.0",
+    "@number-flow/react": "catalog:",
     "@octokit/rest": "^22.0.0",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
@@ -17,6 +18,8 @@
     "@tanstack/react-router-devtools": "catalog:",
     "@tanstack/react-start": "^1.131.27",
     "@trpc/client": "^11.5.0",
+    "arktype": "catalog:",
+    "better-auth": "catalog:",
     "date-fns": "^4.1.0",
     "motion": "^12.23.12",
     "postgres": "^3.4.7",
@@ -39,10 +42,12 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
+    "posthog-js": "^1.260.2",
     "react-scan": "^0.4.3",
     "tailwindcss": "catalog:",
-    "tw-animate-css": "^1.3.7",
+    "tw-animate-css": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }

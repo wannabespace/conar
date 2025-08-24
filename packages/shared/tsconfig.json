@@ -1,0 +1,12 @@
+{
+  "extends": "@conar/configs/ts/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@conar/shared/*": ["./*"]
+    },
+    "noEmit": true
+  },
+  "include": ["."],
+  "exclude": ["node_modules"]
+}

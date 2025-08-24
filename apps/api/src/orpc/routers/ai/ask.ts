@@ -1,14 +1,27 @@
-import type { AppUIMessage } from '@conar/shared/ai'
+import type { AppUIMessage } from '@conar/shared/ai-tools'
 import type { LanguageModel } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
-import { chatInputType, tools } from '@conar/shared/ai'
+import { tools } from '@conar/shared/ai-tools'
+import { DatabaseType } from '@conar/shared/enums/database-type'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
+import { type } from 'arktype'
 import { asc, eq } from 'drizzle-orm'
 // import { createResumableStreamContext } from 'resumable-stream'
 import { v7 } from 'uuid'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { authMiddleware, orpc } from '~/orpc'
+
+const chatInputType = type({
+  'id': 'string.uuid.v7',
+  'type': type.valueOf(DatabaseType),
+  'context?': 'string',
+  'prompt': 'object' as type.cast<AppUIMessage>,
+  'databaseId': 'string.uuid.v7',
+  'fallback?': 'boolean',
+  'trigger': '"submit-message" | "regenerate-message"',
+  'messageId?': 'string.uuid.v7',
+})
 
 const mainModel = anthropic('claude-sonnet-4-20250514')
 const fallbackModel = anthropic('claude-opus-4-20250514')

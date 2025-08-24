@@ -1,9 +1,9 @@
 import type { ComponentProps } from 'react'
+import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { Badge } from '@conar/ui/components/badge'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
-import { constants } from '@conar/web/src/utils/constants'
 import NumberFlow from '@number-flow/react'
 import { RiGithubFill, RiTwitterXLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
@@ -45,7 +45,7 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
           asChild
         >
           <a
-            href={constants.TWITTER_URL}
+            href={SOCIAL_LINKS.TWITTER}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -59,7 +59,7 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
           asChild
         >
           <a
-            href={constants.GITHUB_URL}
+            href={SOCIAL_LINKS.GITHUB}
             target="_blank"
             rel="noopener noreferrer"
           >

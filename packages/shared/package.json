@@ -1,4 +1,25 @@
 {
   "name": "@conar/shared",
-  "type": "module"
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./ai-tools": "./src/ai-tools.ts",
+    "./constants": "./src/constants.ts",
+    "./encryption": "./src/encryption.ts",
+    "./enums/*": "./src/enums/*.ts",
+    "./sql/*": "./src/sql/*.ts",
+    "./utils/*": "./src/utils/*.ts"
+  },
+  "scripts": {
+    "check-types": "tsc"
+  },
+  "dependencies": {
+    "ai": "catalog:",
+    "arktype": "catalog:",
+    "nanoid": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@conar/configs": "workspace:*"
+  }
 }
