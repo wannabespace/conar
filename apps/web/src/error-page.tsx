@@ -7,15 +7,9 @@ import { ThemeProvider } from '@conar/ui/theme-provider'
 import { RiAlertLine, RiArrowGoBackLine, RiLoopLeftLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { TraversalError } from 'arktype'
-import posthog from 'posthog-js'
-import { useEffect } from 'react'
 
 export function ErrorPage({ error }: ErrorComponentProps) {
   const router = useRouter()
-
-  useEffect(() => {
-    posthog.captureException(error)
-  }, [error])
 
   return (
     <ThemeProvider>

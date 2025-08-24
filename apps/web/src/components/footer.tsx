@@ -1,5 +1,5 @@
+import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
-import { constants } from '@conar/web/src/utils/constants'
 import { RiGithubLine, RiTwitterXLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 
@@ -26,7 +26,7 @@ export function Footer() {
       </div>
       <div className="flex flex-1 items-center justify-center sm:justify-end gap-2">
         <a
-          href={constants.TWITTER_URL}
+          href={SOCIAL_LINKS.TWITTER}
           target="_blank"
           rel="noopener noreferrer"
           className="text-muted-foreground hover:text-foreground transition-colors"
@@ -34,7 +34,7 @@ export function Footer() {
           <RiTwitterXLine className="size-4" />
         </a>
         <a
-          href={constants.GITHUB_URL}
+          href={SOCIAL_LINKS.GITHUB}
           target="_blank"
           rel="noopener noreferrer"
           className="text-muted-foreground hover:text-foreground transition-colors"

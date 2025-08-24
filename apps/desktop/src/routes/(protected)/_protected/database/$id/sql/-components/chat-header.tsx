@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '@conar/shared/ai'
+import type { AppUIMessage } from '@conar/shared/ai-tools'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'

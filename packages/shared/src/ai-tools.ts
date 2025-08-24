@@ -1,20 +1,7 @@
 import type { InferUITools, UIDataTypes, UIMessage } from 'ai'
 import { tool } from 'ai'
-import { type } from 'arktype'
 import * as z from 'zod'
-import { DatabaseType } from './enums/database-type'
 import { SQL_OPERATORS } from './utils/sql'
-
-export const chatInputType = type({
-  'id': 'string.uuid.v7',
-  'type': type.valueOf(DatabaseType),
-  'context?': 'string',
-  'prompt': 'object' as type.cast<AppUIMessage>,
-  'databaseId': 'string.uuid.v7',
-  'fallback?': 'boolean',
-  'trigger': '"submit-message" | "regenerate-message"',
-  'messageId?': 'string.uuid.v7',
-})
 
 export const tools = {
   columns: tool({

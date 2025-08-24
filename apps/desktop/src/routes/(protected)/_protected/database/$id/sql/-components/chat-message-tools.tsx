@@ -1,4 +1,4 @@
-import type { tools } from '@conar/shared/ai'
+import type { tools } from '@conar/shared/ai-tools'
 import type { InferUITools, ToolUIPart } from 'ai'
 import type { ReactNode } from 'react'
 import type { databases } from '~/drizzle'
