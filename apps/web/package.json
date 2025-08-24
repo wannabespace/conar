@@ -42,7 +42,6 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
-    "posthog-js": "^1.260.2",
     "react-scan": "^0.4.3",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
