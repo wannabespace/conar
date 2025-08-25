@@ -136,17 +136,20 @@ function TableCellContent({
     onClose()
   }
 
+  const shouldHideToggleSize = column.type === 'boolean'
+    || column.type?.includes('time')
+    || column.type?.includes('numeric')
+
   return (
     <>
       {column?.type === 'boolean'
         ? (
-            <div className="p-2">
-              <CellSwitch
-                checked={value === 'true'}
-                onChange={checked => setValue(checked.toString())}
-                onSave={save}
-              />
-            </div>
+            <CellSwitch
+              className="py-6 w-full justify-center"
+              checked={value === 'true'}
+              onChange={checked => setValue(checked.toString())}
+              onSave={save}
+            />
           )
         : (
             <Monaco
@@ -170,20 +173,22 @@ function TableCellContent({
           )}
       <div className="flex justify-between items-center gap-2 p-2 border-t">
         <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon-xs"
-                  onClick={() => setIsBig(prev => !prev)}
-                >
-                  {isBig ? <RiCollapseDiagonal2Line className="size-3" /> : <RiExpandDiagonal2Line className="size-3" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Toggle size</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {!shouldHideToggleSize && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon-xs"
+                    onClick={() => setIsBig(prev => !prev)}
+                  >
+                    {isBig ? <RiCollapseDiagonal2Line className="size-3" /> : <RiExpandDiagonal2Line className="size-3" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Toggle size</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
