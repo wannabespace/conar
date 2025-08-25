@@ -13,9 +13,10 @@ import { Header } from './-components/header'
 import { Sidebar } from './-components/sidebar'
 import { Table } from './-components/table'
 import { TablesTabs } from './-components/tabs'
-import { addTab, useLastOpenedTable } from './-lib'
+import { useLastOpenedTable } from './-lib'
 import { useTableColumns } from './-queries/use-columns-query'
 import { createPageStore, PageStoreContext } from './-store'
+import { addTab } from './-tabs'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/table/',

@@ -1,6 +1,6 @@
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { ComponentProps, RefObject } from 'react'
-import type { Tab } from '../-lib'
+import type { Tab } from '../-tabs'
 import type { databases } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -18,8 +18,8 @@ import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useRouter, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
-import { addTab, closeTab, moveTab, useTabs } from '../-lib'
 import { getPageStoreState } from '../-store'
+import { addTab, closeTab, moveTab, useTabs } from '../-tabs'
 
 const os = getOS(navigator.userAgent)
 

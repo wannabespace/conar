@@ -22,7 +22,7 @@ import { tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { Route } from '..'
-import { closeTab } from '../-lib'
+import { closeTab } from '../-tabs'
 
 interface DropTableDialogProps {
   ref: React.RefObject<{

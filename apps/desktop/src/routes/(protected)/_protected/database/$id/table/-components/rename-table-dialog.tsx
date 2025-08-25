@@ -21,7 +21,7 @@ import { toast } from 'sonner'
 import { tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { renameTab } from '../-lib'
+import { renameTab } from '../-tabs'
 
 interface RenameTableDialogProps {
   ref: React.RefObject<{
