@@ -48,7 +48,14 @@ export function Monaco({
       return
 
     monacoInstance.current = monaco.editor.create(elementRef.current, {
-      value: language === 'json' ? JSON.stringify(JSON.parse(value), null, 2) : value,
+      value: (() => {
+        try {
+          return JSON.stringify(JSON.parse(value), null, 2)
+        }
+        catch {
+          return value
+        }
+      })(),
       language,
       automaticLayout: true,
       minimap: { enabled: false },
@@ -60,6 +67,10 @@ export function Monaco({
     if (ref) {
       ref.current = monacoInstance.current
     }
+
+    const timeout = setTimeout(() => {
+      monacoInstance.current?.getAction('editor.action.formatDocument')?.run()
+    }, 50)
 
     if (onEnter) {
       monacoInstance.current.addAction({
@@ -84,6 +95,7 @@ export function Monaco({
     }
 
     return () => {
+      clearTimeout(timeout)
       subscription?.dispose()
       monacoInstance.current?.dispose()
     }
@@ -92,6 +104,7 @@ export function Monaco({
   useEffect(() => {
     if (!monacoInstance.current || !options)
       return
+
     monacoInstance.current.updateOptions(options)
   }, [options])
 
