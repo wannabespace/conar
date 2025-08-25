@@ -153,7 +153,7 @@ function TableCellContent({
               data-mask
               value={value}
               language={column?.type?.includes('json') ? 'json' : undefined}
-              className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(50vh,40rem)]')}
+              className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(45vh,40rem)]')}
               onChange={setValue}
               options={{
                 lineNumbers: isBig ? 'on' : 'off',

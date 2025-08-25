@@ -2,6 +2,7 @@ import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
+import { useEffect } from 'react'
 import { ensureQueries } from '~/entities/query/lib/fetching'
 import { chatQuery, createChat, lastOpenedChatId } from './-chat'
 import { Chat as ChatComponent } from './-components/chat'
@@ -16,11 +17,8 @@ export const Route = createFileRoute(
     'chatId?': 'string.uuid.v7',
     'error?': 'string',
   }),
-  staleTime: Number.POSITIVE_INFINITY,
   loaderDeps: ({ search }) => ({ chatId: search.chatId }),
   loader: async ({ params, context, deps }) => {
-    lastOpenedChatId.set(params.id, deps.chatId || null)
-
     pageStore.setState(state => ({
       ...state,
       query: chatQuery.get(params.id),
@@ -51,6 +49,13 @@ export const Route = createFileRoute(
 })
 
 function DatabaseSqlPage() {
+  const { id } = Route.useParams()
+  const { chatId = null } = Route.useSearch()
+
+  useEffect(() => {
+    lastOpenedChatId.set(id, chatId)
+  }, [id, chatId])
+
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex">
       <ResizablePanel

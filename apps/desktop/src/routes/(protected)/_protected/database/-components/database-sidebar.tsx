@@ -12,7 +12,7 @@ import { ThemeToggle } from '~/components/theme-toggle'
 import { UserButton } from '~/entities/user'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
 import { Route } from '../$id'
-import { lastOpenedChatId } from '../$id/sql/-chat'
+import { useLastOpenedChatId } from '../$id/sql/-chat'
 import { useLastOpenedTable } from '../$id/table/-lib'
 
 const os = getOS(navigator.userAgent)
@@ -60,6 +60,8 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
     isActive && 'bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary',
   )
 
+  const [lastOpenedChatId] = useLastOpenedChatId(id)
+
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
       <div className="flex flex-col p-4 pb-0">
@@ -83,7 +85,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
                   <Link
                     to="/database/$id/sql"
                     params={{ id }}
-                    search={lastOpenedChatId.get(id) ? { chatId: lastOpenedChatId.get(id)! } : undefined}
+                    search={lastOpenedChatId ? { chatId: lastOpenedChatId } : undefined}
                     className={classes(isActiveSql)}
                   >
                     <RiPlayLargeLine className="size-4" />

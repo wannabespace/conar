@@ -17,8 +17,8 @@ export const storeState = type({
   prompt: 'string',
 })
 
-export function getPageStoreState(schema: string, table: string) {
-  const parsed = storeState(JSON.parse(sessionStorage.getItem(`${schema}.${table}-store`) ?? '{}'))
+export function getPageStoreState(id: string, schema: string, table: string) {
+  const parsed = storeState(JSON.parse(sessionStorage.getItem(`${id}.${schema}.${table}-store`) ?? '{}'))
 
   if (parsed instanceof type.errors)
     return null
@@ -26,8 +26,8 @@ export function getPageStoreState(schema: string, table: string) {
   return parsed
 }
 
-export function createPageStore({ schema, table }: { schema: string, table: string }) {
-  const store = new Store<typeof storeState.infer>(getPageStoreState(schema, table)
+export function createPageStore({ id, schema, table }: { id: string, schema: string, table: string }) {
+  const store = new Store<typeof storeState.infer>(getPageStoreState(id, schema, table)
     ?? {
       selected: [],
       filters: [],
@@ -37,7 +37,7 @@ export function createPageStore({ schema, table }: { schema: string, table: stri
     })
 
   store.subscribe((state) => {
-    sessionStorage.setItem(`${schema}.${table}-store`, JSON.stringify(state.currentVal))
+    sessionStorage.setItem(`${id}.${schema}.${table}-store`, JSON.stringify(state.currentVal))
   })
 
   return store

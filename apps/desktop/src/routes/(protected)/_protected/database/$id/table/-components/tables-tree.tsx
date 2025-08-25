@@ -43,7 +43,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
 
   function getQueryOpts(tableName: string) {
-    const state = schemaParam ? getPageStoreState(schemaParam, tableName) : null
+    const state = schemaParam ? getPageStoreState(database.id, schemaParam, tableName) : null
 
     if (state) {
       return {
@@ -68,7 +68,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
     ...schema,
     tables: schema.tables.filter(table =>
       !search || table.toLowerCase().includes(search.toLowerCase()),
-    ),
+    ).toSorted((a, b) => a.localeCompare(b)),
   })).filter(schema => schema.tables.length) || [], [search, tablesAndSchemas])
 
   const [accordionValue, setAccordionValue] = useSessionStorage<string[]>(`database-tables-accordion-value-${database.id}`, () => schemaParam ? [schemaParam] : [tablesAndSchemas?.schemas[0]?.name ?? 'public'])

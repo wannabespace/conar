@@ -1,60 +1,63 @@
 import * as React from 'react'
 
-export function getSessionStorageValue<T>(key: string, defaultValue: T): T {
-  if (typeof window === 'undefined') {
-    return defaultValue
-  }
+export function sessionStorageValue(key: string) {
+  return {
+    get<T>(defaultValue: T): T {
+      if (typeof window === 'undefined') {
+        return defaultValue
+      }
 
-  try {
-    const item = window.sessionStorage.getItem(key)
-    return item ? (JSON.parse(item) as T) : defaultValue
-  }
-  catch (error) {
-    console.warn(`Error reading sessionStorage key "${key}":`, error)
-    return defaultValue
+      const item = window.sessionStorage.getItem(key)
+
+      if (item === null) {
+        return defaultValue
+      }
+
+      try {
+        return JSON.parse(item)
+      }
+      catch {
+        return typeof defaultValue === 'string' ? item as T : defaultValue
+      }
+    },
+    set<T>(value: T): void {
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(key, JSON.stringify(value))
+        window.dispatchEvent(new Event('storage'))
+      }
+    },
+    remove(): void {
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem(key)
+        window.dispatchEvent(new Event('storage'))
+      }
+    },
   }
 }
 
-export function useSessionStorage<T>(key: string, initialValue: T | (() => T)) {
-  const readValue = React.useCallback(() => {
-    const initial = typeof initialValue === 'function' ? (initialValue as () => T)() : initialValue
+export function useSessionStorage<T>(key: string, defaultValue: T | (() => T)) {
+  const value = React.useMemo(() => sessionStorageValue(key), [key])
+  const getValue = React.useCallback(() => {
+    const initial = typeof defaultValue === 'function' ? (defaultValue as () => T)() : defaultValue
 
-    return getSessionStorageValue(key, initial)
-  }, [key])
-
-  const [storedValue, setStoredValue] = React.useState<T>(readValue)
-
-  const setValue = React.useCallback((value: T | ((val: T) => T)) => {
-    try {
-      const valueToStore
-        = typeof value === 'function' ? (value as (val: T) => T)(storedValue) : value
-
-      setStoredValue(valueToStore)
-
-      if (typeof window !== 'undefined') {
-        window.sessionStorage.setItem(key, JSON.stringify(valueToStore))
-      }
-    }
-    catch (error) {
-      console.warn(`Error setting sessionStorage key "${key}":`, error)
-    }
-  }, [key, storedValue])
-
-  React.useEffect(() => {
-    setStoredValue(readValue())
-  }, [key, readValue])
+    return value.get(initial)
+  }, [value, defaultValue])
+  const [storedValue, setStoredValue] = React.useState(getValue)
+  const setValue = React.useCallback((newValue: T | ((val: T) => T)) => {
+    value.set(typeof newValue === 'function' ? (newValue as (val: T) => T)(storedValue) : newValue)
+  }, [value, storedValue])
 
   React.useEffect(() => {
     const abortController = new AbortController()
 
     window.addEventListener('storage', () => {
-      setStoredValue(readValue())
+      setStoredValue(getValue)
     }, { signal: abortController.signal })
 
     return () => {
       abortController.abort()
     }
-  }, [readValue])
+  }, [getValue])
 
   return [storedValue, setValue] as const
 }

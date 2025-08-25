@@ -28,7 +28,7 @@ export const Route = createFileRoute(
   component: DatabaseTablesPage,
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => {
-    const store = deps.table && deps.schema ? createPageStore({ schema: deps.schema, table: deps.table }) : null
+    const store = deps.table && deps.schema ? createPageStore({ id: context.database.id, schema: deps.schema, table: deps.table }) : null
 
     if (store) {
       prefetchDatabaseTableCore({
@@ -144,7 +144,14 @@ function DatabaseTablesPage() {
       <ResizableHandle className="w-1 bg-transparent" />
       <ResizablePanel defaultSize={80} className="flex-1 border bg-background rounded-lg">
         {schema && table && store
-          ? <TableContent id={id} table={table} schema={schema} store={store} />
+          ? (
+              <TableContent
+                id={id}
+                table={table}
+                schema={schema}
+                store={store}
+              />
+            )
           : (
               <div className="p-4 flex items-center justify-center h-full">
                 <div className="text-center space-y-4">

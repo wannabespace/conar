@@ -4,6 +4,7 @@ import type { databases } from '~/drizzle'
 import { Chat } from '@ai-sdk/react'
 import { rowsSql } from '@conar/shared/sql/rows'
 import { whereSql } from '@conar/shared/sql/where'
+import { sessionStorageValue, useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { eventIteratorToStream } from '@orpc/client'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { asc, eq } from 'drizzle-orm'
@@ -52,16 +53,26 @@ export const chatInput = {
   },
 }
 
+function getLastChatIdKey(databaseId: string) {
+  return `sql-last-chat-id-${databaseId}`
+}
+
+export function useLastOpenedChatId(databaseId: string) {
+  return useSessionStorage<string | null>(getLastChatIdKey(databaseId), null)
+}
+
 export const lastOpenedChatId = {
   get(databaseId: string) {
-    return sessionStorage.getItem(`sql-last-chat-id-${databaseId}`)
+    return sessionStorageValue(getLastChatIdKey(databaseId)).get<string | null>(null)
   },
   set(databaseId: string, id: string | null) {
+    const value = sessionStorageValue(getLastChatIdKey(databaseId))
+
     if (id) {
-      sessionStorage.setItem(`sql-last-chat-id-${databaseId}`, id)
+      value.set(id)
     }
     else {
-      sessionStorage.removeItem(`sql-last-chat-id-${databaseId}`)
+      value.remove()
     }
   },
 }

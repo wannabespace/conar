@@ -195,7 +195,7 @@ export function TablesTabs({ database, id }: {
   }, [database, tabs])
 
   function getQueryOpts(tableName: string) {
-    const state = schemaParam ? getPageStoreState(schemaParam, tableName) : null
+    const state = schemaParam ? getPageStoreState(id, schemaParam, tableName) : null
 
     if (state) {
       return {

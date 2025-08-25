@@ -56,7 +56,7 @@ function getToolDescription(tool: ToolUIPart<InferUITools<typeof tools>>, databa
                 ? tool.input.select.join(', ')
                 : null },
               { name: 'From', value: tool.input.tableAndSchema ? `${tool.input.tableAndSchema.schemaName}.${tool.input.tableAndSchema?.tableName}` : null },
-              { name: 'Where', value: tool.state === 'input-available' && tool.input.whereFilters?.length
+              { name: 'Where', value: (tool.state === 'input-available' || tool.state === 'output-available') && tool.input.whereFilters?.length
                 ? whereSql(tool.input.whereFilters)[database.type]
                 : null },
               { name: 'Order by', value: tool.input.orderBy && Object.keys(tool.input.orderBy).length
