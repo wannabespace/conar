@@ -2,7 +2,6 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.wannabespace.conar",
   "productName": "Conar",
-  "icon": "electron/assets/desktop-app-512x512.png",
   "asar": true,
   "directories": {
     "output": "release/${version}"
@@ -31,6 +30,7 @@
     "artifactName": "${productName}-Mac-${arch}-${version}-Installer.${ext}"
   },
   "win": {
+    "icon": "electron/assets/desktop-app-512x512.png",
     "target": [
       {
         "target": "nsis",
