@@ -31,7 +31,7 @@ export function RunnerResultsTable({
 
   const tableColumns = useMemo(() => {
     return columns.map(column => ({
-      id: column.name,
+      id: column.id,
       header: ({ columnIndex, style }) => (
         <div
           className={cn(
@@ -44,9 +44,9 @@ export function RunnerResultsTable({
             <div
               data-mask
               className="truncate font-medium flex items-center gap-1"
-              title={column.name}
+              title={column.id}
             >
-              {column.name}
+              {column.id}
             </div>
           </div>
         </div>

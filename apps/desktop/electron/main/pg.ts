@@ -32,7 +32,7 @@ export async function pgQuery({
     return array.map(r => ({
       count: r.rowCount ?? 0,
       columns: r.fields.map(f => ({
-        name: f.name,
+        id: f.name,
       })),
       rows: r.rows,
     }))

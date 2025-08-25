@@ -42,7 +42,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
     Table name: ${table}
     Schema name: ${schema}
     Columns: ${JSON.stringify(columns?.map(col => ({
-      name: col.name,
+      id: col.id,
       type: col.type,
       default: col.default,
       isNullable: col.isNullable,

@@ -11,7 +11,7 @@ export function useTableColumns({ database, table, schema }: { database: typeof 
     return columns
       ?.map(column => ({
         ...column,
-        isPrimaryKey: !!primaryKeys?.includes(column.name),
+        isPrimaryKey: !!primaryKeys?.includes(column.id),
       }))
       .toSorted((a, b) => {
         if (a.isPrimaryKey && !b.isPrimaryKey)

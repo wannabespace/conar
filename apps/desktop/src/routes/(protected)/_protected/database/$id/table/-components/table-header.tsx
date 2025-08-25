@@ -1,3 +1,4 @@
+import type { ColumnRenderer } from '~/components/table'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { useIsScrolled } from '@conar/ui/hookas/use-is-scrolled'
@@ -6,40 +7,65 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftSLine, RiArrowRightSLine, RiDatabase2Line } from '@remixicon/react'
 import { animate } from 'motion'
 import { useEffect, useState } from 'react'
-
 import { TableHeader, useTableContext } from '~/components/table'
+import { selectSymbol } from '../-lib'
 
 interface HeaderColumn {
-  name: string
-  el: HTMLElement
+  id: string
+  size: number
+  scrollLeft: number
 }
 
-function getNotVisibleColumns(element: HTMLDivElement) {
-  const columns = Array.from(element.querySelectorAll<HTMLElement>('[data-column-name]'))
+function getVisibleColumns(element: HTMLElement) {
+  const columns = Array.from(element.querySelectorAll<HTMLElement>('[data-column-id]'))
   const scrollLeft = element.scrollLeft
   const scrollRight = scrollLeft + element.clientWidth
 
-  return columns.reduce<{
-    left: HeaderColumn[]
-    right: HeaderColumn[]
-  }>((acc, el) => {
-    const name = el.getAttribute('data-column-name')
+  return columns.reduce<HeaderColumn[]>((acc, el) => {
+    const id = el.getAttribute('data-column-id')
 
-    if (!name)
+    if (!id)
       return acc
 
     const left = el.offsetLeft
     const right = left + el.offsetWidth
 
-    if (right <= scrollLeft) {
-      acc.left.push({ name, el })
-    }
-    else if (left >= scrollRight) {
-      acc.right.push({ name, el })
+    if (right > scrollLeft && left < scrollRight) {
+      acc.push({ id, size: el.offsetWidth, scrollLeft: left })
     }
 
     return acc
-  }, { left: [], right: [] })
+  }, [])
+}
+
+function getNotVisibleColumns(element: HTMLElement, allColumns: ColumnRenderer[]): {
+  left: HeaderColumn[]
+  right: HeaderColumn[]
+} {
+  const notVisibleColumns: { left: HeaderColumn[], right: HeaderColumn[] } = { left: [], right: [] }
+  const visibleColumns = getVisibleColumns(element)
+
+  let accumulatedLeft = 0
+  for (const column of allColumns) {
+    const isVisible = visibleColumns.some(v => v.id === column.id)
+    const scrollLeft = accumulatedLeft
+
+    accumulatedLeft += column.size
+
+    if (column.id === String(selectSymbol))
+      continue
+
+    if (!isVisible) {
+      if (scrollLeft < element.scrollLeft) {
+        notVisibleColumns.left.push({ id: column.id, size: column.size, scrollLeft })
+      }
+      else {
+        notVisibleColumns.right.push({ id: column.id, size: column.size, scrollLeft })
+      }
+    }
+  }
+
+  return notVisibleColumns
 }
 
 function Header() {
@@ -55,12 +81,10 @@ function Header() {
     if (!scrollEl)
       return
 
-    const isFirst = column.el.getAttribute('data-first') === 'true'
-    const isLast = column.el.getAttribute('data-last') === 'true'
-    const extraSpace = isFirst || isLast ? 0 : direction === 'left' ? -40 : 40
+    const extraSpace = direction === 'left' ? -40 : 40
     const targetScrollLeft = (direction === 'left'
-      ? column.el.offsetLeft
-      : column.el.offsetLeft + column.el.offsetWidth - scrollEl.clientWidth
+      ? column.scrollLeft
+      : column.scrollLeft + column.size - scrollEl.clientWidth
     ) + extraSpace
 
     animate(scrollEl.scrollLeft, targetScrollLeft, {
@@ -78,8 +102,8 @@ function Header() {
     if (!el || direction === 'up' || direction === 'down')
       return
 
-    setNotVisibleColumns(getNotVisibleColumns(el))
-  }, [direction], 200)
+    setNotVisibleColumns(getNotVisibleColumns(el, columns))
+  }, [direction, columns], 200)
 
   useEffect(() => {
     const el = scrollRef.current
@@ -126,11 +150,11 @@ function Header() {
               <DropdownMenuSeparator />
               {left.map(column => (
                 <DropdownMenuItem
-                  key={column.name}
+                  key={column.id}
                   onClick={() => scrollToColumn(column, 'left')}
                 >
                   <RiDatabase2Line className="size-4 text-muted-foreground" />
-                  {column.name}
+                  {column.id}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -157,11 +181,11 @@ function Header() {
               <DropdownMenuSeparator />
               {right.map(column => (
                 <DropdownMenuItem
-                  key={column.name}
+                  key={column.id}
                   onClick={() => scrollToColumn(column, 'right')}
                 >
                   <RiDatabase2Line className="size-4 text-muted-foreground" />
-                  {column.name}
+                  {column.id}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>

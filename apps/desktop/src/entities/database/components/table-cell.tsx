@@ -55,8 +55,8 @@ function CellProvider({
   children: React.ReactNode
   column: Column
   initialValue: unknown
-  onSetValue?: (rowIndex: number, columnName: string, value: unknown) => void
-  onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
+  onSetValue?: (rowIndex: number, columnsId: string, value: unknown) => void
+  onSaveValue?: (rowIndex: number, columnsId: string, value: unknown) => Promise<void>
   onSaveError: (error: Error) => void
   onSaveSuccess: () => void
   onSavePending: () => void
@@ -71,16 +71,16 @@ function CellProvider({
 
       onSavePending()
 
-      onSetValue(rowIndex, column.name, value)
+      onSetValue(rowIndex, column.id, value)
       try {
         await onSaveValue(
           rowIndex,
-          column.name,
+          column.id,
           value,
         )
       }
       catch (e) {
-        onSetValue(rowIndex, column.name, initialValue)
+        onSetValue(rowIndex, column.id, initialValue)
         throw e
       }
     },
@@ -365,7 +365,7 @@ export function TableCell({
 
     console.error(error)
 
-    toast.error(`Failed to update cell "${column.name}"`, {
+    toast.error(`Failed to update cell "${column.id}"`, {
       description: error.message,
       duration: 3000,
     })

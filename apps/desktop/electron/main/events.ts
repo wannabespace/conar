@@ -14,7 +14,7 @@ const encryption = {
 export interface DatabaseQueryResult {
   count: number
   columns: {
-    name: string
+    id: string
   }[]
   rows: Record<string, unknown>[]
 }

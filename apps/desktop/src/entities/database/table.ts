@@ -1,5 +1,5 @@
 export interface Column {
-  name: string
+  id: string
   type?: string
   isEditable?: boolean
   isNullable?: boolean

@@ -7,7 +7,7 @@ import { RiCloseLine, RiCornerDownLeftLine, RiDatabase2Line, RiFilterLine } from
 import { createContext, use, useEffect, useMemo, useRef, useState } from 'react'
 
 interface Column {
-  name: string
+  id: string
   type: string
 }
 
@@ -44,13 +44,13 @@ function FilterColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLInputElem
         <CommandGroup>
           {columns.map(column => (
             <CommandItem
-              key={column.name}
-              value={column.name}
-              keywords={[column.name, column.type]}
+              key={column.id}
+              value={column.id}
+              keywords={[column.id, column.type]}
               onSelect={onSelect}
             >
               <RiDatabase2Line className="size-4 opacity-50" />
-              <span>{column.name}</span>
+              <span>{column.id}</span>
               <span className="ml-auto text-xs text-muted-foreground text-right">{column.type}</span>
             </CommandItem>
           ))}
@@ -332,12 +332,12 @@ export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
     }
   }, [valueRef, selectedOperator])
 
-  const column = useMemo(() => columns.find(column => column.name === selectedColumn), [columns, selectedColumn])
+  const column = useMemo(() => columns.find(column => column.id === selectedColumn), [columns, selectedColumn])
   const operator = useMemo(() => operators.find(operator => operator.value === selectedOperator), [operators, selectedOperator])
 
   useEffect(() => {
     if (column && operator && !operator.hasValue) {
-      onAdd({ column: column.name, operator: operator.value })
+      onAdd({ column: column.id, operator: operator.value })
     }
   }, [column, operator])
 
@@ -360,11 +360,11 @@ export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
       {column && selectedOperator && (
         <FilterValueSelector
           ref={valueRef}
-          column={column.name}
+          column={column.id}
           operator={selectedOperator}
           values={values}
           onChange={setValues}
-          onApply={() => onAdd({ column: column.name, operator: selectedOperator, values })}
+          onApply={() => onAdd({ column: column.id, operator: selectedOperator, values })}
           onBackspace={() => {
             if (values.length === 0) {
               setSelectedOperator(null)

@@ -16,7 +16,7 @@ export const tools = {
       isEditable: z.boolean(),
       isNullable: z.boolean(),
       table: z.string(),
-      name: z.string(),
+      id: z.string(),
       type: z.string(),
       default: z.string().nullable(),
     })),

@@ -43,7 +43,7 @@ export function HeaderActionsColumns({ database, table, schema }: { database: ty
                 value="toggle-columns"
                 onSelect={() => store.setState(state => ({
                   ...state,
-                  hiddenColumns: (hiddenColumns.length === 0 && columns?.map(col => col.name)) || [],
+                  hiddenColumns: (hiddenColumns.length === 0 && columns?.map(col => col.id)) || [],
                 }))}
               >
                 <span className="size-4">
@@ -57,21 +57,21 @@ export function HeaderActionsColumns({ database, table, schema }: { database: ty
             <CommandGroup>
               {columns?.map(column => (
                 <CommandItem
-                  key={column.name}
-                  value={column.name}
-                  keywords={[column.name, column.type]}
+                  key={column.id}
+                  value={column.id}
+                  keywords={[column.id, column.type]}
                   onSelect={() => store.setState(state => ({
                     ...state,
-                    hiddenColumns: hiddenColumns.includes(column.name)
-                      ? hiddenColumns.filter(name => name !== column.name)
-                      : [...hiddenColumns, column.name],
+                    hiddenColumns: hiddenColumns.includes(column.id)
+                      ? hiddenColumns.filter(id => id !== column.id)
+                      : [...hiddenColumns, column.id],
                   }))}
                 >
                   <span className="size-4 shrink-0">
-                    {!hiddenColumns.includes(column.name) && <RiCheckLine className="size-4 opacity-50" />}
+                    {!hiddenColumns.includes(column.id) && <RiCheckLine className="size-4 opacity-50" />}
                   </span>
                   <RiDatabase2Line className="size-4 opacity-50 shrink-0" />
-                  <span className="truncate">{column.name}</span>
+                  <span className="truncate">{column.id}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

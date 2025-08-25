@@ -4,7 +4,7 @@ import { type } from 'arktype'
 
 export const columnType = type({
   table: 'string',
-  name: 'string',
+  id: 'string',
   type: 'string',
   editable: 'boolean',
   default: 'string | null',
@@ -20,7 +20,7 @@ export function columnsSql(schema: string, table: string): Record<DatabaseType, 
     postgres: prepareSql(`
       SELECT
         c.table_name AS table,
-        c.column_name AS name,
+        c.column_name AS id,
         c.column_default AS default,
         CASE
           WHEN "data_type" = 'ARRAY' THEN

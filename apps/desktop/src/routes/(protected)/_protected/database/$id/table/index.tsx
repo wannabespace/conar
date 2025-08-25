@@ -74,8 +74,8 @@ function TableContent({ id, table, schema, store }: { id: string, table: string,
     if (!columns || columns.length === 0)
       return
 
-    const columnNames = columns.map(col => col.name)
-    const invalidOrderByKeys = Object.keys(store.state.orderBy).filter(key => !columnNames.includes(key))
+    const columnIds = columns.map(col => col.id)
+    const invalidOrderByKeys = Object.keys(store.state.orderBy).filter(key => !columnIds.includes(key))
 
     if (invalidOrderByKeys.length === 0)
       return

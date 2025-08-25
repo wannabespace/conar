@@ -13,7 +13,7 @@ const CANNOT_SORT_TYPES = ['json']
 
 function SortButton({ column }: { column: Column }) {
   const store = usePageStoreContext()
-  const order = useStore(store, state => state.orderBy?.[column.name] ?? null)
+  const order = useStore(store, state => state.orderBy?.[column.id] ?? null)
 
   if (column.type && CANNOT_SORT_TYPES.includes(column.type))
     return null
@@ -23,7 +23,7 @@ function SortButton({ column }: { column: Column }) {
       ...state,
       orderBy: {
         ...state.orderBy,
-        [column.name]: order,
+        [column.id]: order,
       },
     }))
   }
@@ -31,7 +31,7 @@ function SortButton({ column }: { column: Column }) {
   function removeOrder() {
     const newOrderBy = { ...store.state.orderBy }
 
-    delete newOrderBy[column.name]
+    delete newOrderBy[column.id]
 
     store.setState(state => ({
       ...state,
@@ -97,15 +97,15 @@ export function TableHeaderCell({ column, isFirst, isLast, columnIndex, classNam
       data-last={isLast}
       data-first={isFirst}
       data-index={columnIndex}
-      data-column-name={column.name}
+      data-column-id={column.id}
     >
       <div className="text-xs overflow-hidden">
         <div
           data-mask
           className="truncate font-medium flex items-center gap-1"
-          title={column.name}
+          title={column.id}
         >
-          {column.name}
+          {column.id}
         </div>
         {column?.type && (
           <div data-footer={!!column.type} className="flex items-center gap-1">

@@ -10,7 +10,7 @@ import { TableCell } from '~/entities/database/components/table-cell'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { Route } from '..'
-import { getRowsQueryOpts } from '../-lib'
+import { columnsSizeMap, getRowsQueryOpts, selectSymbol } from '../-lib'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { usePageStoreContext } from '../-store'
@@ -20,19 +20,6 @@ import { TableHeaderCell } from './table-header-cell'
 import { TableInfiniteLoader } from './table-infinite-loader'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
 import { TableBodySkeleton } from './table-skeleton'
-
-const selectSymbol = Symbol('table-selection')
-
-const columnsSizeMap = new Map<string, number>([
-  ['boolean', 150],
-  ['number', 150],
-  ['integer', 120],
-  ['bigint', 160],
-  ['timestamp', 240],
-  ['timestamptz', 240],
-  ['float', 150],
-  ['uuid', 290],
-])
 
 function prepareValue(value: unknown, type?: string): unknown {
   if (!type)
@@ -109,7 +96,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       : data)
   }
 
-  const saveValue = async (rowIndex: number, columnName: string, value: unknown) => {
+  const saveValue = async (rowIndex: number, columnId: string, value: unknown) => {
     const rowsQueryOpts = getRowsQueryOpts({
       database,
       table,
@@ -128,18 +115,18 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     const rows = data.pages.flatMap(page => page.rows)
 
-    const [{ rows: [{ [columnName]: realValue }] }] = await dbQuery({
+    const [{ rows: [{ [columnId]: realValue }] }] = await dbQuery({
       type: database.type,
       connectionString: database.connectionString,
-      query: setSql(schema, table, columnName, primaryKeys)[database.type],
+      query: setSql(schema, table, columnId, primaryKeys)[database.type],
       values: [
-        prepareValue(value, columns?.find(column => column.name === columnName)?.type),
+        prepareValue(value, columns?.find(column => column.id === columnId)?.type),
         ...primaryKeys.map(key => rows[rowIndex][key]),
       ],
     })
 
     if (value !== realValue)
-      setValue(rowIndex, columnName, realValue)
+      setValue(rowIndex, columnId, realValue)
 
     if (filters.length > 0 || Object.keys(orderBy).length > 0)
       queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
@@ -150,10 +137,10 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       return []
 
     const sortedColumns: ColumnRenderer[] = columns
-      .filter(column => !hiddenColumns.includes(column.name))
+      .filter(column => !hiddenColumns.includes(column.id))
       .toSorted((a, b) => a.isPrimaryKey ? -1 : b.isPrimaryKey ? 1 : 0)
       .map(column => ({
-        id: column.name,
+        id: column.id,
         size: columnsSizeMap.get(column.type) ?? DEFAULT_COLUMN_WIDTH,
         cell: props => (
           <TableCell
