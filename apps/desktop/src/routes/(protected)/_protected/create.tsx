@@ -2,7 +2,6 @@ import type { RefObject } from 'react'
 import { databaseLabels, DatabaseType } from '@conar/shared/enums/database-type'
 import { getProtocols } from '@conar/shared/utils/connections'
 import { title } from '@conar/shared/utils/title'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
@@ -304,30 +303,12 @@ function CreateConnectionPage() {
                     )
                   : status === 'error'
                     ? (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="destructive">
-                              Continue with connection error
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Only proceed if you're sure that your connection string is correct and the database will be accessible later.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                variant="destructive"
-                                onClick={() => setStep('save')}
-                              >
-                                Continue
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button
+                          variant="destructive"
+                          onClick={() => testConnection(form.state.values)}
+                        >
+                          Try again
+                        </Button>
                       )
                     : (
                         <Button
