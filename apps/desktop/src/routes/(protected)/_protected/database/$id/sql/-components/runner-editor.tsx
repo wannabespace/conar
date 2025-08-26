@@ -27,12 +27,22 @@ const os = getOS(navigator.userAgent)
 export function runnerQueryOptions({ id, database, query }: { id: string, database: typeof databases.$inferSelect, query: string }) {
   return queryOptions({
     queryKey: ['sql', id],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
+      let shouldRun = true
+
+      signal.onabort = () => {
+        shouldRun = false
+      }
+
       const result = await dbQuery({
         type: database.type,
         connectionString: database.connectionString,
         query,
       })
+
+      if (!shouldRun) {
+        return null!
+      }
 
       toast.success('SQL executed successfully')
 

@@ -67,6 +67,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                     <div className="flex-1 min-w-0 flex flex-col">
                       <div className="font-medium truncate">{query.name}</div>
                       <div
+                        data-mask
                         className="text-xs text-muted-foreground max-w-full overflow-x-auto truncate"
                         title={query.query}
                       >
