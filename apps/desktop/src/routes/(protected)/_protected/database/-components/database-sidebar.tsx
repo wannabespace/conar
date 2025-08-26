@@ -66,27 +66,17 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
   )
 }
 
+function useLastOpenedDatabases() {
+  return useSessionStorage<string[]>('last-opened-databases', [])
+}
+
 function LastOpenedDatabases() {
-  const { id } = Route.useParams()
   const { data: databases } = useDatabasesLive()
-  const [lastOpenedDatabases, setLastOpenedDatabases] = useSessionStorage<string[]>('last-opened-databases', [])
+  const [lastOpenedDatabases] = useLastOpenedDatabases()
   const filteredDatabases = (databases?.filter(database => lastOpenedDatabases.includes(database.id)) ?? [])
     .toSorted((a, b) => lastOpenedDatabases.indexOf(a.id) - lastOpenedDatabases.indexOf(b.id))
 
-  useEffect(() => {
-    setLastOpenedDatabases((last) => {
-      if (last.includes(id))
-        return last
-
-      return [id, ...last.filter(dbId => dbId !== id)].slice(0, 3)
-    })
-  }, [id])
-
-  return (
-    <>
-      {filteredDatabases.map(database => <LastOpenedDatabase key={database.id} database={database} />)}
-    </>
-  )
+  return filteredDatabases.map(database => <LastOpenedDatabase key={database.id} database={database} />)
 }
 
 function MainLinks() {
@@ -179,6 +169,18 @@ function MainLinks() {
 }
 
 export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'div'>) {
+  const { id } = Route.useParams()
+  const [lastOpenedDatabases, setLastOpenedDatabases] = useLastOpenedDatabases()
+
+  useEffect(() => {
+    setLastOpenedDatabases((last) => {
+      if (last.includes(id))
+        return last
+
+      return [id, ...last.filter(dbId => dbId !== id)].slice(0, 3)
+    })
+  }, [id])
+
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
       <div className="flex flex-col p-4 pb-0">
@@ -197,8 +199,12 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         <div className="w-full">
           <div className="flex w-full flex-col">
             <MainLinks />
-            <Separator className="my-4" />
-            <LastOpenedDatabases />
+            {lastOpenedDatabases.length <= 1 && (
+              <>
+                <Separator className="my-4" />
+                <LastOpenedDatabases />
+              </>
+            )}
           </div>
         </div>
       </ScrollArea>
