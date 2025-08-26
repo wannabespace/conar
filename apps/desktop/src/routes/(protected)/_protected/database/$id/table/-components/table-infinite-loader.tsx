@@ -14,7 +14,7 @@ export function TableInfiniteLoader({ table, schema, database }: { table: string
   const store = usePageStoreContext()
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(
-    getRowsQueryOpts({ database, table, schema, filters, orderBy }),
+    getRowsQueryOpts({ database, table, schema, query: { filters, orderBy } }),
   )
   const loaderRef = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(loaderRef)

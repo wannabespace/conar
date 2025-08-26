@@ -18,7 +18,7 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
   const store = usePageStoreContext()
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const { isFetching, dataUpdatedAt, refetch } = useInfiniteQuery(
-    getRowsQueryOpts({ database, table, schema, filters, orderBy }),
+    getRowsQueryOpts({ database, table, schema, query: { filters, orderBy } }),
   )
 
   async function handleRefresh() {

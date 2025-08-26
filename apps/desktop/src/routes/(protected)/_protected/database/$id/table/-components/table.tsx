@@ -51,7 +51,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(
-    getRowsQueryOpts({ database, table, schema, filters, orderBy }),
+    getRowsQueryOpts({ database, table, schema, query: { filters, orderBy } }),
   )
   const { data: primaryKeys } = usePrimaryKeysQuery({ database, table, schema })
 
@@ -76,8 +76,10 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       database,
       table,
       schema,
-      filters: store.state.filters,
-      orderBy: store.state.orderBy,
+      query: {
+        filters: store.state.filters,
+        orderBy: store.state.orderBy,
+      },
     })
 
     queryClient.setQueryData(rowsQueryOpts.queryKey, data => data
@@ -101,8 +103,10 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       database,
       table,
       schema,
-      filters: store.state.filters,
-      orderBy: store.state.orderBy,
+      query: {
+        filters: store.state.filters,
+        orderBy: store.state.orderBy,
+      },
     })
 
     const data = queryClient.getQueryData(rowsQueryOpts.queryKey)

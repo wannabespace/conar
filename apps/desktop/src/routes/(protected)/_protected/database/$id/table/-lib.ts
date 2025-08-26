@@ -37,17 +37,18 @@ export function getRowsQueryOpts({
   database,
   table,
   schema,
-  filters,
-  orderBy,
+  query,
 }: {
   database: typeof databases.$inferSelect
   table: string
   schema: string
-  filters: WhereFilter[]
-  orderBy: Record<string, 'ASC' | 'DESC'>
+  query: {
+    filters: WhereFilter[]
+    orderBy: Record<string, 'ASC' | 'DESC'>
+  }
 }) {
   return infiniteQueryOptions({
-    ...databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }),
+    ...databaseRowsQuery({ database, table, schema, query }),
     throwOnError: false,
   })
 }
