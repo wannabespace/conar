@@ -7,7 +7,7 @@ import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCloseLine, RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
 import { ThemeToggle } from '~/components/theme-toggle'
@@ -17,7 +17,7 @@ import { actionsCenterStore } from '~/routes/(protected)/-components/actions-cen
 import { Route } from '../$id'
 import { useLastOpenedChatId } from '../$id/sql/-chat'
 import { lastOpenedTable, useLastOpenedTable } from '../$id/table/-lib'
-import { useLastOpenedDatabases } from '../-lib'
+import { lastOpenedDatabases, useLastOpenedDatabases } from '../-lib'
 
 const os = getOS(navigator.userAgent)
 
@@ -33,16 +33,36 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
   const [lastOpenedTable] = useLastOpenedTable(database.id)
   const isActive = database.id === id
 
+  async function onCloseClick(e: React.MouseEvent<HTMLSpanElement>) {
+    e.preventDefault()
+
+    const newDatabases = lastOpenedDatabases.get().filter(dbId => dbId !== database.id)
+
+    lastOpenedDatabases.set(newDatabases)
+  }
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Link
             to="/database/$id/table"
-            className={classes(isActive)}
+            className={cn(classes(isActive), 'relative group')}
             params={{ id: database.id }}
             search={lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined}
           >
+            {!isActive && (
+              <span
+                className={cn(
+                  'absolute top-0 right-0 -translate-y-1/2 translate-x-1/2',
+                  'flex items-center justify-center',
+                  'size-4 bg-background rounded-full text-foreground opacity-0 group-hover:opacity-100',
+                )}
+                onClick={onCloseClick}
+              >
+                <RiCloseLine className="size-3" />
+              </span>
+            )}
             <span className="font-bold text-sm">
               {database.name
                 .replace(/[^a-z0-9\s]/gi, '')
@@ -54,7 +74,7 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
             </span>
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="right">
+        <TooltipContent side="right" sideOffset={10}>
           <span className="flex items-center gap-2 font-medium">
             <DatabaseIcon type={database.type} className="size-4 -ml-1" />
             {database.name}
