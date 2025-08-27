@@ -51,7 +51,7 @@ function generateStream({
           `- Current date and time: ${new Date().toISOString()}`,
           '',
           'Current query in the SQL runner that user is writing:',
-          `${currentQuery || 'Empty'}`,
+          `${currentQuery.trim() || 'Empty'}`,
           '',
           'Database Context:',
           `${JSON.stringify(context)}`,

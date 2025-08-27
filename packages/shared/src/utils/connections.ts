@@ -1,5 +1,16 @@
 import { DatabaseType } from '../enums/database-type'
 
+export function isConnectionStringValid(connectionString: string) {
+  try {
+    // eslint-disable-next-line no-new
+    new URL(connectionString)
+    return true
+  }
+  catch {
+    return false
+  }
+}
+
 export function parseConnectionString(connectionString: string) {
   const url = new URL(connectionString)
 

@@ -92,11 +92,11 @@ function generateStream({
   })
 }
 
-export async function getMessages(chatId: string) {
-  return await db.select().from(chatsMessages).where(eq(chatsMessages.chatId, chatId)).orderBy(asc(chatsMessages.createdAt)).then(rows => rows.map(row => ({
+export function getMessages(chatId: string): Promise<AppUIMessage[]> {
+  return db.select().from(chatsMessages).where(eq(chatsMessages.chatId, chatId)).orderBy(asc(chatsMessages.createdAt)).then(rows => rows.map(row => ({
     ...row,
     metadata: row.metadata || undefined,
-  }))) satisfies AppUIMessage[]
+  })))
 }
 
 export const ask = orpc

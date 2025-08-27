@@ -142,8 +142,11 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           prompt: lastMessage,
           trigger: options.trigger,
           messageId: options.messageId,
-          context: `Current query in the SQL runner: ${pageStore.state.query}
-          Database schemas and tables: ${JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database })), null, 2)}`,
+          context: [
+            `Current query in the SQL runner: ${pageStore.state.query.trim() || 'Empty'}`,
+            'Database schemas and tables:',
+            JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database })), null, 2),
+          ].join('\n'),
         }, { signal: options.abortSignal }))
       },
       reconnectToStream() {
