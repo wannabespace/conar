@@ -37,6 +37,17 @@ const handler = new RPCHandler(router, {
     onError((error) => {
       console.error(error)
     }),
+    async ({ request, next }) => {
+      const body = await request.body()
+
+      console.log('Request info', {
+        method: request.method,
+        url: request.url,
+        body,
+      })
+
+      return next()
+    },
   ],
 })
 
