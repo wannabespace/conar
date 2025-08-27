@@ -17,20 +17,8 @@ export function useLastOpenedTable(id: string) {
   return useSessionStorage<LastOpenedTable | null>(getLastOpenedTableKey(id), null)
 }
 
-export const lastOpenedTable = {
-  get(databaseId: string) {
-    return sessionStorageValue<LastOpenedTable | null>(getLastOpenedTableKey(databaseId), null).get()
-  },
-  set(databaseId: string, table: LastOpenedTable | null) {
-    const value = sessionStorageValue<LastOpenedTable | null>(getLastOpenedTableKey(databaseId), null)
-
-    if (table) {
-      value.set(table)
-    }
-    else {
-      value.remove()
-    }
-  },
+export function lastOpenedTable(id: string) {
+  return sessionStorageValue<LastOpenedTable | null>(getLastOpenedTableKey(id), null)
 }
 
 export function getRowsQueryOpts({

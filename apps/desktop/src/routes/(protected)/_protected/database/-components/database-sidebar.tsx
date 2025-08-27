@@ -100,13 +100,13 @@ function MainLinks() {
   const matches = useMatches({
     select: matches => matches.map(match => match.routeId),
   })
-  const [lastTable] = useLastOpenedTable(id)
+  const [lastTable, setLastTable] = useLastOpenedTable(id)
 
   useEffect(() => {
     if (tableParam && schemaParam && tableParam !== lastTable?.table && schemaParam !== lastTable?.schema) {
-      lastOpenedTable.set(id, { schema: schemaParam, table: tableParam })
+      setLastTable({ schema: schemaParam, table: tableParam })
     }
-  }, [tableParam, schemaParam])
+  }, [lastTable, tableParam, schemaParam])
 
   const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/table/')
@@ -128,7 +128,7 @@ function MainLinks() {
 
   function onTablesClick() {
     if (isCurrentTableAsLastOpened && lastTable) {
-      lastOpenedTable.set(id, null)
+      lastOpenedTable(id).set(null)
     }
   }
 
