@@ -2,8 +2,8 @@
   "name": "@conar/api",
   "type": "module",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development tsx --env-file=.env ./src/index.ts",
-    "start": "cross-env NODE_ENV=production pnpm run drizzle:migrate && tsx src/index.ts",
+    "dev": "cross-env NODE_ENV=development bun ./src/index.ts",
+    "start": "cross-env NODE_ENV=production pnpm run drizzle:migrate && bun ./src/index.ts",
     "check-types": "tsc",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:generate-custom": "drizzle-kit generate --custom",
@@ -20,7 +20,6 @@
     "@ai-sdk/xai1": "npm:@ai-sdk/xai@1.2.18",
     "@conar/shared": "workspace:*",
     "@hono/arktype-validator": "^2.0.1",
-    "@hono/node-server": "^1.19.0",
     "@hono/trpc-server": "^0.4.0",
     "@hono/zod-validator": "^0.7.2",
     "@orpc/server": "^1.8.5",

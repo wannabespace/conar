@@ -1,4 +1,3 @@
-import { serve } from '@hono/node-server'
 import { trpcServer } from '@hono/trpc-server'
 import { onError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
@@ -55,9 +54,7 @@ app.use('/rpc/*', async (c, next) => {
 
 app.route('/ai', ai)
 
-serve({
+export default {
   fetch: app.fetch,
   port: process.env.PORT ? Number(process.env.PORT) : 3000,
-}, (info) => {
-  console.log(`Server is running on http://localhost:${info.port}`)
-})
+}
