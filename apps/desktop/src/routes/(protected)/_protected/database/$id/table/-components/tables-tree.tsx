@@ -5,7 +5,6 @@ import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useDebouncedCallback } from '@conar/ui/hookas/use-debounced-callback'
 import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -13,8 +12,7 @@ import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiStackLine, 
 import { Link, useSearch } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef } from 'react'
-import { prefetchDatabaseTableCore, useDatabaseTablesAndSchemas } from '~/entities/database'
-import { getPageStoreState } from '../-store'
+import { useDatabaseTablesAndSchemas } from '~/entities/database'
 import { addTab } from '../-tabs'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
@@ -41,28 +39,6 @@ export function TablesTree({ database, className, search }: { database: typeof d
   const ref = useRef<HTMLDivElement>(null)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
-
-  function getQueryOpts(tableName: string) {
-    const state = schemaParam ? getPageStoreState(database.id, schemaParam, tableName) : null
-
-    if (state) {
-      return {
-        filters: state.filters,
-        orderBy: state.orderBy,
-      }
-    }
-
-    return {
-      filters: [],
-      orderBy: {},
-    }
-  }
-
-  const debouncedPrefetchDatabaseTableCore = useDebouncedCallback(
-    (schema: string, tableName: string) => prefetchDatabaseTableCore({ database, schema, table: tableName, query: getQueryOpts(tableName) }),
-    [database.id],
-    100,
-  )
 
   const filteredTablesAndSchemas = useMemo(() => tablesAndSchemas?.schemas?.map(schema => ({
     ...schema,
@@ -165,7 +141,6 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                     'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/60',
                                     tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
                                   )}
-                                  onMouseOver={() => debouncedPrefetchDatabaseTableCore(schema.name, table)}
                                 >
                                   <RiTableLine
                                     className={cn(

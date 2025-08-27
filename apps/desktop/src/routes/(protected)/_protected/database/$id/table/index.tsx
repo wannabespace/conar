@@ -7,7 +7,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
 import { FiltersProvider } from '~/components/table'
-import { prefetchDatabaseTableCore } from '~/entities/database'
+import { prefetchDatabaseCore, prefetchDatabaseTableCore } from '~/entities/database'
 import { Filters } from './-components/filters'
 import { Header } from './-components/header'
 import { Sidebar } from './-components/sidebar'
@@ -25,11 +25,12 @@ export const Route = createFileRoute(
     'schema?': 'string',
     'table?': 'string',
   }),
-  staleTime: Number.POSITIVE_INFINITY,
   component: DatabaseTablesPage,
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => {
     const store = deps.table && deps.schema ? createPageStore({ id: context.database.id, schema: deps.schema, table: deps.table }) : null
+
+    prefetchDatabaseCore(context.database)
 
     if (store) {
       prefetchDatabaseTableCore({

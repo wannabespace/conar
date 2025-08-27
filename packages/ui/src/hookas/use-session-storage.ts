@@ -1,8 +1,8 @@
 import * as React from 'react'
 
-export function sessionStorageValue(key: string) {
+export function sessionStorageValue<T>(key: string, defaultValue: T) {
   return {
-    get<T>(defaultValue: T): T {
+    get(): T {
       if (typeof window === 'undefined') {
         return defaultValue
       }
@@ -36,13 +36,11 @@ export function sessionStorageValue(key: string) {
 }
 
 export function useSessionStorage<T>(key: string, defaultValue: T | (() => T)) {
-  const value = React.useMemo(() => sessionStorageValue(key), [key])
-  const getValue = React.useCallback(() => {
-    const initial = typeof defaultValue === 'function' ? (defaultValue as () => T)() : defaultValue
-
-    return value.get(initial)
-  }, [value, defaultValue])
-  const [storedValue, setStoredValue] = React.useState(getValue)
+  const value = React.useMemo(() => {
+    const defaultVal = typeof defaultValue === 'function' ? (defaultValue as () => T)() : defaultValue
+    return sessionStorageValue(key, defaultVal)
+  }, [key, defaultValue])
+  const [storedValue, setStoredValue] = React.useState(value.get)
   const setValue = React.useCallback((newValue: T | ((val: T) => T)) => {
     value.set(typeof newValue === 'function' ? (newValue as (val: T) => T)(storedValue) : newValue)
   }, [value, storedValue])
@@ -51,13 +49,13 @@ export function useSessionStorage<T>(key: string, defaultValue: T | (() => T)) {
     const abortController = new AbortController()
 
     window.addEventListener('storage', () => {
-      setStoredValue(getValue)
+      setStoredValue(value.get)
     }, { signal: abortController.signal })
 
     return () => {
       abortController.abort()
     }
-  }, [getValue])
+  }, [value, setStoredValue])
 
   return [storedValue, setValue] as const
 }

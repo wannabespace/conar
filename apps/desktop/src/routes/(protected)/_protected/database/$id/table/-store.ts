@@ -26,7 +26,15 @@ export function getPageStoreState(id: string, schema: string, table: string) {
   return parsed
 }
 
+const storesMap = new Map<string, Store<typeof storeState.infer>>()
+
 export function createPageStore({ id, schema, table }: { id: string, schema: string, table: string }) {
+  const key = `${id}.${schema}.${table}`
+
+  if (storesMap.has(key)) {
+    return storesMap.get(key)!
+  }
+
   const store = new Store<typeof storeState.infer>(getPageStoreState(id, schema, table)
     ?? {
       selected: [],
@@ -37,8 +45,10 @@ export function createPageStore({ id, schema, table }: { id: string, schema: str
     })
 
   store.subscribe((state) => {
-    sessionStorage.setItem(`${id}.${schema}.${table}-store`, JSON.stringify(state.currentVal))
+    sessionStorage.setItem(`${key}-store`, JSON.stringify(state.currentVal))
   })
+
+  storesMap.set(key, store)
 
   return store
 }

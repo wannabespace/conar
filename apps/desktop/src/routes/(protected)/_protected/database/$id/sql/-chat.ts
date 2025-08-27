@@ -65,10 +65,10 @@ export function useLastOpenedChatId(databaseId: string) {
 
 export const lastOpenedChatId = {
   get(databaseId: string) {
-    return sessionStorageValue(getLastChatIdKey(databaseId)).get<string | null>(null)
+    return sessionStorageValue<string | null>(getLastChatIdKey(databaseId), null).get()
   },
   set(databaseId: string, id: string | null) {
-    const value = sessionStorageValue(getLastChatIdKey(databaseId))
+    const value = sessionStorageValue<string | null>(getLastChatIdKey(databaseId), null)
 
     if (id) {
       value.set(id)

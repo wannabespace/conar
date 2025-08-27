@@ -34,6 +34,7 @@ export function ActionsCenter() {
   function onDatabaseSelect(database: typeof databasesTable.$inferSelect) {
     setIsOpen(false)
 
+    prefetchDatabaseCore(database)
     router.navigate({ to: '/database/$id/table', params: { id: database.id } })
   }
 
@@ -59,7 +60,6 @@ export function ActionsCenter() {
               <CommandItem
                 key={database.id}
                 onSelect={() => onDatabaseSelect(database)}
-                onMouseOver={() => prefetchDatabaseCore(database)}
               >
                 <DatabaseIcon type={database.type} className="size-4 shrink-0" />
                 {database.name}

@@ -7,7 +7,7 @@ import { copy } from '@conar/ui/lib/copy'
 import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useMemo, useRef } from 'react'
-import { DatabaseIcon, prefetchDatabaseCore, useDatabasesLive } from '~/entities/database'
+import { DatabaseIcon, useDatabasesLive } from '~/entities/database'
 import { useLastOpenedTable } from '../database/$id/table/-lib'
 import { RemoveDatabaseDialog } from './remove-database-dialog'
 import { RenameDatabaseDialog } from './rename-database-dialog'
@@ -31,7 +31,6 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
       to="/database/$id/table"
       params={{ id: database.id }}
       search={lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined}
-      onMouseOver={() => prefetchDatabaseCore(database)}
     >
       <div className="size-12 shrink-0 rounded-lg bg-muted/70 p-3">
         <DatabaseIcon type={database.type} className="size-full text-primary" />

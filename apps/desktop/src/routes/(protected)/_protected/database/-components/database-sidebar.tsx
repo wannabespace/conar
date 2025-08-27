@@ -6,18 +6,18 @@ import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
 import { ThemeToggle } from '~/components/theme-toggle'
-import { DatabaseIcon, prefetchDatabaseCore, useDatabasesLive } from '~/entities/database'
+import { DatabaseIcon, useDatabasesLive } from '~/entities/database'
 import { UserButton } from '~/entities/user'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
 import { Route } from '../$id'
 import { useLastOpenedChatId } from '../$id/sql/-chat'
 import { lastOpenedTable, useLastOpenedTable } from '../$id/table/-lib'
+import { useLastOpenedDatabases } from '../-lib'
 
 const os = getOS(navigator.userAgent)
 
@@ -42,7 +42,6 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
             className={classes(isActive)}
             params={{ id: database.id }}
             search={lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined}
-            onMouseOver={() => prefetchDatabaseCore(database)}
           >
             <span className="font-bold text-sm">
               {database.name
@@ -64,10 +63,6 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
       </Tooltip>
     </TooltipProvider>
   )
-}
-
-function useLastOpenedDatabases() {
-  return useSessionStorage<string[]>('last-opened-databases', [])
 }
 
 function LastOpenedDatabases() {
@@ -169,17 +164,7 @@ function MainLinks() {
 }
 
 export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'div'>) {
-  const { id } = Route.useParams()
-  const [lastOpenedDatabases, setLastOpenedDatabases] = useLastOpenedDatabases()
-
-  useEffect(() => {
-    setLastOpenedDatabases((last) => {
-      if (last.includes(id))
-        return last
-
-      return [id, ...last.filter(dbId => dbId !== id)].slice(0, 3)
-    })
-  }, [id])
+  const [lastOpenedDatabases] = useLastOpenedDatabases()
 
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
@@ -199,7 +184,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         <div className="w-full">
           <div className="flex w-full flex-col">
             <MainLinks />
-            {lastOpenedDatabases.length <= 1 && (
+            {lastOpenedDatabases.length > 1 && (
               <>
                 <Separator className="my-4" />
                 <LastOpenedDatabases />

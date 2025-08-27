@@ -19,10 +19,10 @@ export function useLastOpenedTable(id: string) {
 
 export const lastOpenedTable = {
   get(databaseId: string) {
-    return sessionStorageValue(getLastOpenedTableKey(databaseId)).get<LastOpenedTable | null>(null)
+    return sessionStorageValue<LastOpenedTable | null>(getLastOpenedTableKey(databaseId), null).get()
   },
   set(databaseId: string, table: LastOpenedTable | null) {
-    const value = sessionStorageValue(getLastOpenedTableKey(databaseId))
+    const value = sessionStorageValue<LastOpenedTable | null>(getLastOpenedTableKey(databaseId), null)
 
     if (table) {
       value.set(table)
