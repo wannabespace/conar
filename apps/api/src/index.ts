@@ -42,8 +42,8 @@ const handler = new RPCHandler(router, {
 
       console.log('Request info', {
         method: request.method,
-        url: request.url,
-        body,
+        url: request.url.href,
+        body: JSON.stringify(body, null, 2),
       })
 
       return next()
