@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.15.0",
   "engines": {
-    "node": ">=22.0.0"
+    "bun": ">=1.0.0"
   },
   "scripts": {
     "prepare": "husky && node scripts/setup-dev.mjs",
