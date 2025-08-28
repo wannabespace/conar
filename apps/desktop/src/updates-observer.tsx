@@ -46,11 +46,11 @@ export function UpdatesObserver() {
         toast.success('New update successfully downloaded', {
           id: TOAST_UPDATE_READY_ID,
           action: {
-            label: 'Update now',
+            label: 'Restart',
             onClick: () => window.electron?.app.quitAndInstall(),
           },
           position: 'bottom-right',
-          duration: 30000,
+          duration: 60000,
         })
       }
 
