@@ -1,9 +1,7 @@
-import { getOS } from '@conar/shared/utils/os'
+import { isCtrlEnter } from '@conar/shared/utils/os'
 import { Switch } from '@conar/ui/components/switch'
 import { cn } from '@conar/ui/lib/utils'
 import { useKeyboardEvent } from '@react-hookz/web'
-
-const os = getOS(navigator.userAgent)
 
 export function CellSwitch({
   checked,
@@ -16,7 +14,7 @@ export function CellSwitch({
   onSave: (value: string) => void
   className?: string
 }) {
-  useKeyboardEvent(e => e.key === 'Enter' && (os.type === 'macos' ? e.metaKey : e.ctrlKey), () => onSave(checked ? 'true' : 'false'))
+  useKeyboardEvent(isCtrlEnter, () => onSave(checked ? 'true' : 'false'))
 
   return (
     <label className={cn('flex gap-2 items-center text-sm', className)}>

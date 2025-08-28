@@ -2,14 +2,14 @@ import type { UseMutateFunction } from '@tanstack/react-query'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '../table'
 import type { TableCellProps } from '~/components/table'
-import { getOS } from '@conar/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
+import { CtrlEnter } from '@conar/ui/components/custom/ctrl-enter'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCollapseDiagonal2Line, RiCommandLine, RiCornerDownLeftLine, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
@@ -17,8 +17,6 @@ import { toast } from 'sonner'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
 import { sleep } from '~/lib/helpers'
-
-const os = getOS(navigator.userAgent)
 
 function getDisplayValue(value: unknown, oneLine: boolean) {
   if (typeof value === 'object' && value !== null)
@@ -239,10 +237,7 @@ function TableCellContent({
                 onClick={() => save(value)}
               >
                 Save
-                <kbd className="flex items-center text-xs">
-                  {os.type === 'macos' ? <RiCommandLine className="size-2.5" /> : 'Ctrl'}
-                  <RiCornerDownLeftLine className="size-2.5" />
-                </kbd>
+                <CtrlEnter userAgent={navigator.userAgent} />
               </Button>
             </>
           )}

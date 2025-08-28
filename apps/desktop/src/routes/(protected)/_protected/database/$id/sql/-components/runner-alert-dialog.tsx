@@ -1,10 +1,9 @@
-import { getOS } from '@conar/shared/utils/os'
+import { isCtrlEnter } from '@conar/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
+import { ShiftCtrlEnter } from '@conar/ui/components/custom/ctrl-enter'
 import { useKeyboardEvent } from '@react-hookz/web'
-import { RiAlertLine, RiArrowUpLine, RiCommandLine, RiCornerDownLeftLine } from '@remixicon/react'
+import { RiAlertLine } from '@remixicon/react'
 import { DANGEROUS_SQL_KEYWORDS } from '~/entities/database'
-
-const os = getOS(navigator.userAgent)
 
 export function RunnerAlertDialog({ open, setOpen, confirm, query }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void, query: string }) {
   const uncommentedLines = query.split('\n').filter(line => !line.trim().startsWith('--')).join('\n')
@@ -12,7 +11,7 @@ export function RunnerAlertDialog({ open, setOpen, confirm, query }: { open: boo
   const dangerousKeywords = uncommentedLines.match(new RegExp(dangerousKeywordsPattern, 'gi')) || []
   const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map(k => k.toUpperCase()))]
 
-  useKeyboardEvent(e => (os.type === 'macos' ? e.metaKey : e.ctrlKey) && e.key === 'Enter' && e.shiftKey, () => {
+  useKeyboardEvent(e => isCtrlEnter(e) && e.shiftKey, () => {
     confirm()
     setOpen(false)
   })
@@ -43,11 +42,7 @@ export function RunnerAlertDialog({ open, setOpen, confirm, query }: { open: boo
           <AlertDialogAction variant="warning" onClick={confirm}>
             <span className="flex items-center gap-2">
               Run Anyway
-              <kbd className="flex items-center">
-                {os.type === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
-                <RiArrowUpLine className="size-3" />
-                <RiCornerDownLeftLine className="size-3" />
-              </kbd>
+              <ShiftCtrlEnter userAgent={navigator.userAgent} />
             </span>
           </AlertDialogAction>
         </AlertDialogFooter>
