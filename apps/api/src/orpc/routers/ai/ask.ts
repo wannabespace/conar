@@ -53,7 +53,12 @@ function generateStream({
   signal?: AbortSignal
   chatId: string
 }) {
-  console.info('messages', JSON.stringify(messages, null, 2))
+  console.info('messages', JSON.stringify(messages.map(message => ({
+    id: message.id,
+    chatId,
+    role: message.role,
+    parts: message.parts.length,
+  })), null, 2))
 
   return streamText({
     messages: [
