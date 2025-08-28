@@ -3,6 +3,7 @@ import { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
 import { generateObject } from 'ai'
 import { type } from 'arktype'
 import { z } from 'zod'
+import { withPosthog } from '~/lib/posthog'
 import { protectedProcedure } from '~/trpc'
 
 export const filters = protectedProcedure
@@ -15,7 +16,7 @@ export const filters = protectedProcedure
     const { prompt, context } = input
 
     const { object } = await generateObject({
-      model: google('gemini-2.0-flash'),
+      model: withPosthog(google('gemini-2.0-flash')),
       system: `
         You are a SQL filter generator that converts natural language queries into precise database filters.
         You should understand the sense of the prompt as much as possible, as users can ask with just a few words without any context.

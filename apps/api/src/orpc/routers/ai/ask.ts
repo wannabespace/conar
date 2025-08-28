@@ -10,6 +10,7 @@ import { asc, eq } from 'drizzle-orm'
 // import { createResumableStreamContext } from 'resumable-stream'
 import { v7 } from 'uuid'
 import { chats, chatsMessages, db } from '~/drizzle'
+import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
 
 const chatInputType = type({
@@ -43,12 +44,14 @@ function generateStream({
   context,
   model,
   signal,
+  chatId,
 }: {
   messages: AppUIMessage[]
   type: typeof chatInputType.infer['type']
   context: typeof chatInputType.infer['context']
-  model: LanguageModel
+  model: Exclude<LanguageModel, string>
   signal?: AbortSignal
+  chatId: string
 }) {
   console.info('messages', JSON.stringify(messages, null, 2))
 
@@ -86,7 +89,9 @@ function generateStream({
     ],
     stopWhen: stepCountIs(20),
     abortSignal: signal,
-    model,
+    model: withPosthog(model, {
+      chatId,
+    }),
     experimental_transform: smoothStream(),
     tools,
   })
@@ -160,6 +165,7 @@ export const ask = orpc
         context: input.context,
         messages,
         signal,
+        chatId: input.id,
       })
 
       const stream = result.toUIMessageStream({

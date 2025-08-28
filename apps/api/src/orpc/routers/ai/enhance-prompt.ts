@@ -1,6 +1,7 @@
 import { openai } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 import { type } from 'arktype'
+import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
 import { getMessages } from './ask'
 
@@ -14,7 +15,10 @@ export const enhancePrompt = orpc
     const messages = await getMessages(input.chatId)
 
     const { text } = await generateText({
-      model: openai('gpt-4o-mini'),
+      model: withPosthog(openai('gpt-4o-mini'), {
+        chatId: input.chatId,
+        prompt: input.prompt,
+      }),
       messages: [
         {
           role: 'system',
