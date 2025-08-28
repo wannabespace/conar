@@ -12,14 +12,14 @@ export const filters = orpc
     prompt: 'string',
     context: 'string',
   }))
-  .handler(async ({ input, signal }) => {
+  .handler(async ({ input, signal, context }) => {
     console.info('sql filters input', input)
-    const { prompt, context } = input
 
     const { object } = await generateObject({
       model: withPosthog(google('gemini-2.0-flash'), {
-        prompt,
-        context,
+        prompt: input.prompt,
+        context: input.context,
+        userId: context.user.id,
       }),
       system: `
         You are a SQL filter generator that converts natural language queries into precise database filters.
@@ -42,9 +42,9 @@ export const filters = orpc
         Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}
 
         Table context:
-        ${context}
+        ${input.context}
       `,
-      prompt,
+      prompt: input.prompt,
       abortSignal: signal,
       schema: z.object({
         filters: z.object({

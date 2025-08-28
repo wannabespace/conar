@@ -7,12 +7,16 @@ export const posthog = env.POSTHOG_API_KEY
   ? new PostHog(env.POSTHOG_API_KEY, { host: 'https://eu.i.posthog.com' })
   : null
 
-export function withPosthog(model: LanguageModelV2, properties?: Record<string, unknown>): LanguageModelV2 {
+export function withPosthog(model: LanguageModelV2, properties: {
+  userId: string
+  [key: string]: string
+}): LanguageModelV2 {
   if (!posthog)
     return model
 
   return withTracing(model, posthog, {
     posthogProperties: properties,
     posthogPrivacyMode: true,
+    posthogDistinctId: properties.userId,
   })
 }

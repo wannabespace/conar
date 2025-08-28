@@ -11,13 +11,14 @@ export const enhancePrompt = orpc
     prompt: 'string',
     chatId: 'string.uuid.v7',
   }))
-  .handler(async ({ input, signal }) => {
+  .handler(async ({ input, signal, context }) => {
     const messages = await getMessages(input.chatId)
 
     const { text } = await generateText({
       model: withPosthog(openai('gpt-4o-mini'), {
         chatId: input.chatId,
         prompt: input.prompt,
+        userId: context.user.id,
       }),
       messages: [
         {

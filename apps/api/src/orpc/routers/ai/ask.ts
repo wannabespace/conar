@@ -45,6 +45,7 @@ function generateStream({
   model,
   signal,
   chatId,
+  userId,
 }: {
   messages: AppUIMessage[]
   type: typeof chatInputType.infer['type']
@@ -52,6 +53,7 @@ function generateStream({
   model: Exclude<LanguageModel, string>
   signal?: AbortSignal
   chatId: string
+  userId: string
 }) {
   console.info('messages', JSON.stringify(messages.map(message => ({
     id: message.id,
@@ -96,6 +98,7 @@ function generateStream({
     abortSignal: signal,
     model: withPosthog(model, {
       chatId,
+      userId,
     }),
     experimental_transform: smoothStream(),
     tools,
@@ -171,6 +174,7 @@ export const ask = orpc
         messages,
         signal,
         chatId: input.id,
+        userId: context.user.id,
       })
 
       const stream = result.toUIMessageStream({
