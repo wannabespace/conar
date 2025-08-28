@@ -12,7 +12,6 @@ export const filters = protectedProcedure
   }))
   .mutation(async ({ input, signal }) => {
     console.info('sql filters input', input)
-    const { prompt, context } = input
 
     const { object } = await generateObject({
       model: google('gemini-2.0-flash'),
@@ -37,9 +36,9 @@ export const filters = protectedProcedure
         Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}
 
         Table context:
-        ${context}
+        ${input.context}
       `,
-      prompt,
+      prompt: input.prompt,
       abortSignal: signal,
       schema: z.object({
         column: z.string(),

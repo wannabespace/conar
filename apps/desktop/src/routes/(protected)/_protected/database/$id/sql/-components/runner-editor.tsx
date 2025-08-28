@@ -1,13 +1,13 @@
 import type { editor } from 'monaco-editor'
 import type { ComponentProps, ComponentRef } from 'react'
 import type { databases } from '~/drizzle'
-import { getOS } from '@conar/shared/utils/os'
 import { Button } from '@conar/ui/components/button'
+import { CtrlEnter } from '@conar/ui/components/custom/ctrl-enter'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiBrush2Line, RiCommandLine, RiCornerDownLeftLine, RiDeleteBin5Line, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
+import { RiBrush2Line, RiDeleteBin5Line, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
@@ -21,8 +21,6 @@ import { chatQuery } from '../-chat'
 import { pageHooks, pageStore } from '../-lib'
 import { RunnerAlertDialog } from './runner-alert-dialog'
 import { SaveQueryDialog } from './save-query-dialog'
-
-const os = getOS(navigator.userAgent)
 
 export function runnerQueryOptions({ id, database, query }: { id: string, database: typeof databases.$inferSelect, query: string }) {
   return queryOptions({
@@ -210,10 +208,7 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
           <div className="flex items-center gap-1">
             Run
             {' '}
-            <kbd className="flex items-center text-xs">
-              {os.type === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'}
-              <RiCornerDownLeftLine className="size-3" />
-            </kbd>
+            <CtrlEnter userAgent={navigator.userAgent} />
           </div>
         </Button>
       </div>

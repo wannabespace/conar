@@ -4,6 +4,7 @@ import { generateText } from 'ai'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 import { chats, db } from '~/drizzle'
+import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const generateTitle = orpc
@@ -12,9 +13,12 @@ export const generateTitle = orpc
     chatId: 'string.uuid.v7',
     messages: 'Array' as type.cast<AppUIMessage[]>,
   }))
-  .handler(async ({ input, signal }) => {
+  .handler(async ({ input, signal, context }) => {
     const { text } = await generateText({
-      model: google('gemini-2.0-flash'),
+      model: withPosthog(google('gemini-2.0-flash'), {
+        chatId: input.chatId,
+        userId: context.user.id,
+      }),
       prompt: `
         You are a title generator that generates a title for a chat.
         The title should be in the same language as the user's message.

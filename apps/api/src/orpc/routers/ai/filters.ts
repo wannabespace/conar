@@ -3,6 +3,7 @@ import { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
 import { generateObject } from 'ai'
 import { type } from 'arktype'
 import { z } from 'zod'
+import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const filters = orpc
@@ -11,12 +12,15 @@ export const filters = orpc
     prompt: 'string',
     context: 'string',
   }))
-  .handler(async ({ input, signal }) => {
+  .handler(async ({ input, signal, context }) => {
     console.info('sql filters input', input)
-    const { prompt, context } = input
 
     const { object } = await generateObject({
-      model: google('gemini-2.0-flash'),
+      model: withPosthog(google('gemini-2.0-flash'), {
+        prompt: input.prompt,
+        context: input.context,
+        userId: context.user.id,
+      }),
       system: `
         You are a SQL filter generator that converts natural language queries into precise database filters.
         You should understand the sense of the prompt as much as possible, as users can ask with just a few words without any context.
@@ -38,9 +42,9 @@ export const filters = orpc
         Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}
 
         Table context:
-        ${context}
+        ${input.context}
       `,
-      prompt,
+      prompt: input.prompt,
       abortSignal: signal,
       schema: z.object({
         filters: z.object({
