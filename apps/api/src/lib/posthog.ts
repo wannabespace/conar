@@ -9,7 +9,7 @@ export const posthog = env.POSTHOG_API_KEY
 
 export function withPosthog(model: LanguageModelV2, properties: {
   userId: string
-  [key: string]: string
+  [key: string]: string | number | boolean
 }): LanguageModelV2 {
   if (!posthog)
     return model
