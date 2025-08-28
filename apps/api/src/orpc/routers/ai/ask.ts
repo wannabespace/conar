@@ -59,7 +59,7 @@ function generateStream({
     id: message.id,
     chatId,
     role: message.role,
-    parts: message.parts.length,
+    partsCount: message.parts.length,
   })), null, 2))
 
   return streamText({
