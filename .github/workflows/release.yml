@@ -51,7 +51,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: desktop-dist
-          path: ./apps/desktop/dist/
+          path: |
+            ./apps/desktop/dist/
+            ./apps/desktop/dist-electron/
           retention-days: 1
 
   build-electron:
