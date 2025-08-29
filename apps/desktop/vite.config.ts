@@ -46,7 +46,7 @@ export default defineConfig(() => {
       }),
     ],
     build: {
-      sourcemap: true,
+      sourcemap: process.env.SOURCEMAP === 'true',
     },
     optimizeDeps: {
       exclude: ['@electric-sql/pglite'],
