@@ -50,7 +50,9 @@ jobs:
           VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
           VITE_PUBLIC_AUTH_SECRET: ${{ secrets.VITE_PUBLIC_AUTH_SECRET }}
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
-        run: pnpm run build:desktop
+        run: |
+          export NODE_OPTIONS="--max_old_space_size=4096"
+          pnpm run build:desktop
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
