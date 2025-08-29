@@ -1,4 +1,4 @@
-name: Upload PostHog Source Maps
+name: Upload Sourcemaps
 
 on:
   workflow_run:
