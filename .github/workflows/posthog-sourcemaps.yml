@@ -1,0 +1,55 @@
+name: Upload PostHog Source Maps
+
+on:
+  workflow_run:
+    workflows: [Build and release]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  upload-sourcemaps:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Get version from package.json
+        id: package-version
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./apps/desktop/package.json').version")
+          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.12.4
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Download Release Assets
+        uses: actions/download-artifact@v4
+        with:
+          name: desktop-dist
+          path: ./apps/desktop/
+
+      - name: Upload PostHog Sourcemap
+        env:
+          POSTHOG_CLI_ENV_ID: ${{ secrets.POSTHOG_CLI_ENV_ID }}
+          POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_TOKEN }}
+        run: |
+          # Inject source map metadata into the built assets
+          pnpm exec posthog-cli sourcemap inject --directory ./apps/desktop/dist
+
+          # Upload source maps to PostHog
+          pnpm exec posthog-cli sourcemap upload --directory ./apps/desktop/dist --delete-after
