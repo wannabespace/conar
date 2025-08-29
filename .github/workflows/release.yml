@@ -10,7 +10,6 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        # os: [macos-latest, ubuntu-latest]
 
     steps:
       - name: Check out Git repository
@@ -51,4 +50,17 @@ jobs:
           VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
           VITE_PUBLIC_AUTH_SECRET: ${{ secrets.VITE_PUBLIC_AUTH_SECRET }}
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
+          POSTHOG_CLI_ENV_ID: ${{ secrets.POSTHOG_CLI_ENV_ID }}
+          POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_TOKEN }}
         run: pnpm run build:desktop
+
+      - name: Upload PostHog Sourcemap
+        env:
+          POSTHOG_CLI_ENV_ID: ${{ secrets.POSTHOG_CLI_ENV_ID }}
+          POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_TOKEN }}
+        run: |
+          # Inject source map metadata into the built assets
+          pnpm exec posthog-cli sourcemap inject --directory ./apps/desktop/dist
+
+          # Upload source maps to PostHog
+          pnpm exec posthog-cli sourcemap upload --directory ./apps/desktop/dist --delete-after
