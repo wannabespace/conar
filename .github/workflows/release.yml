@@ -5,6 +5,7 @@ on:
 
 jobs:
   build:
+    name: Build Vite
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
@@ -58,6 +59,7 @@ jobs:
 
   build-electron:
     needs: build
+    name: Build Electron
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
