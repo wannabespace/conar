@@ -10,14 +10,14 @@
     "drizzle:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.6",
+    "@ai-sdk/anthropic": "^2.0.9",
     "@ai-sdk/anthropic1": "npm:@ai-sdk/anthropic@1.2.12",
-    "@ai-sdk/google": "^2.0.8",
+    "@ai-sdk/google": "^2.0.11",
     "@ai-sdk/google1": "npm:@ai-sdk/google@1.2.22",
-    "@ai-sdk/openai": "^2.0.20",
+    "@ai-sdk/openai": "^2.0.23",
     "@ai-sdk/openai1": "npm:@ai-sdk/openai@1.3.23",
     "@ai-sdk/provider": "^2.0.0",
-    "@ai-sdk/xai": "^2.0.11",
+    "@ai-sdk/xai": "^2.0.13",
     "@ai-sdk/xai1": "npm:@ai-sdk/xai@1.2.18",
     "@conar/shared": "workspace:*",
     "@hono/arktype-validator": "^2.0.1",
@@ -42,7 +42,7 @@
     "posthog-node": "^5.8.1",
     "redis": "^5.8.2",
     "resumable-stream": "^2.2.3",
-    "stripe": "^18.4.0",
+    "stripe": "^18.5.0",
     "superjson": "^2.2.2",
     "uuid": "catalog:",
     "zod": "catalog:"
