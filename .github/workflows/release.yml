@@ -4,9 +4,61 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
-    runs-on: ${{ matrix.os }}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
 
+      - name: Get version from package.json
+        id: package-version
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./apps/desktop/package.json').version")
+          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.15.0
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Desktop App
+        env:
+          VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
+          VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
+          VITE_PUBLIC_AUTH_SECRET: ${{ secrets.VITE_PUBLIC_AUTH_SECRET }}
+          VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
+        run: pnpm exec cross-env NODE_OPTIONS="--max_old_space_size=4096" pnpm run build:desktop
+
+      - name: Upload PostHog Sourcemap
+        env:
+          POSTHOG_CLI_ENV_ID: ${{ secrets.POSTHOG_CLI_ENV_ID }}
+          POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_TOKEN }}
+        run: |
+          # Inject source map metadata into the built assets
+          pnpm exec posthog-cli sourcemap inject --directory ./apps/desktop/dist
+
+          # Upload source maps to PostHog
+          pnpm exec posthog-cli sourcemap upload --directory ./apps/desktop/dist --delete-after
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-dist
+          path: ./apps/desktop/dist/
+          retention-days: 1
+
+  build-electron:
+    needs: build
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
@@ -30,12 +82,18 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 10.12.4
+          version: 10.15.0
 
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Build and Release
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: desktop-dist
+          path: ./apps/desktop/
+
+      - name: Build Electron App
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           VERSION: ${{ steps.package-version.outputs.version }}
@@ -46,15 +104,4 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
-          VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
-          VITE_PUBLIC_AUTH_SECRET: ${{ secrets.VITE_PUBLIC_AUTH_SECRET }}
-          VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
-        run: pnpm exec cross-env NODE_OPTIONS="--max_old_space_size=4096" pnpm run build:desktop
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: desktop-dist
-          path: ./apps/desktop/dist/
-          retention-days: 1
+        run: pnpm run build:electron

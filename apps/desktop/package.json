@@ -15,7 +15,8 @@
   "main": "dist-electron/main/index.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder -p always",
+    "build": "tsc && vite build",
+    "build:electron": "electron-builder -p always",
     "test": "vitest run",
     "check-types": "tsc",
     "drizzle:generate": "drizzle-kit generate && node compile-migrations.ts",
