@@ -31,7 +31,7 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Build Desktop App
+      - name: Build Vite
         env:
           VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
           VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
