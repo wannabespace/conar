@@ -44,8 +44,8 @@ jobs:
           POSTHOG_CLI_ENV_ID: ${{ secrets.POSTHOG_CLI_ENV_ID }}
           POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_TOKEN }}
         run: |
-          pnpm exec posthog-cli sourcemap inject --directory ./apps/desktop/dist
-          pnpm exec posthog-cli sourcemap upload --directory ./apps/desktop/dist --delete-after
+          pnpm exec posthog-cli --host https://eu.posthog.com sourcemap inject --directory ./apps/desktop/dist
+          pnpm exec posthog-cli --host https://eu.posthog.com sourcemap upload --directory ./apps/desktop/dist --delete-after
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
