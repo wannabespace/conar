@@ -11,10 +11,25 @@ import posthog from 'posthog-js'
 import { useEffect } from 'react'
 import { EventsProvider } from './lib/events'
 
+// User specific errors that we don't want to track
+const IGNORED_ERRORS = [
+  'ERR_TIMED_OUT',
+  'ETIMEDOUT',
+  'ENOTFOUND',
+  'ECONNRESET',
+  'Password authentication',
+  'No pg_hba.conf entry for host',
+  'Could not connect to database',
+]
+
 export function ErrorPage({ error }: ErrorComponentProps) {
   const router = useRouter()
 
   useEffect(() => {
+    if (IGNORED_ERRORS.some(e => e.includes(error.message))) {
+      return
+    }
+
     posthog.captureException(error)
   }, [error])
 

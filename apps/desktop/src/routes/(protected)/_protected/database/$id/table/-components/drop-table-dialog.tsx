@@ -43,7 +43,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
   const isCurrentTable = schema === schemaFromSearch && table === tableFromSearch
 
   useImperativeHandle(ref, () => ({
-    drop: (schema: string, table: string) => {
+    drop: (schema, table) => {
       setSchema(schema)
       setTable(table)
       setConfirmationText('')
