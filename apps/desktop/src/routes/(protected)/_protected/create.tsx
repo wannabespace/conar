@@ -194,7 +194,7 @@ function CreateConnectionPage() {
     defaultValues: {
       connectionString: '',
       name: generateRandomName(),
-      type: null! as DatabaseType,
+      type: DatabaseType.Postgres,
       saveInCloud: true,
     },
     validators: {
