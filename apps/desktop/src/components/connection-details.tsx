@@ -1,11 +1,11 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
-import { parseConnectionString } from '@conar/shared/utils/connections'
+import { parseUrl } from '@conar/shared/utils/url'
 import { cn } from '@conar/ui/lib/utils'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useState } from 'react'
 
 export function ConnectionDetails({ className, connectionString, type }: { className?: string, connectionString: string, type: DatabaseType }) {
-  const connection = parseConnectionString(connectionString)
+  const url = parseUrl(connectionString)
   const [showPassword, setShowPassword] = useState(false)
 
   return (
@@ -17,9 +17,9 @@ export function ConnectionDetails({ className, connectionString, type }: { class
         </tr>
         <tr>
           <td className="py-1 pr-4 text-muted-foreground">User</td>
-          <td data-mask>{connection.user}</td>
+          <td data-mask>{url.username}</td>
         </tr>
-        {connection.password && (
+        {url.password && (
           <tr>
             <td className="py-1 pr-4 text-muted-foreground">Password</td>
             <td data-mask>
@@ -30,31 +30,31 @@ export function ConnectionDetails({ className, connectionString, type }: { class
               >
                 {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
               </button>
-              {showPassword ? connection.password : Array.from({ length: connection.password.length }).map(() => '*').join('')}
+              {showPassword ? url.password : Array.from({ length: url.password.length }).map(() => '*').join('')}
             </td>
           </tr>
         )}
         <tr>
           <td className="py-1 pr-4 text-muted-foreground">Host</td>
-          <td data-mask>{connection.host}</td>
+          <td data-mask>{url.hostname}</td>
         </tr>
         <tr>
           <td className="py-1 pr-4 text-muted-foreground">Port</td>
-          <td data-mask>{connection.port}</td>
+          <td data-mask>{url.port}</td>
         </tr>
         <tr>
           <td className="py-1 pr-4 text-muted-foreground">Database</td>
-          <td data-mask>{connection.database}</td>
+          <td data-mask>{url.pathname.slice(1)}</td>
         </tr>
-        {Object.keys(connection.options).length > 0 && (
+        {Object.keys(url.searchParams.entries()).length > 0 && (
           <>
             <tr>
               <td className="py-1 pr-4 text-muted-foreground">Options</td>
             </tr>
-            {Object.entries(connection.options).map(([key, value]) => (
+            {Object.entries(url.searchParams.entries()).map(([key, value]) => (
               <tr key={key}>
                 <td className="py-1 pr-4 text-muted-foreground">{key}</td>
-                <td data-mask>{value}</td>
+                <td data-mask>{typeof value === 'string' ? value : JSON.stringify(value)}</td>
               </tr>
             ))}
           </>
