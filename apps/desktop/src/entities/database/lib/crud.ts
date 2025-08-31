@@ -1,4 +1,5 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
+import { parseUrl } from '@conar/shared/utils/url'
 import { eq } from 'drizzle-orm'
 import { databases, db } from '~/drizzle'
 import { orpc } from '~/lib/orpc'
@@ -9,7 +10,7 @@ export async function createDatabase({ saveInCloud, ...database }: {
   connectionString: string
   saveInCloud: boolean
 }) {
-  const url = new URL(database.connectionString.trim())
+  const url = parseUrl(database.connectionString.trim())
 
   const isPasswordExists = !!url.password
 
@@ -61,7 +62,7 @@ export async function updateDatabasePassword(id: string, password: string) {
     throw new Error('Database not found')
   }
 
-  const url = new URL(database.connectionString)
+  const url = parseUrl(database.connectionString)
 
   url.password = password
 
