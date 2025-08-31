@@ -1,4 +1,5 @@
 import type { databases } from '~/drizzle'
+import { parseUrl } from '@conar/shared/utils/url'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -31,7 +32,7 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
   })
 
   const newConnectionString = useMemo(() => {
-    const url = new URL(database.connectionString)
+    const url = parseUrl(database.connectionString)
     url.password = password
     return url.toString()
   }, [database.connectionString, password])

@@ -1,6 +1,7 @@
-import type { QueryResult } from 'pg'
+import type { ClientConfig, QueryResult } from 'pg'
 import type { DatabaseQueryResult } from './events'
 import { createRequire } from 'node:module'
+import { parseUrl } from '@conar/shared/utils/url'
 
 const pg = createRequire(import.meta.url)('pg') as typeof import('pg')
 
@@ -12,6 +13,19 @@ pg.types.setTypeParser(pg.types.builtins.TIMESTAMPTZ, parseDate)
 pg.types.setTypeParser(pg.types.builtins.TIME, parseDate)
 pg.types.setTypeParser(pg.types.builtins.TIMETZ, parseDate)
 
+function getClientConfig(connectionString: string): ClientConfig {
+  // We shouldn't pass connection string to pg.Client because it cannot parse special characters in password like #
+  const parsed = parseUrl(connectionString)
+  return {
+    host: parsed.hostname,
+    port: Number.parseInt(parsed.port, 10),
+    user: parsed.username,
+    password: parsed.password,
+    database: parsed.pathname.slice(1),
+    options: JSON.stringify(Object.fromEntries(parsed.searchParams.entries())),
+  }
+}
+
 export async function pgQuery({
   connectionString,
   query,
@@ -21,9 +35,7 @@ export async function pgQuery({
   query: string
   values?: unknown[]
 }): Promise<DatabaseQueryResult[]> {
-  const pool = new pg.Pool({
-    connectionString,
-  })
+  const pool = new pg.Pool(getClientConfig(connectionString))
 
   try {
     const result = await pool.query(query, values)
@@ -43,9 +55,7 @@ export async function pgQuery({
 }
 
 export async function pgTestConnection({ connectionString }: { connectionString: string }) {
-  const client = new pg.Client({
-    connectionString,
-  })
+  const client = new pg.Client(getClientConfig(connectionString))
 
   try {
     await client.connect()

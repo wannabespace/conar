@@ -17,6 +17,7 @@ import { useForm, useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
+import posthog from 'posthog-js'
 import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ConnectionDetails } from '~/components/connection-details'
@@ -194,7 +195,7 @@ function CreateConnectionPage() {
     defaultValues: {
       connectionString: '',
       name: generateRandomName(),
-      type: null! as DatabaseType,
+      type: DatabaseType.Postgres,
       saveInCloud: true,
     },
     validators: {
@@ -217,6 +218,9 @@ function CreateConnectionPage() {
       toast.success('Connection successful. You can save the database.')
     },
     onError: (error) => {
+      posthog.capture('connection_test_failed', {
+        error: error.message,
+      })
       toast.error('We couldn\'t connect to the database', {
         description: error.message,
       })

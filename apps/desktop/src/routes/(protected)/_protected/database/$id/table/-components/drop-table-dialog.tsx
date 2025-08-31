@@ -2,6 +2,7 @@ import type { databases } from '~/drizzle'
 import { dropTableSql } from '@conar/shared/sql/drop-table'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
+import { Checkbox } from '@conar/ui/components/checkbox'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import {
   Dialog,
@@ -38,13 +39,15 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
   const [schema, setSchema] = useState('')
   const [table, setTable] = useState('')
   const [open, setOpen] = useState(false)
+  const [cascade, setCascade] = useState(false)
   const isCurrentTable = schema === schemaFromSearch && table === tableFromSearch
 
   useImperativeHandle(ref, () => ({
-    drop: (schema: string, table: string) => {
+    drop: (schema, table) => {
       setSchema(schema)
       setTable(table)
       setConfirmationText('')
+      setCascade(false)
       setOpen(true)
     },
   }))
@@ -54,13 +57,14 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
       await dbQuery({
         type: database.type,
         connectionString: database.connectionString,
-        query: dropTableSql(schema, table)[database.type],
+        query: dropTableSql(schema, table, cascade)[database.type],
       })
     },
     onSuccess: () => {
       toast.success(`Table "${table}" successfully dropped`)
       setOpen(false)
       setConfirmationText('')
+      setCascade(false)
 
       queryClient.invalidateQueries(tablesAndSchemasQuery({ database }))
       closeTab(database.id, schema, table)
@@ -114,13 +118,26 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
                 autoComplete="off"
               />
             </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="cascade"
+                checked={cascade}
+                onCheckedChange={() => setCascade(!cascade)}
+              />
+              <Label htmlFor="cascade" className="font-normal">
+                Drop tables that depend on this table (CASCADE)
+              </Label>
+            </div>
           </div>
         </DialogHeader>
         <DialogFooter className="mt-4 flex gap-2">
           <DialogClose asChild>
             <Button
               variant="outline"
-              onClick={() => setConfirmationText('')}
+              onClick={() => {
+                setConfirmationText('')
+                setCascade(false)
+              }}
             >
               Cancel
             </Button>

@@ -37,8 +37,9 @@ function DatabasePage() {
   const { database } = Route.useLoaderData()
 
   useEffect(() => {
-    if (!lastOpenedDatabases.get().includes(database.id))
-      lastOpenedDatabases.set([database.id, ...lastOpenedDatabases.get().filter(dbId => dbId !== database.id)].slice(0, 3))
+    const last = lastOpenedDatabases.get()
+    if (!last.includes(database.id))
+      lastOpenedDatabases.set([database.id, ...last.filter(dbId => dbId !== database.id)].slice(0, 3))
   }, [database.id])
 
   if (database.isPasswordExists && !database.isPasswordPopulated) {

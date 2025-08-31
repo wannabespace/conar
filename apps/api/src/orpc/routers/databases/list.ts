@@ -1,4 +1,5 @@
 import { decrypt } from '@conar/shared/encryption'
+import { ORPCError } from '@orpc/server'
 import { desc, eq } from 'drizzle-orm'
 import { databases, db } from '~/drizzle'
 import { authMiddleware, orpc } from '~/orpc'
@@ -20,10 +21,15 @@ export const list = orpc
       .where(eq(databases.userId, context.user.id))
       .orderBy(desc(databases.createdAt))
 
-    return list.map((database) => {
-      return {
+    try {
+      return list.map(database => ({
         ...database,
         connectionString: decrypt({ encryptedText: database.connectionString, secret: context.user.secret }),
-      }
-    })
+      }))
+    }
+    catch {
+      throw new ORPCError('INTERNAL_SERVER_ERROR', {
+        message: 'Failed to decrypt database connection string',
+      })
+    }
   })

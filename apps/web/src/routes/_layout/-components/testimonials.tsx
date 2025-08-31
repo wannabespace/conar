@@ -94,6 +94,13 @@ const testimonials: {
   children: () => React.ReactNode
 }[] = [
   {
+    name: 'Peter Steinberger',
+    login: 'steipete',
+    avatar: '/avatars/steipete.png',
+    link: 'https://x.com/steipete/status/1961806791404130480',
+    children: () => 'Postgres + AI is amazing. @conar_app',
+  },
+  {
     name: 'Maze',
     login: 'mazeincoding',
     avatar: '/avatars/mazeincoding.jpg',
