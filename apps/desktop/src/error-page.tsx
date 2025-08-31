@@ -20,6 +20,7 @@ const IGNORED_ERRORS = [
   'Password authentication',
   'No pg_hba.conf entry for host',
   'Could not connect to database',
+  'Password authentication failed for user',
 ]
 
 export function ErrorPage({ error }: ErrorComponentProps) {
