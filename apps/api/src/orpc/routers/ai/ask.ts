@@ -148,19 +148,6 @@ export const ask = orpc
       if (input.trigger === 'regenerate-message') {
         await tx.delete(chatsMessages).where(eq(chatsMessages.id, input.messageId))
       }
-    }).catch((error) => {
-      console.error('error onFinish transaction', error)
-
-      // Handle foreign key constraint violations specifically
-      if (error.message?.includes('violates foreign key constraint')
-        || error.message?.includes('chats_messages_chat_id_chats_id_fk')) {
-        console.error('Foreign key constraint violation: Chat does not exist', { chatId: input.id })
-        throw new ORPCError('BAD_REQUEST', {
-          message: 'Chat not found. Please try creating a new chat.',
-        })
-      }
-
-      throw error
     })
 
     const messages = await getMessages(input.id).catch((error) => {

@@ -123,17 +123,6 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           if (options.trigger === 'regenerate-message' && options.messageId) {
             await tx.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId))
           }
-        }).catch((error) => {
-          console.error('Transaction error:', error)
-
-          // Handle foreign key constraint violations specifically
-          if (error.message?.includes('violates foreign key constraint')
-            || error.message?.includes('chats_messages_chat_id_chats_id_fk')) {
-            console.error('Foreign key constraint violation: Chat does not exist', { chatId: options.chatId })
-            throw new Error('Chat not found. Please try creating a new chat.')
-          }
-
-          throw error
         })
 
         return eventIteratorToStream(await orpc.ai.ask({
