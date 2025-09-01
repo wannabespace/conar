@@ -2,7 +2,7 @@
   "name": "@conar/api",
   "type": "module",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development bun ./src/index.ts",
+    "dev": "cross-env NODE_ENV=development bun --watch ./src/index.ts",
     "start": "cross-env NODE_ENV=production bun run drizzle:migrate && bun ./src/index.ts",
     "check-types": "tsc",
     "drizzle:generate": "drizzle-kit generate",
