@@ -143,7 +143,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           databaseId: database.id,
           prompt: lastMessage,
           trigger: options.trigger,
-          messageId: options.messageId!,
+          messageId: options.messageId,
           context: [
             `Current query in the SQL runner: ${pageStore.state.query.trim() || 'Empty'}`,
             'Database schemas and tables:',
