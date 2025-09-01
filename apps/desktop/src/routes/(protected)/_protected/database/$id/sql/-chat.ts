@@ -120,8 +120,8 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
             set: lastMessage,
           })
 
-          if (options.trigger === 'regenerate-message') {
-            await tx.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId!))
+          if (options.trigger === 'regenerate-message' && options.messageId) {
+            await tx.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId))
           }
         }).catch((error) => {
           console.error('Transaction error:', error)
