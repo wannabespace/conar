@@ -17,7 +17,6 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:electron": "electron-builder -p always",
-    "test": "vitest run",
     "check-types": "tsc",
     "drizzle:generate": "drizzle-kit generate && node compile-migrations.ts",
     "drizzle:generate-custom": "drizzle-kit generate --custom && node compile-migrations.ts"

@@ -50,7 +50,6 @@
     "@conar/configs": "workspace:*",
     "@types/bun": "^1.2.21",
     "@types/ioredis-mock": "^8.2.6",
-    "drizzle-kit": "catalog:",
-    "tsx": "^4.20.5"
+    "drizzle-kit": "catalog:"
   }
 }

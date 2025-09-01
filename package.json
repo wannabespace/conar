@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "bun@1.2.21",
   "engines": {
-    "bun": ">=1.0.0"
+    "bun": ">=1.2.0"
   },
   "scripts": {
     "prepare": "husky && bun scripts/setup-dev.ts",
