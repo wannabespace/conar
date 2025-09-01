@@ -68,6 +68,7 @@ export const getLatestReleaseOptions = queryOptions({
     const macIntelAsset = links.find(link => link.type === 'macos' && link.name.toLowerCase().includes('x64'))!
     const linuxDebAsset = links.find(link => link.type === 'linux' && link.name.toLowerCase().endsWith('.deb'))!
     const linuxAppImageAsset = links.find(link => link.type === 'linux' && link.name.toLowerCase().endsWith('.appimage'))!
+    const linuxRpmAsset = links.find(link => link.type === 'linux' && link.name.toLowerCase().endsWith('.rpm'))!
     // const windowsAsset = links.find(link => link.type === 'windows')
 
     return {
@@ -79,6 +80,7 @@ export const getLatestReleaseOptions = queryOptions({
       linux: {
         deb: linuxDebAsset,
         appImage: linuxAppImageAsset,
+        rpm: linuxRpmAsset,
       },
       // windows: {
       //   exe: windowsAsset,

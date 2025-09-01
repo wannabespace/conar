@@ -76,6 +76,12 @@ function AllPlatforms() {
         arch="AppImage"
         asset={linux.appImage}
       />
+      <DownloadOption
+        Icon={Linux}
+        type="linux"
+        arch="rpm"
+        asset={linux.rpm}
+      />
     </>
   )
 }
