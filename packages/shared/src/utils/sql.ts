@@ -1,3 +1,9 @@
+export const CUSTOM_OPERATORS = [
+  '≈',
+] as const
+
+export type CustomOperator = typeof CUSTOM_OPERATORS[number]
+
 export const SQL_OPERATORS = [
   '=',
   '!=',
@@ -14,13 +20,18 @@ export const SQL_OPERATORS = [
   'IS NOT NULL',
 ] as const
 
-export interface SqlOperator {
+export type SQLOperator = typeof SQL_OPERATORS[number]
+
+export type FilterOperator = SQLOperator | CustomOperator
+
+export interface FilterRecord<T extends string = FilterOperator> {
   label: string
-  value: typeof SQL_OPERATORS[number]
+  value: T
   hasValue: boolean
+  tip?: string
 }
 
-export const SQL_OPERATORS_LIST: SqlOperator[] = [
+export const SQL_OPERATORS_LIST: FilterRecord<SQLOperator>[] = [
   { label: 'Equal', value: '=', hasValue: true },
   { label: 'Not equal', value: '!=', hasValue: true },
   { label: 'Greater than', value: '>', hasValue: true },
@@ -34,4 +45,13 @@ export const SQL_OPERATORS_LIST: SqlOperator[] = [
   { label: 'Not in', value: 'NOT IN', hasValue: true },
   { label: 'Is null', value: 'IS NULL', hasValue: false },
   { label: 'Is not null', value: 'IS NOT NULL', hasValue: false },
+]
+
+export const CUSTOM_OPERATORS_LIST: (FilterRecord<CustomOperator> & { tip: string })[] = [
+  { label: 'Almost equal', value: '≈', hasValue: true, tip: '<column> ILIKE "%<query>%"' },
+]
+
+export const FILTER_OPERATORS_LIST: FilterRecord[] = [
+  ...SQL_OPERATORS_LIST,
+  ...CUSTOM_OPERATORS_LIST,
 ]

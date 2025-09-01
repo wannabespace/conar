@@ -1,6 +1,6 @@
 import type { Store } from '@tanstack/react-store'
 import type { storeState } from './-store'
-import { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
+import { FILTER_OPERATORS_LIST } from '@conar/shared/utils/sql'
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
@@ -102,7 +102,7 @@ function TableContent({ id, table, schema, store }: { id: string, table: string,
       >
         <FiltersProvider
           columns={columns ?? []}
-          operators={SQL_OPERATORS_LIST}
+          operators={FILTER_OPERATORS_LIST}
         >
           <div className="h-full flex flex-col justify-between">
             <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
