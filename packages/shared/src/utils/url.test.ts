@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { parseUrl } from './url'
 
 const RANDOM_URLS = [
@@ -601,7 +601,7 @@ describe('parseUrl', () => {
     })
 
     it('parses connection strings with database-specific query parameters', () => {
-      const testCases = [
+      const testCases: { url: string, expectedParams: Record<string, string> }[] = [
         {
           url: 'postgresql://user:pass@localhost:5432/db?sslmode=require&connect_timeout=10&application_name=myapp',
           expectedParams: { sslmode: 'require', connect_timeout: '10', application_name: 'myapp' },

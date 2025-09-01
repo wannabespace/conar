@@ -1,5 +1,5 @@
+import { describe, expect, it } from 'bun:test'
 import { nanoid } from 'nanoid'
-import { describe, expect, it } from 'vitest'
 import { decrypt, encrypt } from './encryption'
 
 const secret = 'supersecret'
