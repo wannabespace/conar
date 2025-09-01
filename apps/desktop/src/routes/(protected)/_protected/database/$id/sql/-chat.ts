@@ -92,6 +92,10 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     transport: {
       async sendMessages(options) {
+        if (options.trigger === 'regenerate-message' && !options.messageId) {
+          throw new Error('Message ID is required when regenerating a message.')
+        }
+
         const lastMessage = options.messages.at(-1)
 
         if (!lastMessage) {
@@ -108,18 +112,16 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
             })
           }
 
-          if (options.trigger === 'submit-message') {
-            await tx.insert(chatsMessages).values({
-              ...lastMessage,
-              chatId: options.chatId,
-            }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
-              target: chatsMessages.id,
-              set: lastMessage,
-            })
-          }
+          await tx.insert(chatsMessages).values({
+            ...lastMessage,
+            chatId: options.chatId,
+          }).onConflictDoUpdate({
+            target: chatsMessages.id,
+            set: lastMessage,
+          })
 
-          if (options.trigger === 'regenerate-message' && options.messageId) {
-            await tx.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId))
+          if (options.trigger === 'regenerate-message') {
+            await tx.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId!))
           }
         }).catch((error) => {
           console.error('Transaction error:', error)
@@ -141,7 +143,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           databaseId: database.id,
           prompt: lastMessage,
           trigger: options.trigger,
-          messageId: options.messageId,
+          messageId: options.messageId!,
           context: [
             `Current query in the SQL runner: ${pageStore.state.query.trim() || 'Empty'}`,
             'Database schemas and tables:',
@@ -158,7 +160,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       metadata: row.metadata || undefined,
     }))) satisfies AppUIMessage[],
     onFinish: async ({ message }) => {
-      await db.insert(chatsMessages).values({ chatId: id, ...message }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
+      await db.insert(chatsMessages).values({ chatId: id, ...message }).onConflictDoUpdate({
         target: chatsMessages.id,
         set: message,
       })

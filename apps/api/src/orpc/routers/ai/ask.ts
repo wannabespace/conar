@@ -20,9 +20,13 @@ const chatInputType = type({
   'prompt': 'object' as type.cast<AppUIMessage>,
   'databaseId': 'string.uuid.v7',
   'fallback?': 'boolean',
-  'trigger': '"submit-message" | "regenerate-message"',
-  'messageId?': 'string.uuid.v7',
 })
+  .and(type({
+    trigger: '"submit-message"',
+  }).or(type({
+    trigger: '"regenerate-message"',
+    messageId: 'string.uuid.v7',
+  })))
 
 const mainModel = anthropic('claude-sonnet-4-20250514')
 const fallbackModel = anthropic('claude-opus-4-20250514')
@@ -133,17 +137,15 @@ export const ask = orpc
         })
       }
 
-      if (input.trigger === 'submit-message') {
-        await tx.insert(chatsMessages).values({
-          chatId: input.id,
-          ...input.prompt,
-        }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
-          target: chatsMessages.id,
-          set: input.prompt,
-        })
-      }
+      await tx.insert(chatsMessages).values({
+        chatId: input.id,
+        ...input.prompt,
+      }).onConflictDoUpdate({
+        target: chatsMessages.id,
+        set: input.prompt,
+      })
 
-      if (input.trigger === 'regenerate-message' && input.messageId) {
+      if (input.trigger === 'regenerate-message') {
         await tx.delete(chatsMessages).where(eq(chatsMessages.id, input.messageId))
       }
     }).catch((error) => {
@@ -187,7 +189,7 @@ export const ask = orpc
             await db.insert(chatsMessages).values({
               ...result.responseMessage,
               chatId: input.id,
-            }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
+            }).onConflictDoUpdate({
               target: chatsMessages.id,
               set: result.responseMessage,
             })

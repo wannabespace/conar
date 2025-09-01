@@ -27,7 +27,7 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@ai-sdk/react": "^2.0.28",
+    "@ai-sdk/react": "^2.0.29",
     "@conar/api": "workspace:*",
     "@conar/configs": "workspace:*",
     "@conar/shared": "workspace:*",
@@ -42,8 +42,8 @@
     "@hookform/resolvers": "^5.2.1",
     "@monaco-editor/loader": "^1.5.0",
     "@number-flow/react": "catalog:",
-    "@orpc/client": "^1.8.5",
-    "@orpc/server": "^1.8.5",
+    "@orpc/client": "^1.8.6",
+    "@orpc/server": "^1.8.6",
     "@react-hookz/web": "^25.1.1",
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "^4.1.12",
