@@ -1,6 +1,7 @@
+import process from 'node:process'
 import { type } from 'arktype'
 
-const isProduction = Bun.env.NODE_ENV === 'production'
+const isProduction = process.env.NODE_ENV === 'production'
 
 const envType = type({
   API_URL: 'string',
@@ -38,15 +39,15 @@ const devOptionalEnvs = [
 ] satisfies (keyof typeof envType.infer)[]
 
 export const env = isProduction
-  ? envType.assert(Bun.env)
+  ? envType.assert(process.env)
   : envType
       .merge(
         devOptionalEnvs.reduce((acc, env) => {
           acc[env] = 'string?'
-          if (!Bun.env[env]) {
+          if (!process.env[env]) {
             console.warn(`"${env}" is not set in env file`)
           }
           return acc
         }, {} as { [K in typeof devOptionalEnvs[number]]: 'string?' }),
       )
-      .assert(Bun.env)
+      .assert(process.env)

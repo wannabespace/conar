@@ -1,4 +1,5 @@
 import type { BetterAuthPlugin, User } from 'better-auth'
+import process from 'node:process'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
@@ -96,7 +97,7 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: [env.WEB_URL, ...(Bun.env.NODE_ENV === 'production' ? [] : ['http://localhost:3002'])],
+  trustedOrigins: [env.WEB_URL, ...(process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3002'])],
   advanced: {
     cookiePrefix: 'conar',
     database: {

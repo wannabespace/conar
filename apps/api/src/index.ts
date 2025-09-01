@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { trpcServer } from '@hono/trpc-server'
 import { onError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
@@ -56,5 +57,5 @@ app.route('/ai', ai)
 
 export default {
   fetch: app.fetch,
-  port: Bun.env.PORT ? Number(Bun.env.PORT) : 3000,
+  port: process.env.PORT ? Number(process.env.PORT) : 3000,
 }
