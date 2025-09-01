@@ -1,4 +1,4 @@
-import fs from 'node:fs'
+import fs from 'node:fs/promises'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
@@ -7,8 +7,8 @@ import electron from 'vite-plugin-electron/simple'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import pkg from './package.json'
 
-export default defineConfig(() => {
-  fs.rmSync('dist-electron', { recursive: true, force: true })
+export default defineConfig(async () => {
+  await fs.rm('dist-electron', { recursive: true, force: true })
 
   return {
     plugins: [
