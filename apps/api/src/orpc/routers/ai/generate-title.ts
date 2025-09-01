@@ -1,5 +1,5 @@
 import type { AppUIMessage } from '@conar/shared/ai-tools'
-import { google } from '@ai-sdk/google'
+import { openai } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
@@ -15,7 +15,7 @@ export const generateTitle = orpc
   }))
   .handler(async ({ input, signal, context }) => {
     const { text } = await generateText({
-      model: withPosthog(google('gemini-2.0-flash'), {
+      model: withPosthog(openai('gpt-4o-mini'), {
         chatId: input.chatId,
         userId: context.user.id,
       }),
