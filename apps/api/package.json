@@ -23,7 +23,7 @@
     "@hono/arktype-validator": "^2.0.1",
     "@hono/trpc-server": "^0.4.0",
     "@hono/zod-validator": "^0.7.2",
-    "@orpc/server": "^1.8.5",
+    "@orpc/server": "^1.8.6",
     "@posthog/ai": "^6.3.0",
     "@trpc/server": "^11.5.0",
     "ai": "catalog:",

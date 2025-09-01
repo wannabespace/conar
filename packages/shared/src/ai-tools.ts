@@ -33,10 +33,11 @@ export const tools = {
   select: tool({
     description: [
       'Use this tool to select data from the database to improve your response.',
-      'Do not abuse this tool, unless you are sure that the data is relevant to the question.',
-      'Do not select any sensitive data, avoid columns like password, token, secret, etc.',
-      'tableName and schemaName will be concatenated to "schemaName.tableName".',
+      'Do not abuse this tool, unless you are 100% sure that the data will help to answer the question.',
+      'Do not select any sensitive data, like password, token, secret, card number, etc.',
+      'Mask sensitive data with asterisks if need to select to answer the question.',
       'Do not use any tables and schemas that are not provided in the input.',
+      'tableName and schemaName will be concatenated to "schemaName.tableName".',
       'For tableName use only table without schema prefix.',
     ].join('\n'),
     inputSchema: z.object({

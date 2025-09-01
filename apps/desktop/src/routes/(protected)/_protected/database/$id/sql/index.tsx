@@ -17,7 +17,7 @@ export const Route = createFileRoute(
     'chatId?': 'string.uuid.v7',
     'error?': 'string',
   }),
-  loaderDeps: ({ search }) => ({ chatId: search.chatId }),
+  loaderDeps: ({ search }) => search,
   loader: async ({ params, context, deps }) => {
     pageStore.setState(state => ({
       ...state,
