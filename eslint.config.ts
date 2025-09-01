@@ -18,7 +18,6 @@ export default antfu({
     '**/.nitro/**/*',
     '**/.output/**/*',
     '**/.types/**/*',
-    'out/**/*',
     '**/migrations/meta/*.json',
     '**/migrations.json',
   ],
