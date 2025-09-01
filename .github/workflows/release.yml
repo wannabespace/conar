@@ -67,7 +67,7 @@ jobs:
         id: package-version
         shell: bash
         run: |
-          VERSION=$(bun run --silent 'console.log(require("./apps/desktop/package.json").version)')
+          VERSION=$(node -p "require('./apps/desktop/package.json').version")
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Install Bun
