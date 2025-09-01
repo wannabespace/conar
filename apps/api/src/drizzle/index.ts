@@ -1,4 +1,5 @@
-import { drizzle } from 'drizzle-orm/bun-sql'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
 import { env } from '~/env'
 import * as auth from './schema/auth'
 import * as chats from './schema/chats'
@@ -10,7 +11,9 @@ export * from './schema/chats'
 export * from './schema/databases'
 export * from './schema/queries'
 
-export const db = drizzle(env.DATABASE_URL, {
+const client = postgres(env.DATABASE_URL)
+
+export const db = drizzle(client, {
   logger: true,
   schema: {
     ...auth,
