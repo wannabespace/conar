@@ -22,13 +22,12 @@ export const filters = orpc
         userId: context.user.id,
       }),
       system: `
-        You are a SQL filter generator that converts natural language queries into precise database filters.
-        You should understand the sense of the prompt as much as possible, as users can ask with just a few words without any context.
+        You are a filters and ordering generator that converts natural language queries into database filters and ordering instructions.
+        You should understand the sense of the prompt as much as possible.
         If you do not generate any filters, a user will not be able to filter the data.
-        Each your filters response will replace the previous filters.
+        Each of your filters or ordering responses will replace the previous ones.
 
         Guidelines:
-        - Return an empty array if the prompt is unclear or cannot be converted to filters
         - Create multiple filters when the query has multiple conditions
         - Use exact column names as provided in the context
         - Choose the most appropriate operator for each condition
@@ -37,6 +36,13 @@ export const filters = orpc
         - For exact days use >= and <= operators
         - If user asks 'empty' and the column is a string, use empty string as item in values array
         - If context already contains a filter, you can use it as reference to generate a new filter
+        - Return an empty array if the prompt is unclear or cannot be converted to filters
+
+        // Ordering:
+        // - If the user requests sorting or ordering (e.g., "sort by date descending", "order by name ascending"), generate an orderBy object.
+        // - Use the exact column names from the context for ordering.
+        // - The orderBy object should have the column name as the key and the direction as the value ("ASC" for ascending, "DESC" for descending).
+        // - If no ordering is specified in the prompt, you may omit the orderBy object.
 
         Current time: ${new Date().toISOString()}
         Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}
@@ -47,11 +53,25 @@ export const filters = orpc
       prompt: input.prompt,
       abortSignal: signal,
       schema: z.object({
-        filters: z.object({
-          column: z.string().describe('The column name to filter by'),
-          operator: z.enum(SQL_OPERATORS_LIST.map(operator => operator.value) as [string, ...string[]]).describe('The operator to use for the filter'),
-          values: z.array(z.string()).describe('The values to filter by'),
-        }).array(),
+        // orderBy: z
+        //   .object({})
+        //   .catchall(
+        //     z.enum(['ASC', 'DESC']).describe('The direction to order by: ASC for ascending, DESC for descending'),
+        //   )
+        //   .optional()
+        //   .describe('An optional object specifying the order of the results, where each key is a column name and the value is the order direction (ASC or DESC). The object can be empty.'),
+        filters: z
+          .object({
+            column: z.string().describe('The column name to filter by'),
+            operator: z
+              .enum(SQL_OPERATORS_LIST.map(operator => operator.value) as [string, ...string[]])
+              .describe('The operator to use for the filter, must be one of the available SQL operators'),
+            values: z
+              .array(z.string().describe('A value to filter by for the specified column and operator'))
+              .describe('The values to filter by for the given column and operator'),
+          })
+          .array()
+          .describe('An array of filter objects, each specifying a column, operator, and values to filter by'),
       }).describe('An object with a single property "filters" that is an array of filters'),
       schemaDescription: 'An array of objects with the following properties: column, operator, value where the operator is one of the SQL operators available',
       output: 'object',
