@@ -37,7 +37,6 @@
     "ioredis-mock": "^8.9.0",
     "loops": "^6.0.0",
     "nanoid": "catalog:",
-    "postgres": "^3.4.7",
     "posthog-node": "^5.8.1",
     "redis": "^5.8.2",
     "resumable-stream": "^2.2.3",
