@@ -1,6 +1,7 @@
 import type { BetterAuthPlugin, User } from 'better-auth'
+import process from 'node:process'
 import { betterAuth } from 'better-auth'
-// import { emailHarmony } from 'better-auth-harmony'
+import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { bearer, createAuthMiddleware, twoFactor } from 'better-auth/plugins'
 import { db } from '~/drizzle'
@@ -75,7 +76,7 @@ export const auth = betterAuth({
     //     },
     //   },
     // }),
-    // emailHarmony(),
+    emailHarmony(),
     noSetCookiePlugin(),
   ],
   user: {

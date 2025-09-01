@@ -1,8 +1,7 @@
-#!/usr/bin/env node
 /* eslint-disable no-console */
-// @ts-check
 import fs from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -13,7 +12,8 @@ const __dirname = path.dirname(__filename)
  * @param {string} dir - Directory to search in
  * @param {string[]} results - Array to collect found files
  */
-function findEnvExampleFiles(dir, results = []) {
+function findEnvExampleFiles(dir: string, results: string[] = []) {
+  const r = [...results]
   const items = fs.readdirSync(dir)
 
   for (const item of items) {
@@ -24,14 +24,14 @@ function findEnvExampleFiles(dir, results = []) {
     const stats = fs.statSync(fullPath)
 
     if (stats.isDirectory()) {
-      findEnvExampleFiles(fullPath, results)
+      findEnvExampleFiles(fullPath, r)
     }
     else if (item === '.env.example') {
-      results.push(fullPath)
+      r.push(fullPath)
     }
   }
 
-  return results
+  return r
 }
 
 /**

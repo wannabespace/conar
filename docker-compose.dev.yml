@@ -1,5 +1,5 @@
 # This is a development compose file needed only for the database.
-# Run the project using `pnpm run dev` and then run this command if you need to start the database manually.
+# Run the project using `bun run dev` and then run this command if you need to start the database manually.
 # docker-compose -f docker-compose.dev.yml up -d
 
 version: '3.8'

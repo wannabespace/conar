@@ -1,3 +1,4 @@
+/* eslint-disable node/prefer-global/process */
 import type { UpdatesStatus } from '~/updates-observer'
 import { createRequire } from 'node:module'
 import path from 'node:path'

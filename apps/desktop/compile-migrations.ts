@@ -1,5 +1,6 @@
 import { writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { readMigrationFiles } from 'drizzle-orm/migrator'
 

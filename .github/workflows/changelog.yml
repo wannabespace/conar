@@ -16,12 +16,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set node
-        uses: actions/setup-node@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          registry-url: https://registry.npmjs.org/
-          node-version: lts/*
+          bun-version: latest
 
-      - run: npx changelogithub
+      - run: bunx changelogithub
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

@@ -15,21 +15,16 @@ jobs:
         id: package-version
         shell: bash
         run: |
-          VERSION=$(node -p "require('./apps/desktop/package.json').version")
+          VERSION=$(bun run --silent 'console.log(require("./apps/desktop/package.json").version)')
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 22
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10.15.0
+          bun-version: latest
 
       - name: Install Dependencies
-        run: pnpm install
+        run: bun install
 
       - name: Build Vite
         env:
@@ -37,15 +32,15 @@ jobs:
           VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
           VITE_PUBLIC_AUTH_SECRET: ${{ secrets.VITE_PUBLIC_AUTH_SECRET }}
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
-        run: pnpm exec cross-env NODE_OPTIONS="--max_old_space_size=4096" pnpm run build:desktop
+        run: bun run build:desktop
 
       - name: Upload Sourcemaps
         env:
           POSTHOG_CLI_ENV_ID: ${{ secrets.POSTHOG_CLI_ENV_ID }}
           POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_TOKEN }}
         run: |
-          pnpm exec posthog-cli --host https://eu.posthog.com sourcemap inject --directory ./apps/desktop/dist
-          pnpm exec posthog-cli --host https://eu.posthog.com sourcemap upload --directory ./apps/desktop/dist --delete-after
+          bunx posthog-cli --host https://eu.posthog.com sourcemap inject --directory ./apps/desktop/dist
+          bunx posthog-cli --host https://eu.posthog.com sourcemap upload --directory ./apps/desktop/dist --delete-after
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
@@ -72,21 +67,16 @@ jobs:
         id: package-version
         shell: bash
         run: |
-          VERSION=$(node -p "require('./apps/desktop/package.json').version")
+          VERSION=$(bun run --silent 'console.log(require("./apps/desktop/package.json").version)')
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 22
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10.15.0
+          bun-version: latest
 
       - name: Install Dependencies
-        run: pnpm install
+        run: bun install
 
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
@@ -105,4 +95,4 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-        run: pnpm run build:electron
+        run: bun run build:electron

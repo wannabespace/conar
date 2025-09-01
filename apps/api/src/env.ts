@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { type } from 'arktype'
 
 const isProduction = process.env.NODE_ENV === 'production'
