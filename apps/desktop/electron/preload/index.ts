@@ -1,3 +1,4 @@
+/* eslint-disable node/prefer-global/process */
 import type { electron } from '../main/events'
 import type { UpdatesStatus } from '~/updates-observer'
 import { contextBridge, ipcRenderer } from 'electron'

@@ -1,3 +1,4 @@
+/* eslint-disable node/prefer-global/process */
 import type { BrowserWindow } from 'electron'
 import path from 'node:path'
 import { app } from 'electron'

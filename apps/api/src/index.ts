@@ -56,5 +56,5 @@ app.route('/ai', ai)
 
 export default {
   fetch: app.fetch,
-  port: process.env.PORT ? Number(process.env.PORT) : 3000,
+  port: Bun.env.PORT ? Number(Bun.env.PORT) : 3000,
 }
