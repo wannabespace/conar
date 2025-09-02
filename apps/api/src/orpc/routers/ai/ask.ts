@@ -20,13 +20,9 @@ const chatInputType = type({
   'prompt': 'object' as type.cast<AppUIMessage>,
   'databaseId': 'string.uuid.v7',
   'fallback?': 'boolean',
+  'trigger': '"submit-message" | "regenerate-message"',
+  'messageId?': 'string.uuid.v7',
 })
-  .and(type({
-    trigger: '"submit-message"',
-  }).or(type({
-    trigger: '"regenerate-message"',
-    messageId: 'string.uuid.v7',
-  })))
 
 const mainModel = anthropic('claude-sonnet-4-20250514')
 const fallbackModel = anthropic('claude-opus-4-20250514')
@@ -118,6 +114,22 @@ export function getMessages(chatId: string): Promise<AppUIMessage[]> {
     .then(rows => rows.map(convertToAppUIMessage))
 }
 
+async function ensureChat(chatId: string, userId: string, databaseId: string) {
+  const [existingChat] = await db.select().from(chats).where(eq(chats.id, chatId)).limit(1)
+
+  if (existingChat) {
+    return existingChat
+  }
+
+  const [newChat] = await db.insert(chats).values({
+    id: chatId,
+    userId,
+    databaseId,
+  }).returning()
+
+  return newChat
+}
+
 export const ask = orpc
   .use(authMiddleware)
   .use(async ({ context, next }) => {
@@ -128,31 +140,27 @@ export const ask = orpc
   })
   .input(chatInputType)
   .handler(async ({ input, context, signal }) => {
-    await db.transaction(async (tx) => {
-      const [existingChat] = await tx.select().from(chats).where(eq(chats.id, input.id)).limit(1)
+    await ensureChat(input.id, context.user.id, input.databaseId)
 
-      if (!existingChat) {
-        await tx.insert(chats).values({
-          id: input.id,
-          userId: context.user.id,
-          databaseId: input.databaseId,
-        })
-      }
+    if (input.trigger === 'submit-message') {
+      await db.insert(chatsMessages).values({
+        chatId: input.id,
+        ...input.prompt,
+      }).onConflictDoUpdate({
+        target: chatsMessages.id,
+        set: input.prompt,
+      }).catch((error) => {
+        console.error('error on submit-message', error)
+        throw error
+      })
+    }
 
-      if (input.trigger === 'submit-message') {
-        await tx.insert(chatsMessages).values({
-          chatId: input.id,
-          ...input.prompt,
-        }).onConflictDoUpdate({
-          target: chatsMessages.id,
-          set: input.prompt,
-        })
-      }
-
-      if (input.trigger === 'regenerate-message') {
-        await tx.delete(chatsMessages).where(eq(chatsMessages.id, input.messageId))
-      }
-    })
+    if (input.trigger === 'regenerate-message' && input.messageId) {
+      await db.delete(chatsMessages).where(eq(chatsMessages.id, input.messageId)).catch((error) => {
+        console.error('error on regenerate-message', error)
+        throw error
+      })
+    }
 
     const messages = await getMessages(input.id).catch((error) => {
       console.error('error on getMessages', error)

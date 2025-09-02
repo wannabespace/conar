@@ -80,6 +80,21 @@ export const lastOpenedChatId = {
   },
 }
 
+async function ensureChat(chatId: string, databaseId: string) {
+  const [existingChat] = await db.select().from(chats).where(eq(chats.id, chatId)).limit(1)
+
+  if (existingChat) {
+    return existingChat
+  }
+
+  const [newChat] = await db.insert(chats).values({
+    id: chatId,
+    databaseId,
+  }).returning()
+
+  return newChat
+}
+
 const chatsMap = new Map<string, Chat<AppUIMessage>>()
 
 export async function createChat({ id = uuid(), database }: { id?: string, database: typeof databases.$inferSelect }) {
@@ -103,30 +118,21 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           throw new Error('Last message not found')
         }
 
-        await db.transaction(async (tx) => {
-          const [existingChat] = await tx.select().from(chats).where(eq(chats.id, options.chatId)).limit(1)
+        await ensureChat(options.chatId, database.id)
 
-          if (!existingChat) {
-            await tx.insert(chats).values({
-              id: options.chatId,
-              databaseId: database.id,
-            })
-          }
+        if (options.trigger === 'submit-message') {
+          await db.insert(chatsMessages).values({
+            ...lastMessage,
+            chatId: options.chatId,
+          }).onConflictDoUpdate({
+            target: chatsMessages.id,
+            set: lastMessage,
+          })
+        }
 
-          if (options.trigger === 'submit-message') {
-            await tx.insert(chatsMessages).values({
-              ...lastMessage,
-              chatId: options.chatId,
-            }).onConflictDoUpdate({
-              target: chatsMessages.id,
-              set: lastMessage,
-            })
-          }
-
-          if (options.trigger === 'regenerate-message' && options.messageId) {
-            await tx.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId))
-          }
-        })
+        if (options.trigger === 'regenerate-message' && options.messageId) {
+          await db.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId))
+        }
 
         return eventIteratorToStream(await orpc.ai.ask({
           ...options.body,
