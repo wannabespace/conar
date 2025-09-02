@@ -1,7 +1,7 @@
 import type { AppUIMessage } from '@conar/shared/ai-tools'
 import type { LanguageModel } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
-import { tools } from '@conar/shared/ai-tools'
+import { convertToAppUIMessage, tools } from '@conar/shared/ai-tools'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
@@ -110,10 +110,12 @@ function generateStream({
 }
 
 export function getMessages(chatId: string): Promise<AppUIMessage[]> {
-  return db.select().from(chatsMessages).where(eq(chatsMessages.chatId, chatId)).orderBy(asc(chatsMessages.createdAt)).then(rows => rows.map(row => ({
-    ...row,
-    metadata: row.metadata || undefined,
-  })))
+  return db
+    .select()
+    .from(chatsMessages)
+    .where(eq(chatsMessages.chatId, chatId))
+    .orderBy(asc(chatsMessages.createdAt))
+    .then(rows => rows.map(convertToAppUIMessage))
 }
 
 export const ask = orpc
@@ -137,13 +139,15 @@ export const ask = orpc
         })
       }
 
-      await tx.insert(chatsMessages).values({
-        chatId: input.id,
-        ...input.prompt,
-      }).onConflictDoUpdate({
-        target: chatsMessages.id,
-        set: input.prompt,
-      })
+      if (input.trigger === 'submit-message') {
+        await tx.insert(chatsMessages).values({
+          chatId: input.id,
+          ...input.prompt,
+        }).onConflictDoUpdate({
+          target: chatsMessages.id,
+          set: input.prompt,
+        })
+      }
 
       if (input.trigger === 'regenerate-message') {
         await tx.delete(chatsMessages).where(eq(chatsMessages.id, input.messageId))

@@ -67,3 +67,7 @@ export type AppUIMessage = UIMessage<
   UIDataTypes,
   InferUITools<typeof tools>
 >
+
+export function convertToAppUIMessage(message: UIMessage): AppUIMessage {
+  return message as AppUIMessage
+}

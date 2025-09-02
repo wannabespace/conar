@@ -18,8 +18,8 @@
     "build": "tsc && vite build",
     "build:electron": "electron-builder -p always",
     "check-types": "tsc",
-    "drizzle:generate": "drizzle-kit generate && node compile-migrations.ts",
-    "drizzle:generate-custom": "drizzle-kit generate --custom && node compile-migrations.ts"
+    "drizzle:generate": "bunx --bun drizzle-kit generate && bun compile-migrations.ts",
+    "drizzle:generate-custom": "bunx --bun drizzle-kit generate --custom && bun compile-migrations.ts"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",

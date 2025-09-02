@@ -2,6 +2,7 @@ import type { AppUIMessage, tools } from '@conar/shared/ai-tools'
 import type { InferToolInput, InferToolOutput } from 'ai'
 import type { databases } from '~/drizzle'
 import { Chat } from '@ai-sdk/react'
+import { convertToAppUIMessage } from '@conar/shared/ai-tools'
 import { rowsSql } from '@conar/shared/sql/rows'
 import { whereSql } from '@conar/shared/sql/where'
 import { sessionStorageValue, useSessionStorage } from '@conar/ui/hookas/use-session-storage'
@@ -112,13 +113,15 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
             })
           }
 
-          await tx.insert(chatsMessages).values({
-            ...lastMessage,
-            chatId: options.chatId,
-          }).onConflictDoUpdate({
-            target: chatsMessages.id,
-            set: lastMessage,
-          })
+          if (options.trigger === 'submit-message') {
+            await tx.insert(chatsMessages).values({
+              ...lastMessage,
+              chatId: options.chatId,
+            }).onConflictDoUpdate({
+              target: chatsMessages.id,
+              set: lastMessage,
+            })
+          }
 
           if (options.trigger === 'regenerate-message' && options.messageId) {
             await tx.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId))
@@ -144,10 +147,11 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         throw new Error('Unsupported')
       },
     },
-    messages: await db.select().from(chatsMessages).where(eq(chatsMessages.chatId, id)).orderBy(asc(chatsMessages.createdAt)).then(rows => rows.map(row => ({
-      ...row,
-      metadata: row.metadata || undefined,
-    }))) satisfies AppUIMessage[],
+    messages: await db.select()
+      .from(chatsMessages)
+      .where(eq(chatsMessages.chatId, id))
+      .orderBy(asc(chatsMessages.createdAt))
+      .then(rows => rows.map(convertToAppUIMessage)),
     onFinish: async ({ message }) => {
       await db.insert(chatsMessages).values({ chatId: id, ...message }).onConflictDoUpdate({
         target: chatsMessages.id,
