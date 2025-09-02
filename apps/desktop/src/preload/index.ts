@@ -1,4 +1,3 @@
-/* eslint-disable node/prefer-global/process */
 import type { electron } from '../main/events'
 import type { UpdatesStatus } from '~/updates-observer'
 import { contextBridge, ipcRenderer } from 'electron'
@@ -15,11 +14,6 @@ export type ElectronPreload = PromisifyElectron<typeof electron> & {
   app: {
     onDeepLink: (callback: (url: string) => void) => void
     onUpdatesStatus: (callback: (params: { status: UpdatesStatus, message?: string }) => void) => void
-  }
-  versions: {
-    node: () => string
-    chrome: () => string
-    electron: () => string
   }
 }
 
@@ -75,9 +69,6 @@ contextBridge.exposeInMainWorld('electron', {
     quitAndInstall: () => handleError(() => ipcRenderer.invoke('app.quitAndInstall')),
   },
   versions: {
-    node: () => process.versions.node,
-    chrome: () => process.versions.chrome,
-    electron: () => process.versions.electron,
     app: () => ipcRenderer.invoke('versions.app'),
   },
 } satisfies ElectronPreload)

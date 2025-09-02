@@ -12,14 +12,14 @@
     "type": "git",
     "url": "https://github.com/wannabespace/conar.git"
   },
-  "main": "dist-electron/main/index.js",
+  "main": "./out/main/index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "electron-vite dev",
+    "build": "tsc && electron-vite build",
     "build:electron": "electron-builder -p always",
     "check-types": "tsc",
-    "drizzle:generate": "bunx --bun drizzle-kit generate && bun compile-migrations.ts",
-    "drizzle:generate-custom": "bunx --bun drizzle-kit generate --custom && bun compile-migrations.ts"
+    "drizzle:generate": "bunx --bun drizzle-kit generate && bun ./scripts/compile-migrations.ts",
+    "drizzle:generate-custom": "bunx --bun drizzle-kit generate --custom && bun ./scripts/compile-migrations.ts"
   },
   "dependencies": {
     "electron-updater": "^6.6.2",
@@ -53,10 +53,10 @@
     "@tanstack/react-router-devtools": "catalog:",
     "@tanstack/react-store": "^0.7.4",
     "@tanstack/react-virtual": "^3.13.12",
-    "@tanstack/router-plugin": "^1.131.31",
-    "@tiptap/extension-placeholder": "^3.3.0",
-    "@tiptap/react": "^3.3.0",
-    "@tiptap/starter-kit": "^3.3.0",
+    "@tanstack/router-plugin": "^1.131.32",
+    "@tiptap/extension-placeholder": "^3.3.1",
+    "@tiptap/react": "^3.3.1",
+    "@tiptap/starter-kit": "^3.3.1",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/pg": "^8.15.5",
     "@types/react": "catalog:",
@@ -71,13 +71,14 @@
     "drizzle-orm": "catalog:",
     "electron": "^37.4.0",
     "electron-builder": "^26.0.12",
+    "electron-vite": "^4.0.0",
     "hookable": "^5.5.3",
     "marked": "^16.2.1",
     "monaco-editor": "^0.52.2",
     "monaco-themes": "^0.4.7",
     "motion": "^12.23.12",
     "nanoid": "catalog:",
-    "posthog-js": "^1.261.0",
+    "posthog-js": "^1.261.4",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-hook-form": "^7.62.0",
@@ -92,7 +93,6 @@
     "use-stick-to-bottom": "^1.1.1",
     "uuid": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-electron": "^0.29.0",
     "vite-tsconfig-paths": "^5.1.4",
     "zod": "catalog:"
   }

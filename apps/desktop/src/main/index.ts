@@ -1,11 +1,13 @@
 /* eslint-disable node/prefer-global/process */
 import type { UpdatesStatus } from '~/updates-observer'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
-import { autoUpdater } from 'electron-updater'
 import { setupProtocolHandler } from './deep-link'
 import { initElectronEvents } from './events'
+
+const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
 initElectronEvents()
 
@@ -25,6 +27,7 @@ export function createWindow() {
     // backgroundMaterial: 'acrylic', // on Windows 11
     // visualEffectState: 'active',
     webPreferences: {
+      sandbox: false,
       preload: path.join(path.dirname(fileURLToPath(import.meta.url)), '../preload/index.mjs'),
     },
   })
@@ -33,12 +36,12 @@ export function createWindow() {
     mainWindow!.show()
   })
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
+  if (process.env.ELECTRON_RENDERER_URL) {
     mainWindow.webContents.openDevTools()
+    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   }
   else {
-    mainWindow.loadFile('dist/index.html')
+    mainWindow.loadFile(path.join(path.dirname(fileURLToPath(import.meta.url)), '../renderer/index.html'))
   }
 
   return mainWindow
