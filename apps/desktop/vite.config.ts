@@ -5,7 +5,6 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron/simple'
 import tsconfigPaths from 'vite-tsconfig-paths'
-import pkg from './package.json'
 
 export default defineConfig(async () => {
   await fs.rm('dist-electron', { recursive: true, force: true })
@@ -26,9 +25,6 @@ export default defineConfig(async () => {
           vite: {
             build: {
               outDir: 'dist-electron/main',
-              rollupOptions: {
-                external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
-              },
             },
           },
         },
@@ -37,9 +33,6 @@ export default defineConfig(async () => {
           vite: {
             build: {
               outDir: 'dist-electron/preload',
-              rollupOptions: {
-                external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
-              },
             },
           },
         },

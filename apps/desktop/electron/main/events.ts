@@ -1,10 +1,8 @@
 import { decrypt, encrypt } from '@conar/shared/encryption'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { app, ipcMain } from 'electron'
-import updater from 'electron-updater'
+import { autoUpdater } from 'electron-updater'
 import { pgQuery, pgTestConnection } from './pg'
-
-const { autoUpdater } = updater
 
 const encryption = {
   encrypt,

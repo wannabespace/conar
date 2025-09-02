@@ -3,11 +3,9 @@ import type { UpdatesStatus } from '~/updates-observer'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
-import updater from 'electron-updater'
+import { autoUpdater } from 'electron-updater'
 import { setupProtocolHandler } from './deep-link'
 import { initElectronEvents } from './events'
-
-const { autoUpdater } = updater
 
 initElectronEvents()
 
