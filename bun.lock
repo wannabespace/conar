@@ -68,7 +68,7 @@
     },
     "apps/desktop": {
       "name": "@conar/desktop",
-      "version": "0.16.3",
+      "version": "0.16.4",
       "dependencies": {
         "electron-squirrel-startup": "^1.0.1",
         "electron-updater": "^6.6.2",
@@ -157,7 +157,6 @@
         "@tanstack/react-router": "catalog:",
         "@tanstack/react-router-devtools": "catalog:",
         "@tanstack/react-start": "^1.131.31",
-        "@trpc/client": "^11.5.0",
         "arktype": "catalog:",
         "better-auth": "catalog:",
         "date-fns": "^4.1.0",
@@ -1168,8 +1167,6 @@
     "@tiptap/starter-kit": ["@tiptap/starter-kit@3.3.0", "", { "dependencies": { "@tiptap/core": "^3.3.0", "@tiptap/extension-blockquote": "^3.3.0", "@tiptap/extension-bold": "^3.3.0", "@tiptap/extension-bullet-list": "^3.3.0", "@tiptap/extension-code": "^3.3.0", "@tiptap/extension-code-block": "^3.3.0", "@tiptap/extension-document": "^3.3.0", "@tiptap/extension-dropcursor": "^3.3.0", "@tiptap/extension-gapcursor": "^3.3.0", "@tiptap/extension-hard-break": "^3.3.0", "@tiptap/extension-heading": "^3.3.0", "@tiptap/extension-horizontal-rule": "^3.3.0", "@tiptap/extension-italic": "^3.3.0", "@tiptap/extension-link": "^3.3.0", "@tiptap/extension-list": "^3.3.0", "@tiptap/extension-list-item": "^3.3.0", "@tiptap/extension-list-keymap": "^3.3.0", "@tiptap/extension-ordered-list": "^3.3.0", "@tiptap/extension-paragraph": "^3.3.0", "@tiptap/extension-strike": "^3.3.0", "@tiptap/extension-text": "^3.3.0", "@tiptap/extension-underline": "^3.3.0", "@tiptap/extensions": "^3.3.0", "@tiptap/pm": "^3.3.0" } }, "sha512-F527JUR0BgLHmOSZomEQ3INdiriIzaq4AMDGuG53MtBd1s+b1lvE4/U8gnQyVBRQC921Gl1xG8eJb2a60Rhk1w=="],
 
     "@tootallnate/once": ["@tootallnate/once@2.0.0", "", {}, "sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A=="],
-
-    "@trpc/client": ["@trpc/client@11.5.0", "", { "peerDependencies": { "@trpc/server": "11.5.0", "typescript": ">=5.7.2" } }, "sha512-32oH+KOAdo73jJKjU9tyG+vCjID6A28NgXwUNr691O5HjpF5yyTX51Zzyee8YtGzU89Nw/drCHdfA4gD7BN2eg=="],
 
     "@trpc/server": ["@trpc/server@11.5.0", "", { "peerDependencies": { "typescript": ">=5.7.2" } }, "sha512-0IBtkmUCeO2ycn4K45/cqsujnlCQrSvkCo7lFDpg3kGMIPiLyLRciID5IiS7prEjRjeITa+od2aaHTIwONApVw=="],
 
