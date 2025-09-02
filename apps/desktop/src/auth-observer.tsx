@@ -14,6 +14,8 @@ export function AuthObserver() {
   const router = useRouter()
   const location = useLocation()
 
+  const isSignedInButServerError = !!bearerToken.get() && !!error
+
   useEffect(() => {
     if (data?.user) {
       identifyUser(data.user.id, {
@@ -34,9 +36,10 @@ export function AuthObserver() {
      * An error can be only on the server side
      * To not block the app, we navigate to the home page to continue working
      */
-    if (error && bearerToken.get()) {
-      router.navigate({ to: '/' })
-      toast.error('Something went wrong with our server. You can continue working, but some features may not work as expected.')
+    if (isSignedInButServerError) {
+      if (authRoutes.includes(location.pathname))
+        router.navigate({ to: '/' })
+
       return
     }
 
@@ -48,6 +51,11 @@ export function AuthObserver() {
       router.navigate({ to: '/sign-in' })
     }
   }, [isPending, data?.user, location.pathname])
+
+  useEffect(() => {
+    if (isSignedInButServerError)
+      toast.error('Something went wrong with our server. You can continue working, but some features may not work as expected.')
+  }, [isSignedInButServerError])
 
   async function handle(url: string) {
     const { type } = await handleDeepLink(url)
