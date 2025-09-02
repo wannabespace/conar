@@ -78,7 +78,7 @@ app.get('/health', async (c) => {
     }, 400)
   }
 
-  const serverPromises = await Promise.all([
+  const promises = await Promise.all([
     db
       .select()
       .from(users)
@@ -92,41 +92,58 @@ app.get('/health', async (c) => {
       })
       .then(() => createAnswer('ok', 'database', 'Database connection ok'))
       .catch(e => createAnswer('error', 'database', e instanceof Error ? e.message : 'Database connection failed')),
-  ])
-
-  if (serverPromises.some(promise => promise.status === 'error')) {
-    return c.json(serverPromises.find(promise => promise.status === 'error'), 500)
-  }
-
-  const aiPromises = await Promise.all([
     generateText({
       model: openai('gpt-4.1-nano'),
       prompt: 'Hello, how are you?',
     })
-      .then(result => createAnswer('ok', 'openai', result.text))
+      .then((result) => {
+        if (!result.text) {
+          return createAnswer('error', 'openai', 'OpenAI connection failed')
+        }
+
+        return createAnswer('ok', 'openai', result.text)
+      })
       .catch(e => createAnswer('error', 'openai', e instanceof Error ? e.message : 'OpenAI connection failed')),
     generateText({
       model: google('gemini-2.0-flash'),
       prompt: 'Hello, how are you?',
     })
-      .then(result => createAnswer('ok', 'google', result.text))
+      .then((result) => {
+        if (!result.text) {
+          return createAnswer('error', 'google', 'Google connection failed')
+        }
+
+        return createAnswer('ok', 'google', result.text)
+      })
       .catch(e => createAnswer('error', 'google', e instanceof Error ? e.message : 'Google connection failed')),
     generateText({
       model: anthropic('claude-3-5-haiku-latest'),
       prompt: 'Hello, how are you?',
     })
-      .then(result => createAnswer('ok', 'anthropic', result.text))
+      .then((result) => {
+        if (!result.text) {
+          return createAnswer('error', 'anthropic', 'Anthropic connection failed')
+        }
+
+        return createAnswer('ok', 'anthropic', result.text)
+      })
       .catch(e => createAnswer('error', 'anthropic', e instanceof Error ? e.message : 'Anthropic connection failed')),
     generateText({
       model: xai('grok-3-mini'),
       prompt: 'Hello, how are you?',
     })
-      .then(result => createAnswer('ok', 'xai', result.text))
+      .then((result) => {
+        if (!result.text) {
+          return createAnswer('error', 'xai', 'XAI connection failed')
+        }
+
+        return createAnswer('ok', 'xai', result.text)
+      })
       .catch(e => createAnswer('error', 'xai', e instanceof Error ? e.message : 'XAI connection failed')),
   ])
 
-  if (aiPromises.some(promise => promise.status === 'error')) {
-    return c.json(aiPromises.find(promise => promise.status === 'error'), 500)
+  if (promises.some(promise => promise.status === 'error')) {
+    return c.json(promises.find(promise => promise.status === 'error'), 500)
   }
 
   return c.json({
