@@ -181,6 +181,11 @@ function RouteComponent() {
                   type="linux"
                   arch="AppImage"
                 />
+                <DownloadOption
+                  Icon={Linux}
+                  type="linux"
+                  arch="rpm"
+                />
               </>
             )}
             >

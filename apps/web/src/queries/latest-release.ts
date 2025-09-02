@@ -25,7 +25,7 @@ const releaseCache = createCache<Release>({
 function getFileType(name: string): OS {
   if (name.toLowerCase().endsWith('.dmg'))
     return 'macos'
-  if (name.toLowerCase().endsWith('.appimage') || name.toLowerCase().endsWith('.deb'))
+  if (name.toLowerCase().endsWith('.appimage') || name.toLowerCase().endsWith('.deb') || name.toLowerCase().endsWith('.rpm'))
     return 'linux'
   if (name.toLowerCase().endsWith('.exe'))
     return 'windows'
@@ -47,9 +47,10 @@ export const getLatestReleaseOptions = queryOptions({
   },
   select: (data) => {
     const version = data.tag_name
+    console.log(data.assets)
     const assets = {
       macos: data.assets?.filter(asset => asset.name.toLowerCase().endsWith('.dmg')) || [],
-      linux: data.assets?.filter(asset => asset.name.toLowerCase().endsWith('.deb') || asset.name.toLowerCase().endsWith('.appimage')) || [],
+      linux: data.assets?.filter(asset => asset.name.toLowerCase().endsWith('.deb') || asset.name.toLowerCase().endsWith('.appimage') || asset.name.toLowerCase().endsWith('.rpm')) || [],
       windows: data.assets?.filter(asset => asset.name.toLowerCase().endsWith('.exe')) || [],
     }
 

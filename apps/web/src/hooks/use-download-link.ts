@@ -31,7 +31,7 @@ export function useDownloadLinks() {
       }
     }
 
-    if (os?.type === 'linux' && linux.deb && linux.appImage) {
+    if (os?.type === 'linux' && linux.deb && linux.appImage && linux.rpm) {
       return {
         platform: os.label,
         assets: [
@@ -42,6 +42,10 @@ export function useDownloadLinks() {
           {
             arch: 'AppImage',
             url: linux.appImage.url,
+          },
+          {
+            arch: 'rpm',
+            url: linux.rpm.url,
           },
         ],
       }
