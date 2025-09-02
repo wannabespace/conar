@@ -182,7 +182,10 @@ export const ask = orpc
         originalMessages: messages,
         generateMessageId: () => v7(),
         onFinish: async (result) => {
-          console.info('stream finished', JSON.stringify(result.responseMessage, null, 2))
+          console.info('stream finished', JSON.stringify({
+            ...result.responseMessage,
+            parts: result.responseMessage.parts.map(part => part.type),
+          }, null, 2))
 
           try {
             await db.insert(chatsMessages).values({
