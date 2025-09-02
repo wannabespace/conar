@@ -13,7 +13,7 @@ export const filters = orpc
     context: 'string',
   }))
   .handler(async ({ input, signal, context }) => {
-    console.info('sql filters input', input)
+    console.info('sql filters input', input.prompt)
 
     const { object } = await generateObject({
       model: withPosthog(google('gemini-2.0-flash'), {
