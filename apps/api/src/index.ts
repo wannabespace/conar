@@ -1,10 +1,16 @@
 import process from 'node:process'
+import { anthropic } from '@ai-sdk/anthropic'
+import { google } from '@ai-sdk/google'
+import { openai } from '@ai-sdk/openai'
+import { xai } from '@ai-sdk/xai'
 import { trpcServer } from '@hono/trpc-server'
 import { onError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
+import { generateText } from 'ai'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
+import { db, users } from './drizzle'
 import { env } from './env'
 import { auth } from './lib/auth'
 import { router } from './orpc/routers'
@@ -54,6 +60,79 @@ app.use('/rpc/*', async (c, next) => {
 })
 
 app.route('/ai', ai)
+
+function createAnswer(type: 'error' | 'ok', service: string, message: string) {
+  return {
+    status: type,
+    service,
+    message,
+  }
+}
+
+app.get('/health', async (c) => {
+  const hostname = c.req.header('host')
+  if (hostname !== 'healthcheck.railway.app') {
+    return c.json({
+      status: 'error',
+      message: 'Invalid healthcheck host',
+    }, 400)
+  }
+
+  const serverPromises = await Promise.all([
+    db
+      .select()
+      .from(users)
+      .limit(1)
+      .then(([user]) => {
+        if (!user) {
+          throw new Error('User not found')
+        }
+
+        return user
+      })
+      .then(() => createAnswer('ok', 'database', 'Database connection ok'))
+      .catch(e => createAnswer('error', 'database', e instanceof Error ? e.message : 'Database connection failed')),
+  ])
+
+  if (serverPromises.some(promise => promise.status === 'error')) {
+    return c.json(serverPromises.find(promise => promise.status === 'error'), 500)
+  }
+
+  const aiPromises = await Promise.all([
+    generateText({
+      model: openai('gpt-4.1-nano'),
+      prompt: 'Hello, how are you?',
+    })
+      .then(result => createAnswer('ok', 'openai', result.text))
+      .catch(e => createAnswer('error', 'openai', e instanceof Error ? e.message : 'OpenAI connection failed')),
+    generateText({
+      model: google('gemini-2.0-flash'),
+      prompt: 'Hello, how are you?',
+    })
+      .then(result => createAnswer('ok', 'google', result.text))
+      .catch(e => createAnswer('error', 'google', e instanceof Error ? e.message : 'Google connection failed')),
+    generateText({
+      model: anthropic('claude-3-5-haiku-latest'),
+      prompt: 'Hello, how are you?',
+    })
+      .then(result => createAnswer('ok', 'anthropic', result.text))
+      .catch(e => createAnswer('error', 'anthropic', e instanceof Error ? e.message : 'Anthropic connection failed')),
+    generateText({
+      model: xai('grok-3-mini'),
+      prompt: 'Hello, how are you?',
+    })
+      .then(result => createAnswer('ok', 'xai', result.text))
+      .catch(e => createAnswer('error', 'xai', e instanceof Error ? e.message : 'XAI connection failed')),
+  ])
+
+  if (aiPromises.some(promise => promise.status === 'error')) {
+    return c.json(aiPromises.find(promise => promise.status === 'error'), 500)
+  }
+
+  return c.json({
+    status: 'ok',
+  })
+})
 
 export default {
   fetch: app.fetch,
