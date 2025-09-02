@@ -40,7 +40,7 @@ jobs:
           POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_TOKEN }}
         run: |
           bunx posthog-cli --host https://eu.posthog.com sourcemap inject --directory ./apps/desktop/dist
-          bunx posthog-cli --host https://eu.posthog.com sourcemap upload --directory ./apps/desktop/dist --delete-after
+          bunx posthog-cli --host https://eu.posthog.com sourcemap upload --directory ./apps/desktop/dist
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
