@@ -9,11 +9,6 @@ import { initElectronEvents } from './events'
 
 const { autoUpdater } = updater
 
-// eslint-disable-next-line ts/no-require-imports
-if (require('electron-squirrel-startup')) {
-  app.quit()
-}
-
 initElectronEvents()
 
 let mainWindow: BrowserWindow | null = null
