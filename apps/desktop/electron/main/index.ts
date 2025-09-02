@@ -3,14 +3,14 @@ import type { UpdatesStatus } from '~/updates-observer'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
-import started from 'electron-squirrel-startup'
 import updater from 'electron-updater'
 import { setupProtocolHandler } from './deep-link'
 import { initElectronEvents } from './events'
 
 const { autoUpdater } = updater
 
-if (started) {
+// eslint-disable-next-line ts/no-require-imports
+if (require('electron-squirrel-startup')) {
   app.quit()
 }
 
