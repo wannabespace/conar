@@ -5,9 +5,8 @@
     "build": {
       "dependsOn": ["^build"]
     },
-    "build:electron": {
-      "dependsOn": ["@conar/desktop#build"]
-    },
+    "build:vite": {},
+    "build:electron": {},
     "@conar/desktop#build": {
       "dependsOn": ["^check-types"]
     },

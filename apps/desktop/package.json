@@ -15,7 +15,8 @@
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
-    "build": "tsc && electron-vite build",
+    "build": "turbo run build:vite && turbo run build:electron",
+    "build:vite": "tsc && electron-vite build",
     "build:electron": "electron-builder -p always",
     "check-types": "tsc",
     "drizzle:generate": "drizzle-kit generate && bun run ./scripts/compile-migrations.ts",
