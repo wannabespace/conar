@@ -14,6 +14,11 @@ export const generateTitle = orpc
     messages: 'Array' as type.cast<AppUIMessage[]>,
   }))
   .handler(async ({ input, signal, context }) => {
+    const prompt = input.messages.map(message => message.parts
+      .map(part => JSON.stringify(part, null, 2))
+      .join('\n'),
+    ).join('\n')
+
     const { text } = await generateText({
       model: withPosthog(openai('gpt-4o-mini'), {
         chatId: input.chatId,
@@ -28,12 +33,11 @@ export const generateTitle = orpc
         'Do not use dots, commas, etc.',
         'Respond only with the title, nothing else.',
       ].join('\n'),
-      prompt: input.messages.map(message => message.parts
-        .map(part => JSON.stringify(part, null, 2))
-        .join('\n'),
-      ).join('\n'),
+      prompt,
       abortSignal: signal,
     })
+
+    console.info('generateTitle response', text)
 
     await db.update(chats).set({ title: text }).where(eq(chats.id, input.chatId))
 
