@@ -52,7 +52,7 @@ jobs:
         with:
           name: desktop-dist
           path: |
-            ./apps/desktop/out
+            ./apps/desktop/out/
           retention-days: 1
 
   build-electron:

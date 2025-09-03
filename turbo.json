@@ -19,7 +19,7 @@
     },
     "build:vite": {
       "cache": false,
-      "dependsOn": ["^check-types"]
+      "dependsOn": ["check-types", "^check-types"]
     },
     "build:electron": {
       "dependsOn": ["build:vite"]
