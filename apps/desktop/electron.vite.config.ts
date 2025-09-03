@@ -3,16 +3,10 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
-import pkg from './package.json'
 
 export default defineConfig({
   main: {
-    plugins: [tsconfigPaths()],
-    build: {
-      rollupOptions: {
-        external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
-      },
-    },
+    plugins: [tsconfigPaths(), externalizeDepsPlugin()],
   },
   preload: {
     plugins: [tsconfigPaths(), externalizeDepsPlugin()],
