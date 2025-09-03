@@ -5,7 +5,7 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiGithubFill, RiTwitterXLine } from '@remixicon/react'
+import { RiDiscordLine, RiGithubFill, RiTwitterXLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
@@ -50,6 +50,20 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             rel="noopener noreferrer"
           >
             <RiTwitterXLine className="h-3 w-3 sm:h-4 sm:w-4" />
+          </a>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="gap-1 sm:gap-2 hidden sm:flex"
+          asChild
+        >
+          <a
+            href={SOCIAL_LINKS.DISCORD}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <RiDiscordLine className="size-3 sm:size-4" />
           </a>
         </Button>
         <Button

@@ -1,6 +1,6 @@
 import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
-import { RiGithubLine, RiTwitterXLine } from '@remixicon/react'
+import { RiDiscordLine, RiGithubLine, RiTwitterXLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 
 export function Footer() {
@@ -32,6 +32,14 @@ export function Footer() {
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
           <RiTwitterXLine className="size-4" />
+        </a>
+        <a
+          href={SOCIAL_LINKS.DISCORD}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <RiDiscordLine className="size-4" />
         </a>
         <a
           href={SOCIAL_LINKS.GITHUB}
