@@ -108,14 +108,14 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     transport: {
       async sendMessages(options) {
-        if (options.trigger === 'regenerate-message' && !options.messageId) {
-          throw new Error('Message ID is required when regenerating a message.')
-        }
-
         const lastMessage = options.messages.at(-1)
 
         if (!lastMessage) {
           throw new Error('Last message not found')
+        }
+
+        if (options.trigger === 'regenerate-message' && !options.messageId) {
+          options.messageId = lastMessage.id
         }
 
         await ensureChat(options.chatId, database.id)
@@ -141,7 +141,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           databaseId: database.id,
           prompt: lastMessage,
           trigger: options.trigger,
-          messageId: options.messageId!,
+          messageId: options.messageId,
           context: [
             `Current query in the SQL runner: ${pageStore.state.query.trim() || 'Empty'}`,
             'Database schemas and tables:',
