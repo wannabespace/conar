@@ -7,10 +7,10 @@ import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { AuthObserver } from '~/auth-observer'
+import { enterAppAnimation } from '~/enter'
 import { ErrorPage } from '~/error-page'
 import { authClient } from '~/lib/auth'
 import { EventsProvider } from '~/lib/events'
-import { sleep } from '~/lib/helpers'
 import { queryClient } from '~/main'
 import { checkForUpdates, UpdatesObserver } from '~/updates-observer'
 
@@ -35,19 +35,7 @@ function RootDocument() {
     if (isPending)
       return
 
-    // Entering app animations
-    const preloader = document.getElementById('preloader')
-    const root = document.getElementById('root')!
-
-    sleep(100).then(() => {
-      root.classList.remove('scale-[1.2]', 'opacity-0')
-      document.body.classList.remove('overflow-hidden')
-    })
-
-    if (preloader) {
-      preloader.classList.add('scale-[0.6]', 'opacity-0', 'animate-spin')
-      sleep(500).then(() => preloader.remove())
-    }
+    enterAppAnimation()
   }, [isPending])
 
   return (

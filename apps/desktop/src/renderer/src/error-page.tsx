@@ -9,6 +9,7 @@ import { useRouter } from '@tanstack/react-router'
 import { TraversalError } from 'arktype'
 import posthog from 'posthog-js'
 import { useEffect } from 'react'
+import { enterAppAnimation } from './enter'
 import { EventsProvider } from './lib/events'
 
 // User specific errors that we don't want to track
@@ -25,6 +26,10 @@ const IGNORED_ERRORS = [
 
 export function ErrorPage({ error }: ErrorComponentProps) {
   const router = useRouter()
+
+  useEffect(() => {
+    enterAppAnimation()
+  }, [])
 
   useEffect(() => {
     if (IGNORED_ERRORS.some(e => e.includes(error.message))) {
