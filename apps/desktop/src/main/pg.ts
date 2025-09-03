@@ -1,7 +1,9 @@
 import type { ClientConfig, QueryResult } from 'pg'
 import type { DatabaseQueryResult } from './events'
+import { createRequire } from 'node:module'
 import { parseUrl } from '@conar/shared/utils/url'
-import pg from 'pg'
+
+const pg = createRequire(import.meta.url)('pg') as typeof import('pg')
 
 const parseDate = (value: string) => value
 

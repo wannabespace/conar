@@ -18,7 +18,7 @@
       "schemes": ["conar"]
     }
   ],
-  "files": ["dist", "dist-electron"],
+  "files": ["out"],
   "mac": {
     "category": "public.app-category.developer-tools",
     "target": [
@@ -30,7 +30,7 @@
     "artifactName": "${productName}-Mac-${arch}-${version}-Installer.${ext}"
   },
   "win": {
-    "icon": "electron/assets/desktop-app-512x512.png",
+    "icon": "resources/desktop-app-512x512.png",
     "target": [
       {
         "target": "nsis",
