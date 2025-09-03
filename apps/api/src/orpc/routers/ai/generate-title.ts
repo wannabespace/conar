@@ -19,17 +19,22 @@ export const generateTitle = orpc
         chatId: input.chatId,
         userId: context.user.id,
       }),
-      prompt: `
-        You are a title generator that generates a title for a chat.
-        The title should be in the same language as the user's message.
-        Title should not be more than 30 characters.
-        Title should be properly formatted, example: "Update Component in React".
-        Each word should be capitalized.
-        Do not use dots, commas, etc.
-
-        Here are the messages in the chat:
-        ${input.messages.map(message => `${message.role}: ${message.parts.map(part => part.type === 'text' ? part.text : '').filter(Boolean).join('\n')}`).join('\n\n')}
-      `,
+      system: [
+        'You are a title generator that generates a title for a chat.',
+        'The title should be in the same language as the user\'s message.',
+        'Title should not be more than 30 characters.',
+        'Title should be properly formatted, example: "Update Component in React".',
+        'Each word should be capitalized.',
+        'Do not use dots, commas, etc.',
+        'Respond only with the title, nothing else.',
+      ].join('\n'),
+      prompt: input.messages.map(
+        message =>
+          `${message.role}: ${message.parts
+            .map(part => (part.type === 'text' ? part.text : ''))
+            .filter(Boolean)
+            .join('\n')}`,
+      ).join('\n'),
       abortSignal: signal,
     })
 
