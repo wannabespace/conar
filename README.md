@@ -52,7 +52,7 @@ Conar is an AI-powered open-source project that simplifies database interactions
 
 - **📦 Package Installation**
   ```bash
-  bun install
+  pnpm install
   ```
 
 - **🐳 Start Database with Docker Compose**
@@ -66,14 +66,14 @@ Conar is an AI-powered open-source project that simplifies database interactions
 
   This will run database migrations to set up the required tables and schema.
   ```bash
-  bun run drizzle:migrate
+  pnpm run drizzle:migrate
   ```
 
 - **🚀 Run the Project**
 
   This will start all development servers using Turbo.
   ```bash
-  bun run dev
+  pnpm run dev
   ```
 
 ## License

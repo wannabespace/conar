@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "vite dev",
     "build": "vite build",
     "start": "bun run .output/server/index.mjs",
     "check-types": "tsc"
@@ -36,7 +36,6 @@
     "@conar/ui": "workspace:*",
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "^4.1.12",
-    "@types/bun": "^1.2.21",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",

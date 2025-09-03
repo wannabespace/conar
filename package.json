@@ -1,7 +1,7 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "bun@1.2.21",
+  "packageManager": "pnpm@10.15.1",
   "engines": {
     "bun": ">=1.2.0"
   },
@@ -14,8 +14,8 @@
     "build:desktop": "turbo run @conar/desktop#build",
     "build:electron": "turbo run @conar/desktop#build:electron",
     "build:web": "turbo run @conar/web#build",
-    "start:web": "cd apps/web && bun run start",
-    "start:api": "cd apps/api && bun run start",
+    "start:web": "cd apps/web && pnpm run start",
+    "start:api": "cd apps/api && pnpm run start",
     "drizzle:generate": "turbo run drizzle:generate",
     "drizzle:migrate": "turbo run drizzle:migrate",
     "check-types": "turbo run check-types",
@@ -38,38 +38,5 @@
     "tsx": "^4.20.5",
     "turbo": "^2.5.6",
     "typescript": "catalog:"
-  },
-  "workspaces": {
-    "packages": [
-      "packages/*",
-      "apps/*"
-    ],
-    "catalog": {
-      "@number-flow/react": "^0.5.10",
-      "@remixicon/react": "^4.6.0",
-      "@tanstack/react-query": "^5.85.5",
-      "@tanstack/react-query-devtools": "^5.85.5",
-      "@tanstack/react-router": "^1.131.28",
-      "@tanstack/react-router-devtools": "^1.131.28",
-      "@types/react": "^19.1.12",
-      "@types/react-dom": "^19.1.9",
-      "@vitejs/plugin-react": "^5.0.2",
-      "ai": "^5.0.28",
-      "arktype": "2.1.20",
-      "babel-plugin-react-compiler": "19.1.0-rc.2",
-      "better-auth": "^1.3.7",
-      "drizzle-kit": "^0.31.4",
-      "drizzle-orm": "^0.44.5",
-      "nanoid": "^5.1.5",
-      "react": "^19.1.1",
-      "react-dom": "^19.1.1",
-      "sonner": "^2.0.7",
-      "tailwindcss": "^4.1.12",
-      "tw-animate-css": "^1.3.7",
-      "typescript": "^5.9.2",
-      "uuid": "^11.1.0",
-      "vite": "^7.1.3",
-      "zod": "^4.1.5"
-    }
   }
 }

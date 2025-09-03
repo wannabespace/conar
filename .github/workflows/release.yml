@@ -18,13 +18,13 @@ jobs:
           VERSION=$(node -p "require('./apps/desktop/package.json').version")
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          bun-version: latest
+          version: 10.15.0
 
       - name: Install Dependencies
-        run: bun install
+        run: pnpm install
 
       - name: Build Vite
         env:
@@ -32,23 +32,22 @@ jobs:
           VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
           VITE_PUBLIC_AUTH_SECRET: ${{ secrets.VITE_PUBLIC_AUTH_SECRET }}
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
-        run: bun run build:desktop
+        run: pnpm run build:desktop
 
       - name: Upload Sourcemaps
         env:
           POSTHOG_CLI_ENV_ID: ${{ secrets.POSTHOG_CLI_ENV_ID }}
           POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_TOKEN }}
         run: |
-          bunx posthog-cli --host https://eu.posthog.com sourcemap inject --directory ./apps/desktop/out/renderer
-          bunx posthog-cli --host https://eu.posthog.com sourcemap upload --directory ./apps/desktop/out/renderer
+          pnpm exec posthog-cli --host https://eu.posthog.com sourcemap inject --directory ./apps/desktop/out/renderer
+          pnpm exec posthog-cli --host https://eu.posthog.com sourcemap upload --directory ./apps/desktop/out/renderer
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: desktop-dist
           path: |
-            ./apps/desktop/dist/
-            ./apps/desktop/dist-electron/
+            ./apps/desktop/out
           retention-days: 1
 
   build-electron:
@@ -70,13 +69,13 @@ jobs:
           VERSION=$(node -p "require('./apps/desktop/package.json').version")
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          bun-version: latest
+          version: 10.15.0
 
       - name: Install Dependencies
-        run: bun install
+        run: pnpm install
 
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
@@ -95,4 +94,4 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-        run: bun run build:electron
+        run: pnpm run build:electron

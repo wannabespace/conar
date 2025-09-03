@@ -18,8 +18,8 @@
     "build": "tsc && electron-vite build",
     "build:electron": "electron-builder -p always",
     "check-types": "tsc",
-    "drizzle:generate": "bunx --bun drizzle-kit generate && bun ./scripts/compile-migrations.ts",
-    "drizzle:generate-custom": "bunx --bun drizzle-kit generate --custom && bun ./scripts/compile-migrations.ts"
+    "drizzle:generate": "drizzle-kit generate && bun run ./scripts/compile-migrations.ts",
+    "drizzle:generate-custom": "drizzle-kit generate --custom && bun run ./scripts/compile-migrations.ts"
   },
   "dependencies": {
     "electron-updater": "^6.6.2",
@@ -57,7 +57,6 @@
     "@tiptap/extension-placeholder": "^3.3.1",
     "@tiptap/react": "^3.3.1",
     "@tiptap/starter-kit": "^3.3.1",
-    "@types/electron-squirrel-startup": "^1.0.2",
     "@types/pg": "^8.15.5",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
