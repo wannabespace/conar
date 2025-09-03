@@ -1,3 +1,4 @@
+import type { FilterOperator } from '@conar/shared/utils/sql'
 import type { RefObject } from 'react'
 import { Button } from '@conar/ui/components/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
@@ -5,23 +6,42 @@ import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/po
 import { Separator } from '@conar/ui/components/separator'
 import { RiCloseLine, RiCornerDownLeftLine, RiDatabase2Line, RiFilterLine } from '@remixicon/react'
 import { createContext, use, useEffect, useMemo, useRef, useState } from 'react'
+import { InfoButton } from '~/components/info-button'
 
 interface Column {
   id: string
   type: string
 }
 
-interface Filter {
-  column: string
-  operator: string
-  values?: string[]
-}
+const OPERATION_GROUPS = {
+  comparison: 'Comparison',
+  text: 'Text Search',
+  list: 'List Operations',
+  null: 'Null Checks',
+  other: 'Other',
+} as const
+
+type CategoryLiteral = keyof typeof OPERATION_GROUPS
+
+const GROUPED_OPERATIONS = {
+  comparison: ['=', '≈', '!=', '>', '<', '>=', '<='],
+  text: ['LIKE', 'ILIKE', 'NOT LIKE'],
+  list: ['IN', 'NOT IN'],
+  null: ['IS NULL', 'IS NOT NULL'],
+} satisfies Omit<Record<keyof typeof OPERATION_GROUPS, FilterOperator[]>, 'other'>
 
 interface Operator {
-  value: string
+  value: FilterOperator
   label: string
   placeholder?: string
   hasValue: boolean
+  tip?: string
+}
+
+interface Filter {
+  column: string
+  operator: FilterOperator
+  values?: string[]
 }
 
 const FilterInternalContext = createContext<{
@@ -66,33 +86,18 @@ function FilterOperatorSelector({
   onBackspace,
 }: {
   ref?: RefObject<HTMLInputElement | null>
-  onSelect: (operator: string) => void
+  onSelect: (operator: FilterOperator) => void
   onBackspace?: () => void
 }) {
   const { operators } = useInternalContext()
 
-  const groupLabels = {
-    comparison: 'Comparison',
-    text: 'Text Search',
-    list: 'List Operations',
-    null: 'Null Checks',
-    other: 'Other',
-  } as const
-
   const groupedOperators = useMemo(() => {
-    const groups: Omit<Record<keyof typeof groupLabels, Operator['value'][]>, 'other'> = {
-      comparison: ['=', '!=', '>', '<', '>=', '<='],
-      text: ['LIKE', 'ILIKE', 'NOT LIKE'],
-      list: ['IN', 'NOT IN'],
-      null: ['IS NULL', 'IS NOT NULL'],
-    }
-
     return operators.reduce((acc, operator) => {
-      let category: keyof typeof groupLabels = 'other'
+      let category: CategoryLiteral = 'other'
 
-      for (const [group, values] of Object.entries(groups)) {
-        if (values.includes(operator.value)) {
-          category = group as keyof typeof groupLabels
+      for (const [group, values] of Object.entries(GROUPED_OPERATIONS)) {
+        if ((values as FilterOperator[]).includes(operator.value)) {
+          category = group as CategoryLiteral
           break
         }
       }
@@ -103,7 +108,7 @@ function FilterOperatorSelector({
       acc[category].push(operator)
 
       return acc
-    }, {} as Record<keyof typeof groupLabels, Operator[]>)
+    }, {} as Record<CategoryLiteral, Operator[]>)
   }, [operators])
 
   return (
@@ -120,16 +125,17 @@ function FilterOperatorSelector({
       <CommandList className="h-fit max-h-[70vh]">
         <CommandEmpty>No operators found.</CommandEmpty>
         {Object.entries(groupedOperators).map(([group, ops]) => (
-          <CommandGroup key={group} heading={groupLabels[group as keyof typeof groupLabels] || group}>
+          <CommandGroup key={group} heading={OPERATION_GROUPS[group as keyof typeof OPERATION_GROUPS] || group}>
             {ops.map(operator => (
               <CommandItem
                 key={operator.value}
                 value={operator.value}
                 keywords={[operator.label, operator.value]}
-                onSelect={onSelect}
+                onSelect={onSelect as (_: string) => void}
               >
                 <RiFilterLine className="size-4 opacity-50" />
                 <span>{operator.label}</span>
+                {operator.tip && <InfoButton>{operator.tip}</InfoButton>}
                 <span className="ml-auto text-xs text-muted-foreground text-right">{operator.value}</span>
               </CommandItem>
             ))}
@@ -242,7 +248,7 @@ export function FilterItem({
 }: {
   filter: Filter
   onRemove: () => void
-  onEdit: (params: { column: string, operator: string, values: string[] }) => void
+  onEdit: (params: { column: string, operator: FilterOperator, values: string[] }) => void
 }) {
   const [values, setValues] = useState(filter.values ?? [])
   const { operators } = useInternalContext()
@@ -312,7 +318,7 @@ export function FilterItem({
 
 export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
   const [selectedColumn, setSelectedColumn] = useState<string | null>(null)
-  const [selectedOperator, setSelectedOperator] = useState<string | null>(null)
+  const [selectedOperator, setSelectedOperator] = useState<FilterOperator | null>(null)
   const [values, setValues] = useState<string[]>([])
   const { columns, operators } = useInternalContext()
 

@@ -1,4 +1,4 @@
-import type { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
+import type { FilterOperator } from '@conar/shared/utils/sql'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -26,8 +26,8 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         // ...(data.orderBy && Object.keys(data.orderBy).length > 0 ? { orderBy: data.orderBy } : {}),
         filters: data.filters.map(filter => ({
           column: filter.column,
-          operator: filter.operator as typeof SQL_OPERATORS_LIST[number]['value'],
-          values: filter.values,
+          operator: filter.operator as FilterOperator,
+          value: filter.values,
         })),
       }))
 
