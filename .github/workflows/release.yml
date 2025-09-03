@@ -18,6 +18,11 @@ jobs:
           VERSION=$(node -p "require('./apps/desktop/package.json').version")
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
 
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
@@ -68,6 +73,11 @@ jobs:
         run: |
           VERSION=$(node -p "require('./apps/desktop/package.json').version")
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
