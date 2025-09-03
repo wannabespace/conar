@@ -11,7 +11,6 @@ import {
   TableRow,
 } from '@conar/ui/components/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
@@ -44,7 +43,7 @@ const langsMap = {
 }
 
 interface MarkdownContextType {
-  withAnimation?: boolean
+  generating?: boolean
 }
 
 const MarkdownContext = createContext<MarkdownContextType>(null!)
@@ -54,29 +53,11 @@ function useMarkdownContext<T>(selector: ContextSelector<MarkdownContextType, T>
 }
 
 function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: string) => void }) {
-  const withAnimation = useMarkdownContext(c => c.withAnimation)
+  const generating = useMarkdownContext(c => c.generating)
   const childrenProps = (typeof children === 'object' && (children as ReactElement<{ children?: ReactNode, className?: string }>)?.props) || null
   const content = childrenProps?.children?.toString().trim() || null
   const lang = (childrenProps?.className?.split('-')[1] || 'text') as keyof typeof langsMap
-  const [isLoading, setIsLoading] = useState(false)
-  const [opened, setOpened] = useState(content ? content.split('\n').length < 10 : false)
-
-  useMountedEffect(() => {
-    if (!isLoading)
-      setIsLoading(true)
-
-    const timeout = setTimeout(() => {
-      setIsLoading(false)
-    }, 500)
-
-    return () => clearTimeout(timeout)
-  }, [content])
-
-  useMountedEffect(() => {
-    if (!isLoading && content && content.split('\n').length < 10) {
-      setOpened(true)
-    }
-  }, [isLoading])
+  const [opened, setOpened] = useState(false)
 
   if (!content)
     return null
@@ -84,7 +65,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
   const lines = content.split('\n').length
 
   return (
-    <div className={cn(withAnimation && 'animate-in fade-in duration-200', 'typography-disabled relative my-4 first:mt-0 last:mb-0')}>
+    <div className={cn(generating && 'animate-in fade-in duration-200', 'typography-disabled relative my-4 first:mt-0 last:mb-0')}>
       <SingleAccordion
         open={opened}
         onOpenChange={setOpened}
@@ -134,7 +115,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                       <Button
                         size="icon-xs"
                         variant="ghost"
-                        disabled={isLoading}
+                        disabled={generating}
                         onClick={(e) => {
                           e.stopPropagation()
                           onEdit(content)
@@ -185,7 +166,7 @@ function MarkdownTable({ children, className, ...props }: ComponentProps<'div'>)
 }
 
 function P({ children, className }: { children?: ReactNode, className?: string }) {
-  const withAnimation = useMarkdownContext(c => c.withAnimation)
+  const generating = useMarkdownContext(c => c.generating)
 
   if (typeof children === 'string') {
     return (
@@ -193,7 +174,7 @@ function P({ children, className }: { children?: ReactNode, className?: string }
         {children.split('').map((char, index) => (
           <span
             key={index}
-            className={cn(withAnimation && 'animate-in fade-in duration-200')}
+            className={cn(generating && 'animate-in fade-in duration-200')}
           >
             {char}
           </span>
@@ -236,18 +217,18 @@ export function Markdown({
   id,
   className,
   onEdit,
-  withAnimation,
+  generating,
   ...props
 }: {
   content: string
   onEdit?: (content: string) => void
-  withAnimation?: boolean
+  generating?: boolean
 } & ComponentProps<'div'>) {
   const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content])
 
   return (
-    <MarkdownContext.Provider value={{ withAnimation }}>
-      <div className={cn('typography', withAnimation && 'animate-in fade-in duration-200', className)} {...props}>
+    <MarkdownContext.Provider value={{ generating }}>
+      <div className={cn('typography', generating && 'animate-in fade-in duration-200', className)} {...props}>
         {blocks.map((block, index) => (
           <MarkdownBase
             key={id ? `${id}-block_${index}` : `block_${index}`}

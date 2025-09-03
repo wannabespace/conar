@@ -59,7 +59,7 @@ function ChatMessageParts({ parts, loading, onEdit }: { parts: UIMessage['parts'
         <Markdown
           key={index}
           content={part.text}
-          withAnimation={loading}
+          generating={loading}
           onEdit={onEdit}
         />
       )
