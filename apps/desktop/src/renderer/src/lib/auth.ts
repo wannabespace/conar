@@ -9,6 +9,7 @@ import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { toast } from 'sonner'
 import { identifyUser } from './events'
+import { getApiUrl } from './utils'
 
 export const CODE_CHALLENGE_KEY = 'conar.code_challenge'
 export const BEARER_TOKEN_KEY = 'conar.bearer_token'
@@ -37,7 +38,7 @@ export function successAuthToast(newUser: boolean) {
 }
 
 export const authClient = createAuthClient({
-  baseURL: import.meta.env.VITE_PUBLIC_API_URL,
+  baseURL: getApiUrl(),
   basePath: '/auth',
   plugins: [
     inferAdditionalFields<typeof auth>(),

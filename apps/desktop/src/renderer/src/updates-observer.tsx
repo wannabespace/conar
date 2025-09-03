@@ -24,7 +24,12 @@ export async function checkForUpdates() {
 export function UpdatesObserver() {
   const { data: version } = useQuery({
     queryKey: ['version'],
-    queryFn: () => window.electron?.versions.app(),
+    queryFn: () => {
+      if (!window.electron)
+        throw new Error('window.electron is not defined')
+
+      return window.electron.versions.app()
+    },
   })
   const status = useStore(updatesStore, state => state.status)
 
