@@ -28,12 +28,9 @@ export const generateTitle = orpc
         'Do not use dots, commas, etc.',
         'Respond only with the title, nothing else.',
       ].join('\n'),
-      prompt: input.messages.map(
-        message =>
-          `${message.role}: ${message.parts
-            .map(part => (part.type === 'text' ? part.text : ''))
-            .filter(Boolean)
-            .join('\n')}`,
+      prompt: input.messages.map(message => message.parts
+        .map(part => JSON.stringify(part, null, 2))
+        .join('\n'),
       ).join('\n'),
       abortSignal: signal,
     })
