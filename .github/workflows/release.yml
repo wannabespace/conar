@@ -52,7 +52,9 @@ jobs:
         with:
           name: desktop-dist
           path: |
-            ./apps/desktop/out/
+            ./apps/desktop/out/main/
+            ./apps/desktop/out/preload/
+            ./apps/desktop/out/renderer/
           retention-days: 1
 
   build-electron:
@@ -92,6 +94,12 @@ jobs:
         with:
           name: desktop-dist
           path: ./apps/desktop/
+
+      - name: Restructure Build Artifacts
+        run: |
+          cd apps/desktop
+          mkdir -p out
+          mv main preload renderer out/
 
       - name: Build Electron App
         env:
