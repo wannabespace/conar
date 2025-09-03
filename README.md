@@ -10,8 +10,6 @@ Conar is an AI-powered open-source project that simplifies database interactions
   </a>
 </div>
 
-> **Note:** Our X (Twitter) account is temporarily blocked. If you have any questions or need support, please join our [Discord community](https://discord.gg/XweDPUVadR) to connect with us!
-
 ## Features
 
 - **🔐 Secure & Open**
