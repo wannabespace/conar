@@ -5,9 +5,9 @@
     "dev": "cross-env NODE_ENV=development bun --watch run ./src/index.ts",
     "start": "cross-env NODE_ENV=production bun run drizzle:migrate && bun run ./src/index.ts",
     "check-types": "tsc",
-    "drizzle:generate": "bunx --bun drizzle-kit generate",
-    "drizzle:generate-custom": "bunx --bun drizzle-kit generate --custom",
-    "drizzle:migrate": "bunx --bun drizzle-kit migrate"
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:generate-custom": "drizzle-kit generate --custom",
+    "drizzle:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.9",

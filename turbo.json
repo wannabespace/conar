@@ -6,10 +6,10 @@
       "dependsOn": ["^build"]
     },
     "build:vite": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^check-types"]
     },
     "build:electron": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^check-types"]
     },
     "@conar/desktop#build": {
       "dependsOn": ["^check-types"]
