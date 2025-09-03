@@ -18,11 +18,6 @@ jobs:
           VERSION=$(node -p "require('./apps/desktop/package.json').version")
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
@@ -52,8 +47,7 @@ jobs:
         with:
           name: desktop-dist
           path: |
-            ./apps/desktop/dist/
-            ./apps/desktop/dist-electron/
+            ./apps/desktop/out
           retention-days: 1
 
   build-electron:
@@ -74,11 +68,6 @@ jobs:
         run: |
           VERSION=$(node -p "require('./apps/desktop/package.json').version")
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
-
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
