@@ -95,12 +95,6 @@ jobs:
           name: desktop-dist
           path: ./apps/desktop/
 
-      - name: Restructure Build Artifacts
-        run: |
-          cd apps/desktop
-          mkdir -p out
-          mv main preload renderer out/
-
       - name: Build Electron App
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
