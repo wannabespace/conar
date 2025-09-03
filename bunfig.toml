@@ -1,4 +1,0 @@
-# Isolated linker is needed for electron-builder
-
-[install]
-linker = "isolated"

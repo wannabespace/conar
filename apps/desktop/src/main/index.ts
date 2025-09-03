@@ -1,4 +1,3 @@
-/* eslint-disable node/prefer-global/process */
 import type { UpdatesStatus } from '~/updates-observer'
 import { createRequire } from 'node:module'
 import path from 'node:path'
@@ -37,8 +36,8 @@ export function createWindow() {
   })
 
   if (process.env.ELECTRON_RENDERER_URL) {
-    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
     mainWindow.webContents.openDevTools()
+    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   }
   else {
     mainWindow.loadFile(path.join(path.dirname(fileURLToPath(import.meta.url)), '../renderer/index.html'))

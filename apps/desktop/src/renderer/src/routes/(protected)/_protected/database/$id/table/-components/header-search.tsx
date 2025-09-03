@@ -23,7 +23,6 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
     onSuccess: (data) => {
       store.setState(state => ({
         ...state,
-        // ...(data.orderBy && Object.keys(data.orderBy).length > 0 ? { orderBy: data.orderBy } : {}),
         filters: data.filters.map(filter => ({
           column: filter.column,
           operator: filter.operator as typeof SQL_OPERATORS_LIST[number]['value'],

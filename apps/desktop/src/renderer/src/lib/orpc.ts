@@ -3,10 +3,9 @@ import { createORPCClient, onError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { bearerToken } from './auth'
 import { handleError } from './error'
-import { getApiUrl } from './utils'
 
 const link = new RPCLink({
-  url: `${getApiUrl()}/rpc`,
+  url: `${import.meta.env.VITE_PUBLIC_API_URL}/rpc`,
   headers: () => {
     const token = bearerToken.get()
 

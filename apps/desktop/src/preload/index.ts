@@ -15,6 +15,11 @@ export type ElectronPreload = PromisifyElectron<typeof electron> & {
     onDeepLink: (callback: (url: string) => void) => void
     onUpdatesStatus: (callback: (params: { status: UpdatesStatus, message?: string }) => void) => void
   }
+  versions: {
+    node: () => string
+    chrome: () => string
+    electron: () => string
+  }
 }
 
 // eslint-disable-next-line ts/no-explicit-any
@@ -69,6 +74,9 @@ contextBridge.exposeInMainWorld('electron', {
     quitAndInstall: () => handleError(() => ipcRenderer.invoke('app.quitAndInstall')),
   },
   versions: {
+    node: () => process.versions.node,
+    chrome: () => process.versions.chrome,
+    electron: () => process.versions.electron,
     app: () => ipcRenderer.invoke('versions.app'),
   },
 } satisfies ElectronPreload)

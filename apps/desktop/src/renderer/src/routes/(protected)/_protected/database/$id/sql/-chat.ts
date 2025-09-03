@@ -2,7 +2,6 @@ import type { AppUIMessage, tools } from '@conar/shared/ai-tools'
 import type { InferToolInput, InferToolOutput } from 'ai'
 import type { databases } from '~/drizzle'
 import { Chat } from '@ai-sdk/react'
-import { convertToAppUIMessage } from '@conar/shared/ai-tools'
 import { rowsSql } from '@conar/shared/sql/rows'
 import { whereSql } from '@conar/shared/sql/where'
 import { sessionStorageValue, useSessionStorage } from '@conar/ui/hookas/use-session-storage'
@@ -80,21 +79,6 @@ export const lastOpenedChatId = {
   },
 }
 
-async function ensureChat(chatId: string, databaseId: string) {
-  const [existingChat] = await db.select().from(chats).where(eq(chats.id, chatId)).limit(1)
-
-  if (existingChat) {
-    return existingChat
-  }
-
-  const [newChat] = await db.insert(chats).values({
-    id: chatId,
-    databaseId,
-  }).returning()
-
-  return newChat
-}
-
 const chatsMap = new Map<string, Chat<AppUIMessage>>()
 
 export async function createChat({ id = uuid(), database }: { id?: string, database: typeof databases.$inferSelect }) {
@@ -108,31 +92,47 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     transport: {
       async sendMessages(options) {
-        if (options.trigger === 'regenerate-message' && !options.messageId) {
-          throw new Error('Message ID is required when regenerating a message.')
-        }
-
         const lastMessage = options.messages.at(-1)
 
         if (!lastMessage) {
           throw new Error('Last message not found')
         }
 
-        await ensureChat(options.chatId, database.id)
+        await db.transaction(async (tx) => {
+          const [existingChat] = await tx.select().from(chats).where(eq(chats.id, options.chatId)).limit(1)
 
-        if (options.trigger === 'submit-message') {
-          await db.insert(chatsMessages).values({
-            ...lastMessage,
-            chatId: options.chatId,
-          }).onConflictDoUpdate({
-            target: chatsMessages.id,
-            set: lastMessage,
-          })
-        }
+          if (!existingChat) {
+            await tx.insert(chats).values({
+              id: options.chatId,
+              databaseId: database.id,
+            })
+          }
 
-        if (options.trigger === 'regenerate-message' && options.messageId) {
-          await db.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId))
-        }
+          if (options.trigger === 'submit-message') {
+            await tx.insert(chatsMessages).values({
+              ...lastMessage,
+              chatId: options.chatId,
+            }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
+              target: chatsMessages.id,
+              set: lastMessage,
+            })
+          }
+
+          if (options.trigger === 'regenerate-message' && options.messageId) {
+            await tx.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId))
+          }
+        }).catch((error) => {
+          console.error('Transaction error:', error)
+
+          // Handle foreign key constraint violations specifically
+          if (error.message?.includes('violates foreign key constraint')
+            || error.message?.includes('chats_messages_chat_id_chats_id_fk')) {
+            console.error('Foreign key constraint violation: Chat does not exist', { chatId: options.chatId })
+            throw new Error('Chat not found. Please try creating a new chat.')
+          }
+
+          throw error
+        })
 
         return eventIteratorToStream(await orpc.ai.ask({
           ...options.body,
@@ -141,7 +141,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           databaseId: database.id,
           prompt: lastMessage,
           trigger: options.trigger,
-          messageId: options.messageId!,
+          messageId: options.messageId,
           context: [
             `Current query in the SQL runner: ${pageStore.state.query.trim() || 'Empty'}`,
             'Database schemas and tables:',
@@ -153,13 +153,12 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         throw new Error('Unsupported')
       },
     },
-    messages: await db.select()
-      .from(chatsMessages)
-      .where(eq(chatsMessages.chatId, id))
-      .orderBy(asc(chatsMessages.createdAt))
-      .then(rows => rows.map(convertToAppUIMessage)),
+    messages: await db.select().from(chatsMessages).where(eq(chatsMessages.chatId, id)).orderBy(asc(chatsMessages.createdAt)).then(rows => rows.map(row => ({
+      ...row,
+      metadata: row.metadata || undefined,
+    }))) satisfies AppUIMessage[],
     onFinish: async ({ message }) => {
-      await db.insert(chatsMessages).values({ chatId: id, ...message }).onConflictDoUpdate({
+      await db.insert(chatsMessages).values({ chatId: id, ...message }).onConflictDoUpdate({ // It happens when the chat calling the stream again after some tool call
         target: chatsMessages.id,
         set: message,
       })
