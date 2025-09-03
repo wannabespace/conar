@@ -51,10 +51,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: desktop-dist
-          path: |
-            ./apps/desktop/out/main/
-            ./apps/desktop/out/preload/
-            ./apps/desktop/out/renderer/
+          path: ./apps/desktop/out/
           retention-days: 1
 
   build-electron:
@@ -93,7 +90,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: desktop-dist
-          path: ./apps/desktop/
+          path: ./apps/desktop/out/
 
       - name: Build Electron App
         env:
