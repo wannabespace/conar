@@ -37,8 +37,8 @@ export function createWindow() {
   })
 
   if (process.env.ELECTRON_RENDERER_URL) {
-    mainWindow.webContents.openDevTools()
     mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+    mainWindow.webContents.openDevTools()
   }
   else {
     mainWindow.loadFile(path.join(path.dirname(fileURLToPath(import.meta.url)), '../renderer/index.html'))
