@@ -22,7 +22,7 @@ export const generateTitle = orpc
       prompt: `
         You are a title generator that generates a title for a chat.
         The title should be in the same language as the user's message.
-        Title should be a single sentence between 2 and 8 words.
+        Title should not be more than 30 characters.
         Title should be properly formatted, example: "Update Component in React".
         Each word should be capitalized.
         Do not use dots, commas, etc.
