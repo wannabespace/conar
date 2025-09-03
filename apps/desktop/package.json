@@ -68,7 +68,7 @@
     "dayjs": "^1.11.18",
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
-    "electron": "^37.4.0",
+    "electron": "^38.0.0",
     "electron-builder": "^26.0.12",
     "electron-vite": "^4.0.0",
     "hookable": "^5.5.3",
