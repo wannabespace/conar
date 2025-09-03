@@ -8,9 +8,7 @@
     "build:vite": {
       "dependsOn": ["^check-types"]
     },
-    "build:electron": {
-      "dependsOn": ["^check-types"]
-    },
+    "build:electron": {},
     "@conar/desktop#build": {
       "dependsOn": ["^check-types"]
     },
