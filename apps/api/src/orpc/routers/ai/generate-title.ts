@@ -1,5 +1,5 @@
 import type { AppUIMessage } from '@conar/shared/ai-tools'
-import { openai } from '@ai-sdk/openai'
+import { google } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
@@ -20,20 +20,29 @@ export const generateTitle = orpc
     ).join('\n')
 
     const { text } = await generateText({
-      model: withPosthog(openai('gpt-4o-mini'), {
+      model: withPosthog(google('gemini-2.0-flash'), {
         chatId: input.chatId,
         userId: context.user.id,
       }),
-      system: [
-        'You are a title generator that generates a title for a chat.',
-        'The title should be in the same language as the user\'s message.',
-        'Title should not be more than 30 characters.',
-        'Title should be properly formatted, example: "Update Component in React".',
-        'Each word should be capitalized.',
-        'Do not use dots, commas, etc.',
-        'Respond only with the title, nothing else.',
-      ].join('\n'),
-      prompt,
+      messages: [
+        {
+          role: 'system',
+          content: [
+            'You are a title generator that generates a title for a chat.',
+            'The title should be in the same language as the user\'s message.',
+            'Try to generate a title that is as close as possible to the user\'s message.',
+            'Title should not be more than 30 characters.',
+            'Title should be properly formatted, example: "Update Component in React".',
+            'Each word should be capitalized.',
+            'Do not use dots, commas, etc.',
+            'Generate only the text of the title, nothing else.',
+          ].join('\n'),
+        },
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
       abortSignal: signal,
     })
 

@@ -77,7 +77,7 @@ export function ChatHeader() {
   const { chatId } = Route.useSearch()
   const { data } = useChatsLive(id)
   const currentChat = useMemo(() => data?.find(chat => chat.id === chatId), [data, chatId])
-  const shouldGenerateTitle = !!currentChat && currentChat.title === null
+  const shouldGenerateTitle = !!currentChat && currentChat.title === null && currentChat.messages.length > 0
 
   useAsyncEffect(async () => {
     if (!shouldGenerateTitle) {
