@@ -5,8 +5,12 @@
     "build": {
       "dependsOn": ["^build"]
     },
-    "build:vite": {},
-    "build:electron": {},
+    "build:vite": {
+      "dependsOn": ["^build"]
+    },
+    "build:electron": {
+      "dependsOn": ["^build"]
+    },
     "@conar/desktop#build": {
       "dependsOn": ["^check-types"]
     },
