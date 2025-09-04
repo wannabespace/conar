@@ -5,7 +5,7 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiAddLine, RiCheckLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
+import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
@@ -80,6 +80,14 @@ function DashboardPage() {
             className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
           >
             <RiTwitterXLine className="size-4" />
+          </a>
+          <a
+            href={SOCIAL_LINKS.DISCORD}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
+          >
+            <RiDiscordLine className="size-4" />
           </a>
           <a
             href={SOCIAL_LINKS.GITHUB}
