@@ -29,6 +29,7 @@
     "@ai-sdk/react": "^2.0.30",
     "@conar/api": "workspace:*",
     "@conar/configs": "workspace:*",
+    "@conar/connection": "workspace:*",
     "@conar/shared": "workspace:*",
     "@conar/ui": "workspace:*",
     "@dnd-kit/core": "^6.3.1",

@@ -1,4 +1,4 @@
-import { parseUrl } from '@conar/shared/utils/url'
+import { SafeURL } from '@conar/shared/utils/url'
 import { eq } from 'drizzle-orm'
 import { toast } from 'sonner'
 import { databases, db } from '~/drizzle'
@@ -21,7 +21,7 @@ export async function syncDatabases() {
     const toAdd = fetchedDatabases.filter(d => !existingMap.has(d.id))
       .map(d => ({
         ...d,
-        isPasswordPopulated: !!parseUrl(d.connectionString).password,
+        isPasswordPopulated: !!new SafeURL(d.connectionString).password,
       }))
     const toUpdate = fetchedDatabases
       .filter(d => existingMap.has(d.id))
@@ -33,15 +33,15 @@ export async function syncDatabases() {
           changes.name = d.name
         }
 
-        const existingUrl = parseUrl(existing.connectionString)
+        const existingUrl = new SafeURL(existing.connectionString)
         existingUrl.password = ''
-        const fetchedUrl = parseUrl(d.connectionString)
+        const fetchedUrl = new SafeURL(d.connectionString)
         fetchedUrl.password = ''
 
         if (existingUrl.toString() !== fetchedUrl.toString()) {
           changes.connectionString = d.connectionString
           changes.isPasswordExists = !!d.isPasswordExists
-          changes.isPasswordPopulated = !!parseUrl(d.connectionString).password
+          changes.isPasswordPopulated = !!new SafeURL(d.connectionString).password
         }
 
         return {

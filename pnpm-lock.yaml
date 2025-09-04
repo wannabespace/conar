@@ -271,6 +271,9 @@ importers:
       '@conar/configs':
         specifier: workspace:*
         version: link:../../packages/configs
+      '@conar/connection':
+        specifier: workspace:*
+        version: link:../../packages/connection
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -577,6 +580,19 @@ importers:
         version: 5.1.4(typescript@5.9.2)(vite@7.1.4(@types/node@24.3.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1))
 
   packages/configs: {}
+
+  packages/connection:
+    dependencies:
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
 
   packages/shared:
     dependencies:
@@ -11366,7 +11382,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 22.18.0
+      '@types/node': 24.3.0
       '@types/responselike': 1.0.3
 
   '@types/conventional-commits-parser@5.0.1':
@@ -11403,7 +11419,7 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 22.18.0
+      '@types/node': 24.3.0
 
   '@types/linkify-it@5.0.0': {}
 
@@ -11422,7 +11438,7 @@ snapshots:
 
   '@types/node-fetch@2.6.13':
     dependencies:
-      '@types/node': 18.19.123
+      '@types/node': 24.3.0
       form-data: 4.0.4
 
   '@types/node@18.19.123':
@@ -11471,7 +11487,7 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 22.18.0
+      '@types/node': 24.3.0
 
   '@types/retry@0.12.0': {}
 
@@ -11488,7 +11504,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 22.18.0
+      '@types/node': 24.3.0
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2)':

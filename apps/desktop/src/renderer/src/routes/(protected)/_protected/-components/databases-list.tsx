@@ -1,6 +1,6 @@
 import type { ComponentRef } from 'react'
 import type { databases } from '~/drizzle'
-import { parseUrl } from '@conar/shared/utils/url'
+import { SafeURL } from '@conar/shared/utils/url'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Skeleton } from '@conar/ui/components/skeleton'
@@ -15,7 +15,7 @@ import { RenameDatabaseDialog } from './rename-database-dialog'
 
 function DatabaseCard({ database, onRemove, onRename }: { database: typeof databases.$inferSelect, onRemove: () => void, onRename: () => void }) {
   const connectionString = useMemo(() => {
-    const url = parseUrl(database.connectionString)
+    const url = new SafeURL(database.connectionString)
 
     if (database.isPasswordExists || url.password) {
       url.password = '*'.repeat(url.password.length || 6)
