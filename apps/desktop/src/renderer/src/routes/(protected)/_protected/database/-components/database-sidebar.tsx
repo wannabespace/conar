@@ -3,16 +3,23 @@ import type { databases } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
+import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
+import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiListUnordered, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCloseLine, RiCommandLine, RiListUnordered, RiMessageLine, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { ThemeToggle } from '~/components/theme-toggle'
 import { DatabaseIcon, useDatabasesLive } from '~/entities/database'
 import { UserButton } from '~/entities/user'
+import { orpc } from '~/lib/orpc'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
 import { Route } from '../$id'
 import { useLastOpenedChatId } from '../$id/sql/-chat'
@@ -25,6 +32,82 @@ function classes(isActive = false) {
   return cn(
     'cursor-pointer text-foreground size-9 rounded-md flex items-center justify-center border border-transparent',
     isActive && 'bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary',
+  )
+}
+
+function SupportButton() {
+  const [open, setOpen] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const { mutate: sendSupport, isPending: loading } = useMutation({
+    mutationFn: async () => {
+      await orpc.contact({ message })
+    },
+    onSuccess: () => {
+      toast.success('Support message sent successfully! We will get back to you as soon as possible.')
+      setOpen(false)
+      setMessage('')
+    },
+    onError: (err) => {
+      console.error(err)
+      toast.error('Failed to send message. Please try again later.')
+    },
+  })
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    sendSupport()
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button size="icon" variant="ghost">
+                <RiMessageLine className="size-4" />
+              </Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="right">Support</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Contact Support</DialogTitle>
+        </DialogHeader>
+        <div className="text-muted-foreground mb-2">
+          Have a question, suggestion, or need assistance?
+          We're here to listen!
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="support-message">Message</Label>
+            <Textarea
+              id="support-message"
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+              required
+              placeholder="Type any message you'd like to send us"
+              className="min-h-48"
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit" disabled={loading || !message}>
+              <LoadingContent loading={loading}>
+                Send
+              </LoadingContent>
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -214,6 +297,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         </div>
       </ScrollArea>
       <div className="p-4 pt-0 flex flex-col items-center">
+        <SupportButton />
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger

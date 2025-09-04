@@ -40,6 +40,7 @@
     "postgres": "^3.4.7",
     "posthog-node": "^5.8.1",
     "redis": "^5.8.2",
+    "resend": "^6.0.2",
     "resumable-stream": "^2.2.3",
     "stripe": "^18.5.0",
     "superjson": "^2.2.2",

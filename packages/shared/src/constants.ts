@@ -3,3 +3,5 @@ export const SOCIAL_LINKS = {
   TWITTER: 'https://x.com/conar_app',
   DISCORD: 'https://discord.gg/XweDPUVadR',
 } as const
+
+export const SUPPORT_EMAIL = 'valerii.strilets@gmail.com'
