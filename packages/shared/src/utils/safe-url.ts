@@ -2,15 +2,9 @@
 const urlRegex = /^([a-z][a-z\d+\-.]*):\/\/(?:([^:@/\s]*)(?::([^@/\s]*))?@)?([^:/\s]+|\[[^\]]+\])(?::(\d+))?(?:\/([^?#\s]*))?(?:\?([^#\s]*))?(?:#(.*))?$/i
 
 export class SafeURL implements URL {
-  protocol!: string
+  #url!: URL
   username!: string
   password!: string
-  hostname!: string
-  port!: string
-  pathname!: string
-  search!: string
-  hash!: string
-  href!: string
 
   constructor(url: string) {
     const match = url.match(urlRegex)
@@ -31,47 +25,124 @@ export class SafeURL implements URL {
       hash,
     ] = match
 
-    this.protocol = `${protocol}:`
-    this.username = typeof username === 'string' ? username : ''
-    this.password = typeof password === 'string' ? password : ''
-    this.hostname = hostname
-    this.port = port || ''
-    this.pathname = pathname ? `/${pathname}` : '/'
-    this.search = search ? `?${search}` : ''
-    this.hash = typeof hash === 'string' ? `#${hash}` : ''
-    this.href = url
-  }
+    const _url = new URL(`${protocol}://${hostname}`)
 
-  get searchParams() {
-    const searchParams = new URLSearchParams()
-
-    if (this.search) {
-      this.search.slice(1).split('&').forEach((param) => {
-        const [key, value] = param.split('=')
-
-        if (key) {
-          searchParams.append(
-            decodeURIComponent(key),
-            value ? decodeURIComponent(value) : '',
-          )
-        }
-      })
+    if (hash) {
+      _url.hash = hash
     }
 
-    return searchParams
+    if (search) {
+      _url.search = search
+    }
+
+    if (pathname) {
+      _url.pathname = pathname ? `/${pathname}` : '/'
+    }
+
+    if (port) {
+      _url.port = port || ''
+    }
+
+    this.username = typeof username === 'string' ? username : ''
+    this.password = typeof password === 'string' ? password : ''
+    this.#url = _url
+  }
+
+  get protocol() {
+    return this.#url.protocol
+  }
+
+  set protocol(value: string) {
+    this.#url.protocol = value
   }
 
   get origin() {
-    return `${this.protocol}://${this.hostname}${this.port ? `:${this.port}` : ''}`
+    return `${this.protocol}//${this.host}`
   }
 
   get host() {
-    return this.hostname + (this.port ? `:${this.port}` : '')
+    return this.#url.host
   }
 
   set host(value: string) {
-    this.hostname = value.split(':')[0]
-    this.port = value.split(':')[1] || ''
+    this.#url.host = value
+  }
+
+  get hostname() {
+    return this.#url.hostname
+  }
+
+  set hostname(value: string) {
+    this.#url.hostname = value
+  }
+
+  get port() {
+    return this.#url.port
+  }
+
+  set port(value: string) {
+    this.#url.port = value
+  }
+
+  get pathname() {
+    return this.#url.pathname
+  }
+
+  set pathname(value: string) {
+    this.#url.pathname = value
+  }
+
+  get search() {
+    return this.#url.search
+  }
+
+  set search(value: string) {
+    this.#url.search = value
+  }
+
+  get hash() {
+    return this.#url.hash
+  }
+
+  set hash(value: string) {
+    this.#url.hash = value
+  }
+
+  get searchParams() {
+    return this.#url.searchParams
+  }
+
+  get href() {
+    const url = new URL(this.#url.toString())
+    const originalUsername = this.username
+    const originalPassword = this.password
+
+    const encodedUsername = encodeURIComponent(originalUsername)
+    const encodedPassword = encodeURIComponent(originalPassword)
+
+    url.username = encodedUsername || ''
+    url.password = encodedPassword || ''
+
+    let href = url.toString()
+
+    if (originalUsername !== encodedUsername) {
+      href = href.replace(encodedUsername, originalUsername)
+    }
+
+    if (originalPassword !== encodedPassword) {
+      href = href.replace(encodedPassword, originalPassword)
+    }
+
+    return href
+  }
+
+  get hrefEncoded() {
+    const url = new URL(this.#url.toString())
+
+    url.username = this.username || ''
+    url.password = this.password || ''
+
+    return url.toString()
   }
 
   toString() {
