@@ -100,6 +100,6 @@ autoUpdater.on('error', (e) => {
 autoUpdater.on('download-progress', () => {
   sendUpdatesStatus('downloading')
 })
-autoUpdater.on('update-downloaded', () => {
-  sendUpdatesStatus('ready')
+autoUpdater.on('update-downloaded', (event) => {
+  sendUpdatesStatus('ready', typeof event.releaseNotes === 'string' ? event.releaseNotes : undefined)
 })

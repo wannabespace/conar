@@ -43,13 +43,23 @@ export function UpdatesObserver() {
     if (version) {
       updatesStore.setState(state => ({ ...state, version }))
     }
+    updatesStore.setState(state => ({ ...state, status: 'ready', message: 'Hello' }))
   }, [version])
 
   useEffect(() => {
     if (status === 'ready') {
       function showToast() {
-        toast.success('New update successfully downloaded', {
+        toast.success('New update downloaded!', {
           id: TOAST_UPDATE_READY_ID,
+          description: updatesStore.state.message
+            ? (
+                <>
+                  What’s new:
+                  <br />
+                  {updatesStore.state.message}
+                </>
+              )
+            : null,
           action: {
             label: 'Restart',
             onClick: () => window.electron?.app.quitAndInstall(),
@@ -66,5 +76,5 @@ export function UpdatesObserver() {
     }
   }, [status])
 
-  return <></>
+  return null
 }
