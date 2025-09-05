@@ -43,7 +43,6 @@ export function UpdatesObserver() {
     if (version) {
       updatesStore.setState(state => ({ ...state, version }))
     }
-    updatesStore.setState(state => ({ ...state, status: 'ready', message: 'Hello' }))
   }, [version])
 
   useEffect(() => {
