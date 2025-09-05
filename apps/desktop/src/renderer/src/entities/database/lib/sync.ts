@@ -1,14 +1,11 @@
 import { SafeURL } from '@conar/shared/utils/safe-url'
+import { queryOptions } from '@tanstack/react-query'
 import { eq } from 'drizzle-orm'
 import { toast } from 'sonner'
 import { databases, db } from '~/drizzle'
 import { orpc } from '~/lib/orpc'
 
-export async function syncDatabases() {
-  if (!navigator.onLine) {
-    return
-  }
-
+async function syncDatabases() {
   try {
     const [fetchedDatabases, existingDatabases] = await Promise.all([
       orpc.databases.list(),
@@ -64,3 +61,12 @@ export async function syncDatabases() {
     toast.error('Failed to fetch databases. Please try again later.')
   }
 }
+
+export const syncDatabasesQueryOptions = queryOptions({
+  queryKey: ['sync-databases'],
+  queryFn: async () => {
+    await syncDatabases()
+    return true
+  },
+  enabled: false,
+})

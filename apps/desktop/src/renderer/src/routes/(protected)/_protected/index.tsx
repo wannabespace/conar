@@ -6,10 +6,10 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
-import { useMutation } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { syncDatabases } from '~/entities/database'
+import { syncDatabasesQueryOptions } from '~/entities/database'
 import { checkForUpdates, updatesStore } from '~/updates-observer'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
@@ -26,9 +26,7 @@ export const Route = createFileRoute('/(protected)/_protected/')({
 })
 
 function DashboardPage() {
-  const { mutate: refetch, isPending: isRefetching } = useMutation({
-    mutationFn: syncDatabases,
-  })
+  const { refetch, isFetching } = useQuery(syncDatabasesQueryOptions)
   const router = useRouter()
   const [version, status] = useStore(updatesStore, state => [state.version, state.status])
 
@@ -46,11 +44,11 @@ function DashboardPage() {
           <Button
             variant="outline"
             size="icon"
-            disabled={isRefetching}
+            disabled={isFetching}
             onClick={() => refetch()}
           >
-            <LoadingContent loading={isRefetching}>
-              <ContentSwitch active={isRefetching} activeContent={<RiCheckLine className="text-success" />}>
+            <LoadingContent loading={isFetching}>
+              <ContentSwitch active={isFetching} activeContent={<RiCheckLine className="text-success" />}>
                 <RiLoopLeftLine />
               </ContentSwitch>
             </LoadingContent>

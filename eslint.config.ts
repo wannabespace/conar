@@ -6,7 +6,6 @@ export default antfu(
     rules: {
       'ts/no-explicit-any': 'error',
       'no-console': 'warn',
-      'react-hooks/exhaustive-deps': 'off',
       'prefer-arrow-callback': 'off',
       'react/no-context-provider': 'off', // Due to context selector
     },

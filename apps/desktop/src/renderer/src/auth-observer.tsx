@@ -50,7 +50,7 @@ export function AuthObserver() {
     if (!data?.user && !publicRoutes.includes(location.pathname)) {
       router.navigate({ to: '/sign-in' })
     }
-  }, [isPending, data?.user, location.pathname])
+  }, [router, isPending, data?.user, location.pathname, isSignedInButServerError])
 
   useEffect(() => {
     if (isSignedInButServerError)

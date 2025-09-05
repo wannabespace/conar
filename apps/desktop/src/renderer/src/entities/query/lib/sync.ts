@@ -1,13 +1,10 @@
+import { queryOptions } from '@tanstack/react-query'
 import { eq } from 'drizzle-orm'
 import { toast } from 'sonner'
 import { db, queries } from '~/drizzle'
 import { orpc } from '~/lib/orpc'
 
-export async function syncQueries() {
-  if (!navigator.onLine) {
-    return
-  }
-
+async function syncQueries() {
   try {
     const [fetchedQueries, existingQueries] = await Promise.all([
       orpc.queries.list(),
@@ -57,3 +54,12 @@ export async function syncQueries() {
     toast.error('Failed to fetch queries. Please try again later.')
   }
 }
+
+export const syncQueriesQueryOptions = queryOptions({
+  queryKey: ['sync-queries'],
+  queryFn: async () => {
+    await syncQueries()
+    return true
+  },
+  enabled: false,
+})

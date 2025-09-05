@@ -1,14 +1,11 @@
 import { isDeeplyEqual } from '@conar/shared/utils/helpers'
+import { queryOptions } from '@tanstack/react-query'
 import { eq } from 'drizzle-orm'
 import { toast } from 'sonner'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { orpc } from '~/lib/orpc'
 
-export async function syncChats() {
-  if (!navigator.onLine) {
-    return
-  }
-
+async function syncChats() {
   let fetchedMessages: typeof chatsMessages.$inferSelect[] = []
   let existingMessages: typeof chatsMessages.$inferSelect[] = []
 
@@ -101,3 +98,12 @@ export async function syncChats() {
     toast.error('Failed to fetch messages. Please try again later.')
   }
 }
+
+export const syncChatsQueryOptions = queryOptions({
+  queryKey: ['sync-chats'],
+  queryFn: async () => {
+    await syncChats()
+    return true
+  },
+  enabled: false,
+})
