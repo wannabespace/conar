@@ -22,7 +22,7 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
     }
 
     return url.toString()
-  }, [database.connectionString])
+  }, [database.connectionString, database.isPasswordExists])
 
   const [lastOpenedTable] = useLastOpenedTable(database.id)
 

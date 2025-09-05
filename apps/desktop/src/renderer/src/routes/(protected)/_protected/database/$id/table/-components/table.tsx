@@ -3,7 +3,7 @@ import { setSql } from '@conar/shared/sql/set'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
@@ -67,11 +67,11 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       ...state,
       selected: validSelected,
     }))
-  }, [rows, primaryKeys])
+  }, [store, rows, primaryKeys])
 
   const selectable = !!primaryKeys && primaryKeys.length > 0
 
-  const setValue = (rowIndex: number, columnName: string, value: unknown) => {
+  const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
     const rowsQueryOpts = getRowsQueryOpts({
       database,
       table,
@@ -96,9 +96,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           })),
         })
       : data)
-  }
+  }, [database, table, schema, store])
 
-  const saveValue = async (rowIndex: number, columnId: string, value: unknown) => {
+  const saveValue = useCallback(async (rowIndex: number, columnId: string, value: unknown) => {
     const rowsQueryOpts = getRowsQueryOpts({
       database,
       table,
@@ -134,7 +134,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     if (filters.length > 0 || Object.keys(orderBy).length > 0)
       queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
-  }
+  }, [database, table, schema, store, primaryKeys, setValue, columns, filters, orderBy])
 
   const tableColumns = useMemo(() => {
     if (!columns)
@@ -167,7 +167,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     }
 
     return sortedColumns
-  }, [columns, hiddenColumns, selectable])
+  }, [columns, hiddenColumns, selectable, primaryKeys, setValue, saveValue])
 
   return (
     <TableProvider

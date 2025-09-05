@@ -305,25 +305,16 @@ function CreateConnectionPage() {
                         Continue
                       </Button>
                     )
-                  : status === 'error'
-                    ? (
-                        <Button
-                          variant="destructive"
-                          onClick={() => testConnection(form.state.values)}
-                        >
-                          Try again
-                        </Button>
-                      )
-                    : (
-                        <Button
-                          disabled={status === 'pending' || !connectionString}
-                          onClick={() => testConnection(form.state.values)}
-                        >
-                          <LoadingContent loading={status === 'pending'}>
-                            Test connection
-                          </LoadingContent>
-                        </Button>
-                      )}
+                  : (
+                      <Button
+                        disabled={status === 'pending' || !connectionString}
+                        onClick={() => testConnection(form.state.values)}
+                      >
+                        <LoadingContent loading={status === 'pending'}>
+                          {status === 'error' ? 'Try again' : 'Test connection'}
+                        </LoadingContent>
+                      </Button>
+                    )}
               </div>
             </div>
           </StepperContent>

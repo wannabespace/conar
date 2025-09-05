@@ -16,26 +16,30 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const { mutate: savePassword, isPending } = useMutation({
-    mutationFn: async (password: string) => {
-      await updateDatabasePassword(database.id, password)
-    },
-    onSuccess: () => {
-      toast.success('Password successfully saved!')
-    },
-  })
-  const { mutate: testConnection, isPending: isConnecting } = useMutation({
-    mutationFn: dbTestConnection,
-    onSuccess: () => {
-      toast.success('Connection successful. You can now save the database password.')
-    },
-  })
 
   const newConnectionString = useMemo(() => {
     const url = new SafeURL(database.connectionString)
     url.password = password
     return url.toString()
   }, [database.connectionString, password])
+
+  const { mutate: savePassword, status } = useMutation({
+    mutationFn: async (password: string) => {
+      await dbTestConnection({ type: database.type, connectionString: newConnectionString })
+      await updateDatabasePassword(database.id, password)
+    },
+    onSuccess: () => {
+      toast.success('Password successfully saved!')
+      setPassword('')
+      // TODO: remove it after migration to TanStack DB
+      window.location.reload()
+    },
+    onError: (error) => {
+      toast.error('We couldn\'t connect to the database', {
+        description: error.message,
+      })
+    },
+  })
 
   return (
     <div className="min-h-[inherit] h-screen flex flex-col justify-center">
@@ -71,7 +75,7 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
                   <Input
                     placeholder="••••••••"
                     value={password}
-                    disabled={isPending}
+                    disabled={status === 'pending'}
                     onChange={e => setPassword(e.target.value)}
                     type={showPassword ? 'text' : 'password'}
                     autoCapitalize="none"
@@ -81,43 +85,28 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
                     required
                   />
                   <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
                     className="absolute right-2 top-1/2 size-7 -translate-y-1/2"
                     onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
                   >
                     {showPassword
-                      ? (
-                          <RiEyeOffLine className="size-4" />
-                        )
-                      : (
-                          <RiEyeLine className="size-4" />
-                        )}
-                    <span className="sr-only">
-                      {showPassword ? 'Hide password' : 'Show password'}
-                    </span>
+                      ? <RiEyeOffLine className="size-4" />
+                      : <RiEyeLine className="size-4" />}
                   </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  className="shrink-0"
-                  disabled={isConnecting || isPending}
-                  onClick={() => testConnection({ type: database.type, connectionString: newConnectionString })}
-                >
-                  <LoadingContent loading={isConnecting}>
-                    Test connection
-                  </LoadingContent>
-                </Button>
               </div>
             </CardContent>
             <CardFooter>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isPending}
+                disabled={status === 'pending'}
               >
-                <LoadingContent loading={isPending}>
-                  Save Password
+                <LoadingContent loading={status === 'pending'}>
+                  {status === 'error' ? 'Retry Saving Password' : 'Save Password'}
                 </LoadingContent>
               </Button>
             </CardFooter>
