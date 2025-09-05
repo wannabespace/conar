@@ -78,7 +78,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
     },
   })
 
-  const canConfirm = confirmationText === `DROP TABLE ${table}`
+  const canConfirm = confirmationText === table
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -101,8 +101,6 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
                   Type
                   {' '}
                   <span className="font-semibold">
-                    DROP TABLE
-                    {' '}
                     {table}
                   </span>
                   {' '}
@@ -113,7 +111,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
                 id="confirmation"
                 value={confirmationText}
                 onChange={e => setConfirmationText(e.target.value)}
-                placeholder={`DROP TABLE ${table}`}
+                placeholder={table}
                 spellCheck={false}
                 autoComplete="off"
               />
