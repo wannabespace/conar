@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { SafeURL } from './url'
+import { SafeURL } from './safe-url'
 
 const RANDOM_URLS = [
   'http://localhost:5432/mydb',

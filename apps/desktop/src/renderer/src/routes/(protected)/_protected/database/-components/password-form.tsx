@@ -1,5 +1,5 @@
 import type { databases } from '~/drizzle'
-import { SafeURL } from '@conar/shared/utils/url'
+import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'

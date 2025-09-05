@@ -1,6 +1,6 @@
 import type { ComponentRef } from 'react'
 import type { databases } from '~/drizzle'
-import { SafeURL } from '@conar/shared/utils/url'
+import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Skeleton } from '@conar/ui/components/skeleton'

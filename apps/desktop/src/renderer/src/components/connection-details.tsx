@@ -1,5 +1,5 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
-import { SafeURL } from '@conar/shared/utils/url'
+import { SafeURL } from '@conar/shared/utils/safe-url'
 import { cn } from '@conar/ui/lib/utils'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useState } from 'react'

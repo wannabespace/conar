@@ -1,5 +1,5 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
-import { SafeURL } from '@conar/shared/utils/url'
+import { SafeURL } from '@conar/shared/utils/safe-url'
 import { eq } from 'drizzle-orm'
 import { databases, db } from '~/drizzle'
 import { orpc } from '~/lib/orpc'

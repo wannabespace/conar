@@ -1,5 +1,5 @@
 // Inspired by https://github.com/brianc/node-postgres/blob/master/packages/pg-connection-string/index.js
-import { SafeURL } from '@conar/shared/utils/url'
+import { SafeURL } from '@conar/shared/utils/safe-url'
 
 export type SSLConfig = {
   rejectUnauthorized?: boolean

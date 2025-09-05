@@ -1,4 +1,4 @@
-import { SafeURL } from '@conar/shared/utils/url'
+import { SafeURL } from '@conar/shared/utils/safe-url'
 import { eq } from 'drizzle-orm'
 import { toast } from 'sonner'
 import { databases, db } from '~/drizzle'
