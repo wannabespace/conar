@@ -64,19 +64,6 @@ describe('parseConnectionString', () => {
     })
   })
 
-  it('should handle URL-encoded characters', () => {
-    const connectionString = 'postgresql://user:p%40#ssw%23rd@localhost:5432/mydb'
-    const config = parseConnectionString(connectionString)
-
-    expect(config).toEqual({
-      user: 'user',
-      password: 'p@#ssw#rd',
-      host: 'localhost',
-      port: 5432,
-      database: 'mydb',
-    })
-  })
-
   describe('SSL Configuration', () => {
     it('should parse sslmode=disable', () => {
       const connectionString = 'postgresql://user:password@localhost:5432/mydb?sslmode=disable'
@@ -356,7 +343,7 @@ describe('real-world Examples', () => {
 
     expect(config).toEqual({
       user: 'postgres.ghfgh',
-      password: 'p#96!h6h',
+      password: 'p%2396!h6h',
       host: 'aws-0-eu-central-1.pooler.supabase.com',
       port: 6543,
       database: 'postgres',

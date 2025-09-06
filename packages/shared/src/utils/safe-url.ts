@@ -1,5 +1,4 @@
-// eslint-disable-next-line regexp/no-super-linear-backtracking
-const urlRegex = /^([a-z][a-z\d+\-.]*):\/\/(?:([^:@/\s]*)(?::([^@/\s]*))?@)?([^:/\s]+|\[[^\]]+\])(?::(\d+))?(?:\/([^?#\s]*))?(?:\?([^#\s]*))?(?:#(.*))?$/i
+const authRegex = /^([^:]+):\/\/([^:]*)(?::(.*))?$/
 
 export class SafeURL implements URL {
   #url!: URL
@@ -7,45 +6,30 @@ export class SafeURL implements URL {
   password!: string
 
   constructor(url: string) {
-    const match = url.match(urlRegex)
+    let _url = url
+    const atIndex = url.lastIndexOf('@')
 
-    if (!match) {
-      throw new TypeError(`Invalid URL format: ${url}`)
+    let username = ''
+    let password = ''
+
+    if (atIndex > 0) {
+      const beforeAt = url.substring(0, atIndex)
+      const afterAt = url.substring(atIndex + 1)
+      const authMatch = beforeAt.match(authRegex)
+
+      if (authMatch) {
+        const [, protocol, _user, _password] = authMatch
+        _url = `${protocol}://${afterAt}`
+        username = _user || ''
+        password = _password || ''
+      }
     }
 
-    const [
-      ,
-      protocol,
-      username,
-      password,
-      hostname,
-      port,
-      pathname,
-      search,
-      hash,
-    ] = match
+    const _URL = new URL(_url)
 
-    const _url = new URL(`${protocol}://${hostname}`)
-
-    if (hash) {
-      _url.hash = hash
-    }
-
-    if (search) {
-      _url.search = search
-    }
-
-    if (pathname) {
-      _url.pathname = pathname ? `/${pathname}` : '/'
-    }
-
-    if (port) {
-      _url.port = port || ''
-    }
-
-    this.username = typeof username === 'string' ? username : ''
-    this.password = typeof password === 'string' ? password : ''
-    this.#url = _url
+    this.#url = _URL
+    this.username = username || ''
+    this.password = password || ''
   }
 
   get protocol() {
@@ -113,7 +97,7 @@ export class SafeURL implements URL {
   }
 
   get href() {
-    const url = new URL(this.#url.toString())
+    const url = new URL(this.#url)
     const originalUsername = this.username
     const originalPassword = this.password
 
@@ -126,11 +110,11 @@ export class SafeURL implements URL {
     let href = url.toString()
 
     if (originalUsername !== encodedUsername) {
-      href = href.replace(encodedUsername, originalUsername)
+      href = href.replace(encodedUsername, originalUsername.replaceAll(' ', '%20'))
     }
 
     if (originalPassword !== encodedPassword) {
-      href = href.replace(encodedPassword, originalPassword)
+      href = href.replace(encodedPassword, originalPassword.replaceAll(' ', '%20'))
     }
 
     return href

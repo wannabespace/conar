@@ -19,37 +19,12 @@ export interface Config {
   ssl?: SSLConfig
 }
 
-function encodeConnectionString(connectionString: string): string {
-  let encodedConnectionString = connectionString
-  const atIndex = connectionString.lastIndexOf('@')
-  if (atIndex > 0) {
-    const beforeAt = connectionString.substring(0, atIndex)
-    const afterAt = connectionString.substring(atIndex + 1)
-    const authMatch = beforeAt.match(/^([^:]+):\/\/([^:]+):(.+)$/)
-    if (authMatch) {
-      const [, protocol, user, password] = authMatch
-      let processedPassword = password
-      if (password.includes('%')) {
-        processedPassword = decodeURIComponent(password)
-        processedPassword = encodeURIComponent(processedPassword)
-      }
-      else if (/[#@]/.test(password)) {
-        processedPassword = encodeURIComponent(password)
-      }
-      const encodedPassword = processedPassword
-      encodedConnectionString = `${protocol}://${user}:${encodedPassword}@${afterAt}`
-    }
-  }
-  return encodedConnectionString
-}
-
 export function parseConnectionString(connectionString: string): Config {
-  const encodedConnectionString = encodeConnectionString(connectionString)
-  const parsed = new SafeURL(encodedConnectionString)
+  const parsed = new SafeURL(connectionString)
 
   const config: Config = {
-    user: parsed.username ? decodeURIComponent(parsed.username) : undefined,
-    password: parsed.password ? decodeURIComponent(parsed.password) : undefined,
+    user: parsed.username || undefined,
+    password: parsed.password || undefined,
     host: parsed.hostname,
     port: parsed.port ? Number.parseInt(parsed.port, 10) : undefined,
     database: parsed.pathname && parsed.pathname !== '/' ? parsed.pathname.slice(1) : undefined,
