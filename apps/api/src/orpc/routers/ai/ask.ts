@@ -35,8 +35,12 @@ function handleError(error: unknown) {
   if (typeof error === 'object' && (error as { type?: string }).type === 'overloaded_error') {
     return 'Sorry, I was unable to generate a response due to high load. Please try again later.'
   }
+  if (typeof error === 'object' && (error as { message?: string }).message?.includes('prompt is too long')) {
+    return 'Sorry, I was unable to generate a response. Currently I cannot handle larger chats like yours. Please create a new chat.'
+  }
   return 'Sorry, I was unable to generate a response due to an error. Please try again.'
 }
+
 
 function generateStream({
   messages,
