@@ -1,7 +1,6 @@
 import { eventIterator } from '@orpc/server'
 import { type } from 'arktype'
-import { addSeconds } from 'date-fns'
-import { and, eq, getTableColumns, gt, inArray, notInArray, or } from 'drizzle-orm'
+import { and, eq, getTableColumns, inArray, not, notInArray, or } from 'drizzle-orm'
 import { chats, chatsMessages, chatsMessagesSelectSchema, db } from '~/drizzle'
 import { authMiddleware, orpc } from '~/orpc'
 
@@ -12,7 +11,7 @@ const entityUpdatesSchema = type.or(
   }),
   type({
     type: '"update"',
-    value: chatsMessagesSelectSchema.partial(),
+    value: chatsMessagesSelectSchema,
   }),
   type({
     type: '"delete"',
@@ -42,7 +41,7 @@ export const sync = orpc
               and(
                 eq(chats.userId, context.user.id),
                 or(...input.map(message =>
-                  and(eq(chatsMessages.id, message.id), gt(chatsMessages.updatedAt, addSeconds(message.updatedAt, 1))),
+                  and(eq(chatsMessages.id, message.id), not(eq(chatsMessages.updatedAt, message.updatedAt))),
                 )),
               ),
             )

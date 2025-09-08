@@ -1,7 +1,6 @@
 import { eventIterator } from '@orpc/server'
 import { type } from 'arktype'
-import { addSeconds } from 'date-fns'
-import { and, eq, gt, inArray, notInArray, or } from 'drizzle-orm'
+import { and, eq, inArray, not, notInArray, or } from 'drizzle-orm'
 import { db, queries, queriesSelectSchema } from '~/drizzle'
 import { authMiddleware, orpc } from '~/orpc'
 
@@ -12,7 +11,7 @@ const entityUpdatesSchema = type.or(
   }),
   type({
     type: '"update"',
-    value: queriesSelectSchema.partial(),
+    value: queriesSelectSchema,
   }),
   type({
     type: '"delete"',
@@ -38,7 +37,7 @@ export const sync = orpc
             and(
               eq(queries.userId, context.user.id),
               or(...input.map(query =>
-                and(eq(queries.id, query.id), gt(queries.updatedAt, addSeconds(query.updatedAt, 1))),
+                and(eq(queries.id, query.id), not(eq(queries.updatedAt, query.updatedAt))),
               )),
             ),
           )

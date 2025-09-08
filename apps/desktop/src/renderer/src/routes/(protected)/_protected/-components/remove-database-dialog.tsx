@@ -1,10 +1,8 @@
 import type { databases } from '~/drizzle'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { removeDatabase } from '~/entities/database'
+import { databasesCollection } from '~/entities/database'
 
 interface RemoveDatabaseDialogProps {
   ref?: React.RefObject<{
@@ -23,13 +21,15 @@ export function RemoveDatabaseDialog({ ref }: RemoveDatabaseDialogProps) {
     },
   }), [])
 
-  const { mutate: remove, isPending } = useMutation({
-    mutationFn: () => removeDatabase(database!.id),
-    onSuccess: () => {
-      toast.success('Database removed successfully')
-      setOpen(false)
-    },
-  })
+  function remove(e: React.MouseEvent<HTMLButtonElement>) {
+    if (!database)
+      return
+
+    e.preventDefault()
+    databasesCollection.delete(database.id)
+    toast.success('Database removed successfully')
+    setOpen(false)
+  }
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
@@ -45,15 +45,9 @@ export function RemoveDatabaseDialog({ ref }: RemoveDatabaseDialogProps) {
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
-            onClick={(e) => {
-              e.preventDefault()
-              remove()
-            }}
-            disabled={isPending}
+            onClick={remove}
           >
-            <LoadingContent loading={isPending}>
-              Remove
-            </LoadingContent>
+            Remove
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

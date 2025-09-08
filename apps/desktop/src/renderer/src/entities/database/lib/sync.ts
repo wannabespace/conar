@@ -9,6 +9,21 @@ import { orpc } from '~/lib/orpc'
 export const databasesCollection = createCollection(pgLiteCollectionOptions({
   table: databases,
   getPrimaryColumn: databases => databases.id,
+  onUpdate: async (params) => {
+    await Promise.all(params.transaction.mutations.map((m) => {
+      if (m.changes.name) {
+        return orpc.databases.update({
+          id: m.key,
+          name: m.modified.name,
+        })
+      }
+
+      return Promise.resolve()
+    }))
+  },
+  onDelete: async (params) => {
+    await Promise.all(params.transaction.mutations.map(m => orpc.databases.remove({ id: m.key })))
+  },
 }))
 
 async function syncDatabases() {
@@ -27,11 +42,23 @@ async function syncDatabases() {
         }
         else if (item.type === 'update') {
           databasesCollection.update(item.value.id, (draft) => {
-            Object.assign(draft, item.value)
+            const { connectionString, ...value } = item.value
 
-            if (item.value.connectionString) {
-              draft.isPasswordPopulated = !!new SafeURL(item.value.connectionString).password
+            Object.assign(draft, value)
+
+            const cloudPassword = new SafeURL(connectionString).password
+            const localPassword = new SafeURL(draft.connectionString).password
+            const newConnectionString = new SafeURL(connectionString)
+
+            if (cloudPassword) {
+              newConnectionString.password = cloudPassword
             }
+            else if (draft.isPasswordExists && localPassword) {
+              newConnectionString.password = localPassword
+            }
+
+            draft.connectionString = newConnectionString.toString()
+            draft.isPasswordPopulated = !!new SafeURL(draft.connectionString).password
           })
         }
         else if (item.type === 'delete') {

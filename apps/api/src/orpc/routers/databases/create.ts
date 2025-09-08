@@ -1,4 +1,4 @@
-import { encrypt } from '@conar/shared/encryption'
+import { decrypt, encrypt } from '@conar/shared/encryption'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { type } from 'arktype'
 import { databases, db } from '~/drizzle'
@@ -21,5 +21,8 @@ export const create = orpc
       userId: context.user.id,
     }).returning()
 
-    return database!
+    return {
+      ...database!,
+      connectionString: decrypt({ encryptedText: database!.connectionString, secret: context.user.secret }),
+    }
   })
