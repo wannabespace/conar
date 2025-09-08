@@ -15,6 +15,13 @@
       "when": 1754340533260,
       "tag": "0001_green_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1757364726381,
+      "tag": "0002_tired_bloodaxe",
+      "breakpoints": true
     }
   ]
 }

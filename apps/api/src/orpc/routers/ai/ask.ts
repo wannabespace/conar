@@ -41,7 +41,6 @@ function handleError(error: unknown) {
   return 'Sorry, I was unable to generate a response due to an error. Please try again.'
 }
 
-
 function generateStream({
   messages,
   type,
