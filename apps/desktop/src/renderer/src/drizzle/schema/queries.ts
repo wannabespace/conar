@@ -8,7 +8,7 @@ export const queries = pgTable('queries', ({ uuid, text }) => ({
   databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }).notNull(),
   name: text().notNull(),
   query: text().notNull(),
-})).enableRLS()
+}))
 
 export const queriesRelations = relations(queries, ({ one }) => ({
   database: one(databases, {
