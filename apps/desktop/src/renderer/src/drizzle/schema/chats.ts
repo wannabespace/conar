@@ -1,5 +1,4 @@
 import type { AppUIMessage } from '@conar/shared/ai-tools'
-import { createSelectSchema } from 'drizzle-arktype'
 import { relations } from 'drizzle-orm'
 import { jsonb, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
@@ -11,8 +10,6 @@ export const chats = pgTable('chats', {
   title: text(),
 })
 
-export const chatsSelectSchema = createSelectSchema(chats)
-
 export const chatsMessages = pgTable('chats_messages', {
   ...baseTable,
   chatId: uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
@@ -21,8 +18,6 @@ export const chatsMessages = pgTable('chats_messages', {
   // eslint-disable-next-line ts/no-empty-object-type
   metadata: jsonb().$type<{}>(),
 })
-
-export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
 
 export const chatsRelations = relations(chats, ({ one, many }) => ({
   database: one(databases, {
