@@ -34,15 +34,19 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>(config: {
     schema: createSelectSchema(config.table),
     getKey: t => t[primaryColumn.name],
     onDelete: async (params) => {
-      const keys = params.transaction.mutations.map(mutation => mutation.key)
-      await db.delete(config.table).where(inArray(primaryColumn, keys))
+      await db.transaction(async (tx) => {
+        await tx.delete(config.table).where(inArray(primaryColumn, params.transaction.mutations.map(m => m.key)))
+        await config.onDelete?.(params)
+      })
       syncParams.begin()
       params.transaction.mutations.forEach(m => syncParams.write({ type: 'delete', value: m.key }))
       syncParams.commit()
     },
     onInsert: async (params) => {
-      await db.insert(config.table).values(params.transaction.mutations.map(m => m.modified))
-      await config.onInsert?.(params)
+      await db.transaction(async (tx) => {
+        await tx.insert(config.table).values(params.transaction.mutations.map(m => m.modified))
+        await config.onInsert?.(params)
+      })
       syncParams.begin()
       params.transaction.mutations.forEach(m => syncParams.write({ type: 'insert', value: m.modified }))
       syncParams.commit()
@@ -52,8 +56,8 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>(config: {
         await Promise.all(params.transaction.mutations.map(mutation =>
           tx.update(config.table).set(mutation.changes).where(eq(primaryColumn, mutation.key)),
         ))
+        await config.onUpdate?.(params)
       })
-      await config.onUpdate?.(params)
       syncParams.begin()
       params.transaction.mutations.forEach(m => syncParams.write({ type: 'update', value: m.modified }))
       syncParams.commit()
