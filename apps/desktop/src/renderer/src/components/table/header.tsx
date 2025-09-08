@@ -79,7 +79,7 @@ export function TableHeader({
           <VirtualHeaderColumn
             key={virtualColumn.key}
             virtualColumn={virtualColumn}
-            column={columns[virtualColumn.index]}
+            column={columns[virtualColumn.index]!}
             isLast={virtualColumn.index === columns.length - 1}
           />
         ))}

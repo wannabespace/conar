@@ -26,7 +26,7 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
     if (existingPreviewTabIndex !== -1) {
       tabsStore.setState(prev => ({
         ...prev,
-        [id]: prev[id]?.map((tab, index) => index === existingPreviewTabIndex ? { table, schema, preview: true } : tab),
+        [id]: prev[id]?.map((tab, index) => index === existingPreviewTabIndex ? { table, schema, preview: true } : tab) ?? [],
       }))
       return
     }
@@ -41,7 +41,7 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
   if (!tabs.find(tab => tab.table === table && tab.schema === schema && !tab.preview)) {
     tabsStore.setState(prev => ({
       ...prev,
-      [id]: prev[id]?.map(tab => tab.table === table && tab.schema === schema ? { table, schema, preview: false } : tab),
+      [id]: prev[id]?.map(tab => tab.table === table && tab.schema === schema ? { table, schema, preview: false } : tab) ?? [],
     }))
   }
 }
@@ -49,14 +49,14 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
 export function closeTab(id: string, schema: string, table: string) {
   tabsStore.setState(prev => ({
     ...prev,
-    [id]: prev[id]?.filter(tab => !(tab.table === table && tab.schema === schema)),
+    [id]: prev[id]?.filter(tab => !(tab.table === table && tab.schema === schema)) ?? [],
   }))
 }
 
 export function renameTab(id: string, schema: string, table: string, newTableName: string) {
   tabsStore.setState(prev => ({
     ...prev,
-    [id]: prev[id]?.map(tab => tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab),
+    [id]: prev[id]?.map(tab => tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab) ?? [],
   }))
 }
 

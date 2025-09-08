@@ -8,7 +8,7 @@ function getFallback(name: string | undefined, email: string | undefined) {
     const nameParts = name.split(' ')
 
     if (nameParts.length > 1) {
-      return `${nameParts[0].charAt(0)}${nameParts[1].charAt(0)}`
+      return `${nameParts[0]!.charAt(0)}${nameParts[1]!.charAt(0)}`
     }
 
     return name.charAt(0)

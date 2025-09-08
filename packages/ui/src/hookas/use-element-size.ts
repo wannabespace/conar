@@ -39,7 +39,7 @@ export function useElementSize<T extends Element = Element>(
       const observer = new ResizeObserver(([entry]) => {
         if (entry && entry.borderBoxSize) {
           const { inlineSize: width, blockSize: height }
-            = entry.borderBoxSize[0]
+            = entry.borderBoxSize[0]!
 
           if (width !== size.width || height !== size.height) {
             setSize({ width, height })

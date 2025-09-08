@@ -181,6 +181,13 @@ export const ask = orpc
       const stream = result.toUIMessageStream({
         originalMessages: messages,
         generateMessageId: () => v7(),
+        messageMetadata: ({ part }) => {
+          if (part.type === 'finish') {
+            return {
+              updatedAt: new Date(),
+            }
+          }
+        },
         onFinish: async (result) => {
           console.info('stream finished', JSON.stringify({
             ...result.responseMessage,
@@ -190,10 +197,14 @@ export const ask = orpc
           try {
             await db.insert(chatsMessages).values({
               ...result.responseMessage,
+              updatedAt: result.responseMessage.metadata?.updatedAt,
               chatId: input.id,
             }).onConflictDoUpdate({
               target: chatsMessages.id,
-              set: result.responseMessage,
+              set: {
+                ...result.responseMessage,
+                updatedAt: result.responseMessage.metadata?.updatedAt,
+              },
             })
             // await db.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
           }

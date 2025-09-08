@@ -1,8 +1,7 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
-import { eq } from 'drizzle-orm'
-import { databases, db } from '~/drizzle'
 import { orpc } from '~/lib/orpc'
+import { databasesCollection } from './sync'
 
 export async function createDatabase({ saveInCloud, ...database }: {
   name: string
@@ -18,45 +17,38 @@ export async function createDatabase({ saveInCloud, ...database }: {
     url.password = ''
   }
 
-  const { id } = await orpc.databases.create({
+  const db = await orpc.databases.create({
     ...database,
     connectionString: url.toString(),
     isPasswordExists,
   })
 
-  await db.insert(databases).values({
-    ...database,
-    id,
-    isPasswordExists,
-    isPasswordPopulated: isPasswordExists,
-    createdAt: new Date(),
-  })
+  databasesCollection.insert({ ...db, isPasswordPopulated: isPasswordExists })
 
-  return { id }
+  return db
 }
 
 export async function removeDatabase(id: string) {
-  await Promise.all([
-    orpc.databases.remove({ id }),
-    db.delete(databases).where(eq(databases.id, id)),
-  ])
+  await orpc.databases.remove({ id })
+  databasesCollection.delete(id)
 }
 
 export async function renameDatabase(id: string, name: string) {
-  const [existing] = await db.select().from(databases).where(eq(databases.id, id)).limit(1)
+  const existing = databasesCollection.get(id)
 
   if (!existing) {
     throw new Error('Database not found')
   }
 
-  await Promise.all([
-    orpc.databases.update({ id, name }),
-    db.update(databases).set({ name }).where(eq(databases.id, id)),
-  ])
+  await orpc.databases.update({ id, name })
+
+  databasesCollection.update(id, (draft) => {
+    draft.name = name
+  })
 }
 
 export async function updateDatabasePassword(id: string, password: string) {
-  const [database] = await db.select().from(databases).where(eq(databases.id, id)).limit(1)
+  const database = databasesCollection.get(id)
 
   if (!database) {
     throw new Error('Database not found')
@@ -66,8 +58,8 @@ export async function updateDatabasePassword(id: string, password: string) {
 
   url.password = password
 
-  await db.update(databases).set({
-    connectionString: url.toString(),
-    isPasswordPopulated: true,
-  }).where(eq(databases.id, id))
+  databasesCollection.update(id, (draft) => {
+    draft.connectionString = url.toString()
+    draft.isPasswordPopulated = true
+  })
 }

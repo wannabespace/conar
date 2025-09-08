@@ -1,72 +1,81 @@
+import type { MutationOptions } from '@tanstack/react-query'
 import { SafeURL } from '@conar/shared/utils/safe-url'
-import { queryOptions } from '@tanstack/react-query'
-import { eq } from 'drizzle-orm'
-import { toast } from 'sonner'
-import { databases, db } from '~/drizzle'
+import { createCollection } from '@tanstack/react-db'
+import { useIsMutating, useMutation } from '@tanstack/react-query'
+import { eq, inArray } from 'drizzle-orm'
+import { databases, databasesSelectSchema, db } from '~/drizzle'
 import { orpc } from '~/lib/orpc'
 
+export const databasesCollection = createCollection({
+  startSync: true,
+  sync: {
+    sync: async ({ begin, write, commit, markReady }) => {
+      begin()
+      const dbs = await db.select().from(databases)
+      dbs.forEach(db => write({ type: 'insert', value: db }))
+      commit()
+      markReady()
+    },
+  },
+  schema: databasesSelectSchema,
+  getKey: database => database.id,
+  onDelete: async ({ transaction }) => {
+    const keys = transaction.mutations.map(mutation => mutation.key)
+    if (keys.length > 0) {
+      await db.delete(databases).where(inArray(databases.id, keys))
+    }
+  },
+  onInsert: async ({ transaction }) => {
+    await db.insert(databases).values(transaction.mutations.map(m => m.modified))
+  },
+  onUpdate: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map(mutation =>
+      db.update(databases).set(mutation.changes).where(eq(databases.id, mutation.key)),
+    ))
+  },
+})
+
 async function syncDatabases() {
-  try {
-    const [fetchedDatabases, existingDatabases] = await Promise.all([
-      orpc.databases.list(),
-      db.select().from(databases),
-    ])
-    const fetchedMap = new Map(fetchedDatabases.map(d => [d.id, d]))
-    const existingMap = new Map(existingDatabases.map(d => [d.id, d]))
+  const existing = databasesCollection.toArray
+  const iterator = await orpc.sync.databases(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
-    const toDelete = existingDatabases.filter(d => !fetchedMap.has(d.id)).map(d => d.id)
-    const toAdd = fetchedDatabases.filter(d => !existingMap.has(d.id))
-      .map(d => ({
-        ...d,
-        isPasswordPopulated: !!new SafeURL(d.connectionString).password,
-      }))
-    const toUpdate = fetchedDatabases
-      .filter(d => existingMap.has(d.id))
-      .map((d) => {
-        const existing = existingMap.get(d.id)!
-        const changes: Partial<typeof databases.$inferSelect> = {}
-
-        if (existing.name !== d.name) {
-          changes.name = d.name
+  for await (const event of iterator) {
+    // Temporary only one event
+    if (event.type === 'sync') {
+      event.data.forEach((item) => {
+        if (item.type === 'insert') {
+          databasesCollection.insert({
+            ...item.value,
+            isPasswordPopulated: !!new SafeURL(item.value.connectionString).password,
+          })
         }
+        else if (item.type === 'update') {
+          databasesCollection.update(item.value.id, (draft) => {
+            Object.assign(draft, item.value)
 
-        const existingUrl = new SafeURL(existing.connectionString)
-        existingUrl.password = ''
-        const fetchedUrl = new SafeURL(d.connectionString)
-        fetchedUrl.password = ''
-
-        if (existingUrl.toString() !== fetchedUrl.toString()) {
-          changes.connectionString = d.connectionString
-          changes.isPasswordExists = !!d.isPasswordExists
-          changes.isPasswordPopulated = !!new SafeURL(d.connectionString).password
+            if (item.value.connectionString) {
+              draft.isPasswordPopulated = !!new SafeURL(item.value.connectionString).password
+            }
+          })
         }
-
-        return {
-          id: d.id,
-          changes,
+        else if (item.type === 'delete') {
+          databasesCollection.delete(item.value)
         }
       })
-      .filter(d => Object.keys(d.changes).length > 0)
-
-    await db.transaction(async (tx) => {
-      await Promise.all([
-        ...toDelete.map(id => tx.delete(databases).where(eq(databases.id, id))),
-        ...toAdd.map(d => tx.insert(databases).values(d)),
-        ...toUpdate.map(d => tx.update(databases).set(d.changes).where(eq(databases.id, d.id))),
-      ])
-    })
-  }
-  catch (e) {
-    console.error(e)
-    toast.error('Failed to fetch databases. Please try again later.')
+    }
   }
 }
 
-export const syncDatabasesQueryOptions = queryOptions({
-  queryKey: ['sync-databases'],
-  queryFn: async () => {
-    await syncDatabases()
-    return true
-  },
-  enabled: false,
-})
+const syncDatabasesMutationOptions = {
+  mutationKey: ['sync-databases'],
+  mutationFn: syncDatabases,
+} satisfies MutationOptions
+
+export function useDatabasesSync() {
+  const { mutate } = useMutation(syncDatabasesMutationOptions)
+
+  return {
+    sync: mutate,
+    isSyncing: useIsMutating(syncDatabasesMutationOptions) > 0,
+  }
+}

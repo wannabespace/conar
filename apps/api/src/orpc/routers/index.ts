@@ -5,6 +5,7 @@ import { chats } from './chats'
 import { contact } from './contact'
 import { databases } from './databases'
 import { queries } from './queries'
+import { sync } from './sync'
 
 export const router = orpc.router({
   contact,
@@ -12,6 +13,7 @@ export const router = orpc.router({
   chats,
   queries,
   databases,
+  sync,
 })
 
 export type ORPCRouter = RouterClient<typeof router>

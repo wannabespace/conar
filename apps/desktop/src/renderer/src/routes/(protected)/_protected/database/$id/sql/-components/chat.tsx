@@ -9,7 +9,6 @@ import { ChatMessages } from './chat-messages'
 import { ChatPlaceholder } from './chat-placeholder'
 
 export function Chat({ className, ...props }: ComponentProps<'div'>) {
-  const { chatId } = Route.useSearch()
   const { chat } = Route.useLoaderData()
   const { messages, error } = useChat({ chat })
 
@@ -17,11 +16,11 @@ export function Chat({ className, ...props }: ComponentProps<'div'>) {
     if (messages.at(-1)?.role === 'user' && chat.status !== 'streaming' && chat.status !== 'submitted') {
       chat.regenerate()
     }
-  }, [chatId])
+  }, [chat, messages])
 
   return (
     <div key={chat.id} className={cn('relative flex flex-col justify-between gap-4 p-4', className)} {...props}>
-      <ChatHeader />
+      <ChatHeader chatId={chat.id} />
       {messages.length === 0 && !error && (
         <ChatPlaceholder />
       )}

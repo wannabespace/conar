@@ -8,9 +8,8 @@ import { whereSql } from '@conar/shared/sql/where'
 import { sessionStorageValue, useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { eventIteratorToStream } from '@orpc/client'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
-import { asc, eq } from 'drizzle-orm'
 import { v7 as uuid } from 'uuid'
-import { chats, chatsMessages, db } from '~/drizzle'
+import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { databaseEnumsQuery, databaseTableColumnsQuery, tablesAndSchemasQuery } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { dbQuery } from '~/lib/query'
@@ -80,24 +79,27 @@ export const lastOpenedChatId = {
   },
 }
 
-async function ensureChat(chatId: string, databaseId: string) {
-  const [existingChat] = await db.select().from(chats).where(eq(chats.id, chatId)).limit(1)
+function ensureChat(chatId: string, databaseId: string) {
+  const existingChat = chatsCollection.get(chatId)
 
   if (existingChat) {
     return existingChat
   }
 
-  const [newChat] = await db.insert(chats).values({
+  chatsCollection.insert({
     id: chatId,
     databaseId,
-  }).returning()
+    title: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  })
 
-  return newChat
+  return chatsCollection.get(chatId)!
 }
 
 const chatsMap = new Map<string, Chat<AppUIMessage>>()
 
-export async function createChat({ id = uuid(), database }: { id?: string, database: typeof databases.$inferSelect }) {
+export function createChat({ id = uuid(), database }: { id?: string, database: typeof databases.$inferSelect }) {
   if (chatsMap.has(id)) {
     return chatsMap.get(id)!
   }
@@ -118,20 +120,21 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           options.messageId = lastMessage.id
         }
 
-        await ensureChat(options.chatId, database.id)
+        ensureChat(options.chatId, database.id)
 
         if (options.trigger === 'submit-message') {
-          await db.insert(chatsMessages).values({
+          // TODO: can be conflict
+          chatsMessagesCollection.insert({
             ...lastMessage,
             chatId: options.chatId,
-          }).onConflictDoUpdate({
-            target: chatsMessages.id,
-            set: lastMessage,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            metadata: null,
           })
         }
 
         if (options.trigger === 'regenerate-message' && options.messageId) {
-          await db.delete(chatsMessages).where(eq(chatsMessages.id, options.messageId))
+          chatsMessagesCollection.delete(options.messageId)
         }
 
         return eventIteratorToStream(await orpc.ai.ask({
@@ -153,16 +156,22 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         throw new Error('Unsupported')
       },
     },
-    messages: await db.select()
-      .from(chatsMessages)
-      .where(eq(chatsMessages.chatId, id))
-      .orderBy(asc(chatsMessages.createdAt))
-      .then(rows => rows.map(convertToAppUIMessage)),
-    onFinish: async ({ message }) => {
-      await db.insert(chatsMessages).values({ chatId: id, ...message }).onConflictDoUpdate({
-        target: chatsMessages.id,
-        set: message,
-      })
+    messages: chatsMessagesCollection.toArray
+      .filter(m => m.chatId === id)
+      .toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .map(convertToAppUIMessage),
+    onFinish: ({ message }) => {
+      // TODO: resolve conflicts
+      chatsMessagesCollection
+        .update(message.id, (draft) => {
+          Object.assign(draft, {
+            chatId: id,
+            ...message,
+            createdAt: message.metadata?.createdAt || new Date(),
+            updatedAt: message.metadata?.updatedAt || new Date(),
+            metadata: null,
+          })
+        })
     },
     onToolCall: async ({ toolCall }) => {
       if (toolCall.toolName === 'columns') {

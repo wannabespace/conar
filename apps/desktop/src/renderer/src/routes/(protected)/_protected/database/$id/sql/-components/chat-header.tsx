@@ -1,4 +1,5 @@
 import type { AppUIMessage } from '@conar/shared/ai-tools'
+import type { chats } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -13,12 +14,10 @@ import {
 import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAddLine, RiHistoryLine } from '@remixicon/react'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { eq } from 'drizzle-orm'
-import { useMemo } from 'react'
-import { chats, db } from '~/drizzle'
-import { useChatsLive } from '~/entities/chat/lib/fetching'
+import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { orpc } from '~/lib/orpc'
 import { Route } from '..'
 import { lastOpenedChatId } from '../-chat'
@@ -72,12 +71,14 @@ function groupChats(data: typeof chats.$inferSelect[]) {
   ) as typeof groups
 }
 
-export function ChatHeader() {
+export function ChatHeader({ chatId }: { chatId: string }) {
   const { id } = Route.useParams()
-  const { chatId } = Route.useSearch()
-  const { data } = useChatsLive(id)
-  const currentChat = useMemo(() => data?.find(chat => chat.id === chatId), [data, chatId])
-  const shouldGenerateTitle = !!currentChat && currentChat.title === null && currentChat.messages.length > 0
+  const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'))
+  const { data: [chat] } = useLiveQuery(q => q.from({ chats: chatsCollection }).where(({ chats }) => eq(chats.id, chatId)))
+  const { data: messages } = useLiveQuery(q => q
+    .from({ chatsMessages: chatsMessagesCollection })
+    .where(({ chatsMessages }) => eq(chatsMessages.chatId, chatId)))
+  const shouldGenerateTitle = !!chat && chat.title === null && messages.length > 0
 
   useAsyncEffect(async () => {
     if (!shouldGenerateTitle) {
@@ -85,26 +86,28 @@ export function ChatHeader() {
     }
 
     const title = await orpc.ai.generateTitle({
-      chatId: currentChat.id,
-      messages: currentChat.messages as AppUIMessage[],
+      chatId: chat.id,
+      messages: messages as AppUIMessage[],
     })
 
-    await db.update(chats).set({ title }).where(eq(chats.id, currentChat.id))
+    chatsCollection.update(chat.id, (draft) => {
+      draft.title = title
+    })
   }, [shouldGenerateTitle])
 
-  const grouped = data ? groupChats(data) : {} as ReturnType<typeof groupChats>
+  const grouped = groupChats(allChats)
 
   return (
     <div className="flex justify-between items-center h-8 gap-2">
       <CardTitle className="flex items-center gap-2 flex-1 min-w-0">
         <span className="truncate block min-w-0">
-          {chatId
-            ? <>{currentChat?.title || <span className="block animate-pulse bg-muted rounded-md w-30 h-4" />}</>
+          {chat
+            ? <>{chat.title || <span className="block animate-pulse bg-muted rounded-md w-30 h-4" />}</>
             : 'New Chat'}
         </span>
       </CardTitle>
       <div className="flex items-center gap-2">
-        {chatId && (
+        {chat && (
           <Button
             variant="outline"
             size="icon-sm"
@@ -132,7 +135,7 @@ export function ChatHeader() {
             <DropdownMenuLabel>Chats</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <ScrollArea className="max-h-[70vh]">
-              {data && data.length === 0
+              {allChats.length === 0
                 ? <DropdownMenuItem disabled>No chats found</DropdownMenuItem>
                 : (
                     Object.entries(grouped).map(([group, chats], idx) => (

@@ -1,65 +1,73 @@
-import { queryOptions } from '@tanstack/react-query'
-import { eq } from 'drizzle-orm'
-import { toast } from 'sonner'
-import { db, queries } from '~/drizzle'
+import type { MutationOptions } from '@tanstack/react-query'
+import { createCollection } from '@tanstack/react-db'
+import { useIsMutating, useMutation } from '@tanstack/react-query'
+import { eq, inArray } from 'drizzle-orm'
+import { db, queries, queriesSelectSchema } from '~/drizzle'
 import { orpc } from '~/lib/orpc'
 
+export const queriesCollection = createCollection({
+  startSync: true,
+  sync: {
+    sync: async ({ begin, write, commit, markReady }) => {
+      begin()
+      const qs = await db.select().from(queries)
+      qs.forEach(q => write({ type: 'insert', value: q }))
+      commit()
+      markReady()
+    },
+  },
+  schema: queriesSelectSchema,
+  getKey: query => query.id,
+  onDelete: async ({ transaction }) => {
+    const keys = transaction.mutations.map(mutation => mutation.key)
+    if (keys.length > 0) {
+      await db.delete(queries).where(inArray(queries.id, keys))
+    }
+  },
+  onInsert: async ({ transaction }) => {
+    await db.insert(queries).values(transaction.mutations.map(m => m.modified))
+  },
+  onUpdate: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map(mutation =>
+      db.update(queries).set(mutation.changes).where(eq(queries.id, mutation.key)),
+    ))
+  },
+})
+
 async function syncQueries() {
-  try {
-    const [fetchedQueries, existingQueries] = await Promise.all([
-      orpc.queries.list(),
-      db.query.queries.findMany(),
-    ])
-    const fetchedMap = new Map(fetchedQueries.map(q => [q.id, q]))
-    const existingMap = new Map(existingQueries.map(q => [q.id, q]))
+  const existing = queriesCollection.toArray
+  const iterator = await orpc.sync.queries(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
-    const toDelete = existingQueries
-      .filter(q => !fetchedMap.has(q.id))
-      .map(q => q.id)
-    const toAdd = fetchedQueries
-      .filter(q => !existingMap.has(q.id))
-    const toUpdate = fetchedQueries
-      .filter(q => existingMap.has(q.id))
-      .map((q) => {
-        const existing = existingMap.get(q.id)!
-        const changes: Partial<typeof queries.$inferSelect> = {}
-
-        if (q.name !== existing.name) {
-          changes.name = q.name
+  for await (const event of iterator) {
+    // Temporary only one event
+    if (event.type === 'sync') {
+      event.data.forEach((item) => {
+        if (item.type === 'insert') {
+          queriesCollection.insert(item.value)
         }
-        if (q.query !== existing.query) {
-          changes.query = q.query
+        else if (item.type === 'update') {
+          queriesCollection.update(item.value.id, (draft) => {
+            Object.assign(draft, item.value)
+          })
         }
-        if (q.updatedAt.getTime() !== existing.updatedAt.getTime()) {
-          changes.updatedAt = q.updatedAt
-        }
-
-        return {
-          id: q.id,
-          changes,
+        else if (item.type === 'delete') {
+          queriesCollection.delete(item.value)
         }
       })
-      .filter(q => Object.keys(q.changes).length > 0)
-
-    await db.transaction(async (tx) => {
-      await Promise.all([
-        ...toDelete.map(id => tx.delete(queries).where(eq(queries.id, id))),
-        ...toAdd.map(q => tx.insert(queries).values(q)),
-        ...toUpdate.map(q => tx.update(queries).set(q.changes).where(eq(queries.id, q.id))),
-      ])
-    })
-  }
-  catch (e) {
-    console.error(e)
-    toast.error('Failed to fetch queries. Please try again later.')
+    }
   }
 }
 
-export const syncQueriesQueryOptions = queryOptions({
-  queryKey: ['sync-queries'],
-  queryFn: async () => {
-    await syncQueries()
-    return true
-  },
-  enabled: false,
-})
+const syncQueriesMutationOptions = {
+  mutationKey: ['sync-queries'],
+  mutationFn: syncQueries,
+} satisfies MutationOptions
+
+export function useQueriesSync() {
+  const { mutate } = useMutation(syncQueriesMutationOptions)
+
+  return {
+    sync: mutate,
+    isSyncing: useIsMutating(syncQueriesMutationOptions) > 0,
+  }
+}

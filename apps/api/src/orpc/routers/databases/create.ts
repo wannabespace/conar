@@ -13,13 +13,13 @@ export const create = orpc
     isPasswordExists: 'boolean',
   }))
   .handler(async ({ context, input }) => {
-    const [connection] = await db.insert(databases).values({
+    const [database] = await db.insert(databases).values({
       name: input.name,
       type: input.type,
       connectionString: encrypt({ text: input.connectionString, secret: context.user.secret }),
       isPasswordExists: input.isPasswordExists,
       userId: context.user.id,
-    }).returning({ id: databases.id })
+    }).returning()
 
-    return connection
+    return database!
   })

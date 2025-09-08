@@ -22,7 +22,7 @@ import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { createDatabase, DatabaseIcon, ensureDatabase, prefetchDatabaseCore } from '~/entities/database'
+import { createDatabase, DatabaseIcon, databasesCollection, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { dbTestConnection } from '~/lib/query'
@@ -32,11 +32,7 @@ export const Route = createFileRoute(
 )({
   component: CreateConnectionPage,
   head: () => ({
-    meta: [
-      {
-        title: title('Create connection'),
-      },
-    ],
+    meta: [{ title: title('Create connection') }],
   }),
 })
 
@@ -181,7 +177,7 @@ function CreateConnectionPage() {
     mutationFn: createDatabase,
     onSuccess: async ({ id }) => {
       toast.success('Connection created successfully 🎉')
-      const database = await ensureDatabase(id)
+      const database = databasesCollection.get(id)
 
       if (database) {
         prefetchDatabaseCore(database)

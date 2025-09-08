@@ -73,7 +73,7 @@ export function SelectionHeaderCell({ columnIndex, className, size, keys }: Tabl
 export function SelectionCell({ rowIndex, columnIndex, className, size, keys }: TableCellProps & { keys: string[] }) {
   const store = usePageStoreContext()
   const rows = useTableContext(state => state.rows)
-  const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex][key])))
+  const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])))
 
   return (
     <div className={cn('flex items-center w-fit', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
@@ -83,13 +83,13 @@ export function SelectionCell({ rowIndex, columnIndex, className, size, keys }: 
           if (isSelected) {
             store.setState(state => ({
               ...state,
-              selected: store.state.selected.filter(row => !keys.every(key => row[key] === rows[rowIndex][key])),
+              selected: store.state.selected.filter(row => !keys.every(key => row[key] === rows[rowIndex]![key])),
             }))
           }
           else {
             store.setState(state => ({
               ...state,
-              selected: [...state.selected, keys.reduce((acc, key) => ({ ...acc, [key]: rows[rowIndex][key] }), {})],
+              selected: [...state.selected, keys.reduce((acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] }), {})],
             }))
           }
         }}

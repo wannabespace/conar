@@ -258,7 +258,7 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
     return pageHooks.hook('sendMessage', () => {
       scrollToBottom()
     })
-  }, [])
+  }, [scrollToBottom])
 
   useEffect(() => {
     if (userMessageRef.current) {

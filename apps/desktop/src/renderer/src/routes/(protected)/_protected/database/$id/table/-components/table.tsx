@@ -87,7 +87,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           ...data,
           pages: data.pages.map((page, pageIndex) => ({
             ...page,
-            rows: page.rows.map((row, rIndex) => pageIndex * data.pages[0].rows.length + rIndex === rowIndex
+            rows: page.rows.map((row, rIndex) => pageIndex * data.pages[0]!.rows.length + rIndex === rowIndex
               ? ({
                   ...row,
                   [columnName]: value,
@@ -119,15 +119,17 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     const rows = data.pages.flatMap(page => page.rows)
 
-    const [{ rows: [{ [columnId]: realValue }] }] = await dbQuery({
+    const response = await dbQuery({
       type: database.type,
       connectionString: database.connectionString,
       query: setSql(schema, table, columnId, primaryKeys)[database.type],
       values: [
         prepareValue(value, columns?.find(column => column.id === columnId)?.type),
-        ...primaryKeys.map(key => rows[rowIndex][key]),
+        ...primaryKeys.map(key => rows[rowIndex]![key]),
       ],
     })
+
+    const realValue = response[0]!.rows[rowIndex]![columnId]
 
     if (value !== realValue)
       setValue(rowIndex, columnId, realValue)

@@ -26,7 +26,7 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
   const { mutate: savePassword, status } = useMutation({
     mutationFn: async (password: string) => {
       await dbTestConnection({ type: database.type, connectionString: newConnectionString })
-      await updateDatabasePassword(database.id, password)
+      updateDatabasePassword(database.id, password)
     },
     onSuccess: () => {
       toast.success('Password successfully saved!')

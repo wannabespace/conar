@@ -1,5 +1,6 @@
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { enumValues } from '@conar/shared/utils/helpers'
+import { createSelectSchema } from 'drizzle-arktype'
 import { relations } from 'drizzle-orm'
 import { pgEnum, pgTable } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
@@ -16,6 +17,8 @@ export const databases = pgTable('databases', ({ uuid, text, boolean }) => ({
   connectionString: encryptedText().notNull(),
   isPasswordExists: boolean('password_exists').notNull(),
 })).enableRLS()
+
+export const databasesSelectSchema = createSelectSchema(databases)
 
 export const databasesRelations = relations(databases, ({ one }) => ({
   user: one(users, {

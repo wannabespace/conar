@@ -6,10 +6,9 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
-import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { syncDatabasesQueryOptions } from '~/entities/database'
+import { useDatabasesSync } from '~/entities/database'
 import { checkForUpdates, updatesStore } from '~/updates-observer'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
@@ -17,18 +16,14 @@ import { Profile } from './-components/profile'
 export const Route = createFileRoute('/(protected)/_protected/')({
   component: DashboardPage,
   head: () => ({
-    meta: [
-      {
-        title: title('Dashboard'),
-      },
-    ],
+    meta: [{ title: title('Dashboard') }],
   }),
 })
 
 function DashboardPage() {
-  const { refetch, isFetching } = useQuery(syncDatabasesQueryOptions)
+  const { sync, isSyncing } = useDatabasesSync()
   const router = useRouter()
-  const [version, status] = useStore(updatesStore, state => [state.version, state.status])
+  const [version, versionStatus] = useStore(updatesStore, state => [state.version, state.status])
 
   return (
     <div className="min-h-screen flex flex-col px-6 mx-auto max-w-2xl py-10">
@@ -44,11 +39,11 @@ function DashboardPage() {
           <Button
             variant="outline"
             size="icon"
-            disabled={isFetching}
-            onClick={() => refetch()}
+            disabled={isSyncing}
+            onClick={() => sync()}
           >
-            <LoadingContent loading={isFetching}>
-              <ContentSwitch active={isFetching} activeContent={<RiCheckLine className="text-success" />}>
+            <LoadingContent loading={isSyncing}>
+              <ContentSwitch active={isSyncing} activeContent={<RiCheckLine className="text-success" />}>
                 <RiLoopLeftLine />
               </ContentSwitch>
             </LoadingContent>
@@ -107,8 +102,8 @@ function DashboardPage() {
             {version}
           </button>
           {' '}
-          {status === 'checking' && <RiLoader4Line className="size-3 animate-spin text-muted-foreground/50" />}
-          {status === 'downloading' && (
+          {versionStatus === 'checking' && <RiLoader4Line className="size-3 animate-spin text-muted-foreground/50" />}
+          {versionStatus === 'downloading' && (
             <Tooltip>
               <TooltipTrigger>
                 <RiDownloadLine className="size-3 animate-bounce text-muted-foreground/50" />

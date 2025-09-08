@@ -1,5 +1,6 @@
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { enumValues } from '@conar/shared/utils/helpers'
+import { createSelectSchema } from 'drizzle-arktype'
 import { pgEnum, pgTable } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 
@@ -13,3 +14,5 @@ export const databases = pgTable('databases', ({ text, boolean }) => ({
   isPasswordExists: boolean('password_exists').notNull(),
   isPasswordPopulated: boolean('password_populated').notNull(),
 }))
+
+export const databasesSelectSchema = createSelectSchema(databases)

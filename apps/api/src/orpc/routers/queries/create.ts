@@ -19,9 +19,7 @@ export const create = orpc
         name: input.name,
         query: input.query,
       })
-      .returning({
-        id: queries.id,
-      })
+      .returning()
 
-    return query
+    return query!
   })

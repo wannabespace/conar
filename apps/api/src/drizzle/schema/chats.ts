@@ -1,4 +1,5 @@
 import type { AppUIMessage } from '@conar/shared/ai-tools'
+import { createSelectSchema } from 'drizzle-arktype'
 import { relations } from 'drizzle-orm'
 import { pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
@@ -14,6 +15,8 @@ export const chats = pgTable('chats', {
   activeStreamId: uuid(),
 }).enableRLS()
 
+export const chatsSelectSchema = createSelectSchema(chats)
+
 export const chatsMessages = pgTable('chats_messages', {
   ...baseTable,
   chatId: uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
@@ -21,6 +24,8 @@ export const chatsMessages = pgTable('chats_messages', {
   role: text().$type<AppUIMessage['role']>().notNull(),
   metadata: encryptedJson().$type<NonNullable<AppUIMessage['metadata']>>(),
 }).enableRLS()
+
+export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
 
 export const chatsRelations = relations(chats, ({ one, many }) => ({
   user: one(users, {

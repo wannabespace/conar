@@ -118,7 +118,7 @@ function SortableTab({
     if (!isVisible && isActive && ref.current) {
       onFocus(ref)
     }
-  }, [isActive])
+  }, [isActive, onFocus, isVisible])
 
   return (
     <div
@@ -159,14 +159,13 @@ function SortableTab({
   )
 }
 
-export function TablesTabs({ database, id }: {
+export function TablesTabs({ database }: {
   database: typeof databases.$inferSelect
-  id: string
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const router = useRouter()
-  const tabs = useTabs(id)
+  const tabs = useTabs(database.id)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -184,9 +183,9 @@ export function TablesTabs({ database, id }: {
     const tab = tabs.find(tab => tab.table === tableParam && tab.schema === schemaParam)
 
     if (!tab) {
-      addTab(id, schemaParam, tableParam, true)
+      addTab(database.id, schemaParam, tableParam, true)
     }
-  }, [schemaParam, tableParam])
+  }, [tabs, database.id, schemaParam, tableParam])
 
   useAsyncEffect(async () => {
     for (const tab of tabs) {
@@ -195,7 +194,7 @@ export function TablesTabs({ database, id }: {
   }, [database, tabs])
 
   function getQueryOpts(tableName: string) {
-    const state = schemaParam ? getPageStoreState(id, schemaParam, tableName) : null
+    const state = schemaParam ? getPageStoreState(database.id, schemaParam, tableName) : null
 
     if (state) {
       return {
@@ -220,14 +219,14 @@ export function TablesTabs({ database, id }: {
 
       router.navigate({
         to: '/database/$id/table',
-        params: { id },
+        params: { id: database.id },
         search: { schema: prevTab.schema, table: prevTab.table },
       })
     }
     else {
       router.navigate({
         to: '/database/$id/table',
-        params: { id },
+        params: { id: database.id },
       })
     }
   }
@@ -240,7 +239,7 @@ export function TablesTabs({ database, id }: {
     e.preventDefault()
 
     if (schemaParam && tableParam) {
-      closeTab(id, schemaParam, tableParam)
+      closeTab(database.id, schemaParam, tableParam)
     }
   })
 
@@ -250,7 +249,7 @@ export function TablesTabs({ database, id }: {
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     if (over && active.id !== over.id) {
-      moveTab(id, active.id, over.id)
+      moveTab(database.id, active.id, over.id)
     }
   }
 
@@ -269,8 +268,8 @@ export function TablesTabs({ database, id }: {
               id={database.id}
               item={item}
               showSchema={!isOneSchema}
-              onClose={() => closeTab(id, item.tab.schema, item.tab.table)}
-              onDoubleClick={() => addTab(id, item.tab.schema, item.tab.table, false)}
+              onClose={() => closeTab(database.id, item.tab.schema, item.tab.table)}
+              onDoubleClick={() => addTab(database.id, item.tab.schema, item.tab.table, false)}
               onFocus={(ref) => {
                 ref.current?.scrollIntoView({
                   block: 'nearest',

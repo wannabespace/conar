@@ -13,7 +13,7 @@ export function databasePrimaryKeysQuery({ database }: { database: typeof databa
         query: primaryKeysSql()[database.type],
       })
 
-      return result.rows.map(row => primaryKeyType.assert(row))
+      return result!.rows.map(row => primaryKeyType.assert(row))
     },
   })
 }

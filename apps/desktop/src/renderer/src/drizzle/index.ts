@@ -1,5 +1,4 @@
 import { PGlite } from '@electric-sql/pglite'
-import { live } from '@electric-sql/pglite/live'
 import { drizzle } from 'drizzle-orm/pglite'
 import migrations from './migrations.json'
 import * as chats from './schema/chats'
@@ -10,12 +9,7 @@ export * from './schema/chats'
 export * from './schema/databases'
 export * from './schema/queries'
 
-// eslint-disable-next-line antfu/no-top-level-await
-export const pg = await PGlite.create('idb://conar', {
-  extensions: {
-    live,
-  },
-})
+export const pg = new PGlite('idb://conar')
 
 if (import.meta.env.DEV) {
   // @ts-expect-error - window.db is not typed

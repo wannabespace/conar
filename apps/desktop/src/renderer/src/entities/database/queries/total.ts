@@ -38,7 +38,7 @@ export function databaseTableTotalQuery({
         })[database.type],
       })
 
-      return totalType.assert(result.rows[0]).total
+      return totalType.assert(result!.rows[0]!).total
     },
     throwOnError: false,
   })
