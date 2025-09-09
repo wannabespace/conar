@@ -14,40 +14,21 @@ export const queriesCollection = createCollection(pgLiteCollectionOptions({
 async function syncQueries() {
   await waitForDatabasesSync()
   const existing = await queriesCollection.toArrayWhenReady()
-  const iterator = await orpc.sync.queries(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+  const sync = await orpc.queries.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
-  for await (const event of iterator) {
-    if (import.meta.env.DEV) {
-      console.log('syncQueries event', event)
+  sync.forEach((item) => {
+    if (item.type === 'insert') {
+      queriesCollection.insert(item.value)
     }
-
-    if (event.type === 'sync') {
-      event.value.forEach((item) => {
-        if (item.type === 'insert') {
-          queriesCollection.insert(item.value)
-        }
-        else if (item.type === 'update') {
-          queriesCollection.update(item.value.id, (draft) => {
-            Object.assign(draft, item.value)
-          })
-        }
-        else if (item.type === 'delete') {
-          queriesCollection.delete(item.value)
-        }
+    else if (item.type === 'update') {
+      queriesCollection.update(item.value.id, (draft) => {
+        Object.assign(draft, item.value)
       })
     }
-    else if (event.type === 'insert') {
-      queriesCollection.insert(event.value)
+    else if (item.type === 'delete') {
+      queriesCollection.delete(item.value)
     }
-    else if (event.type === 'update') {
-      queriesCollection.update(event.value.id, (draft) => {
-        Object.assign(draft, event.value)
-      })
-    }
-    else if (event.type === 'delete') {
-      queriesCollection.delete(event.value)
-    }
-  }
+  })
 }
 
 const syncQueriesMutationOptions = {

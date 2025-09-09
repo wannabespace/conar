@@ -1,27 +1,11 @@
 import { decrypt } from '@conar/shared/encryption'
-import { eventIterator, EventPublisher } from '@orpc/server'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gt, inArray, notInArray, or } from 'drizzle-orm'
 import { databases, databasesSelectSchema, db } from '~/drizzle'
 import { authMiddleware, orpc } from '~/orpc'
 
-export const publisher = new EventPublisher<{
-  action: {
-    userId: string
-  }& ({
-    type: 'insert'
-    value: typeof databasesSelectSchema.infer
-  } | {
-    type: 'update'
-    value: typeof databasesSelectSchema.infer
-  } | {
-    type: 'delete'
-    value: string
-  })
-}>()
-
-const entityUpdatesSchema = type.or(
+const output = type.or(
   type({
     type: '"insert"',
     value: databasesSelectSchema,
@@ -34,7 +18,7 @@ const entityUpdatesSchema = type.or(
     type: '"delete"',
     value: 'string.uuid.v7',
   }),
-)
+).array()
 
 export const sync = orpc
   .use(authMiddleware)
@@ -42,25 +26,8 @@ export const sync = orpc
     id: 'string.uuid.v7',
     updatedAt: 'Date',
   }).array())
-  .output(eventIterator(type.or(
-    type({
-      type: '"sync"',
-      value: entityUpdatesSchema.array(),
-    }),
-    type({
-      type: '"insert"',
-      value: databasesSelectSchema,
-    }),
-    type({
-      type: '"delete"',
-      value: 'string.uuid.v7',
-    }),
-    type({
-      type: '"update"',
-      value: databasesSelectSchema,
-    }),
-  )))
-  .handler(async function* ({ input, context, signal }) {
+  .output(output)
+  .handler(async function ({ input, context }) {
     const inputIds = input.map(i => i.id)
     const [updatedItems, newItems, allIds] = await Promise.all([
       inputIds.length > 0
@@ -91,7 +58,7 @@ export const sync = orpc
     ])
     const missingIds = inputIds.filter(id => !allIds.includes(id))
 
-    const sync: typeof entityUpdatesSchema.infer[] = []
+    const sync: typeof output.infer = []
 
     updatedItems.forEach((item) => {
       sync.push({
@@ -120,35 +87,5 @@ export const sync = orpc
       })
     })
 
-    yield {
-      type: 'sync' as const,
-      value: sync,
-    }
-
-    for await (const payload of publisher.subscribe('action', { signal })) {
-      if (payload.userId !== context.user.id) {
-        continue
-      }
-
-      switch (payload.type) {
-        case 'update':
-          yield {
-            type: 'update',
-            value: payload.value,
-          }
-          break
-        case 'insert':
-          yield {
-            type: 'insert',
-            value: payload.value,
-          }
-          break
-        case 'delete':
-          yield {
-            type: 'delete',
-            value: payload.value,
-          }
-          break
-      }
-    }
+    return sync
   })

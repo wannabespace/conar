@@ -36,60 +36,18 @@ export function waitForDatabasesSync() {
 
 async function syncDatabases() {
   const existing = await databasesCollection.toArrayWhenReady()
-  const iterator = await orpc.sync.databases(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+  const sync = await orpc.databases.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
-  for await (const event of iterator) {
-    if (import.meta.env.DEV) {
-      console.log('syncDatabases event', event)
-    }
-
-    if (event.type === 'sync') {
-      event.value.forEach((item) => {
-        if (item.type === 'insert') {
-          databasesCollection.insert({
-            ...item.value,
-            isPasswordPopulated: !!new SafeURL(item.value.connectionString).password,
-          })
-        }
-        else if (item.type === 'update') {
-          databasesCollection.update(item.value.id, (draft) => {
-            const { connectionString, ...value } = item.value
-
-            Object.assign(draft, value)
-
-            const cloudPassword = new SafeURL(connectionString).password
-            const localPassword = new SafeURL(draft.connectionString).password
-            const newConnectionString = new SafeURL(connectionString)
-
-            if (cloudPassword) {
-              newConnectionString.password = cloudPassword
-            }
-            else if (draft.isPasswordExists && localPassword) {
-              newConnectionString.password = localPassword
-            }
-
-            draft.connectionString = newConnectionString.toString()
-            draft.isPasswordPopulated = !!new SafeURL(draft.connectionString).password
-          })
-        }
-        else if (item.type === 'delete') {
-          databasesCollection.delete(item.value)
-        }
-      })
-      resolve()
-    }
-    else if (event.type === 'insert') {
+  sync.forEach((item) => {
+    if (item.type === 'insert') {
       databasesCollection.insert({
-        ...event.value,
-        isPasswordPopulated: !!new SafeURL(event.value.connectionString).password,
+        ...item.value,
+        isPasswordPopulated: !!new SafeURL(item.value.connectionString).password,
       })
     }
-    else if (event.type === 'delete') {
-      databasesCollection.delete(event.value)
-    }
-    else if (event.type === 'update') {
-      databasesCollection.update(event.value.id, (draft) => {
-        const { connectionString, ...value } = event.value
+    else if (item.type === 'update') {
+      databasesCollection.update(item.value.id, (draft) => {
+        const { connectionString, ...value } = item.value
 
         Object.assign(draft, value)
 
@@ -108,7 +66,11 @@ async function syncDatabases() {
         draft.isPasswordPopulated = !!new SafeURL(draft.connectionString).password
       })
     }
-  }
+    else if (item.type === 'delete') {
+      databasesCollection.delete(item.value)
+    }
+  })
+  resolve()
 }
 
 const syncDatabasesMutationOptions = {

@@ -25,80 +25,42 @@ export function waitForChatsSync() {
 async function syncChats() {
   await waitForDatabasesSync()
   const existing = await chatsCollection.toArrayWhenReady()
-  const iterator = await orpc.sync.chats(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+  const sync = await orpc.chats.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
-  for await (const event of iterator) {
-    if (import.meta.env.DEV) {
-      console.log('syncChats event', event)
+  sync.forEach((item) => {
+    if (item.type === 'insert') {
+      chatsCollection.insert(item.value)
     }
-
-    if (event.type === 'sync') {
-      event.value.forEach((item) => {
-        if (item.type === 'insert') {
-          chatsCollection.insert(item.value)
-        }
-        else if (item.type === 'update') {
-          chatsCollection.update(item.value.id, (draft) => {
-            Object.assign(draft, item.value)
-          })
-        }
-        else if (item.type === 'delete') {
-          chatsCollection.delete(item.value)
-        }
-      })
-      resolve()
-    }
-    else if (event.type === 'insert') {
-      chatsCollection.insert(event.value)
-    }
-    else if (event.type === 'update') {
-      chatsCollection.update(event.value.id, (draft) => {
-        Object.assign(draft, event.value)
+    else if (item.type === 'update') {
+      chatsCollection.update(item.value.id, (draft) => {
+        Object.assign(draft, item.value)
       })
     }
-    else if (event.type === 'delete') {
-      chatsCollection.delete(event.value)
+    else if (item.type === 'delete') {
+      chatsCollection.delete(item.value)
     }
-  }
+  })
+  resolve()
 }
 
 async function syncChatsMessages() {
   await waitForChatsSync()
   const existing = await chatsMessagesCollection.toArrayWhenReady()
-  const iterator = await orpc.sync.chatsMessages(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+  const sync = await orpc.chatsMessages.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
-  for await (const event of iterator) {
-    if (import.meta.env.DEV) {
-      console.log('syncChatsMessages event', event)
+  sync.forEach((item) => {
+    if (item.type === 'insert') {
+      chatsMessagesCollection.insert(item.value)
     }
-
-    if (event.type === 'sync') {
-      event.value.forEach((item) => {
-        if (item.type === 'insert') {
-          chatsMessagesCollection.insert(item.value)
-        }
-        else if (item.type === 'update') {
-          chatsMessagesCollection.update(item.value.id, (draft) => {
-            Object.assign(draft, item.value)
-          })
-        }
-        else if (item.type === 'delete') {
-          chatsMessagesCollection.delete(item.value)
-        }
+    else if (item.type === 'update') {
+      chatsMessagesCollection.update(item.value.id, (draft) => {
+        Object.assign(draft, item.value)
       })
     }
-    else if (event.type === 'insert') {
-      chatsMessagesCollection.insert(event.value)
+    else if (item.type === 'delete') {
+      chatsMessagesCollection.delete(item.value)
     }
-    else if (event.type === 'update') {
-      chatsMessagesCollection.update(event.value.id, (draft) => {
-        Object.assign(draft, event.value)
-      })
-    }
-    else if (event.type === 'delete') {
-      chatsMessagesCollection.delete(event.value)
-    }
-  }
+  })
 }
 
 const syncChatsMutationOptions = {
