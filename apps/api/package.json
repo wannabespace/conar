@@ -10,7 +10,7 @@
     "drizzle:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.14",
+    "@ai-sdk/anthropic": "^2.0.15",
     "@ai-sdk/anthropic1": "npm:@ai-sdk/anthropic@1.2.12",
     "@ai-sdk/google": "^2.0.13",
     "@ai-sdk/google1": "npm:@ai-sdk/google@1.2.22",

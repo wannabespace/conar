@@ -1,10 +1,25 @@
 import { decrypt } from '@conar/shared/encryption'
-import { eventIterator } from '@orpc/server'
+import { eventIterator, EventPublisher } from '@orpc/server'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gt, inArray, notInArray, or } from 'drizzle-orm'
 import { databases, databasesSelectSchema, db } from '~/drizzle'
 import { authMiddleware, orpc } from '~/orpc'
+
+export const publisher = new EventPublisher<{
+  action: {
+    userId: string
+  }& ({
+    type: 'insert'
+    value: typeof databasesSelectSchema.infer
+  } | {
+    type: 'update'
+    value: typeof databasesSelectSchema.infer
+  } | {
+    type: 'delete'
+    value: string
+  })
+}>()
 
 const entityUpdatesSchema = type.or(
   type({
@@ -27,11 +42,25 @@ export const sync = orpc
     id: 'string.uuid.v7',
     updatedAt: 'Date',
   }).array())
-  .output(eventIterator(type({
-    type: '"sync"',
-    data: entityUpdatesSchema.array(),
-  })))
-  .handler(async function* ({ input, context }) {
+  .output(eventIterator(type.or(
+    type({
+      type: '"sync"',
+      value: entityUpdatesSchema.array(),
+    }),
+    type({
+      type: '"insert"',
+      value: databasesSelectSchema,
+    }),
+    type({
+      type: '"delete"',
+      value: 'string.uuid.v7',
+    }),
+    type({
+      type: '"update"',
+      value: databasesSelectSchema,
+    }),
+  )))
+  .handler(async function* ({ input, context, signal }) {
     const inputIds = input.map(i => i.id)
     const [updatedItems, newItems, allIds] = await Promise.all([
       inputIds.length > 0
@@ -93,7 +122,33 @@ export const sync = orpc
 
     yield {
       type: 'sync' as const,
-      data: sync,
+      value: sync,
     }
-    await new Promise(resolve => setTimeout(resolve, 100))
+
+    for await (const payload of publisher.subscribe('action', { signal })) {
+      if (payload.userId !== context.user.id) {
+        continue
+      }
+
+      switch (payload.type) {
+        case 'update':
+          yield {
+            type: 'update',
+            value: payload.value,
+          }
+          break
+        case 'insert':
+          yield {
+            type: 'insert',
+            value: payload.value,
+          }
+          break
+        case 'delete':
+          yield {
+            type: 'delete',
+            value: payload.value,
+          }
+          break
+      }
+    }
   })

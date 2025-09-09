@@ -20,9 +20,9 @@ async function syncQueries() {
     if (import.meta.env.DEV) {
       console.log('syncQueries event', event)
     }
-    // Temporary only one event
+
     if (event.type === 'sync') {
-      event.data.forEach((item) => {
+      event.value.forEach((item) => {
         if (item.type === 'insert') {
           queriesCollection.insert(item.value)
         }
@@ -35,6 +35,17 @@ async function syncQueries() {
           queriesCollection.delete(item.value)
         }
       })
+    }
+    else if (event.type === 'insert') {
+      queriesCollection.insert(event.value)
+    }
+    else if (event.type === 'update') {
+      queriesCollection.update(event.value.id, (draft) => {
+        Object.assign(draft, event.value)
+      })
+    }
+    else if (event.type === 'delete') {
+      queriesCollection.delete(event.value)
     }
   }
 }

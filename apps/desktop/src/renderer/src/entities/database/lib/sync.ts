@@ -42,9 +42,9 @@ async function syncDatabases() {
     if (import.meta.env.DEV) {
       console.log('syncDatabases event', event)
     }
-    // Temporary only one event
+
     if (event.type === 'sync') {
-      event.data.forEach((item) => {
+      event.value.forEach((item) => {
         if (item.type === 'insert') {
           databasesCollection.insert({
             ...item.value,
@@ -77,6 +77,36 @@ async function syncDatabases() {
         }
       })
       resolve()
+    }
+    else if (event.type === 'insert') {
+      databasesCollection.insert({
+        ...event.value,
+        isPasswordPopulated: !!new SafeURL(event.value.connectionString).password,
+      })
+    }
+    else if (event.type === 'delete') {
+      databasesCollection.delete(event.value)
+    }
+    else if (event.type === 'update') {
+      databasesCollection.update(event.value.id, (draft) => {
+        const { connectionString, ...value } = event.value
+
+        Object.assign(draft, value)
+
+        const cloudPassword = new SafeURL(connectionString).password
+        const localPassword = new SafeURL(draft.connectionString).password
+        const newConnectionString = new SafeURL(connectionString)
+
+        if (cloudPassword) {
+          newConnectionString.password = cloudPassword
+        }
+        else if (draft.isPasswordExists && localPassword) {
+          newConnectionString.password = localPassword
+        }
+
+        draft.connectionString = newConnectionString.toString()
+        draft.isPasswordPopulated = !!new SafeURL(draft.connectionString).password
+      })
     }
   }
 }

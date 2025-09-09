@@ -31,9 +31,9 @@ async function syncChats() {
     if (import.meta.env.DEV) {
       console.log('syncChats event', event)
     }
-    // Temporary only one event
+
     if (event.type === 'sync') {
-      event.data.forEach((item) => {
+      event.value.forEach((item) => {
         if (item.type === 'insert') {
           chatsCollection.insert(item.value)
         }
@@ -48,6 +48,17 @@ async function syncChats() {
       })
       resolve()
     }
+    else if (event.type === 'insert') {
+      chatsCollection.insert(event.value)
+    }
+    else if (event.type === 'update') {
+      chatsCollection.update(event.value.id, (draft) => {
+        Object.assign(draft, event.value)
+      })
+    }
+    else if (event.type === 'delete') {
+      chatsCollection.delete(event.value)
+    }
   }
 }
 
@@ -60,9 +71,9 @@ async function syncChatsMessages() {
     if (import.meta.env.DEV) {
       console.log('syncChatsMessages event', event)
     }
-    // Temporary only one event
+
     if (event.type === 'sync') {
-      event.data.forEach((item) => {
+      event.value.forEach((item) => {
         if (item.type === 'insert') {
           chatsMessagesCollection.insert(item.value)
         }
@@ -75,6 +86,17 @@ async function syncChatsMessages() {
           chatsMessagesCollection.delete(item.value)
         }
       })
+    }
+    else if (event.type === 'insert') {
+      chatsMessagesCollection.insert(event.value)
+    }
+    else if (event.type === 'update') {
+      chatsMessagesCollection.update(event.value.id, (draft) => {
+        Object.assign(draft, event.value)
+      })
+    }
+    else if (event.type === 'delete') {
+      chatsMessagesCollection.delete(event.value)
     }
   }
 }
