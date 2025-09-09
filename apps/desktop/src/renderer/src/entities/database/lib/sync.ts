@@ -28,6 +28,12 @@ export const databasesCollection = createCollection(pgLiteCollectionOptions({
   },
 }))
 
+const { promise, resolve } = Promise.withResolvers()
+
+export function waitForDatabasesSync() {
+  return promise
+}
+
 async function syncDatabases() {
   const existing = await databasesCollection.toArrayWhenReady()
   const iterator = await orpc.sync.databases(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
@@ -70,6 +76,7 @@ async function syncDatabases() {
           databasesCollection.delete(item.value)
         }
       })
+      resolve()
     }
   }
 }

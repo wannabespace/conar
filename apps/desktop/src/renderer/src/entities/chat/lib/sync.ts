@@ -2,6 +2,7 @@ import type { MutationOptions } from '@tanstack/react-query'
 import { createCollection } from '@tanstack/react-db'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { chats, chatsMessages } from '~/drizzle'
+import { waitForDatabasesSync } from '~/entities/database'
 import { pgLiteCollectionOptions } from '~/lib/db'
 import { orpc } from '~/lib/orpc'
 
@@ -15,7 +16,14 @@ export const chatsMessagesCollection = createCollection(pgLiteCollectionOptions(
   getPrimaryColumn: chatsMessages => chatsMessages.id,
 }))
 
+const { promise, resolve } = Promise.withResolvers()
+
+export function waitForChatsSync() {
+  return promise
+}
+
 async function syncChats() {
+  await waitForDatabasesSync()
   const existing = await chatsCollection.toArrayWhenReady()
   const iterator = await orpc.sync.chats(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
@@ -38,11 +46,13 @@ async function syncChats() {
           chatsCollection.delete(item.value)
         }
       })
+      resolve()
     }
   }
 }
 
 async function syncChatsMessages() {
+  await waitForChatsSync()
   const existing = await chatsMessagesCollection.toArrayWhenReady()
   const iterator = await orpc.sync.chatsMessages(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 

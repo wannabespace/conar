@@ -51,39 +51,60 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>(config: {
         console.log('onDelete db', params)
       }
       await params.collection.stateWhenReady()
-      await db.delete(config.table).where(inArray(primaryColumn, params.transaction.mutations.map(m => m.key))).catch((error) => {
+      const result = await db.transaction(async (tx) => {
+        await tx.delete(config.table).where(inArray(primaryColumn, params.transaction.mutations.map(m => m.key))).catch((error) => {
+          if (import.meta.env.DEV) {
+            console.error('error on delete db', error)
+          }
+          throw error
+        })
+        return await config.onDelete?.(params)
+      }).catch((error) => {
         if (import.meta.env.DEV) {
-          console.error('error on delete db', error)
+          console.error('error on delete db tx', error)
         }
         throw error
       })
-      const result = await config.onDelete?.(params)
       await runMutations(params.transaction.mutations)
       return result
     },
     onInsert: async (params) => {
       await params.collection.stateWhenReady()
-      await db.insert(config.table).values(params.transaction.mutations.map(m => m.modified)).catch((error) => {
+      const result = await db.transaction(async (tx) => {
+        await tx.insert(config.table).values(params.transaction.mutations.map(m => m.modified)).catch((error) => {
+          if (import.meta.env.DEV) {
+            console.error('error on insert db', error)
+          }
+          throw error
+        })
+        return await config.onInsert?.(params)
+      }).catch((error) => {
         if (import.meta.env.DEV) {
-          console.error('error on insert db', error)
+          console.error('error on insert db tx', error)
         }
         throw error
       })
-      const result = await config.onInsert?.(params)
       await runMutations(params.transaction.mutations)
       return result
     },
     onUpdate: async (params) => {
       await params.collection.stateWhenReady()
-      await Promise.all(params.transaction.mutations.map(mutation =>
-        db.update(config.table).set(mutation.changes).where(eq(primaryColumn, mutation.key)).catch((error) => {
-          if (import.meta.env.DEV) {
-            console.error('error on update db', error)
-          }
-          throw error
-        }),
-      ))
-      const result = await config.onUpdate?.(params)
+      const result = await db.transaction(async (tx) => {
+        await Promise.all(params.transaction.mutations.map(mutation =>
+          tx.update(config.table).set(mutation.changes).where(eq(primaryColumn, mutation.key)).catch((error) => {
+            if (import.meta.env.DEV) {
+              console.error('error on update db', error)
+            }
+            throw error
+          }),
+        ))
+        return await config.onUpdate?.(params)
+      }).catch((error) => {
+        if (import.meta.env.DEV) {
+          console.error('error on update db tx', error)
+        }
+        throw error
+      })
       await runMutations(params.transaction.mutations)
       return result
     },

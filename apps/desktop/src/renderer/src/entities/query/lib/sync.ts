@@ -2,6 +2,7 @@ import type { MutationOptions } from '@tanstack/react-query'
 import { createCollection } from '@tanstack/react-db'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { queries } from '~/drizzle'
+import { waitForDatabasesSync } from '~/entities/database'
 import { pgLiteCollectionOptions } from '~/lib/db'
 import { orpc } from '~/lib/orpc'
 
@@ -11,6 +12,7 @@ export const queriesCollection = createCollection(pgLiteCollectionOptions({
 }))
 
 async function syncQueries() {
+  await waitForDatabasesSync()
   const existing = await queriesCollection.toArrayWhenReady()
   const iterator = await orpc.sync.queries(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
