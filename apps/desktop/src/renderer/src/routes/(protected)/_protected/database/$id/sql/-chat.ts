@@ -1,6 +1,6 @@
 import type { AppUIMessage, tools } from '@conar/shared/ai-tools'
 import type { InferToolInput, InferToolOutput } from 'ai'
-import type { databases } from '~/drizzle'
+import type { chatsMessages, databases } from '~/drizzle'
 import { Chat } from '@ai-sdk/react'
 import { convertToAppUIMessage } from '@conar/shared/ai-tools'
 import { rowsSql } from '@conar/shared/sql/rows'
@@ -99,7 +99,7 @@ function ensureChat(chatId: string, databaseId: string) {
 
 const chatsMap = new Map<string, Chat<AppUIMessage>>()
 
-export function createChat({ id = uuid(), database }: { id?: string, database: typeof databases.$inferSelect }) {
+export async function createChat({ id = uuid(), database }: { id?: string, database: typeof databases.$inferSelect }) {
   if (chatsMap.has(id)) {
     return chatsMap.get(id)!
   }
@@ -120,17 +120,38 @@ export function createChat({ id = uuid(), database }: { id?: string, database: t
           options.messageId = lastMessage.id
         }
 
-        ensureChat(options.chatId, database.id)
+        const chat = ensureChat(options.chatId, database.id)
 
         if (options.trigger === 'submit-message') {
-          // TODO: can be conflict
-          chatsMessagesCollection.insert({
-            ...lastMessage,
-            chatId: options.chatId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            metadata: null,
-          })
+          const existingMessage = chatsMessagesCollection.get(lastMessage.id)
+
+          const updatedAt = new Date()
+          if (existingMessage) {
+            chatsMessagesCollection.update(lastMessage.id, (draft) => {
+              Object.assign(draft, {
+                ...lastMessage,
+                chatId: options.chatId,
+                updatedAt,
+                metadata: {
+                  ...existingMessage.metadata,
+                  updatedAt,
+                },
+              } satisfies typeof chatsMessages.$inferInsert)
+            })
+          }
+          else {
+            const createdAt = new Date()
+            chatsMessagesCollection.insert({
+              ...lastMessage,
+              chatId: options.chatId,
+              createdAt,
+              updatedAt,
+              metadata: {
+                createdAt,
+                updatedAt,
+              },
+            })
+          }
         }
 
         if (options.trigger === 'regenerate-message' && options.messageId) {
@@ -140,6 +161,8 @@ export function createChat({ id = uuid(), database }: { id?: string, database: t
         return eventIteratorToStream(await orpc.ai.ask({
           ...options.body,
           id: options.chatId,
+          createdAt: chat.createdAt,
+          updatedAt: chat.updatedAt,
           type: database.type,
           databaseId: database.id,
           prompt: lastMessage,
@@ -156,22 +179,31 @@ export function createChat({ id = uuid(), database }: { id?: string, database: t
         throw new Error('Unsupported')
       },
     },
-    messages: chatsMessagesCollection.toArray
+    messages: (await chatsMessagesCollection.toArrayWhenReady())
       .filter(m => m.chatId === id)
       .toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .map(convertToAppUIMessage),
     onFinish: ({ message }) => {
-      // TODO: resolve conflicts
-      chatsMessagesCollection
-        .update(message.id, (draft) => {
+      const existingMessage = chatsMessagesCollection.get(message.id)
+
+      if (existingMessage) {
+        chatsMessagesCollection.update(message.id, (draft) => {
           Object.assign(draft, {
-            chatId: id,
             ...message,
             createdAt: message.metadata?.createdAt || new Date(),
             updatedAt: message.metadata?.updatedAt || new Date(),
-            metadata: null,
           })
         })
+      }
+      else {
+        chatsMessagesCollection.insert({
+          ...message,
+          chatId: id,
+          createdAt: message.metadata?.createdAt || new Date(),
+          updatedAt: message.metadata?.updatedAt || new Date(),
+          metadata: null,
+        })
+      }
     },
     onToolCall: async ({ toolCall }) => {
       if (toolCall.toolName === 'columns') {

@@ -1,7 +1,8 @@
 import { decrypt } from '@conar/shared/encryption'
 import { eventIterator } from '@orpc/server'
 import { type } from 'arktype'
-import { and, eq, inArray, not, notInArray, or } from 'drizzle-orm'
+import { addSeconds } from 'date-fns'
+import { and, eq, gt, inArray, notInArray, or } from 'drizzle-orm'
 import { databases, databasesSelectSchema, db } from '~/drizzle'
 import { authMiddleware, orpc } from '~/orpc'
 
@@ -38,7 +39,7 @@ export const sync = orpc
             and(
               eq(databases.userId, context.user.id),
               or(...input.map(database =>
-                and(eq(databases.id, database.id), not(eq(databases.updatedAt, database.updatedAt))),
+                and(eq(databases.id, database.id), gt(databases.updatedAt, addSeconds(database.updatedAt, 1))),
               )),
             ),
           )

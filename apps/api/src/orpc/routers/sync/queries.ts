@@ -1,6 +1,7 @@
 import { eventIterator } from '@orpc/server'
 import { type } from 'arktype'
-import { and, eq, inArray, not, notInArray, or } from 'drizzle-orm'
+import { addSeconds } from 'date-fns'
+import { and, eq, gte, inArray, notInArray, or } from 'drizzle-orm'
 import { db, queries, queriesSelectSchema } from '~/drizzle'
 import { authMiddleware, orpc } from '~/orpc'
 
@@ -37,7 +38,7 @@ export const sync = orpc
             and(
               eq(queries.userId, context.user.id),
               or(...input.map(query =>
-                and(eq(queries.id, query.id), not(eq(queries.updatedAt, query.updatedAt))),
+                and(eq(queries.id, query.id), gte(queries.updatedAt, addSeconds(query.updatedAt, 1))),
               )),
             ),
           )

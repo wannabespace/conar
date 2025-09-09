@@ -122,11 +122,18 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
 function DatabaseTablesPage() {
   const { database, store } = Route.useLoaderData()
   const { schema, table } = Route.useSearch()
-  const [, setLastOpenedTable] = useLastOpenedTable(database.id)
+  const [lastOpenedTable, setLastOpenedTable] = useLastOpenedTable(database.id)
 
   useEffect(() => {
-    setLastOpenedTable(schema && table ? { schema, table } : null)
-  }, [schema, table, setLastOpenedTable])
+    if (schema && table) {
+      if (schema !== lastOpenedTable?.schema || table !== lastOpenedTable?.table) {
+        setLastOpenedTable({ schema, table })
+      }
+    }
+    else if (lastOpenedTable !== null) {
+      setLastOpenedTable(null)
+    }
+  }, [schema, table, setLastOpenedTable, lastOpenedTable])
 
   return (
     <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} direction="horizontal" className="flex">

@@ -5,6 +5,7 @@ import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { databases } from '~/drizzle'
 import { pgLiteCollectionOptions } from '~/lib/db'
 import { orpc } from '~/lib/orpc'
+import { router } from '~/main'
 
 export const databasesCollection = createCollection(pgLiteCollectionOptions({
   table: databases,
@@ -14,12 +15,13 @@ export const databasesCollection = createCollection(pgLiteCollectionOptions({
       if (m.changes.name) {
         return orpc.databases.update({
           id: m.key,
-          name: m.modified.name,
+          name: m.changes.name,
         })
       }
 
       return Promise.resolve()
     }))
+    router.invalidate({ filter: r => r.routeId === '/(protected)/_protected/database/$id' })
   },
   onDelete: async (params) => {
     await Promise.all(params.transaction.mutations.map(m => orpc.databases.remove({ id: m.key })))
@@ -27,10 +29,13 @@ export const databasesCollection = createCollection(pgLiteCollectionOptions({
 }))
 
 async function syncDatabases() {
-  const existing = databasesCollection.toArray
+  const existing = await databasesCollection.toArrayWhenReady()
   const iterator = await orpc.sync.databases(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
   for await (const event of iterator) {
+    if (import.meta.env.DEV) {
+      console.log('syncDatabases event', event)
+    }
     // Temporary only one event
     if (event.type === 'sync') {
       event.data.forEach((item) => {

@@ -23,6 +23,7 @@ import { tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { Route } from '..'
+import { lastOpenedTable } from '../-lib'
 import { closeTab } from '../-tabs'
 
 interface DropTableDialogProps {
@@ -49,6 +50,9 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
       setConfirmationText('')
       setCascade(false)
       setOpen(true)
+      if (lastOpenedTable(database.id).get()?.schema === schema && lastOpenedTable(database.id).get()?.table === table) {
+        lastOpenedTable(database.id).set(null)
+      }
     },
   }))
 

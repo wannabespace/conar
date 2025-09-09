@@ -16,10 +16,13 @@ export const chatsMessagesCollection = createCollection(pgLiteCollectionOptions(
 }))
 
 async function syncChats() {
-  const existing = chatsCollection.toArray
+  const existing = await chatsCollection.toArrayWhenReady()
   const iterator = await orpc.sync.chats(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
   for await (const event of iterator) {
+    if (import.meta.env.DEV) {
+      console.log('syncChats event', event)
+    }
     // Temporary only one event
     if (event.type === 'sync') {
       event.data.forEach((item) => {
@@ -40,10 +43,13 @@ async function syncChats() {
 }
 
 async function syncChatsMessages() {
-  const existing = chatsMessagesCollection.toArray
+  const existing = await chatsMessagesCollection.toArrayWhenReady()
   const iterator = await orpc.sync.chatsMessages(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
   for await (const event of iterator) {
+    if (import.meta.env.DEV) {
+      console.log('syncChatsMessages event', event)
+    }
     // Temporary only one event
     if (event.type === 'sync') {
       event.data.forEach((item) => {

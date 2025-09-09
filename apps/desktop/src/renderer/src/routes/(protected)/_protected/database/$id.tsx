@@ -8,7 +8,7 @@ import { lastOpenedDatabases } from './-lib'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: DatabasePage,
-  beforeLoad: ({ params }) => {
+  beforeLoad: async ({ params }) => {
     const database = databasesCollection.get(params.id)
 
     if (!database) {

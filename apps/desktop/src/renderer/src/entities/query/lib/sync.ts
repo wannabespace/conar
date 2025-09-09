@@ -11,10 +11,13 @@ export const queriesCollection = createCollection(pgLiteCollectionOptions({
 }))
 
 async function syncQueries() {
-  const existing = queriesCollection.toArray
+  const existing = await queriesCollection.toArrayWhenReady()
   const iterator = await orpc.sync.queries(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
   for await (const event of iterator) {
+    if (import.meta.env.DEV) {
+      console.log('syncQueries event', event)
+    }
     // Temporary only one event
     if (event.type === 'sync') {
       event.data.forEach((item) => {

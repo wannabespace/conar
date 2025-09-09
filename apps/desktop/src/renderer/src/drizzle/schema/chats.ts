@@ -15,8 +15,7 @@ export const chatsMessages = pgTable('chats_messages', {
   chatId: uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
   parts: jsonb().array().$type<AppUIMessage['parts']>().notNull(),
   role: text().$type<AppUIMessage['role']>().notNull(),
-  // eslint-disable-next-line ts/no-empty-object-type
-  metadata: jsonb().$type<{}>(),
+  metadata: jsonb().$type<NonNullable<AppUIMessage['metadata']>>(),
 })
 
 export const chatsRelations = relations(chats, ({ one, many }) => ({

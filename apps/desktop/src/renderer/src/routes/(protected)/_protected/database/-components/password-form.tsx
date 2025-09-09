@@ -38,7 +38,6 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
     onSuccess: () => {
       toast.success('Password successfully saved!')
       setPassword('')
-      router.invalidate({ filter: r => r.routeId === '/(protected)/_protected/database/$id' })
     },
     onError: (error) => {
       toast.error('We couldn\'t connect to the database', {

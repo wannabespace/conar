@@ -58,37 +58,48 @@ async function recordMigration(hash: string) {
   `)
 }
 
+const { promise, resolve } = Promise.withResolvers()
+
+export async function waitForMigrations() {
+  await promise
+}
+
 export async function runMigrations() {
-  console.log('🚀 Starting pglite migrations...')
+  try {
+    console.log('🚀 Starting pglite migrations...')
 
-  await ensureMigrationsTable()
+    await ensureMigrationsTable()
 
-  const executedHashes = await getMigratedHashes()
-  const pendingMigrations = migrations.filter(migration => !executedHashes.includes(migration.hash))
+    const executedHashes = await getMigratedHashes()
+    const pendingMigrations = migrations.filter(migration => !executedHashes.includes(migration.hash))
 
-  if (pendingMigrations.length === 0) {
-    console.info('✨ No pending migrations found.')
-    return
-  }
+    if (pendingMigrations.length === 0) {
+      console.info('✨ No pending migrations found.')
+      return
+    }
 
-  console.info(`📦 Found ${pendingMigrations.length} pending migrations`)
+    console.info(`📦 Found ${pendingMigrations.length} pending migrations`)
 
-  for (const migration of pendingMigrations) {
-    console.info(`⚡ Executing migration: ${migration.hash}`)
+    for (const migration of pendingMigrations) {
+      console.info(`⚡ Executing migration: ${migration.hash}`)
 
-    try {
-      for (const sql of migration.sql) {
-        await db.execute(sql)
+      try {
+        for (const sql of migration.sql) {
+          await db.execute(sql)
+        }
+
+        await recordMigration(migration.hash)
+        console.info(`✅ Successfully completed migration: ${migration.hash}`)
       }
+      catch (error) {
+        console.error(`❌ Failed to execute migration ${migration.hash}:`, error)
+        throw error
+      }
+    }
 
-      await recordMigration(migration.hash)
-      console.info(`✅ Successfully completed migration: ${migration.hash}`)
-    }
-    catch (error) {
-      console.error(`❌ Failed to execute migration ${migration.hash}:`, error)
-      throw error
-    }
+    console.info('🎉 All migrations completed successfully')
   }
-
-  console.info('🎉 All migrations completed successfully')
+  finally {
+    resolve()
+  }
 }

@@ -74,7 +74,7 @@ function groupChats(data: typeof chats.$inferSelect[]) {
 export function ChatHeader({ chatId }: { chatId: string }) {
   const { id } = Route.useParams()
   const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'))
-  const { data: [chat] } = useLiveQuery(q => q.from({ chats: chatsCollection }).where(({ chats }) => eq(chats.id, chatId)))
+  const chat = allChats.find(chat => chat.id === chatId)
   const { data: messages } = useLiveQuery(q => q
     .from({ chatsMessages: chatsMessagesCollection })
     .where(({ chatsMessages }) => eq(chatsMessages.chatId, chatId)))

@@ -1,76 +1,90 @@
 import type { CollectionConfig, DeleteMutationFnParams, InsertMutationFnParams, PendingMutation, SyncConfig, UpdateMutationFnParams } from '@tanstack/react-db'
-import type { Column } from 'drizzle-orm'
-import type { PgTable } from 'drizzle-orm/pg-core'
+import type { IndexColumn, PgTable } from 'drizzle-orm/pg-core'
 import { createSelectSchema } from 'drizzle-arktype'
 import { eq, inArray } from 'drizzle-orm'
-import { db } from '~/drizzle'
+import { db, waitForMigrations } from '~/drizzle'
 
 // eslint-disable-next-line ts/no-explicit-any
 export function pgLiteCollectionOptions<Table extends PgTable<any>>(config: {
   table: Table
-  getPrimaryColumn: (row: Table) => Column
+  getPrimaryColumn: (row: Table) => IndexColumn
   onInsert?: (params: InsertMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   onUpdate?: (params: UpdateMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   onDelete?: (params: DeleteMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
 }) {
-  let syncParams: Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0]
+  type SyncParams = Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0]
+
+  // Sync params can be null while running PGLite migrations
+  const { promise: syncParams, resolve: resolveSyncParams } = Promise.withResolvers<SyncParams>()
   const primaryColumn = config.getPrimaryColumn(config.table)
 
-  function runMutations(mutations: PendingMutation[]) {
-    syncParams.begin()
+  async function runMutations(mutations: PendingMutation[]) {
+    const { begin, write, commit } = await syncParams
+    begin()
     mutations.forEach((m) => {
-      syncParams.write({ type: m.type, value: m.modified })
+      write({ type: m.type, value: m.modified })
     })
-    syncParams.commit()
+    commit()
   }
 
   return {
     startSync: true,
     sync: {
-      sync: async (params: Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0]) => {
-        syncParams = params
-        const { begin, write, commit, markReady } = params
-        begin()
+      sync: async (params) => {
+        resolveSyncParams(params)
+        await waitForMigrations()
+        params.begin()
         // @ts-expect-error drizzle types
         const dbs = await db.select().from(config.table)
-        dbs.forEach(db => write({ type: 'insert', value: db }))
-        commit()
-        markReady()
+        dbs.forEach((db) => {
+          params.write({ type: 'insert', value: db })
+        })
+        params.commit()
+        params.markReady()
       },
     },
     gcTime: 0,
     schema: createSelectSchema(config.table),
     getKey: t => t[primaryColumn.name],
     onDelete: async (params) => {
-      // eslint-disable-next-line ts/no-explicit-any
-      let result: any
-      await db.transaction(async (tx) => {
-        await tx.delete(config.table).where(inArray(primaryColumn, params.transaction.mutations.map(m => m.key)))
-        result = await config.onDelete?.(params)
+      if (import.meta.env.DEV) {
+        console.log('onDelete db', params)
+      }
+      await params.collection.stateWhenReady()
+      await db.delete(config.table).where(inArray(primaryColumn, params.transaction.mutations.map(m => m.key))).catch((error) => {
+        if (import.meta.env.DEV) {
+          console.error('error on delete db', error)
+        }
+        throw error
       })
-      runMutations(params.transaction.mutations)
+      const result = await config.onDelete?.(params)
+      await runMutations(params.transaction.mutations)
       return result
     },
     onInsert: async (params) => {
-      // eslint-disable-next-line ts/no-explicit-any
-      let result: any
-      await db.transaction(async (tx) => {
-        await tx.insert(config.table).values(params.transaction.mutations.map(m => m.modified))
-        result = await config.onInsert?.(params)
+      await params.collection.stateWhenReady()
+      await db.insert(config.table).values(params.transaction.mutations.map(m => m.modified)).catch((error) => {
+        if (import.meta.env.DEV) {
+          console.error('error on insert db', error)
+        }
+        throw error
       })
-      runMutations(params.transaction.mutations)
+      const result = await config.onInsert?.(params)
+      await runMutations(params.transaction.mutations)
       return result
     },
     onUpdate: async (params) => {
-      // eslint-disable-next-line ts/no-explicit-any
-      let result: any
-      await db.transaction(async (tx) => {
-        await Promise.all(params.transaction.mutations.map(mutation =>
-          tx.update(config.table).set(mutation.changes).where(eq(primaryColumn, mutation.key)),
-        ))
-        result = await config.onUpdate?.(params)
-      })
-      runMutations(params.transaction.mutations)
+      await params.collection.stateWhenReady()
+      await Promise.all(params.transaction.mutations.map(mutation =>
+        db.update(config.table).set(mutation.changes).where(eq(primaryColumn, mutation.key)).catch((error) => {
+          if (import.meta.env.DEV) {
+            console.error('error on update db', error)
+          }
+          throw error
+        }),
+      ))
+      const result = await config.onUpdate?.(params)
+      await runMutations(params.transaction.mutations)
       return result
     },
   } satisfies CollectionConfig<Table['$inferSelect'], string>

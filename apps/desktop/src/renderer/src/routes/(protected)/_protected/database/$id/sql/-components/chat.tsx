@@ -13,10 +13,10 @@ export function Chat({ className, ...props }: ComponentProps<'div'>) {
   const { messages, error } = useChat({ chat })
 
   useEffect(() => {
-    if (messages.at(-1)?.role === 'user' && chat.status !== 'streaming' && chat.status !== 'submitted') {
+    if (chat.messages.at(-1)?.role === 'user' && chat.status !== 'streaming' && chat.status !== 'submitted') {
       chat.regenerate()
     }
-  }, [chat, messages])
+  }, [chat])
 
   return (
     <div key={chat.id} className={cn('relative flex flex-col justify-between gap-4 p-4', className)} {...props}>

@@ -25,7 +25,7 @@ export const Route = createFileRoute(
 
     return {
       database: context.database,
-      chat: createChat({
+      chat: await createChat({
         id: deps.chatId,
         database: context.database,
       }),
