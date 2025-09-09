@@ -47,9 +47,6 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>(config: {
     schema: createSelectSchema(config.table),
     getKey: t => t[primaryColumn.name],
     onDelete: async (params) => {
-      if (import.meta.env.DEV) {
-        console.log('onDelete db', params)
-      }
       await params.collection.stateWhenReady()
       await db.delete(config.table).where(inArray(primaryColumn, params.transaction.mutations.map(m => m.key))).catch((error) => {
         if (import.meta.env.DEV) {
