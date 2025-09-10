@@ -1,5 +1,4 @@
 export * from './components/database-icon'
-export * from './lib/crud'
 export * from './lib/fetching'
 export * from './lib/sync'
 export * from './queries/columns'

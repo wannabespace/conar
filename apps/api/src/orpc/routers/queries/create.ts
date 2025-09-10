@@ -6,14 +6,16 @@ import { authMiddleware, orpc } from '~/orpc'
 export const create = orpc
   .use(authMiddleware)
   .input(type({
-    databaseId: 'string.uuid.v7',
-    name: 'string',
-    query: 'string',
+    'id?': 'string.uuid.v7',
+    'databaseId': 'string.uuid.v7',
+    'name': 'string',
+    'query': 'string',
   }))
   .handler(async ({ context, input }) => {
     const [query] = await db
       .insert(queries)
       .values({
+        id: input.id,
         userId: context.session.userId,
         databaseId: input.databaseId,
         name: input.name,

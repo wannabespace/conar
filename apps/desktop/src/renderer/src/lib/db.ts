@@ -5,12 +5,17 @@ import { eq, inArray } from 'drizzle-orm'
 import { db, waitForMigrations } from '~/drizzle'
 
 // eslint-disable-next-line ts/no-explicit-any
-export function pgLiteCollectionOptions<Table extends PgTable<any>>(config: {
+export function pgLiteCollectionOptions<Table extends PgTable<any>>({
+  startSync = true,
+  ...config
+}: {
   table: Table
   getPrimaryColumn: (row: Table) => IndexColumn
+  startSync?: boolean
   onInsert?: (params: InsertMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   onUpdate?: (params: UpdateMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   onDelete?: (params: DeleteMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
+  onSync?: (params: Pick<Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0], 'write' | 'collection' | 'truncate'>) => Promise<void>
 }) {
   type SyncParams = Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0]
 
@@ -27,6 +32,57 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>(config: {
     commit()
   }
 
+  async function onPgLiteInsert(data: typeof config.table.$inferInsert[]) {
+    // @ts-expect-error drizzle types
+    await db.insert(config.table).values(data).catch((error) => {
+      if (import.meta.env.DEV) {
+        console.error('error on insert db', error)
+      }
+      throw error
+    })
+  }
+
+  async function onPgLiteUpdate(id: string, changes: Partial<typeof config.table.$inferSelect>) {
+    await db.update(config.table).set(changes).where(eq(primaryColumn, id)).catch((error) => {
+      if (import.meta.env.DEV) {
+        console.error('error on update db', error)
+      }
+      throw error
+    })
+  }
+
+  async function onPgLiteDelete(ids: string[]) {
+    await db.delete(config.table).where(inArray(primaryColumn, ids)).catch((error) => {
+      if (import.meta.env.DEV) {
+        console.error('error on delete db', error)
+      }
+      throw error
+    })
+  }
+
+  const getSyncParams = async (): Promise<Pick<SyncParams, 'write' | 'collection' | 'truncate'>> => {
+    const params = await syncParams
+
+    return {
+      write: async (p) => {
+        params.begin()
+        if (p.type === 'insert') {
+          await onPgLiteInsert([p.value])
+        }
+        else if (p.type === 'update') {
+          await onPgLiteUpdate(params.collection.getKeyFromItem(p.value), p.value)
+        }
+        else if (p.type === 'delete') {
+          await onPgLiteDelete([params.collection.getKeyFromItem(p.value)])
+        }
+        params.write(p)
+        params.commit()
+      },
+      collection: params.collection,
+      truncate: params.truncate,
+    }
+  }
+
   return {
     startSync: true,
     sync: {
@@ -40,6 +96,9 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>(config: {
           params.write({ type: 'insert', value: db })
         })
         params.commit()
+        if (config.onSync && startSync) {
+          await config.onSync(await getSyncParams())
+        }
         params.markReady()
       },
     },
@@ -47,42 +106,32 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>(config: {
     schema: createSelectSchema(config.table),
     getKey: t => t[primaryColumn.name],
     onDelete: async (params) => {
-      await params.collection.stateWhenReady()
-      await db.delete(config.table).where(inArray(primaryColumn, params.transaction.mutations.map(m => m.key))).catch((error) => {
-        if (import.meta.env.DEV) {
-          console.error('error on delete db', error)
-        }
-        throw error
-      })
+      await onPgLiteDelete(params.transaction.mutations.map(m => m.key))
       const result = await config.onDelete?.(params)
       await runMutations(params.transaction.mutations)
       return result
     },
     onInsert: async (params) => {
-      await params.collection.stateWhenReady()
-      await db.insert(config.table).values(params.transaction.mutations.map(m => m.modified)).catch((error) => {
-        if (import.meta.env.DEV) {
-          console.error('error on insert db', error)
-        }
-        throw error
-      })
+      await onPgLiteInsert(params.transaction.mutations.map(m => m.modified))
       const result = await config.onInsert?.(params)
       await runMutations(params.transaction.mutations)
       return result
     },
     onUpdate: async (params) => {
-      await params.collection.stateWhenReady()
-      await Promise.all(params.transaction.mutations.map(mutation =>
-        db.update(config.table).set(mutation.changes).where(eq(primaryColumn, mutation.key)).catch((error) => {
-          if (import.meta.env.DEV) {
-            console.error('error on update db', error)
-          }
-          throw error
-        }),
-      ))
+      await Promise.all(params.transaction.mutations.map(m => onPgLiteUpdate(m.key, m.changes)))
       const result = await config.onUpdate?.(params)
       await runMutations(params.transaction.mutations)
       return result
     },
-  } satisfies CollectionConfig<Table['$inferSelect'], string>
+    utils: {
+      runSync: async () => {
+        const params = await getSyncParams()
+
+        // To wait the first sync
+        await params.collection.stateWhenReady()
+
+        await config.onSync?.(params)
+      },
+    },
+  } satisfies CollectionConfig<Table['$inferSelect'], string> & { utils: { runSync: () => Promise<void> } }
 }
