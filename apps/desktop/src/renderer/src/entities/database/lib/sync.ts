@@ -19,7 +19,7 @@ export const databasesCollection = createCollection(pgLiteCollectionOptions({
   startSync: false,
   table: databases,
   getPrimaryColumn: databases => databases.id,
-  onSync: async ({ write, collection }) => {
+  sync: async ({ write, collection }) => {
     if (!bearerToken.get() || !navigator.onLine) {
       return
     }

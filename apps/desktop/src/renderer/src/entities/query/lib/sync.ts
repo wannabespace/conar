@@ -11,7 +11,7 @@ export const queriesCollection = createCollection(pgLiteCollectionOptions({
   startSync: false,
   table: queries,
   getPrimaryColumn: queries => queries.id,
-  onSync: async ({ collection, write }) => {
+  sync: async ({ collection, write }) => {
     if (!bearerToken.get() || !navigator.onLine) {
       return
     }

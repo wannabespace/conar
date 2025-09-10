@@ -17,7 +17,7 @@ export const chatsCollection = createCollection(pgLiteCollectionOptions({
   startSync: false,
   table: chats,
   getPrimaryColumn: chats => chats.id,
-  onSync: async ({ collection, write }) => {
+  sync: async ({ collection, write }) => {
     if (!bearerToken.get() || !navigator.onLine) {
       return
     }
@@ -51,7 +51,7 @@ export const chatsMessagesCollection = createCollection(pgLiteCollectionOptions(
   startSync: false,
   table: chatsMessages,
   getPrimaryColumn: chatsMessages => chatsMessages.id,
-  onSync: async ({ collection, write }) => {
+  sync: async ({ collection, write }) => {
     if (!bearerToken.get() || !navigator.onLine) {
       return
     }

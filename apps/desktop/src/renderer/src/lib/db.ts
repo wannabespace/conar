@@ -15,7 +15,7 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>({
   onInsert?: (params: InsertMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   onUpdate?: (params: UpdateMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   onDelete?: (params: DeleteMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
-  onSync?: (params: Pick<Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0], 'write' | 'collection' | 'truncate'>) => Promise<void>
+  sync?: (params: Pick<Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0], 'write' | 'collection' | 'truncate'>) => Promise<void>
 }) {
   type SyncParams = Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0]
 
@@ -96,8 +96,8 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>({
           params.write({ type: 'insert', value: db })
         })
         params.commit()
-        if (config.onSync && startSync) {
-          await config.onSync(await getSyncParams())
+        if (config.sync && startSync) {
+          await config.sync(await getSyncParams())
         }
         params.markReady()
       },
@@ -130,7 +130,7 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>({
         // To wait the first sync
         await params.collection.stateWhenReady()
 
-        await config.onSync?.(params)
+        await config.sync?.(params)
       },
     },
   } satisfies CollectionConfig<Table['$inferSelect'], string> & { utils: { runSync: () => Promise<void> } }
