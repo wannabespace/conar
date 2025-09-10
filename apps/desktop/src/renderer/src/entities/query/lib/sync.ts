@@ -21,20 +21,11 @@ export const queriesCollection = createCollection(pgLiteCollectionOptions({
     const sync = await orpc.queries.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
     sync.forEach((item) => {
-      if (item.type === 'insert') {
-        write({ type: 'insert', value: item.value })
+      if (item.type === 'delete') {
+        write({ type: 'delete', value: collection.get(item.value)! })
       }
-      else if (item.type === 'update') {
-        write({ type: 'update', value: item.value })
-      }
-      else if (item.type === 'delete') {
-        const existed = collection.get(item.value)
-
-        if (!existed) {
-          throw new Error('Entity not found')
-        }
-
-        write({ type: 'delete', value: existed })
+      else {
+        write(item)
       }
     })
   },
