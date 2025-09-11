@@ -14,16 +14,24 @@ export const contact = orpc
       return
     }
 
-    const { data, error } = await resend.emails.send({
-      from: 'Conar <conar@conar.app>',
-      to: SUPPORT_EMAIL,
-      subject: `Support request from ${context.user.email}`,
-      html: `<p>From: ${context.user.email}</p><p>Message:<br>${input.message}</p>`,
-    })
+    const { data, error } = await resend.batch.send([
+      {
+        from: 'Conar <conar@conar.app>',
+        to: SUPPORT_EMAIL,
+        subject: `Support request from ${context.user.email}`,
+        html: `<p>From: ${context.user.email}</p><p>Message:<br>${input.message}</p>`,
+      },
+      {
+        from: 'Conar <conar@conar.app>',
+        to: context.user.email,
+        subject: 'Your support request has been received by Conar',
+        html: `<p>Hi ${context.user.name || context.user.email},</p><p>This is an automatic reply to let you know we received your message and will answer soon.</p>`,
+      },
+    ])
 
     if (error) {
       throw error
     }
 
-    console.log('Support message sent successfully', data)
+    console.log('Support message sent successfully', data.data)
   })
