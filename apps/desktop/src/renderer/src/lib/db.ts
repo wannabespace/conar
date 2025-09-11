@@ -15,7 +15,7 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>({
   onInsert?: (params: InsertMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   onUpdate?: (params: UpdateMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   onDelete?: (params: DeleteMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
-  sync?: (params: Pick<Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0], 'write' | 'collection' | 'truncate'>) => Promise<void>
+  sync?: (params: Pick<Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0], 'write' | 'collection'>) => Promise<void>
 }) {
   type SyncParams = Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0]
 
@@ -60,7 +60,7 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>({
     })
   }
 
-  const getSyncParams = async (): Promise<Pick<SyncParams, 'write' | 'collection' | 'truncate'>> => {
+  const getSyncParams = async (): Promise<Pick<SyncParams, 'write' | 'collection'>> => {
     const params = await syncParams
 
     return {
@@ -79,7 +79,6 @@ export function pgLiteCollectionOptions<Table extends PgTable<any>>({
         params.commit()
       },
       collection: params.collection,
-      truncate: params.truncate,
     }
   }
 

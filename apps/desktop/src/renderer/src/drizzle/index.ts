@@ -14,6 +14,11 @@ export const pg = new PGlite('idb://conar')
 if (import.meta.env.DEV) {
   // @ts-expect-error - window.db is not typed
   window.db = pg
+  // @ts-expect-error - window.db is not typed
+  window.dbQuery = q => pg.query(q).then((r) => {
+    console.table(r.rows)
+    return r.rows
+  })
 }
 
 export const db = drizzle({
