@@ -18,13 +18,13 @@ export const contact = orpc
       {
         from: 'Conar <conar@conar.app>',
         to: SUPPORT_EMAIL,
-        subject: `Support request from ${context.user.email}`,
+        subject: `Contact request from ${context.user.email}`,
         html: `<p>From: ${context.user.email}</p><p>Message:<br>${input.message}</p>`,
       },
       {
         from: 'Conar <conar@conar.app>',
         to: context.user.email,
-        subject: 'Your support request has been received by Conar',
+        subject: 'Your contact request has been received by Conar',
         html: `<p>Hi ${context.user.name || context.user.email},</p><p>This is an automatic reply to let you know we received your message and will answer soon.</p>`,
       },
     ])
