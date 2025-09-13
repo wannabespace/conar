@@ -71,6 +71,7 @@ export const chatsMessagesCollection = createCollection(drizzleCollectionOptions
 const syncChatsMutationOptions = {
   mutationKey: ['sync-chats'],
   mutationFn: chatsCollection.utils.runSync,
+  onError: () => {},
 } satisfies MutationOptions
 
 export function useChatsSync() {
@@ -85,6 +86,7 @@ export function useChatsSync() {
 const syncChatsMessagesMutationOptions = {
   mutationKey: ['sync-messages-chats'],
   mutationFn: chatsMessagesCollection.utils.runSync,
+  onError: () => {},
 } satisfies MutationOptions
 
 export function useChatsMessagesSync() {

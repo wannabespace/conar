@@ -128,6 +128,7 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
 const syncDatabasesMutationOptions = {
   mutationKey: ['sync-databases'],
   mutationFn: databasesCollection.utils.runSync,
+  onError: () => {},
 } satisfies MutationOptions
 
 export function useDatabasesSync() {

@@ -68,17 +68,25 @@ export function drizzleCollectionOptions<Table extends PgTable<any>>(config: {
     return {
       write: async (p) => {
         params.begin()
-        if (p.type === 'insert') {
-          await onDrizzleInsert([p.value])
+        try {
+          if (p.type === 'insert') {
+            await onDrizzleInsert([p.value])
+          }
+          else if (p.type === 'update') {
+            await onDrizzleUpdate(params.collection.getKeyFromItem(p.value), p.value)
+          }
+          else if (p.type === 'delete') {
+            await onDrizzleDelete([params.collection.getKeyFromItem(p.value)])
+          }
+          params.write(p)
         }
-        else if (p.type === 'update') {
-          await onDrizzleUpdate(params.collection.getKeyFromItem(p.value), p.value)
+        catch (e) {
+          params.truncate()
+          throw e
         }
-        else if (p.type === 'delete') {
-          await onDrizzleDelete([params.collection.getKeyFromItem(p.value)])
+        finally {
+          params.commit()
         }
-        params.write(p)
-        params.commit()
       },
       collection: params.collection,
     }
@@ -88,19 +96,29 @@ export function drizzleCollectionOptions<Table extends PgTable<any>>(config: {
     startSync: true,
     sync: {
       sync: async (params) => {
-        resolveSyncParams(params)
-        await config.sync.beforeSync?.()
-        params.begin()
-        // @ts-expect-error drizzle types
-        const dbs = await config.db.select().from(config.table)
-        dbs.forEach((db) => {
-          params.write({ type: 'insert', value: db })
-        })
-        params.commit()
-        if (config.sync && config.sync.startSync) {
-          await config.sync.sync(await getSyncParams())
+        try {
+          resolveSyncParams(params)
+          await config.sync.beforeSync?.()
+          params.begin()
+          // @ts-expect-error drizzle types
+          const dbs = await config.db.select().from(config.table)
+          dbs.forEach((db) => {
+            params.write({ type: 'insert', value: db })
+          })
+          params.commit()
+          if (config.sync && config.sync.startSync) {
+            await config.sync.sync(await getSyncParams())
+          }
         }
-        params.markReady()
+        catch (e) {
+          if (import.meta.env.DEV) {
+            console.error('error on sync', e)
+          }
+          throw e
+        }
+        finally {
+          params.markReady()
+        }
       },
     },
     gcTime: 0,
@@ -131,7 +149,15 @@ export function drizzleCollectionOptions<Table extends PgTable<any>>(config: {
         // To wait the first sync
         await params.collection.stateWhenReady()
 
-        await config.sync.sync(params)
+        try {
+          await config.sync.sync(params)
+        }
+        catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('error on runSync', error)
+          }
+          throw error
+        }
       },
     },
   } satisfies CollectionConfig<Table['$inferSelect'], string> & { utils: { runSync: () => Promise<void> } }
