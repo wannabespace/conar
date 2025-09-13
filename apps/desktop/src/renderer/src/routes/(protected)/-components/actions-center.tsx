@@ -3,10 +3,11 @@ import { getOS } from '@conar/shared/utils/os'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAddLine, RiDashboardLine, RiTableLine } from '@remixicon/react'
+import { useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { Store, useStore } from '@tanstack/react-store'
-import { DatabaseIcon, prefetchDatabaseCore, tablesAndSchemasQuery, useDatabasesLive } from '~/entities/database'
+import { DatabaseIcon, databasesCollection, prefetchDatabaseCore, tablesAndSchemasQuery } from '~/entities/database'
 import { trackEvent } from '~/lib/events'
 
 const os = getOS(navigator.userAgent)
@@ -54,7 +55,9 @@ function ActionsDatabaseTables({ database }: { database: typeof databases.$infer
 }
 
 export function ActionsCenter() {
-  const { data: databases } = useDatabasesLive()
+  const { data: databases } = useLiveQuery(q => q
+    .from({ databases: databasesCollection })
+    .orderBy(({ databases }) => databases.createdAt, 'desc'))
   const isOpen = useStore(actionsCenterStore, state => state.isOpen)
   const router = useRouter()
   const { id } = useParams({ strict: false })

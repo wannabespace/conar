@@ -77,7 +77,7 @@ const Row = memo(function Row({
         style={spacerStyle}
       />
       {virtualColumns.map((virtualColumn) => {
-        const column = columns[virtualColumn.index]
+        const column = columns[virtualColumn.index]!
         const value = row?.[column?.id]
 
         return (

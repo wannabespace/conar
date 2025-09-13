@@ -18,7 +18,7 @@ async function loopsUpdateUser(user: User) {
         userId: user.id,
         properties: {
           name: user.name,
-          firstName,
+          firstName: firstName!,
           lastName: lastName.join(' '),
         },
       })

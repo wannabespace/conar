@@ -12,12 +12,13 @@ import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiCommandLine, RiListUnordered, RiMessageLine, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ThemeToggle } from '~/components/theme-toggle'
-import { DatabaseIcon, useDatabasesLive } from '~/entities/database'
+import { DatabaseIcon, databasesCollection } from '~/entities/database'
 import { UserButton } from '~/entities/user'
 import { orpc } from '~/lib/orpc'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
@@ -169,7 +170,9 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
 }
 
 function LastOpenedDatabases() {
-  const { data: databases } = useDatabasesLive()
+  const { data: databases } = useLiveQuery(q => q
+    .from({ databases: databasesCollection })
+    .orderBy(({ databases }) => databases.createdAt, 'desc'))
   const [lastOpenedDatabases] = useLastOpenedDatabases()
   const filteredDatabases = (databases?.filter(database => lastOpenedDatabases.includes(database.id)) ?? [])
     .toSorted((a, b) => lastOpenedDatabases.indexOf(a.id) - lastOpenedDatabases.indexOf(b.id))
@@ -189,7 +192,7 @@ function MainLinks() {
     if (tableParam && schemaParam && tableParam !== lastTable?.table && schemaParam !== lastTable?.schema) {
       setLastTable({ schema: schemaParam, table: tableParam })
     }
-  }, [lastTable, tableParam, schemaParam])
+  }, [setLastTable, lastTable, tableParam, schemaParam])
 
   const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/table/')

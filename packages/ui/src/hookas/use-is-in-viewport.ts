@@ -9,7 +9,7 @@ export function useIsInViewport(ref: React.RefObject<Element | null>, visibility
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsVisible(entry.isIntersecting)
+        setIsVisible(entry!.isIntersecting)
       },
       {
         threshold: typeof visibility === 'number' ? visibility : visibility === 'full' ? 1 : visibility === 'half' ? 0.5 : 0,

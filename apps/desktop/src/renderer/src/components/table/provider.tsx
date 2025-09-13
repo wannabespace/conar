@@ -55,7 +55,7 @@ export function TableProvider({
     horizontal: true,
     count: columns.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: index => columns[index].size ?? estimatedColumnSize,
+    estimateSize: index => columns[index]!.size ?? estimatedColumnSize,
     overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
   })
 

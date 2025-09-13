@@ -3,25 +3,24 @@ import { db } from '~/drizzle'
 import { queries } from '~/drizzle/schema/queries'
 import { authMiddleware, orpc } from '~/orpc'
 
+const input = type({
+  'id?': 'string.uuid.v7',
+  'databaseId': 'string.uuid.v7',
+  'name': 'string',
+  'query': 'string',
+})
+
 export const create = orpc
   .use(authMiddleware)
-  .input(type({
-    databaseId: 'string.uuid.v7',
-    name: 'string',
-    query: 'string',
-  }))
+  .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    const [query] = await db
+    await db
       .insert(queries)
-      .values({
+      .values(input.map(item => ({
+        id: item.id,
         userId: context.session.userId,
-        databaseId: input.databaseId,
-        name: input.name,
-        query: input.query,
-      })
-      .returning({
-        id: queries.id,
-      })
-
-    return query
+        databaseId: item.databaseId,
+        name: item.name,
+        query: item.query,
+      })))
   })

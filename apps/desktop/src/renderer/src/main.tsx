@@ -8,7 +8,8 @@ import isYesterday from 'dayjs/plugin/isYesterday'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { createRoot } from 'react-dom/client'
 import { runMigrations } from './drizzle'
-import { ensureDatabases } from './entities/database'
+import { chatsCollection } from './entities/chat'
+import { databasesCollection } from './entities/database'
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
 import { routeTree } from './routeTree.gen'
@@ -48,7 +49,7 @@ export const queryClient = new QueryClient({
   },
 })
 
-const router = createRouter({
+export const router = createRouter({
   history: createHashHistory(),
   routeTree,
   defaultPreload: 'intent',
@@ -63,7 +64,10 @@ declare module '@tanstack/react-router' {
 
 const root = createRoot(document.getElementById('root')!)
 
-runMigrations().then(() => {
+runMigrations().then(async () => {
+  await Promise.all([
+    databasesCollection.stateWhenReady(),
+    chatsCollection.stateWhenReady(),
+  ])
   root.render(<RouterProvider router={router} />)
-  ensureDatabases()
 })

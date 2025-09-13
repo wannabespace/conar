@@ -1,7 +1,7 @@
 import { title } from '@conar/shared/utils/title'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { ensureDatabase, prefetchDatabaseCore } from '~/entities/database'
+import { databasesCollection, prefetchDatabaseCore } from '~/entities/database'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
 import { lastOpenedDatabases } from './-lib'
@@ -9,7 +9,7 @@ import { lastOpenedDatabases } from './-lib'
 export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: DatabasePage,
   beforeLoad: async ({ params }) => {
-    const database = await ensureDatabase(params.id)
+    const database = databasesCollection.get(params.id)
 
     if (!database) {
       throw redirect({ to: '/' })
@@ -23,13 +23,7 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
     return { database: context.database }
   },
   head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          {
-            title: title(loaderData.database.name),
-          },
-        ]
-      : [],
+    meta: loaderData ? [{ title: title(loaderData.database.name) }] : [],
   }),
 })
 

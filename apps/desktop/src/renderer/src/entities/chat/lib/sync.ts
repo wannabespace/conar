@@ -1,109 +1,99 @@
-import { isDeeplyEqual } from '@conar/shared/utils/helpers'
-import { queryOptions } from '@tanstack/react-query'
-import { eq } from 'drizzle-orm'
-import { toast } from 'sonner'
-import { chats, chatsMessages, db } from '~/drizzle'
+import type { MutationOptions } from '@tanstack/react-query'
+import { createCollection } from '@tanstack/react-db'
+import { useIsMutating, useMutation } from '@tanstack/react-query'
+import { chats, chatsMessages, db, waitForMigrations } from '~/drizzle'
+import { waitForDatabasesSync } from '~/entities/database'
+import { bearerToken } from '~/lib/auth'
+import { drizzleCollectionOptions } from '~/lib/db'
 import { orpc } from '~/lib/orpc'
 
-async function syncChats() {
-  let fetchedMessages: typeof chatsMessages.$inferSelect[] = []
-  let existingMessages: typeof chatsMessages.$inferSelect[] = []
+const { promise, resolve } = Promise.withResolvers()
 
-  try {
-    const [fetchedChats, existingChats] = await Promise.all([
-      orpc.chats.list(),
-      db.query.chats.findMany({ with: { messages: true } }),
-    ])
+export function waitForChatsSync() {
+  return promise
+}
 
-    fetchedMessages = fetchedChats.flatMap(c => c.messages)
-    existingMessages = existingChats.flatMap(c => c.messages)
+export const chatsCollection = createCollection(drizzleCollectionOptions({
+  db,
+  table: chats,
+  primaryColumn: chats.id,
+  startSync: false,
+  sync: {
+    prepare: waitForMigrations,
+    sync: async ({ collection, write }) => {
+      if (!bearerToken.get() || !navigator.onLine) {
+        return
+      }
 
-    const fetchedMap = new Map(fetchedChats.map(c => [c.id, c]))
-    const existingMap = new Map(existingChats.map(c => [c.id, c]))
+      await waitForDatabasesSync()
+      const sync = await orpc.chats.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
-    const toDelete = existingChats.filter(c => !fetchedMap.has(c.id)).map(c => c.id)
-    const toAdd = fetchedChats.filter(c => !existingMap.has(c.id))
-    const toUpdate = fetchedChats
-      .filter(c => existingMap.has(c.id))
-      .map((c) => {
-        const existing = existingMap.get(c.id)!
-        const changes: Partial<typeof chats.$inferSelect> = {}
-
-        if (existing.title !== c.title) {
-          changes.title = c.title
+      sync.forEach((item) => {
+        if (item.type === 'delete') {
+          write({ type: 'delete', value: collection.get(item.value)! })
         }
-
-        return {
-          id: c.id,
-          changes,
+        else {
+          write(item)
         }
       })
-      .filter(c => Object.keys(c.changes).length > 0)
+      resolve()
+    },
+  },
+}))
 
-    await db.transaction(async (tx) => {
-      await Promise.all([
-        ...toDelete.map(id => tx.delete(chats).where(eq(chats.id, id))),
-        ...toAdd.map(c => tx.insert(chats).values(c)),
-        ...toUpdate.map(c => tx.update(chats).set(c.changes).where(eq(chats.id, c.id))),
-      ])
-    })
-  }
-  catch (e) {
-    console.error(e)
-    toast.error('Failed to fetch chats. Please try again later.')
-  }
-
-  const existingMap = new Map(existingMessages.map(m => [m.id, m]))
-  const fetchedMap = new Map(fetchedMessages.map(m => [m.id, m]))
-
-  const toDelete = existingMessages.filter(m => !fetchedMap.has(m.id)).map(m => m.id)
-  const toAdd = fetchedMessages.filter(m => !existingMap.has(m.id))
-  const toUpdate = fetchedMessages
-    .filter(m => existingMap.has(m.id))
-    .map((m) => {
-      const existing = existingMap.get(m.id)!
-      const changes: Partial<typeof m> = {}
-
-      if (!isDeeplyEqual(existing.parts, m.parts)) {
-        changes.parts = m.parts
-      }
-      if (existing.role !== m.role) {
-        changes.role = m.role
-      }
-      if (existing.chatId !== m.chatId) {
-        changes.chatId = m.chatId
-      }
-      if (existing.metadata && m.metadata && !isDeeplyEqual(existing.metadata, m.metadata)) {
-        changes.metadata = m.metadata
+export const chatsMessagesCollection = createCollection(drizzleCollectionOptions({
+  db,
+  table: chatsMessages,
+  primaryColumn: chatsMessages.id,
+  startSync: false,
+  sync: {
+    prepare: waitForMigrations,
+    sync: async ({ collection, write }) => {
+      if (!bearerToken.get() || !navigator.onLine) {
+        return
       }
 
-      return {
-        id: m.id,
-        changes,
-      }
-    })
-    .filter(m => Object.keys(m.changes).length > 0)
+      await waitForChatsSync()
+      const sync = await orpc.chatsMessages.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
-  try {
-    await db.transaction(async (tx) => {
-      await Promise.all([
-        ...toDelete.map(id => tx.delete(chatsMessages).where(eq(chatsMessages.id, id))),
-        ...toAdd.map(m => tx.insert(chatsMessages).values(m)),
-        ...toUpdate.map(m => tx.update(chatsMessages).set(m.changes).where(eq(chatsMessages.id, m.id))),
-      ])
-    })
-  }
-  catch (e) {
-    console.error(e)
-    toast.error('Failed to fetch messages. Please try again later.')
+      sync.forEach((item) => {
+        if (item.type === 'delete') {
+          write({ type: 'delete', value: collection.get(item.value)! })
+        }
+        else {
+          write(item)
+        }
+      })
+    },
+  },
+}))
+
+const syncChatsMutationOptions = {
+  mutationKey: ['sync-chats'],
+  mutationFn: chatsCollection.utils.runSync,
+  onError: () => {},
+} satisfies MutationOptions
+
+export function useChatsSync() {
+  const { mutate } = useMutation(syncChatsMutationOptions)
+
+  return {
+    sync: mutate,
+    isSyncing: useIsMutating(syncChatsMutationOptions) > 0,
   }
 }
 
-export const syncChatsQueryOptions = queryOptions({
-  queryKey: ['sync-chats'],
-  queryFn: async () => {
-    await syncChats()
-    return true
-  },
-  enabled: false,
-})
+const syncChatsMessagesMutationOptions = {
+  mutationKey: ['sync-messages-chats'],
+  mutationFn: chatsMessagesCollection.utils.runSync,
+  onError: () => {},
+} satisfies MutationOptions
+
+export function useChatsMessagesSync() {
+  const { mutate } = useMutation(syncChatsMessagesMutationOptions)
+
+  return {
+    sync: mutate,
+    isSyncing: useIsMutating(syncChatsMessagesMutationOptions) > 0,
+  }
+}

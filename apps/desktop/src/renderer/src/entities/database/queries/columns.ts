@@ -13,7 +13,7 @@ export function databaseTableColumnsQuery({ database, table, schema }: { databas
         query: columnsSql(schema, table)[database.type],
       })
 
-      return result.rows.map(col => columnType.assert(col))
+      return result!.rows.map(col => columnType.assert(col))
     },
   })
 }

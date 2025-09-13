@@ -1,6 +1,8 @@
 import type { RefObject } from 'react'
 import { databaseLabels, DatabaseType } from '@conar/shared/enums/database-type'
+import { SyncType } from '@conar/shared/enums/sync-type'
 import { getProtocols } from '@conar/shared/utils/connections'
+import { SafeURL } from '@conar/shared/utils/safe-url'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -20,9 +22,10 @@ import { type } from 'arktype'
 import posthog from 'posthog-js'
 import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { v7 } from 'uuid'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { createDatabase, DatabaseIcon, ensureDatabase, prefetchDatabaseCore } from '~/entities/database'
+import { DatabaseIcon, databasesCollection, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { dbTestConnection } from '~/lib/query'
@@ -32,11 +35,7 @@ export const Route = createFileRoute(
 )({
   component: CreateConnectionPage,
   head: () => ({
-    meta: [
-      {
-        title: title('Create connection'),
-      },
-    ],
+    meta: [{ title: title('Create connection') }],
   }),
 })
 
@@ -177,19 +176,30 @@ function CreateConnectionPage() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const { mutate, isPending: isCreating } = useMutation({
-    mutationFn: createDatabase,
-    onSuccess: async ({ id }) => {
-      toast.success('Connection created successfully 🎉')
-      const database = await ensureDatabase(id)
+  function createDatabase(data: { connectionString: string, name: string, type: DatabaseType, saveInCloud: boolean }) {
+    const id = v7()
 
-      if (database) {
-        prefetchDatabaseCore(database)
-      }
+    const password = new SafeURL(data.connectionString.trim()).password
 
-      router.navigate({ to: '/database/$id/table', params: { id } })
-    },
-  })
+    databasesCollection.insert({
+      id,
+      name: data.name,
+      type: data.type,
+      connectionString: data.connectionString,
+      isPasswordExists: !!password,
+      isPasswordPopulated: !!password,
+      syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+
+    toast.success('Connection created successfully 🎉')
+    const database = databasesCollection.get(id)!
+
+    prefetchDatabaseCore(database)
+
+    router.navigate({ to: '/database/$id/table', params: { id } })
+  }
 
   const form = useForm({
     defaultValues: {
@@ -206,7 +216,7 @@ function CreateConnectionPage() {
         saveInCloud: 'boolean',
       }),
       onSubmit(e) {
-        mutate(e.value)
+        createDatabase(e.value)
       },
     },
   })
@@ -334,9 +344,9 @@ function CreateConnectionPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={isCreating || status === 'pending' || !form.state.isValid}
+                disabled={status === 'pending' || !form.state.isValid}
               >
-                <LoadingContent loading={isCreating || status === 'pending'}>
+                <LoadingContent loading={status === 'pending'}>
                   <AppLogo className="w-4" />
                   Save connection
                 </LoadingContent>

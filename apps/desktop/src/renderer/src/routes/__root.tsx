@@ -18,11 +18,7 @@ export const Route = createRootRoute({
   component: RootDocument,
   errorComponent: ErrorPage,
   head: () => ({
-    meta: [
-      {
-        title: title(),
-      },
-    ],
+    meta: [{ title: title() }],
   }),
 })
 

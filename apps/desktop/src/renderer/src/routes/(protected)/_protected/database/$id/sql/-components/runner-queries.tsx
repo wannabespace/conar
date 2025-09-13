@@ -7,15 +7,19 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftDoubleLine, RiCheckLine, RiDeleteBin7Line, RiFileCopyLine, RiMoreLine, RiSaveLine } from '@remixicon/react'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useRef, useState } from 'react'
-import { useQueriesLive } from '~/entities/query/lib/fetching'
+import { queriesCollection } from '~/entities/query/lib/sync'
 import { Route } from '..'
 import { pageStore } from '../-lib'
 import { RemoveQueryDialog } from './remove-query-dialog'
 
 export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
   const { database } = Route.useRouteContext()
-  const { data } = useQueriesLive(database.id)
+  const { data } = useLiveQuery(q => q
+    .from({ queries: queriesCollection })
+    .where(({ queries }) => eq(queries.databaseId, database.id))
+    .orderBy(({ queries }) => queries.createdAt, 'desc'))
   const [movedId, setMovedId] = useState<string | null>(null)
 
   const removeQueryDialogRef = useRef<ComponentRef<typeof RemoveQueryDialog>>(null)
@@ -24,7 +28,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
     <div className={cn('flex flex-col h-full', className)} {...props}>
       <RemoveQueryDialog ref={removeQueryDialogRef} />
       <ScrollArea className="flex-1 p-2">
-        {data && data.length > 0
+        {data.length > 0
           ? (
               <ul className="space-y-1">
                 {data.map(query => (

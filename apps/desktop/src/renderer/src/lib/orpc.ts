@@ -7,12 +7,13 @@ import { getApiUrl } from './utils'
 
 const link = new RPCLink({
   url: `${getApiUrl()}/rpc`,
-  headers: () => {
+  headers: async () => {
     const token = bearerToken.get()
 
     return {
       'Authorization': token ? `Bearer ${token}` : undefined,
       'x-desktop': 'true',
+      ...(window.electron ? { 'x-desktop-version': await window.electron.versions.app() } : {}),
     }
   },
   interceptors: [

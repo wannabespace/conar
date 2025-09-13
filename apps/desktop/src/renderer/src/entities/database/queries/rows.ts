@@ -50,9 +50,9 @@ export function databaseRowsQuery({
       })
 
       return {
-        rows: result.rows,
-        columns: result.columns,
-        count: result.count,
+        rows: result!.rows,
+        columns: result!.columns,
+        count: result!.count,
       }
     },
     select: data => data.pages.flatMap(page => page.rows),

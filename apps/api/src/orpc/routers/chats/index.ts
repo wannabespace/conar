@@ -1,10 +1,11 @@
-import { orpc } from '~/orpc'
 import { get } from './get'
 import { list } from './list'
 import { remove } from './remove'
+import { sync } from './sync'
 
-export const chats = orpc.router({
+export const chats = {
+  sync,
   list,
   remove,
   get,
-})
+}

@@ -53,21 +53,17 @@ export const Route = createFileRoute(
   },
   head: ({ loaderData }) => ({
     meta: loaderData
-      ? [
-          {
-            title: title(
-              loaderData.schema && loaderData.table
-                ? `${loaderData.schema}.${loaderData.table}`
-                : 'Tables',
-              loaderData.database.name,
-            ),
-          },
-        ]
+      ? [{
+          title: title(
+            loaderData.schema && loaderData.table ? `${loaderData.schema}.${loaderData.table}` : 'Tables',
+            loaderData.database.name,
+          ),
+        }]
       : [],
   }),
 })
 
-function TableContent({ id, table, schema, store }: { id: string, table: string, schema: string, store: Store<typeof storeState.infer> }) {
+function TableContent({ table, schema, store }: { table: string, schema: string, store: Store<typeof storeState.infer> }) {
   const { database } = Route.useLoaderData()
 
   const columns = useTableColumns({ database, table, schema })
@@ -94,11 +90,11 @@ function TableContent({ id, table, schema, store }: { id: string, table: string,
 
   return (
     <PageStoreContext value={store}>
-      <TablesTabs database={database} id={id} />
+      <TablesTabs database={database} />
       <div
         key={table}
         className="h-[calc(100%-theme(spacing.9))]"
-        onClick={() => addTab(id, schema, table)}
+        onClick={() => addTab(database.id, schema, table)}
       >
         <FiltersProvider
           columns={columns ?? []}
@@ -124,31 +120,36 @@ function TableContent({ id, table, schema, store }: { id: string, table: string,
 }
 
 function DatabaseTablesPage() {
-  const { id } = Route.useParams()
   const { database, store } = Route.useLoaderData()
   const { schema, table } = Route.useSearch()
-  const [, setLastOpenedTable] = useLastOpenedTable(id)
+  const [lastOpenedTable, setLastOpenedTable] = useLastOpenedTable(database.id)
 
   useEffect(() => {
-    setLastOpenedTable(schema && table ? { schema, table } : null)
-  }, [schema, table])
+    if (schema && table) {
+      if (schema !== lastOpenedTable?.schema || table !== lastOpenedTable?.table) {
+        setLastOpenedTable({ schema, table })
+      }
+    }
+    else if (lastOpenedTable !== null) {
+      setLastOpenedTable(null)
+    }
+  }, [schema, table, setLastOpenedTable, lastOpenedTable])
 
   return (
-    <ResizablePanelGroup autoSaveId={`database-layout-${id}`} direction="horizontal" className="flex">
+    <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} direction="horizontal" className="flex">
       <ResizablePanel
         defaultSize={20}
         minSize={10}
         maxSize={50}
         className="flex flex-col h-full border bg-background rounded-lg"
       >
-        <Sidebar database={database} />
+        <Sidebar key={database.id} database={database} />
       </ResizablePanel>
       <ResizableHandle className="w-1 bg-transparent" />
       <ResizablePanel defaultSize={80} className="flex-1 border bg-background rounded-lg">
         {schema && table && store
           ? (
               <TableContent
-                id={id}
                 table={table}
                 schema={schema}
                 store={store}

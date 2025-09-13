@@ -1,65 +1,56 @@
-import { queryOptions } from '@tanstack/react-query'
-import { eq } from 'drizzle-orm'
-import { toast } from 'sonner'
-import { db, queries } from '~/drizzle'
+import type { MutationOptions } from '@tanstack/react-query'
+import { createCollection } from '@tanstack/react-db'
+import { useIsMutating, useMutation } from '@tanstack/react-query'
+import { db, queries, waitForMigrations } from '~/drizzle'
+import { waitForDatabasesSync } from '~/entities/database'
+import { bearerToken } from '~/lib/auth'
+import { drizzleCollectionOptions } from '~/lib/db'
 import { orpc } from '~/lib/orpc'
 
-async function syncQueries() {
-  try {
-    const [fetchedQueries, existingQueries] = await Promise.all([
-      orpc.queries.list(),
-      db.query.queries.findMany(),
-    ])
-    const fetchedMap = new Map(fetchedQueries.map(q => [q.id, q]))
-    const existingMap = new Map(existingQueries.map(q => [q.id, q]))
+export const queriesCollection = createCollection(drizzleCollectionOptions({
+  db,
+  table: queries,
+  primaryColumn: queries.id,
+  startSync: false,
+  sync: {
+    prepare: waitForMigrations,
+    sync: async ({ collection, write }) => {
+      if (!bearerToken.get() || !navigator.onLine) {
+        return
+      }
 
-    const toDelete = existingQueries
-      .filter(q => !fetchedMap.has(q.id))
-      .map(q => q.id)
-    const toAdd = fetchedQueries
-      .filter(q => !existingMap.has(q.id))
-    const toUpdate = fetchedQueries
-      .filter(q => existingMap.has(q.id))
-      .map((q) => {
-        const existing = existingMap.get(q.id)!
-        const changes: Partial<typeof queries.$inferSelect> = {}
+      await waitForDatabasesSync()
+      const sync = await orpc.queries.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
-        if (q.name !== existing.name) {
-          changes.name = q.name
+      sync.forEach((item) => {
+        if (item.type === 'delete') {
+          write({ type: 'delete', value: collection.get(item.value)! })
         }
-        if (q.query !== existing.query) {
-          changes.query = q.query
-        }
-        if (q.updatedAt.getTime() !== existing.updatedAt.getTime()) {
-          changes.updatedAt = q.updatedAt
-        }
-
-        return {
-          id: q.id,
-          changes,
+        else {
+          write(item)
         }
       })
-      .filter(q => Object.keys(q.changes).length > 0)
+    },
+  },
+  onInsert: async ({ transaction }) => {
+    await orpc.queries.create(transaction.mutations.map(m => m.modified))
+  },
+  onDelete: async ({ transaction }) => {
+    await orpc.queries.remove(transaction.mutations.map(m => ({ id: m.key })))
+  },
+}))
 
-    await db.transaction(async (tx) => {
-      await Promise.all([
-        ...toDelete.map(id => tx.delete(queries).where(eq(queries.id, id))),
-        ...toAdd.map(q => tx.insert(queries).values(q)),
-        ...toUpdate.map(q => tx.update(queries).set(q.changes).where(eq(queries.id, q.id))),
-      ])
-    })
-  }
-  catch (e) {
-    console.error(e)
-    toast.error('Failed to fetch queries. Please try again later.')
+const syncQueriesMutationOptions = {
+  mutationKey: ['sync-queries'],
+  mutationFn: queriesCollection.utils.runSync,
+  onError: () => {},
+} satisfies MutationOptions
+
+export function useQueriesSync() {
+  const { mutate } = useMutation(syncQueriesMutationOptions)
+
+  return {
+    sync: mutate,
+    isSyncing: useIsMutating(syncQueriesMutationOptions) > 0,
   }
 }
-
-export const syncQueriesQueryOptions = queryOptions({
-  queryKey: ['sync-queries'],
-  queryFn: async () => {
-    await syncQueries()
-    return true
-  },
-  enabled: false,
-})

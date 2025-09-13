@@ -12,7 +12,7 @@ export function setupProtocolHandler(win: BrowserWindow) {
 
   if (process.defaultApp && process.argv.length >= 2) {
     app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL, process.execPath, [
-      path.resolve(process.argv[1]),
+      path.resolve(process.argv[1]!),
     ])
   }
   else {

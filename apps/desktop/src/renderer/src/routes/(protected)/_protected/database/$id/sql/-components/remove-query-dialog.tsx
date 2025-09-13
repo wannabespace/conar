@@ -1,10 +1,8 @@
 import type { queries } from '~/drizzle'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { removeQuery } from '~/entities/query'
+import { queriesCollection } from '~/entities/query'
 
 interface RemoveQueryDialogProps {
   ref?: React.RefObject<{
@@ -23,13 +21,14 @@ export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
     },
   }), [])
 
-  const { mutate: remove, isPending } = useMutation({
-    mutationFn: () => removeQuery(query!.id),
-    onSuccess: () => {
-      toast.success('Query removed successfully')
-      setOpen(false)
-    },
-  })
+  function removeQuery() {
+    if (!query)
+      return
+
+    queriesCollection.delete(query.id)
+    toast.success('Query removed successfully')
+    setOpen(false)
+  }
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
@@ -46,13 +45,10 @@ export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
             variant="destructive"
             onClick={(e) => {
               e.preventDefault()
-              remove()
+              removeQuery()
             }}
-            disabled={isPending}
           >
-            <LoadingContent loading={isPending}>
-              Remove
-            </LoadingContent>
+            Remove
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

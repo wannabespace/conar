@@ -3,7 +3,6 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
-import { ensureQueries } from '~/entities/query/lib/fetching'
 import { chatQuery, createChat, lastOpenedChatId } from './-chat'
 import { Chat as ChatComponent } from './-components/chat'
 import { Runner } from './-components/runner'
@@ -24,27 +23,16 @@ export const Route = createFileRoute(
       query: chatQuery.get(params.id),
     }))
 
-    const [chat] = await Promise.all([
-      await createChat({
+    return {
+      database: context.database,
+      chat: await createChat({
         id: deps.chatId,
         database: context.database,
       }),
-      await ensureQueries(params.id),
-    ])
-
-    return {
-      database: context.database,
-      chat,
     }
   },
   head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          {
-            title: title('SQL Runner', loaderData.database.name),
-          },
-        ]
-      : [],
+    meta: loaderData ? [{ title: title('SQL Runner', loaderData.database.name) }] : [],
   }),
 })
 

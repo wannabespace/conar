@@ -1,1 +1,1 @@
-export * from './lib/crud'
+export * from './lib/sync'

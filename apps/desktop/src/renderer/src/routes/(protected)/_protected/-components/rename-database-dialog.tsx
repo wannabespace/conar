@@ -1,13 +1,11 @@
 import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
-import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { renameDatabase } from '~/entities/database'
+import { databasesCollection } from '~/entities/database'
 
 interface RenameDatabaseDialogProps {
   ref?: React.RefObject<{
@@ -28,15 +26,19 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
     },
   }), [])
 
-  const { mutate: rename, isPending } = useMutation({
-    mutationFn: () => database ? renameDatabase(database.id, newName.trim()) : Promise.resolve(),
-    onSuccess: () => {
-      toast.success(`Database renamed to "${newName.trim()}"`)
-      setOpen(false)
-    },
-  })
+  function rename(e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLInputElement>) {
+    if (!database)
+      return
 
-  const canConfirm = newName.trim() !== '' && newName.trim() !== database?.name && !isPending
+    e.preventDefault()
+    databasesCollection.update(database.id, (draft) => {
+      draft.name = newName.trim()
+    })
+    toast.success(`Database renamed to "${newName.trim()}"`)
+    setOpen(false)
+  }
+
+  const canConfirm = newName.trim() !== '' && newName.trim() !== database?.name
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -57,7 +59,7 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
                 onChange={e => setNewName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && canConfirm) {
-                    rename()
+                    rename(e)
                   }
                 }}
               />
@@ -72,15 +74,13 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
           </DialogClose>
           <Button
             disabled={!canConfirm}
-            onClick={() => {
+            onClick={(e) => {
               if (canConfirm) {
-                rename()
+                rename(e)
               }
             }}
           >
-            <LoadingContent loading={isPending}>
-              Rename Database
-            </LoadingContent>
+            Rename Database
           </Button>
         </DialogFooter>
       </DialogContent>

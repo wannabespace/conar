@@ -1,6 +1,6 @@
 import type { WhereFilter } from '@conar/shared/sql/where'
 import type { databases } from '~/drizzle'
-import { sessionStorageValue, useSessionStorage } from '@conar/ui/hookas/use-session-storage'
+import { localStorageValue, useLocalStorage } from '@conar/ui/hookas/use-local-storage'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { databaseRowsQuery } from '~/entities/database'
 
@@ -14,11 +14,11 @@ function getLastOpenedTableKey(databaseId: string) {
 }
 
 export function useLastOpenedTable(id: string) {
-  return useSessionStorage<LastOpenedTable | null>(getLastOpenedTableKey(id), null)
+  return useLocalStorage<LastOpenedTable | null>(getLastOpenedTableKey(id), null)
 }
 
 export function lastOpenedTable(id: string) {
-  return sessionStorageValue<LastOpenedTable | null>(getLastOpenedTableKey(id), null)
+  return localStorageValue<LastOpenedTable | null>(getLastOpenedTableKey(id), null)
 }
 
 export function getRowsQueryOpts({

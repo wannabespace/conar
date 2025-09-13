@@ -6,9 +6,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from '@conar/ui/components/skeleton'
 import { copy } from '@conar/ui/lib/copy'
 import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
+import { useLiveQuery } from '@tanstack/react-db'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useMemo, useRef } from 'react'
-import { DatabaseIcon, useDatabasesLive } from '~/entities/database'
+import { DatabaseIcon, databasesCollection } from '~/entities/database'
 import { useLastOpenedTable } from '../database/$id/table/-lib'
 import { RemoveDatabaseDialog } from './remove-database-dialog'
 import { RenameDatabaseDialog } from './rename-database-dialog'
@@ -112,7 +113,9 @@ function DatabaseCardSkeleton() {
 }
 
 export function DatabasesList() {
-  const { data: databases } = useDatabasesLive()
+  const { data: databases } = useLiveQuery(q => q
+    .from({ databases: databasesCollection })
+    .orderBy(({ databases }) => databases.createdAt, 'desc'))
   const renameDialogRef = useRef<ComponentRef<typeof RenameDatabaseDialog>>(null)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveDatabaseDialog>>(null)
 

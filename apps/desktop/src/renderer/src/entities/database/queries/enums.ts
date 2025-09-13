@@ -13,7 +13,7 @@ export function databaseEnumsQuery({ database }: { database: typeof databases.$i
         query: enumsSql()[database.type],
       })
 
-      return enumsType.assert(result.rows)
+      return enumsType.assert(result!.rows)
     },
   })
 }

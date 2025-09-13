@@ -62,7 +62,8 @@ export const tools = {
 
 export type AppUIMessage = UIMessage<
   {
-    createdAt: number
+    updatedAt?: Date
+    createdAt?: Date
   },
   UIDataTypes,
   InferUITools<typeof tools>

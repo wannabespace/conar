@@ -13,7 +13,7 @@ export function tablesAndSchemasQuery({ database }: { database: typeof databases
         query: tablesAndSchemasSql()[database.type],
       })
 
-      const parsed = tablesAndSchemasType.assert(result.rows[0].tables_and_schemas)
+      const parsed = tablesAndSchemasType.assert(result!.rows[0]!.tables_and_schemas)
 
       return {
         ...parsed,

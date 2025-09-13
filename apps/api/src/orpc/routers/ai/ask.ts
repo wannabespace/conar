@@ -17,6 +17,8 @@ const chatInputType = type({
   'id': 'string.uuid.v7',
   'type': type.valueOf(DatabaseType),
   'context?': 'string',
+  'createdAt?': 'Date',
+  'updatedAt?': 'Date',
   'prompt': 'object' as type.cast<AppUIMessage>,
   'databaseId': 'string.uuid.v7',
   'fallback?': 'boolean',
@@ -117,7 +119,19 @@ export function getMessages(chatId: string): Promise<AppUIMessage[]> {
     .then(rows => rows.map(convertToAppUIMessage))
 }
 
-async function ensureChat(chatId: string, userId: string, databaseId: string) {
+async function ensureChat({
+  chatId,
+  userId,
+  databaseId,
+  createdAt,
+  updatedAt,
+}: {
+  chatId: string
+  userId: string
+  databaseId: string
+  createdAt?: Date
+  updatedAt?: Date
+}) {
   const [existingChat] = await db.select().from(chats).where(eq(chats.id, chatId)).limit(1)
 
   if (existingChat) {
@@ -128,6 +142,8 @@ async function ensureChat(chatId: string, userId: string, databaseId: string) {
     id: chatId,
     userId,
     databaseId,
+    createdAt,
+    updatedAt,
   }).returning()
 
   return newChat
@@ -143,7 +159,13 @@ export const ask = orpc
   })
   .input(chatInputType)
   .handler(async ({ input, context, signal }) => {
-    await ensureChat(input.id, context.user.id, input.databaseId)
+    await ensureChat({
+      chatId: input.id,
+      userId: context.user.id,
+      databaseId: input.databaseId,
+      createdAt: input.createdAt,
+      updatedAt: input.updatedAt,
+    })
 
     if (input.trigger === 'submit-message') {
       await db.insert(chatsMessages).values({
@@ -184,6 +206,13 @@ export const ask = orpc
       const stream = result.toUIMessageStream({
         originalMessages: messages,
         generateMessageId: () => v7(),
+        messageMetadata: ({ part }) => {
+          if (part.type === 'finish') {
+            return {
+              updatedAt: new Date(),
+            }
+          }
+        },
         onFinish: async (result) => {
           console.info('stream finished', JSON.stringify({
             ...result.responseMessage,
@@ -193,10 +222,14 @@ export const ask = orpc
           try {
             await db.insert(chatsMessages).values({
               ...result.responseMessage,
+              updatedAt: result.responseMessage.metadata?.updatedAt,
               chatId: input.id,
             }).onConflictDoUpdate({
               target: chatsMessages.id,
-              set: result.responseMessage,
+              set: {
+                ...result.responseMessage,
+                updatedAt: result.responseMessage.metadata?.updatedAt,
+              },
             })
             // await db.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
           }

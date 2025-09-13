@@ -10,14 +10,13 @@ import { runnerQueryOptions } from './runner-editor'
 import { RunnerResultsTable } from './runner-results-table'
 
 export function RunnerResults() {
-  const { id } = Route.useParams()
   const { database } = Route.useLoaderData()
   const query = useStore(pageStore, state => state.query)
 
-  const { data: results, fetchStatus: queryStatus } = useQuery(runnerQueryOptions({ id, database, query }))
+  const { data: results, fetchStatus: queryStatus } = useQuery(runnerQueryOptions({ database, query }))
 
   function handleStop() {
-    queryClient.cancelQueries(runnerQueryOptions({ id, database, query }))
+    queryClient.cancelQueries(runnerQueryOptions({ database, query }))
   }
 
   if (queryStatus === 'fetching') {

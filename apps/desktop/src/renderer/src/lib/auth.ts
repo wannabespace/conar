@@ -8,6 +8,7 @@ import {
 import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { toast } from 'sonner'
+import { clearDb } from '~/drizzle'
 import { identifyUser } from './events'
 import { getApiUrl } from './utils'
 
@@ -66,5 +67,6 @@ export const authClient = createAuthClient({
 export async function fullSignOut() {
   await authClient.signOut()
   bearerToken.remove()
+  clearDb()
   identifyUser(null)
 }

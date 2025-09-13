@@ -1,6 +1,8 @@
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { clearDb } from '~/drizzle'
+import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
+import { databasesCollection } from '~/entities/database'
+import { queriesCollection } from '~/entities/query/lib/sync'
 import { authClient, fullSignOut } from '~/lib/auth'
 import { queryClient } from '~/main'
 
@@ -17,8 +19,11 @@ export function useSignOut() {
 
       // Timeout to wait transition to auth page
       setTimeout(() => {
-        clearDb()
         queryClient.invalidateQueries()
+        databasesCollection.cleanup()
+        chatsCollection.cleanup()
+        chatsMessagesCollection.cleanup()
+        queriesCollection.cleanup()
       }, 1000)
     },
   })

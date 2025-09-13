@@ -141,12 +141,12 @@ export function Pricing({ className }: PricingSectionProps) {
           ))}
         </div>
         <div className="h-6 flex items-center">
-          {isYearly && tiers[1].price.yearly > 0 && tiers[1].price.monthly > 0 && (
+          {isYearly && tiers[1]!.price.yearly > 0 && tiers[1]!.price.monthly > 0 && (
             <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 font-medium">
               <RiStarLine className="size-4" />
               Save
               {' '}
-              {Math.round((1 - (tiers[1].price.yearly / (tiers[1].price.monthly * 12))) * 100)}
+              {Math.round((1 - (tiers[1]!.price.yearly / (tiers[1]!.price.monthly * 12))) * 100)}
               % with yearly billing
             </div>
           )}

@@ -9,7 +9,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { updateDatabasePassword } from '~/entities/database'
+import { databasesCollection } from '~/entities/database'
 import { dbTestConnection } from '~/lib/query'
 
 export function PasswordForm({ database }: { database: typeof databases.$inferSelect }) {
@@ -26,13 +26,18 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
   const { mutate: savePassword, status } = useMutation({
     mutationFn: async (password: string) => {
       await dbTestConnection({ type: database.type, connectionString: newConnectionString })
-      await updateDatabasePassword(database.id, password)
+      databasesCollection.update(database.id, (draft) => {
+        const url = new SafeURL(draft.connectionString)
+
+        url.password = password
+
+        draft.connectionString = url.toString()
+        draft.isPasswordPopulated = true
+      })
     },
     onSuccess: () => {
       toast.success('Password successfully saved!')
       setPassword('')
-      // TODO: remove it after migration to TanStack DB
-      window.location.reload()
     },
     onError: (error) => {
       toast.error('We couldn\'t connect to the database', {

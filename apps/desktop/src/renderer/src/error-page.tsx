@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Toaster } from '@conar/ui/components/sonner'
 import { ThemeProvider } from '@conar/ui/theme-provider'
-import { RiAlertLine, RiArrowGoBackLine, RiLoopLeftLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowGoBackLine, RiHomeLine, RiLoopLeftLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { TraversalError } from 'arktype'
 import posthog from 'posthog-js'
@@ -101,6 +101,14 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                 >
                   <RiArrowGoBackLine className="mr-1" />
                   Go back
+                </Button>
+                <Button
+                  className="flex-1"
+                  variant="outline"
+                  onClick={() => router.navigate({ to: '/' })}
+                >
+                  <RiHomeLine className="mr-1" />
+                  Home
                 </Button>
                 <Button
                   className="flex-1"

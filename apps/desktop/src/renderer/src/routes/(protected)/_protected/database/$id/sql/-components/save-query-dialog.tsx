@@ -1,6 +1,5 @@
 import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import {
   Dialog,
   DialogClose,
@@ -11,10 +10,10 @@ import {
 } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
-import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { createQuery } from '~/entities/query'
+import { v7 } from 'uuid'
+import { queriesCollection } from '~/entities/query'
 
 interface SaveQueryDialogProps {
   ref: React.RefObject<{
@@ -36,15 +35,20 @@ export function SaveQueryDialog({ ref, database }: SaveQueryDialogProps) {
     },
   }))
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: () => createQuery({ database, name, query }),
-    onSuccess: async () => {
-      toast.success(`Query "${name}" successfully created`)
-      setOpen(false)
-    },
-  })
+  function createQuery() {
+    queriesCollection.insert({
+      id: v7(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      databaseId: database.id,
+      name,
+      query,
+    })
+    toast.success(`Query "${name}" successfully created`)
+    setOpen(false)
+  }
 
-  const canConfirm = name.trim() && !isPending
+  const canConfirm = name.trim()
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -68,7 +72,7 @@ export function SaveQueryDialog({ ref, database }: SaveQueryDialogProps) {
             onChange={e => setName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && canConfirm) {
-                mutate()
+                createQuery()
               }
             }}
           />
@@ -83,13 +87,11 @@ export function SaveQueryDialog({ ref, database }: SaveQueryDialogProps) {
             disabled={!canConfirm}
             onClick={() => {
               if (canConfirm) {
-                mutate()
+                createQuery()
               }
             }}
           >
-            <LoadingContent loading={isPending}>
-              Save Query
-            </LoadingContent>
+            Save Query
           </Button>
         </DialogFooter>
       </DialogContent>
