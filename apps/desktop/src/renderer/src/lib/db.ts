@@ -5,7 +5,10 @@ import { createSelectSchema } from 'drizzle-arktype'
 import { eq, inArray } from 'drizzle-orm'
 
 // eslint-disable-next-line ts/no-explicit-any
-export function drizzleCollectionOptions<Table extends PgTable<any>>(config: {
+export function drizzleCollectionOptions<Table extends PgTable<any>>({
+  startSync = true,
+  ...config
+}: {
   // eslint-disable-next-line ts/no-explicit-any
   db: PgliteDatabase<any>
   table: Table
@@ -13,10 +16,10 @@ export function drizzleCollectionOptions<Table extends PgTable<any>>(config: {
   onInsert?: (params: InsertMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   onUpdate?: (params: UpdateMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   onDelete?: (params: DeleteMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
+  startSync?: boolean
   sync: {
-    startSync?: boolean
     // eslint-disable-next-line ts/no-explicit-any
-    beforeSync?: () => Promise<any> | any
+    prepare?: () => Promise<any> | any
     sync: (params: Pick<Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0], 'write' | 'collection'>) => Promise<void>
   }
 }) {
@@ -80,10 +83,6 @@ export function drizzleCollectionOptions<Table extends PgTable<any>>(config: {
           }
           params.write(p)
         }
-        catch (e) {
-          params.truncate()
-          throw e
-        }
         finally {
           params.commit()
         }
@@ -98,7 +97,7 @@ export function drizzleCollectionOptions<Table extends PgTable<any>>(config: {
       sync: async (params) => {
         try {
           resolveSyncParams(params)
-          await config.sync.beforeSync?.()
+          await config.sync.prepare?.()
           params.begin()
           // @ts-expect-error drizzle types
           const dbs = await config.db.select().from(config.table)
@@ -106,15 +105,9 @@ export function drizzleCollectionOptions<Table extends PgTable<any>>(config: {
             params.write({ type: 'insert', value: db })
           })
           params.commit()
-          if (config.sync && config.sync.startSync) {
+          if (config.sync && startSync) {
             await config.sync.sync(await getSyncParams())
           }
-        }
-        catch (e) {
-          if (import.meta.env.DEV) {
-            console.error('error on sync', e)
-          }
-          throw e
         }
         finally {
           params.markReady()
@@ -149,15 +142,7 @@ export function drizzleCollectionOptions<Table extends PgTable<any>>(config: {
         // To wait the first sync
         await params.collection.stateWhenReady()
 
-        try {
-          await config.sync.sync(params)
-        }
-        catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('error on runSync', error)
-          }
-          throw error
-        }
+        await config.sync.sync(params)
       },
     },
   } satisfies CollectionConfig<Table['$inferSelect'], string> & { utils: { runSync: () => Promise<void> } }

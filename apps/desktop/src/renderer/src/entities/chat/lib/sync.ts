@@ -17,9 +17,9 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
   db,
   table: chats,
   primaryColumn: chats.id,
+  startSync: false,
   sync: {
-    startSync: false,
-    beforeSync: waitForMigrations,
+    prepare: waitForMigrations,
     sync: async ({ collection, write }) => {
       if (!bearerToken.get() || !navigator.onLine) {
         return
@@ -45,9 +45,9 @@ export const chatsMessagesCollection = createCollection(drizzleCollectionOptions
   db,
   table: chatsMessages,
   primaryColumn: chatsMessages.id,
+  startSync: false,
   sync: {
-    startSync: false,
-    beforeSync: waitForMigrations,
+    prepare: waitForMigrations,
     sync: async ({ collection, write }) => {
       if (!bearerToken.get() || !navigator.onLine) {
         return

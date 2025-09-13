@@ -11,9 +11,9 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
   db,
   table: queries,
   primaryColumn: queries.id,
+  startSync: false,
   sync: {
-    startSync: false,
-    beforeSync: waitForMigrations,
+    prepare: waitForMigrations,
     sync: async ({ collection, write }) => {
       if (!bearerToken.get() || !navigator.onLine) {
         return

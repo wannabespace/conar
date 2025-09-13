@@ -12,7 +12,7 @@ export const create = orpc
     'query': 'string',
   }))
   .handler(async ({ context, input }) => {
-    const [query] = await db
+    await db
       .insert(queries)
       .values({
         id: input.id,
@@ -21,7 +21,4 @@ export const create = orpc
         name: input.name,
         query: input.query,
       })
-      .returning()
-
-    return query!
   })

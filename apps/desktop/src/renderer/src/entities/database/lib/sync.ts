@@ -19,9 +19,9 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
   db,
   table: databases,
   primaryColumn: databases.id,
+  startSync: false,
   sync: {
-    startSync: false,
-    beforeSync: waitForMigrations,
+    prepare: waitForMigrations,
     sync: async ({ write, collection }) => {
       if (!bearerToken.get() || !navigator.onLine) {
         return
