@@ -38,7 +38,7 @@ function findEnvExampleFiles(dir: string, results: string[] = []) {
  * Copy .env.example to .env in the same directory
  * @param {string} envExamplePath - Path to .env.example file
  */
-function createEnvFile(envExamplePath) {
+function createEnvFile(envExamplePath: string) {
   const envPath = path.join(path.dirname(envExamplePath), '.env')
 
   if (fs.existsSync(envPath)) {
