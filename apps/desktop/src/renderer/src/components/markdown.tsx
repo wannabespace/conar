@@ -115,7 +115,6 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                       <Button
                         size="icon-xs"
                         variant="ghost"
-                        disabled={generating}
                         onClick={(e) => {
                           e.stopPropagation()
                           onEdit(content)
