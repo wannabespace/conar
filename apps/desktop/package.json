@@ -22,6 +22,7 @@
     "drizzle:generate-custom": "drizzle-kit generate --custom && bun run ./scripts/compile-migrations.ts"
   },
   "dependencies": {
+    "electron-store": "^10.1.0",
     "electron-updater": "^6.6.2",
     "pg": "^8.16.3"
   },

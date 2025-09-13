@@ -1,10 +1,14 @@
+import type { Rectangle } from 'electron'
 import type { UpdatesStatus } from '~/updates-observer'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
+import Store from 'electron-store'
 import { setupProtocolHandler } from './deep-link'
 import { initElectronEvents } from './events'
+
+const store = new Store()
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
@@ -29,6 +33,12 @@ export function createWindow() {
       sandbox: false,
       preload: path.join(path.dirname(fileURLToPath(import.meta.url)), '../preload/index.mjs'),
     },
+  })
+
+  mainWindow.setBounds(store.get('bounds') as Rectangle)
+
+  mainWindow.on('close', () => {
+    store.set('bounds', mainWindow!.getBounds())
   })
 
   mainWindow.on('ready-to-show', () => {
