@@ -12,7 +12,7 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
   table: queries,
   primaryColumn: queries.id,
   sync: {
-    start: false,
+    startSync: false,
     beforeSync: waitForMigrations,
     sync: async ({ collection, write }) => {
       if (!bearerToken.get() || !navigator.onLine) {
@@ -20,8 +20,7 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
       }
 
       await waitForDatabasesSync()
-      const existing = collection.toArray
-      const sync = await orpc.queries.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+      const sync = await orpc.queries.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
       sync.forEach((item) => {
         if (item.type === 'delete') {
@@ -33,11 +32,11 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
       })
     },
   },
-  onInsert: async (params) => {
-    await Promise.all(params.transaction.mutations.map(m => orpc.queries.create(m.modified)))
+  onInsert: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map(m => orpc.queries.create(m.modified)))
   },
-  onDelete: async (params) => {
-    await Promise.all(params.transaction.mutations.map(m => orpc.queries.remove({ id: m.key })))
+  onDelete: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map(m => orpc.queries.remove({ id: m.key })))
   },
 }))
 

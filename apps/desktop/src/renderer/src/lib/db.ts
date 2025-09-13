@@ -14,7 +14,7 @@ export function drizzleCollectionOptions<Table extends PgTable<any>>(config: {
   onUpdate?: (params: UpdateMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   onDelete?: (params: DeleteMutationFnParams<Table['$inferSelect'], string>) => Promise<void>
   sync: {
-    start?: boolean
+    startSync?: boolean
     // eslint-disable-next-line ts/no-explicit-any
     beforeSync?: () => Promise<any> | any
     sync: (params: Pick<Parameters<SyncConfig<Table['$inferSelect'], string>['sync']>[0], 'write' | 'collection'>) => Promise<void>
@@ -97,7 +97,7 @@ export function drizzleCollectionOptions<Table extends PgTable<any>>(config: {
           params.write({ type: 'insert', value: db })
         })
         params.commit()
-        if (config.sync && config.sync.start) {
+        if (config.sync && config.sync.startSync) {
           await config.sync.sync(await getSyncParams())
         }
         params.markReady()

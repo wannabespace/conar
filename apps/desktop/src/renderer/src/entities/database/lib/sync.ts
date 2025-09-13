@@ -20,15 +20,14 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
   table: databases,
   primaryColumn: databases.id,
   sync: {
-    start: false,
+    startSync: false,
     beforeSync: waitForMigrations,
     sync: async ({ write, collection }) => {
       if (!bearerToken.get() || !navigator.onLine) {
         return
       }
 
-      const existing = collection.toArray
-      const sync = await orpc.databases.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+      const sync = await orpc.databases.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
       for (const item of sync) {
         if (item.type === 'insert') {
@@ -86,8 +85,8 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
       resolve()
     },
   },
-  onInsert: async (params) => {
-    await Promise.all(params.transaction.mutations.map((m) => {
+  onInsert: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map((m) => {
       if (m.changes.name) {
         const url = new SafeURL(m.modified.connectionString.trim())
 
@@ -108,8 +107,8 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
       return Promise.resolve()
     }))
   },
-  onUpdate: async (params) => {
-    await Promise.all(params.transaction.mutations.map((m) => {
+  onUpdate: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map((m) => {
       if (m.changes.name) {
         return orpc.databases.update({
           id: m.key,
@@ -121,8 +120,8 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
     }))
     router.invalidate({ filter: r => r.routeId === '/(protected)/_protected/database/$id' })
   },
-  onDelete: async (params) => {
-    await Promise.all(params.transaction.mutations.map(m => orpc.databases.remove({ id: m.key })))
+  onDelete: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map(m => orpc.databases.remove({ id: m.key })))
   },
 }))
 

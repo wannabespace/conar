@@ -18,7 +18,7 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
   table: chats,
   primaryColumn: chats.id,
   sync: {
-    start: false,
+    startSync: false,
     beforeSync: waitForMigrations,
     sync: async ({ collection, write }) => {
       if (!bearerToken.get() || !navigator.onLine) {
@@ -26,8 +26,7 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
       }
 
       await waitForDatabasesSync()
-      const existing = collection.toArray
-      const sync = await orpc.chats.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+      const sync = await orpc.chats.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
       sync.forEach((item) => {
         if (item.type === 'delete') {
@@ -47,7 +46,7 @@ export const chatsMessagesCollection = createCollection(drizzleCollectionOptions
   table: chatsMessages,
   primaryColumn: chatsMessages.id,
   sync: {
-    start: false,
+    startSync: false,
     beforeSync: waitForMigrations,
     sync: async ({ collection, write }) => {
       if (!bearerToken.get() || !navigator.onLine) {
@@ -55,8 +54,7 @@ export const chatsMessagesCollection = createCollection(drizzleCollectionOptions
       }
 
       await waitForChatsSync()
-      const existing = collection.toArray
-      const sync = await orpc.chatsMessages.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+      const sync = await orpc.chatsMessages.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
       sync.forEach((item) => {
         if (item.type === 'delete') {
