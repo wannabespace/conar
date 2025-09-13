@@ -19,7 +19,7 @@ export const databases = pgTable('databases', ({ uuid, text, boolean }) => ({
   name: text().notNull(),
   connectionString: encryptedText().notNull(),
   isPasswordExists: boolean('password_exists').notNull(),
-  syncType: syncType(),
+  syncType: syncType().notNull(),
 })).enableRLS()
 
 export const databasesSelectSchema = createSelectSchema(databases)

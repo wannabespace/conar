@@ -43,6 +43,13 @@
       "when": 1757495377715,
       "tag": "0005_silly_gambit",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1757789759185,
+      "tag": "0006_mushy_franklin_richards",
+      "breakpoints": true
     }
   ]
 }

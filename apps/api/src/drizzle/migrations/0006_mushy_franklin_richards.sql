@@ -1,0 +1,1 @@
+ALTER TABLE "databases" ALTER COLUMN "sync_type" SET NOT NULL;
