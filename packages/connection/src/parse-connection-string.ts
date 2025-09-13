@@ -50,23 +50,6 @@ export function parseSSLConfig(searchParams: URLSearchParams): Config['ssl'] {
   const hasMainSSLParams = sslCert || sslKey || sslRootCert || sslPassword || sslServername
 
   if (sslMode || hasMainSSLParams) {
-    const validSSLModes = ['disable', 'prefer', 'require', 'verify', 'verify-ca', 'verify-full', 'no-verify']
-    if (sslMode && !validSSLModes.includes(sslMode)) {
-      throw new Error(`Invalid sslmode value: ${sslMode}. Valid values are: ${validSSLModes.join(', ')}`)
-    }
-
-    if (sslMode === 'verify' && !sslRootCert) {
-      throw new Error('sslmode=verify requires sslrootcert to be provided')
-    }
-
-    if (sslMode === 'verify-ca' && !sslRootCert) {
-      throw new Error('sslmode=verify-ca requires sslrootcert to be provided')
-    }
-
-    if (sslMode === 'verify-full' && !sslRootCert) {
-      throw new Error('sslmode=verify-full requires sslrootcert to be provided')
-    }
-
     if (sslMode === 'disable' && hasMainSSLParams) {
       throw new Error('sslmode=disable cannot be used with SSL certificate parameters (sslcert, sslkey, sslrootcert, sslpassword, sslservername)')
     }

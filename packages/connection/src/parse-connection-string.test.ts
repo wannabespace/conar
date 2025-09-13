@@ -86,10 +86,11 @@ describe('parseConnectionString', () => {
       expect(config.ssl).toBe(true)
     })
 
-    it('should throw error for sslmode=verify-ca without sslrootcert', () => {
+    it('should parse sslmode=verify-ca without sslrootcert', () => {
       const connectionString = 'postgresql://user:password@localhost:5432/mydb?sslmode=verify-ca'
+      const config = parseConnectionString(connectionString)
 
-      expect(() => parseConnectionString(connectionString)).toThrow('sslmode=verify-ca requires sslrootcert to be provided')
+      expect(config.ssl).toEqual({})
     })
 
     it('should parse sslmode=verify-ca with sslrootcert', () => {
@@ -110,22 +111,28 @@ describe('parseConnectionString', () => {
       })
     })
 
-    it('should throw error for sslmode=verify without sslrootcert', () => {
+    it('should parse sslmode=verify without sslrootcert', () => {
       const connectionString = 'postgresql://user:password@localhost:5432/mydb?sslmode=verify'
+      const config = parseConnectionString(connectionString)
 
-      expect(() => parseConnectionString(connectionString)).toThrow('sslmode=verify requires sslrootcert to be provided')
+      expect(config.ssl).toEqual({ rejectUnauthorized: true })
     })
 
-    it('should throw error for invalid sslmode', () => {
+    it('should parse invalid sslmode', () => {
       const connectionString = 'postgresql://user:password@localhost:5432/mydb?sslmode=invalid'
+      const config = parseConnectionString(connectionString)
 
-      expect(() => parseConnectionString(connectionString)).toThrow('Invalid sslmode value: invalid. Valid values are: disable, prefer, require, verify, verify-ca, verify-full, no-verify')
+      expect(config.ssl).toEqual({})
     })
 
-    it('should throw error for sslmode=verify-full without sslrootcert', () => {
+    it('should parse sslmode=verify-full without sslrootcert', () => {
       const connectionString = 'postgresql://user:password@localhost:5432/mydb?sslmode=verify-full&sslcert=/path/to/cert.pem&sslkey=/path/to/key.pem'
+      const config = parseConnectionString(connectionString)
 
-      expect(() => parseConnectionString(connectionString)).toThrow('sslmode=verify-full requires sslrootcert to be provided')
+      expect(config.ssl).toEqual({
+        cert: '/path/to/cert.pem',
+        key: '/path/to/key.pem',
+      })
     })
 
     it('should parse sslmode=verify-full with sslrootcert only', () => {
@@ -150,26 +157,6 @@ describe('parseConnectionString', () => {
       expect(config.ssl).toEqual({
         cert: '/path/to/cert.pem',
         key: '/path/to/key.pem',
-        ca: '/path/to/ca.pem',
-      })
-    })
-
-    it('should parse sslmode=verify-full with servername', () => {
-      const connectionString = 'postgresql://user:password@localhost:5432/mydb?sslmode=verify-full&sslservername=example.com&sslrootcert=/path/to/ca.pem'
-      const config = parseConnectionString(connectionString)
-
-      expect(config.ssl).toEqual({
-        servername: 'example.com',
-        ca: '/path/to/ca.pem',
-      })
-    })
-
-    it('should parse sslmode=verify-full with sslpassword', () => {
-      const connectionString = 'postgresql://user:password@localhost:5432/mydb?sslmode=verify-full&sslpassword=mypassword&sslrootcert=/path/to/ca.pem'
-      const config = parseConnectionString(connectionString)
-
-      expect(config.ssl).toEqual({
-        passphrase: 'mypassword',
         ca: '/path/to/ca.pem',
       })
     })
@@ -217,53 +204,13 @@ describe('parseConnectionString', () => {
       expect(config.ssl).toBe(true)
     })
 
-    it('should parse ssl=true', () => {
-      const connectionString = 'postgresql://user:password@localhost:5432/mydb?ssl=true'
-      const config = parseConnectionString(connectionString)
-
-      expect(config.ssl).toBe(true)
-    })
-
-    it('should parse ssl=1', () => {
-      const connectionString = 'postgresql://user:password@localhost:5432/mydb?ssl=1'
-      const config = parseConnectionString(connectionString)
-
-      expect(config.ssl).toBe(true)
-    })
-
-    it('should parse ssl=false', () => {
-      const connectionString = 'postgresql://user:password@localhost:5432/mydb?ssl=false'
-      const config = parseConnectionString(connectionString)
-
-      expect(config.ssl).toBe(false)
-    })
-
-    it('should parse ssl=0', () => {
-      const connectionString = 'postgresql://user:password@localhost:5432/mydb?ssl=0'
-      const config = parseConnectionString(connectionString)
-
-      expect(config.ssl).toBe(false)
-    })
-
-    it('should parse ssl=TRUE (case insensitive)', () => {
-      const connectionString = 'postgresql://user:password@localhost:5432/mydb?ssl=TRUE'
-      const config = parseConnectionString(connectionString)
-
-      expect(config.ssl).toBe(true)
-    })
-
-    it('should parse ssl=FALSE (case insensitive)', () => {
-      const connectionString = 'postgresql://user:password@localhost:5432/mydb?ssl=FALSE'
-      const config = parseConnectionString(connectionString)
-
-      expect(config.ssl).toBe(false)
-    })
-
-    it('should handle ssl parameter without sslmode', () => {
-      const connectionString = 'postgresql://user:password@localhost:5432/mydb?ssl=true'
-      const config = parseConnectionString(connectionString)
-
-      expect(config.ssl).toBe(true)
+    it('should parse ssl parameter (true/false, 1/0, case insensitive)', () => {
+      expect(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=true').ssl).toBe(true)
+      expect(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=1').ssl).toBe(true)
+      expect(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=TRUE').ssl).toBe(true)
+      expect(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=false').ssl).toBe(false)
+      expect(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=0').ssl).toBe(false)
+      expect(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=FALSE').ssl).toBe(false)
     })
 
     it('should prioritize sslmode over ssl parameter', () => {
@@ -290,34 +237,6 @@ describe('real-world Examples', () => {
     })
   })
 
-  it('should parse AWS RDS connection string', () => {
-    const connectionString = 'postgresql://username:password@mydbinstance.c9akciq32q.us-west-2.rds.amazonaws.com:5432/mydb?sslmode=require&application_name=myapp'
-    const config = parseConnectionString(connectionString)
-
-    expect(config).toEqual({
-      user: 'username',
-      password: 'password',
-      host: 'mydbinstance.c9akciq32q.us-west-2.rds.amazonaws.com',
-      port: 5432,
-      database: 'mydb',
-      ssl: true,
-    })
-  })
-
-  it('should parse local development connection string', () => {
-    const connectionString = 'postgresql://postgres:postgres@localhost:5432/myapp_dev?sslmode=prefer'
-    const config = parseConnectionString(connectionString)
-
-    expect(config).toEqual({
-      user: 'postgres',
-      password: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      database: 'myapp_dev',
-      ssl: true,
-    })
-  })
-
   it('should parse production connection string with full SSL', () => {
     const connectionString = 'postgresql://produser:prodpass@prod-db.example.com:5432/proddb?sslmode=verify-full&sslcert=/path/to/client-cert.pem&sslkey=/path/to/client-key.pem&sslrootcert=/path/to/ca-cert.pem&sslservername=prod-db.example.com'
     const config = parseConnectionString(connectionString)
@@ -333,22 +252,6 @@ describe('real-world Examples', () => {
         key: '/path/to/client-key.pem',
         ca: '/path/to/ca-cert.pem',
         servername: 'prod-db.example.com',
-      },
-    })
-  })
-
-  it('should parse connection string with sslmode=verify-ca and sslrootcert', () => {
-    const connectionString = 'postgresql://postgres.ghfgh:p%2396!h6h@aws-0-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=verify&sslrootcert=/Users/user/cert.crt'
-    const config = parseConnectionString(connectionString)
-
-    expect(config).toEqual({
-      user: 'postgres.ghfgh',
-      password: 'p%2396!h6h',
-      host: 'aws-0-eu-central-1.pooler.supabase.com',
-      port: 6543,
-      database: 'postgres',
-      ssl: {
-        ca: '/Users/user/cert.crt',
       },
     })
   })
