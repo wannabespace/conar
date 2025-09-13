@@ -64,21 +64,21 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
         query: dropTableSql(schema, table, cascade)[database.type],
       })
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success(`Table "${table}" successfully dropped`)
       setOpen(false)
       setConfirmationText('')
       setCascade(false)
 
       queryClient.invalidateQueries(tablesAndSchemasQuery({ database }))
-      closeTab(database.id, schema, table)
 
       if (isCurrentTable) {
-        router.navigate({
+        await router.navigate({
           to: '/database/$id/table',
           params: { id: database.id },
         })
       }
+      closeTab(database.id, schema, table)
     },
   })
 
