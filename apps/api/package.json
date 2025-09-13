@@ -10,14 +10,14 @@
     "drizzle:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.15",
+    "@ai-sdk/anthropic": "^2.0.16",
     "@ai-sdk/anthropic1": "npm:@ai-sdk/anthropic@1.2.12",
-    "@ai-sdk/google": "^2.0.13",
+    "@ai-sdk/google": "^2.0.14",
     "@ai-sdk/google1": "npm:@ai-sdk/google@1.2.22",
-    "@ai-sdk/openai": "^2.0.28",
+    "@ai-sdk/openai": "^2.0.30",
     "@ai-sdk/openai1": "npm:@ai-sdk/openai@1.3.23",
     "@ai-sdk/provider": "^2.0.0",
-    "@ai-sdk/xai": "^2.0.16",
+    "@ai-sdk/xai": "^2.0.18",
     "@ai-sdk/xai1": "npm:@ai-sdk/xai@1.2.18",
     "@conar/shared": "workspace:*",
     "@hono/arktype-validator": "^2.0.1",
