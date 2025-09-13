@@ -33,10 +33,10 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
     },
   },
   onInsert: async ({ transaction }) => {
-    await Promise.all(transaction.mutations.map(m => orpc.queries.create(m.modified)))
+    await orpc.queries.create(transaction.mutations.map(m => m.modified))
   },
   onDelete: async ({ transaction }) => {
-    await Promise.all(transaction.mutations.map(m => orpc.queries.remove({ id: m.key })))
+    await orpc.queries.remove(transaction.mutations.map(m => ({ id: m.key })))
   },
 }))
 

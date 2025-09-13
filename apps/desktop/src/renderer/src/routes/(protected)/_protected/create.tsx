@@ -179,13 +179,15 @@ function CreateConnectionPage() {
   function createDatabase(data: { connectionString: string, name: string, type: DatabaseType, saveInCloud: boolean }) {
     const id = v7()
 
+    const password = new SafeURL(data.connectionString.trim()).password
+
     databasesCollection.insert({
       id,
       name: data.name,
       type: data.type,
       connectionString: data.connectionString,
-      isPasswordExists: !!new SafeURL(data.connectionString.trim()).password,
-      isPasswordPopulated: !!new SafeURL(data.connectionString.trim()).password,
+      isPasswordExists: !!password,
+      isPasswordPopulated: !!password,
       syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
       createdAt: new Date(),
       updatedAt: new Date(),

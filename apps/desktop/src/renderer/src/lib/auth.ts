@@ -9,9 +9,6 @@ import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { toast } from 'sonner'
 import { clearDb } from '~/drizzle'
-import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
-import { databasesCollection } from '~/entities/database'
-import { queriesCollection } from '~/entities/query/lib/sync'
 import { identifyUser } from './events'
 import { getApiUrl } from './utils'
 
@@ -71,9 +68,5 @@ export async function fullSignOut() {
   await authClient.signOut()
   bearerToken.remove()
   clearDb()
-  databasesCollection.cleanup()
-  chatsCollection.cleanup()
-  chatsMessagesCollection.cleanup()
-  queriesCollection.cleanup()
   identifyUser(null)
 }
