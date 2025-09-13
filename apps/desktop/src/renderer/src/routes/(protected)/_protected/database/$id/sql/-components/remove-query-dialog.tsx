@@ -22,7 +22,10 @@ export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
   }), [])
 
   function removeQuery() {
-    queriesCollection.delete(query!.id)
+    if (!query)
+      return
+
+    queriesCollection.delete(query.id)
     toast.success('Query removed successfully')
     setOpen(false)
   }

@@ -33,12 +33,8 @@ export const db = drizzle({
 })
 
 export async function clearDb() {
-  await db.transaction(async (tx) => {
-    await Promise.all([
-      tx.delete(databases.databases),
-      tx.delete(chats.chats),
-    ])
-  })
+  // We can remove just databases because other tables are related to databases
+  await db.delete(databases.databases)
 }
 
 async function ensureMigrationsTable() {
