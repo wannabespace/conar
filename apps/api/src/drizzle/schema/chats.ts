@@ -1,7 +1,7 @@
 import type { AppUIMessage } from '@conar/shared/ai-tools'
 import { createSelectSchema } from 'drizzle-arktype'
 import { relations } from 'drizzle-orm'
-import { pgTable, text, uuid } from 'drizzle-orm/pg-core'
+import { index, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedJson } from '../utils'
 import { users } from './auth'
@@ -13,7 +13,10 @@ export const chats = pgTable('chats', {
   databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }).notNull(),
   title: text(),
   activeStreamId: uuid(),
-}).enableRLS()
+}, t => [
+  index().on(t.userId),
+  index().on(t.databaseId),
+]).enableRLS()
 
 export const chatsSelectSchema = createSelectSchema(chats)
 
@@ -23,7 +26,10 @@ export const chatsMessages = pgTable('chats_messages', {
   parts: encryptedJson().array().$type<AppUIMessage['parts']>().notNull(),
   role: text().$type<AppUIMessage['role']>().notNull(),
   metadata: encryptedJson().$type<NonNullable<AppUIMessage['metadata']>>(),
-}).enableRLS()
+}, t => [
+  index().on(t.chatId),
+  index().on(t.role),
+]).enableRLS()
 
 export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
 
