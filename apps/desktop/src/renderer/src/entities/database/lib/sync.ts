@@ -3,9 +3,9 @@ import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { createCollection } from '@tanstack/react-db'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
-import { databases } from '~/drizzle'
+import { databases, db, waitForMigrations } from '~/drizzle'
 import { bearerToken } from '~/lib/auth'
-import { pgLiteCollectionOptions } from '~/lib/db'
+import { drizzleCollectionOptions } from '~/lib/db'
 import { orpc } from '~/lib/orpc'
 import { router } from '~/main'
 
@@ -15,72 +15,76 @@ export function waitForDatabasesSync() {
   return promise
 }
 
-export const databasesCollection = createCollection(pgLiteCollectionOptions({
-  startSync: false,
+export const databasesCollection = createCollection(drizzleCollectionOptions({
+  db,
   table: databases,
-  getPrimaryColumn: databases => databases.id,
-  sync: async ({ write, collection }) => {
-    if (!bearerToken.get() || !navigator.onLine) {
-      return
-    }
-
-    const existing = collection.toArray
-    const sync = await orpc.databases.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
-
-    for (const item of sync) {
-      if (item.type === 'insert') {
-        write({
-          type: 'insert',
-          value: {
-            ...item.value,
-            isPasswordPopulated: !!new SafeURL(item.value.connectionString).password,
-            syncType: item.value.syncType ?? SyncType.CloudWithoutPassword,
-          },
-        })
+  primaryColumn: databases.id,
+  sync: {
+    start: false,
+    beforeSync: waitForMigrations,
+    sync: async ({ write, collection }) => {
+      if (!bearerToken.get() || !navigator.onLine) {
+        return
       }
-      else if (item.type === 'update') {
-        const existed = collection.get(item.value.id)
 
-        if (!existed) {
-          throw new Error('Entity not found')
+      const existing = collection.toArray
+      const sync = await orpc.databases.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+
+      for (const item of sync) {
+        if (item.type === 'insert') {
+          write({
+            type: 'insert',
+            value: {
+              ...item.value,
+              isPasswordPopulated: !!new SafeURL(item.value.connectionString).password,
+              syncType: item.value.syncType ?? SyncType.CloudWithoutPassword,
+            },
+          })
         }
+        else if (item.type === 'update') {
+          const existed = collection.get(item.value.id)
 
-        const cloudPassword = new SafeURL(item.value.connectionString).password
-        const localPassword = new SafeURL(existed.connectionString).password
-        const newConnectionString = new SafeURL(item.value.connectionString)
+          if (!existed) {
+            throw new Error('Entity not found')
+          }
 
-        // TODO: change to sync type
-        if (item.value.isPasswordExists && localPassword && !cloudPassword) {
-          newConnectionString.password = localPassword
+          const cloudPassword = new SafeURL(item.value.connectionString).password
+          const localPassword = new SafeURL(existed.connectionString).password
+          const newConnectionString = new SafeURL(item.value.connectionString)
+
+          // TODO: change to sync type
+          if (item.value.isPasswordExists && localPassword && !cloudPassword) {
+            newConnectionString.password = localPassword
+          }
+
+          const connectionString = newConnectionString.toString()
+          const isPasswordPopulated = !!new SafeURL(item.value.connectionString).password
+
+          write({
+            type: 'update',
+            value: {
+              ...item.value,
+              connectionString,
+              isPasswordPopulated,
+              syncType: item.value.syncType ?? SyncType.CloudWithoutPassword,
+            },
+          })
         }
+        else if (item.type === 'delete') {
+          const existed = collection.get(item.value)
 
-        const connectionString = newConnectionString.toString()
-        const isPasswordPopulated = !!new SafeURL(item.value.connectionString).password
+          if (!existed) {
+            throw new Error('Entity not found')
+          }
 
-        write({
-          type: 'update',
-          value: {
-            ...item.value,
-            connectionString,
-            isPasswordPopulated,
-            syncType: item.value.syncType ?? SyncType.CloudWithoutPassword,
-          },
-        })
+          write({
+            type: 'delete',
+            value: existed,
+          })
+        }
       }
-      else if (item.type === 'delete') {
-        const existed = collection.get(item.value)
-
-        if (!existed) {
-          throw new Error('Entity not found')
-        }
-
-        write({
-          type: 'delete',
-          value: existed,
-        })
-      }
-    }
-    resolve()
+      resolve()
+    },
   },
   onInsert: async (params) => {
     await Promise.all(params.transaction.mutations.map((m) => {

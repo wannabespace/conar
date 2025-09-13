@@ -22,9 +22,9 @@ import { pageHooks, pageStore } from '../-lib'
 import { RunnerAlertDialog } from './runner-alert-dialog'
 import { SaveQueryDialog } from './save-query-dialog'
 
-export function runnerQueryOptions({ id, database, query }: { id: string, database: typeof databases.$inferSelect, query: string }) {
+export function runnerQueryOptions({ database, query }: { database: typeof databases.$inferSelect, query: string }) {
   return queryOptions({
-    queryKey: ['sql', id],
+    queryKey: ['sql', database.id],
     queryFn: async ({ signal }) => {
       let shouldRun = true
 
@@ -62,7 +62,7 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
     chatQuery.set(id, query)
   }, [id, query])
 
-  const { refetch: runQuery, status, fetchStatus: queryStatus, error } = useQuery(runnerQueryOptions({ id, database, query }))
+  const { refetch: runQuery, status, fetchStatus: queryStatus, error } = useQuery(runnerQueryOptions({ database, query }))
 
   useEffect(() => {
     if (status === 'error') {

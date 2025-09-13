@@ -1,10 +1,10 @@
 import type { MutationOptions } from '@tanstack/react-query'
 import { createCollection } from '@tanstack/react-db'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
-import { chats, chatsMessages } from '~/drizzle'
+import { chats, chatsMessages, db, waitForMigrations } from '~/drizzle'
 import { waitForDatabasesSync } from '~/entities/database'
 import { bearerToken } from '~/lib/auth'
-import { pgLiteCollectionOptions } from '~/lib/db'
+import { drizzleCollectionOptions } from '~/lib/db'
 import { orpc } from '~/lib/orpc'
 
 const { promise, resolve } = Promise.withResolvers()
@@ -13,52 +13,60 @@ export function waitForChatsSync() {
   return promise
 }
 
-export const chatsCollection = createCollection(pgLiteCollectionOptions({
-  startSync: false,
+export const chatsCollection = createCollection(drizzleCollectionOptions({
+  db,
   table: chats,
-  getPrimaryColumn: chats => chats.id,
-  sync: async ({ collection, write }) => {
-    if (!bearerToken.get() || !navigator.onLine) {
-      return
-    }
-
-    await waitForDatabasesSync()
-    const existing = collection.toArray
-    const sync = await orpc.chats.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
-
-    sync.forEach((item) => {
-      if (item.type === 'delete') {
-        write({ type: 'delete', value: collection.get(item.value)! })
+  primaryColumn: chats.id,
+  sync: {
+    start: false,
+    beforeSync: waitForMigrations,
+    sync: async ({ collection, write }) => {
+      if (!bearerToken.get() || !navigator.onLine) {
+        return
       }
-      else {
-        write(item)
-      }
-    })
-    resolve()
+
+      await waitForDatabasesSync()
+      const existing = collection.toArray
+      const sync = await orpc.chats.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+
+      sync.forEach((item) => {
+        if (item.type === 'delete') {
+          write({ type: 'delete', value: collection.get(item.value)! })
+        }
+        else {
+          write(item)
+        }
+      })
+      resolve()
+    },
   },
 }))
 
-export const chatsMessagesCollection = createCollection(pgLiteCollectionOptions({
-  startSync: false,
+export const chatsMessagesCollection = createCollection(drizzleCollectionOptions({
+  db,
   table: chatsMessages,
-  getPrimaryColumn: chatsMessages => chatsMessages.id,
-  sync: async ({ collection, write }) => {
-    if (!bearerToken.get() || !navigator.onLine) {
-      return
-    }
-
-    await waitForChatsSync()
-    const existing = collection.toArray
-    const sync = await orpc.chatsMessages.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
-
-    sync.forEach((item) => {
-      if (item.type === 'delete') {
-        write({ type: 'delete', value: collection.get(item.value)! })
+  primaryColumn: chatsMessages.id,
+  sync: {
+    start: false,
+    beforeSync: waitForMigrations,
+    sync: async ({ collection, write }) => {
+      if (!bearerToken.get() || !navigator.onLine) {
+        return
       }
-      else {
-        write(item)
-      }
-    })
+
+      await waitForChatsSync()
+      const existing = collection.toArray
+      const sync = await orpc.chatsMessages.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+
+      sync.forEach((item) => {
+        if (item.type === 'delete') {
+          write({ type: 'delete', value: collection.get(item.value)! })
+        }
+        else {
+          write(item)
+        }
+      })
+    },
   },
 }))
 

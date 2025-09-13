@@ -1,33 +1,37 @@
 import type { MutationOptions } from '@tanstack/react-query'
 import { createCollection } from '@tanstack/react-db'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
-import { queries } from '~/drizzle'
+import { db, queries, waitForMigrations } from '~/drizzle'
 import { waitForDatabasesSync } from '~/entities/database'
 import { bearerToken } from '~/lib/auth'
-import { pgLiteCollectionOptions } from '~/lib/db'
+import { drizzleCollectionOptions } from '~/lib/db'
 import { orpc } from '~/lib/orpc'
 
-export const queriesCollection = createCollection(pgLiteCollectionOptions({
-  startSync: false,
+export const queriesCollection = createCollection(drizzleCollectionOptions({
+  db,
   table: queries,
-  getPrimaryColumn: queries => queries.id,
-  sync: async ({ collection, write }) => {
-    if (!bearerToken.get() || !navigator.onLine) {
-      return
-    }
-
-    await waitForDatabasesSync()
-    const existing = collection.toArray
-    const sync = await orpc.queries.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
-
-    sync.forEach((item) => {
-      if (item.type === 'delete') {
-        write({ type: 'delete', value: collection.get(item.value)! })
+  primaryColumn: queries.id,
+  sync: {
+    start: false,
+    beforeSync: waitForMigrations,
+    sync: async ({ collection, write }) => {
+      if (!bearerToken.get() || !navigator.onLine) {
+        return
       }
-      else {
-        write(item)
-      }
-    })
+
+      await waitForDatabasesSync()
+      const existing = collection.toArray
+      const sync = await orpc.queries.sync(existing.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+
+      sync.forEach((item) => {
+        if (item.type === 'delete') {
+          write({ type: 'delete', value: collection.get(item.value)! })
+        }
+        else {
+          write(item)
+        }
+      })
+    },
   },
   onInsert: async (params) => {
     await Promise.all(params.transaction.mutations.map(m => orpc.queries.create(m.modified)))
