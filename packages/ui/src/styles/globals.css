@@ -110,6 +110,10 @@
   }
 }
 
+* {
+  -electron-corner-smoothing: system-ui;
+}
+
 html {
   color-scheme: light dark;
 }
