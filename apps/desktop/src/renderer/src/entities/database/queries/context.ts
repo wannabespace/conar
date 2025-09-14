@@ -13,13 +13,12 @@ export function tablesAndSchemasQuery({ database }: { database: typeof databases
         query: tablesAndSchemasSql()[database.type],
       })
 
-      const parsed = tablesAndSchemasType.assert(result!.rows[0]!.tables_and_schemas)
+      const schemas = tablesAndSchemasType.assert(result!.rows)
 
       return {
-        ...parsed,
-        totalSchemas: parsed.schemas.length,
-        totalTables: parsed.schemas.reduce((acc, { tables }) => acc + tables.length, 0),
-        schemas: parsed.schemas.toSorted((a, b) => {
+        totalSchemas: schemas.length,
+        totalTables: schemas.reduce((acc, schema) => acc + schema.tables.length, 0),
+        schemas: schemas.toSorted((a, b) => {
           if (a.name === 'public' && b.name !== 'public')
             return -1
           if (b.name === 'public' && a.name !== 'public')
