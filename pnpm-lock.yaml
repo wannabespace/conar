@@ -400,9 +400,6 @@ importers:
       dayjs:
         specifier: ^1.11.18
         version: 1.11.18
-      drizzle-arktype:
-        specifier: ^0.1.3
-        version: 0.1.3(arktype@2.1.20)(drizzle-orm@0.44.5(@electric-sql/pglite@0.3.8)(@opentelemetry/api@1.9.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(bun-types@1.2.21(@types/react@19.1.13))(kysely@0.28.5)(pg@8.16.3)(postgres@3.4.7)(prisma@5.22.0))
       drizzle-kit:
         specifier: 'catalog:'
         version: 0.31.4
@@ -466,6 +463,9 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 4.1.13
+      tanstack-db-pglite:
+        specifier: ^1.0.0
+        version: 1.0.0(@tanstack/db@0.2.4(typescript@5.9.2))(drizzle-orm@0.44.5(@electric-sql/pglite@0.3.8)(@opentelemetry/api@1.9.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(bun-types@1.2.21(@types/react@19.1.13))(kysely@0.28.5)(pg@8.16.3)(postgres@3.4.7)(prisma@5.22.0))(zod@4.1.8)
       tw-animate-css:
         specifier: 'catalog:'
         version: 1.3.8
@@ -4747,6 +4747,12 @@ packages:
       sqlite3:
         optional: true
 
+  drizzle-zod@0.8.3:
+    resolution: {integrity: sha512-66yVOuvGhKJnTdiqj1/Xaaz9/qzOdRJADpDa68enqS6g3t0kpNkwNYjUuaeXgZfO/UWuIM9HIhSlJ6C5ZraMww==}
+    peerDependencies:
+      drizzle-orm: '>=0.36.0'
+      zod: ^3.25.0 || ^4.0.0
+
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
@@ -7961,6 +7967,12 @@ packages:
 
   tailwindcss@4.1.13:
     resolution: {integrity: sha512-i+zidfmTqtwquj4hMEwdjshYYgMbOrPzb9a0M3ZgNa0JMoZeFC6bxZvO8yr8ozS6ix2SDz0+mvryPeBs2TFE+w==}
+
+  tanstack-db-pglite@1.0.0:
+    resolution: {integrity: sha512-X8o3TutK+xf4UE8WmyQfgKVg+8IVUOSFQTuRwt+PLkX9DMFUb3KN2qv/uf1zpuARVy9039mkuHGN46qsv9IMng==}
+    peerDependencies:
+      '@tanstack/db': '>=0.2.0'
+      drizzle-orm: '>=0.44.0'
 
   tapable@2.2.3:
     resolution: {integrity: sha512-ZL6DDuAlRlLGghwcfmSn9sK3Hr6ArtyudlSAiCqQ6IfE+b+HHbydbYDIG15IfS5do+7XQQBdBiubF/cV2dnDzg==}
@@ -13220,6 +13232,11 @@ snapshots:
       postgres: 3.4.7
       prisma: 5.22.0
 
+  drizzle-zod@0.8.3(drizzle-orm@0.44.5(@electric-sql/pglite@0.3.8)(@opentelemetry/api@1.9.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(bun-types@1.2.21(@types/react@19.1.13))(kysely@0.28.5)(pg@8.16.3)(postgres@3.4.7)(prisma@5.22.0))(zod@4.1.8):
+    dependencies:
+      drizzle-orm: 0.44.5(@electric-sql/pglite@0.3.8)(@opentelemetry/api@1.9.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(bun-types@1.2.21(@types/react@19.1.13))(kysely@0.28.5)(pg@8.16.3)(postgres@3.4.7)(prisma@5.22.0)
+      zod: 4.1.8
+
   dunder-proto@1.0.1:
     dependencies:
       call-bind-apply-helpers: 1.0.2
@@ -16932,6 +16949,14 @@ snapshots:
       - react
 
   tailwindcss@4.1.13: {}
+
+  tanstack-db-pglite@1.0.0(@tanstack/db@0.2.4(typescript@5.9.2))(drizzle-orm@0.44.5(@electric-sql/pglite@0.3.8)(@opentelemetry/api@1.9.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(bun-types@1.2.21(@types/react@19.1.13))(kysely@0.28.5)(pg@8.16.3)(postgres@3.4.7)(prisma@5.22.0))(zod@4.1.8):
+    dependencies:
+      '@tanstack/db': 0.2.4(typescript@5.9.2)
+      drizzle-orm: 0.44.5(@electric-sql/pglite@0.3.8)(@opentelemetry/api@1.9.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(bun-types@1.2.21(@types/react@19.1.13))(kysely@0.28.5)(pg@8.16.3)(postgres@3.4.7)(prisma@5.22.0)
+      drizzle-zod: 0.8.3(drizzle-orm@0.44.5(@electric-sql/pglite@0.3.8)(@opentelemetry/api@1.9.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(bun-types@1.2.21(@types/react@19.1.13))(kysely@0.28.5)(pg@8.16.3)(postgres@3.4.7)(prisma@5.22.0))(zod@4.1.8)
+    transitivePeerDependencies:
+      - zod
 
   tapable@2.2.3: {}
 
