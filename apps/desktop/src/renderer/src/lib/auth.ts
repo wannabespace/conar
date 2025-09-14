@@ -1,6 +1,7 @@
 import type { auth } from '@conar/api/src/lib/auth'
 import {
   inferAdditionalFields,
+  lastLoginMethodClient,
   magicLinkClient,
   organizationClient,
   twoFactorClient,
@@ -47,6 +48,7 @@ export const authClient = createAuthClient({
     organizationClient(),
     twoFactorClient(),
     magicLinkClient(),
+    lastLoginMethodClient(),
   ],
   fetchOptions: {
     auth: {

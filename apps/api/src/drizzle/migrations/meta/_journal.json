@@ -64,6 +64,13 @@
       "when": 1757865445835,
       "tag": "0008_cultured_red_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1757883623100,
+      "tag": "0009_cloudy_calypso",
+      "breakpoints": true
     }
   ]
 }

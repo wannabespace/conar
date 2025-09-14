@@ -11,6 +11,7 @@ export const users = pgTable('users', {
   image: text(),
   twoFactorEnabled: boolean().default(false),
   normalizedEmail: text().unique('users_normalized_email_unique'),
+  isAnonymous: boolean(),
   secret: text().notNull().$defaultFn(() => nanoid()),
 }, t => [
   index().on(t.email),
@@ -95,7 +96,7 @@ export const members = pgTable('members', {
   ...baseTable,
   workspaceId: uuid().notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
   userId: uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
-  role: text().notNull(),
+  role: text().default('member').notNull(),
 }, t => [
   index().on(t.userId),
   index().on(t.workspaceId),
@@ -117,8 +118,8 @@ export const invitations = pgTable('invitations', {
   workspaceId: uuid().notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
   email: text().notNull(),
   role: text(),
-  status: text().notNull(),
-  expiresAt: timestamp().notNull(),
+  status: text().default('pending').notNull(),
+  expiresAt: timestamp({ withTimezone: true }).notNull(),
   inviterId: uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
 }, t => [
   index().on(t.email),

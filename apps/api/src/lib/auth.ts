@@ -1,9 +1,9 @@
-import type { BetterAuthPlugin, User } from 'better-auth'
+import type { BetterAuthOptions, BetterAuthPlugin, User } from 'better-auth'
 import process from 'node:process'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { bearer, createAuthMiddleware, twoFactor } from 'better-auth/plugins'
+import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { db } from '~/drizzle'
 import { env } from '~/env'
 import { loops } from '~/lib/loops'
@@ -61,7 +61,7 @@ function noSetCookiePlugin() {
   } satisfies BetterAuthPlugin
 }
 
-export const auth = betterAuth({
+const config = {
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
@@ -69,15 +69,27 @@ export const auth = betterAuth({
   plugins: [
     bearer(),
     twoFactor(),
-    // organization({
-    //   schema: {
-    //     organization: {
-    //       modelName: 'workspaces',
-    //     },
-    //   },
-    // }),
+    organization({
+      schema: {
+        organization: {
+          modelName: 'workspace',
+        },
+        member: {
+          fields: {
+            organizationId: 'workspaceId',
+          },
+        },
+        invitation: {
+          fields: {
+            organizationId: 'workspaceId',
+          },
+        },
+      },
+    }),
+    lastLoginMethod(),
     emailHarmony(),
     noSetCookiePlugin(),
+    anonymous(),
   ],
   user: {
     additionalFields: {
@@ -125,4 +137,6 @@ export const auth = betterAuth({
       },
     }),
   },
-})
+} satisfies BetterAuthOptions
+
+export const auth = betterAuth(config) as ReturnType<typeof betterAuth<typeof config>>
