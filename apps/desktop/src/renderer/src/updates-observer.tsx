@@ -50,15 +50,6 @@ export function UpdatesObserver() {
       function showToast() {
         toast.success('New update downloaded!', {
           id: TOAST_UPDATE_READY_ID,
-          description: updatesStore.state.message
-            ? (
-                <>
-                  What’s new:
-                  <br />
-                  {updatesStore.state.message}
-                </>
-              )
-            : null,
           action: {
             label: 'Restart',
             onClick: () => window.electron?.app.quitAndInstall(),
