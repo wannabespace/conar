@@ -2,12 +2,14 @@ import type { editor } from 'monaco-editor'
 import type { ComponentProps, ComponentRef } from 'react'
 import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { CtrlEnter } from '@conar/ui/components/custom/ctrl-enter'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiBrush2Line, RiDeleteBin5Line, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
+import { RiBrush2Line, RiCheckLine, RiDeleteBin5Line, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
@@ -41,8 +43,6 @@ export function runnerQueryOptions({ database, query }: { database: typeof datab
       if (!shouldRun) {
         return null!
       }
-
-      toast.success('SQL executed successfully')
 
       return result
     },
@@ -205,11 +205,18 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
           size="sm"
           onClick={() => sendQuery(query)}
         >
-          <div className="flex items-center gap-1">
-            Run
-            {' '}
-            <CtrlEnter userAgent={navigator.userAgent} />
-          </div>
+          <LoadingContent loading={queryStatus === 'fetching'}>
+            <ContentSwitch
+              activeContent={<RiCheckLine />}
+              active={queryStatus === 'fetching'}
+            >
+              <span className="flex items-center gap-1">
+                Run
+                {' '}
+                <CtrlEnter userAgent={navigator.userAgent} />
+              </span>
+            </ContentSwitch>
+          </LoadingContent>
         </Button>
       </div>
     </div>
