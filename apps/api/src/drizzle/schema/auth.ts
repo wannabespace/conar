@@ -1,28 +1,29 @@
 import { relations } from 'drizzle-orm'
-import { index, pgTable } from 'drizzle-orm/pg-core'
+import { boolean, index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { nanoid } from 'nanoid'
 import { baseTable } from '../base-table'
 
-export const users = pgTable('users', ({ text, boolean }) => ({
+export const users = pgTable('users', {
   ...baseTable,
   name: text().notNull(),
   email: text().notNull().unique(),
-  emailVerified: boolean().notNull(),
+  emailVerified: boolean().default(false).notNull(),
   image: text(),
+  twoFactorEnabled: boolean().default(false),
   normalizedEmail: text().unique('users_normalized_email_unique'),
   secret: text().notNull().$defaultFn(() => nanoid()),
-}), t => [
+}, t => [
   index().on(t.email),
 ]).enableRLS()
 
-export const sessions = pgTable('sessions', ({ text, timestamp, uuid }) => ({
+export const sessions = pgTable('sessions', {
   ...baseTable,
   expiresAt: timestamp({ withTimezone: true }).notNull(),
   token: text().notNull().unique(),
   ipAddress: text(),
   userAgent: text(),
   userId: uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
-}), t => [
+}, t => [
   index().on(t.userId),
   index().on(t.token),
 ]).enableRLS()
@@ -34,7 +35,7 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
   }),
 }))
 
-export const accounts = pgTable('accounts', ({ text, timestamp, uuid }) => ({
+export const accounts = pgTable('accounts', {
   ...baseTable,
   accountId: text().notNull(),
   providerId: text().notNull(),
@@ -46,7 +47,7 @@ export const accounts = pgTable('accounts', ({ text, timestamp, uuid }) => ({
   refreshTokenExpiresAt: timestamp({ withTimezone: true }),
   scope: text(),
   password: text(),
-}), t => [
+}, t => [
   index().on(t.userId),
 ]).enableRLS()
 
@@ -57,22 +58,21 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
   }),
 }))
 
-export const verifications = pgTable('verifications', ({ text, timestamp }) => ({
+export const verifications = pgTable('verifications', {
   ...baseTable,
   identifier: text().notNull(),
   value: text().notNull(),
   expiresAt: timestamp({ withTimezone: true }).notNull(),
-  updatedAt: timestamp({ withTimezone: true }),
-}), t => [
+}, t => [
   index().on(t.identifier),
 ]).enableRLS()
 
-export const twoFactors = pgTable('two_factors', ({ text, uuid }) => ({
+export const twoFactors = pgTable('two_factors', {
   ...baseTable,
   secret: text().notNull(),
   backupCodes: text().notNull(),
   userId: uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
-})).enableRLS()
+}).enableRLS()
 
 export const twoFactorsRelations = relations(twoFactors, ({ one }) => ({
   user: one(users, {
@@ -81,22 +81,22 @@ export const twoFactorsRelations = relations(twoFactors, ({ one }) => ({
   }),
 }))
 
-export const workspaces = pgTable('workspaces', ({ text }) => ({
+export const workspaces = pgTable('workspaces', {
   ...baseTable,
   name: text().notNull(),
   slug: text().unique(),
   logo: text(),
   metadata: text(),
-}), t => [
+}, t => [
   index().on(t.slug),
 ]).enableRLS()
 
-export const members = pgTable('members', ({ text, uuid }) => ({
+export const members = pgTable('members', {
   ...baseTable,
   workspaceId: uuid().notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
   userId: uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
   role: text().notNull(),
-}), t => [
+}, t => [
   index().on(t.userId),
   index().on(t.workspaceId),
 ]).enableRLS()
@@ -112,7 +112,7 @@ export const membersRelations = relations(members, ({ one }) => ({
   }),
 }))
 
-export const invitations = pgTable('invitations', ({ text, uuid, timestamp }) => ({
+export const invitations = pgTable('invitations', {
   ...baseTable,
   workspaceId: uuid().notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
   email: text().notNull(),
@@ -120,7 +120,7 @@ export const invitations = pgTable('invitations', ({ text, uuid, timestamp }) =>
   status: text().notNull(),
   expiresAt: timestamp().notNull(),
   inviterId: uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
-}), t => [
+}, t => [
   index().on(t.email),
   index().on(t.workspaceId),
 ]).enableRLS()

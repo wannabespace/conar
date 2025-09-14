@@ -57,6 +57,13 @@
       "when": 1757790323243,
       "tag": "0007_perfect_chamber",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1757865445835,
+      "tag": "0008_cultured_red_hulk",
+      "breakpoints": true
     }
   ]
 }
