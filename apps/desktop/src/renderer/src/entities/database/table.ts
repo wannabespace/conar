@@ -3,5 +3,6 @@ export interface Column {
   type?: string
   isEditable?: boolean
   isNullable?: boolean
-  isPrimaryKey?: boolean
+  unique?: string
+  primaryKey?: string
 }

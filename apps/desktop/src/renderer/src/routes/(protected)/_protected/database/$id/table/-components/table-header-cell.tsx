@@ -3,7 +3,7 @@ import type { Column } from '~/entities/database/table'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiKey2Line } from '@remixicon/react'
+import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { usePageStoreContext } from '../-store'
 
@@ -109,13 +109,21 @@ export function TableHeaderCell({ column, isFirst, isLast, columnIndex, classNam
         </div>
         {column?.type && (
           <div data-footer={!!column.type} className="flex items-center gap-1">
-            {column.isPrimaryKey && (
+            {column.primaryKey && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <RiKey2Line className="size-3 text-primary" />
                   </TooltipTrigger>
-                  <TooltipContent>Primary key</TooltipContent>
+                  <TooltipContent>
+                    <div className="flex items-center gap-1 mb-1">
+                      <RiKey2Line className="size-3 text-primary" />
+                      <span>Primary key</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {column.primaryKey}
+                    </div>
+                  </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -123,9 +131,32 @@ export function TableHeaderCell({ column, isFirst, isLast, columnIndex, classNam
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <RiEraserLine className="size-3 opacity-30" />
+                    <RiEraserLine className="size-3 text-muted-foreground/70" />
                   </TooltipTrigger>
-                  <TooltipContent>Nullable</TooltipContent>
+                  <TooltipContent>
+                    <div className="flex items-center gap-1">
+                      <RiEraserLine className="size-3 text-muted-foreground/70" />
+                      <span>Nullable</span>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {column.unique && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <RiFingerprintLine className="size-3 text-muted-foreground/70" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="flex items-center gap-1 mb-1">
+                      <RiFingerprintLine className="size-3 text-muted-foreground/70" />
+                      <span>Unique</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {column.unique}
+                    </div>
+                  </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -133,9 +164,14 @@ export function TableHeaderCell({ column, isFirst, isLast, columnIndex, classNam
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <RiBookOpenLine className="size-3 opacity-30" />
+                    <RiBookOpenLine className="size-3 text-muted-foreground/70" />
                   </TooltipTrigger>
-                  <TooltipContent>Read only</TooltipContent>
+                  <TooltipContent>
+                    <div className="flex items-center gap-1">
+                      <RiBookOpenLine className="size-3 text-muted-foreground/70" />
+                      <span>Read only</span>
+                    </div>
+                  </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}

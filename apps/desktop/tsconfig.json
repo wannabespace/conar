@@ -18,7 +18,7 @@
     "../../packages/sql/delete.ts",
     "../../packages/sql/drop-table.ts",
     "../../packages/sql/enums.ts",
-    "../../packages/sql/primary-keys.ts",
+    "../../packages/sql/constraints.ts",
     "../../packages/sql/rename-table.ts",
     "../../packages/sql/rows.ts",
     "../../packages/sql/set.ts",

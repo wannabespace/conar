@@ -5,14 +5,13 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, useDatabaseTableConstraints } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { columnsSizeMap, getRowsQueryOpts, selectSymbol } from '../-lib'
 import { useTableColumns } from '../-queries/use-columns-query'
-import { usePrimaryKeysQuery } from '../-queries/use-primary-keys-query'
 import { usePageStoreContext } from '../-store'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
@@ -53,23 +52,23 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(
     getRowsQueryOpts({ database, table, schema, query: { filters, orderBy } }),
   )
-  const { data: primaryKeys } = usePrimaryKeysQuery({ database, table, schema })
+  const { data: constraints } = useDatabaseTableConstraints({ database, table, schema })
+
+  const primaryColumns = useMemo(() => constraints?.filter(c => c.column && c.type === 'primaryKey').map(c => c.column!) ?? [], [constraints])
 
   useEffect(() => {
-    if (!rows || !primaryKeys || !store.state.selected)
+    if (!rows || !store.state.selected)
       return
 
     const validSelected = store.state.selected.filter(selectedRow =>
-      rows.some(row => primaryKeys.every(key => row[key] === selectedRow[key])),
+      rows.some(row => primaryColumns.every(key => row[key] === selectedRow[key])),
     )
 
     store.setState(state => ({
       ...state,
       selected: validSelected,
     }))
-  }, [store, rows, primaryKeys])
-
-  const selectable = !!primaryKeys && primaryKeys.length > 0
+  }, [store, rows, primaryColumns])
 
   const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
     const rowsQueryOpts = getRowsQueryOpts({
@@ -114,7 +113,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     if (!data)
       throw new Error('No data found. Please refresh the page.')
 
-    if (!primaryKeys || primaryKeys.length === 0)
+    if (primaryColumns.length === 0)
       throw new Error('No primary keys found. Please use SQL Runner to update this row.')
 
     const rows = data.pages.flatMap(page => page.rows)
@@ -122,21 +121,21 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     const [result] = await dbQuery({
       type: database.type,
       connectionString: database.connectionString,
-      query: setSql(schema, table, columnId, primaryKeys)[database.type],
+      query: setSql(schema, table, columnId, primaryColumns)[database.type],
       values: [
         prepareValue(value, columns?.find(column => column.id === columnId)?.type),
-        ...primaryKeys.map(key => rows[rowIndex]![key]),
+        ...primaryColumns.map(key => rows[rowIndex]![key]),
       ],
     })
 
-    const realValue = result!.rows[rowIndex]![columnId]
+    const realValue = result!.rows[0]![columnId]
 
     if (value !== realValue)
       setValue(rowIndex, columnId, realValue)
 
     if (filters.length > 0 || Object.keys(orderBy).length > 0)
       queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
-  }, [database, table, schema, store, primaryKeys, setValue, columns, filters, orderBy])
+  }, [database, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
 
   const tableColumns = useMemo(() => {
     if (!columns)
@@ -144,7 +143,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     const sortedColumns: ColumnRenderer[] = columns
       .filter(column => !hiddenColumns.includes(column.id))
-      .toSorted((a, b) => a.isPrimaryKey ? -1 : b.isPrimaryKey ? 1 : 0)
+      .toSorted((a, b) => a.primaryKey ? -1 : b.primaryKey ? 1 : 0)
       .map(column => ({
         id: column.id,
         size: columnsSizeMap.get(column.type) ?? DEFAULT_COLUMN_WIDTH,
@@ -159,17 +158,17 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         header: props => <TableHeaderCell column={column} {...props} />,
       }) satisfies ColumnRenderer)
 
-    if (selectable && hiddenColumns.length !== columns.length) {
+    if (primaryColumns.length > 0 && hiddenColumns.length !== columns.length) {
       sortedColumns.unshift({
         id: String(selectSymbol),
-        cell: props => <SelectionCell keys={primaryKeys} {...props} />,
-        header: props => <SelectionHeaderCell keys={primaryKeys} {...props} />,
+        cell: props => <SelectionCell keys={primaryColumns} {...props} />,
+        header: props => <SelectionHeaderCell keys={primaryColumns} {...props} />,
         size: 40,
       } satisfies ColumnRenderer)
     }
 
     return sortedColumns
-  }, [columns, hiddenColumns, selectable, primaryKeys, setValue, saveValue])
+  }, [columns, hiddenColumns, primaryColumns, setValue, saveValue])
 
   return (
     <TableProvider
@@ -182,7 +181,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         <Table>
           <TableHeader />
           {isRowsPending
-            ? <TableBodySkeleton selectable={selectable} />
+            ? <TableBodySkeleton selectable={primaryColumns.length > 0} />
             : error
               ? <TableError error={error} />
               : rows?.length === 0
