@@ -4,13 +4,13 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { databasesCollection } from '~/entities/database'
 
-interface RemoveDatabaseDialogProps {
+interface RemoveConnectionDialogProps {
   ref?: React.RefObject<{
     remove: (database: typeof databases.$inferSelect) => void
   } | null>
 }
 
-export function RemoveDatabaseDialog({ ref }: RemoveDatabaseDialogProps) {
+export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
   const [open, setOpen] = useState(false)
   const [database, setDatabase] = useState<typeof databases.$inferSelect | null>(null)
 
@@ -27,7 +27,7 @@ export function RemoveDatabaseDialog({ ref }: RemoveDatabaseDialogProps) {
 
     e.preventDefault()
     databasesCollection.delete(database.id)
-    toast.success('Database removed successfully')
+    toast.success('Connection removed successfully')
     setOpen(false)
   }
 
@@ -35,9 +35,9 @@ export function RemoveDatabaseDialog({ ref }: RemoveDatabaseDialogProps) {
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Remove database</AlertDialogTitle>
+          <AlertDialogTitle>Remove Connection</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this database
+            This action cannot be undone. This will permanently delete this connection
             and remove all associated data.
           </AlertDialogDescription>
         </AlertDialogHeader>

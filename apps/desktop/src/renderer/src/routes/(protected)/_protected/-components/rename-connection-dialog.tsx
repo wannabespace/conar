@@ -7,13 +7,13 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { databasesCollection } from '~/entities/database'
 
-interface RenameDatabaseDialogProps {
+interface RenameConnectionDialogProps {
   ref?: React.RefObject<{
     rename: (database: typeof databases.$inferSelect) => void
   } | null>
 }
 
-export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
+export function RenameConnectionDialog({ ref }: RenameConnectionDialogProps) {
   const [open, setOpen] = useState(false)
   const [database, setDatabase] = useState<typeof databases.$inferSelect | null>(null)
   const [newName, setNewName] = useState('')
@@ -44,16 +44,16 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Rename Database</DialogTitle>
+          <DialogTitle>Rename Connection</DialogTitle>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="newDatabaseName" className="font-normal">
-                Database name
+                Connection name
               </Label>
               <Input
                 id="newDatabaseName"
                 value={newName}
-                placeholder="Enter new database name"
+                placeholder="Enter new connection name"
                 spellCheck={false}
                 autoComplete="off"
                 onChange={e => setNewName(e.target.value)}
@@ -80,7 +80,7 @@ export function RenameDatabaseDialog({ ref }: RenameDatabaseDialogProps) {
               }
             }}
           >
-            Rename Database
+            Rename Connection
           </Button>
         </DialogFooter>
       </DialogContent>

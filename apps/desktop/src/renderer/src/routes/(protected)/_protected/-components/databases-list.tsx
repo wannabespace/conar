@@ -11,8 +11,8 @@ import { Link, useRouter } from '@tanstack/react-router'
 import { useMemo, useRef } from 'react'
 import { DatabaseIcon, databasesCollection } from '~/entities/database'
 import { useLastOpenedTable } from '../database/$id/table/-lib'
-import { RemoveDatabaseDialog } from './remove-database-dialog'
-import { RenameDatabaseDialog } from './rename-database-dialog'
+import { RemoveConnectionDialog } from './remove-connection-dialog'
+import { RenameConnectionDialog } from './rename-connection-dialog'
 
 function DatabaseCard({ database, onRemove, onRename }: { database: typeof databases.$inferSelect, onRemove: () => void, onRename: () => void }) {
   const connectionString = useMemo(() => {
@@ -116,13 +116,13 @@ export function DatabasesList() {
   const { data: databases } = useLiveQuery(q => q
     .from({ databases: databasesCollection })
     .orderBy(({ databases }) => databases.createdAt, 'desc'))
-  const renameDialogRef = useRef<ComponentRef<typeof RenameDatabaseDialog>>(null)
-  const removeDialogRef = useRef<ComponentRef<typeof RemoveDatabaseDialog>>(null)
+  const renameDialogRef = useRef<ComponentRef<typeof RenameConnectionDialog>>(null)
+  const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
 
   return (
     <div className="flex flex-col gap-6">
-      <RemoveDatabaseDialog ref={removeDialogRef} />
-      <RenameDatabaseDialog ref={renameDialogRef} />
+      <RemoveConnectionDialog ref={removeDialogRef} />
+      <RenameConnectionDialog ref={renameDialogRef} />
       <div className="flex flex-col gap-2">
         {!databases
           ? (
