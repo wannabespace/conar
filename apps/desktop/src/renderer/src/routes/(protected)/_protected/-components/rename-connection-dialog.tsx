@@ -34,7 +34,7 @@ export function RenameConnectionDialog({ ref }: RenameConnectionDialogProps) {
     databasesCollection.update(database.id, (draft) => {
       draft.name = newName.trim()
     })
-    toast.success(`Database renamed to "${newName.trim()}"`)
+    toast.success(`Connection renamed to "${newName.trim()}"`)
     setOpen(false)
   }
 
