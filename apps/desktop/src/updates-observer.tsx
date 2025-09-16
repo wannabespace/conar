@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Store, useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
+import { version } from '../package.json'
 
 export type UpdatesStatus = 'no-updates' | 'checking' | 'downloading' | 'ready' | 'error'
 
@@ -13,7 +14,7 @@ export const updatesStore = new Store<{
   message?: string
 }>({
   status: 'no-updates',
-  version: '',
+  version,
   message: undefined,
 })
 
@@ -26,7 +27,7 @@ export function UpdatesObserver() {
     queryKey: ['version'],
     queryFn: () => {
       if (!window.electron)
-        throw new Error('window.electron is not defined')
+        return null
 
       return window.electron.versions.app()
     },

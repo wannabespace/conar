@@ -3,6 +3,7 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { xai } from '@ai-sdk/xai'
+import { PORTS } from '@conar/shared/constants'
 import { trpcServer } from '@hono/trpc-server'
 import { onError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
@@ -11,7 +12,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { db, users } from './drizzle'
-import { env } from './env'
+import { env, nodeEnv } from './env'
 import { auth } from './lib/auth'
 import { router } from './orpc/routers'
 import { ai } from './routers/ai'
@@ -22,13 +23,33 @@ const app = new Hono()
 
 app.use(logger())
 app.use(cors({
-  origin: [env.WEB_URL, 'http://localhost:3002'],
+  origin: [
+    env.WEB_URL,
+    ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
+    ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
+  ],
   credentials: true,
 }))
 
 app.on(['GET', 'POST'], '/auth/*', (c) => {
   return auth.handler(c.req.raw)
 })
+
+if (process.env.NODE_ENV === 'test') {
+  app.get('/', async (c) => {
+    await auth.api.signUpEmail({
+      body: {
+        name: 'Test',
+        email: 'test@gmail.com',
+        password: '12345678',
+      },
+    })
+
+    return c.json({
+      message: 'User created',
+    })
+  })
+}
 
 app.use(
   '/trpc/*',
@@ -44,7 +65,7 @@ const handler = new RPCHandler(router, {
       console.error(error)
     }),
     async ({ request, next }) => {
-      console.log('Desktop version', request.headers['x-desktop-version'] ?? 'Unknown')
+      console.log('Desktop version; ', request.headers['x-desktop-version'] || 'Unknown')
       return next()
     },
   ],
@@ -157,5 +178,7 @@ app.get('/health', async (c) => {
 
 export default {
   fetch: app.fetch,
-  port: process.env.PORT ? Number(process.env.PORT) : 3000,
+  port: process.env.PORT
+    ? Number(process.env.PORT)
+    : nodeEnv === 'test' ? PORTS.TEST.API : PORTS.DEV.API,
 }

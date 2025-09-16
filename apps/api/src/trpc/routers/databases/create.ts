@@ -23,6 +23,7 @@ export const create = protectedProcedure
       syncType: !input.isPasswordExists || (input.isPasswordExists && new SafeURL(input.connectionString).password)
         ? SyncType.Cloud
         : SyncType.CloudWithoutPassword,
+      // @ts-expect-error - idk
     }).returning({ id: databases.id })
 
     return connection

@@ -74,6 +74,20 @@ Conar is an AI-powered open-source project that simplifies database interactions
   pnpm run dev
   ```
 
+## Testing
+
+- **Unit Tests**
+  ```bash
+  pnpm run test:unit
+  ```
+
+> Before running E2E tests, make sure to start the test server: `pnpm run test:start` and db `postgresql://postgres:postgres@localhost:5432/conar`
+
+- **E2E Tests**
+  ```bash
+  pnpm run test:e2e
+  ```
+
 ## License
 
 This project is licensed under the Apache-2.0 License — see the [LICENSE](LICENSE) file for details.

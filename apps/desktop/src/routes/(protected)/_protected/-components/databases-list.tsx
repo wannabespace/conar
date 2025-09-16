@@ -7,7 +7,7 @@ import { Skeleton } from '@conar/ui/components/skeleton'
 import { copy } from '@conar/ui/lib/copy'
 import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
-import { Link, useRouter } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { useMemo, useRef } from 'react'
 import { DatabaseIcon, databasesCollection } from '~/entities/database'
 import { useLastOpenedTable } from '../database/$id/table/-lib'
@@ -83,8 +83,6 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
 }
 
 export function Empty() {
-  const router = useRouter()
-
   return (
     <div className="text-center bg-card border-2 border-dashed border-border/50 rounded-xl p-14 w-full m-auto group">
       <h2 className="text-foreground font-medium mt-6">
@@ -93,8 +91,10 @@ export function Empty() {
       <p className="text-sm text-muted-foreground mt-1 mb-4 whitespace-pre-line">
         Create a new connection to get started.
       </p>
-      <Button onClick={() => router.navigate({ to: '/create' })}>
-        Create a new connection
+      <Button asChild>
+        <Link to="/create">
+          Create a new connection
+        </Link>
       </Button>
     </div>
   )

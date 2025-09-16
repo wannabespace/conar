@@ -12,6 +12,9 @@
 # deps
 node_modules/
 
+# test
+.test-db
+
 # env
 .env
 .env.production

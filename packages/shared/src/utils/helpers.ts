@@ -1,3 +1,5 @@
+export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
 export function enumValues<T extends { [key: string]: string }>(enumType: T) {
   return Object.values(enumType) as [T[keyof T], ...T[keyof T][]]
 }

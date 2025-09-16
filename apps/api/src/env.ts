@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { type } from 'arktype'
 
-const isProduction = process.env.NODE_ENV === 'production'
+export const nodeEnv = type('"production" | "development" | "test"').assert(process.env.NODE_ENV)
 
 const envType = type({
   API_URL: 'string',
@@ -40,7 +40,7 @@ const devOptionalEnvs = [
   'GITHUB_CLIENT_SECRET',
 ] satisfies (keyof typeof envType.infer)[]
 
-export const env = isProduction
+export const env = nodeEnv === 'production' || nodeEnv === 'test'
   ? envType.assert(process.env)
   : envType
       .merge(
