@@ -27,4 +27,10 @@ export default antfu(
       'node/prefer-global/process': 'off',
     },
   },
+  {
+    files: ['**/e2e/**/*'],
+    rules: {
+      'react-hooks/rules-of-hooks': 'off',
+    },
+  },
 )
