@@ -111,7 +111,7 @@ const config = {
   },
   trustedOrigins: [
     env.WEB_URL,
-    ...(nodeEnv === 'development' ? [] : [`http://localhost:${PORTS.DEV.DESKTOP}`]),
+    ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
     ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
   ],
   advanced: {
