@@ -34,6 +34,7 @@ export default defineConfig({
     },
     root: '.',
     build: {
+      sourcemap: true,
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'index.html'),

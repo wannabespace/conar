@@ -18,9 +18,6 @@ export const viteBaseConfig = defineConfig({
       },
     }),
   ],
-  build: {
-    sourcemap: true,
-  },
   optimizeDeps: {
     exclude: ['@electric-sql/pglite'],
   },

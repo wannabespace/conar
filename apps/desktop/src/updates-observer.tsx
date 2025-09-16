@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Store, useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
-import { version } from '../package.json'
+import { version as packageVersion } from '../package.json'
 
 export type UpdatesStatus = 'no-updates' | 'checking' | 'downloading' | 'ready' | 'error'
 
@@ -14,7 +14,7 @@ export const updatesStore = new Store<{
   message?: string
 }>({
   status: 'no-updates',
-  version,
+  version: packageVersion,
   message: undefined,
 })
 
@@ -23,11 +23,11 @@ export async function checkForUpdates() {
 }
 
 export function UpdatesObserver() {
-  const { data: version } = useQuery({
+  const { data: version } = useQuery<string>({
     queryKey: ['version'],
     queryFn: () => {
       if (!window.electron)
-        return null
+        return packageVersion
 
       return window.electron.versions.app()
     },

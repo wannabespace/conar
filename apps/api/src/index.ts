@@ -35,22 +35,6 @@ app.on(['GET', 'POST'], '/auth/*', (c) => {
   return auth.handler(c.req.raw)
 })
 
-if (process.env.NODE_ENV === 'test') {
-  app.get('/', async (c) => {
-    await auth.api.signUpEmail({
-      body: {
-        name: 'Test',
-        email: 'test@gmail.com',
-        password: '12345678',
-      },
-    })
-
-    return c.json({
-      message: 'User created',
-    })
-  })
-}
-
 app.use(
   '/trpc/*',
   trpcServer({
@@ -65,7 +49,7 @@ const handler = new RPCHandler(router, {
       console.error(error)
     }),
     async ({ request, next }) => {
-      console.log('Desktop version; ', request.headers['x-desktop-version'] || 'Unknown')
+      console.log('Desktop version: ', request.headers['x-desktop-version'] || 'Unknown')
       return next()
     },
   ],
