@@ -13,7 +13,7 @@
 node_modules/
 
 # test
-.test-db
+.pglite
 
 # env
 .env
