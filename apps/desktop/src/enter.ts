@@ -1,4 +1,4 @@
-import { sleep } from './lib/helpers'
+import { sleep } from '@conar/shared/utils/helpers'
 
 let isEntered = false
 

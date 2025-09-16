@@ -2,6 +2,7 @@ import type { UseMutateFunction } from '@tanstack/react-query'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '../table'
 import type { TableCellProps } from '~/components/table'
+import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { CtrlEnter } from '@conar/ui/components/custom/ctrl-enter'
@@ -16,7 +17,6 @@ import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
-import { sleep } from '~/lib/helpers'
 
 function getDisplayValue(value: unknown, oneLine: boolean) {
   if (typeof value === 'object' && value !== null)

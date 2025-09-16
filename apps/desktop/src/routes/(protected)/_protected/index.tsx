@@ -6,7 +6,7 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useDatabasesSync } from '~/entities/database'
 import { checkForUpdates, updatesStore } from '~/updates-observer'
@@ -22,7 +22,6 @@ export const Route = createFileRoute('/(protected)/_protected/')({
 
 function DashboardPage() {
   const { sync, isSyncing } = useDatabasesSync()
-  const router = useRouter()
   const [version, versionStatus] = useStore(updatesStore, state => [state.version, state.status])
 
   return (
@@ -48,9 +47,11 @@ function DashboardPage() {
               </ContentSwitch>
             </LoadingContent>
           </Button>
-          <Button onClick={() => router.navigate({ to: '/create' })}>
-            <RiAddLine className="size-4" />
-            Add new
+          <Button asChild>
+            <Link to="/create">
+              <RiAddLine className="size-4" />
+              Add new
+            </Link>
           </Button>
         </div>
       </div>

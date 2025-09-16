@@ -20,6 +20,7 @@ function findEnvExampleFiles(dir: string, results: string[] = []) {
     if (['node_modules'].includes(item)) {
       continue
     }
+
     const fullPath = path.join(dir, item)
     const stats = fs.statSync(fullPath)
 

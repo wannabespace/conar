@@ -3,7 +3,6 @@
   "envMode": "loose",
   "tasks": {
     "start": {
-      "cache": false,
       "persistent": true
     },
     "check-types": {
@@ -11,7 +10,6 @@
       "dependsOn": ["^check-types"]
     },
     "dev": {
-      "cache": false,
       "persistent": true
     },
     "build": {
@@ -32,6 +30,15 @@
     },
     "drizzle:generate": {
       "cache": false
+    },
+    "test:unit": {
+      "cache": false
+    },
+    "test:e2e": {
+      "cache": false
+    },
+    "test:start": {
+      "persistent": true
     }
   }
 }

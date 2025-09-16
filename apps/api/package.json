@@ -5,6 +5,7 @@
     "dev": "cross-env NODE_ENV=development bun --watch run ./src/index.ts",
     "start": "cross-env NODE_ENV=production bun run drizzle:migrate && bun run ./src/index.ts",
     "check-types": "tsc",
+    "test:start": "cross-env NODE_ENV=test bun --env-file=.env.test run drizzle:migrate && cross-env NODE_ENV=test bun --env-file=.env.test run ./src/index.ts",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:generate-custom": "drizzle-kit generate --custom",
     "drizzle:migrate": "drizzle-kit migrate"
@@ -51,6 +52,8 @@
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
+    "@electric-sql/pglite": "^0.3.8",
+    "@playwright/test": "catalog:",
     "@types/ioredis-mock": "^8.2.6",
     "drizzle-kit": "catalog:"
   }

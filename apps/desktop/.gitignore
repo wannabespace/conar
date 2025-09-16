@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 out
+dist
 release
 *.local
 
@@ -29,3 +30,9 @@ yarn.lock
 
 # env
 .env
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

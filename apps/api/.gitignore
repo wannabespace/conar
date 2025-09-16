@@ -12,6 +12,9 @@
 # deps
 node_modules/
 
+# test
+.pglite
+
 # env
 .env
 .env.production

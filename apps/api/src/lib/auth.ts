@@ -1,11 +1,11 @@
 import type { BetterAuthOptions, BetterAuthPlugin, User } from 'better-auth'
-import process from 'node:process'
+import { PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { db } from '~/drizzle'
-import { env } from '~/env'
+import { env, nodeEnv } from '~/env'
 import { loops } from '~/lib/loops'
 
 async function loopsUpdateUser(user: User) {
@@ -109,7 +109,11 @@ const config = {
       },
     },
   },
-  trustedOrigins: [env.WEB_URL, ...(process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3002'])],
+  trustedOrigins: [
+    env.WEB_URL,
+    ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
+    ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
+  ],
   advanced: {
     cookiePrefix: 'conar',
     database: {
