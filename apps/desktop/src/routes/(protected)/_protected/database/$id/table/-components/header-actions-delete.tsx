@@ -23,9 +23,7 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      await dbQuery({
-        type: database.type,
-        connectionString: database.connectionString,
+      await dbQuery(database.id, {
         query: deleteRowsSql(table, schema, selected)[database.type],
       })
     },

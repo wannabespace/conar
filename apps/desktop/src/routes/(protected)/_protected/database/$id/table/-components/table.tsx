@@ -118,9 +118,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     const rows = data.pages.flatMap(page => page.rows)
 
-    const [result] = await dbQuery({
-      type: database.type,
-      connectionString: database.connectionString,
+    const [result] = await dbQuery(database.id, {
       query: setSql(schema, table, columnId, primaryColumns)[database.type],
       values: [
         prepareValue(value, columns?.find(column => column.id === columnId)?.type),

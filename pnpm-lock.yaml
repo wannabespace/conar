@@ -167,6 +167,9 @@ importers:
       '@ai-sdk/xai1':
         specifier: npm:@ai-sdk/xai@1.2.18
         version: '@ai-sdk/xai@1.2.18(zod@4.1.8)'
+      '@conar/connection':
+        specifier: workspace:*
+        version: link:../../packages/connection
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -227,6 +230,9 @@ importers:
       nanoid:
         specifier: 'catalog:'
         version: 5.1.5
+      pg:
+        specifier: ^8.16.3
+        version: 8.16.3
       postgres:
         specifier: ^3.4.7
         version: 3.4.7
@@ -267,6 +273,9 @@ importers:
       '@types/ioredis-mock':
         specifier: ^8.2.6
         version: 8.2.6(ioredis@5.7.0)
+      '@types/pg':
+        specifier: ^8.15.5
+        version: 8.15.5
       drizzle-kit:
         specifier: 'catalog:'
         version: 0.31.4

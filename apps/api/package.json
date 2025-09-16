@@ -20,6 +20,7 @@
     "@ai-sdk/provider": "^2.0.0",
     "@ai-sdk/xai": "^2.0.18",
     "@ai-sdk/xai1": "npm:@ai-sdk/xai@1.2.18",
+    "@conar/connection": "workspace:*",
     "@conar/shared": "workspace:*",
     "@hono/arktype-validator": "^2.0.1",
     "@hono/trpc-server": "^0.4.0",
@@ -40,6 +41,7 @@
     "ioredis-mock": "^8.9.0",
     "loops": "^6.0.0",
     "nanoid": "catalog:",
+    "pg": "^8.16.3",
     "postgres": "^3.4.7",
     "posthog-node": "^5.8.4",
     "redis": "^5.8.2",
@@ -55,6 +57,7 @@
     "@electric-sql/pglite": "^0.3.8",
     "@playwright/test": "catalog:",
     "@types/ioredis-mock": "^8.2.6",
+    "@types/pg": "^8.15.5",
     "drizzle-kit": "catalog:"
   }
 }

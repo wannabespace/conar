@@ -1,3 +1,4 @@
+import type { DatabaseQueryResult } from '@conar/shared/databases'
 import { createRequire } from 'node:module'
 import { decrypt, encrypt } from '@conar/shared/encryption'
 import { DatabaseType } from '@conar/shared/enums/database-type'
@@ -9,14 +10,6 @@ const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as ty
 const encryption = {
   encrypt,
   decrypt,
-}
-
-export interface DatabaseQueryResult {
-  count: number
-  columns: {
-    id: string
-  }[]
-  rows: Record<string, unknown>[]
 }
 
 const databases = {

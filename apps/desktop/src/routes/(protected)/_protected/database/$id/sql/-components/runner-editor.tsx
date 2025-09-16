@@ -34,11 +34,7 @@ export function runnerQueryOptions({ database, query }: { database: typeof datab
         shouldRun = false
       }
 
-      const result = await dbQuery({
-        type: database.type,
-        connectionString: database.connectionString,
-        query,
-      })
+      const result = await dbQuery(database.id, { query })
 
       if (!shouldRun) {
         return null!

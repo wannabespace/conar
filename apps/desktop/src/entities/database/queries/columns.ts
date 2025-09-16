@@ -7,9 +7,7 @@ export function databaseTableColumnsQuery({ database, table, schema }: { databas
   return queryOptions({
     queryKey: ['database', database.id, 'columns', schema, table],
     queryFn: async () => {
-      const [result] = await dbQuery({
-        type: database.type,
-        connectionString: database.connectionString,
+      const [result] = await dbQuery(database.id, {
         query: columnsSql(schema, table)[database.type],
       })
 

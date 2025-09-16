@@ -7,9 +7,7 @@ export function databaseEnumsQuery({ database }: { database: typeof databases.$i
   return queryOptions({
     queryKey: ['database', database.id, 'enums'],
     queryFn: async () => {
-      const [result] = await dbQuery({
-        type: database.type,
-        connectionString: database.connectionString,
+      const [result] = await dbQuery(database.id, {
         query: enumsSql()[database.type],
       })
 

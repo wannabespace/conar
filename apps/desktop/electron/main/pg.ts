@@ -1,5 +1,5 @@
+import type { DatabaseQueryResult } from '@conar/shared/databases'
 import type { QueryResult } from 'pg'
-import type { DatabaseQueryResult } from './events'
 import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
 import { readSSLFiles } from '@conar/connection/server'
