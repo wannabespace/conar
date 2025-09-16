@@ -37,8 +37,14 @@ export function createWindow() {
 
   mainWindow.setBounds(store.get('bounds') as Rectangle)
 
+  const isFullscreen = store.get('fullscreen', false) as boolean
+  if (isFullscreen) {
+    mainWindow.setFullScreen(true)
+  }
+
   mainWindow.on('close', () => {
     store.set('bounds', mainWindow!.getBounds())
+    store.set('fullscreen', mainWindow!.isFullScreen())
   })
 
   mainWindow.on('ready-to-show', () => {
