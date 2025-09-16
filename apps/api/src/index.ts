@@ -65,7 +65,7 @@ const handler = new RPCHandler(router, {
       console.error(error)
     }),
     async ({ request, next }) => {
-      console.log('Desktop version; ', request.headers['x-desktop-version'] || 'Unknown')
+      console.log('Desktop version: ', request.headers['x-desktop-version'] || 'Unknown')
       return next()
     },
   ],
