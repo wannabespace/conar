@@ -16,6 +16,8 @@ export default antfu(
       '**/.tanstack/**/*',
       '**/.nitro/**/*',
       '**/.output/**/*',
+      '**/playwright-report/**/*',
+      '**/test-results/**/*',
       '**/.types/**/*',
       '**/migrations/meta/*.json',
       '**/migrations.json',

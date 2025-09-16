@@ -1,5 +1,5 @@
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
-import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
+import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
@@ -23,7 +23,7 @@ dayjs.extend(isSameOrAfter)
 dayjs.extend(isSameOrBefore)
 dayjs.extend(weekOfYear)
 
-if (import.meta.env.DEV) {
+if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => {
     scan()
   })
@@ -50,7 +50,7 @@ export const queryClient = new QueryClient({
 })
 
 export const router = createRouter({
-  history: createHashHistory(),
+  history: import.meta.env.VITE_TEST ? createBrowserHistory() : createHashHistory(),
   routeTree,
   defaultPreload: 'intent',
   defaultPendingMinMs: 0,

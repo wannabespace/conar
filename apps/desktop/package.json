@@ -14,10 +14,12 @@
   },
   "main": "./out/main/index.js",
   "scripts": {
-    "dev": "electron-vite dev",
-    "build:vite": "electron-vite build",
+    "dev": "electron-vite -c vite.electron.config.ts dev",
+    "build:vite": "electron-vite -c vite.electron.config.ts build",
     "build:electron": "electron-builder -p always",
     "check-types": "tsc",
+    "test:start": "vite -c vite.test.config.ts build --mode test && vite -c vite.test.config.ts preview --mode test",
+    "test:e2e": "playwright test --headed",
     "drizzle:generate": "drizzle-kit generate && bun run ./scripts/compile-migrations.ts",
     "drizzle:generate-custom": "drizzle-kit generate --custom && bun run ./scripts/compile-migrations.ts"
   },
@@ -45,6 +47,7 @@
     "@number-flow/react": "catalog:",
     "@orpc/client": "^1.8.8",
     "@orpc/server": "^1.8.8",
+    "@playwright/test": "catalog:",
     "@react-hookz/web": "^25.1.1",
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "^4.1.13",
