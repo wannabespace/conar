@@ -1,4 +1,5 @@
 import type { databases } from '~/drizzle'
+import type { DatabaseMutationMetadata } from '~/entities/database'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
@@ -26,7 +27,11 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
   const { mutate: savePassword, status } = useMutation({
     mutationFn: async (password: string) => {
       await dbTestConnection({ type: database.type, connectionString: newConnectionString })
-      databasesCollection.update(database.id, (draft) => {
+      databasesCollection.update(database.id, {
+        metadata: {
+          sync: false,
+        } satisfies DatabaseMutationMetadata,
+      }, (draft) => {
         const url = new SafeURL(draft.connectionString)
 
         url.password = password

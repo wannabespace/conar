@@ -120,10 +120,10 @@ export function ChatForm() {
         search: { error },
       })
     })
-  }, [router])
+  }, [router, database.id])
 
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation({
-    mutationFn: orpc.ai.enhancePrompt,
+    mutationFn: (data: { prompt: string, chatId: string }) => orpc.ai.enhancePrompt(data),
     onSuccess: (data) => {
       if (input.length < 10) {
         return

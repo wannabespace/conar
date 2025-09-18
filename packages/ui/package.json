@@ -42,7 +42,7 @@
     "cmdk": "1.1.1",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.544.0",
-    "motion": "^12.23.12",
+    "motion": "catalog:",
     "next-themes": "^0.4.6",
     "react": "catalog:",
     "react-dom": "catalog:",

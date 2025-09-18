@@ -15,6 +15,18 @@ export function waitForDatabasesSync() {
   return promise
 }
 
+function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
+  const url = new SafeURL(connectionString.trim())
+  if (syncType !== SyncType.Cloud) {
+    url.password = ''
+  }
+  return url.toString()
+}
+
+export interface DatabaseMutationMetadata {
+  sync?: boolean
+}
+
 export const databasesCollection = createCollection(drizzleCollectionOptions({
   db,
   table: databases,
@@ -35,7 +47,6 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
           value: {
             ...item.value,
             isPasswordPopulated: !!new SafeURL(item.value.connectionString).password,
-            syncType: item.value.syncType ?? SyncType.CloudWithoutPassword,
           },
         })
       }
@@ -50,20 +61,16 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
         const localPassword = new SafeURL(existed.connectionString).password
         const newConnectionString = new SafeURL(item.value.connectionString)
 
-        // TODO: change to sync type
-        if (item.value.isPasswordExists && localPassword && !cloudPassword) {
+        if (item.value.syncType === SyncType.CloudWithoutPassword && localPassword && !cloudPassword) {
           newConnectionString.password = localPassword
         }
-
-        const connectionString = newConnectionString.toString()
-        const isPasswordPopulated = !!new SafeURL(item.value.connectionString).password
 
         write({
           type: 'update',
           value: {
             ...item.value,
-            connectionString,
-            isPasswordPopulated,
+            connectionString: newConnectionString.toString(),
+            isPasswordPopulated: !!newConnectionString.password,
             syncType: item.value.syncType ?? SyncType.CloudWithoutPassword,
           },
         })
@@ -84,38 +91,21 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
     resolve()
   },
   onInsert: async ({ transaction }) => {
-    await Promise.all(transaction.mutations.map((m) => {
-      if (m.changes.name) {
-        const url = new SafeURL(m.modified.connectionString.trim())
-
-        const isPasswordExists = !!url.password
-
-        if (isPasswordExists && m.modified.syncType !== SyncType.Cloud) {
-          url.password = ''
-        }
-
-        return orpc.databases.create({
-          ...m.modified,
-          connectionString: url.toString(),
-          isPasswordExists,
-          syncType: m.modified.syncType,
-        })
-      }
-
-      return Promise.resolve()
-    }))
+    await Promise.all(transaction.mutations.map(m => orpc.databases.create({
+      ...m.modified,
+      connectionString: prepareConnectionStringToCloud(m.modified.connectionString, m.modified.syncType),
+    })))
   },
   onUpdate: async ({ transaction }) => {
-    await Promise.all(transaction.mutations.map((m) => {
-      if (m.changes.name) {
-        return orpc.databases.update({
-          id: m.key,
-          name: m.changes.name,
-        })
-      }
-
-      return Promise.resolve()
-    }))
+    await Promise.all(transaction.mutations
+      .filter(m => (m.metadata as DatabaseMutationMetadata)?.sync !== false)
+      .map(m => orpc.databases.update({
+        id: m.key,
+        ...m.changes,
+        ...(m.changes.connectionString
+          ? { connectionString: prepareConnectionStringToCloud(m.changes.connectionString, m.modified.syncType) }
+          : {}),
+      })))
     router.invalidate({ filter: r => r.routeId === '/(protected)/_protected/database/$id' })
   },
   onDelete: async ({ transaction }) => {

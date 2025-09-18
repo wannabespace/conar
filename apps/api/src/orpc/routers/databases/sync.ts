@@ -29,7 +29,7 @@ export const sync = orpc
   .output(output)
   .handler(async function ({ input, context }) {
     const inputIds = input.map(i => i.id)
-    const [updatedItems, newItems, allIds] = await Promise.all([
+    const [updatedItems, newItems, existingIds] = await Promise.all([
       inputIds.length > 0
         ? db.select().from(databases).where(
             and(
@@ -56,7 +56,7 @@ export const sync = orpc
         ))
         .then(r => r.map(item => item.id)),
     ])
-    const missingIds = inputIds.filter(id => !allIds.includes(id))
+    const missingIds = inputIds.filter(id => !existingIds.includes(id))
 
     const sync: typeof output.infer = []
 

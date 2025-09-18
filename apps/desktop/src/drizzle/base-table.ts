@@ -3,11 +3,10 @@ import { v7 } from 'uuid'
 
 export const baseTable = {
   id: uuid().$defaultFn(v7).primaryKey(),
-  createdAt: timestamp('created_at', { withTimezone: true })
+  createdAt: timestamp({ withTimezone: true })
     .defaultNow()
     .notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
+  updatedAt: timestamp({ withTimezone: true })
     .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
+    .notNull(),
 }

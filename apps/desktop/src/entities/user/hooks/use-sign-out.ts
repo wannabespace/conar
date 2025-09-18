@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { databasesCollection } from '~/entities/database'
-import { queriesCollection } from '~/entities/query/lib/sync'
+import { queriesCollection } from '~/entities/query/sync'
 import { authClient, fullSignOut } from '~/lib/auth'
 import { queryClient } from '~/main'
 

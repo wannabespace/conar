@@ -19,7 +19,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
   const store = usePageStoreContext()
   const prompt = useStore(store, state => state.prompt)
   const { mutate: generateFilter, isPending } = useMutation({
-    mutationFn: orpc.ai.filters,
+    mutationFn: (data: { prompt: string, context: string }) => orpc.ai.filters(data),
     onSuccess: (data) => {
       store.setState(state => ({
         ...state,

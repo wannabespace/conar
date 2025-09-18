@@ -1,1 +1,1 @@
-export * from './lib/sync'
+export * from './sync'
