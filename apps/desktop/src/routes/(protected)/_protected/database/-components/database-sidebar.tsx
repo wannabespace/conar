@@ -10,11 +10,11 @@ import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { cn } from '@conar/ui/lib/utils'
+import { clickHandlers, cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiCommandLine, RiListUnordered, RiMessageLine, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
-import { Link, useMatches, useSearch } from '@tanstack/react-router'
+import { Link, useMatches, useNavigate, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ThemeToggle } from '~/components/theme-toggle'
@@ -114,6 +114,7 @@ function SupportButton() {
 
 function LastOpenedDatabase({ database }: { database: typeof databases.$inferSelect }) {
   const { id } = Route.useParams()
+  const navigate = useNavigate()
   const [lastOpenedTable] = useLastOpenedTable(database.id)
   const isActive = database.id === id
 
@@ -134,6 +135,11 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
             className={cn(classes(isActive), 'relative group')}
             params={{ id: database.id }}
             search={lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined}
+            {...clickHandlers(() => navigate({
+              to: '/database/$id/table',
+              params: { id: database.id },
+              search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
+            }))}
           >
             {!isActive && (
               <span
@@ -182,6 +188,7 @@ function LastOpenedDatabases() {
 
 function MainLinks() {
   const { id } = Route.useParams()
+  const navigate = useNavigate()
   const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
   const matches = useMatches({
     select: matches => matches.map(match => match.routeId),
@@ -230,6 +237,11 @@ function MainLinks() {
               params={{ id }}
               search={lastOpenedChatId ? { chatId: lastOpenedChatId } : undefined}
               className={classes(isActiveSql)}
+              {...clickHandlers(() => navigate({
+                to: '/database/$id/sql',
+                params: { id },
+                search: lastOpenedChatId ? { chatId: lastOpenedChatId } : undefined,
+              }))}
             >
               <RiPlayLargeLine className="size-4" />
             </Link>
@@ -242,8 +254,11 @@ function MainLinks() {
           <TooltipTrigger asChild>
             <Link
               className={classes(isActiveTables)}
-              onClick={onTablesClick}
               {...route}
+              {...clickHandlers(() => {
+                navigate(route)
+                onTablesClick()
+              })}
             >
               <RiTableLine className="size-4" />
             </Link>
@@ -258,6 +273,10 @@ function MainLinks() {
               to="/database/$id/enums"
               params={{ id }}
               className={classes(isActiveEnums)}
+              {...clickHandlers(() => navigate({
+                to: '/database/$id/enums',
+                params: { id },
+              }))}
             >
               <RiListUnordered className="size-4" />
             </Link>

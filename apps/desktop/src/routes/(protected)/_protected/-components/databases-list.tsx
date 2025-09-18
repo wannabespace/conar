@@ -5,9 +5,10 @@ import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Skeleton } from '@conar/ui/components/skeleton'
 import { copy } from '@conar/ui/lib/copy'
+import { clickHandlers } from '@conar/ui/lib/utils'
 import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useMemo, useRef } from 'react'
 import { DatabaseIcon, databasesCollection } from '~/entities/database'
 import { useLastOpenedTable } from '../database/$id/table/-lib'
@@ -15,6 +16,7 @@ import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
 function DatabaseCard({ database, onRemove, onRename }: { database: typeof databases.$inferSelect, onRemove: () => void, onRename: () => void }) {
+  const navigate = useNavigate()
   const connectionString = useMemo(() => {
     const url = new SafeURL(database.connectionString)
 
@@ -33,6 +35,11 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
       to="/database/$id/table"
       params={{ id: database.id }}
       search={lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined}
+      {...clickHandlers(() => navigate({
+        to: '/database/$id/table',
+        params: { id: database.id },
+        search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
+      }))}
     >
       <div className="size-12 shrink-0 rounded-lg bg-muted/70 p-3">
         <DatabaseIcon type={database.type} className="size-full text-primary" />
