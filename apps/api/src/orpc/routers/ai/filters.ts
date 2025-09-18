@@ -21,35 +21,35 @@ export const filters = orpc
         context: input.context,
         userId: context.user.id,
       }),
-      system: `
-        You are a filters and ordering generator that converts natural language queries into database filters and ordering instructions.
-        You should understand the sense of the prompt as much as possible.
-        If you do not generate any filters, a user will not be able to filter the data.
-        Each of your filters or ordering responses will replace the previous ones.
-
-        Guidelines:
-        - Create multiple filters when the query has multiple conditions
-        - Use exact column names as provided in the context
-        - Choose the most appropriate operator for each condition
-        - Format values correctly based on column types (strings, numbers, dates, etc.)
-        - For enum columns, ensure values match the available options
-        - For exact days use >= and <= operators
-        - If user asks 'empty' and the column is a string, use empty string as item in values array
-        - If context already contains a filter, you can use it as reference to generate a new filter
-        - Return an empty array if the prompt is unclear or cannot be converted to filters
-
-        // Ordering:
-        // - If the user requests sorting or ordering (e.g., "sort by date descending", "order by name ascending"), generate an orderBy object.
-        // - Use the exact column names from the context for ordering.
-        // - The orderBy object should have the column name as the key and the direction as the value ("ASC" for ascending, "DESC" for descending).
-        // - If no ordering is specified in the prompt, you may omit the orderBy object.
-
-        Current time: ${new Date().toISOString()}
-        Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}
-
-        Table context:
-        ${input.context}
-      `,
+      system: [
+        'You are a filters and ordering generator that converts natural language queries into database filters and ordering instructions.',
+        'You should understand the sense of the prompt as much as possible.',
+        'Each of your filters or ordering responses will replace the previous ones.',
+        '',
+        'Guidelines:',
+        '- Create multiple filters when the query has multiple conditions',
+        '- Use exact column names as provided in the context',
+        '- Choose the most appropriate operator for each condition',
+        '- Format values correctly based on column types (strings, numbers, dates, etc.)',
+        '- For enum columns, ensure values match the available options',
+        '- For exact days use >= and <= operators',
+        '- If user asks \'empty\' and the column is a string, use empty string as item in values array',
+        '- If context already contains a filter, you can use it as reference to generate a new filter',
+        '- User can paste only the value, you should try to understand to which column the value belongs',
+        '- Try to generate at least one filter unless the prompt is completely unclear',
+        // '',
+        // ' Ordering:',
+        // ' - If the user requests sorting or ordering (e.g., "sort by date descending", "order by name ascending"), generate an orderBy object.',
+        // ' - Use the exact column names from the context for ordering.',
+        // ' - The orderBy object should have the column name as the key and the direction as the value ("ASC" for ascending, "DESC" for descending).',
+        // ' - If no ordering is specified in the prompt, you may omit the orderBy object.',
+        '',
+        `Current time: ${new Date().toISOString()}`,
+        `Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}`,
+        '',
+        'Table context:',
+        input.context,
+      ].join('\n'),
       prompt: input.prompt,
       abortSignal: signal,
       schema: z.object({
