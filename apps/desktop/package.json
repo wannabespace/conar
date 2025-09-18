@@ -24,7 +24,6 @@
     "drizzle:generate-custom": "drizzle-kit generate --custom && bun run ./scripts/compile-migrations.ts"
   },
   "dependencies": {
-    "drizzle-zod": "^0.8.3",
     "electron-store": "^10.1.0",
     "electron-updater": "^6.6.2",
     "pg": "^8.16.3"
@@ -53,6 +52,7 @@
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "^4.1.13",
     "@tanstack/react-db": "^0.1.20",
+    "@tanstack/react-devtools": "^0.6.9",
     "@tanstack/react-form": "^1.21.1",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
