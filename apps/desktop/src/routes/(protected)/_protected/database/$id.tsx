@@ -1,10 +1,15 @@
 import { title } from '@conar/shared/utils/title'
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { databasesCollection, prefetchDatabaseCore } from '~/entities/database'
+import {
+  databasesCollection,
+  getDatabasePageId,
+  lastOpenedDatabases,
+  lastOpenedPage,
+  prefetchDatabaseCore,
+} from '~/entities/database'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
-import { lastOpenedDatabases } from './-lib'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: DatabasePage,
@@ -29,6 +34,15 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
 
 function DatabasePage() {
   const { database } = Route.useLoaderData()
+  const currentPageId = useMatches({
+    select: matches => getDatabasePageId(matches.map(match => match.routeId)),
+  })
+
+  useEffect(() => {
+    if (currentPageId) {
+      lastOpenedPage(database.id).set(currentPageId)
+    }
+  }, [currentPageId, database.id])
 
   useEffect(() => {
     const last = lastOpenedDatabases.get()

@@ -7,7 +7,7 @@ import { useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { Store, useStore } from '@tanstack/react-store'
-import { DatabaseIcon, databasesCollection, prefetchDatabaseCore, tablesAndSchemasQuery } from '~/entities/database'
+import { DatabaseIcon, databasesCollection, prefetchDatabaseCore, tablesAndSchemasQuery, useDatabaseLinkParams } from '~/entities/database'
 import { trackEvent } from '~/lib/events'
 
 const os = getOS(navigator.userAgent)
@@ -54,6 +54,28 @@ function ActionsDatabaseTables({ database }: { database: typeof databases.$infer
   )
 }
 
+function ActionsDatabase({ database }: { database: typeof databases.$inferSelect }) {
+  const router = useRouter()
+  const params = useDatabaseLinkParams(database.id)
+
+  function onDatabaseSelect(database: typeof databasesTable.$inferSelect) {
+    setIsOpen(false)
+
+    prefetchDatabaseCore(database)
+    router.navigate(params)
+  }
+
+  return (
+    <CommandItem
+      key={database.id}
+      onSelect={() => onDatabaseSelect(database)}
+    >
+      <DatabaseIcon type={database.type} className="size-4 shrink-0" />
+      {database.name}
+    </CommandItem>
+  )
+}
+
 export function ActionsCenter() {
   const { data: databases } = useLiveQuery(q => q
     .from({ databases: databasesCollection })
@@ -69,13 +91,6 @@ export function ActionsCenter() {
     setIsOpen(!isOpen)
     trackEvent('actions_center_open_shortcut')
   })
-
-  function onDatabaseSelect(database: typeof databasesTable.$inferSelect) {
-    setIsOpen(false)
-
-    prefetchDatabaseCore(database)
-    router.navigate({ to: '/database/$id/table', params: { id: database.id } })
-  }
 
   const currentConnection = databases?.find(database => database.id === id)
 
@@ -106,15 +121,7 @@ export function ActionsCenter() {
         </CommandGroup>
         {!!databases?.length && (
           <CommandGroup heading="Databases">
-            {databases.map(database => (
-              <CommandItem
-                key={database.id}
-                onSelect={() => onDatabaseSelect(database)}
-              >
-                <DatabaseIcon type={database.type} className="size-4 shrink-0" />
-                {database.name}
-              </CommandItem>
-            ))}
+            {databases.map(database => <ActionsDatabase key={database.id} database={database} />)}
           </CommandGroup>
         )}
         {currentConnection && <ActionsDatabaseTables database={currentConnection} />}

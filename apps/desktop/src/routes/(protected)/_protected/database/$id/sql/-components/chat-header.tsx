@@ -18,9 +18,9 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
+import { lastOpenedChatId } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { Route } from '..'
-import { lastOpenedChatId } from '../-chat'
 
 type Group = 'today' | 'yesterday' | 'week' | 'month' | 'older'
 
@@ -112,7 +112,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
             variant="outline"
             size="icon-sm"
             asChild
-            onClick={() => lastOpenedChatId.set(id, null)}
+            onClick={() => lastOpenedChatId(id).remove()}
           >
             <Link
               to="/database/$id/sql"

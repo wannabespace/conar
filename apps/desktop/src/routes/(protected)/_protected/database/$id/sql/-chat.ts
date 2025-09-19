@@ -5,7 +5,6 @@ import { Chat } from '@ai-sdk/react'
 import { convertToAppUIMessage } from '@conar/shared/ai-tools'
 import { rowsSql } from '@conar/shared/sql/rows'
 import { whereSql } from '@conar/shared/sql/where'
-import { sessionStorageValue, useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { eventIteratorToStream } from '@orpc/client'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
@@ -52,30 +51,6 @@ export const chatInput = {
   },
   set(id: string, input: string) {
     sessionStorage.setItem(`sql-chat-input-${id}`, JSON.stringify(input))
-  },
-}
-
-function getLastChatIdKey(databaseId: string) {
-  return `sql-last-chat-id-${databaseId}`
-}
-
-export function useLastOpenedChatId(databaseId: string) {
-  return useSessionStorage<string | null>(getLastChatIdKey(databaseId), null)
-}
-
-export const lastOpenedChatId = {
-  get(databaseId: string) {
-    return sessionStorageValue<string | null>(getLastChatIdKey(databaseId), null).get()
-  },
-  set(databaseId: string, id: string | null) {
-    const value = sessionStorageValue<string | null>(getLastChatIdKey(databaseId), null)
-
-    if (id) {
-      value.set(id)
-    }
-    else {
-      value.remove()
-    }
   },
 }
 

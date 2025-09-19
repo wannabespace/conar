@@ -10,8 +10,7 @@ import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixi
 import { useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useMemo, useRef } from 'react'
-import { DatabaseIcon, databasesCollection } from '~/entities/database'
-import { useLastOpenedTable } from '../database/$id/table/-lib'
+import { DatabaseIcon, databasesCollection, useDatabaseLinkParams } from '~/entities/database'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
@@ -27,19 +26,13 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
     return url.toString()
   }, [database.connectionString, database.isPasswordExists])
 
-  const [lastOpenedTable] = useLastOpenedTable(database.id)
+  const params = useDatabaseLinkParams(database.id)
 
   return (
     <Link
       className="relative flex items-center justify-between gap-4 rounded-lg bg-muted/30 p-5 border border-border/50 hover:border-primary transition-all duration-150"
-      to="/database/$id/table"
-      params={{ id: database.id }}
-      search={lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined}
-      {...clickHandlers(() => navigate({
-        to: '/database/$id/table',
-        params: { id: database.id },
-        search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
-      }))}
+      {...params}
+      {...clickHandlers(() => navigate(params))}
     >
       <div className="size-12 shrink-0 rounded-lg bg-muted/70 p-3">
         <DatabaseIcon type={database.type} className="size-full text-primary" />

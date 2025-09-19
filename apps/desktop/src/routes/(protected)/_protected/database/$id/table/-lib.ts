@@ -1,25 +1,7 @@
 import type { WhereFilter } from '@conar/shared/sql/where'
 import type { databases } from '~/drizzle'
-import { localStorageValue, useLocalStorage } from '@conar/ui/hookas/use-local-storage'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { databaseRowsQuery } from '~/entities/database'
-
-interface LastOpenedTable {
-  schema: string
-  table: string
-}
-
-function getLastOpenedTableKey(databaseId: string) {
-  return `last-opened-table-${databaseId}`
-}
-
-export function useLastOpenedTable(id: string) {
-  return useLocalStorage<LastOpenedTable | null>(getLastOpenedTableKey(id), null)
-}
-
-export function lastOpenedTable(id: string) {
-  return localStorageValue<LastOpenedTable | null>(getLastOpenedTableKey(id), null)
-}
 
 export function getRowsQueryOpts({
   database,

@@ -18,14 +18,20 @@ import { Link, useMatches, useNavigate, useSearch } from '@tanstack/react-router
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ThemeToggle } from '~/components/theme-toggle'
-import { DatabaseIcon, databasesCollection } from '~/entities/database'
+import {
+  DatabaseIcon,
+  databasesCollection,
+  lastOpenedDatabases,
+  lastOpenedTable,
+  useDatabaseLinkParams,
+  useLastOpenedChatId,
+  useLastOpenedDatabases,
+  useLastOpenedTable,
+} from '~/entities/database'
 import { UserButton } from '~/entities/user'
 import { orpc } from '~/lib/orpc'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
 import { Route } from '../$id'
-import { useLastOpenedChatId } from '../$id/sql/-chat'
-import { lastOpenedTable, useLastOpenedTable } from '../$id/table/-lib'
-import { lastOpenedDatabases, useLastOpenedDatabases } from '../-lib'
 
 const os = getOS(navigator.userAgent)
 
@@ -115,8 +121,8 @@ function SupportButton() {
 function LastOpenedDatabase({ database }: { database: typeof databases.$inferSelect }) {
   const { id } = Route.useParams()
   const navigate = useNavigate()
-  const [lastOpenedTable] = useLastOpenedTable(database.id)
   const isActive = database.id === id
+  const params = useDatabaseLinkParams(database.id)
 
   async function onCloseClick() {
     const newDatabases = lastOpenedDatabases.get().filter(dbId => dbId !== database.id)
@@ -142,15 +148,9 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
               </span>
             )}
             <Link
-              to="/database/$id/table"
               className={classes(isActive)}
-              params={{ id: database.id }}
-              search={lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined}
-              {...clickHandlers(() => navigate({
-                to: '/database/$id/table',
-                params: { id: database.id },
-                search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
-              }))}
+              {...params}
+              {...clickHandlers(() => navigate(params))}
             >
               <span className="font-bold text-sm">
                 {database.name

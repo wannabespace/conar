@@ -19,11 +19,10 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { tablesAndSchemasQuery } from '~/entities/database'
+import { lastOpenedTable, tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { Route } from '..'
-import { lastOpenedTable } from '../-lib'
 import { closeTab } from '../-tabs'
 
 interface DropTableDialogProps {

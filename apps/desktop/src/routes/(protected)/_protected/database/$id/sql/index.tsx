@@ -3,7 +3,8 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
-import { chatQuery, createChat, lastOpenedChatId } from './-chat'
+import { lastOpenedChatId } from '~/entities/database'
+import { chatQuery, createChat } from './-chat'
 import { Chat as ChatComponent } from './-components/chat'
 import { Runner } from './-components/runner'
 import { pageStore } from './-lib'
@@ -41,7 +42,7 @@ function DatabaseSqlPage() {
   const { chatId = null } = Route.useSearch()
 
   useEffect(() => {
-    lastOpenedChatId.set(id, chatId)
+    lastOpenedChatId(id).set(chatId)
   }, [id, chatId])
 
   return (
