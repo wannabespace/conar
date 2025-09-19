@@ -118,9 +118,7 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
   const [lastOpenedTable] = useLastOpenedTable(database.id)
   const isActive = database.id === id
 
-  async function onCloseClick(e: React.MouseEvent<HTMLSpanElement>) {
-    e.preventDefault()
-
+  async function onCloseClick() {
     const newDatabases = lastOpenedDatabases.get().filter(dbId => dbId !== database.id)
 
     lastOpenedDatabases.set(newDatabases)
@@ -130,21 +128,11 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link
-            to="/database/$id/table"
-            className={cn(classes(isActive), 'relative group')}
-            params={{ id: database.id }}
-            search={lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined}
-            {...clickHandlers(() => navigate({
-              to: '/database/$id/table',
-              params: { id: database.id },
-              search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
-            }))}
-          >
+          <div className="relative group">
             {!isActive && (
               <span
                 className={cn(
-                  'absolute top-0 right-0 -translate-y-1/2 translate-x-1/2',
+                  'absolute z-10 top-0 right-0 -translate-y-1/2 translate-x-1/2',
                   'flex items-center justify-center',
                   'size-4 bg-background rounded-full text-foreground opacity-0 group-hover:opacity-100',
                 )}
@@ -153,16 +141,28 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
                 <RiCloseLine className="size-3" />
               </span>
             )}
-            <span className="font-bold text-sm">
-              {database.name
-                .replace(/[^a-z0-9\s]/gi, '')
-                .split(/\s+/)
-                .map(word => word[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase()}
-            </span>
-          </Link>
+            <Link
+              to="/database/$id/table"
+              className={classes(isActive)}
+              params={{ id: database.id }}
+              search={lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined}
+              {...clickHandlers(() => navigate({
+                to: '/database/$id/table',
+                params: { id: database.id },
+                search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
+              }))}
+            >
+              <span className="font-bold text-sm">
+                {database.name
+                  .replace(/[^a-z0-9\s]/gi, '')
+                  .split(/\s+/)
+                  .map(word => word[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()}
+              </span>
+            </Link>
+          </div>
         </TooltipTrigger>
         <TooltipContent side="right" sideOffset={10}>
           <span className="flex items-center gap-2 font-medium">
@@ -290,6 +290,7 @@ function MainLinks() {
 
 export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const [lastOpenedDatabases] = useLastOpenedDatabases()
+  const navigate = useNavigate()
 
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
@@ -297,7 +298,11 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Link to="/" className="p-2">
+              <Link
+                to="/"
+                className="p-2"
+                {...clickHandlers(() => navigate({ to: '/' }))}
+              >
                 <AppLogo className="size-6 text-primary" />
               </Link>
             </TooltipTrigger>
