@@ -190,7 +190,7 @@ function TableCellContent({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon-xs" variant="outline" onClick={() => copy(displayValue)}>
+                <Button size="icon-xs" variant="outline" onClick={() => copy(displayValue, 'Value copied to clipboard')}>
                   <RiFileCopyLine className="size-3" />
                 </Button>
               </TooltipTrigger>

@@ -1,10 +1,12 @@
 import { toast } from 'sonner'
 
-export function copy(text: string, successText = 'Text copied to clipboard') {
+export function copy(text: string, successText?: string) {
   navigator.clipboard.writeText(text)
     .then(() => {
-      toast.success(successText, {
-        duration: 1500,
-      })
+      if (successText) {
+        toast.success(successText, {
+          duration: 1500,
+        })
+      }
     })
 }

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/c
 import { copy } from '@conar/ui/lib/copy'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { authClient } from '~/lib/auth'
 
 export const Route = createFileRoute('/open')({
@@ -19,20 +19,20 @@ function RouteComponent() {
   const { 'code-challenge': codeChallenge, 'new-user': newUser, connnect } = Route.useSearch()
   const { data, isPending } = authClient.useSession()
 
-  const getUrl = (token: string, codeChallenge: string) => `${connnect ? 'connnect' : 'conar'}://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
+  const getUrl = useCallback((token: string, codeChallenge: string) => `${connnect ? 'connnect' : 'conar'}://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`, [connnect, newUser])
 
-  function handleOpenSession(codeChallenge: string) {
+  const handleOpenSession = useCallback((codeChallenge: string) => {
     if (!data)
       return
 
     location.assign(getUrl(data.session.token, codeChallenge))
-  }
+  }, [data, getUrl])
 
   const handleCopyUrl = () => {
     if (!data)
       return
 
-    copy(getUrl(data.session.token, codeChallenge))
+    copy(getUrl(data.session.token, codeChallenge), 'URL copied to clipboard')
   }
 
   useEffect(() => {
@@ -42,7 +42,7 @@ function RouteComponent() {
     if (codeChallenge) {
       handleOpenSession(codeChallenge)
     }
-  }, [isPending, codeChallenge])
+  }, [isPending, codeChallenge, handleOpenSession])
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">

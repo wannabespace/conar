@@ -137,7 +137,7 @@ function SocialAuthForm({ type }: { type: Type }) {
               <button
                 type="button"
                 className="text-primary cursor-pointer hover:underline"
-                onClick={() => copy(googleUrl || githubUrl!)}
+                onClick={() => copy(googleUrl || githubUrl!, 'URL copied to clipboard')}
               >
                 copy the URL
               </button>

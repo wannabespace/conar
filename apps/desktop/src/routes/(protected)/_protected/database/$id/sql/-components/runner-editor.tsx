@@ -76,6 +76,23 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
 
   const [isAlertVisible, setIsAlertVisible] = useState(false)
 
+  const [isCopying, setIsCopying] = useState(false)
+  const [isFormatting, setIsFormatting] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
+
+  function handleCopy() {
+    copy(query)
+    setIsCopying(true)
+  }
+
+  function handleClear() {
+    pageStore.setState(state => ({
+      ...state,
+      query: '',
+    }))
+    setIsClearing(true)
+  }
+
   function sendQuery(query: string) {
     if (hasDangerousSqlKeywords(query)) {
       setIsAlertVisible(true)
@@ -92,7 +109,7 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
       ...state,
       query: formatted,
     }))
-    toast.success('SQL formatted successfully')
+    setIsFormatting(true)
   }
 
   useEffect(() => {
@@ -151,12 +168,15 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
               <Button
                 variant="secondary"
                 size="icon-sm"
-                onClick={() => pageStore.setState(state => ({
-                  ...state,
-                  query: '',
-                }))}
+                onClick={handleClear}
               >
-                <RiDeleteBin5Line />
+                <ContentSwitch
+                  active={isClearing}
+                  activeContent={<RiCheckLine className="text-success" />}
+                  onActiveChange={() => setIsClearing(false)}
+                >
+                  <RiDeleteBin5Line />
+                </ContentSwitch>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -170,9 +190,15 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
               <Button
                 variant="secondary"
                 size="icon-sm"
-                onClick={() => copy(query)}
+                onClick={handleCopy}
               >
-                <RiFileCopyLine />
+                <ContentSwitch
+                  active={isCopying}
+                  activeContent={<RiCheckLine className="text-success" />}
+                  onActiveChange={() => setIsCopying(false)}
+                >
+                  <RiFileCopyLine />
+                </ContentSwitch>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -185,10 +211,16 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
             <TooltipTrigger asChild>
               <Button
                 variant="secondary"
-                size="sm"
+                size="icon-sm"
                 onClick={() => format()}
               >
-                <RiBrush2Line />
+                <ContentSwitch
+                  active={isFormatting}
+                  activeContent={<RiCheckLine className="text-success" />}
+                  onActiveChange={() => setIsFormatting(false)}
+                >
+                  <RiBrush2Line />
+                </ContentSwitch>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
