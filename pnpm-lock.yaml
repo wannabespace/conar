@@ -518,7 +518,7 @@ importers:
   apps/web:
     dependencies:
       '@databuddy/sdk':
-        specifier: ^2.1.0
+        specifier: ^2.0.0
         version: 2.1.4(react@19.1.1)
       '@number-flow/react':
         specifier: 'catalog:'
