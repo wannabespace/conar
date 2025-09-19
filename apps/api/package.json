@@ -43,7 +43,7 @@
     "nanoid": "catalog:",
     "pg": "^8.16.3",
     "postgres": "^3.4.7",
-    "posthog-node": "^5.8.4",
+    "posthog-node": "^5.8.5",
     "redis": "^5.8.2",
     "resend": "^6.1.0",
     "resumable-stream": "^2.2.4",

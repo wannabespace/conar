@@ -55,7 +55,7 @@
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
-    "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/typography": "^0.5.17",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "tailwind-scrollbar": "^4.0.2",
