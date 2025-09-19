@@ -518,8 +518,8 @@ importers:
   apps/web:
     dependencies:
       '@databuddy/sdk':
-        specifier: ^2.0.0
-        version: 2.1.4(react@19.1.1)
+        specifier: ^2.1.5
+        version: 2.1.5(@babel/core@7.28.4)(@babel/template@7.27.2)(@types/react@19.1.13)(react@19.1.1)
       '@number-flow/react':
         specifier: 'catalog:'
         version: 0.5.10(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -1253,15 +1253,12 @@ packages:
     resolution: {integrity: sha512-/yCrWGCoA1SVKOks25EGadP9Pnj0oAIHGpl2wH2M2Y46dPM2ueb8wyCVOD7O3WCTkaJ0IkKvzhl1JY7+uCT2Dw==}
     engines: {node: '>=v18'}
 
-  '@databuddy/sdk@2.1.4':
-    resolution: {integrity: sha512-cpGqCwJh+LMsLVe1elnReqi+1sl7vFbysqLHfy3CwozCMs3iUgow7OxwZLLZCAbv+c6VUE9z4MlcDKgZrOBkNw==}
+  '@databuddy/sdk@2.1.5':
+    resolution: {integrity: sha512-VLbA48dIXaLUuGiBS0XSRIwOwxouilzRjtsbRnzVWnUBdRPLVSgI8ACxSJL4CvqeTddUNCZ5TlgKPn2rQRO5GA==}
     peerDependencies:
-      jotai: '>=2.0.0'
       react: '>=18'
       vue: '>=3'
     peerDependenciesMeta:
-      jotai:
-        optional: true
       react:
         optional: true
       vue:
@@ -6039,6 +6036,24 @@ packages:
   jose@6.1.0:
     resolution: {integrity: sha512-TTQJyoEoKcC1lscpVDCSsVgYzUDg/0Bt3WE//WiTPK6uOCQC2KZS4MpugbMWt/zyjkopgZoXhZuCi00gLudfUA==}
 
+  jotai@2.14.0:
+    resolution: {integrity: sha512-JQkNkTnqjk1BlSUjHfXi+pGG/573bVN104gp6CymhrWDseZGDReTNniWrLhJ+zXbM6pH+82+UNJ2vwYQUkQMWQ==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@babel/core': '>=7.0.0'
+      '@babel/template': '>=7.0.0'
+      '@types/react': '>=17.0.0'
+      react: '>=17.0.0'
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      '@babel/template':
+        optional: true
+      '@types/react':
+        optional: true
+      react:
+        optional: true
+
   js-tiktoken@1.0.21:
     resolution: {integrity: sha512-biOj/6M5qdgx5TKjDnFT1ymSpM5tbd3ylwDtrQvFQSu0Z7bBYko2dF+W/aUkXUPuk6IVpRxk/3Q2sHOzGlS36g==}
 
@@ -9407,9 +9422,15 @@ snapshots:
       '@types/conventional-commits-parser': 5.0.1
       chalk: 5.6.0
 
-  '@databuddy/sdk@2.1.4(react@19.1.1)':
+  '@databuddy/sdk@2.1.5(@babel/core@7.28.4)(@babel/template@7.27.2)(@types/react@19.1.13)(react@19.1.1)':
+    dependencies:
+      jotai: 2.14.0(@babel/core@7.28.4)(@babel/template@7.27.2)(@types/react@19.1.13)(react@19.1.1)
     optionalDependencies:
       react: 19.1.1
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@babel/template'
+      - '@types/react'
 
   '@develar/schema-utils@2.6.5':
     dependencies:
@@ -14848,6 +14869,13 @@ snapshots:
   jiti@2.5.1: {}
 
   jose@6.1.0: {}
+
+  jotai@2.14.0(@babel/core@7.28.4)(@babel/template@7.27.2)(@types/react@19.1.13)(react@19.1.1):
+    optionalDependencies:
+      '@babel/core': 7.28.4
+      '@babel/template': 7.27.2
+      '@types/react': 19.1.13
+      react: 19.1.1
 
   js-tiktoken@1.0.21:
     dependencies:

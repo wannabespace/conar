@@ -9,7 +9,7 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@databuddy/sdk": "^2.0.0",
+    "@databuddy/sdk": "^2.1.5",
     "@number-flow/react": "catalog:",
     "@octokit/rest": "^22.0.0",
     "@tanstack/react-query": "catalog:",
