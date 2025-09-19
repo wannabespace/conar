@@ -14,8 +14,8 @@
   },
   "main": "./out/main/index.js",
   "scripts": {
-    "dev": "electron-vite dev",
-    "build:vite": "electron-vite build",
+    "dev": "electron-vite -c vite.electron.config.ts dev",
+    "build:vite": "electron-vite -c vite.electron.config.ts build",
     "build:electron": "electron-builder -p always",
     "check-types": "tsc",
     "test:start": "vite -c vite.test.config.ts build --mode test && vite -c vite.test.config.ts preview --mode test",
