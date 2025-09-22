@@ -14,7 +14,7 @@ import { clickHandlers, cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiCommandLine, RiListUnordered, RiMessageLine, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
-import { Link, useMatches, useNavigate, useSearch } from '@tanstack/react-router'
+import { Link, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ThemeToggle } from '~/components/theme-toggle'
@@ -120,7 +120,7 @@ function SupportButton() {
 
 function LastOpenedDatabase({ database }: { database: typeof databases.$inferSelect }) {
   const { id } = Route.useParams()
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
   const isActive = database.id === id
   const params = useDatabaseLinkParams(database.id)
 
@@ -150,7 +150,7 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
             <Link
               className={classes(isActive)}
               {...params}
-              {...clickHandlers(() => navigate(params))}
+              // {...clickHandlers(() => navigate(params))}
             >
               <span className="font-bold text-sm">
                 {database.name
@@ -188,7 +188,7 @@ function LastOpenedDatabases() {
 
 function MainLinks() {
   const { id } = Route.useParams()
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
   const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
   const matches = useMatches({
     select: matches => matches.map(match => match.routeId),
@@ -237,11 +237,11 @@ function MainLinks() {
               params={{ id }}
               search={lastOpenedChatId ? { chatId: lastOpenedChatId } : undefined}
               className={classes(isActiveSql)}
-              {...clickHandlers(() => navigate({
-                to: '/database/$id/sql',
-                params: { id },
-                search: lastOpenedChatId ? { chatId: lastOpenedChatId } : undefined,
-              }))}
+              // {...clickHandlers(() => navigate({
+              //   to: '/database/$id/sql',
+              //   params: { id },
+              //   search: lastOpenedChatId ? { chatId: lastOpenedChatId } : undefined,
+              // }))}
             >
               <RiPlayLargeLine className="size-4" />
             </Link>
@@ -256,7 +256,7 @@ function MainLinks() {
               className={classes(isActiveTables)}
               {...route}
               {...clickHandlers(() => {
-                navigate(route)
+                // navigate(route)
                 onTablesClick()
               })}
             >
@@ -273,10 +273,10 @@ function MainLinks() {
               to="/database/$id/enums"
               params={{ id }}
               className={classes(isActiveEnums)}
-              {...clickHandlers(() => navigate({
-                to: '/database/$id/enums',
-                params: { id },
-              }))}
+              // {...clickHandlers(() => navigate({
+              //   to: '/database/$id/enums',
+              //   params: { id },
+              // }))}
             >
               <RiListUnordered className="size-4" />
             </Link>
@@ -290,7 +290,7 @@ function MainLinks() {
 
 export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const [lastOpenedDatabases] = useLastOpenedDatabases()
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
 
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
@@ -301,7 +301,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
               <Link
                 to="/"
                 className="p-2"
-                {...clickHandlers(() => navigate({ to: '/' }))}
+                // {...clickHandlers(() => navigate({ to: '/' }))}
               >
                 <AppLogo className="size-6 text-primary" />
               </Link>
