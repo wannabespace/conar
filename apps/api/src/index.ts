@@ -31,6 +31,10 @@ app.use(cors({
   credentials: true,
 }))
 
+app.get('/', (c) => {
+  return c.redirect(env.WEB_URL)
+})
+
 app.on(['GET', 'POST'], '/auth/*', (c) => {
   return auth.handler(c.req.raw)
 })
