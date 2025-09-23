@@ -1,3 +1,4 @@
+import type { WhereFilter } from '@conar/shared/sql/where'
 import type { FilterOperator } from '@conar/shared/utils/sql'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
@@ -27,8 +28,8 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         filters: data.filters.map(filter => ({
           column: filter.column,
           operator: filter.operator as FilterOperator,
-          value: filter.values,
-        })),
+          values: filter.values,
+        } satisfies WhereFilter)),
       }))
 
       if (data.filters.length === 0) {
