@@ -76,14 +76,18 @@ describe('parseConnectionString', () => {
       const connectionString = 'postgresql://user:password@localhost:5432/mydb?sslmode=require'
       const config = parseConnectionString(connectionString)
 
-      expect(config.ssl).toBe(true)
+      expect(config.ssl).toEqual({
+        rejectUnauthorized: false,
+      })
     })
 
     it('should parse sslmode=prefer', () => {
       const connectionString = 'postgresql://user:password@localhost:5432/mydb?sslmode=prefer'
       const config = parseConnectionString(connectionString)
 
-      expect(config.ssl).toBe(true)
+      expect(config.ssl).toEqual({
+        rejectUnauthorized: false,
+      })
     })
 
     it('should parse sslmode=verify-ca without sslrootcert', () => {
@@ -201,7 +205,9 @@ describe('parseConnectionString', () => {
       const connectionString = 'postgresql://user:password@localhost:5432/mydb?sslmode=require'
       const config = parseConnectionString(connectionString)
 
-      expect(config.ssl).toBe(true)
+      expect(config.ssl).toEqual({
+        rejectUnauthorized: false,
+      })
     })
 
     it('should parse ssl parameter (true/false, 1/0, case insensitive)', () => {
@@ -233,7 +239,9 @@ describe('real-world Examples', () => {
       host: 'ec2-54-83-1-101.compute-1.amazonaws.com',
       port: 5432,
       database: 'dbname',
-      ssl: true,
+      ssl: {
+        rejectUnauthorized: false,
+      },
     })
   })
 

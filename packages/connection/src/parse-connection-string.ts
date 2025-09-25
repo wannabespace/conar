@@ -58,9 +58,6 @@ export function parseSSLConfig(searchParams: URLSearchParams): Config['ssl'] {
       if (sslMode === 'disable') {
         return false
       }
-      if (['prefer', 'require'].includes(sslMode)) {
-        return true
-      }
       if (sslMode === 'no-verify') {
         return { rejectUnauthorized: false }
       }
@@ -70,7 +67,14 @@ export function parseSSLConfig(searchParams: URLSearchParams): Config['ssl'] {
     }
 
     const sslConfig: SSLConfig = {
-      ...(sslMode && (['prefer', 'no-verify'].includes(sslMode) || (sslMode === 'require' && !sslRootCert && !hasMainSSLParams)) ? { rejectUnauthorized: false } : {}),
+      ...(sslMode && (
+        ['prefer', 'no-verify'].includes(sslMode)
+        || (sslMode === 'require' && !sslRootCert && !hasMainSSLParams)
+      )
+        ? {
+            rejectUnauthorized: false,
+          }
+        : {}),
       ...(sslCert ? { cert: sslCert } : {}),
       ...(sslKey ? { key: sslKey } : {}),
       ...(sslRootCert ? { ca: sslRootCert } : {}),
