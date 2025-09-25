@@ -9,14 +9,14 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@databuddy/sdk": "^2.1.5",
+    "@databuddy/sdk": "^2.1.75",
     "@number-flow/react": "catalog:",
     "@octokit/rest": "^22.0.0",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
     "@tanstack/react-router": "catalog:",
     "@tanstack/react-router-devtools": "catalog:",
-    "@tanstack/react-start": "^1.131.48",
+    "@tanstack/react-start": "^1.132.7",
     "arktype": "catalog:",
     "better-auth": "catalog:",
     "date-fns": "^4.1.0",

@@ -11,10 +11,7 @@ export default defineConfig({
       projects: ['./tsconfig.json'],
     }),
     tailwindcss(),
-    tanstackStart({
-      customViteReactPlugin: true,
-      target: 'bun',
-    }),
+    tanstackStart(),
     react({
       babel: {
         plugins: [['babel-plugin-react-compiler', { target: '19' }]],

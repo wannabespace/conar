@@ -1,9 +1,9 @@
 import { getOS } from '@conar/shared/utils/os'
 import { createIsomorphicFn } from '@tanstack/react-start'
-import { getHeader } from '@tanstack/react-start/server'
+import { getRequestHeader } from '@tanstack/react-start/server'
 
 export const getOSIsomorphic = createIsomorphicFn().server(() => {
-  const userAgent = getHeader('user-agent')
+  const userAgent = getRequestHeader('user-agent')
 
   if (!userAgent) {
     return null
