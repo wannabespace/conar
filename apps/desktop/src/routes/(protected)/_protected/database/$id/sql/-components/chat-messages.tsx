@@ -10,7 +10,6 @@ import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { useIsMounted } from '@conar/ui/hookas/use-is-mounted'
-import { useIsScrolled } from '@conar/ui/hookas/use-is-scrolled'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiFileCopyLine, RiRestartLine } from '@remixicon/react'
@@ -249,7 +248,6 @@ const MESSAGES_GAP = 32
 export function ChatMessages({ className }: ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()
   const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
-  const isScrolled = useIsScrolled(scrollRef, { threshold: 50 })
   const { messages, error, status } = useChat({ chat })
   const userMessageRef = useRef<HTMLDivElement>(null)
   const [placeholderHeight, setPlaceholderHeight] = useState(0)
@@ -262,9 +260,9 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
 
   useEffect(() => {
     if (userMessageRef.current) {
-      setPlaceholderHeight((scrollRef.current?.offsetHeight || 0) - (userMessageRef.current?.offsetHeight || 0) - MESSAGES_GAP - 30) // 30px for the gradient
+      setPlaceholderHeight((scrollRef.current?.offsetHeight || 0) - (userMessageRef.current?.offsetHeight || 0) - MESSAGES_GAP)
     }
-  }, [userMessageRef, messages.length])
+  }, [scrollRef, userMessageRef, messages.length])
 
   const isLastMessageFromUser = messages.at(-1)?.role === 'user'
 
@@ -273,9 +271,6 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
       ref={scrollRef}
       className={cn('relative -mx-4', className)}
     >
-      <div className="sticky z-10 top-0">
-        <div className={cn('absolute top-0 inset-x-0 h-12 bg-gradient-to-b from-background to-transparent pointer-events-none opacity-0 duration-150', isScrolled && 'opacity-100')}></div>
-      </div>
       <div
         ref={contentRef}
         className="relative px-4 flex flex-col"
@@ -315,9 +310,6 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
           </ChatMessage>
         )}
         {error && <ErrorMessage error={error} />}
-      </div>
-      <div className="sticky z-10 bottom-0">
-        <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-background via-background/70 to-transparent pointer-events-none"></div>
       </div>
       <div className={cn('sticky bottom-4 z-40 transition-opacity duration-150', isNearBottom ? 'opacity-0 pointer-events-none' : '')}>
         <Button

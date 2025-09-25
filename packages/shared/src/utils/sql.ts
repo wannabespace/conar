@@ -48,7 +48,7 @@ export const SQL_OPERATORS_LIST: FilterRecord<SQLOperator>[] = [
 ]
 
 export const CUSTOM_OPERATORS_LIST: (FilterRecord<CustomOperator> & { tip: string })[] = [
-  { label: 'Almost equal', value: '≈', hasValue: true, tip: '<column> ILIKE "%<query>%"' },
+  { label: 'Includes', value: '≈', hasValue: true, tip: '<column> ILIKE "%<query>%"' },
 ]
 
 export const FILTER_OPERATORS_LIST: FilterRecord[] = [

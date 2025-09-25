@@ -135,7 +135,7 @@ function FilterOperatorSelector({
               >
                 <RiFilterLine className="size-4 opacity-50" />
                 <span>{operator.label}</span>
-                {operator.tip && <InfoButton>{operator.tip}</InfoButton>}
+                {operator.tip && <InfoButton className="-ml-1">{operator.tip}</InfoButton>}
                 <span className="ml-auto text-xs text-muted-foreground text-right">{operator.value}</span>
               </CommandItem>
             ))}

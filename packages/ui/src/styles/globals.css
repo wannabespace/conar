@@ -112,6 +112,7 @@
 
 * {
   -electron-corner-smoothing: system-ui;
+  overscroll-behavior: none;
 }
 
 html {

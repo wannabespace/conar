@@ -189,7 +189,7 @@ export function AuthForm({ type }: { type: Type }) {
     if (emailRef.current) {
       emailRef.current.focus()
     }
-  }, [emailRef.current])
+  }, [emailRef])
 
   const submit = async (values: typeof schema.infer) => {
     const { error, data } = type === 'sign-up'
