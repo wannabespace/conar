@@ -40,6 +40,10 @@ export function runnerQueryOptions({ database, query }: { database: typeof datab
         return null!
       }
 
+      if (hasDangerousSqlKeywords(query)) {
+        toast.success('Query executed successfully!')
+      }
+
       return result
     },
     throwOnError: false,

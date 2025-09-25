@@ -20,7 +20,7 @@ export function sessionStorageValue<T>(key: string, defaultValue: T) {
         return typeof defaultValue === 'string' ? item as T : defaultValue
       }
     },
-    set<T>(value: T): void {
+    set(value: T): void {
       if (typeof window !== 'undefined') {
         window.sessionStorage.setItem(key, JSON.stringify(value))
         window.dispatchEvent(new Event('storage'))

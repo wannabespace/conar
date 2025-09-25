@@ -39,10 +39,10 @@ export const Route = createFileRoute(
 
 function DatabaseSqlPage() {
   const { id } = Route.useParams()
-  const { chatId = null } = Route.useSearch()
+  const { chatId } = Route.useSearch()
 
   useEffect(() => {
-    lastOpenedChatId(id).set(chatId)
+    lastOpenedChatId(id).set(chatId ?? null)
   }, [id, chatId])
 
   return (

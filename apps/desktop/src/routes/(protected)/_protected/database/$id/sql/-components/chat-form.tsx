@@ -5,13 +5,12 @@ import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { orpc } from '~/lib/orpc'
@@ -39,7 +38,7 @@ export function ChatForm() {
     }
   }, [ref])
 
-  const handleSend = async (value: string) => {
+  const handleSend = useCallback(async (value: string) => {
     if (
       value.trim() === ''
       || chat.status === 'streaming'
@@ -98,15 +97,20 @@ export function ChatForm() {
           : 'An unexpected error occurred. Please try again.',
       })
     }
-  }
+  }, [router, location.search.chatId, chat, database.id])
 
-  useAsyncEffect(async () => {
+  useEffect(() => {
     if (!error) {
       return
     }
 
-    await handleSend(`Fix the following SQL error by correcting the current query: ${error}`)
-  }, [error, handleSend])
+    router.navigate({
+      to: '.',
+      search: { chatId: chat.id },
+      replace: true,
+    })
+    handleSend(`Fix the following SQL error by correcting the current query: ${error}`)
+  }, [error, handleSend, router, chat.id])
 
   useMountedEffect(() => {
     chatInput.set(database.id, input)
@@ -117,10 +121,10 @@ export function ChatForm() {
       await router.navigate({
         to: '/database/$id/sql',
         params: { id: database.id },
-        search: { error },
+        search: { chatId: chat.id, error },
       })
     })
-  }, [router, database.id])
+  }, [router, database.id, chat.id])
 
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation({
     mutationFn: (data: { prompt: string, chatId: string }) => orpc.ai.enhancePrompt(data),
