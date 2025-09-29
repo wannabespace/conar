@@ -1,7 +1,9 @@
+import type { CompletionService } from 'monaco-sql-languages'
 import type { RefObject } from 'react'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { useTheme } from '@conar/ui/theme-provider'
 import * as monaco from 'monaco-editor'
+import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
 import ghDark from 'monaco-themes/themes/GitHub Dark.json'
 import ghLight from 'monaco-themes/themes/GitHub Light.json'
 import { useEffect, useRef } from 'react'
@@ -23,6 +25,7 @@ export function Monaco({
   onChange,
   options,
   onEnter,
+  completionService,
   ...props
 }: {
   ref?: RefObject<monaco.editor.IStandaloneCodeEditor | null>
@@ -33,6 +36,7 @@ export function Monaco({
   onChange?: (value: string) => void
   options?: monaco.editor.IStandaloneEditorConstructionOptions
   onEnter?: (value: string) => void
+  completionService?: CompletionService
 }) {
   const elementRef = useRef<HTMLDivElement>(null)
   const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
@@ -99,7 +103,7 @@ export function Monaco({
       subscription?.dispose()
       monacoInstance.current?.dispose()
     }
-  }, [elementRef, language])
+  }, [elementRef, language, onChange, onEnter, ref])
 
   useEffect(() => {
     if (!monacoInstance.current || !options)
@@ -107,6 +111,18 @@ export function Monaco({
 
     monacoInstance.current.updateOptions(options)
   }, [options])
+
+  useEffect(() => {
+    if (!Object.values(LanguageIdEnum).includes(language as LanguageIdEnum))
+      return
+
+    setupLanguageFeatures(language as LanguageIdEnum, {
+      completionItems: {
+        enable: true,
+        completionService,
+      },
+    })
+  }, [language, completionService])
 
   useMountedEffect(() => {
     if (!monacoInstance.current)

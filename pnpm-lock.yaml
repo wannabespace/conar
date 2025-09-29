@@ -457,6 +457,9 @@ importers:
       monaco-editor:
         specifier: ^0.53.0
         version: 0.53.0
+      monaco-sql-languages:
+        specifier: ^0.15.1
+        version: 0.15.1(antlr4ng-cli@1.0.7)(monaco-editor@0.53.0)
       monaco-themes:
         specifier: ^0.4.7
         version: 0.4.7
@@ -4257,6 +4260,19 @@ packages:
     resolution: {integrity: sha512-BGcItUBWSMRgOCe+SVZJ+S7yTRG0eGt9cXAHev72yuGcY23hnLA7Bky5L/xLyPINoSN95geovfBkqoTlNZYa7w==}
     engines: {node: '>=14'}
 
+  antlr4-c3@3.3.7:
+    resolution: {integrity: sha512-F3ndE38wwA6z6AjUbL3heSdEGl4TxulGDPf9xB0/IY4dbRHWBh6XNaqFwur8vHKQk9FS5yNABHeg2wqlqIYO0w==}
+
+  antlr4ng-cli@1.0.7:
+    resolution: {integrity: sha512-qN2FsDBmLvsQcA5CWTrPz8I8gNXeS1fgXBBhI78VyxBSBV/EJgqy8ks6IDTC9jyugpl40csCQ4sL5K4i2YZ/2w==}
+    deprecated: 'This package is deprecated and will no longer be updated. Please use the new antlr-ng package instead: https://github.com/mike-lischke/antlr-ng'
+    hasBin: true
+
+  antlr4ng@2.0.11:
+    resolution: {integrity: sha512-9jM91VVtHSqHkAHQsXHaoaiewFETMvUTI1/tXvwTiFw4f7zke3IGlwEyoKN9NS0FqIwDKFvUNW2e1cKPniTkVQ==}
+    peerDependencies:
+      antlr4ng-cli: 1.0.7
+
   anymatch@3.1.3:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
     engines: {node: '>= 8'}
@@ -5155,6 +5171,10 @@ packages:
     peerDependencies:
       drizzle-orm: '>=0.36.0'
       zod: ^3.25.0 || ^4.0.0
+
+  dt-sql-parser@4.3.1:
+    resolution: {integrity: sha512-WlFB9of+ChwWtc5M222jHGIpzqHx51szLe/11GAwwbA+4hRaVkMpWMf2bbYj4i855edSoTQ52zyLJVOpe+4OVg==}
+    engines: {node: '>=18'}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -7074,6 +7094,12 @@ packages:
 
   monaco-editor@0.53.0:
     resolution: {integrity: sha512-0WNThgC6CMWNXXBxTbaYYcunj08iB5rnx4/G56UOPeL9UVIUGGHA1GR0EWIh9Ebabj7NpCRawQ5b0hfN1jQmYQ==}
+
+  monaco-sql-languages@0.15.1:
+    resolution: {integrity: sha512-BJ/jksowxNQ/p1LWAFWTRJo9xpblTwinBYe+M/sTpbnRqyZ98yJg353I3Uqpsc43Ks7dtmf4NAy9hNRSRBIRtw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      monaco-editor: '>=0.31.0'
 
   monaco-themes@0.4.7:
     resolution: {integrity: sha512-1RCMsoC8UMwdBMahdhLkuE48kjDcHVN1T2STHceyW4usCR4vsIPC4b6PhnZcUvx+r+RHduwgGvyoPTiqKaMd7w==}
@@ -13259,6 +13285,18 @@ snapshots:
 
   ansis@4.1.0: {}
 
+  antlr4-c3@3.3.7(antlr4ng-cli@1.0.7):
+    dependencies:
+      antlr4ng: 2.0.11(antlr4ng-cli@1.0.7)
+    transitivePeerDependencies:
+      - antlr4ng-cli
+
+  antlr4ng-cli@1.0.7: {}
+
+  antlr4ng@2.0.11(antlr4ng-cli@1.0.7):
+    dependencies:
+      antlr4ng-cli: 1.0.7
+
   anymatch@3.1.3:
     dependencies:
       normalize-path: 3.0.0
@@ -14152,6 +14190,13 @@ snapshots:
     dependencies:
       drizzle-orm: 0.44.5(@electric-sql/pglite@0.3.10)(@opentelemetry/api@1.9.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(bun-types@1.2.23(@types/react@19.1.15))(kysely@0.28.5)(pg@8.16.3)(postgres@3.4.7)(prisma@5.22.0)
       zod: 4.1.11
+
+  dt-sql-parser@4.3.1(antlr4ng-cli@1.0.7):
+    dependencies:
+      antlr4-c3: 3.3.7(antlr4ng-cli@1.0.7)
+      antlr4ng: 2.0.11(antlr4ng-cli@1.0.7)
+    transitivePeerDependencies:
+      - antlr4ng-cli
 
   dunder-proto@1.0.1:
     dependencies:
@@ -16455,6 +16500,13 @@ snapshots:
   monaco-editor@0.53.0:
     dependencies:
       '@types/trusted-types': 1.0.6
+
+  monaco-sql-languages@0.15.1(antlr4ng-cli@1.0.7)(monaco-editor@0.53.0):
+    dependencies:
+      dt-sql-parser: 4.3.1(antlr4ng-cli@1.0.7)
+      monaco-editor: 0.53.0
+    transitivePeerDependencies:
+      - antlr4ng-cli
 
   monaco-themes@0.4.7:
     dependencies:

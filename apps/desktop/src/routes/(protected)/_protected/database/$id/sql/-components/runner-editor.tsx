@@ -12,10 +12,12 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiBrush2Line, RiCheckLine, RiDeleteBin5Line, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
+import { LanguageIdEnum } from 'monaco-sql-languages'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { hasDangerousSqlKeywords } from '~/entities/database'
+import { databaseCompletionService } from '~/entities/database/monaco'
 import { formatSql } from '~/lib/formatter'
 import { dbQuery } from '~/lib/query'
 import { Route } from '..'
@@ -57,6 +59,8 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
   const query = useStore(pageStore, state => state.query)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof SaveQueryDialog>>(null)
+
+  const completionService = databaseCompletionService(database)
 
   useMountedEffect(() => {
     chatQuery.set(id, query)
@@ -140,12 +144,13 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
       <Monaco
         data-mask
         ref={monacoRef}
-        language="sql"
+        language={LanguageIdEnum.PG}
         value={query}
         onChange={q => pageStore.setState(state => ({
           ...state,
           query: q,
         }))}
+        completionService={completionService}
         className="size-full"
         onEnter={sendQuery}
       />

@@ -81,6 +81,7 @@
     "hookable": "^5.5.3",
     "marked": "^16.3.0",
     "monaco-editor": "^0.53.0",
+    "monaco-sql-languages": "^0.15.1",
     "monaco-themes": "^0.4.7",
     "motion": "catalog:",
     "nanoid": "catalog:",

@@ -8,7 +8,7 @@ export function databaseTableConstraintsQuery({ database, schema, table }: { dat
     queryKey: ['database', database.id, 'constraints', schema, table],
     queryFn: async () => {
       const [result] = await dbQuery(database.id, {
-        query: constraintsSql(schema, table)[database.type]!,
+        query: constraintsSql(schema, table)[database.type],
       })
 
       return result!.rows.map(row => constraintsType.assert(row))

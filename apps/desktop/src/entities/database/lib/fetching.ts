@@ -13,10 +13,18 @@ export async function prefetchDatabaseCore(database: typeof databases.$inferSele
     return
   }
 
-  await Promise.all([
-    queryClient.prefetchQuery(tablesAndSchemasQuery({ database })),
+  const [tablesAndSchemas] = await Promise.all([
+    queryClient.ensureQueryData(tablesAndSchemasQuery({ database })),
     queryClient.prefetchQuery(databaseEnumsQuery({ database })),
   ])
+
+  // This approach is needed to launch prefetch, but without overloading the database
+  for (const schemaAndTables of tablesAndSchemas.schemas) {
+    for (const table of schemaAndTables.tables) {
+      await queryClient.prefetchQuery(databaseTableColumnsQuery({ database, table, schema: schemaAndTables.name }))
+      await queryClient.prefetchQuery(databaseTableConstraintsQuery({ database, table, schema: schemaAndTables.name }))
+    }
+  }
 }
 
 export async function prefetchDatabaseTableCore({ database, schema, table, query }: {
