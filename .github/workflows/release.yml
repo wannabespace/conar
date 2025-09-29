@@ -37,7 +37,6 @@ jobs:
           VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
           VITE_PUBLIC_AUTH_SECRET: ${{ secrets.VITE_PUBLIC_AUTH_SECRET }}
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
-          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm run build:desktop:vite
 
       - name: Upload Sourcemaps
@@ -104,5 +103,4 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          NODE_OPTIONS: --max-old-space-size=4096
         run: cd apps/desktop && pnpm run build:electron
