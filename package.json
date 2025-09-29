@@ -36,6 +36,7 @@
     "eslint-plugin-react-refresh": "^0.4.22",
     "husky": "^9.1.7",
     "npm-run-all2": "^8.0.4",
+    "playwright": "^1.55.1",
     "taze": "^19.7.0",
     "tsx": "^4.20.6",
     "turbo": "^2.5.8",
