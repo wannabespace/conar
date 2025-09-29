@@ -14,8 +14,8 @@ export const constraintsType = type({
   constraint_name: 'string',
   constraint_type: constraintType,
   column_name: 'string | null',
-  foreign_table_name: 'string',
-  foreign_column_name: 'string',
+  foreign_table_name: 'string | null',
+  foreign_column_name: 'string | null',
 }).pipe(item => ({
   name: item.constraint_name,
   type: constraintTypeMap[item.constraint_type],
