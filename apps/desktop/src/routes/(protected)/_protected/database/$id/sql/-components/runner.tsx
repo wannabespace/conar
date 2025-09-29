@@ -2,14 +2,22 @@ import { Button } from '@conar/ui/components/button'
 import { CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { RiSidebarFoldLine, RiSidebarUnfoldLine } from '@remixicon/react'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useStore } from '@tanstack/react-store'
+import { queriesCollection } from '~/entities/query'
+import { Route } from '..'
 import { pageStore } from '../-lib'
 import { RunnerEditor } from './runner-editor'
 import { RunnerQueries } from './runner-queries'
 import { RunnerResults } from './runner-results'
 
 export function Runner() {
+  const { id } = Route.useParams()
   const queriesOpen = useStore(pageStore, state => state.queriesOpen)
+  const { data: queries } = useLiveQuery(q => q
+    .from({ queries: queriesCollection })
+    .where(({ queries }) => eq(queries.databaseId, id)),
+  )
 
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
@@ -21,6 +29,7 @@ export function Runner() {
                 SQL Queries Runner
                 <div>
                   <Button
+                    className="relative"
                     variant="secondary"
                     size="sm"
                     onClick={() => {
@@ -30,8 +39,11 @@ export function Runner() {
                       }))
                     }}
                   >
-                    {queriesOpen ? 'Hide saved' : 'Show saved'}
                     {queriesOpen ? <RiSidebarUnfoldLine /> : <RiSidebarFoldLine />}
+                    {queriesOpen ? 'Hide saved' : 'Show saved'}
+                    <span className="bg-primary text-primary-foreground rounded-full text-xs px-1.5 h-5 flex items-center justify-center">
+                      {queries.length}
+                    </span>
                   </Button>
                 </div>
               </CardTitle>

@@ -116,7 +116,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
               </ul>
             )
           : (
-              <div className="flex flex-col max-w-56 mx-auto items-center justify-center h-full py-12 text-muted-foreground text-center">
+              <div className="flex flex-col max-w-56 mx-auto items-center justify-center h-full py-12 px-6 text-muted-foreground text-center">
                 <span className="text-smk mb-2">No saved queries found.</span>
                 <span className="text-xs">
                   You can add a new query by pressing the
