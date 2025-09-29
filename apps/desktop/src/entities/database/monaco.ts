@@ -73,11 +73,13 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
             sortText: `1${col.id}`,
             insertText: col.id,
           }))
-          items = [...items, ...columnItems.filter((item, i, arr) => arr.findIndex(x => x.label === item.label) === i)]
+          return [...columnItems, ...keywordItems]
         }
       }
+      return keywordItems
     }
-    else if (tablesAndSchemas && isColumnContext && !isFromContext) {
+
+    if (tablesAndSchemas && isColumnContext && !isFromContext) {
       const columnPromises = tablesAndSchemas.schemas.flatMap(schema =>
         schema.tables.map(async (tableName) => {
           const columns = await queryClient.ensureQueryData(
