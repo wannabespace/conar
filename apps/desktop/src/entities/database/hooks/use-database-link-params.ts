@@ -7,7 +7,7 @@ export function useDatabaseLinkParams(id: string) {
   const [lastOpenedPage] = useLastOpenedPage(id)
   const [lastChatId] = useLastOpenedChatId(id)
 
-  const params = useMemo((): LinkProps => {
+  return useMemo((): LinkProps => {
     if (lastOpenedPage) {
       if (lastOpenedPage === '/(protected)/_protected/database/$id/enums/') {
         return { to: '/database/$id/enums', params: { id } }
@@ -34,6 +34,4 @@ export function useDatabaseLinkParams(id: string) {
       search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
     }
   }, [id, lastOpenedPage, lastOpenedTable, lastChatId])
-
-  return params
 }

@@ -5,7 +5,6 @@ import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Skeleton } from '@conar/ui/components/skeleton'
 import { copy } from '@conar/ui/lib/copy'
-import { clickHandlers } from '@conar/ui/lib/utils'
 import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
@@ -15,7 +14,6 @@ import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
 function DatabaseCard({ database, onRemove, onRename }: { database: typeof databases.$inferSelect, onRemove: () => void, onRename: () => void }) {
-  // const navigate = useNavigate()
   const connectionString = useMemo(() => {
     const url = new SafeURL(database.connectionString)
 
@@ -32,7 +30,6 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
     <Link
       className="relative flex items-center justify-between gap-4 rounded-lg bg-muted/30 p-5 border border-border/50 hover:border-primary transition-all duration-150"
       {...params}
-      // {...clickHandlers(() => navigate(params))}
     >
       <div className="size-12 shrink-0 rounded-lg bg-muted/70 p-3">
         <DatabaseIcon type={database.type} className="size-full text-primary" />
@@ -49,29 +46,29 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem
-            {...clickHandlers((e) => {
+            onClick={(e) => {
               e.stopPropagation()
               copy(database.connectionString, 'Connection string copied to clipboard')
-            })}
+            }}
           >
             <RiFileCopyLine className="size-4 opacity-50" />
             Copy Connection String
           </DropdownMenuItem>
           <DropdownMenuItem
-            {...clickHandlers((e) => {
+            onClick={(e) => {
               e.stopPropagation()
               onRename()
-            })}
+            }}
           >
             <RiEditLine className="size-4 opacity-50" />
             Rename
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
-            {...clickHandlers((e) => {
+            onClick={(e) => {
               e.stopPropagation()
               onRemove()
-            })}
+            }}
           >
             <RiDeleteBinLine className="size-4" />
             Remove

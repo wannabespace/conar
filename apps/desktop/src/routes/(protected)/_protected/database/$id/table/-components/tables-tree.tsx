@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
-import { clickHandlers, cn } from '@conar/ui/lib/utils'
+import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiStackLine, RiTableLine } from '@remixicon/react'
 import { Link, useSearch } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
@@ -37,7 +37,6 @@ export function TablesTree({ database, className, search }: { database: typeof d
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas({ database })
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const ref = useRef<HTMLDivElement>(null)
-  // const navigate = useNavigate()
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
 
@@ -142,11 +141,6 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                     'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/60',
                                     tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
                                   )}
-                                  // {...clickHandlers(() => navigate({
-                                  //   to: '/database/$id/table',
-                                  //   params: { id: database.id },
-                                  //   search: { schema: schema.name, table },
-                                  // }))}
                                 >
                                   <RiTableLine
                                     className={cn(
@@ -194,10 +188,10 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                         Copy Name
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
-                                        {...clickHandlers((e) => {
+                                        onClick={(e) => {
                                           e.stopPropagation()
                                           renameTableDialogRef.current?.rename(schema.name, table)
-                                        })}
+                                        }}
                                       >
                                         <RiEditLine className="size-4" />
                                         Rename
