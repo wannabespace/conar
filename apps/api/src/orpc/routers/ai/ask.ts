@@ -26,8 +26,8 @@ const chatInputType = type({
   'messageId?': 'string.uuid.v7',
 })
 
-const mainModel = anthropic('claude-sonnet-4-20250514')
-const fallbackModel = anthropic('claude-opus-4-20250514')
+const mainModel = anthropic('claude-sonnet-4-5')
+const fallbackModel = anthropic('claude-opus-4-1')
 
 // const streamContext = createResumableStreamContext({
 //   waitUntil: null,
