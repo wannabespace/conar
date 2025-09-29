@@ -138,7 +138,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                   }}
                                   onDoubleClick={() => addTab(database.id, schema.name, table)}
                                   className={cn(
-                                    'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/60',
+                                    'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/30',
                                     tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
                                   )}
                                 >
