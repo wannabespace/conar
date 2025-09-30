@@ -41,7 +41,7 @@ export function Runner() {
                   >
                     {queriesOpen ? <RiSidebarUnfoldLine /> : <RiSidebarFoldLine />}
                     {queriesOpen ? 'Hide saved' : 'Show saved'}
-                    <span className="bg-accent text-primary-foreground rounded-full text-xs px-1.5 h-5 flex items-center justify-center">
+                    <span className="bg-accent rounded-full text-xs px-1.5 h-5 flex items-center justify-center">
                       {queries.length}
                     </span>
                   </Button>

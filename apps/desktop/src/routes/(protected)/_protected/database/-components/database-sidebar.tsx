@@ -312,11 +312,14 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         <SupportButton />
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger
-              className={classes()}
-              onClick={() => actionsCenterStore.setState(state => ({ ...state, isOpen: true }))}
-            >
-              <RiCommandLine className="size-4" />
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => actionsCenterStore.setState(state => ({ ...state, isOpen: true }))}
+              >
+                <RiCommandLine className="size-4" />
+              </Button>
             </TooltipTrigger>
             <TooltipContent side="right">
               {os?.type === 'macos' ? '⌘' : 'Ctrl'}

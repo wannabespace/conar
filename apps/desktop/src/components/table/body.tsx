@@ -68,7 +68,7 @@ const Row = memo(function Row({
 
   return (
     <div
-      className={cn('flex w-fit border-b min-w-full hover:bg-accent/50', rowIndex === lastIndex && 'border-b-0')}
+      className={cn('flex w-fit border-b min-w-full hover:bg-accent/30', rowIndex === lastIndex && 'border-b-0')}
       style={{ height: `${size}px`, contain: 'layout style' }}
     >
       <div
