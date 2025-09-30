@@ -27,7 +27,7 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
       label: kw,
       kind: languages.CompletionItemKind.Keyword,
       detail: 'keyword',
-      sortText: `2${kw}`,
+      sortText: `3${kw}`,
     }))
 
     const [tablesAndSchemas, enums] = await Promise.all([
@@ -102,14 +102,14 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
             label: tableName,
             kind: languages.CompletionItemKind.Class,
             detail: `table (${schema.name})`,
-            sortText: `1${tableName}`,
+            sortText: `2${tableName}`,
             insertText: tableName,
           },
           {
             label: `${schema.name}.${tableName}`,
             kind: languages.CompletionItemKind.Class,
             detail: `table (${schema.name})`,
-            sortText: `1${schema.name}.${tableName}`,
+            sortText: `2${schema.name}.${tableName}`,
             insertText: `${schema.name}.${tableName}`,
           },
         ]),
