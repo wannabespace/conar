@@ -31,15 +31,11 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
     }))
 
     const [tablesAndSchemas, enums] = await Promise.all([
-      queryClient.ensureQueryData(
-        tablesAndSchemasQuery({ database }),
-      ),
-      queryClient.ensureQueryData(
-        databaseEnumsQuery({ database }),
-      ),
+      queryClient.ensureQueryData(tablesAndSchemasQuery({ database })),
+      queryClient.ensureQueryData(databaseEnumsQuery({ database })),
     ])
 
-    let items: ICompletionItem[] = []
+    const items: ICompletionItem[] = []
 
     const textBeforeCursor = model.getValueInRange({
       startLineNumber: 1,
@@ -95,7 +91,8 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
         }),
       )
       const allColumns = (await Promise.all(columnPromises)).flat()
-      items = [...items, ...allColumns.filter((item, i, arr) => arr.findIndex(x => x.label === item.label) === i)]
+
+      items.push(...allColumns.filter((item, i, arr) => arr.findIndex(x => x.label === item.label) === i))
     }
 
     if (tablesAndSchemas) {
@@ -117,7 +114,8 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
           },
         ]),
       )
-      items = [...items, ...tableItems]
+
+      items.push(...tableItems)
     }
 
     if (enums) {
@@ -126,11 +124,12 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
           label: value,
           kind: languages.CompletionItemKind.EnumMember,
           detail: `enum value (${enumItem.schema}.${enumItem.name})`,
-          sortText: `1${value}`,
+          sortText: `3${value}`,
           insertText: value,
         })),
       )
-      items = [...items, ...enumItems]
+
+      items.push(...enumItems)
     }
 
     return [...items, ...keywordItems]
