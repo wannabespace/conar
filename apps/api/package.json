@@ -6,9 +6,10 @@
     "start": "cross-env NODE_ENV=production bun run drizzle:migrate && bun run ./src/index.ts",
     "check-types": "tsc",
     "test:start": "cross-env NODE_ENV=test bun --env-file=.env.test run drizzle:migrate && cross-env NODE_ENV=test bun --env-file=.env.test run ./src/index.ts",
-    "drizzle:generate": "drizzle-kit generate",
-    "drizzle:generate-custom": "drizzle-kit generate --custom",
-    "drizzle:migrate": "drizzle-kit migrate"
+    "drizzle:generate": "cross-env NODE_ENV=production drizzle-kit generate",
+    "drizzle:generate-custom": "cross-env NODE_ENV=production drizzle-kit generate --custom",
+    "drizzle:migrate": "cross-env NODE_ENV=production drizzle-kit migrate",
+    "better-auth:generate": "cross-env NODE_ENV=production pnpm dlx @better-auth/cli@latest generate"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.22",
