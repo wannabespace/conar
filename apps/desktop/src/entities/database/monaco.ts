@@ -60,7 +60,7 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
         kind: languages.CompletionItemKind.Keyword,
         detail: 'keyword',
         sortText: `3${priority.toString().padStart(3, '0')}${kw}`,
-      }
+      } satisfies ICompletionItem
     })
 
     const [tablesAndSchemas, enums] = await Promise.all([
