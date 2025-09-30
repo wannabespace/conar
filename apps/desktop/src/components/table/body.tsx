@@ -10,14 +10,14 @@ const VirtualColumn = memo(function VirtualColumn({
   column,
   value,
   rowIndex,
-  isLast,
 }: {
   virtualColumn: VirtualItem
   column: ColumnRenderer
   value: unknown
   rowIndex: number
-  isLast: boolean
 }) {
+  const columns = useTableContext(context => context.columns)
+
   if (!column.cell) {
     return (
       <div
@@ -39,8 +39,11 @@ const VirtualColumn = memo(function VirtualColumn({
       size={virtualColumn.size}
       rowIndex={rowIndex}
       columnIndex={virtualColumn.index}
-      isFirst={virtualColumn.index === 0}
-      isLast={isLast}
+      position={virtualColumn.index === 0
+        ? 'first'
+        : virtualColumn.index === columns.length - 1
+          ? 'last'
+          : 'middle'}
       style={{
         width: `${virtualColumn.size}px`,
         height: '100%',
@@ -87,7 +90,6 @@ const Row = memo(function Row({
             column={column}
             value={value}
             rowIndex={rowIndex}
-            isLast={virtualColumn.index === columns.length - 1}
           />
         )
       })}

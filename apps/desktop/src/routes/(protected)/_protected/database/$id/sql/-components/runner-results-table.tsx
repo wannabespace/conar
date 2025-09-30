@@ -54,7 +54,7 @@ export function RunnerResultsTable({
       cell: props => <TableCell column={column} {...props} />,
       size: DEFAULT_COLUMN_WIDTH,
     } satisfies ColumnRenderer))
-  }, [columns, filteredData])
+  }, [columns])
 
   return (
     <div className="h-full">

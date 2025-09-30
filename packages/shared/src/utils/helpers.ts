@@ -19,42 +19,6 @@ export function prepareSql(input: string) {
   return input.replaceAll('\n', ' ').replace(/\s+/g, ' ').trim()
 }
 
-export function isDeeplyEqual(a: object, b: object): boolean {
-  if (a === b)
-    return true
-
-  if (a && typeof a === 'object' && b && typeof b === 'object') {
-    if (Array.isArray(a) && Array.isArray(b)) {
-      if (a.length !== b.length)
-        return false
-
-      for (let i = 0; i < a.length; i++) {
-        if (!isDeeplyEqual(a[i], b[i]))
-          return false
-      }
-      return true
-    }
-
-    if (Array.isArray(a) !== Array.isArray(b))
-      return false
-
-    const keysA = Object.keys(a) as (keyof typeof a)[]
-    const keysB = Object.keys(b) as (keyof typeof b)[]
-
-    if (keysA.length !== keysB.length)
-      return false
-
-    for (const key of keysA) {
-      if (!keysB.includes(key) || !isDeeplyEqual(a[key], b[key])) {
-        return false
-      }
-    }
-    return true
-  }
-
-  return false
-}
-
 export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
   return Object.fromEntries(Object.entries(obj).filter(([key]) => !keys.includes(key as K))) as Omit<T, K>
 }

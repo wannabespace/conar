@@ -8,12 +8,12 @@ import { useTableContext } from '.'
 const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   virtualColumn,
   column,
-  isLast,
 }: {
   virtualColumn: VirtualItem
   column: ColumnRenderer
-  isLast: boolean
 }) {
+  const columns = useTableContext(context => context.columns)
+
   if (!column.header) {
     return (
       <div
@@ -33,8 +33,11 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
       key={virtualColumn.key}
       id={column.id}
       columnIndex={virtualColumn.index}
-      isFirst={virtualColumn.index === 0}
-      isLast={isLast}
+      position={virtualColumn.index === 0
+        ? 'first'
+        : virtualColumn.index === columns.length - 1
+          ? 'last'
+          : 'middle'}
       size={virtualColumn.size}
       style={{
         width: `${virtualColumn.size}px`,
@@ -80,7 +83,6 @@ export function TableHeader({
             key={virtualColumn.key}
             virtualColumn={virtualColumn}
             column={columns[virtualColumn.index]!}
-            isLast={virtualColumn.index === columns.length - 1}
           />
         ))}
         <div

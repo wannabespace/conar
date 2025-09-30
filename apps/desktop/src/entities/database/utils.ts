@@ -1,7 +1,7 @@
 export const DEFAULT_LIMIT = 100
 
 export const DEFAULT_ROW_HEIGHT = 32
-export const DEFAULT_COLUMN_WIDTH = 220
+export const DEFAULT_COLUMN_WIDTH = 240
 
 export const DANGEROUS_SQL_KEYWORDS = ['DELETE', 'UPDATE', 'INSERT', 'DROP', 'RENAME', 'TRUNCATE', 'ALTER']
 

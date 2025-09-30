@@ -1,4 +1,3 @@
-import type { UseMutateFunction } from '@tanstack/react-query'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '../table'
 import type { TableCellProps } from '~/components/table'
@@ -10,102 +9,18 @@ import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/po
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
-import { useMutation } from '@tanstack/react-query'
+import { RiCollapseDiagonal2Line, RiCornerRightDownLine, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import dayjs from 'dayjs'
-import { createContext, use, useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
+import { getDisplayValue } from '../lib/render'
+import { TableCellContent } from './table-cell-content'
+import { TableCellForeignTable } from './table-cell-foreign-table'
+import { TableCellProvider, useCellContext } from './table-cell-provider'
 
-function getDisplayValue(value: unknown, oneLine: boolean) {
-  if (typeof value === 'object' && value !== null)
-    return oneLine ? JSON.stringify(value).replaceAll('\n', ' ') : JSON.stringify(value)
-
-  return oneLine ? String(value ?? '').replaceAll('\n', ' ') : String(value ?? '')
-}
-
-interface CellContextValue {
-  value: string
-  setValue: Dispatch<SetStateAction<string>>
-  column: Column
-  initialValue: unknown
-  displayValue: string
-  update: UseMutateFunction<void, Error, { value: string | null, rowIndex: number }>
-}
-
-const CellContext = createContext<CellContextValue>(null!)
-
-function useCellContext() {
-  return use(CellContext)
-}
-
-function CellProvider({
-  children,
-  column,
-  initialValue,
-  onSetValue,
-  onSaveValue,
-  onSaveError,
-  onSaveSuccess,
-  onSavePending,
-}: {
-  children: React.ReactNode
-  column: Column
-  initialValue: unknown
-  onSetValue?: (rowIndex: number, columnsId: string, value: unknown) => void
-  onSaveValue?: (rowIndex: number, columnsId: string, value: unknown) => Promise<void>
-  onSaveError: (error: Error) => void
-  onSaveSuccess: () => void
-  onSavePending: () => void
-}) {
-  const displayValue = getDisplayValue(initialValue, false)
-  const [value, setValue] = useState<string>(() => initialValue === null ? '' : displayValue)
-
-  const { mutate: update } = useMutation({
-    mutationFn: async ({ rowIndex, value }: { value: string | null, rowIndex: number }) => {
-      if (!onSetValue || !onSaveValue)
-        return
-
-      onSavePending()
-
-      onSetValue(rowIndex, column.id, value)
-      try {
-        await onSaveValue(
-          rowIndex,
-          column.id,
-          value,
-        )
-      }
-      catch (e) {
-        onSetValue(rowIndex, column.id, initialValue)
-        throw e
-      }
-    },
-    onSuccess: onSaveSuccess,
-    onError: onSaveError,
-  })
-
-  const context = useMemo(() => ({
-    value,
-    setValue,
-    column,
-    initialValue,
-    displayValue,
-    update,
-  }), [
-    value,
-    setValue,
-    column,
-    initialValue,
-    displayValue,
-    update,
-  ])
-
-  return <CellContext.Provider value={context}>{children}</CellContext.Provider>
-}
-
-function TableCellContent({
+function CellPopoverContent({
   rowIndex,
   isBig,
   setIsBig,
@@ -247,50 +162,15 @@ function TableCellContent({
   )
 }
 
-function CellContent({
-  value,
-  className,
-  size,
-  isFirst,
-  isLast,
-  ...props
-}: {
-  value: unknown
-  className?: string
-  size: number
-  isFirst: boolean
-  isLast: boolean
-} & ComponentProps<'div'>) {
-  const displayValue = useMemo(() => {
-    if (value === null)
-      return 'null'
-
-    if (value === '')
-      return 'empty'
-
-    /*
-      If value has a lot of symbols that don't fit in the cell,
-      we truncate it to avoid performance issues.
-      Used 6 as a multiplier because 1 symbol takes ~6px width
-      + 5 to make sure there are extra symbols for ellipsis
-    */
-    return getDisplayValue(value, true).slice(0, (size / 6) + 5)
-  }, [value])
-
+function ForeignButton(props: ComponentProps<'button'>) {
   return (
-    <div
-      className={cn(
-        'h-full text-xs truncate p-2 font-mono cursor-default select-none',
-        'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
-        isFirst && 'pl-4',
-        isLast && 'pr-4',
-        (value === null || value === '') && 'text-muted-foreground/50',
-        className,
-      )}
+    <Button
+      variant="outline"
+      size="icon-xs"
       {...props}
     >
-      {displayValue}
-    </div>
+      <RiCornerRightDownLine className="size-3 text-muted-foreground" />
+    </Button>
   )
 }
 
@@ -310,8 +190,7 @@ export function TableCell({
   column,
   className,
   style,
-  isFirst,
-  isLast,
+  position,
   size,
   onSetValue,
   onSaveValue,
@@ -320,7 +199,10 @@ export function TableCell({
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
 } & TableCellProps) {
+  const displayValue = getDisplayValue(value, size)
+
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [isForeignOpen, setIsForeignOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
@@ -337,24 +219,28 @@ export function TableCell({
   }, [status])
 
   const cellClassName = cn(
+    'flex justify-between',
     isPopoverOpen && 'ring-primary/30 bg-primary/10',
+    isForeignOpen && 'ring-accent/60 bg-accent/30',
     status === 'error' && 'ring-destructive/50 bg-destructive/20',
     status === 'success' && 'ring-success/50 bg-success/10',
     status === 'saving' && 'animate-pulse bg-primary/10',
+    column.foreign && 'pr-1',
     className,
   )
 
   if (!canInteract) {
     return (
-      <CellContent
-        value={value}
-        isFirst={isFirst}
-        isLast={isLast}
-        size={size}
+      <TableCellContent
+        position={position}
         onMouseOver={() => setCanInteract(true)}
         className={cellClassName}
         style={style}
-      />
+        value={value}
+      >
+        <span className="truncate">{displayValue}</span>
+        {column.foreign && <ForeignButton />}
+      </TableCellContent>
     )
   }
 
@@ -362,8 +248,6 @@ export function TableCell({
     setCanInteract(true)
     setIsPopoverOpen(true)
     setStatus('error')
-
-    console.error(error)
 
     toast.error(`Failed to update cell "${column.id}"`, {
       description: error.message,
@@ -382,9 +266,10 @@ export function TableCell({
   const date = column ? getTimestamp(value, column) : null
 
   return (
-    <CellProvider
+    <TableCellProvider
       column={column}
       initialValue={value}
+      displayValue={displayValue}
       onSetValue={onSetValue}
       onSaveValue={onSaveValue}
       onSavePending={onSavePending}
@@ -408,16 +293,51 @@ export function TableCell({
                 asChild
                 onClick={e => e.preventDefault()}
                 onDoubleClick={() => setIsPopoverOpen(true)}
-                onMouseLeave={() => !isPopoverOpen && sleep(100).then(() => setCanInteract(false))}
+                onMouseLeave={() => !isPopoverOpen && !isForeignOpen && sleep(200).then(() => setCanInteract(false))}
               >
-                <CellContent
-                  value={value}
-                  isFirst={isFirst}
-                  isLast={isLast}
-                  size={size}
+                <TableCellContent
                   className={cellClassName}
                   style={style}
-                />
+                  value={value}
+                  position={position}
+                >
+                  <span className="truncate">{displayValue}</span>
+                  {column.foreign && (
+                    <Popover
+                      open={isForeignOpen}
+                      onOpenChange={setIsForeignOpen}
+                    >
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <PopoverTrigger asChild>
+                              <ForeignButton
+                                onClick={(e) => {
+                                  e.stopPropagation()
+
+                                  setIsForeignOpen(true)
+                                }}
+                              />
+                            </PopoverTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent className="text-sm">
+                            See referenced records
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <PopoverContent
+                        className="w-[80vw] h-[45vh] p-0"
+                        onDoubleClick={e => e.stopPropagation()}
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <TableCellForeignTable
+                          foreign={column.foreign}
+                          value={value}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </TableCellContent>
               </PopoverTrigger>
             </TooltipTrigger>
             {date && (
@@ -431,7 +351,7 @@ export function TableCell({
           className={cn('p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
           onAnimationEnd={() => !isPopoverOpen && setCanInteract(false)}
         >
-          <TableCellContent
+          <CellPopoverContent
             rowIndex={rowIndex}
             isBig={isBig}
             setIsBig={setIsBig}
@@ -440,6 +360,6 @@ export function TableCell({
           />
         </PopoverContent>
       </Popover>
-    </CellProvider>
+    </TableCellProvider>
   )
 }

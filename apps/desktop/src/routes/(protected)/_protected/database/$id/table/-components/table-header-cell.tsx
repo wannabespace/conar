@@ -3,56 +3,13 @@ import type { Column } from '~/entities/database/table'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line } from '@remixicon/react'
+import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { usePageStoreContext } from '../-store'
 
-type SortOrder = 'ASC' | 'DESC'
-
 const CANNOT_SORT_TYPES = ['json']
 
-function SortButton({ column }: { column: Column }) {
-  const store = usePageStoreContext()
-  const order = useStore(store, state => state.orderBy?.[column.id] ?? null)
-
-  if (column.type && CANNOT_SORT_TYPES.includes(column.type))
-    return null
-
-  function setOrder(order: SortOrder) {
-    store.setState(state => ({
-      ...state,
-      orderBy: {
-        ...state.orderBy,
-        [column.id]: order,
-      },
-    }))
-  }
-
-  function removeOrder() {
-    const newOrderBy = { ...store.state.orderBy }
-
-    delete newOrderBy[column.id]
-
-    store.setState(state => ({
-      ...state,
-      orderBy: newOrderBy,
-    }))
-  }
-
-  const handleClick = () => {
-    switch (order) {
-      case null:
-        setOrder('ASC')
-        break
-      case 'ASC':
-        setOrder('DESC')
-        break
-      case 'DESC':
-        removeOrder()
-        break
-    }
-  }
-
+function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null, onClick: () => void }) {
   return (
     <TooltipProvider>
       <Tooltip>
@@ -60,7 +17,7 @@ function SortButton({ column }: { column: Column }) {
           <Button
             variant="ghost"
             size="icon-xs"
-            onClick={handleClick}
+            onClick={onClick}
             className={cn(order !== null && 'text-primary')}
           >
             {order === 'ASC'
@@ -84,18 +41,27 @@ function SortButton({ column }: { column: Column }) {
   )
 }
 
-export function TableHeaderCell({ column, isFirst, isLast, columnIndex, className, style }: { column: Column } & TableHeaderCellProps) {
+export function TableHeaderCell({
+  onSort,
+  column,
+  position,
+  columnIndex,
+  className,
+  style,
+}: { column: Column, onSort?: () => void } & TableHeaderCellProps) {
+  const store = usePageStoreContext()
+  const order = useStore(store, state => state.orderBy?.[column.id] ?? null)
+
   return (
     <div
       className={cn(
         'flex w-full items-center justify-between shrink-0 p-2',
-        isFirst && 'pl-4',
-        isLast && 'pr-4',
+        position === 'first' && 'pl-4',
+        position === 'last' && 'pr-4',
         className,
       )}
       style={style}
-      data-last={isLast}
-      data-first={isFirst}
+      data-position={position}
       data-index={columnIndex}
       data-column-id={column.id}
     >
@@ -175,13 +141,39 @@ export function TableHeaderCell({ column, isFirst, isLast, columnIndex, classNam
                 </Tooltip>
               </TooltipProvider>
             )}
+            {column.foreign && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <RiLinksLine className="size-3 text-muted-foreground/70" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="flex items-center gap-1">
+                      <RiLinksLine className="size-3 text-muted-foreground/70" />
+                      <span>Foreign key</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {column.foreign.name}
+                      {' '}
+                      (
+                      {column.foreign.table}
+                      .
+                      {column.foreign.column}
+                      )
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
             <span className="text-muted-foreground truncate font-mono">
               {column.type}
             </span>
           </div>
         )}
       </div>
-      <SortButton column={column} />
+      {onSort && column.type && !CANNOT_SORT_TYPES.includes(column.type) && (
+        <SortButton order={order} onClick={onSort} />
+      )}
     </div>
   )
 }

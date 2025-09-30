@@ -100,7 +100,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
   return (
     <div className="flex justify-between items-center h-8 gap-2">
       <CardTitle className="flex items-center gap-2 flex-1 min-w-0">
-        <span className="truncate block min-w-0">
+        <span data-mask className="truncate block min-w-0">
           {chat
             ? <>{chat.title || <span className="block animate-pulse bg-muted rounded-md w-30 h-4" />}</>
             : 'New Chat'}
