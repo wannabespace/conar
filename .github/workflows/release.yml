@@ -39,13 +39,13 @@ jobs:
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
         run: pnpm run build:desktop:vite
 
-      - name: Upload Sourcemaps
-        env:
-          POSTHOG_CLI_ENV_ID: ${{ secrets.POSTHOG_CLI_ENV_ID }}
-          POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_TOKEN }}
-        run: |
-          pnpm exec posthog-cli --host https://eu.posthog.com sourcemap inject --directory ./apps/desktop/out/renderer
-          pnpm exec posthog-cli --host https://eu.posthog.com sourcemap upload --directory ./apps/desktop/out/renderer
+      # - name: Upload Sourcemaps
+      #   env:
+      #     POSTHOG_CLI_ENV_ID: ${{ secrets.POSTHOG_CLI_ENV_ID }}
+      #     POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_TOKEN }}
+      #   run: |
+      #     pnpm exec posthog-cli --host https://eu.posthog.com sourcemap inject --directory ./apps/desktop/out/renderer
+      #     pnpm exec posthog-cli --host https://eu.posthog.com sourcemap upload --directory ./apps/desktop/out/renderer
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
