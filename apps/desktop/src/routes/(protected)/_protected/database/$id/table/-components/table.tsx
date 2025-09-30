@@ -5,7 +5,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, useDatabaseTableConstraints } from '~/entities/database'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
@@ -52,9 +52,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(
     getRowsQueryOpts({ database, table, schema, query: { filters, orderBy } }),
   )
-  const { data: constraints } = useDatabaseTableConstraints({ database, table, schema })
-
-  const primaryColumns = useMemo(() => constraints?.filter(c => c.column && c.type === 'primaryKey').map(c => c.column!) ?? [], [constraints])
+  const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
 
   useEffect(() => {
     if (!rows || !store.state.selected)

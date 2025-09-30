@@ -10,10 +10,19 @@ export function useTableColumns({ database, table, schema }: { database: typeof 
     return columns
       ?.map((column) => {
         const columnConstraints = constraints?.filter(constraint => constraint.column === column.id)
+        const foreign = columnConstraints?.find(constraint => constraint.type === 'foreignKey')
+
         return {
           ...column,
           primaryKey: columnConstraints?.find(constraint => constraint.type === 'primaryKey')?.name,
           unique: columnConstraints?.find(constraint => constraint.type === 'unique')?.name,
+          foreign: foreign && foreign.type === 'foreignKey' && foreign.foreignTable && foreign.foreignColumn
+            ? {
+                name: foreign.name,
+                table: foreign.foreignTable,
+                column: foreign.foreignColumn,
+              }
+            : undefined,
         }
       })
       .toSorted((a, b) => {

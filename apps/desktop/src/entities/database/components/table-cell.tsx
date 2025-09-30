@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/po
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import { RiCollapseDiagonal2Line, RiCornerRightDownLine, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { createContext, use, useEffect, useMemo, useState } from 'react'
@@ -248,48 +248,20 @@ function TableCellContent({
 }
 
 function CellContent({
-  value,
   className,
-  size,
-  isFirst,
-  isLast,
+  children,
   ...props
-}: {
-  value: unknown
-  className?: string
-  size: number
-  isFirst: boolean
-  isLast: boolean
-} & ComponentProps<'div'>) {
-  const displayValue = useMemo(() => {
-    if (value === null)
-      return 'null'
-
-    if (value === '')
-      return 'empty'
-
-    /*
-      If value has a lot of symbols that don't fit in the cell,
-      we truncate it to avoid performance issues.
-      Used 6 as a multiplier because 1 symbol takes ~6px width
-      + 5 to make sure there are extra symbols for ellipsis
-    */
-    return getDisplayValue(value, true).slice(0, (size / 6) + 5)
-  }, [value])
-
+}: ComponentProps<'div'>) {
   return (
     <div
       className={cn(
-        'h-full text-xs truncate p-2 font-mono cursor-default select-none',
+        'flex items-center gap-2 h-full text-xs truncate p-2 font-mono cursor-default select-none',
         'rounded-sm transition-ring duration-100 ring-2 ring-inset ring-transparent',
-        isFirst && 'pl-4',
-        isLast && 'pr-4',
-        (value === null || value === '') && 'text-muted-foreground/50',
         className,
       )}
       {...props}
     >
-      {displayValue}
+      {children}
     </div>
   )
 }
@@ -320,6 +292,22 @@ export function TableCell({
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
 } & TableCellProps) {
+  const displayValue = useMemo(() => {
+    if (value === null)
+      return 'null'
+
+    if (value === '')
+      return 'empty'
+
+    /*
+      If value has a lot of symbols that don't fit in the cell,
+      we truncate it to avoid performance issues.
+      Used 6 as a multiplier because 1 symbol takes ~6px width
+      + 5 to make sure there are extra symbols for ellipsis
+    */
+    return getDisplayValue(value, true).slice(0, (size / 6) + 5)
+  }, [value, size])
+
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
@@ -341,20 +329,26 @@ export function TableCell({
     status === 'error' && 'ring-destructive/50 bg-destructive/20',
     status === 'success' && 'ring-success/50 bg-success/10',
     status === 'saving' && 'animate-pulse bg-primary/10',
+    isFirst && 'pl-4',
+    isLast && 'pr-4',
+    (value === null || value === '') && 'text-muted-foreground/50',
     className,
   )
 
   if (!canInteract) {
     return (
       <CellContent
-        value={value}
-        isFirst={isFirst}
-        isLast={isLast}
-        size={size}
         onMouseOver={() => setCanInteract(true)}
         className={cellClassName}
         style={style}
-      />
+      >
+        {displayValue}
+        {column.foreign && (
+          <Button variant="outline" size="icon-xs">
+            <RiCornerRightDownLine className="size-3" />
+          </Button>
+        )}
+      </CellContent>
     )
   }
 
@@ -362,8 +356,6 @@ export function TableCell({
     setCanInteract(true)
     setIsPopoverOpen(true)
     setStatus('error')
-
-    console.error(error)
 
     toast.error(`Failed to update cell "${column.id}"`, {
       description: error.message,
@@ -411,13 +403,16 @@ export function TableCell({
                 onMouseLeave={() => !isPopoverOpen && sleep(100).then(() => setCanInteract(false))}
               >
                 <CellContent
-                  value={value}
-                  isFirst={isFirst}
-                  isLast={isLast}
-                  size={size}
                   className={cellClassName}
                   style={style}
-                />
+                >
+                  {displayValue}
+                  {column.foreign && (
+                    <Button variant="outline" size="icon-xs">
+                      <RiCornerRightDownLine className="size-3" />
+                    </Button>
+                  )}
+                </CellContent>
               </PopoverTrigger>
             </TooltipTrigger>
             {date && (

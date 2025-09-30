@@ -5,4 +5,9 @@ export interface Column {
   isNullable?: boolean
   unique?: string
   primaryKey?: string
+  foreign?: {
+    name: string
+    table: string
+    column: string
+  }
 }
