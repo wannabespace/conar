@@ -49,7 +49,9 @@ export function TablesTree({ database, className, search }: { database: typeof d
 
   const [accordionValue, setAccordionValue] = useSessionStorage<string[]>(`database-tables-accordion-value-${database.id}`, () => schemaParam ? [schemaParam] : [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
 
-  const searchAccordionValue = useMemo(() => search ? filteredTablesAndSchemas.map(schema => schema.name) : accordionValue, [search, filteredTablesAndSchemas, accordionValue])
+  const searchAccordionValue = useMemo(() => search
+    ? filteredTablesAndSchemas.map(schema => schema.name)
+    : accordionValue, [search, filteredTablesAndSchemas, accordionValue])
 
   return (
     <ScrollArea ref={ref} className={cn('h-full overflow-y-auto p-2', className)}>
@@ -70,7 +72,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
         }}
         data-mask
         type="multiple"
-        className="w-full"
+        className="w-full space-y-4"
       >
         {isPending
           ? (
@@ -119,7 +121,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
                             {schema.name}
                           </span>
                         </AccordionTrigger>
-                        <AccordionContent className="pb-4">
+                        <AccordionContent className="pb-0">
                           <AnimatePresence>
                             {schema.tables.map(table => (
                               <motion.div
