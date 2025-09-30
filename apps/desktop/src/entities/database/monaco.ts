@@ -7,6 +7,34 @@ import { databaseTableColumnsQuery } from './queries/columns'
 import { tablesAndSchemasQuery } from './queries/context'
 import { databaseEnumsQuery } from './queries/enums'
 
+const keywordPriority = [
+  'SELECT',
+  'FROM',
+  'WHERE',
+  'JOIN',
+  'INNER',
+  'LEFT',
+  'RIGHT',
+  'OUTER',
+  'ON',
+  'GROUP',
+  'BY',
+  'ORDER',
+  'HAVING',
+  'LIMIT',
+  'OFFSET',
+  'INSERT',
+  'INTO',
+  'VALUES',
+  'UPDATE',
+  'SET',
+  'DELETE',
+  'CREATE',
+  'TABLE',
+  'ALTER',
+  'DROP',
+]
+
 export function databaseCompletionService(database: typeof databases.$inferSelect): CompletionService {
   queryClient.prefetchQuery(tablesAndSchemasQuery({ database }))
   queryClient.prefetchQuery(databaseEnumsQuery({ database }))
@@ -23,12 +51,17 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
       return []
 
     const { keywords, syntax } = suggestions
-    const keywordItems = keywords.map(kw => ({
-      label: kw,
-      kind: languages.CompletionItemKind.Keyword,
-      detail: 'keyword',
-      sortText: `3${kw}`,
-    }))
+
+    const keywordItems = keywords.map((kw) => {
+      const index = keywordPriority.indexOf(kw.toUpperCase())
+      const priority = index === -1 ? 100 : index
+      return {
+        label: kw,
+        kind: languages.CompletionItemKind.Keyword,
+        detail: 'keyword',
+        sortText: `3${priority.toString().padStart(3, '0')}${kw}`,
+      }
+    })
 
     const [tablesAndSchemas, enums] = await Promise.all([
       queryClient.ensureQueryData(tablesAndSchemasQuery({ database })),
@@ -45,11 +78,12 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
     })
 
     const dotMatches = [...textBeforeCursor.matchAll(/(\w+(?:\.\w+)*)\.\s*$/g)]
-    const isFromContext = syntax.some(item => item.syntaxContextType === EntityContextType.TABLE)
+    const isTableContext = syntax.some(item => item.syntaxContextType === EntityContextType.TABLE)
     const isColumnContext = syntax.some(item => item.syntaxContextType === EntityContextType.COLUMN)
 
     if (dotMatches.length > 0) {
       const tableRef = dotMatches[dotMatches.length - 1]?.[1]
+
       if (tableRef) {
         const parts = tableRef.split('.')
         const schemaName = parts.length === 2 ? parts[0]! : 'public'
@@ -68,14 +102,14 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
             detail: `${col.type}${col.isNullable ? ' (nullable)' : ' (not null)'}`,
             sortText: `1${col.id}`,
             insertText: col.id,
-          }))
+          } satisfies ICompletionItem))
           return [...columnItems, ...keywordItems]
         }
       }
       return keywordItems
     }
 
-    if (tablesAndSchemas && isColumnContext && !isFromContext) {
+    if (tablesAndSchemas && isColumnContext && !isTableContext) {
       const columnPromises = tablesAndSchemas.schemas.flatMap(schema =>
         schema.tables.map(async (tableName) => {
           const columns = await queryClient.ensureQueryData(
@@ -87,7 +121,7 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
             detail: `${col.type}${col.isNullable ? ' (nullable)' : ' (not null)'}`,
             sortText: `1${col.id}`,
             insertText: col.id,
-          }))
+          } satisfies ICompletionItem))
         }),
       )
       const allColumns = (await Promise.all(columnPromises)).flat()
@@ -104,14 +138,14 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
             detail: `table (${schema.name})`,
             sortText: `2${tableName}`,
             insertText: tableName,
-          },
+          } satisfies ICompletionItem,
           {
             label: `${schema.name}.${tableName}`,
             kind: languages.CompletionItemKind.Class,
             detail: `table (${schema.name})`,
             sortText: `2${schema.name}.${tableName}`,
             insertText: `${schema.name}.${tableName}`,
-          },
+          } satisfies ICompletionItem,
         ]),
       )
 
@@ -126,7 +160,7 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
           detail: `enum value (${enumItem.schema}.${enumItem.name})`,
           sortText: `3${value}`,
           insertText: value,
-        })),
+        } satisfies ICompletionItem)),
       )
 
       items.push(...enumItems)
