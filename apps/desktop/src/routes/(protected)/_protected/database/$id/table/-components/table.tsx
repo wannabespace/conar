@@ -181,7 +181,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         cell: props => (
           <TableCell
             column={column}
-            database={database}
             onSetValue={setValue}
             onSaveValue={saveValue}
             {...props}
@@ -206,7 +205,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     }
 
     return sortedColumns
-  }, [columns, hiddenColumns, primaryColumns, setValue, saveValue, onSort, database])
+  }, [columns, hiddenColumns, primaryColumns, setValue, saveValue, onSort])
 
   return (
     <TableProvider

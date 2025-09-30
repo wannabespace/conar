@@ -1,8 +1,8 @@
 import type { WhereFilter } from '@conar/shared/sql/where'
 import type { Column } from '../table'
 import type { ColumnRenderer } from '~/components/table'
-import type { databases } from '~/drizzle'
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
 import { TableError } from '~/routes/(protected)/_protected/database/$id/table/-components/table'
@@ -18,15 +18,16 @@ import { databaseRowsQuery } from '../queries/rows'
 import { DEFAULT_COLUMN_WIDTH } from '../utils'
 import { TableCellContent } from './table-cell-content'
 
+const { useLoaderData } = getRouteApi('/(protected)/_protected/database/$id')
+
 export function TableCellForeignTable({
   foreign,
-  database,
   value,
 }: {
-  database: typeof databases.$inferSelect
   foreign: NonNullable<Column['foreign']>
   value: unknown
 }) {
+  const { database } = useLoaderData()
   const filters = [{
     column: foreign.column,
     operator: '=',

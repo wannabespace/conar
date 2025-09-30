@@ -1,7 +1,6 @@
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '../table'
 import type { TableCellProps } from '~/components/table'
-import type { databases } from '~/drizzle'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
@@ -193,11 +192,9 @@ export function TableCell({
   style,
   position,
   size,
-  database,
   onSetValue,
   onSaveValue,
 }: {
-  database: typeof databases.$inferSelect
   onSetValue?: (rowIndex: number, columnName: string, value: unknown) => void
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
@@ -334,7 +331,6 @@ export function TableCell({
                         onClick={e => e.stopPropagation()}
                       >
                         <TableCellForeignTable
-                          database={database}
                           foreign={column.foreign}
                           value={value}
                         />
