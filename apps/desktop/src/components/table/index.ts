@@ -10,18 +10,16 @@ export * from './header'
 export * from './provider'
 export * from './table'
 
-export interface TableCellProps extends Omit<ComponentProps<'div'>, 'id'>, Pick<ColumnRenderer, 'size' | 'id'> {
+export interface TableCellProps extends Pick<ComponentProps<'div'>, 'style' | 'className'>, Pick<ColumnRenderer, 'size' | 'id'> {
   rowIndex: number
   columnIndex: number
   value: unknown
-  isFirst: boolean
-  isLast: boolean
+  position: 'first' | 'last' | 'middle'
 }
 
-export interface TableHeaderCellProps extends Omit<ComponentProps<'div'>, 'id'>, Pick<ColumnRenderer, 'size' | 'id'> {
+export interface TableHeaderCellProps extends Pick<ComponentProps<'div'>, 'style' | 'className'>, Pick<ColumnRenderer, 'size' | 'id'> {
   columnIndex: number
-  isFirst: boolean
-  isLast: boolean
+  position: 'first' | 'last' | 'middle'
 }
 
 export interface ColumnRenderer {

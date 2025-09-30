@@ -10,6 +10,7 @@ import { useMemo, useState } from 'react'
 import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
+import { Route } from '..'
 
 export function RunnerResultsTable({
   result,
@@ -18,6 +19,7 @@ export function RunnerResultsTable({
   result: Record<string, unknown>[]
   columns: Column[]
 }) {
+  const { database } = Route.useLoaderData()
   const [search, setSearch] = useState('')
 
   const filteredData = useDebouncedMemo(() => {
@@ -51,10 +53,10 @@ export function RunnerResultsTable({
           </div>
         </div>
       ),
-      cell: props => <TableCell column={column} {...props} />,
+      cell: props => <TableCell column={column} database={database} {...props} />,
       size: DEFAULT_COLUMN_WIDTH,
     } satisfies ColumnRenderer))
-  }, [columns, filteredData])
+  }, [columns, database])
 
   return (
     <div className="h-full">

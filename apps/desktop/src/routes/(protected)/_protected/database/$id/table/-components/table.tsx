@@ -5,12 +5,12 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
+import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { Route } from '..'
-import { columnsSizeMap, getRowsQueryOpts, selectSymbol } from '../-lib'
+import { columnsSizeMap, selectSymbol } from '../-lib'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
 import { TableEmpty } from './table-empty'
@@ -50,7 +50,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(
-    getRowsQueryOpts({ database, table, schema, query: { filters, orderBy } }),
+    databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }),
   )
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
 
@@ -69,7 +69,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   }, [store, rows, primaryColumns])
 
   const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
-    const rowsQueryOpts = getRowsQueryOpts({
+    const rowsQueryOpts = databaseRowsQuery({
       database,
       table,
       schema,
@@ -96,7 +96,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   }, [database, table, schema, store])
 
   const saveValue = useCallback(async (rowIndex: number, columnId: string, value: unknown) => {
-    const rowsQueryOpts = getRowsQueryOpts({
+    const rowsQueryOpts = databaseRowsQuery({
       database,
       table,
       schema,
@@ -133,6 +133,41 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
   }, [database, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
 
+  const setOrder = useCallback((columnId: string, order: 'ASC' | 'DESC') => {
+    store.setState(state => ({
+      ...state,
+      orderBy: {
+        ...state.orderBy,
+        [columnId]: order,
+      },
+    }))
+  }, [store])
+
+  const removeOrder = useCallback((columnId: string) => {
+    const newOrderBy = { ...store.state.orderBy }
+
+    delete newOrderBy[columnId]
+
+    store.setState(state => ({
+      ...state,
+      orderBy: newOrderBy,
+    }))
+  }, [store])
+
+  const onSort = useCallback((columnId: string) => {
+    const currentOrder = store.state.orderBy?.[columnId]
+
+    if (currentOrder === 'ASC') {
+      setOrder(columnId, 'DESC')
+    }
+    else if (currentOrder === 'DESC') {
+      removeOrder(columnId)
+    }
+    else {
+      setOrder(columnId, 'ASC')
+    }
+  }, [store, setOrder, removeOrder])
+
   const tableColumns = useMemo(() => {
     if (!columns)
       return []
@@ -146,12 +181,19 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         cell: props => (
           <TableCell
             column={column}
+            database={database}
             onSetValue={setValue}
             onSaveValue={saveValue}
             {...props}
           />
         ),
-        header: props => <TableHeaderCell column={column} {...props} />,
+        header: props => (
+          <TableHeaderCell
+            column={column}
+            onSort={() => onSort(column.id)}
+            {...props}
+          />
+        ),
       }) satisfies ColumnRenderer)
 
     if (primaryColumns.length > 0 && hiddenColumns.length !== columns.length) {
@@ -164,7 +206,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     }
 
     return sortedColumns
-  }, [columns, hiddenColumns, primaryColumns, setValue, saveValue])
+  }, [columns, hiddenColumns, primaryColumns, setValue, saveValue, onSort, database])
 
   return (
     <TableProvider
@@ -187,7 +229,13 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
                   : (
                       <>
                         <TableBody data-mask className="bg-background" />
-                        <TableInfiniteLoader table={table} schema={schema} database={database} />
+                        <TableInfiniteLoader
+                          table={table}
+                          schema={schema}
+                          database={database}
+                          filters={filters}
+                          orderBy={orderBy}
+                        />
                       </>
                     )}
         </Table>

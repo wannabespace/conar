@@ -10,10 +10,9 @@ import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { databaseTableTotalQuery } from '~/entities/database'
+import { databaseRowsQuery, databaseTableTotalQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
-import { getRowsQueryOpts } from '../-lib'
 import { usePageStoreContext } from '../-store'
 
 export function HeaderActionsDelete({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
@@ -29,7 +28,7 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
     },
     onSuccess: () => {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
-      queryClient.invalidateQueries(getRowsQueryOpts({ database, table, schema, query: { filters: store.state.filters, orderBy: store.state.orderBy } }))
+      queryClient.invalidateQueries(databaseRowsQuery({ database, table, schema, query: { filters: store.state.filters, orderBy: store.state.orderBy } }))
       queryClient.invalidateQueries(databaseTableTotalQuery({ database, table, schema, query: { filters: store.state.filters } }))
       store.setState(state => ({
         ...state,

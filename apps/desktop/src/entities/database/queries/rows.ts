@@ -54,6 +54,7 @@ export function databaseRowsQuery({
       }
     },
     select: data => data.pages.flatMap(page => page.rows),
+    throwOnError: false,
   })
 }
 

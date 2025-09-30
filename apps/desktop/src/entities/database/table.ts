@@ -7,6 +7,7 @@ export interface Column {
   primaryKey?: string
   foreign?: {
     name: string
+    schema: string
     table: string
     column: string
   }
