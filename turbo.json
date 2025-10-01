@@ -10,14 +10,16 @@
       "dependsOn": ["^check-types"]
     },
     "dev": {
-      "persistent": true
+      "persistent": true,
+      "cache": false
     },
     "build": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "cache": false
     },
     "build:vite": {
-      "cache": false,
-      "dependsOn": ["check-types", "^check-types"]
+      "dependsOn": ["check-types", "^check-types"],
+      "cache": false
     },
     "build:electron": {
       "dependsOn": ["build:vite"]
