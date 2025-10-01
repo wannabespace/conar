@@ -40,7 +40,7 @@ export function TableInfiniteLoader({
   }, [filters, orderBy])
 
   return (
-    <div className="sticky left-0 h-[50vh] pointer-events-none">
+    <div className="sticky left-0 h-80 pointer-events-none">
       <div ref={loaderRef} className="absolute h-[calc(50vh+50rem)] bottom-0 inset-x-0" />
       <div className="flex items-center justify-center h-[inherit]">
         {hasNextPage

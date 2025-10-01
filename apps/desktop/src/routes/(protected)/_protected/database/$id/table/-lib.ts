@@ -2,11 +2,11 @@ export const selectSymbol = Symbol('table-selection')
 
 export const columnsSizeMap = new Map<string, number>([
   ['boolean', 160],
-  ['number', 180],
+  ['number', 170],
   ['integer', 150],
-  ['bigint', 190],
+  ['bigint', 170],
   ['timestamp', 240],
   ['timestamptz', 240],
-  ['float', 180],
-  ['uuid', 320],
+  ['float', 170],
+  ['uuid', 290],
 ])

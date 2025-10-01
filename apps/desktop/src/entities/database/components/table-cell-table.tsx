@@ -1,6 +1,6 @@
 import type { WhereFilter } from '@conar/shared/sql/where'
-import type { Column } from '../table'
 import type { ColumnRenderer } from '~/components/table'
+import { Badge } from '@conar/ui/components/badge'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useMemo } from 'react'
@@ -20,24 +20,18 @@ import { TableCellContent } from './table-cell-content'
 
 const { useLoaderData } = getRouteApi('/(protected)/_protected/database/$id')
 
-export function TableCellForeignTable({
-  foreign,
-  value,
-}: {
-  foreign: NonNullable<Column['foreign']>
-  value: unknown
-}) {
+export function TableCellTable({ schema, table, column, value }: { schema: string, table: string, column: string, value: unknown }) {
   const { database } = useLoaderData()
   const filters = [{
-    column: foreign.column,
+    column,
     operator: '=',
     values: [value as string],
   } satisfies WhereFilter]
   const orderBy = {}
   const { data: rows, isPending: isRowsPending, error } = useInfiniteQuery(databaseRowsQuery({
     database,
-    table: foreign.table,
-    schema: foreign.schema,
+    table,
+    schema,
     query: {
       filters,
       orderBy,
@@ -45,8 +39,8 @@ export function TableCellForeignTable({
   }))
   const columns = useTableColumns({
     database,
-    table: foreign.table,
-    schema: foreign.schema,
+    table,
+    schema,
   })
   const tableColumns = useMemo(() => {
     if (!columns)
@@ -83,22 +77,24 @@ export function TableCellForeignTable({
       estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
     >
       <div className="size-full relative">
-        <div className="px-4 py-2 h-8 text-xs text-muted-foreground">
-          Showing records from
-          {' '}
-          <span className="font-semibold">
-            {foreign.schema}
-            .
-            {foreign.table}
-          </span>
-          {' '}
-          where
-          {' '}
-          <span className="font-semibold">{foreign.column}</span>
-          {' '}
-          =
-          {' '}
-          <span className="font-mono">{String(value)}</span>
+        <div className="px-4 flex items-center h-8 text-xs text-muted-foreground bg-background">
+          <div>
+            Showing records from
+            {' '}
+            <Badge variant="secondary">
+              {schema}
+              .
+              {table}
+            </Badge>
+            {' '}
+            where
+            {' '}
+            <Badge variant="secondary">{column}</Badge>
+            {' '}
+            =
+            {' '}
+            <Badge variant="secondary">{String(value)}</Badge>
+          </div>
         </div>
         <Table className="bg-background h-[calc(100%-theme(spacing.8))] rounded-b-lg">
           <TableHeader />
@@ -114,8 +110,8 @@ export function TableCellForeignTable({
                       <>
                         <TableBody data-mask className="bg-background" />
                         <TableInfiniteLoader
-                          table={foreign.table}
-                          schema={foreign.schema}
+                          table={table}
+                          schema={schema}
                           database={database}
                           filters={filters}
                           orderBy={orderBy}

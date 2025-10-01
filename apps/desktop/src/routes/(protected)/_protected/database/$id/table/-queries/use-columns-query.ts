@@ -26,6 +26,14 @@ export function useTableColumns({ database, table, schema }: { database: typeof 
                 column: foreign.foreignColumn,
               }
             : undefined,
+          references: foreignKeys
+            ?.filter(fk => fk.foreignColumn === column.id && fk.foreignSchema === schema && fk.foreignTable === table)
+            .map(fk => ({
+              name: fk.name,
+              schema: fk.schema,
+              table: fk.table,
+              column: fk.column,
+            })),
         }
       })
       .toSorted((a, b) => {

@@ -11,7 +11,7 @@ export function TableCellContent({
   return (
     <div
       className={cn(
-        'flex items-center gap-2 h-full text-xs truncate p-2 font-mono cursor-default select-none',
+        'flex items-center gap-1 h-full text-xs truncate p-2 font-mono cursor-default select-none',
         'rounded-md transition-ring duration-100 ring-2 ring-inset ring-transparent',
         position === 'first' && 'pl-4',
         position === 'last' && 'pr-4',

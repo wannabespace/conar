@@ -177,7 +177,10 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       .toSorted((a, b) => a.primaryKey ? -1 : b.primaryKey ? 1 : 0)
       .map(column => ({
         id: column.id,
-        size: columnsSizeMap.get(column.type) ?? DEFAULT_COLUMN_WIDTH,
+        size: (columnsSizeMap.get(column.type) ?? DEFAULT_COLUMN_WIDTH)
+          // 25 it's a ~size of the button, 6 it's a ~size of the number
+          + (column.references?.length ? 25 + 6 : 0)
+          + (column.foreign ? 25 : 0),
         cell: props => (
           <TableCell
             column={column}

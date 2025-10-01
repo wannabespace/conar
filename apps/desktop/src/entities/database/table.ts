@@ -11,4 +11,10 @@ export interface Column {
     table: string
     column: string
   }
+  references?: {
+    name: string
+    schema: string
+    table: string
+    column: string
+  }[]
 }
