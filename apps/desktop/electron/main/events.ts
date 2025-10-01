@@ -24,7 +24,16 @@ const databases = {
       [DatabaseType.Postgres]: pgTestConnection,
     }
 
-    return queryMap[type]({ connectionString })
+    try {
+      return await queryMap[type]({ connectionString })
+    }
+    catch (error) {
+      if (error instanceof AggregateError) {
+        throw error.errors[0]
+      }
+
+      throw error
+    }
   },
   query: async ({
     type,
@@ -41,7 +50,16 @@ const databases = {
       [DatabaseType.Postgres]: pgQuery,
     }
 
-    return queryMap[type]({ connectionString, query, values }) satisfies Promise<DatabaseQueryResult[]>
+    try {
+      return await queryMap[type]({ connectionString, query, values }) satisfies DatabaseQueryResult[]
+    }
+    catch (error) {
+      if (error instanceof AggregateError) {
+        throw error.errors[0]
+      }
+
+      throw error
+    }
   },
 }
 

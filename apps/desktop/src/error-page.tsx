@@ -18,6 +18,7 @@ const IGNORED_ERRORS = [
   'ETIMEDOUT',
   'ENOTFOUND',
   'ECONNRESET',
+  'ECONNREFUSED',
   'Password authentication',
   'No pg_hba.conf entry for host',
   'Could not connect to database',

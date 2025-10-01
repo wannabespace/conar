@@ -25,11 +25,7 @@ export function dbQuery(databaseId: string, params: {
         values: params.values,
         error: err.message,
       })
-      throw new Error([
-        err.message,
-        params.query,
-        params.values,
-      ].join('\n'), { cause: err })
+      throw err
     })
   }
 
@@ -45,11 +41,7 @@ export function dbQuery(databaseId: string, params: {
       values: params.values,
       error: err.message,
     })
-    throw new Error([
-      err.message,
-      params.query,
-      params.values,
-    ].join('\n'), { cause: err })
+    throw err
   })
 }
 
