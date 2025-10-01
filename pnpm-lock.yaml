@@ -206,6 +206,9 @@ importers:
       ai:
         specifier: 'catalog:'
         version: 5.0.59(zod@4.1.11)
+      ai-retry:
+        specifier: ^0.0.3
+        version: 0.0.3(ai@5.0.59(zod@4.1.11))(zod@4.1.11)
       ai4:
         specifier: npm:ai@4.3.19
         version: ai@4.3.19(react@19.1.1)(zod@4.1.11)
@@ -4207,6 +4210,11 @@ packages:
   aggregate-error@3.1.0:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
     engines: {node: '>=8'}
+
+  ai-retry@0.0.3:
+    resolution: {integrity: sha512-tNumSpM2/j8GI9yJwYaX7KyOMF2ve0H/Eujq/NdTMaGTGXsnPKdPU6TND/hzs/EQbWT4m+xeoilZug2AhfdWOQ==}
+    peerDependencies:
+      ai: 5.x
 
   ai@4.3.19:
     resolution: {integrity: sha512-dIE2bfNpqHN3r6IINp9znguYdhIOheKW2LDigAMrgt/upT3B8eBGPSCblENvaZGoq+hxaN9fSMzjWpbqloP+7Q==}
@@ -13238,6 +13246,14 @@ snapshots:
     dependencies:
       clean-stack: 2.2.0
       indent-string: 4.0.0
+
+  ai-retry@0.0.3(ai@5.0.59(zod@4.1.11))(zod@4.1.11):
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.10(zod@4.1.11)
+      ai: 5.0.59(zod@4.1.11)
+    transitivePeerDependencies:
+      - zod
 
   ai@4.3.19(react@19.1.1)(zod@4.1.11):
     dependencies:

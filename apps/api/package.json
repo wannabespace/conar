@@ -30,6 +30,7 @@
     "@posthog/ai": "^6.4.3",
     "@trpc/server": "^11.6.0",
     "ai": "catalog:",
+    "ai-retry": "^0.0.3",
     "ai4": "npm:ai@4.3.19",
     "arktype": "catalog:",
     "better-auth": "catalog:",

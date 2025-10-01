@@ -1,10 +1,12 @@
 import type { AppUIMessage } from '@conar/shared/ai-tools'
 import type { LanguageModel } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
+import { google } from '@ai-sdk/google'
 import { convertToAppUIMessage, tools } from '@conar/shared/ai-tools'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
+import { createRetryable } from 'ai-retry'
 import { type } from 'arktype'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
@@ -26,7 +28,14 @@ const chatInputType = type({
   'messageId?': 'string.uuid.v7',
 })
 
-const mainModel = anthropic('claude-sonnet-4-5')
+const mainModel = createRetryable({
+  model: anthropic('claude-sonnet-4-5'),
+  retries: [
+    anthropic('claude-opus-4-1'),
+    google('gemini-2.5-pro'),
+  ],
+})
+
 const fallbackModel = anthropic('claude-opus-4-1')
 
 function handleError(error: unknown) {
