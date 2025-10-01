@@ -3,6 +3,7 @@ import type { Dispatch, SetStateAction } from 'react'
 import type { Column } from '../table'
 import { useMutation } from '@tanstack/react-query'
 import { createContext, use, useMemo, useState } from 'react'
+import { getEditableValue } from '../lib/render'
 
 interface CellContextValue {
   value: string
@@ -40,7 +41,7 @@ export function TableCellProvider({
   onSaveSuccess: () => void
   onSavePending: () => void
 }) {
-  const [value, setValue] = useState<string>(() => initialValue === null ? '' : displayValue)
+  const [value, setValue] = useState<string>(() => getEditableValue(initialValue, false))
 
   const { mutate: update } = useMutation({
     mutationFn: async ({ rowIndex, value }: { value: string | null, rowIndex: number }) => {
