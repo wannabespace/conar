@@ -3,17 +3,19 @@ import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 import { createResumableStreamContext } from 'resumable-stream'
 import { chats, db } from '~/drizzle'
-import { redis } from '~/lib/redis'
+import { createRedisPubSub } from '~/lib/redis'
 import { authMiddleware, orpc } from '~/orpc'
 
 const resumeStreamInputType = type({
   id: 'string.uuid.v7',
 })
 
+const { subscriber, publisher } = createRedisPubSub()
+
 export const streamContext = createResumableStreamContext({
   waitUntil: null,
-  subscriber: redis,
-  publisher: redis,
+  subscriber,
+  publisher,
 })
 
 export const resumeStream = orpc
