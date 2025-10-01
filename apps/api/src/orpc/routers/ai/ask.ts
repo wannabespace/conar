@@ -7,11 +7,11 @@ import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { type } from 'arktype'
 import { asc, eq } from 'drizzle-orm'
-// import { createResumableStreamContext } from 'resumable-stream'
 import { v7 } from 'uuid'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
+import { streamContext } from './resume-stream'
 
 const chatInputType = type({
   'id': 'string.uuid.v7',
@@ -28,10 +28,6 @@ const chatInputType = type({
 
 const mainModel = anthropic('claude-sonnet-4-5')
 const fallbackModel = anthropic('claude-opus-4-1')
-
-// const streamContext = createResumableStreamContext({
-//   waitUntil: null,
-// })
 
 function handleError(error: unknown) {
   if (typeof error === 'object' && (error as { type?: string }).type === 'overloaded_error') {
@@ -231,7 +227,8 @@ export const ask = orpc
                 updatedAt: result.responseMessage.metadata?.updatedAt,
               },
             })
-            // await db.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
+
+            await db.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
           }
           catch (error) {
             console.error('error onFinish transaction', error)
@@ -243,19 +240,16 @@ export const ask = orpc
 
           return handleError(error)
         },
-        // consumeSseStream: async ({ stream }) => {
-        //   const streamId = v7()
-
-        //   try {
-        //     console.log('create new resumable stream', streamId, id)
-        //     await streamContext.createNewResumableStream(streamId, () => stream)
-        //     await db.update(chats).set({ activeStreamId: streamId }).where(eq(chats.id, id))
-        //   }
-        //   catch (error) {
-        //     console.error('consume stream error', error)
-        //   }
-        // },
       })
+
+      try {
+        const streamId = v7()
+        await streamContext.createNewResumableStream(streamId, () => result.textStream)
+        await db.update(chats).set({ activeStreamId: streamId }).where(eq(chats.id, input.id))
+      }
+      catch (error) {
+        console.error('error on createNewResumableStream', error)
+      }
 
       return streamToEventIterator(stream)
     }
