@@ -1,8 +1,10 @@
 import type { WhereFilter } from '@conar/shared/sql/where'
 import type { ColumnRenderer } from '~/components/table'
 import { Badge } from '@conar/ui/components/badge'
+import { Button } from '@conar/ui/components/button'
+import { RiCornerRightUpLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
+import { getRouteApi, Link } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
 import { TableError } from '~/routes/(protected)/_protected/database/$id/table/-components/table'
@@ -77,7 +79,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
       estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
     >
       <div className="size-full relative">
-        <div className="px-4 flex items-center h-8 text-xs text-muted-foreground bg-background">
+        <div className="px-4 flex items-center justify-between h-8 text-xs text-muted-foreground bg-background">
           <div>
             Showing records from
             {' '}
@@ -95,6 +97,20 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
             {' '}
             <Badge variant="secondary">{String(value)}</Badge>
           </div>
+          <Button
+            variant="outline"
+            size="xs"
+            asChild
+          >
+            <Link
+              to="/database/$id/table"
+              params={{ id: database.id }}
+              search={{ schema, table, filters, orderBy }}
+            >
+              <RiCornerRightUpLine className="size-3" />
+              Open table
+            </Link>
+          </Button>
         </div>
         <Table className="bg-background h-[calc(100%-theme(spacing.8))] rounded-b-lg">
           <TableHeader />

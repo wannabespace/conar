@@ -1,3 +1,4 @@
+import type { WhereFilter } from '@conar/shared/sql/where'
 import type { Store } from '@tanstack/react-store'
 import type { storeState } from './-store'
 import { FILTER_OPERATORS_LIST } from '@conar/shared/utils/sql'
@@ -23,11 +24,21 @@ export const Route = createFileRoute(
   validateSearch: type({
     'schema?': 'string',
     'table?': 'string',
+    'filters?': 'object[]' as type.cast<WhereFilter[]>,
+    'orderBy?': 'object' as type.cast<Record<string, 'ASC' | 'DESC'>>,
   }),
   component: DatabaseTablesPage,
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => {
     const store = deps.table && deps.schema ? createPageStore({ id: context.database.id, schema: deps.schema, table: deps.table }) : null
+
+    if (store && (deps.filters || deps.orderBy)) {
+      store.setState(state => ({
+        ...state,
+        ...(deps.filters ? { filters: deps.filters } : {}),
+        ...(deps.orderBy ? { orderBy: deps.orderBy } : {}),
+      }))
+    }
 
     prefetchDatabaseCore(context.database)
 
