@@ -239,7 +239,7 @@ export function TableCell({
         value={value}
       >
         <span className="truncate">{displayValue}</span>
-        {column.foreign && <ForeignButton />}
+        {!!value && column.foreign && <ForeignButton />}
       </TableCellContent>
     )
   }
