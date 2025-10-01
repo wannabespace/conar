@@ -265,6 +265,12 @@ export function TableCell({
 
   const date = column ? getTimestamp(value, column) : null
 
+  function closePopover() {
+    if (!isPopoverOpen && !isForeignOpen) {
+      sleep(200).then(() => setCanInteract(false))
+    }
+  }
+
   return (
     <TableCellProvider
       column={column}
@@ -293,7 +299,7 @@ export function TableCell({
                 asChild
                 onClick={e => e.preventDefault()}
                 onDoubleClick={() => setIsPopoverOpen(true)}
-                onMouseLeave={() => !isPopoverOpen && !isForeignOpen && sleep(200).then(() => setCanInteract(false))}
+                onMouseLeave={closePopover}
               >
                 <TableCellContent
                   className={cellClassName}
@@ -316,6 +322,7 @@ export function TableCell({
                                   e.stopPropagation()
 
                                   setIsForeignOpen(true)
+                                  setIsPopoverOpen(false)
                                 }}
                               />
                             </PopoverTrigger>
@@ -349,7 +356,7 @@ export function TableCell({
         </TooltipProvider>
         <PopoverContent
           className={cn('p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
-          onAnimationEnd={() => !isPopoverOpen && setCanInteract(false)}
+          onAnimationEnd={closePopover}
         >
           <CellPopoverContent
             rowIndex={rowIndex}
