@@ -7,7 +7,6 @@ import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
-import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { cn } from '@conar/ui/lib/utils'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { restrictToHorizontalAxis } from '@dnd-kit/modifiers'
@@ -19,7 +18,7 @@ import { useRouter, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
 import { getPageStoreState } from '../-store'
-import { addTab, closeTab, moveTab, useTabs } from '../-tabs'
+import { addTab, moveTab, removeTab, useTabs } from '../-tabs'
 
 const os = getOS(navigator.userAgent)
 
@@ -209,37 +208,38 @@ export function TablesTabs({ database }: {
     }
   }
 
-  function navigateToAvailableRoute() {
-    if (schemaParam && tableParam && tabs.find(tab => tab.schema === schemaParam && tab.table === tableParam)) {
-      return
-    }
+  async function navigateToDifferentTab(schema: string, table: string) {
+    const currentTabIndex = tabs.findIndex(tab => tab.schema === schema && tab.table === table)
+    const nextTabIndex = currentTabIndex === tabs.length - 1 ? null : currentTabIndex + 1
+    const prevTabIndex = currentTabIndex === 0 ? null : currentTabIndex - 1
 
-    if (tabs.length) {
-      const prevTab = tabs.at(-1)!
+    const newTab = nextTabIndex !== null || prevTabIndex !== null ? tabs[(nextTabIndex ?? prevTabIndex)!] : null
 
-      router.navigate({
+    if (newTab) {
+      await router.navigate({
         to: '/database/$id/table',
         params: { id: database.id },
-        search: { schema: prevTab.schema, table: prevTab.table },
+        search: { schema: newTab.schema, table: newTab.table },
       })
     }
     else {
-      router.navigate({
+      await router.navigate({
         to: '/database/$id/table',
         params: { id: database.id },
       })
     }
   }
 
-  useMountedEffect(() => {
-    navigateToAvailableRoute()
-  }, [tabs.length])
+  async function closeTab(schema: string, table: string) {
+    await navigateToDifferentTab(schema, table)
+    removeTab(database.id, schema, table)
+  }
 
   useKeyboardEvent(e => e.key === 'w' && (os.type === 'macos' ? e.metaKey : e.ctrlKey), (e) => {
     e.preventDefault()
 
     if (schemaParam && tableParam) {
-      closeTab(database.id, schemaParam, tableParam)
+      closeTab(schemaParam, tableParam)
     }
   })
 
@@ -268,7 +268,7 @@ export function TablesTabs({ database }: {
               id={database.id}
               item={item}
               showSchema={!isOneSchema}
-              onClose={() => closeTab(database.id, item.tab.schema, item.tab.table)}
+              onClose={() => closeTab(item.tab.schema, item.tab.table)}
               onDoubleClick={() => addTab(database.id, item.tab.schema, item.tab.table, false)}
               onFocus={(ref) => {
                 ref.current?.scrollIntoView({

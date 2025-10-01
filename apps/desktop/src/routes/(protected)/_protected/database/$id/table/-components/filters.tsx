@@ -59,15 +59,14 @@ export function Filters() {
         </Popover>
       </div>
       <Button
-        variant="ghost"
+        variant="outline"
         size="xs"
-        className="text-destructive!"
         onClick={() => store.setState(state => ({
           ...state,
           filters: [],
         }))}
       >
-        <RiFilterOffLine className="size-3" />
+        <RiFilterOffLine className="size-3 text-destructive" />
         Clear
       </Button>
     </div>

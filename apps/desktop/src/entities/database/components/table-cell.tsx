@@ -237,7 +237,7 @@ export function TableCell({
   }, [status])
 
   const cellClassName = cn(
-    'flex justify-between',
+    'ring-1 flex justify-between',
     isPopoverOpen && 'ring-primary/30 bg-primary/10',
     (isForeignOpen || isReferencesOpen) && 'ring-accent/60 bg-accent/30',
     status === 'error' && 'ring-destructive/50 bg-destructive/20',

@@ -23,7 +23,7 @@ import { lastOpenedTable, tablesAndSchemasQuery } from '~/entities/database'
 import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { Route } from '..'
-import { closeTab } from '../-tabs'
+import { removeTab } from '../-tabs'
 
 interface DropTableDialogProps {
   ref: React.RefObject<{
@@ -75,7 +75,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
           params: { id: database.id },
         })
       }
-      closeTab(database.id, schema, table)
+      removeTab(database.id, schema, table)
     },
   })
 

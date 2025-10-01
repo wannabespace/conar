@@ -46,7 +46,7 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
   }
 }
 
-export function closeTab(id: string, schema: string, table: string) {
+export function removeTab(id: string, schema: string, table: string) {
   tabsStore.setState(prev => ({
     ...prev,
     [id]: prev[id]?.filter(tab => !(tab.table === table && tab.schema === schema)) ?? [],
