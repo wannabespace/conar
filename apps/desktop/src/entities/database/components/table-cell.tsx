@@ -308,7 +308,7 @@ export function TableCell({
                   position={position}
                 >
                   <span className="truncate">{displayValue}</span>
-                  {column.foreign && (
+                  {!!value && column.foreign && (
                     <Popover
                       open={isForeignOpen}
                       onOpenChange={setIsForeignOpen}

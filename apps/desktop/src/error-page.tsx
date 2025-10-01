@@ -13,7 +13,7 @@ import { enterAppAnimation } from './enter'
 import { EventsProvider } from './lib/events'
 
 // User specific errors that we don't want to track
-const IGNORED_ERRORS = [
+const CONNECTION_ERRORS = [
   'ERR_TIMED_OUT',
   'ETIMEDOUT',
   'ENOTFOUND',
@@ -33,7 +33,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
   }, [])
 
   useEffect(() => {
-    if (IGNORED_ERRORS.some(e => e.includes(error.message))) {
+    if (CONNECTION_ERRORS.some(e => e.includes(error.message))) {
       return
     }
 
@@ -52,7 +52,9 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                 </div>
                 <CardTitle className="text-xl">Something went wrong</CardTitle>
                 <CardDescription>
-                  An error occurred while rendering this page
+                  {CONNECTION_ERRORS.some(e => error.message.includes(e))
+                    ? 'Check your database connection settings and network.'
+                    : 'An error occurred while rendering this page'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
