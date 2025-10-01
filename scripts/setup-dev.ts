@@ -12,8 +12,7 @@ const __dirname = path.dirname(__filename)
  * @param {string} dir - Directory to search in
  * @param {string[]} results - Array to collect found files
  */
-function findEnvExampleFiles(dir: string, results: string[] = []) {
-  const r = [...results]
+function findEnvExampleFiles(dir: string, r: string[] = []) {
   const items = fs.readdirSync(dir)
 
   for (const item of items) {
