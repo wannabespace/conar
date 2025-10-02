@@ -3,6 +3,7 @@ import { prepareSql } from '@conar/shared/utils/helpers'
 import { type } from 'arktype'
 
 export const columnType = type({
+  schema: 'string',
   table: 'string',
   id: 'string',
   type: 'string',
@@ -19,6 +20,7 @@ export function columnsSql(schema: string, table: string): Record<DatabaseType, 
   return {
     postgres: prepareSql(`
       SELECT
+        c.table_schema AS schema,
         c.table_name AS table,
         c.column_name AS id,
         c.column_default AS default,

@@ -12,7 +12,7 @@
     "better-auth:generate": "cross-env NODE_ENV=production pnpm dlx @better-auth/cli@latest generate"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.22",
+    "@ai-sdk/anthropic": "^2.0.23",
     "@ai-sdk/anthropic1": "npm:@ai-sdk/anthropic@1.2.12",
     "@ai-sdk/google": "^2.0.17",
     "@ai-sdk/google1": "npm:@ai-sdk/google@1.2.22",
@@ -30,7 +30,7 @@
     "@posthog/ai": "^6.4.3",
     "@trpc/server": "^11.6.0",
     "ai": "catalog:",
-    "ai-retry": "^0.0.3",
+    "ai-retry": "^0.1.0",
     "ai4": "npm:ai@4.3.19",
     "arktype": "catalog:",
     "better-auth": "catalog:",
@@ -46,10 +46,10 @@
     "pg": "^8.16.3",
     "postgres": "^3.4.7",
     "posthog-node": "^5.9.2",
-    "redis": "^5.8.2",
-    "resend": "^6.1.1",
+    "redis": "^5.8.3",
+    "resend": "^6.1.2",
     "resumable-stream": "^2.2.4",
-    "stripe": "^18.5.0",
+    "stripe": "^19.0.0",
     "superjson": "^2.2.2",
     "uuid": "catalog:",
     "zod": "catalog:"

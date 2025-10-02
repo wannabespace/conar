@@ -10,10 +10,14 @@ const constraintTypeMap = {
 } as const satisfies Record<typeof constraintType.infer, string>
 
 export const constraintsType = type({
+  table_schema: 'string',
+  table_name: 'string',
   constraint_name: 'string',
   constraint_type: constraintType,
   column_name: 'string | null',
 }).pipe(item => ({
+  schema: item.table_schema,
+  table: item.table_name,
   name: item.constraint_name,
   type: constraintTypeMap[item.constraint_type],
   column: item.column_name,
@@ -23,6 +27,8 @@ export function constraintsSql(schema: string, table: string): Record<DatabaseTy
   return {
     postgres: prepareSql(`
       SELECT
+        tc."table_schema",
+        tc."table_name",
         tc."constraint_name",
         tc."constraint_type",
         kcu."column_name"

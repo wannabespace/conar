@@ -20,6 +20,7 @@ import { Route as publicAuthSignInRouteImport } from './routes/(public)/_auth/si
 import { Route as protectedProtectedCreateRouteImport } from './routes/(protected)/_protected/create'
 import { Route as publicAuthTwoFactorSetupRouteImport } from './routes/(public)/_auth/two-factor.setup'
 import { Route as protectedProtectedDatabaseIdRouteImport } from './routes/(protected)/_protected/database/$id'
+import { Route as protectedProtectedDatabaseIdVisualizerIndexRouteImport } from './routes/(protected)/_protected/database/$id/visualizer/index'
 import { Route as protectedProtectedDatabaseIdTableIndexRouteImport } from './routes/(protected)/_protected/database/$id/table/index'
 import { Route as protectedProtectedDatabaseIdSqlIndexRouteImport } from './routes/(protected)/_protected/database/$id/sql/index'
 import { Route as protectedProtectedDatabaseIdEnumsIndexRouteImport } from './routes/(protected)/_protected/database/$id/enums/index'
@@ -81,6 +82,12 @@ const protectedProtectedDatabaseIdRoute =
     path: '/database/$id',
     getParentRoute: () => protectedProtectedRoute,
   } as any)
+const protectedProtectedDatabaseIdVisualizerIndexRoute =
+  protectedProtectedDatabaseIdVisualizerIndexRouteImport.update({
+    id: '/visualizer/',
+    path: '/visualizer/',
+    getParentRoute: () => protectedProtectedDatabaseIdRoute,
+  } as any)
 const protectedProtectedDatabaseIdTableIndexRoute =
   protectedProtectedDatabaseIdTableIndexRouteImport.update({
     id: '/table/',
@@ -111,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
   '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
   '/database/$id/table': typeof protectedProtectedDatabaseIdTableIndexRoute
+  '/database/$id/visualizer': typeof protectedProtectedDatabaseIdVisualizerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof protectedProtectedIndexRoute
@@ -123,6 +131,7 @@ export interface FileRoutesByTo {
   '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
   '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
   '/database/$id/table': typeof protectedProtectedDatabaseIdTableIndexRoute
+  '/database/$id/visualizer': typeof protectedProtectedDatabaseIdVisualizerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -140,6 +149,7 @@ export interface FileRoutesById {
   '/(protected)/_protected/database/$id/enums/': typeof protectedProtectedDatabaseIdEnumsIndexRoute
   '/(protected)/_protected/database/$id/sql/': typeof protectedProtectedDatabaseIdSqlIndexRoute
   '/(protected)/_protected/database/$id/table/': typeof protectedProtectedDatabaseIdTableIndexRoute
+  '/(protected)/_protected/database/$id/visualizer/': typeof protectedProtectedDatabaseIdVisualizerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/database/$id/enums'
     | '/database/$id/sql'
     | '/database/$id/table'
+    | '/database/$id/visualizer'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/database/$id/enums'
     | '/database/$id/sql'
     | '/database/$id/table'
+    | '/database/$id/visualizer'
   id:
     | '__root__'
     | '/(protected)'
@@ -182,6 +194,7 @@ export interface FileRouteTypes {
     | '/(protected)/_protected/database/$id/enums/'
     | '/(protected)/_protected/database/$id/sql/'
     | '/(protected)/_protected/database/$id/table/'
+    | '/(protected)/_protected/database/$id/visualizer/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -268,6 +281,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof protectedProtectedDatabaseIdRouteImport
       parentRoute: typeof protectedProtectedRoute
     }
+    '/(protected)/_protected/database/$id/visualizer/': {
+      id: '/(protected)/_protected/database/$id/visualizer/'
+      path: '/visualizer'
+      fullPath: '/database/$id/visualizer'
+      preLoaderRoute: typeof protectedProtectedDatabaseIdVisualizerIndexRouteImport
+      parentRoute: typeof protectedProtectedDatabaseIdRoute
+    }
     '/(protected)/_protected/database/$id/table/': {
       id: '/(protected)/_protected/database/$id/table/'
       path: '/table'
@@ -296,6 +316,7 @@ interface protectedProtectedDatabaseIdRouteChildren {
   protectedProtectedDatabaseIdEnumsIndexRoute: typeof protectedProtectedDatabaseIdEnumsIndexRoute
   protectedProtectedDatabaseIdSqlIndexRoute: typeof protectedProtectedDatabaseIdSqlIndexRoute
   protectedProtectedDatabaseIdTableIndexRoute: typeof protectedProtectedDatabaseIdTableIndexRoute
+  protectedProtectedDatabaseIdVisualizerIndexRoute: typeof protectedProtectedDatabaseIdVisualizerIndexRoute
 }
 
 const protectedProtectedDatabaseIdRouteChildren: protectedProtectedDatabaseIdRouteChildren =
@@ -306,6 +327,8 @@ const protectedProtectedDatabaseIdRouteChildren: protectedProtectedDatabaseIdRou
       protectedProtectedDatabaseIdSqlIndexRoute,
     protectedProtectedDatabaseIdTableIndexRoute:
       protectedProtectedDatabaseIdTableIndexRoute,
+    protectedProtectedDatabaseIdVisualizerIndexRoute:
+      protectedProtectedDatabaseIdVisualizerIndexRoute,
   }
 
 const protectedProtectedDatabaseIdRouteWithChildren =
