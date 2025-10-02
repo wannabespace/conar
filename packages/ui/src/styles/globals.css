@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@xyflow/react/dist/style.css";
 @import "./fonts.css";
 @import "./monaco.css";
 @import "./typography.css";

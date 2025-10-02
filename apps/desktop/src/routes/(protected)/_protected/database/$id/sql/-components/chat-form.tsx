@@ -114,7 +114,7 @@ export function ChatForm() {
 
   useMountedEffect(() => {
     chatInput.set(database.id, input)
-  }, [input])
+  }, [input, database.id])
 
   useEffect(() => {
     return pageHooks.hook('fix', async (error) => {

@@ -11,7 +11,7 @@ import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiListUnordered, RiMessageLine, RiMoonLine, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCloseLine, RiCommandLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
@@ -201,6 +201,7 @@ function MainLinks() {
   const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/table/')
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
+  const isActiveVisualizer = matches.includes('/(protected)/_protected/database/$id/visualizer/')
 
   const isCurrentTableAsLastOpened = lastTable?.schema === schemaParam && lastTable?.table === tableParam
 
@@ -269,6 +270,16 @@ function MainLinks() {
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">Enums</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link to="/database/$id/visualizer" params={{ id }} className={classes(isActiveVisualizer)}>
+              <RiNodeTree className="size-4" />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="right">Visualizer</TooltipContent>
         </Tooltip>
       </TooltipProvider>
     </>

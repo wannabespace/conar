@@ -11,10 +11,7 @@ export function databaseTableConstraintsQuery({ database, schema, table }: { dat
         query: constraintsSql(schema, table)[database.type],
       })
 
-      return result!.rows.map(row => ({
-        ...constraintsType.assert(row),
-        schema,
-      }))
+      return result!.rows.map(row => constraintsType.assert(row))
     },
   })
 }

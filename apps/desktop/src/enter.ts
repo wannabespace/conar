@@ -1,6 +1,11 @@
 import { sleep } from '@conar/shared/utils/helpers'
+import { createHooks } from 'hookable'
 
 let isEntered = false
+
+export const animationHooks = createHooks<{
+  finished: () => void
+}>()
 
 export function enterAppAnimation() {
   if (isEntered)
@@ -14,6 +19,8 @@ export function enterAppAnimation() {
   sleep(100).then(() => {
     root.classList.remove('scale-[1.2]', 'opacity-0')
     document.body.classList.remove('overflow-hidden')
+    // 300 - transition duration
+    sleep(300).then(() => animationHooks.callHook('finished'))
   })
 
   if (preloader) {

@@ -1,7 +1,7 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.17.1",
+  "packageManager": "pnpm@10.18.0",
   "engines": {
     "bun": ">=1.2.0"
   },
@@ -32,8 +32,8 @@
     "@types/bun": "^1.2.23",
     "cross-env": "^10.1.0",
     "eslint": "^9.36.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.22",
+    "eslint-plugin-react-hooks": "^6.1.0",
+    "eslint-plugin-react-refresh": "^0.4.23",
     "husky": "^9.1.7",
     "npm-run-all2": "^8.0.4",
     "playwright": "^1.55.1",
