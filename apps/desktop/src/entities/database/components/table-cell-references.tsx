@@ -14,24 +14,22 @@ export function TableCellReferences({
 
   return (
     <Tabs defaultValue={references?.[0]?.name} className="size-full gap-0">
-      {references.length > 1 && (
-        <ScrollArea className="bg-muted/50">
-          <TabsList className="w-full justify-start h-8 bg-transparent">
-            {references.map(reference => (
-              <TabsTrigger
-                key={reference.name}
-                value={reference.name}
-                className="flex-1"
-              >
-                <span>
-                  {showSchemas && `${reference.schema}.`}
-                  {reference.table}
-                </span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </ScrollArea>
-      )}
+      <ScrollArea className="bg-muted/50">
+        <TabsList className="w-full justify-start h-8 bg-transparent">
+          {references.map(reference => (
+            <TabsTrigger
+              key={reference.name}
+              value={reference.name}
+              className="flex-1"
+            >
+              <span>
+                {showSchemas && `${reference.schema}.`}
+                {reference.table}
+              </span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </ScrollArea>
       {references.map(reference => (
         <TabsContent
           key={reference.name}
