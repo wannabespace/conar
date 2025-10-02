@@ -179,8 +179,8 @@ function ReferenceButton({ count, className, ...props }: ComponentProps<'button'
   return (
     <Button
       variant="outline"
-      size={count > 1 ? 'xs' : 'icon-xs'}
-      className={cn(count > 1 && 'px-1.5!', className)}
+      size="xs"
+      className={cn('px-1.5!', className)}
       {...props}
     >
       <RiArrowLeftDownLine className="size-3 text-muted-foreground" />
@@ -337,6 +337,7 @@ export function TableCell({
                           <TooltipTrigger asChild>
                             <PopoverTrigger asChild>
                               <ForeignButton
+                                onDoubleClick={e => e.stopPropagation()}
                                 onClick={(e) => {
                                   e.stopPropagation()
 
@@ -377,6 +378,7 @@ export function TableCell({
                             <PopoverTrigger asChild>
                               <ReferenceButton
                                 count={column.references.length}
+                                onDoubleClick={e => e.stopPropagation()}
                                 onClick={(e) => {
                                   e.stopPropagation()
 

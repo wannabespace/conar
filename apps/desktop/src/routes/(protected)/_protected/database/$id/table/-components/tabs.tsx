@@ -208,7 +208,12 @@ export function TablesTabs({ database }: {
     }
   }
 
-  async function navigateToDifferentTab(schema: string, table: string) {
+  async function navigateToDifferentTabIfThisActive(schema: string, table: string) {
+    // If this tab is not opened, do not navigate
+    if (schemaParam !== schema || tableParam !== table) {
+      return
+    }
+
     const currentTabIndex = tabs.findIndex(tab => tab.schema === schema && tab.table === table)
     const nextTabIndex = currentTabIndex === tabs.length - 1 ? null : currentTabIndex + 1
     const prevTabIndex = currentTabIndex === 0 ? null : currentTabIndex - 1
@@ -231,7 +236,7 @@ export function TablesTabs({ database }: {
   }
 
   async function closeTab(schema: string, table: string) {
-    await navigateToDifferentTab(schema, table)
+    await navigateToDifferentTabIfThisActive(schema, table)
     removeTab(database.id, schema, table)
   }
 
