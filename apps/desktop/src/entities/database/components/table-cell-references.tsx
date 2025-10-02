@@ -21,6 +21,7 @@ export function TableCellReferences({
               key={reference.name}
               value={reference.name}
               className="flex-1"
+              data-mask
             >
               <span>
                 {showSchemas && `${reference.schema}.`}
