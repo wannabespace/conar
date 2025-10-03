@@ -14,6 +14,8 @@ pg.types.setTypeParser(pg.types.builtins.TIMESTAMPTZ, parseDate)
 pg.types.setTypeParser(pg.types.builtins.TIME, parseDate)
 pg.types.setTypeParser(pg.types.builtins.TIMETZ, parseDate)
 
+const poolMap: Map<string, InstanceType<typeof pg.Pool>> = new Map()
+
 export async function pgQuery({
   connectionString,
   query,
@@ -24,27 +26,28 @@ export async function pgQuery({
   values?: unknown[]
 }): Promise<DatabaseQueryResult[]> {
   const config = parseConnectionString(connectionString)
-  const client = new pg.Client({
+
+  const existingPool = poolMap.get(connectionString)
+
+  const pool = existingPool || new pg.Pool({
     ...config,
     ...(config.ssl ? { ssl: readSSLFiles(config.ssl) } : {}),
   })
 
-  try {
-    await client.connect()
-    const result = await client.query(query, values)
-    const array = (Array.isArray(result) ? result : [result]) as QueryResult[]
+  if (!existingPool) {
+    poolMap.set(connectionString, pool)
+  }
 
-    return array.map(r => ({
-      count: r.rowCount ?? 0,
-      columns: r.fields.map(f => ({
-        id: f.name,
-      })),
-      rows: r.rows,
-    }))
-  }
-  finally {
-    await client.end()
-  }
+  const result = await pool.query(query, values)
+  const array = (Array.isArray(result) ? result : [result]) as QueryResult[]
+
+  return array.map(r => ({
+    count: r.rowCount ?? 0,
+    columns: r.fields.map(f => ({
+      id: f.name,
+    })),
+    rows: r.rows,
+  }))
 }
 
 export async function pgTestConnection({ connectionString }: { connectionString: string }) {
