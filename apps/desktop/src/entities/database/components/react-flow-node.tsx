@@ -23,10 +23,10 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         data.selected ? 'ring-2 ring-primary ring-offset-2' : '',
       )}
     >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 bg-gradient-to-t from-background/70 dark:from-background/30">
-        <div className="flex items-center gap-2 text-sm">
-          <RiTableLine className="size-5 text-muted-foreground/80" />
-          <span className="font-medium">{data.table}</span>
+      <div className="flex gap-2 items-center justify-between px-4 py-3 border-b border-border/80 bg-gradient-to-t from-background/70 dark:from-background/30">
+        <div data-mask className="flex items-center gap-2 text-sm min-w-0">
+          <RiTableLine className="size-5 text-muted-foreground/80 shrink-0" />
+          <span className="truncate block">{data.table}</span>
         </div>
         <Button
           size="icon-xs"
@@ -62,7 +62,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                 {column.foreign && (
                   <RiLinksLine className="shrink-0 size-3 text-muted-foreground/70" />
                 )}
-                <span className="truncate font-medium">{column.id}</span>
+                <span data-mask className="truncate font-medium">{column.id}</span>
               </div>
               <span className="text-muted-foreground/60">{column.type}</span>
               {column.foreign && (
