@@ -10,7 +10,10 @@ export function useDatabaseLinkParams(id: string) {
   return useMemo((): LinkProps => {
     if (lastOpenedPage) {
       if (lastOpenedPage === '/(protected)/_protected/database/$id/enums/') {
-        return { to: '/database/$id/enums', params: { id } }
+        return {
+          to: '/database/$id/enums',
+          params: { id },
+        }
       }
       else if (lastOpenedPage === '/(protected)/_protected/database/$id/sql/') {
         return {
@@ -19,11 +22,10 @@ export function useDatabaseLinkParams(id: string) {
           search: lastChatId ? { chatId: lastChatId } : undefined,
         }
       }
-      else if (lastOpenedPage === '/(protected)/_protected/database/$id/table/') {
+      else if (lastOpenedPage === '/(protected)/_protected/database/$id/visualizer/') {
         return {
-          to: '/database/$id/table',
+          to: '/database/$id/visualizer',
           params: { id },
-          search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
         }
       }
     }

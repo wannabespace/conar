@@ -1,12 +1,9 @@
-import type { columnType } from '@conar/shared/sql/columns'
-import type { constraintsType } from '@conar/shared/sql/constraints'
-import type { foreignKeysType } from '@conar/shared/sql/foreign-keys'
+import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { ReactFlowEdge } from '@conar/ui/components/react-flow/edge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState, useReactFlow } from '@xyflow/react'
+import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react'
 import { animationHooks } from '~/enter'
 import { databaseTableColumnsQuery, databaseTableConstraintsQuery, ReactFlowNode, tablesAndSchemasQuery } from '~/entities/database'
@@ -18,55 +15,42 @@ export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/visualizer/',
 )({
   loader: async ({ context }) => {
-    const tablesAndSchemas = await queryClient.ensureQueryData(
-      tablesAndSchemasQuery({ database: context.database }),
-    )
-    await queryClient.prefetchQuery(databaseForeignKeysQuery({ database: context.database }))
+    const tablesAndSchemas = await queryClient.ensureQueryData(tablesAndSchemasQuery({ database: context.database }))
+      .then(data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))))
+    const foreignKeys = await queryClient.ensureQueryData(databaseForeignKeysQuery({ database: context.database }))
+    const columns = (await Promise.all(
+      tablesAndSchemas.flatMap(({ schema, table }) =>
+        queryClient.ensureQueryData(databaseTableColumnsQuery({ database: context.database, schema, table })),
+      ),
+    )).flat()
+    const constraints = (await Promise.all(
+      tablesAndSchemas.flatMap(({ schema, table }) =>
+        queryClient.ensureQueryData(databaseTableConstraintsQuery({ database: context.database, schema, table })),
+      ),
+    )).flat()
 
-    await Promise.all(
-      tablesAndSchemas.schemas.flatMap(({ name, tables }) => tables.map(table =>
-        queryClient.prefetchQuery(databaseTableColumnsQuery({ database: context.database, schema: name, table })),
-      )),
-    )
-    await Promise.all(
-      tablesAndSchemas.schemas.flatMap(({ name, tables }) => tables.map(table =>
-        queryClient.prefetchQuery(databaseTableConstraintsQuery({ database: context.database, schema: name, table })),
-      )),
-    )
+    return {
+      tablesAndSchemas,
+      foreignKeys,
+      columns,
+      constraints,
+    }
   },
   component: RouteComponent,
-  pendingComponent: () => <div className="size-full flex items-center border rounded-lg justify-center bg-background">Loading...</div>,
+  pendingComponent: () => (
+    <div className="size-full flex items-center border rounded-lg justify-center bg-background">
+      <AppLogo className="size-40 text-muted-foreground animate-pulse" />
+    </div>
+  ),
 })
 
 function RouteComponent() {
-  const { database } = Route.useRouteContext()
-  const { data: tablesAndSchemas } = useSuspenseQuery({
-    ...tablesAndSchemasQuery({ database }),
-    select: data => data.schemas.flatMap(schema =>
-      schema.tables.map(table => ({
-        schema: schema.name,
-        table,
-      })),
-    ),
-  })
-  const { data: foreignKeys } = useSuspenseQuery(databaseForeignKeysQuery({ database }))
-  const columns = useSuspenseQueries({
-    queries: tablesAndSchemas.map(({ schema, table }) => databaseTableColumnsQuery({ database, schema, table })),
-    combine: results => results.flatMap(r => r.data).filter((c): c is typeof columnType.infer => !!c),
-  })
-  const constraints = useSuspenseQueries({
-    queries: tablesAndSchemas.map(({ schema, table }) => databaseTableConstraintsQuery({ database, schema, table })),
-    combine: results => results.flatMap(r => r.data).filter((c): c is typeof constraintsType.infer => !!c),
-  })
+  const { id } = Route.useParams()
 
   return (
-    <ReactFlowProvider>
-      <Visualizer
-        tablesAndSchemas={tablesAndSchemas}
-        foreignKeys={foreignKeys}
-        columns={columns}
-        constraints={constraints}
-      />
+    // Need to re-render the whole visualizer when the database changes due to recalculation of sizes
+    <ReactFlowProvider key={id}>
+      <Visualizer />
     </ReactFlowProvider>
   )
 }
@@ -78,9 +62,9 @@ const edgeTypes = {
   custom: ReactFlowEdge,
 }
 
-function Visualizer({ tablesAndSchemas, foreignKeys, columns, constraints }: { tablesAndSchemas: { schema: string, table: string }[], foreignKeys: typeof foreignKeysType.infer[], columns: typeof columnType.infer[], constraints: typeof constraintsType.infer[] }) {
-  const { database } = Route.useRouteContext()
-  const { fitView } = useReactFlow()
+function Visualizer() {
+  const { id } = Route.useParams()
+  const { tablesAndSchemas, foreignKeys, columns, constraints } = Route.useLoaderData()
   const schemas = useMemo(() => [...new Set(tablesAndSchemas.map(({ schema }) => schema))], [tablesAndSchemas])
   const [schema, setSchema] = useState(schemas[0]!)
   const schemaTables = useMemo(() => tablesAndSchemas
@@ -91,7 +75,7 @@ function Visualizer({ tablesAndSchemas, foreignKeys, columns, constraints }: { t
     const edges = getEdges({ foreignKeys })
     return getLayoutedElements(
       getNodes({
-        databaseId: database.id,
+        databaseId: id,
         schema,
         tables: schemaTables,
         columns,
@@ -101,7 +85,7 @@ function Visualizer({ tablesAndSchemas, foreignKeys, columns, constraints }: { t
       }),
       edges,
     )
-  }, [database.id, schema, schemaTables, columns, foreignKeys, constraints])
+  }, [id, schema, schemaTables, columns, foreignKeys, constraints])
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes)
@@ -110,7 +94,7 @@ function Visualizer({ tablesAndSchemas, foreignKeys, columns, constraints }: { t
     const edges = getEdges({ foreignKeys })
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
       getNodes({
-        databaseId: database.id,
+        databaseId: id,
         schema,
         tables: schemaTables,
         columns,
@@ -123,11 +107,7 @@ function Visualizer({ tablesAndSchemas, foreignKeys, columns, constraints }: { t
 
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
-
-    setTimeout(() => {
-      fitView({ padding: 0.1, duration: 800 })
-    }, 0)
-  }, [database.id, schema, schemaTables, columns, foreignKeys, constraints, fitView, setNodes, setEdges])
+  }, [id, schema, schemaTables, columns, foreignKeys, constraints, setNodes, setEdges])
 
   const recalculateLayoutEvent = useEffectEvent(recalculateLayout)
 
@@ -168,6 +148,7 @@ function Visualizer({ tablesAndSchemas, foreignKeys, columns, constraints }: { t
         </Select>
       </div>
       <ReactFlow
+        key={schema}
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -178,7 +159,7 @@ function Visualizer({ tablesAndSchemas, foreignKeys, columns, constraints }: { t
         edgeTypes={edgeTypes}
         fitView
         minZoom={0.3}
-        maxZoom={2}
+        maxZoom={4}
         defaultEdgeOptions={{
           type: 'custom',
         }}
