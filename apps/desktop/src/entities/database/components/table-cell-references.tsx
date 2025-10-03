@@ -23,10 +23,8 @@ export function TableCellReferences({
               className="flex-1"
               data-mask
             >
-              <span>
-                {showSchemas && `${reference.schema}.`}
-                {reference.table}
-              </span>
+              {showSchemas && `${reference.schema}.`}
+              {reference.table}
             </TabsTrigger>
           ))}
         </TabsList>
