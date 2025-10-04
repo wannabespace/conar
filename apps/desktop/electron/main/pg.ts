@@ -3,6 +3,7 @@ import type { QueryResult } from 'pg'
 import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
 import { readSSLFiles } from '@conar/connection/server'
+import { app } from 'electron'
 
 const pg = createRequire(import.meta.url)('pg') as typeof import('pg')
 
@@ -15,6 +16,10 @@ pg.types.setTypeParser(pg.types.builtins.TIME, parseDate)
 pg.types.setTypeParser(pg.types.builtins.TIMETZ, parseDate)
 
 const poolMap: Map<string, InstanceType<typeof pg.Pool>> = new Map()
+
+app.on('before-quit', () => {
+  poolMap.forEach(pool => pool.end())
+})
 
 export async function pgQuery({
   connectionString,
