@@ -20,7 +20,7 @@ import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { lastOpenedTable, tablesAndSchemasQuery } from '~/entities/database'
-import { dbQuery } from '~/lib/query'
+import { dbQuery } from '~/entities/database/query'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { removeTab } from '../-tabs'
@@ -58,6 +58,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
   const { mutate: dropTable, isPending } = useMutation({
     mutationFn: async () => {
       await dbQuery(database.id, {
+        label: `Drop table ${schema}.${table}`,
         query: dropTableSql(schema, table, cascade)[database.type],
       })
     },

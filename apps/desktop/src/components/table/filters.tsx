@@ -255,7 +255,7 @@ export function FilterItem({
   const showValue = useMemo(() => {
     const operator = operators.find(operator => operator.value === filter.operator)
     return !!operator?.hasValue
-  }, [filter.operator])
+  }, [operators, filter.operator])
 
   return (
     <div className="flex items-center border rounded-sm overflow-hidden h-6 bg-card">
@@ -345,7 +345,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
     if (column && operator && !operator.hasValue) {
       onAdd({ column: column.id, operator: operator.value })
     }
-  }, [column, operator])
+  }, [column, operator, onAdd])
 
   return (
     <div>

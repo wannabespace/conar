@@ -60,7 +60,7 @@
     "@tanstack/react-router": "catalog:",
     "@tanstack/react-router-devtools": "catalog:",
     "@tanstack/react-store": "^0.7.7",
-    "@tanstack/react-virtual": "^3.13.12",
+    "@tanstack/react-virtual": "catalog:",
     "@tanstack/router-plugin": "^1.132.31",
     "@tiptap/extension-placeholder": "^3.6.2",
     "@tiptap/react": "^3.6.2",

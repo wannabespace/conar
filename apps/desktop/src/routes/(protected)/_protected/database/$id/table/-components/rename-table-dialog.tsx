@@ -19,7 +19,7 @@ import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { tablesAndSchemasQuery } from '~/entities/database'
-import { dbQuery } from '~/lib/query'
+import { dbQuery } from '~/entities/database/query'
 import { queryClient } from '~/main'
 import { renameTab } from '../-tabs'
 
@@ -49,6 +49,7 @@ export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
   const { mutate: renameTable, isPending } = useMutation({
     mutationFn: async () => {
       await dbQuery(database.id, {
+        label: `Rename table ${schema}.${table} to ${newTableName}`,
         query: renameTableSql(schema, table, newTableName)[database.type],
       })
     },

@@ -7,8 +7,7 @@ import { Input } from '@conar/ui/components/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { RiCheckLine, RiCloseLine, RiLoopLeftLine } from '@remixicon/react'
-import { useDatabaseTablesAndSchemas } from '~/entities/database'
-import { databaseForeignKeysQuery } from '~/entities/database/queries/foreign-keys'
+import { databaseConstraintsQuery, useDatabaseTablesAndSchemas } from '~/entities/database'
 import { queryClient } from '~/main'
 import { TablesTree } from './tables-tree'
 
@@ -19,7 +18,7 @@ export function Sidebar({ database }: { database: typeof databases.$inferSelect 
   async function handleRefresh() {
     await Promise.all([
       refetchTablesAndSchemas(),
-      queryClient.invalidateQueries(databaseForeignKeysQuery({ database })),
+      queryClient.invalidateQueries(databaseConstraintsQuery({ database })),
     ])
   }
 

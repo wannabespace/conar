@@ -1,13 +1,14 @@
 import type { databases } from '~/drizzle'
 import { enumsSql, enumsType } from '@conar/shared/sql/enums'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { dbQuery } from '~/lib/query'
+import { dbQuery } from '~/entities/database/query'
 
 export function databaseEnumsQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
     queryKey: ['database', database.id, 'enums'],
     queryFn: async () => {
       const [result] = await dbQuery(database.id, {
+        label: 'Enums',
         query: enumsSql()[database.type],
       })
 

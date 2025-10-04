@@ -1,11 +1,10 @@
 import type { DragEndEvent } from '@dnd-kit/core'
-import type { ComponentProps, RefObject } from 'react'
+import type { RefObject } from 'react'
 import type { Tab } from '../-tabs'
 import type { databases } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { cn } from '@conar/ui/lib/utils'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
@@ -14,10 +13,9 @@ import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dn
 import { CSS } from '@dnd-kit/utilities'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
-import { useRouter, useSearch } from '@tanstack/react-router'
+import { Link, useRouter, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef } from 'react'
-import { prefetchDatabaseTableCore } from '~/entities/database'
-import { getPageStoreState } from '../-store'
+import { Route } from '..'
 import { addTab, moveTab, removeTab, useTabs } from '../-tabs'
 
 const os = getOS(navigator.userAgent)
@@ -44,26 +42,38 @@ function CloseButton({ onClick }: { onClick: (e: React.MouseEvent<SVGSVGElement>
 }
 
 function TabButton({
+  schema,
+  table,
   className,
   children,
   active,
-  onClose,
-  ...props
-}: ComponentProps<'button'> & {
+  onCloseClick,
+  onDoubleClick,
+}: {
+  children: React.ReactNode
+  className?: string
+  schema: string
+  table: string
   active: boolean
-  onClose: () => void
+  onCloseClick: (e: React.MouseEvent<SVGSVGElement>) => void
+  onDoubleClick: (e: React.MouseEvent<HTMLAnchorElement>) => void
 }) {
+  const { id } = Route.useParams()
+
   return (
-    <button
+    <Link
       data-mask
-      type="button"
+      to="/database/$id/table"
+      params={{ id }}
+      search={{ schema, table }}
+      preloadDelay={200}
       className={cn(
         'group text-foreground flex h-full items-center gap-1 pl-2 pr-1.5 text-sm rounded-sm border border-transparent',
         'hover:bg-muted/70 hover:border-accent',
         active && 'bg-primary/10 border-primary/50 hover:bg-primary/10 hover:border-primary/50',
         className,
       )}
-      {...props}
+      onDoubleClick={onDoubleClick}
     >
       <RiTableLine
         className={cn(
@@ -74,32 +84,24 @@ function TabButton({
       <span>
         {children}
       </span>
-      <CloseButton
-        onClick={(e) => {
-          e.stopPropagation()
-          onClose()
-        }}
-      />
-    </button>
+      <CloseButton onClick={onCloseClick} />
+    </Link>
   )
 }
 
 function SortableTab({
-  id,
   item,
   showSchema,
-  onClose,
+  onCloseClick,
   onDoubleClick,
   onFocus,
 }: {
-  id: string
   item: { id: string, tab: Tab }
   showSchema: boolean
-  onClose: () => void
-  onDoubleClick: () => void
+  onCloseClick: (e: React.MouseEvent<SVGSVGElement>) => void
+  onDoubleClick: (e: React.MouseEvent<HTMLAnchorElement>) => void
   onFocus: (ref: RefObject<HTMLDivElement | null>) => void
 }) {
-  const router = useRouter()
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const ref = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(ref, 'full')
@@ -138,13 +140,10 @@ function SortableTab({
     >
       <TabButton
         active={schemaParam === item.tab.schema && tableParam === item.tab.table}
-        onClose={onClose}
+        onCloseClick={onCloseClick}
         onDoubleClick={onDoubleClick}
-        onClick={() => router.navigate({
-          to: '/database/$id/table',
-          params: { id },
-          search: { schema: item.tab.schema, table: item.tab.table },
-        })}
+        schema={item.tab.schema}
+        table={item.tab.table}
       >
         {showSchema && (
           <span className="text-muted-foreground">
@@ -185,28 +184,6 @@ export function TablesTabs({ database }: {
       addTab(database.id, schemaParam, tableParam, true)
     }
   }, [tabs, database.id, schemaParam, tableParam])
-
-  useAsyncEffect(async () => {
-    for (const tab of tabs) {
-      await prefetchDatabaseTableCore({ database, schema: tab.schema, table: tab.table, query: getQueryOpts(tab.table) })
-    }
-  }, [database, tabs])
-
-  function getQueryOpts(tableName: string) {
-    const state = schemaParam ? getPageStoreState(database.id, schemaParam, tableName) : null
-
-    if (state) {
-      return {
-        filters: state.filters,
-        orderBy: state.orderBy,
-      }
-    }
-
-    return {
-      filters: [],
-      orderBy: {},
-    }
-  }
 
   async function navigateToDifferentTabIfThisActive(schema: string, table: string) {
     // If this tab is not opened, do not navigate
@@ -270,11 +247,16 @@ export function TablesTabs({ database }: {
           {tabItems.map(item => (
             <SortableTab
               key={item.id}
-              id={database.id}
               item={item}
               showSchema={!isOneSchema}
-              onClose={() => closeTab(item.tab.schema, item.tab.table)}
-              onDoubleClick={() => addTab(database.id, item.tab.schema, item.tab.table, false)}
+              onCloseClick={(e) => {
+                e.stopPropagation()
+                closeTab(item.tab.schema, item.tab.table)
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation()
+                addTab(database.id, item.tab.schema, item.tab.table, false)
+              }}
               onFocus={(ref) => {
                 ref.current?.scrollIntoView({
                   block: 'nearest',

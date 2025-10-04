@@ -39,11 +39,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
       orderBy,
     },
   }))
-  const columns = useTableColumns({
-    database,
-    table,
-    schema,
-  })
+  const columns = useTableColumns({ database, table, schema })
   const tableColumns = useMemo(() => {
     if (!columns)
       return []
