@@ -52,7 +52,7 @@ export function Monaco({
       return
 
     monacoInstance.current = monaco.editor.create(elementRef.current, {
-      value: language?.includes('json') || language?.includes('sql')
+      value: language?.includes('json')
         ? (() => {
             try {
               return JSON.stringify(JSON.parse(value), null, 2)
