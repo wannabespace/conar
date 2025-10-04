@@ -5,7 +5,6 @@ import type { databases } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { cn } from '@conar/ui/lib/utils'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
@@ -90,6 +89,7 @@ function SortableTab({
   showSchema,
   onClose,
   onDoubleClick,
+  onMouseOver,
   onFocus,
 }: {
   id: string
@@ -97,6 +97,7 @@ function SortableTab({
   showSchema: boolean
   onClose: () => void
   onDoubleClick: () => void
+  onMouseOver: () => void
   onFocus: (ref: RefObject<HTMLDivElement | null>) => void
 }) {
   const router = useRouter()
@@ -140,6 +141,7 @@ function SortableTab({
         active={schemaParam === item.tab.schema && tableParam === item.tab.table}
         onClose={onClose}
         onDoubleClick={onDoubleClick}
+        onMouseOver={onMouseOver}
         onClick={() => router.navigate({
           to: '/database/$id/table',
           params: { id },
@@ -185,12 +187,6 @@ export function TablesTabs({ database }: {
       addTab(database.id, schemaParam, tableParam, true)
     }
   }, [tabs, database.id, schemaParam, tableParam])
-
-  useAsyncEffect(async () => {
-    for (const tab of tabs) {
-      await prefetchDatabaseTableCore({ database, schema: tab.schema, table: tab.table, query: getQueryOpts(tab.table) })
-    }
-  }, [database, tabs])
 
   function getQueryOpts(tableName: string) {
     const state = schemaParam ? getPageStoreState(database.id, schemaParam, tableName) : null
@@ -275,6 +271,7 @@ export function TablesTabs({ database }: {
               showSchema={!isOneSchema}
               onClose={() => closeTab(item.tab.schema, item.tab.table)}
               onDoubleClick={() => addTab(database.id, item.tab.schema, item.tab.table, false)}
+              onMouseOver={() => prefetchDatabaseTableCore({ database, schema: item.tab.schema, table: item.tab.table, query: getQueryOpts(item.tab.table) })}
               onFocus={(ref) => {
                 ref.current?.scrollIntoView({
                   block: 'nearest',

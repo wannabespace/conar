@@ -1,38 +1,43 @@
 import type { databases } from '~/drizzle'
 import { useMemo } from 'react'
-import { useDatabaseTableColumns, useDatabaseTableConstraints } from '~/entities/database'
-import { useDatabaseForeignKeys } from '~/entities/database/queries/foreign-keys'
+import { useDatabaseConstraints, useDatabaseTableColumns } from '~/entities/database'
 
 export function useTableColumns({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
   const { data: columns } = useDatabaseTableColumns({ database, table, schema })
-  const { data: constraints } = useDatabaseTableConstraints({ database, table, schema })
-  const { data: foreignKeys } = useDatabaseForeignKeys({ database })
+  const { data: constraints } = useDatabaseConstraints({ database })
 
   return useMemo(() => {
     return columns
       ?.map((column) => {
-        const columnConstraints = constraints?.filter(constraint => constraint.column === column.id)
-        const foreign = foreignKeys?.find(foreignKey => foreignKey.column === column.id && foreignKey.schema === schema && foreignKey.table === table)
+        const columnConstraints = constraints?.filter(c => c.column === column.id)
+        const foreignConstraint = columnConstraints?.find(c => c.type === 'foreignKey' && c.schema === schema && c.table === table)
+        const uniqueConstraint = columnConstraints?.find(c => c.type === 'unique')
+        const primaryConstraint = columnConstraints?.find(c => c.type === 'primaryKey')
 
         return {
           ...column,
-          primaryKey: columnConstraints?.find(constraint => constraint.type === 'primaryKey')?.name,
-          unique: columnConstraints?.find(constraint => constraint.type === 'unique')?.name,
-          foreign: foreign
+          primaryKey: primaryConstraint?.name,
+          unique: uniqueConstraint?.name,
+          foreign: foreignConstraint && foreignConstraint.usageSchema && foreignConstraint.usageTable && foreignConstraint.usageColumn
             ? {
-                name: foreign.name,
-                schema: foreign.foreignSchema,
-                table: foreign.foreignTable,
-                column: foreign.foreignColumn,
+                name: foreignConstraint.name,
+                schema: foreignConstraint.usageSchema,
+                table: foreignConstraint.usageTable,
+                column: foreignConstraint.usageColumn,
               }
             : undefined,
-          references: foreignKeys
-            ?.filter(fk => fk.foreignColumn === column.id && fk.foreignSchema === schema && fk.foreignTable === table)
-            .map(fk => ({
-              name: fk.name,
-              schema: fk.schema,
-              table: fk.table,
-              column: fk.column,
+          references: constraints
+            ?.filter(c => c.type === 'foreignKey'
+              && c.usageColumn === column.id
+              && c.usageSchema === schema
+              && c.usageTable === table
+              && !!c.column,
+            )
+            .map(c => ({
+              name: c.name,
+              schema: c.schema,
+              table: c.table,
+              column: c.column!,
             })),
         }
       })
@@ -43,5 +48,5 @@ export function useTableColumns({ database, table, schema }: { database: typeof 
           return 1
         return 0
       }) ?? []
-  }, [columns, constraints, foreignKeys, schema, table])
+  }, [columns, constraints, schema, table])
 }

@@ -4,8 +4,8 @@ import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ReactNode, RefObject } from 'react'
 import type { ColumnRenderer } from '.'
 import { useScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
+import { useVirtual } from '@conar/ui/hooks/use-virtual'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import { useMemo, useRef } from 'react'
 
 interface TableContextType {
@@ -44,26 +44,20 @@ export function TableProvider({
   const verticalScroll = scrollDirection === 'up' || scrollDirection === 'down'
   const horizontalScroll = scrollDirection === 'left' || scrollDirection === 'right'
 
-  const rowVirtualizer = useVirtualizer({
+  const { virtualItems: virtualRows, totalSize: tableHeight } = useVirtual({
     count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => estimatedRowSize,
     overscan: verticalScroll || scrollDirection === null ? 10 : 0,
   })
 
-  const columnVirtualizer = useVirtualizer({
+  const { virtualItems: virtualColumns, totalSize: tableWidth } = useVirtual({
     horizontal: true,
     count: columns.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: index => columns[index]!.size ?? estimatedColumnSize,
     overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
   })
-
-  const virtualRows = rowVirtualizer.getVirtualItems()
-  const virtualColumns = columnVirtualizer.getVirtualItems()
-
-  const tableHeight = rowVirtualizer.getTotalSize()
-  const tableWidth = columnVirtualizer.getTotalSize()
 
   const offsets = {
     top: virtualRows[0]?.start ?? 0,

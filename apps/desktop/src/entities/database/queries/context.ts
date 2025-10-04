@@ -1,13 +1,14 @@
 import type { databases } from '~/drizzle'
 import { tablesAndSchemasSql, tablesAndSchemasType } from '@conar/shared/sql/tables-and-schemas'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { dbQuery } from '~/lib/query'
+import { dbQuery } from '~/entities/database/query'
 
 export function tablesAndSchemasQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
     queryKey: ['database', database.id, 'tables-and-schemas'],
     queryFn: async () => {
       const [result] = await dbQuery(database.id, {
+        label: 'Tables and Schemas',
         query: tablesAndSchemasSql()[database.type],
       })
 

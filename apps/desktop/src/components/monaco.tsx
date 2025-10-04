@@ -52,14 +52,16 @@ export function Monaco({
       return
 
     monacoInstance.current = monaco.editor.create(elementRef.current, {
-      value: (() => {
-        try {
-          return JSON.stringify(JSON.parse(value), null, 2)
-        }
-        catch {
-          return value
-        }
-      })(),
+      value: language?.includes('json')
+        ? (() => {
+            try {
+              return JSON.stringify(JSON.parse(value), null, 2)
+            }
+            catch {
+              return value
+            }
+          })()
+        : value,
       language,
       automaticLayout: true,
       minimap: { enabled: false },

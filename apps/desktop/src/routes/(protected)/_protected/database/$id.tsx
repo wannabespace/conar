@@ -1,4 +1,5 @@
 import { title } from '@conar/shared/utils/title'
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import {
@@ -8,8 +9,10 @@ import {
   lastOpenedPage,
   prefetchDatabaseCore,
 } from '~/entities/database'
+import { QueryLogger } from '~/entities/database/components/query-logger'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
+import { useLoggerOpened } from './-use-logger-opened'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: DatabasePage,
@@ -37,6 +40,7 @@ function DatabasePage() {
   const currentPageId = useMatches({
     select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
+  const [loggerOpened] = useLoggerOpened()
 
   useEffect(() => {
     if (currentPageId) {
@@ -57,8 +61,24 @@ function DatabasePage() {
   return (
     <div className="min-h-[inherit] h-screen flex bg-gray-100 dark:bg-neutral-950/60">
       <DatabaseSidebar className="w-16" />
-      <div className="h-[calc(100%-theme(spacing.4))] w-[calc(100%-theme(spacing.16)-theme(spacing.2))] m-2 ml-0">
-        <Outlet />
+      <div className="h-[calc(100%-theme(spacing.4))] w-[calc(100%-theme(spacing.16)-theme(spacing.2))] m-2 ml-0 flex flex-col">
+        <ResizablePanelGroup
+          direction="vertical"
+          className="flex-1 min-h-0"
+          autoSaveId={`logger-layout-${database.id}`}
+        >
+          <ResizablePanel defaultSize={70} minSize={50}>
+            <Outlet />
+          </ResizablePanel>
+          {loggerOpened && (
+            <>
+              <ResizableHandle className="h-1! bg-body" />
+              <ResizablePanel defaultSize={30} minSize={10} maxSize={50} className="border overflow-auto rounded-lg bg-background">
+                <QueryLogger database={database} />
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
       </div>
     </div>
   )

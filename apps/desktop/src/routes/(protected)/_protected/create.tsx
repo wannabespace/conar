@@ -26,9 +26,9 @@ import { v7 } from 'uuid'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
 import { DatabaseIcon, databasesCollection, prefetchDatabaseCore } from '~/entities/database'
+import { dbTestConnection } from '~/entities/database/query'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
-import { dbTestConnection } from '~/lib/query'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/create',

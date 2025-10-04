@@ -11,7 +11,7 @@ import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
@@ -32,6 +32,7 @@ import { UserButton } from '~/entities/user'
 import { orpc } from '~/lib/orpc'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
 import { Route } from '../$id'
+import { useLoggerOpened } from '../-use-logger-opened'
 
 const os = getOS(navigator.userAgent)
 
@@ -288,6 +289,7 @@ function MainLinks() {
 
 export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const [lastOpenedDatabases] = useLastOpenedDatabases()
+  const [loggerOpened, setLoggerOpened] = useLoggerOpened()
 
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
@@ -320,6 +322,17 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         </div>
       </ScrollArea>
       <div className="p-4 pt-0 flex flex-col items-center">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="ghost" onClick={() => setLoggerOpened(!loggerOpened)}>
+                <RiFileListLine className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Query Logger</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <Separator className="my-4" />
         <SupportButton />
         <TooltipProvider>
           <Tooltip>

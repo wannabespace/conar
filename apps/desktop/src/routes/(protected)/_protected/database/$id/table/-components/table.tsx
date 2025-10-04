@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
 import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
-import { dbQuery } from '~/lib/query'
+import { dbQuery } from '~/entities/database/query'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { columnsSizeMap, selectSymbol } from '../-lib'
@@ -49,9 +49,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const store = usePageStoreContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
-  const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(
-    databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }),
-  )
+  const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
 
   useEffect(() => {
@@ -117,6 +115,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     const rows = data.pages.flatMap(page => page.rows)
 
     const [result] = await dbQuery(database.id, {
+      label: `Set value for ${schema}.${table}`,
       query: setSql(schema, table, columnId, primaryColumns)[database.type],
       values: [
         prepareValue(value, columns?.find(column => column.id === columnId)?.type),

@@ -11,7 +11,7 @@ import { useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { databasesCollection } from '~/entities/database'
-import { dbTestConnection } from '~/lib/query'
+import { dbTestConnection } from '~/entities/database/query'
 
 export function PasswordForm({ database }: { database: typeof databases.$inferSelect }) {
   const router = useRouter()

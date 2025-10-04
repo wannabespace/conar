@@ -1,14 +1,15 @@
 import type { databases } from '~/drizzle'
 import { constraintsSql, constraintsType } from '@conar/shared/sql/constraints'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { dbQuery } from '~/lib/query'
+import { dbQuery } from '~/entities/database/query'
 
-export function databaseTableConstraintsQuery({ database, schema, table }: { database: typeof databases.$inferSelect, schema: string, table: string }) {
+export function databaseConstraintsQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
-    queryKey: ['database', database.id, 'constraints', schema, table],
+    queryKey: ['database', database.id, 'constraints'],
     queryFn: async () => {
       const [result] = await dbQuery(database.id, {
-        query: constraintsSql(schema, table)[database.type],
+        label: 'Constraints',
+        query: constraintsSql()[database.type],
       })
 
       return result!.rows.map(row => constraintsType.assert(row))
@@ -16,6 +17,6 @@ export function databaseTableConstraintsQuery({ database, schema, table }: { dat
   })
 }
 
-export function useDatabaseTableConstraints(...params: Parameters<typeof databaseTableConstraintsQuery>) {
-  return useQuery(databaseTableConstraintsQuery(...params))
+export function useDatabaseConstraints(...params: Parameters<typeof databaseConstraintsQuery>) {
+  return useQuery(databaseConstraintsQuery(...params))
 }

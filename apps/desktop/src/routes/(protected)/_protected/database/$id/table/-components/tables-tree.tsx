@@ -72,7 +72,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
         }}
         data-mask
         type="multiple"
-        className="w-full space-y-4"
+        className="w-full space-y-2"
       >
         {isPending
           ? (
@@ -138,6 +138,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                     schema: schema.name,
                                     table,
                                   }}
+                                  preloadDelay={200}
                                   onDoubleClick={() => addTab(database.id, schema.name, table)}
                                   className={cn(
                                     'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/30',

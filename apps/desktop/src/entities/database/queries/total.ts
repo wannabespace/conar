@@ -3,7 +3,7 @@ import type { databases } from '~/drizzle'
 import { totalSql, totalType } from '@conar/shared/sql/total'
 import { whereSql } from '@conar/shared/sql/where'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { dbQuery } from '~/lib/query'
+import { dbQuery } from '~/entities/database/query'
 
 export function databaseTableTotalQuery({
   database,
@@ -31,6 +31,7 @@ export function databaseTableTotalQuery({
     ],
     queryFn: async () => {
       const [result] = await dbQuery(database.id, {
+        label: `Total for ${schema}.${table}`,
         query: totalSql(schema, table, {
           where: whereSql(query.filters)[database.type],
         })[database.type],

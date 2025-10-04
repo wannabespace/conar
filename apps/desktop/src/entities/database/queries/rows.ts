@@ -3,7 +3,7 @@ import type { databases } from '~/drizzle'
 import { rowsSql } from '@conar/shared/sql/rows'
 import { whereSql } from '@conar/shared/sql/where'
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query'
-import { dbQuery } from '~/lib/query'
+import { dbQuery } from '~/entities/database/query'
 import { DEFAULT_LIMIT } from '../utils'
 
 type Page = Awaited<ReturnType<typeof dbQuery>>[0]
@@ -39,6 +39,7 @@ export function databaseRowsQuery({
     ],
     queryFn: async ({ pageParam: offset = 0 }) => {
       const [result] = await dbQuery(database.id, {
+        label: `Rows for ${schema}.${table}`,
         query: rowsSql(schema, table, {
           limit: DEFAULT_LIMIT,
           offset,

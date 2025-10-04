@@ -6,8 +6,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react'
 import { animationHooks } from '~/enter'
-import { databaseTableColumnsQuery, databaseTableConstraintsQuery, ReactFlowNode, tablesAndSchemasQuery } from '~/entities/database'
-import { databaseForeignKeysQuery } from '~/entities/database/queries/foreign-keys'
+import { databaseConstraintsQuery, databaseTableColumnsQuery, ReactFlowNode, tablesAndSchemasQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { getEdges, getLayoutedElements, getNodes } from './-lib'
 
@@ -17,21 +16,15 @@ export const Route = createFileRoute(
   loader: async ({ context }) => {
     const tablesAndSchemas = await queryClient.ensureQueryData(tablesAndSchemasQuery({ database: context.database }))
       .then(data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))))
-    const foreignKeys = await queryClient.ensureQueryData(databaseForeignKeysQuery({ database: context.database }))
     const columns = (await Promise.all(
       tablesAndSchemas.flatMap(({ schema, table }) =>
         queryClient.ensureQueryData(databaseTableColumnsQuery({ database: context.database, schema, table })),
       ),
     )).flat()
-    const constraints = (await Promise.all(
-      tablesAndSchemas.flatMap(({ schema, table }) =>
-        queryClient.ensureQueryData(databaseTableConstraintsQuery({ database: context.database, schema, table })),
-      ),
-    )).flat()
+    const constraints = await queryClient.ensureQueryData(databaseConstraintsQuery({ database: context.database }))
 
     return {
       tablesAndSchemas,
-      foreignKeys,
       columns,
       constraints,
     }
@@ -64,7 +57,7 @@ const edgeTypes = {
 
 function Visualizer() {
   const { id } = Route.useParams()
-  const { tablesAndSchemas, foreignKeys, columns, constraints } = Route.useLoaderData()
+  const { tablesAndSchemas, columns, constraints } = Route.useLoaderData()
   const schemas = useMemo(() => [...new Set(tablesAndSchemas.map(({ schema }) => schema))], [tablesAndSchemas])
   const [schema, setSchema] = useState(schemas[0]!)
   const schemaTables = useMemo(() => tablesAndSchemas
@@ -72,7 +65,7 @@ function Visualizer() {
     .map(({ table }) => table), [tablesAndSchemas, schema])
 
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => {
-    const edges = getEdges({ foreignKeys })
+    const edges = getEdges({ constraints })
     return getLayoutedElements(
       getNodes({
         databaseId: id,
@@ -80,18 +73,17 @@ function Visualizer() {
         tables: schemaTables,
         columns,
         edges,
-        foreignKeys,
         constraints,
       }),
       edges,
     )
-  }, [id, schema, schemaTables, columns, foreignKeys, constraints])
+  }, [id, schema, schemaTables, columns, constraints])
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes)
 
   const recalculateLayout = useCallback(() => {
-    const edges = getEdges({ foreignKeys })
+    const edges = getEdges({ constraints })
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
       getNodes({
         databaseId: id,
@@ -99,7 +91,6 @@ function Visualizer() {
         tables: schemaTables,
         columns,
         edges,
-        foreignKeys,
         constraints,
       }),
       edges,
@@ -107,7 +98,7 @@ function Visualizer() {
 
     setNodes(layoutedNodes)
     setEdges(layoutedEdges)
-  }, [id, schema, schemaTables, columns, foreignKeys, constraints, setNodes, setEdges])
+  }, [id, schema, schemaTables, columns, constraints, setNodes, setEdges])
 
   const recalculateLayoutEvent = useEffectEvent(recalculateLayout)
 

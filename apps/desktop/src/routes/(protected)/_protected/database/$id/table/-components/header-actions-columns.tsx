@@ -18,16 +18,18 @@ export function HeaderActionsColumns({ database, table, schema }: { database: ty
     <Popover>
       <TooltipProvider>
         <Tooltip>
-          <div className="relative">
-            <TooltipTrigger asChild>
-              <PopoverTrigger asChild>
-                <Button size="icon" variant="outline">
-                  <RiLayoutColumnLine />
-                </Button>
-              </PopoverTrigger>
-            </TooltipTrigger>
-            {hiddenColumns.length > 0 && <Indicator />}
-          </div>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                size="icon"
+                variant="outline"
+                className="overflow-visible"
+              >
+                <RiLayoutColumnLine />
+                {hiddenColumns.length > 0 && <Indicator />}
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
           <TooltipContent side="top">
             Columns visibility
           </TooltipContent>

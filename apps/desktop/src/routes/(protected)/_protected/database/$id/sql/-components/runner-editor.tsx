@@ -18,8 +18,8 @@ import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { hasDangerousSqlKeywords } from '~/entities/database'
 import { databaseCompletionService } from '~/entities/database/monaco'
+import { dbQuery } from '~/entities/database/query'
 import { formatSql } from '~/lib/formatter'
-import { dbQuery } from '~/lib/query'
 import { Route } from '..'
 import { chatQuery } from '../-chat'
 import { pageHooks, pageStore } from '../-lib'
@@ -36,7 +36,10 @@ export function runnerQueryOptions({ database, query }: { database: typeof datab
         shouldRun = false
       }
 
-      const result = await dbQuery(database.id, { query })
+      const result = await dbQuery(database.id, {
+        label: 'SQL Runner',
+        query,
+      })
 
       if (!shouldRun) {
         return null!

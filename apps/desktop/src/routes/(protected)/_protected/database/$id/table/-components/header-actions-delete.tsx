@@ -11,7 +11,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { databaseRowsQuery, databaseTableTotalQuery } from '~/entities/database'
-import { dbQuery } from '~/lib/query'
+import { dbQuery } from '~/entities/database/query'
 import { queryClient } from '~/main'
 import { usePageStoreContext } from '../-store'
 
@@ -23,6 +23,7 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
       await dbQuery(database.id, {
+        label: `Delete ${selected.length} row${selected.length === 1 ? '' : 's'} from ${schema}.${table}`,
         query: deleteRowsSql(table, schema, selected)[database.type],
       })
     },

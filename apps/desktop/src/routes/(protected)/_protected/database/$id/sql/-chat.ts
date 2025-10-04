@@ -10,8 +10,8 @@ import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { databaseEnumsQuery, databaseTableColumnsQuery, tablesAndSchemasQuery } from '~/entities/database'
+import { dbQuery } from '~/entities/database/query'
 import { orpc } from '~/lib/orpc'
-import { dbQuery } from '~/lib/query'
 import { queryClient } from '~/main'
 import { pageStore } from './-lib'
 
@@ -211,6 +211,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       else if (toolCall.toolName === 'select') {
         const input = toolCall.input as InferToolInput<typeof tools.select>
         const output = await dbQuery(database.id, {
+          label: `Rows for ${input.tableAndSchema.schemaName}.${input.tableAndSchema.tableName}`,
           query: rowsSql(input.tableAndSchema.schemaName, input.tableAndSchema.tableName, {
             limit: input.limit,
             offset: input.offset,

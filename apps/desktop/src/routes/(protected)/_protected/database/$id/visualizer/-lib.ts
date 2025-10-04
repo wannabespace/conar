@@ -1,21 +1,22 @@
 import type { columnType } from '@conar/shared/sql/columns'
 import type { constraintsType } from '@conar/shared/sql/constraints'
-import type { foreignKeysType } from '@conar/shared/sql/foreign-keys'
 import type { Edge } from '@xyflow/react'
 import type { NodeType } from '~/entities/database'
 import type { Column } from '~/entities/database/table'
 import dagre from '@dagrejs/dagre'
 import { Position } from '@xyflow/react'
 
-export function getEdges({ foreignKeys }: { foreignKeys: typeof foreignKeysType.infer[] }): Edge[] {
-  return foreignKeys.map(fk => ({
-    id: `${fk.table}_${fk.column}_${fk.foreignTable}_${fk.foreignColumn}`,
-    type: 'custom',
-    source: fk.table,
-    target: fk.foreignTable,
-    sourceHandle: fk.column,
-    targetHandle: fk.foreignColumn,
-  }))
+export function getEdges({ constraints }: { constraints: typeof constraintsType.infer[] }): Edge[] {
+  return constraints
+    .filter(c => c.type === 'foreignKey' && c.usageTable && c.usageColumn && c.table && c.column)
+    .map(c => ({
+      id: `${c.table}_${c.column}_${c.usageTable}_${c.usageColumn}`,
+      type: 'custom',
+      source: c.table,
+      target: c.usageTable!,
+      sourceHandle: c.column!,
+      targetHandle: c.usageColumn!,
+    }))
 }
 
 export function getNodes({
@@ -24,7 +25,6 @@ export function getNodes({
   tables,
   columns,
   edges,
-  foreignKeys,
   constraints,
 }: {
   databaseId: string
@@ -32,13 +32,12 @@ export function getNodes({
   tables: string[]
   columns: typeof columnType.infer[]
   edges: Edge[]
-  foreignKeys: typeof foreignKeysType.infer[]
   constraints: typeof constraintsType.infer[]
 }): NodeType[] {
   return tables.map((table) => {
     const tableColumns = columns.filter(c => c.table === table && c.schema === schema)
     const tableConstraints = constraints.filter(c => c.table === table && c.schema === schema)
-    const tableForeignKeys = foreignKeys.filter(fk => fk.table === table && fk.schema === schema)
+    const tableForeignKeys = tableConstraints.filter(c => c.type === 'foreignKey' && c.table === table && c.schema === schema)
 
     return {
       id: table,
@@ -58,12 +57,12 @@ export function getNodes({
             type: c.type,
             isEditable: c.isEditable,
             isNullable: c.isNullable,
-            foreign: foreign
+            foreign: foreign && foreign.usageSchema && foreign.usageTable && foreign.usageColumn
               ? {
                   name: foreign.name,
-                  schema: foreign.foreignSchema,
-                  table: foreign.foreignTable,
-                  column: foreign.foreignColumn,
+                  schema: foreign.usageSchema,
+                  table: foreign.usageTable,
+                  column: foreign.usageColumn,
                 }
               : undefined,
             primaryKey: columnConstraints.find(constraint => constraint.type === 'primaryKey')?.name,
