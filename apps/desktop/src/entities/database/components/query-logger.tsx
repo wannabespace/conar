@@ -8,7 +8,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@conar/ui/c
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { useVirtual } from '@conar/ui/hooks/use-virtual'
 import { cn } from '@conar/ui/lib/utils'
-import NumberFlow from '@number-flow/react'
 import { RiArrowDownLine, RiArrowDownSLine, RiArrowRightSLine, RiCheckboxCircleLine, RiCloseCircleLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useMemo, useState } from 'react'
@@ -192,7 +191,7 @@ export function QueryLogger({ database, className }: {
   }
 
   return (
-    <div className={cn('flex flex-col h-full', className)}>
+    <div className={cn('flex flex-col justify-between h-full', className)}>
       <div className="flex items-center justify-between py-2 px-4">
         <div className="flex items-center gap-2">
           <CardTitle>
@@ -206,7 +205,7 @@ export function QueryLogger({ database, className }: {
               onClick={() => toggleGroup('success')}
             >
               <RiCheckboxCircleLine className="size-3" />
-              <NumberFlow className="tabular-nums" value={statusCounts.success} />
+              {statusCounts.success}
             </Button>
             <Button
               size="xs"
@@ -215,7 +214,7 @@ export function QueryLogger({ database, className }: {
               onClick={() => toggleGroup('error')}
             >
               <RiCloseCircleLine className="size-3" />
-              <NumberFlow className="tabular-nums" value={statusCounts.error} />
+              {statusCounts.error}
             </Button>
             <Button
               size="xs"
@@ -224,7 +223,7 @@ export function QueryLogger({ database, className }: {
               onClick={() => toggleGroup('pending')}
             >
               <RiTimeLine className="size-3" />
-              <NumberFlow className="tabular-nums" value={statusCounts.pending} />
+              {statusCounts.pending}
             </Button>
           </ButtonGroup>
         </div>
@@ -239,7 +238,7 @@ export function QueryLogger({ database, className }: {
       <ScrollArea
         ref={scrollRef}
         className={cn(
-          'flex-1 min-h-0 relative',
+          'min-h-0 relative',
           filteredQueries.length === 0 && 'flex flex-col items-center justify-center py-12',
         )}
       >
@@ -262,17 +261,17 @@ export function QueryLogger({ database, className }: {
           ))}
           <div className="h-(--scroll-bottom-offset)" />
         </div>
+        <div className="sticky bottom-0 h-0">
+          <Button
+            className={cn('absolute bottom-2 left-1/2 -translate-x-1/2', isNearBottom ? 'opacity-0 pointer-events-none' : '')}
+            variant="secondary"
+            size="icon-sm"
+            onClick={() => scrollToBottom()}
+          >
+            <RiArrowDownLine className="size-4" />
+          </Button>
+        </div>
       </ScrollArea>
-      <div className="sticky bottom-0 h-0">
-        <Button
-          className={cn('absolute bottom-2 left-1/2 -translate-x-1/2', isNearBottom ? 'opacity-0 pointer-events-none' : '')}
-          variant="secondary"
-          size="icon-sm"
-          onClick={() => scrollToBottom()}
-        >
-          <RiArrowDownLine className="size-4" />
-        </Button>
-      </div>
     </div>
   )
 }
