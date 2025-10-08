@@ -49,7 +49,7 @@ function LogTrigger({ query, className, ...props }: { query: QueryLog } & Compon
     <button
       type="button"
       className={cn(
-        'cursor-pointer w-full flex items-center gap-2 justify-between border-t py-1 px-2 hover:bg-muted/50',
+        'cursor-pointer w-full flex items-center gap-2 justify-between border-t py-1 px-4 hover:bg-muted/50',
         className,
       )}
       {...props}
@@ -137,7 +137,7 @@ function Log({ query, className, database }: { query: QueryLog, className?: stri
           {query.values && query.values.length > 0 && (
             <div className="space-y-2">
               <Label>Values</Label>
-              <pre className="bg-muted p-2 rounded text-xs font-mono overflow-x-auto">
+              <pre className="bg-accent/50 p-2 rounded text-xs font-mono overflow-x-auto">
                 {formatValues(query.values)}
               </pre>
             </div>
