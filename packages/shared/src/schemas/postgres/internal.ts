@@ -1,0 +1,43 @@
+import { boolean, integer, pgTable, text } from 'drizzle-orm/pg-core'
+
+export const pgType = pgTable('pg_type', {
+  oid: integer().primaryKey(),
+  typname: text().notNull(),
+  typnamespace: integer().notNull(),
+  typowner: integer().notNull(),
+  typlen: integer().notNull(),
+  typbyval: boolean().notNull(),
+  typtype: text().notNull(),
+  typcategory: text().notNull(),
+  typispreferred: boolean().notNull(),
+  typisdefined: boolean().notNull(),
+  typdelim: text().notNull(),
+  typrelid: integer().notNull(),
+  typsubscript: text().notNull(),
+  typelem: integer().notNull(),
+  typarray: integer().notNull(),
+  typinput: text().notNull(),
+  typoutput: text().notNull(),
+  typreceive: text().notNull(),
+  typsend: text().notNull(),
+  typmodin: text().notNull(),
+  typmodout: text().notNull(),
+  typanalyze: text().notNull(),
+  typalign: text().notNull(),
+  typstorage: text().notNull(),
+  typnotnull: boolean().notNull(),
+  typbasetype: integer().notNull(),
+  typtypmod: integer().notNull(),
+  typndims: integer().notNull(),
+  typcollation: integer().notNull(),
+  typdefaultbin: text(),
+  typdefault: text(),
+  typacl: text(),
+})
+
+export const pgEnum = pgTable('pg_enum', {
+  oid: integer().primaryKey(),
+  enumtypid: integer().notNull(),
+  enumsortorder: integer().notNull(),
+  enumlabel: text().notNull(),
+})

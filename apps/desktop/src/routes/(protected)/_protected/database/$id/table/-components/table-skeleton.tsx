@@ -21,7 +21,7 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: {
       id: column.id,
       size: column.size ?? DEFAULT_COLUMN_WIDTH,
     }))
-  }, [columns])
+  }, [columns, columnsCount])
 
   return (
     <div className={cn('relative w-full', className)}>

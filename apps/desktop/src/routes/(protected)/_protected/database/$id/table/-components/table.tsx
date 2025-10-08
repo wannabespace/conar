@@ -1,13 +1,12 @@
 import type { ColumnRenderer } from '~/components/table'
-import { setSql } from '@conar/shared/sql/set'
+import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
-import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
+import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, setSql } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
-import { dbQuery } from '~/entities/database/query'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { columnsSizeMap, selectSymbol } from '../-lib'
@@ -114,16 +113,18 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     const rows = data.pages.flatMap(page => page.rows)
 
-    const [result] = await dbQuery(database.id, {
-      label: `Set value for ${schema}.${table}`,
-      query: setSql(schema, table, columnId, primaryColumns)[database.type],
-      values: [
-        prepareValue(value, columns?.find(column => column.id === columnId)?.type),
-        ...primaryColumns.map(key => rows[rowIndex]![key]),
-      ],
+    const [result] = await setSql(database, {
+      schema,
+      table,
+      values: { [columnId]: prepareValue(value, columns?.find(c => c.id === columnId)?.type) },
+      filters: primaryColumns.map(column => ({
+        column,
+        ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
+        values: [rows[rowIndex]![column]],
+      })),
     })
 
-    const realValue = result!.rows[0]![columnId]
+    const realValue = result![columnId]
 
     if (value !== realValue)
       setValue(rowIndex, columnId, realValue)

@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename)
 /**
  * Recursively search for .env.example files in a directory
  * @param {string} dir - Directory to search in
- * @param {string[]} results - Array to collect found files
+ * @param {string[]} r - Array to collect found files
  */
 function findEnvExampleFiles(dir: string, r: string[] = []) {
   const items = fs.readdirSync(dir)

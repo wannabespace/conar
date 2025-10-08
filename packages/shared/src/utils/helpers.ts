@@ -15,10 +15,6 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(fu
   return debounced
 }
 
-export function prepareSql(input: string) {
-  return input.replaceAll('\n', ' ').replace(/\s+/g, ' ').trim()
-}
-
 export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
   return Object.fromEntries(Object.entries(obj).filter(([key]) => !keys.includes(key as K))) as Omit<T, K>
 }

@@ -1,4 +1,5 @@
 import type { DatabaseQueryResult } from '@conar/shared/databases'
+import type { QueryParams } from '@conar/shared/filters/sql'
 import { createRequire } from 'node:module'
 import { decrypt, encrypt } from '@conar/shared/encryption'
 import { DatabaseType } from '@conar/shared/enums/database-type'
@@ -38,20 +39,16 @@ const databases = {
   query: async ({
     type,
     connectionString,
-    query,
-    values,
-  }: {
-    type: DatabaseType
-    connectionString: string
-    query: string
-    values?: unknown[]
-  }) => {
+    sql,
+    params,
+    method,
+  }: QueryParams & { type: DatabaseType }) => {
     const queryMap = {
       [DatabaseType.Postgres]: pgQuery,
     }
 
     try {
-      return await queryMap[type]({ connectionString, query, values }) satisfies DatabaseQueryResult[]
+      return await queryMap[type]({ connectionString, sql, params, method }) satisfies DatabaseQueryResult
     }
     catch (error) {
       if (error instanceof AggregateError) {

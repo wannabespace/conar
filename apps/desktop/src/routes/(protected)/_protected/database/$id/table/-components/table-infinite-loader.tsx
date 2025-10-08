@@ -1,4 +1,4 @@
-import type { WhereFilter } from '@conar/shared/sql/where'
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { databases } from '~/drizzle'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
@@ -19,7 +19,7 @@ export function TableInfiniteLoader({
   table: string
   schema: string
   database: typeof databases.$inferSelect
-  filters: WhereFilter[]
+  filters: ActiveFilter[]
   orderBy: Record<string, 'ASC' | 'DESC'>
 }) {
   const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(
@@ -37,7 +37,7 @@ export function TableInfiniteLoader({
   const scrollRef = useTableContext(state => state.scrollRef)
   useMountedEffect(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [filters, orderBy])
+  }, [scrollRef, filters, orderBy])
 
   return (
     <div className="sticky left-0 h-80 pointer-events-none">

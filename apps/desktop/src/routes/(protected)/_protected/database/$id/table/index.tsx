@@ -1,7 +1,7 @@
-import type { WhereFilter } from '@conar/shared/sql/where'
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { Store } from '@tanstack/react-store'
 import type { storeState } from './-store'
-import { FILTER_OPERATORS_LIST } from '@conar/shared/utils/sql'
+import { SQL_FILTERS_GROUPED } from '@conar/shared/filters/sql'
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
@@ -24,7 +24,7 @@ export const Route = createFileRoute(
   validateSearch: type({
     'schema?': 'string',
     'table?': 'string',
-    'filters?': 'object[]' as type.cast<WhereFilter[]>,
+    'filters?': 'object[]' as type.cast<ActiveFilter[]>,
     'orderBy?': 'object' as type.cast<Record<string, 'ASC' | 'DESC'>>,
   }),
   component: DatabaseTablesPage,
@@ -108,7 +108,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
       >
         <FiltersProvider
           columns={columns ?? []}
-          operators={FILTER_OPERATORS_LIST}
+          filtersGrouped={SQL_FILTERS_GROUPED}
         >
           <div className="h-full flex flex-col justify-between">
             <div className="flex flex-col gap-4 px-4 pt-2 pb-4">

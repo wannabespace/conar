@@ -1,5 +1,5 @@
 import { cn } from '@conar/ui/lib/utils'
-import { createContext, use } from 'react'
+import { createContext, use, useMemo } from 'react'
 
 const StepperContext = createContext<{
   active: string
@@ -14,7 +14,7 @@ export function Stepper<T extends string>({
   children: React.ReactNode
 }) {
   return (
-    <StepperContext value={{ active }}>
+    <StepperContext value={useMemo(() => ({ active }), [active])}>
       {children}
     </StepperContext>
   )

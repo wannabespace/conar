@@ -1,5 +1,6 @@
-import type { WhereFilter } from '@conar/shared/sql/where'
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { ColumnRenderer } from '~/components/table'
+import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { RiCornerRightUpLine } from '@remixicon/react'
@@ -26,9 +27,9 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
   const { database } = useLoaderData()
   const filters = [{
     column,
-    operator: '=',
-    values: [value as string],
-  } satisfies WhereFilter]
+    ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
+    values: [value],
+  } satisfies ActiveFilter]
   const orderBy = {}
   const { data: rows, isPending: isRowsPending, error } = useInfiniteQuery(databaseRowsQuery({
     database,
@@ -79,7 +80,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
           <div>
             Showing records from
             {' '}
-            <Badge variant="secondary">
+            <Badge data-mask variant="secondary">
               {schema}
               .
               {table}
@@ -87,11 +88,11 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
             {' '}
             where
             {' '}
-            <Badge variant="secondary">{column}</Badge>
+            <Badge data-mask variant="secondary">{column}</Badge>
             {' '}
             =
             {' '}
-            <Badge variant="secondary">{String(value)}</Badge>
+            <Badge data-mask variant="secondary">{String(value)}</Badge>
           </div>
           <Button
             variant="outline"

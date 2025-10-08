@@ -1,7 +1,7 @@
 import type { InferUITools, UIDataTypes, UIMessage } from 'ai'
 import { tool } from 'ai'
 import * as z from 'zod'
-import { SQL_OPERATORS } from './utils/sql'
+import { SQL_OPERATORS } from './filters/sql'
 
 export const tools = {
   columns: tool({

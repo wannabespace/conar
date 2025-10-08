@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import { hasDangerousSqlKeywords } from '~/entities/database'
 import { databaseCompletionService } from '~/entities/database/monaco'
-import { dbQuery } from '~/entities/database/query'
+import { drizzleProxy } from '~/entities/database/query'
 import { formatSql } from '~/lib/formatter'
 import { Route } from '..'
 import { chatQuery } from '../-chat'
@@ -36,10 +36,8 @@ export function runnerQueryOptions({ database, query }: { database: typeof datab
         shouldRun = false
       }
 
-      const result = await dbQuery(database.id, {
-        label: 'SQL Runner',
-        query,
-      })
+      const db = drizzleProxy(database, 'SQL Runner')
+      const result = await db.execute(query)
 
       if (!shouldRun) {
         return null!
@@ -73,11 +71,13 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
 
   useEffect(() => {
     if (status === 'error') {
-      toast.error(error.message, {
+      const message = error.cause ? String(error.cause) : error.message
+
+      toast.error(message, {
         action: {
           label: 'Fix with AI',
           onClick: () => {
-            pageHooks.callHook('fix', error.message)
+            pageHooks.callHook('fix', message)
           },
         },
         duration: 5000,

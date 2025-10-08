@@ -7,8 +7,10 @@
     "./constants": "./src/constants.ts",
     "./encryption": "./src/encryption.ts",
     "./enums/*": "./src/enums/*.ts",
+    "./filters": "./src/filters/index.ts",
+    "./filters/*": "./src/filters/*.ts",
     "./databases": "./src/databases.ts",
-    "./sql/*": "./src/sql/*.ts",
+    "./schemas/postgres/*": "./src/schemas/postgres/*.ts",
     "./utils/*": "./src/utils/*.ts"
   },
   "scripts": {
@@ -17,6 +19,7 @@
   "dependencies": {
     "ai": "catalog:",
     "arktype": "catalog:",
+    "drizzle-orm": "catalog:",
     "nanoid": "catalog:",
     "zod": "catalog:"
   },

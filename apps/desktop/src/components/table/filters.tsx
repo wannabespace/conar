@@ -1,52 +1,21 @@
-import type { FilterOperator } from '@conar/shared/utils/sql'
+import type { ActiveFilter, Filter, FilterGroup } from '@conar/shared/filters'
 import type { RefObject } from 'react'
+import { FILTER_GROUPS_LABELS } from '@conar/shared/filters'
 import { Button } from '@conar/ui/components/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Separator } from '@conar/ui/components/separator'
 import { RiCloseLine, RiCornerDownLeftLine, RiDatabase2Line, RiFilterLine } from '@remixicon/react'
 import { createContext, use, useEffect, useMemo, useRef, useState } from 'react'
-import { InfoButton } from '~/components/info-button'
 
 interface Column {
   id: string
   type: string
 }
 
-const OPERATION_GROUPS = {
-  comparison: 'Comparison',
-  text: 'Text Search',
-  list: 'List Operations',
-  null: 'Null Checks',
-  other: 'Other',
-} as const
-
-type CategoryLiteral = keyof typeof OPERATION_GROUPS
-
-const GROUPED_OPERATIONS = {
-  comparison: ['=', '≈', '!=', '>', '<', '>=', '<='],
-  text: ['LIKE', 'ILIKE', 'NOT LIKE'],
-  list: ['IN', 'NOT IN'],
-  null: ['IS NULL', 'IS NOT NULL'],
-} satisfies Omit<Record<keyof typeof OPERATION_GROUPS, FilterOperator[]>, 'other'>
-
-interface Operator {
-  value: FilterOperator
-  label: string
-  placeholder?: string
-  hasValue: boolean
-  tip?: string
-}
-
-interface Filter {
-  column: string
-  operator: FilterOperator
-  values?: string[]
-}
-
 const FilterInternalContext = createContext<{
   columns: Column[]
-  operators: Operator[]
+  filtersGrouped: { group: FilterGroup, filters: Filter[] }[]
 }>(null!)
 
 function useInternalContext() {
@@ -80,36 +49,16 @@ function FilterColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLInputElem
   )
 }
 
-function FilterOperatorSelector({
+function FilterSelector({
   ref,
   onSelect,
   onBackspace,
 }: {
   ref?: RefObject<HTMLInputElement | null>
-  onSelect: (operator: FilterOperator) => void
+  onSelect: (filter: Filter) => void
   onBackspace?: () => void
 }) {
-  const { operators } = useInternalContext()
-
-  const groupedOperators = useMemo(() => {
-    return operators.reduce((acc, operator) => {
-      let category: CategoryLiteral = 'other'
-
-      for (const [group, values] of Object.entries(GROUPED_OPERATIONS)) {
-        if ((values as FilterOperator[]).includes(operator.value)) {
-          category = group as CategoryLiteral
-          break
-        }
-      }
-
-      if (!acc[category])
-        acc[category] = []
-
-      acc[category].push(operator)
-
-      return acc
-    }, {} as Record<CategoryLiteral, Operator[]>)
-  }, [operators])
+  const { filtersGrouped } = useInternalContext()
 
   return (
     <Command>
@@ -124,21 +73,22 @@ function FilterOperatorSelector({
       />
       <CommandList className="h-fit max-h-[70vh]">
         <CommandEmpty>No operators found.</CommandEmpty>
-        {Object.entries(groupedOperators).map(([group, ops]) => (
-          <CommandGroup key={group} heading={OPERATION_GROUPS[group as keyof typeof OPERATION_GROUPS] || group}>
-            {ops.map(operator => (
-              <CommandItem
-                key={operator.value}
-                value={operator.value}
-                keywords={[operator.label, operator.value]}
-                onSelect={onSelect as (_: string) => void}
-              >
-                <RiFilterLine className="size-4 opacity-50" />
-                <span>{operator.label}</span>
-                {operator.tip && <InfoButton className="-ml-1">{operator.tip}</InfoButton>}
-                <span className="ml-auto text-xs text-muted-foreground text-right">{operator.value}</span>
-              </CommandItem>
-            ))}
+        {filtersGrouped.map(({ group, filters }) => (
+          <CommandGroup key={group} heading={FILTER_GROUPS_LABELS[group]}>
+            {filters.map((filter) => {
+              return (
+                <CommandItem
+                  key={filter.operator}
+                  value={filter.operator}
+                  keywords={[filter.label, filter.operator]}
+                  onSelect={() => onSelect(filter)}
+                >
+                  <RiFilterLine className="size-4 opacity-50" />
+                  <span>{filter.label}</span>
+                  <span className="ml-auto text-xs text-muted-foreground text-right">{filter.operator}</span>
+                </CommandItem>
+              )
+            })}
           </CommandGroup>
         ))}
       </CommandList>
@@ -158,7 +108,7 @@ function FilterValueSelector({
   ref?: RefObject<HTMLInputElement | null>
   column: string
   operator: string
-  values: string[]
+  values: unknown[]
   onChange: (value: string[]) => void
   onApply: () => void
   onBackspace?: () => void
@@ -168,7 +118,7 @@ function FilterValueSelector({
       <div>
         <CommandInput
           ref={ref}
-          value={values[0]} // Temp due to the current implementation where available only 1 value
+          value={values[0] as string} // TODO: due to the current implementation where available only 1 value
           onValueChange={value => onChange([value])}
           placeholder={`Enter value for ${column}...`}
           onKeyDown={(e) => {
@@ -246,16 +196,11 @@ export function FilterItem({
   onRemove,
   onEdit,
 }: {
-  filter: Filter
+  filter: ActiveFilter
   onRemove: () => void
-  onEdit: (params: { column: string, operator: FilterOperator, values: string[] }) => void
+  onEdit: (filter: ActiveFilter) => void
 }) {
-  const [values, setValues] = useState(filter.values ?? [])
-  const { operators } = useInternalContext()
-  const showValue = useMemo(() => {
-    const operator = operators.find(operator => operator.value === filter.operator)
-    return !!operator?.hasValue
-  }, [operators, filter.operator])
+  const [values, setValues] = useState(filter.values)
 
   return (
     <div className="flex items-center border rounded-sm overflow-hidden h-6 bg-card">
@@ -266,22 +211,22 @@ export function FilterItem({
         </PopoverTrigger>
         <PopoverContent className="p-0 shadow-md">
           <FilterColumnSelector
-            onSelect={column => onEdit({ column, operator: filter.operator, values })}
+            onSelect={column => onEdit({ column, ref: filter.ref, values })}
           />
         </PopoverContent>
       </Popover>
       <Separator orientation="vertical" />
       <Popover>
         <PopoverTrigger className="text-xs px-2 h-full hover:bg-accent/50 transition-colors text-muted-foreground">
-          {filter.operator}
+          {filter.ref.operator}
         </PopoverTrigger>
         <PopoverContent className="p-0 shadow-md">
-          <FilterOperatorSelector
-            onSelect={operator => onEdit({ column: filter.column, operator, values })}
+          <FilterSelector
+            onSelect={operator => onEdit({ column: filter.column, ref: operator, values })}
           />
         </PopoverContent>
       </Popover>
-      {showValue && (
+      {filter.ref.hasValue && (
         <>
           <Separator orientation="vertical" />
           <Popover>
@@ -294,10 +239,10 @@ export function FilterItem({
             <PopoverContent className="p-0 shadow-md max-h-[calc(100vh-10rem)]">
               <FilterValueSelector
                 column={filter.column}
-                operator={filter.operator}
-                values={values} // Temp due to the current implementation where available only 1 value
+                operator={filter.ref.operator}
+                values={values}
                 onChange={setValues}
-                onApply={() => onEdit({ column: filter.column, operator: filter.operator, values })}
+                onApply={() => onEdit({ column: filter.column, ref: filter.ref, values })}
               />
             </PopoverContent>
           </Popover>
@@ -316,11 +261,11 @@ export function FilterItem({
   )
 }
 
-export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
+export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void }) {
   const [selectedColumn, setSelectedColumn] = useState<string | null>(null)
-  const [selectedOperator, setSelectedOperator] = useState<FilterOperator | null>(null)
-  const [values, setValues] = useState<string[]>([])
-  const { columns, operators } = useInternalContext()
+  const [selectedFilter, setSelectedFilter] = useState<Filter | null>(null)
+  const [values, setValues] = useState<string[]>([''])
+  const { columns } = useInternalContext()
 
   const operatorRef = useRef<HTMLInputElement>(null)
 
@@ -328,7 +273,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
     if (operatorRef.current) {
       operatorRef.current.focus()
     }
-  }, [operatorRef, selectedColumn, selectedOperator])
+  }, [operatorRef, selectedColumn, selectedFilter])
 
   const valueRef = useRef<HTMLInputElement>(null)
 
@@ -336,26 +281,25 @@ export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
     if (valueRef.current) {
       valueRef.current.focus()
     }
-  }, [valueRef, selectedOperator])
+  }, [valueRef, selectedFilter])
 
   const column = useMemo(() => columns.find(column => column.id === selectedColumn), [columns, selectedColumn])
-  const operator = useMemo(() => operators.find(operator => operator.value === selectedOperator), [operators, selectedOperator])
 
   useEffect(() => {
-    if (column && operator && !operator.hasValue) {
-      onAdd({ column: column.id, operator: operator.value })
+    if (column && selectedFilter && !selectedFilter.hasValue) {
+      onAdd({ column: column.id, ref: selectedFilter, values })
     }
-  }, [column, operator, onAdd])
+  }, [column, selectedFilter, values, onAdd])
 
   return (
     <div>
       {!column && (
         <FilterColumnSelector onSelect={setSelectedColumn} />
       )}
-      {column && !operator && (
-        <FilterOperatorSelector
+      {column && !selectedFilter && (
+        <FilterSelector
           ref={operatorRef}
-          onSelect={setSelectedOperator}
+          onSelect={setSelectedFilter}
           onBackspace={() => {
             if (values.length === 0) {
               setSelectedColumn(null)
@@ -363,17 +307,17 @@ export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
           }}
         />
       )}
-      {column && selectedOperator && (
+      {column && selectedFilter && (
         <FilterValueSelector
           ref={valueRef}
           column={column.id}
-          operator={selectedOperator}
+          operator={selectedFilter.operator}
           values={values}
           onChange={setValues}
-          onApply={() => onAdd({ column: column.id, operator: selectedOperator, values })}
+          onApply={() => onAdd({ column: column.id, ref: selectedFilter, values })}
           onBackspace={() => {
             if (values.length === 0) {
-              setSelectedOperator(null)
+              setSelectedFilter(null)
             }
           }}
         />
@@ -385,13 +329,13 @@ export function FilterForm({ onAdd }: { onAdd: (filter: Filter) => void }) {
 export function FiltersProvider({
   children,
   columns,
-  operators,
+  filtersGrouped,
 }: {
   children: React.ReactNode
   columns: Column[]
-  operators: Operator[]
+  filtersGrouped: { group: FilterGroup, filters: Filter[] }[]
 }) {
-  const context = useMemo(() => ({ columns, operators }), [columns, operators])
+  const context = useMemo(() => ({ columns, filtersGrouped }), [columns, filtersGrouped])
 
   return (
     <FilterInternalContext value={context}>

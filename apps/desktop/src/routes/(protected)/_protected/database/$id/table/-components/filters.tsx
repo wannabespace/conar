@@ -1,4 +1,3 @@
-import type { WhereFilter } from '@conar/shared/sql/where'
 import { Button } from '@conar/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { useToggle } from '@conar/ui/hookas/use-toggle'
@@ -21,16 +20,16 @@ export function Filters() {
       <div className="flex gap-2 flex-wrap">
         {filters.map(filter => (
           <FilterItem
-            key={`${filter.column}-${filter.operator}-${filter.values?.join(',')}`}
+            key={`${filter.column}-${filter.ref.operator}-${filter.values?.join(',')}`}
             filter={filter}
             onRemove={() => store.setState(state => ({
               ...state,
               filters: state.filters.filter(f => f !== filter),
             }))}
-            onEdit={({ column, operator, values }) => store.setState(state => ({
+            onEdit={({ column, ref, values }) => store.setState(state => ({
               ...state,
               filters: state.filters.map(f => f === filter
-                ? { ...f, column, operator, values }
+                ? { column, ref, values }
                 : f),
             }))}
           />
@@ -51,7 +50,7 @@ export function Filters() {
                 toggleForm(false)
                 store.setState(state => ({
                   ...state,
-                  filters: [...state.filters, filter as WhereFilter],
+                  filters: [...state.filters, filter],
                 }))
               }}
             />

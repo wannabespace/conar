@@ -1,5 +1,4 @@
 import type { databases } from '~/drizzle'
-import { deleteRowsSql } from '@conar/shared/sql/delete'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -10,8 +9,7 @@ import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { databaseRowsQuery, databaseTableTotalQuery } from '~/entities/database'
-import { dbQuery } from '~/entities/database/query'
+import { databaseRowsQuery, databaseTableTotalQuery, deleteRowsSql } from '~/entities/database'
 import { queryClient } from '~/main'
 import { usePageStoreContext } from '../-store'
 
@@ -22,10 +20,7 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      await dbQuery(database.id, {
-        label: `Delete ${selected.length} row${selected.length === 1 ? '' : 's'} from ${schema}.${table}`,
-        query: deleteRowsSql(table, schema, selected)[database.type],
-      })
+      await deleteRowsSql(database, { table, schema, primaryKeys: selected })
     },
     onSuccess: () => {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)

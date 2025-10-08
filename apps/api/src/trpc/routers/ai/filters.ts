@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google'
-import { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
+import { SQL_FILTERS_GROUPED, SQL_OPERATORS } from '@conar/shared/filters/sql'
 import { generateObject } from 'ai'
 import { type } from 'arktype'
 import { z } from 'zod'
@@ -33,7 +33,7 @@ export const filters = protectedProcedure
         - If context already contains a filter, you can use it as reference to generate a new filter
 
         Current time: ${new Date().toISOString()}
-        Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}
+        Available operators: ${JSON.stringify(SQL_FILTERS_GROUPED, null, 2)}
 
         Table context:
         ${input.context}
@@ -42,7 +42,7 @@ export const filters = protectedProcedure
       abortSignal: signal,
       schema: z.object({
         column: z.string(),
-        operator: z.enum(SQL_OPERATORS_LIST.map(operator => operator.value) as [string, ...string[]]),
+        operator: z.enum(SQL_OPERATORS),
         value: z.string(),
       }),
       schemaDescription: 'An array of objects with the following properties: column, operator, value where the operator is one of the SQL operators available',

@@ -64,7 +64,7 @@ export function useDownloadLinks() {
     // }
 
     return null
-  }, [os, data])
+  }, [data])
 
   return {
     links,
