@@ -1,5 +1,5 @@
 import type { ColumnRenderer } from '~/components/table'
-import { SQL_FILTERS_LIST } from '@conar/shared/utils/sql'
+import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'

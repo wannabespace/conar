@@ -1,4 +1,4 @@
-import type { ActiveFilter } from '@conar/shared/utils/filters'
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { databases } from '~/drizzle'
 import { sql } from 'drizzle-orm'
 import { runSql } from '../query'

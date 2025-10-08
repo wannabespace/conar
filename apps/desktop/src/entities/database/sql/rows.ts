@@ -1,11 +1,13 @@
-import type { ActiveFilter } from '@conar/shared/utils/filters'
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { databases } from '~/drizzle'
-import { sql } from 'drizzle-orm'
+import { and, or, sql } from 'drizzle-orm'
 import { runSql } from '../query'
 
 export function buildWhere(filters: ActiveFilter[], concatOperator: 'AND' | 'OR' = 'AND') {
-  return sql.join(
-    filters.map((filter) => {
+  const concat = concatOperator === 'AND' ? and : or
+
+  return concat(
+    ...filters.map((filter) => {
       if (filter.ref.hasValue && filter.values.length > 0) {
         if (filter.values.length === 1) {
           return sql`${sql.identifier(filter.column)} ${sql.raw(filter.ref.operator)} ${sql.param(filter.values[0])}`
@@ -22,7 +24,6 @@ export function buildWhere(filters: ActiveFilter[], concatOperator: 'AND' | 'OR'
         sql.raw(' '),
       )
     }),
-    sql.raw(` ${concatOperator} `),
   )
 }
 

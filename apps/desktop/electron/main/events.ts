@@ -1,5 +1,5 @@
 import type { DatabaseQueryResult } from '@conar/shared/databases'
-import type { QueryParams } from '@conar/shared/utils/sql'
+import type { QueryParams } from '@conar/shared/filters/sql'
 import { createRequire } from 'node:module'
 import { decrypt, encrypt } from '@conar/shared/encryption'
 import { DatabaseType } from '@conar/shared/enums/database-type'

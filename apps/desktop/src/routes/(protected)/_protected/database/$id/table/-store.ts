@@ -1,4 +1,4 @@
-import type { ActiveFilter, Filter } from '@conar/shared/utils/filters'
+import type { ActiveFilter, Filter } from '@conar/shared/filters'
 import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { createContext, use } from 'react'

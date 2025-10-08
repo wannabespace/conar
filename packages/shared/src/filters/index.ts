@@ -4,13 +4,11 @@ export interface Filter {
   hasValue: boolean
 }
 
-export interface ActiveFilter {
+export interface ActiveFilter<T extends Filter = Filter> {
   column: string
-  ref: Filter
+  ref: T
   values: unknown[]
 }
-
-export type FilterGroup = keyof typeof FILTER_GROUPS_LABELS
 
 export const FILTER_GROUPS_LABELS = {
   comparison: 'Comparison',
@@ -18,3 +16,5 @@ export const FILTER_GROUPS_LABELS = {
   list: 'List Operations',
   null: 'Null Checks',
 } as const
+
+export type FilterGroup = keyof typeof FILTER_GROUPS_LABELS

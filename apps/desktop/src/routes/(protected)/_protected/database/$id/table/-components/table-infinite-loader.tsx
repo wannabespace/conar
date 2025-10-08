@@ -1,4 +1,4 @@
-import type { ActiveFilter } from '@conar/shared/utils/filters'
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { databases } from '~/drizzle'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'

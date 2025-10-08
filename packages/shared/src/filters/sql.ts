@@ -1,4 +1,4 @@
-import type { Filter, FilterGroup } from './filters'
+import type { Filter, FilterGroup } from '.'
 
 export const SQL_OPERATORS = [
   '=',
@@ -18,7 +18,6 @@ export const SQL_OPERATORS = [
 
 export const SQL_FILTERS_GROUPED = [
   {
-
     group: 'comparison',
     filters: [
       { label: 'Equal', operator: '=', hasValue: true },

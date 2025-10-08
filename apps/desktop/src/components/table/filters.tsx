@@ -1,6 +1,6 @@
-import type { ActiveFilter, Filter, FilterGroup } from '@conar/shared/utils/filters'
+import type { ActiveFilter, Filter, FilterGroup } from '@conar/shared/filters'
 import type { RefObject } from 'react'
-import { FILTER_GROUPS_LABELS } from '@conar/shared/utils/filters'
+import { FILTER_GROUPS_LABELS } from '@conar/shared/filters'
 import { Button } from '@conar/ui/components/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'

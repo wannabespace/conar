@@ -1,6 +1,6 @@
-import type { ActiveFilter } from '@conar/shared/utils/filters'
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { ColumnRenderer } from '~/components/table'
-import { SQL_FILTERS_LIST } from '@conar/shared/utils/sql'
+import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { RiCornerRightUpLine } from '@remixicon/react'

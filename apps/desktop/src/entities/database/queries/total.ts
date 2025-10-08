@@ -1,4 +1,4 @@
-import type { ActiveFilter } from '@conar/shared/utils/filters'
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { databases } from '~/drizzle'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { totalSql } from '../sql/total'

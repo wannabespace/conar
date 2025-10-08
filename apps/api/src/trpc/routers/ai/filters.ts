@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google'
-import { SQL_FILTERS_GROUPED, SQL_OPERATORS } from '@conar/shared/utils/sql'
+import { SQL_FILTERS_GROUPED, SQL_OPERATORS } from '@conar/shared/filters/sql'
 import { generateObject } from 'ai'
 import { type } from 'arktype'
 import { z } from 'zod'
