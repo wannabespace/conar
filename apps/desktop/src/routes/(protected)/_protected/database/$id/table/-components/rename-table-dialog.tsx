@@ -1,5 +1,4 @@
 import type { databases } from '~/drizzle'
-import { renameTableSql } from '@conar/shared/sql/rename-table'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -18,8 +17,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { tablesAndSchemasQuery } from '~/entities/database'
-import { dbQuery } from '~/entities/database/query'
+import { renameTableSql, tablesAndSchemasQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { renameTab } from '../-tabs'
 
@@ -48,10 +46,7 @@ export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
 
   const { mutate: renameTable, isPending } = useMutation({
     mutationFn: async () => {
-      await dbQuery(database.id, {
-        label: `Rename table ${schema}.${table} to ${newTableName}`,
-        query: renameTableSql(schema, table, newTableName)[database.type],
-      })
+      await renameTableSql(database, { schema, oldTable: table, newTable: newTableName })
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)

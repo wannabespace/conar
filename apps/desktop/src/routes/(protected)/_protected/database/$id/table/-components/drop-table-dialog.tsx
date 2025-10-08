@@ -1,5 +1,4 @@
 import type { databases } from '~/drizzle'
-import { dropTableSql } from '@conar/shared/sql/drop-table'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
@@ -19,8 +18,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { lastOpenedTable, tablesAndSchemasQuery } from '~/entities/database'
-import { dbQuery } from '~/entities/database/query'
+import { dropTableSql, lastOpenedTable, tablesAndSchemasQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { removeTab } from '../-tabs'
@@ -57,10 +55,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
 
   const { mutate: dropTable, isPending } = useMutation({
     mutationFn: async () => {
-      await dbQuery(database.id, {
-        label: `Drop table ${schema}.${table}`,
-        query: dropTableSql(schema, table, cascade)[database.type],
-      })
+      await dropTableSql(database, { table, schema, cascade })
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully dropped`)

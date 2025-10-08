@@ -1,12 +1,14 @@
-import type { WhereFilter } from '@conar/shared/sql/where'
+import type { ActiveFilter } from '@conar/shared/utils/filters'
 import type { databases } from '~/drizzle'
-import { rowsSql } from '@conar/shared/sql/rows'
-import { whereSql } from '@conar/shared/sql/where'
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query'
-import { dbQuery } from '~/entities/database/query'
+import { rowsSql } from '../sql/rows'
 import { DEFAULT_LIMIT } from '../utils'
 
-type Page = Awaited<ReturnType<typeof dbQuery>>[0]
+type Page = Awaited<ReturnType<typeof rowsSql>>[0]
+
+interface PageResult {
+  rows: Page[]
+}
 
 export function databaseRowsQuery({
   database,
@@ -17,11 +19,11 @@ export function databaseRowsQuery({
   database: typeof databases.$inferSelect
   table: string
   schema: string
-  query: { orderBy: Record<string, 'ASC' | 'DESC'>, filters: WhereFilter[] }
+  query: { orderBy: Record<string, 'ASC' | 'DESC'>, filters: ActiveFilter[] }
 }) {
   return infiniteQueryOptions({
     initialPageParam: 0,
-    getNextPageParam: (lastPage: Page, _allPages: Page[], lastPageParam: number) => {
+    getNextPageParam: (lastPage: PageResult, _allPages: PageResult[], lastPageParam: number) => {
       return lastPage.rows.length === 0 || lastPage.rows.length < DEFAULT_LIMIT ? null : lastPageParam + DEFAULT_LIMIT
     },
     queryKey: [
@@ -38,21 +40,18 @@ export function databaseRowsQuery({
       },
     ],
     queryFn: async ({ pageParam: offset = 0 }) => {
-      const [result] = await dbQuery(database.id, {
-        label: `Rows for ${schema}.${table}`,
-        query: rowsSql(schema, table, {
-          limit: DEFAULT_LIMIT,
-          offset,
-          orderBy: query.orderBy,
-          where: whereSql(query.filters)[database.type],
-        })[database.type],
+      const result = await rowsSql(database, {
+        schema,
+        table,
+        limit: DEFAULT_LIMIT,
+        offset,
+        orderBy: query.orderBy,
+        filters: query.filters,
       })
 
       return {
-        rows: result!.rows,
-        columns: result!.columns,
-        count: result!.count,
-      }
+        rows: result,
+      } satisfies PageResult
     },
     select: data => data.pages.flatMap(page => page.rows),
     throwOnError: false,

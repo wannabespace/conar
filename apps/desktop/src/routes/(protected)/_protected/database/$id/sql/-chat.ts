@@ -3,14 +3,12 @@ import type { InferToolInput, InferToolOutput } from 'ai'
 import type { chatsMessages, databases } from '~/drizzle'
 import { Chat } from '@ai-sdk/react'
 import { convertToAppUIMessage } from '@conar/shared/ai-tools'
-import { rowsSql } from '@conar/shared/sql/rows'
-import { whereSql } from '@conar/shared/sql/where'
+import { SQL_FILTERS_LIST } from '@conar/shared/utils/sql'
 import { eventIteratorToStream } from '@orpc/client'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
-import { databaseEnumsQuery, databaseTableColumnsQuery, tablesAndSchemasQuery } from '~/entities/database'
-import { dbQuery } from '~/entities/database/query'
+import { databaseEnumsQuery, databaseTableColumnsQuery, rowsSql, tablesAndSchemasQuery } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { pageStore } from './-lib'
@@ -34,8 +32,6 @@ export const chatQuery = {
       '-- JOIN posts p ON u.id = p.user_id',
       '-- WHERE p.published = true',
       '-- LIMIT 10;',
-      '',
-      '-- TIP: You can run multiple queries at once by separating them with semicolons',
     ].join('\n')
   },
   set(id: string, query: string) {
@@ -210,20 +206,31 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       }
       else if (toolCall.toolName === 'select') {
         const input = toolCall.input as InferToolInput<typeof tools.select>
-        const output = await dbQuery(database.id, {
-          label: `Rows for ${input.tableAndSchema.schemaName}.${input.tableAndSchema.tableName}`,
-          query: rowsSql(input.tableAndSchema.schemaName, input.tableAndSchema.tableName, {
-            limit: input.limit,
-            offset: input.offset,
-            orderBy: input.orderBy,
-            select: input.select,
-            where: whereSql(input.whereFilters, input.whereConcatOperator)[database.type],
-          })[database.type],
-        })
-          .then(results => results.map(r => r.rows).flat())
-          .catch(error => ({
-            error: error instanceof Error ? error.message : 'Error during the query execution',
-          })) satisfies InferToolOutput<typeof tools.select>
+        const output = await rowsSql(database, {
+          schema: input.tableAndSchema.schemaName,
+          table: input.tableAndSchema.tableName,
+          limit: input.limit,
+          offset: input.offset,
+          orderBy: input.orderBy,
+          select: input.select,
+          // To save back compatibility with the old filters
+          filters: input.whereFilters.map((filter) => {
+            const operator = SQL_FILTERS_LIST.find(f => f.operator === filter.operator)
+
+            if (!operator) {
+              throw new Error(`Invalid operator: ${filter.operator}`)
+            }
+
+            return {
+              column: filter.column,
+              ref: operator,
+              values: filter.values,
+            }
+          }),
+          filtersConcatOperator: input.whereConcatOperator,
+        }).catch(error => ({
+          error: error instanceof Error ? error.message : 'Error during the query execution',
+        })) satisfies InferToolOutput<typeof tools.select>
 
         chat.addToolResult({
           tool: 'select',

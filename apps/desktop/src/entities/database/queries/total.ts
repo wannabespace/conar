@@ -1,9 +1,7 @@
-import type { WhereFilter } from '@conar/shared/sql/where'
+import type { ActiveFilter } from '@conar/shared/utils/filters'
 import type { databases } from '~/drizzle'
-import { totalSql, totalType } from '@conar/shared/sql/total'
-import { whereSql } from '@conar/shared/sql/where'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { dbQuery } from '~/entities/database/query'
+import { totalSql } from '../sql/total'
 
 export function databaseTableTotalQuery({
   database,
@@ -14,7 +12,7 @@ export function databaseTableTotalQuery({
   database: typeof databases.$inferSelect
   table: string
   schema: string
-  query: { filters: WhereFilter[] }
+  query: { filters: ActiveFilter[] }
 }) {
   return queryOptions({
     queryKey: [
@@ -29,16 +27,7 @@ export function databaseTableTotalQuery({
         filters: query.filters,
       },
     ],
-    queryFn: async () => {
-      const [result] = await dbQuery(database.id, {
-        label: `Total for ${schema}.${table}`,
-        query: totalSql(schema, table, {
-          where: whereSql(query.filters)[database.type],
-        })[database.type],
-      })
-
-      return totalType.assert(result!.rows[0]!).total
-    },
+    queryFn: () => totalSql(database, { schema, table, filters: query.filters }).then(result => result[0]!.total),
     throwOnError: false,
   })
 }

@@ -8,6 +8,7 @@
     "./encryption": "./src/encryption.ts",
     "./enums/*": "./src/enums/*.ts",
     "./databases": "./src/databases.ts",
+    "./schemas/postgres/*": "./src/schemas/postgres/*.ts",
     "./sql/*": "./src/sql/*.ts",
     "./utils/*": "./src/utils/*.ts"
   },
@@ -17,6 +18,7 @@
   "dependencies": {
     "ai": "catalog:",
     "arktype": "catalog:",
+    "drizzle-orm": "catalog:",
     "nanoid": "catalog:",
     "zod": "catalog:"
   },

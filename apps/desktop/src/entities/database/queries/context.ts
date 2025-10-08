@@ -1,18 +1,16 @@
 import type { databases } from '~/drizzle'
-import { tablesAndSchemasSql, tablesAndSchemasType } from '@conar/shared/sql/tables-and-schemas'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { dbQuery } from '~/entities/database/query'
+import { tablesAndSchemasSql } from '../sql/tables-and-schemas'
 
 export function tablesAndSchemasQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
     queryKey: ['database', database.id, 'tables-and-schemas'],
     queryFn: async () => {
-      const [result] = await dbQuery(database.id, {
-        label: 'Tables and Schemas',
-        query: tablesAndSchemasSql()[database.type],
-      })
-
-      const schemas = tablesAndSchemasType.assert(result!.rows)
+      const results = await tablesAndSchemasSql(database)
+      const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(([schema, tables]) => ({
+        name: schema,
+        tables: tables!.map(table => table.table),
+      }))
 
       return {
         totalSchemas: schemas.length,

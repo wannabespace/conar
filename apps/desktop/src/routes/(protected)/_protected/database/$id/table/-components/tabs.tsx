@@ -14,7 +14,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useRouter, useSearch } from '@tanstack/react-router'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
 import { getPageStoreState } from '../-store'
 import { addTab, moveTab, removeTab, useTabs } from '../-tabs'
@@ -176,17 +176,23 @@ export function TablesTabs({ database }: {
     }),
   )
 
+  const addNewTab = useEffectEvent((schema: string, table: string) => {
+    const tab = tabs.find(tab => tab.table === table && tab.schema === schema)
+
+    if (tab) {
+      return
+    }
+
+    addTab(database.id, schema, table, true)
+  })
+
   useEffect(() => {
     if (!schemaParam || !tableParam) {
       return
     }
 
-    const tab = tabs.find(tab => tab.table === tableParam && tab.schema === schemaParam)
-
-    if (!tab) {
-      addTab(database.id, schemaParam, tableParam, true)
-    }
-  }, [tabs, database.id, schemaParam, tableParam])
+    addNewTab(schemaParam, tableParam)
+  }, [schemaParam, tableParam])
 
   function getQueryOpts(tableName: string) {
     const state = schemaParam ? getPageStoreState(database.id, schemaParam, tableName) : null

@@ -1,4 +1,4 @@
-import type { WhereFilter } from '@conar/shared/sql/where'
+import type { ActiveFilter } from '@conar/shared/utils/filters'
 import type { databases } from '~/drizzle'
 import { queryClient } from '~/main'
 import { databaseTableColumnsQuery } from '../queries/columns'
@@ -25,7 +25,7 @@ export async function prefetchDatabaseTableCore({ database, schema, table, query
   schema: string
   table: string
   query: {
-    filters: WhereFilter[]
+    filters: ActiveFilter[]
     orderBy: Record<string, 'ASC' | 'DESC'>
   }
 }) {

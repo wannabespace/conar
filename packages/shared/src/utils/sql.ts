@@ -1,8 +1,4 @@
-export const CUSTOM_OPERATORS = [
-  '≈',
-] as const
-
-export type CustomOperator = typeof CUSTOM_OPERATORS[number]
+import type { Filter, FilterGroup } from './filters'
 
 export const SQL_OPERATORS = [
   '=',
@@ -20,38 +16,50 @@ export const SQL_OPERATORS = [
   'IS NOT NULL',
 ] as const
 
-export type SQLOperator = typeof SQL_OPERATORS[number]
+export const SQL_FILTERS_GROUPED = [
+  {
 
-export type FilterOperator = SQLOperator | CustomOperator
+    group: 'comparison',
+    filters: [
+      { label: 'Equal', operator: '=', hasValue: true },
+      { label: 'Not equal', operator: '!=', hasValue: true },
+      { label: 'Greater than', operator: '>', hasValue: true },
+      { label: 'Greater than or equal', operator: '>=', hasValue: true },
+      { label: 'Less than', operator: '<', hasValue: true },
+      { label: 'Less than or equal', operator: '<=', hasValue: true },
+    ],
+  },
+  {
 
-export interface FilterRecord<T extends string = FilterOperator> {
-  label: string
-  value: T
-  hasValue: boolean
-  tip?: string
+    group: 'text',
+    filters: [
+      { label: 'Like', operator: 'LIKE', hasValue: true },
+      { label: 'Ilike', operator: 'ILIKE', hasValue: true },
+      { label: 'Not like', operator: 'NOT LIKE', hasValue: true },
+    ],
+  },
+  {
+
+    group: 'list',
+    filters: [
+      { label: 'In', operator: 'IN', hasValue: true },
+      { label: 'Not in', operator: 'NOT IN', hasValue: true },
+    ],
+  },
+  {
+    group: 'null',
+    filters: [
+      { label: 'Is null', operator: 'IS NULL', hasValue: false },
+      { label: 'Is not null', operator: 'IS NOT NULL', hasValue: false },
+    ],
+  },
+] as const satisfies { group: FilterGroup, filters: Filter[] }[]
+
+export const SQL_FILTERS_LIST = SQL_FILTERS_GROUPED.map(group => group.filters).flat()
+
+export interface QueryParams {
+  connectionString: string
+  sql: string
+  params?: unknown[]
+  method: 'all' | 'execute'
 }
-
-export const SQL_OPERATORS_LIST: FilterRecord<SQLOperator>[] = [
-  { label: 'Equal', value: '=', hasValue: true },
-  { label: 'Not equal', value: '!=', hasValue: true },
-  { label: 'Greater than', value: '>', hasValue: true },
-  { label: 'Greater than or equal', value: '>=', hasValue: true },
-  { label: 'Less than', value: '<', hasValue: true },
-  { label: 'Less than or equal', value: '<=', hasValue: true },
-  { label: 'Like', value: 'LIKE', hasValue: true },
-  { label: 'Ilike', value: 'ILIKE', hasValue: true },
-  { label: 'Not like', value: 'NOT LIKE', hasValue: true },
-  { label: 'In', value: 'IN', hasValue: true },
-  { label: 'Not in', value: 'NOT IN', hasValue: true },
-  { label: 'Is null', value: 'IS NULL', hasValue: false },
-  { label: 'Is not null', value: 'IS NOT NULL', hasValue: false },
-]
-
-export const CUSTOM_OPERATORS_LIST: (FilterRecord<CustomOperator> & { tip: string })[] = [
-  { label: 'Includes', value: '≈', hasValue: true, tip: '<column> ILIKE "%<query>%"' },
-]
-
-export const FILTER_OPERATORS_LIST: FilterRecord[] = [
-  ...SQL_OPERATORS_LIST,
-  ...CUSTOM_OPERATORS_LIST,
-]

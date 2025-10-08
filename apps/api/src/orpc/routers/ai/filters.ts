@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google'
-import { SQL_OPERATORS_LIST } from '@conar/shared/utils/sql'
+import { SQL_FILTERS_GROUPED, SQL_OPERATORS } from '@conar/shared/utils/sql'
 import { generateObject } from 'ai'
 import { type } from 'arktype'
 import { z } from 'zod'
@@ -45,7 +45,7 @@ export const filters = orpc
         // ' - If no ordering is specified in the prompt, you may omit the orderBy object.',
         '',
         `Current time: ${new Date().toISOString()}`,
-        `Available operators: ${JSON.stringify(SQL_OPERATORS_LIST, null, 2)}`,
+        `Available operators: ${JSON.stringify(SQL_FILTERS_GROUPED, null, 2)}`,
         '',
         'Table context:',
         input.context,
@@ -64,7 +64,7 @@ export const filters = orpc
           .object({
             column: z.string().describe('The column name to filter by'),
             operator: z
-              .enum(SQL_OPERATORS_LIST.map(operator => operator.value) as [string, ...string[]])
+              .enum(SQL_OPERATORS)
               .describe('The operator to use for the filter, must be one of the available SQL operators'),
             values: z
               .array(z.string().describe('A value to filter by for the specified column and operator'))

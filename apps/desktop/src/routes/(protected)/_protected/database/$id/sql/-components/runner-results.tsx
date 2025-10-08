@@ -1,5 +1,4 @@
 import { Button } from '@conar/ui/components/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { RiLoader4Line, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
@@ -36,30 +35,12 @@ export function RunnerResults() {
     )
   }
 
-  if (Array.isArray(results) && results.length > 0) {
+  if (results && results.length > 0) {
     return (
-      <Tabs defaultValue="table-0" className="size-full gap-0">
-        {results.length > 1 && (
-          <TabsList className="rounded-none w-full bg-muted/20">
-            {results.map((_, i) => (
-              <TabsTrigger
-                key={i}
-                value={`table-${i}`}
-                className="h-9"
-              >
-                Result
-                {' '}
-                {i + 1}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        )}
-        {results.map((r, i) => (
-          <TabsContent className="h-[calc(100%-theme(spacing.9))]" key={i} value={`table-${i}`}>
-            <RunnerResultsTable result={r.rows} columns={r.columns} />
-          </TabsContent>
-        ))}
-      </Tabs>
+      <RunnerResultsTable
+        data={results}
+        columns={Object.keys(results[0]!).map(key => ({ id: key }))}
+      />
     )
   }
 

@@ -12,22 +12,22 @@ import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 
 export function RunnerResultsTable({
-  result,
+  data,
   columns,
 }: {
-  result: Record<string, unknown>[]
+  data: Record<string, unknown>[]
   columns: Column[]
 }) {
   const [search, setSearch] = useState('')
 
   const filteredData = useDebouncedMemo(() => {
     if (!search.trim())
-      return result
+      return data
 
-    return result.filter(row =>
+    return data.filter(row =>
       JSON.stringify(Object.values(row)).toLowerCase().includes(search.toLowerCase()),
     )
-  }, [result, search], 100)
+  }, [data, search], 100)
 
   const tableColumns = useMemo(() => {
     return columns.map(column => ({
@@ -65,7 +65,7 @@ export function RunnerResultsTable({
             <NumberFlow value={filteredData.length} className="tabular-nums" />
             {' '}
             {filteredData.length === 1 ? 'row' : 'rows'}
-            {search && filteredData.length !== result.length && ` (filtered from ${result.length})`}
+            {search && filteredData.length !== data.length && ` (filtered from ${data.length})`}
           </span>
         </div>
         <div className="relative flex-1 max-w-60">

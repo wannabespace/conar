@@ -1,5 +1,5 @@
 import type { DatabaseQueryResult } from '@conar/shared/databases'
-import type { QueryResult } from 'pg'
+import type { QueryParams } from '@conar/shared/utils/sql'
 import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
 import { readSSLFiles } from '@conar/connection/server'
@@ -23,13 +23,10 @@ app.on('before-quit', () => {
 
 export async function pgQuery({
   connectionString,
-  query,
-  values,
-}: {
-  connectionString: string
-  query: string
-  values?: unknown[]
-}): Promise<DatabaseQueryResult[]> {
+  sql,
+  params,
+  method,
+}: QueryParams): Promise<DatabaseQueryResult> {
   const config = parseConnectionString(connectionString)
 
   const existingPool = poolMap.get(connectionString)
@@ -43,16 +40,15 @@ export async function pgQuery({
     poolMap.set(connectionString, pool)
   }
 
-  const result = await pool.query(query, values)
-  const array = (Array.isArray(result) ? result : [result]) as QueryResult[]
+  const result = await (method === 'all'
+    ? pool.query({
+        text: sql,
+        values: params,
+        rowMode: 'array',
+      })
+    : pool.query(sql, params))
 
-  return array.map(r => ({
-    count: r.rowCount ?? 0,
-    columns: r.fields.map(f => ({
-      id: f.name,
-    })),
-    rows: r.rows,
-  }))
+  return { rows: result.rows }
 }
 
 export async function pgTestConnection({ connectionString }: { connectionString: string }) {

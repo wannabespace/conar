@@ -106,7 +106,7 @@ function CellPopoverContent({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon-xs" variant="outline" onClick={() => copy(displayValue, 'Value copied to clipboard')}>
+                <Button size="icon-xs" variant="outline" onClick={() => copy(value, 'Value copied to clipboard')}>
                   <RiFileCopyLine className="size-3" />
                 </Button>
               </TooltipTrigger>
