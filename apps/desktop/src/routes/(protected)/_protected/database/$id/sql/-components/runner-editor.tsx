@@ -71,11 +71,13 @@ export function RunnerEditor({ className, ...props }: ComponentProps<'div'>) {
 
   useEffect(() => {
     if (status === 'error') {
-      toast.error(error.message, {
+      const message = error.cause ? String(error.cause) : error.message
+
+      toast.error(message, {
         action: {
           label: 'Fix with AI',
           onClick: () => {
-            pageHooks.callHook('fix', error.message)
+            pageHooks.callHook('fix', message)
           },
         },
         duration: 5000,

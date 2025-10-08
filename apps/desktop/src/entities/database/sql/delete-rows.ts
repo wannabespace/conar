@@ -1,11 +1,18 @@
 import type { databases } from '~/drizzle'
-import { eq, or, sql } from 'drizzle-orm'
+import { and, eq, or, sql } from 'drizzle-orm'
 import { runSql } from '../query'
 
-export function deleteRowsSql(database: typeof databases.$inferSelect, params: { table: string, schema: string, primaryKeys: Record<string, unknown>[] }) {
+export function deleteRowsSql(database: typeof databases.$inferSelect, params: {
+  table: string
+  schema: string
+  // [{ id: 1, email: 'test@test.com' }, { id: 2, email: 'test2@test.com' }]
+  primaryKeys: Record<string, unknown>[]
+}) {
   const where = or(
-    ...params.primaryKeys.flatMap(pk => Object.entries(pk)
-      .map(([key, value]) => eq(sql.identifier(key), value))),
+    ...params.primaryKeys.map(pk => and(
+      ...Object.entries(pk)
+        .map(([key, value]) => eq(sql.identifier(key), value)),
+    )),
   )
 
   return runSql({

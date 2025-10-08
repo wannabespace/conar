@@ -6,6 +6,7 @@ import { Store } from '@tanstack/react-store'
 // import { drizzle as mysqlProxy } from 'drizzle-orm/mysql-proxy'
 import { drizzle as pgProxy } from 'drizzle-orm/pg-proxy'
 import posthog from 'posthog-js'
+import { formatSql } from '~/lib/formatter'
 import { orpc } from '../../lib/orpc'
 
 const queryFn = window.electron ? window.electron.databases.query : orpc.proxy.databases.query
@@ -100,7 +101,10 @@ export function drizzleProxy<T extends Record<string, unknown>>(database: typeof
     logger: {
       logQuery(query, params) {
         queryLog(database, queryId, {
-          query,
+          query: formatSql(query, database.type)
+            .split('\n')
+            .filter(str => !str.startsWith('--'))
+            .join(' '),
           values: params,
           result: null,
           error: null,
