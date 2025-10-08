@@ -45,13 +45,16 @@ export function rowsSql(database: typeof databases.$inferSelect, params: {
     query: ({ db }) => db.execute(
       sql.join(
         [
-          params.select ? sql`SELECT ${params.select.map(column => sql.identifier(column)).join(', ')}` : sql`SELECT *`,
+          params.select
+            ? sql`SELECT ${sql.join(params.select.map(column => sql.identifier(column)), sql.raw(', '))}`
+            : sql`SELECT *`,
           sql`FROM ${sql.identifier(params.schema)}.${sql.identifier(params.table)}`,
           params.filters?.length ? sql`WHERE ${buildWhere(params.filters, params.filtersConcatOperator)}` : undefined,
           orderBy.length > 0
-            ? sql`ORDER BY ${orderBy
-              .map(([column, order]) => sql`${sql.identifier(column)} ${order}`)
-              .join(', ')}`
+            ? sql`ORDER BY ${sql.join(
+              orderBy.map(([column, order]) => sql`${sql.identifier(column)} ${sql.raw(order)}`),
+              sql.raw(', '),
+            )}`
             : undefined,
           sql`LIMIT ${params.limit}`,
           sql`OFFSET ${params.offset}`,
