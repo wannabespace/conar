@@ -48,7 +48,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                             onClick={() => {
                               pageStore.setState(state => ({
                                 ...state,
-                                sql: `${state.sql}\n\n${query.query}`,
+                                sql: `${state.sql}\n\n-- ${query.name}\n${query.query}`,
                               }))
                               setMovedId(query.id)
                             }}

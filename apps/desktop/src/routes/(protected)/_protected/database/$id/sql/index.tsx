@@ -65,20 +65,21 @@ function DatabaseSqlPage() {
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex">
       <ResizablePanel
+        defaultSize={70}
+        minSize={30}
+        maxSize={80}
+        className="flex flex-col gap-4 border bg-background rounded-lg"
+      >
+        <Runner />
+      </ResizablePanel>
+      <ResizableHandle className="w-1 bg-transparent" />
+      <ResizablePanel
         defaultSize={30}
         minSize={20}
         maxSize={50}
         className="border bg-background rounded-lg"
       >
         <Chat className="h-full" />
-      </ResizablePanel>
-      <ResizableHandle className="w-1 bg-transparent" />
-      <ResizablePanel
-        minSize={30}
-        maxSize={80}
-        className="flex flex-col gap-4 border bg-background rounded-lg"
-      >
-        <Runner />
       </ResizablePanel>
     </ResizablePanelGroup>
   )
