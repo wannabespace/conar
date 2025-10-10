@@ -1,6 +1,6 @@
 import type { UseMutateFunction } from '@tanstack/react-query'
 import type { Dispatch, SetStateAction } from 'react'
-import type { Column } from '../table'
+import type { Column } from '../utils/table'
 import { useMutation } from '@tanstack/react-query'
 import { createContext, use, useMemo, useState } from 'react'
 import { getEditableValue } from '../lib/render'

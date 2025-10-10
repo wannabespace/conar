@@ -25,7 +25,7 @@ export function ConnectionDetails({ className, connectionString, type }: { class
             <td data-mask>
               <button
                 type="button"
-                className="p-1 rounded-md hover:bg-accent translate-y-0.4 cursor-pointer mr-2 inline-block [&_svg]:size-3"
+                className="p-1 rounded-md hover:bg-accent/50 translate-y-0.4 cursor-pointer mr-2 inline-block [&_svg]:size-3"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}

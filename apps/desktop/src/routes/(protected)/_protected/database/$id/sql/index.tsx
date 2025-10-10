@@ -4,9 +4,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
 import { lastOpenedChatId } from '~/entities/database'
-import { chatQuery, createChat } from './-chat'
-import { Chat as ChatComponent } from './-components/chat'
-import { Runner } from './-components/runner'
+import { Chat, createChat } from './-components/chat'
+import { Runner, runnerSelectedLines, runnerSql } from './-components/runner'
 import { pageStore } from './-lib'
 
 export const Route = createFileRoute(
@@ -18,12 +17,7 @@ export const Route = createFileRoute(
     'error?': 'string',
   }),
   loaderDeps: ({ search }) => search,
-  loader: async ({ params, context, deps }) => {
-    pageStore.setState(state => ({
-      ...state,
-      query: chatQuery.get(params.id),
-    }))
-
+  loader: async ({ context, deps }) => {
     return {
       database: context.database,
       chat: await createChat({
@@ -45,6 +39,29 @@ function DatabaseSqlPage() {
     lastOpenedChatId(id).set(chatId ?? null)
   }, [id, chatId])
 
+  useEffect(() => {
+    pageStore.setState(state => ({
+      ...state,
+      sql: runnerSql(id).get() || [
+        '-- Write your SQL query here based on your database schema',
+        '-- The examples below are for reference only and may not work with your database',
+        '',
+        '-- Example 1: Basic query with limit',
+        'SELECT * FROM users LIMIT 10;',
+        '',
+        '-- Example 2: Query with filtering',
+        'SELECT id, name, email FROM users WHERE created_at > \'2025-01-01\' ORDER BY name;',
+        '',
+        '-- Example 3: Join example',
+        'SELECT u.id, u.name, p.title FROM users u',
+        'JOIN posts p ON u.id = p.user_id',
+        'WHERE p.published = true',
+        'LIMIT 10;',
+      ].join('\n'),
+      selectedLines: runnerSelectedLines(id).get(),
+    }))
+  }, [id])
+
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex">
       <ResizablePanel
@@ -53,7 +70,7 @@ function DatabaseSqlPage() {
         maxSize={50}
         className="border bg-background rounded-lg"
       >
-        <ChatComponent className="h-full" />
+        <Chat className="h-full" />
       </ResizablePanel>
       <ResizableHandle className="w-1 bg-transparent" />
       <ResizablePanel

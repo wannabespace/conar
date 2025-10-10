@@ -1,17 +1,18 @@
 import type { ComponentProps, ComponentRef } from 'react'
 import { Button } from '@conar/ui/components/button'
+import { CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowLeftDoubleLine, RiCheckLine, RiDeleteBin7Line, RiFileCopyLine, RiMoreLine, RiSaveLine } from '@remixicon/react'
+import { RiCheckLine, RiDeleteBin7Line, RiFileCopyLine, RiPlayListAddLine, RiSaveLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useRef, useState } from 'react'
 import { queriesCollection } from '~/entities/query/sync'
-import { Route } from '..'
-import { pageStore } from '../-lib'
+import { Route } from '../..'
+import { pageStore } from '../../-lib'
 import { RemoveQueryDialog } from './remove-query-dialog'
 
 export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
@@ -21,23 +22,23 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
     .where(({ queries }) => eq(queries.databaseId, database.id))
     .orderBy(({ queries }) => queries.createdAt, 'desc'))
   const [movedId, setMovedId] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const removeQueryDialogRef = useRef<ComponentRef<typeof RemoveQueryDialog>>(null)
 
   return (
     <div className={cn('flex flex-col h-full', className)} {...props}>
       <RemoveQueryDialog ref={removeQueryDialogRef} />
-      <ScrollArea className="flex-1 p-2">
+      <CardTitle className="py-2 px-4">
+        Saved Queries
+      </CardTitle>
+      <Separator />
+      <ScrollArea className="flex-1 py-2">
         {data.length > 0
           ? (
-              <ul className="space-y-1">
+              <div className="space-y-1">
                 {data.map(query => (
-                  <li
-                    key={query.id}
-                    className={cn(
-                      'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/60 transition',
-                    )}
-                  >
+                  <div key={query.id} className="w-full flex items-center gap-2 px-4 py-1">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -47,7 +48,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                             onClick={() => {
                               pageStore.setState(state => ({
                                 ...state,
-                                query: query.query,
+                                sql: `${state.sql}\n\n${query.query}`,
                               }))
                               setMovedId(query.id)
                             }}
@@ -55,21 +56,21 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                             <ContentSwitch
                               active={movedId === query.id}
                               activeContent={<RiCheckLine className="size-4 text-success" />}
-                              onActiveChange={() => {
+                              onSwitchEnd={() => {
                                 setMovedId(null)
                               }}
                             >
-                              <RiArrowLeftDoubleLine className="size-4" />
+                              <RiPlayListAddLine className="size-4" />
                             </ContentSwitch>
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent side="left">
-                          Move to runner
+                          Add to runner end
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                     <div className="flex-1 min-w-0 flex flex-col">
-                      <div className="font-medium truncate">{query.name}</div>
+                      <div className="font-medium truncate text-sm">{query.name}</div>
                       <div
                         data-mask
                         className="text-xs text-muted-foreground max-w-full truncate"
@@ -78,52 +79,57 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                         {query.query}
                       </div>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          className="opacity-0 group-hover:opacity-100 ml-1 transition-opacity"
-                          onClick={e => e.stopPropagation()}
-                        >
-                          <RiMoreLine className="size-3" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="min-w-40">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            copy(query.query, 'Query successfully copied')
-                          }}
-                        >
-                          <RiFileCopyLine className="size-4" />
-                          Copy Query
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            removeQueryDialogRef.current?.remove(query)
-                          }}
-                        >
-                          <RiDeleteBin7Line className="size-4" />
-                          Delete Query
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </li>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => {
+                              copy(query.query)
+                              setCopiedId(copiedId === query.id ? null : query.id)
+                            }}
+                          >
+                            <ContentSwitch
+                              active={copiedId === query.id}
+                              activeContent={<RiCheckLine className="size-4 text-success" />}
+                              onSwitchEnd={() => setCopiedId(null)}
+                            >
+                              <RiFileCopyLine className="size-4" />
+                            </ContentSwitch>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Copy Query</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => {
+                              removeQueryDialogRef.current?.remove(query)
+                            }}
+                            data-variant="destructive"
+                          >
+                            <RiDeleteBin7Line className="size-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Delete Query</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )
           : (
-              <div className="flex flex-col max-w-56 mx-auto items-center justify-center h-full py-12 px-6 text-muted-foreground text-center">
-                <span className="text-smk mb-2">No saved queries found.</span>
-                <span className="text-xs">
+              <div className="flex flex-col max-w-56 mx-auto items-center justify-center h-full py-12 px-6 text-center">
+                <span className="mb-2">No saved queries found.</span>
+                <span className="text-xs text-muted-foreground">
                   You can add a new query by pressing the
                   {' '}
                   <RiSaveLine className="size-4 inline-block" />
                   {' '}
-                  button at the bottom of the runner.
+                  button.
                 </span>
               </div>
             )}

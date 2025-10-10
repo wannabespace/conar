@@ -19,6 +19,7 @@
     "build:electron": "electron-builder -p always",
     "check-types": "tsc",
     "test:start": "vite -c vite.test.config.ts build --mode test && vite -c vite.test.config.ts preview --mode test",
+    "test:unit": "bun test ./src",
     "test:e2e": "playwright test --headed",
     "drizzle:generate": "drizzle-kit generate && bun run ./scripts/compile-migrations.ts",
     "drizzle:generate-custom": "drizzle-kit generate --custom && bun run ./scripts/compile-migrations.ts"
@@ -82,7 +83,7 @@
     "electron-vite": "^4.0.1",
     "hookable": "^5.5.3",
     "marked": "^16.4.0",
-    "monaco-editor": "^0.53.0",
+    "monaco-editor": "catalog:",
     "monaco-sql-languages": "^0.15.1",
     "monaco-themes": "^0.4.7",
     "motion": "catalog:",

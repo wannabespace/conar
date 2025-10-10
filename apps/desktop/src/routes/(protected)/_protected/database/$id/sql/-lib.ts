@@ -1,17 +1,20 @@
-import { Store } from '@tanstack/react-store'
+import { Derived, Store } from '@tanstack/react-store'
 import { createHooks } from 'hookable'
-
-const QUERIES_OPENED_STORAGE_KEY = 'queries-opened'
+import { getSQLQueries } from '~/entities/database'
 
 export const pageStore = new Store({
-  query: '',
+  sql: '',
+  queriesToRun: [] as string[],
+  selectedLines: [] as number[],
   files: [] as File[],
-  queriesOpen: JSON.parse(localStorage.getItem(QUERIES_OPENED_STORAGE_KEY) ?? 'false'),
 })
 
-pageStore.subscribe((state) => {
-  localStorage.setItem(QUERIES_OPENED_STORAGE_KEY, JSON.stringify(state.currentVal.queriesOpen))
+export const queries = new Derived({
+  fn: ({ currDepVals }) => getSQLQueries(currDepVals[0].sql),
+  deps: [pageStore],
 })
+
+queries.mount()
 
 export const pageHooks = createHooks<{
   fix: (error: string) => Promise<void>

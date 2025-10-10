@@ -1,5 +1,5 @@
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
-import type { Column } from '../table'
+import type { Column } from '../utils/table'
 import type { TableCellProps } from '~/components/table'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
@@ -11,7 +11,7 @@ import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftDownLine, RiArrowRightUpLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import dayjs from 'dayjs'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
@@ -54,6 +54,17 @@ function CellPopoverContent({
     || column.type?.includes('time')
     || column.type?.includes('numeric')
 
+  const monacoOptions = useMemo(() => ({
+    lineNumbers: isBig ? 'on' as const : 'off' as const,
+    readOnly: !canEdit,
+    scrollBeyondLastLine: false,
+    folding: isBig,
+    scrollbar: {
+      horizontalScrollbarSize: 5,
+      verticalScrollbarSize: 5,
+    },
+  }), [isBig, canEdit])
+
   return (
     <>
       {column?.type === 'boolean'
@@ -72,17 +83,8 @@ function CellPopoverContent({
               language={column?.type?.includes('json') ? 'json' : undefined}
               className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(45vh,40rem)]')}
               onChange={setValue}
-              options={{
-                lineNumbers: isBig ? 'on' : 'off',
-                readOnly: !canEdit,
-                scrollBeyondLastLine: false,
-                folding: isBig,
-                scrollbar: {
-                  horizontalScrollbarSize: 5,
-                  verticalScrollbarSize: 5,
-                },
-              }}
-              onEnter={save}
+              options={monacoOptions}
+              onEnter={e => save(e.getValue() ?? '')}
             />
           )}
       <div className="flex justify-between items-center gap-2 p-2 border-t">

@@ -8,7 +8,7 @@ export function InfoButton({ children, className, ...props }: ComponentProps<'bu
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button type="button" className={cn('p-1 rounded-full hover:bg-accent', className)} {...props}>
+          <button type="button" className={cn('p-1 rounded-full hover:bg-accent/50', className)} {...props}>
             <RiInformationLine className="size-3 text-muted-foreground" />
           </button>
         </TooltipTrigger>

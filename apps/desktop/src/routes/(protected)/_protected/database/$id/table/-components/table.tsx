@@ -35,7 +35,7 @@ export function TableError({ error }: { error: Error }) {
           <span>Error occurred</span>
         </div>
         <p className="text-sm text-center text-muted-foreground">
-          {error.message}
+          {(error.cause ? String(error.cause) : error.message).replaceAll('Error: ', '')}
         </p>
       </div>
     </div>

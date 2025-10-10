@@ -3,9 +3,9 @@ import type { databases } from '~/drizzle'
 import { languages } from 'monaco-editor'
 import { EntityContextType } from 'monaco-sql-languages'
 import { queryClient } from '~/main'
-import { databaseTableColumnsQuery } from './queries/columns'
-import { tablesAndSchemasQuery } from './queries/context'
-import { databaseEnumsQuery } from './queries/enums'
+import { databaseTableColumnsQuery } from '../queries/columns'
+import { tablesAndSchemasQuery } from '../queries/context'
+import { databaseEnumsQuery } from '../queries/enums'
 
 const keywordPriority = [
   'SELECT',

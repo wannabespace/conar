@@ -1,4 +1,3 @@
-import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import {
   Dialog,
@@ -14,15 +13,16 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { queriesCollection } from '~/entities/query'
+import { Route } from '../..'
 
-interface SaveQueryDialogProps {
+interface RunnerSaveDialogProps {
   ref: React.RefObject<{
     open: (query: string) => void
   } | null>
-  database: typeof databases.$inferSelect
 }
 
-export function SaveQueryDialog({ ref, database }: SaveQueryDialogProps) {
+export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
+  const { database } = Route.useRouteContext()
   const [name, setName] = useState('')
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
@@ -48,7 +48,7 @@ export function SaveQueryDialog({ ref, database }: SaveQueryDialogProps) {
     setOpen(false)
   }
 
-  const canConfirm = name.trim()
+  const canConfirm = !!name.trim()
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

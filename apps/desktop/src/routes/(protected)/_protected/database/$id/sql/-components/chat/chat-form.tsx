@@ -14,9 +14,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { orpc } from '~/lib/orpc'
-import { Route } from '..'
-import { chatInput } from '../-chat'
-import { pageHooks, pageStore } from '../-lib'
+import { chatInput } from '.'
+import { Route } from '../..'
+import { pageHooks, pageStore } from '../../-lib'
 import { ChatImages } from './chat-images'
 
 export function ChatForm() {

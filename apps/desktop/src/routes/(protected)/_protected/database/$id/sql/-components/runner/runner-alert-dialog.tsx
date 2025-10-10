@@ -3,16 +3,32 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ShiftCtrlEnter } from '@conar/ui/components/custom/ctrl-enter'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAlertLine } from '@remixicon/react'
+import { useImperativeHandle, useState } from 'react'
 import { DANGEROUS_SQL_KEYWORDS } from '~/entities/database'
 
-export function RunnerAlertDialog({ open, setOpen, confirm, query }: { open: boolean, setOpen: (open: boolean) => void, confirm: () => void, query: string }) {
-  const uncommentedLines = query.split('\n').filter(line => !line.trim().startsWith('--')).join('\n')
-  const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
-  const dangerousKeywords = uncommentedLines.match(new RegExp(dangerousKeywordsPattern, 'gi')) || []
+const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
+
+export function RunnerAlertDialog({
+  ref,
+  onConfirm,
+}: {
+  ref: React.RefObject<{ open: (queries: string[]) => void } | null>
+  onConfirm: (queries: string[]) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [queries, setQueries] = useState<string[]>([])
+  const dangerousKeywords = queries.flatMap(query => query.match(new RegExp(dangerousKeywordsPattern, 'gi')) || [])
   const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map(k => k.toUpperCase()))]
 
+  useImperativeHandle(ref, () => ({
+    open: (queries) => {
+      setQueries(queries)
+      setOpen(true)
+    },
+  }))
+
   useKeyboardEvent(e => isCtrlEnter(e) && e.shiftKey, () => {
-    confirm()
+    onConfirm(queries)
     setOpen(false)
   })
 
@@ -39,7 +55,7 @@ export function RunnerAlertDialog({ open, setOpen, confirm, query }: { open: boo
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">
           <AlertDialogCancel className="border-muted-foreground/20">Cancel</AlertDialogCancel>
-          <AlertDialogAction variant="warning" onClick={confirm}>
+          <AlertDialogAction variant="warning" onClick={() => onConfirm(queries)}>
             <span className="flex items-center gap-2">
               Run Anyway
               <ShiftCtrlEnter userAgent={navigator.userAgent} />

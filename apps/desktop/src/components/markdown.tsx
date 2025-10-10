@@ -52,6 +52,14 @@ function useMarkdownContext<T>(selector: ContextSelector<MarkdownContextType, T>
   return useContextSelector(MarkdownContext, selector)
 }
 
+const monacoOptions = {
+  readOnly: true,
+  lineNumbers: 'off' as const,
+  minimap: { enabled: false },
+  scrollBeyondLastLine: false,
+  folding: false,
+}
+
 function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: string) => void }) {
   const generating = useMarkdownContext(c => c.generating)
   const childrenProps = (typeof children === 'object' && (children as ReactElement<{ children?: ReactNode, className?: string }>)?.props) || null
@@ -139,13 +147,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
             data-mask
             value={content}
             language={lang}
-            options={{
-              readOnly: true,
-              lineNumbers: 'off',
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              folding: false,
-            }}
+            options={monacoOptions}
             style={{ height: `${Math.min(content.split('\n').length * 19, 400)}px` }}
           />
         </SingleAccordionContent>

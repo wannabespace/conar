@@ -79,6 +79,14 @@ function LogTrigger({ query, className, ...props }: { query: QueryLog } & Compon
   )
 }
 
+const monacoOptions = {
+  readOnly: true,
+  scrollBeyondLastLine: false,
+  lineNumbers: 'off' as const,
+  minimap: { enabled: false },
+  folding: false,
+}
+
 function Log({ query, className, database }: { query: QueryLog, className?: string, database: typeof databases.$inferSelect }) {
   const [isOpen, setIsOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
@@ -124,13 +132,7 @@ function Log({ query, className, database }: { query: QueryLog, className?: stri
             <Monaco
               value={formatSql(query.query, database.type)}
               language="sql"
-              options={{
-                readOnly: true,
-                scrollBeyondLastLine: false,
-                lineNumbers: 'off',
-                minimap: { enabled: false },
-                folding: false,
-              }}
+              options={monacoOptions}
               className="h-[50vh] border rounded-md overflow-hidden"
             />
           </div>
@@ -150,13 +152,7 @@ function Log({ query, className, database }: { query: QueryLog, className?: stri
               <Monaco
                 value={JSON.stringify(query.result)}
                 language="json"
-                options={{
-                  readOnly: true,
-                  scrollBeyondLastLine: false,
-                  lineNumbers: 'off',
-                  minimap: { enabled: false },
-                  folding: false,
-                }}
+                options={monacoOptions}
                 className="h-[50vh] border rounded-md overflow-hidden"
               />
             </div>

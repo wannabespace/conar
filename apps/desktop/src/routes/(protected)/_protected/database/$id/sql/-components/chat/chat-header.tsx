@@ -20,7 +20,7 @@ import dayjs from 'dayjs'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { lastOpenedChatId } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
-import { Route } from '..'
+import { Route } from '../..'
 
 type Group = 'today' | 'yesterday' | 'week' | 'month' | 'older'
 
