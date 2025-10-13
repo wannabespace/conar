@@ -1,6 +1,6 @@
 import { isCtrlEnter } from '@conar/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
-import { ShiftCtrlEnter } from '@conar/ui/components/custom/ctrl-enter'
+import { ShiftCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAlertLine } from '@remixicon/react'
 import { useImperativeHandle, useState } from 'react'

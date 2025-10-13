@@ -15,7 +15,7 @@ import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 import NumberFlow from '@number-flow/react'
-import { RiArrowRightDoubleLine, RiCodeLine, RiFileCopyLine, RiText } from '@remixicon/react'
+import { RiArrowLeftDoubleLine, RiCodeLine, RiFileCopyLine, RiText } from '@remixicon/react'
 import { marked } from 'marked'
 import { useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
@@ -130,7 +130,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                           trackEvent('markdown_move_to_runner')
                         }}
                       >
-                        <RiArrowRightDoubleLine className="size-3.5" />
+                        <RiArrowLeftDoubleLine className="size-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>

@@ -1,18 +1,23 @@
+import type { editor } from 'monaco-editor'
+import type { RefObject } from 'react'
 import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { copy } from '@conar/ui/lib/copy'
+import { render } from '@conar/ui/lib/render'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
+import { useStore } from '@tanstack/react-form'
 import { useIsFetching } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
-import { useState } from 'react'
+import { useEffect, useEffectEvent, useMemo, useState } from 'react'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
+import { Route } from '../..'
 import { pageStore, queries } from '../../-lib'
 
-export function RunnerEditorZone({
+function RunnerQueryEditorZone({
   database,
   onRun,
   onSave,
@@ -28,11 +33,11 @@ export function RunnerEditorZone({
   const [isCopying, setIsCopying] = useState(false)
   const isChecked = useStore(pageStore, state => state.selectedLines.includes(lineNumber))
   const startFrom = useStore(queries, (state) => {
-    const index = state.findIndex(query => query.lineNumber === lineNumber)
+    const index = state.findIndex(query => query.startLineNumber === lineNumber)
     const queriesBefore = state.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0)
     return queriesBefore + 1
   })
-  const queriesAmount = useStore(queries, state => state.find(query => query.lineNumber === lineNumber)?.queries.length || 0)
+  const queriesAmount = useStore(queries, state => state.find(query => query.startLineNumber === lineNumber)?.queries.length || 0)
   const isFetching = useIsFetching(runnerQueryOptions({ database }), queryClient) > 0
 
   const onCheckedChange = () => {
@@ -122,4 +127,69 @@ export function RunnerEditorZone({
       </div>
     </div>
   )
+}
+
+export function useRunnerEditorQueryZone(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>, {
+  onRun,
+  onSave,
+}: {
+  onRun: (queries: string[]) => void
+  onSave: (query: string) => void
+}) {
+  const { database } = Route.useRouteContext()
+  const queriesArray = useStore(queries)
+  const linesWithQueries = useMemo(() => queriesArray.map(({ startLineNumber }) => startLineNumber), [queriesArray])
+
+  const getQueriesEvent = useEffectEvent((lineNumber: number) =>
+    queriesArray.find(query => query.startLineNumber === lineNumber)?.queries || [],
+  )
+
+  const onRunEvent = useEffectEvent(onRun)
+
+  useEffect(() => {
+    if (!monacoRef.current)
+      return
+
+    const editor = monacoRef.current
+    const viewZoneIds: string[] = []
+
+    queueMicrotask(() => {
+      editor.changeViewZones((changeAccessor) => {
+        linesWithQueries.forEach((lineNumber) => {
+          const element = render(
+            <RunnerQueryEditorZone
+              database={database}
+              lineNumber={lineNumber}
+              onRun={(index) => {
+                onRunEvent([getQueriesEvent(lineNumber)[index]!])
+              }}
+              onCopy={() => {
+                copy(getQueriesEvent(lineNumber).map(q => `${q};`).join(' '))
+              }}
+              onSave={() => {
+                onSave(getQueriesEvent(lineNumber).map(q => `${q};`).join(' '))
+              }}
+            />,
+          )
+
+          element.style.zIndex = '100'
+
+          const zoneId = changeAccessor.addZone({
+            afterLineNumber: lineNumber - 1,
+            heightInPx: 32,
+            domNode: element,
+          })
+
+          viewZoneIds.push(zoneId)
+        })
+      })
+    })
+
+    return () => {
+      editor.changeViewZones((changeAccessor) => {
+        viewZoneIds.forEach(id => changeAccessor.removeZone(id))
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monacoRef, JSON.stringify(linesWithQueries), database])
 }

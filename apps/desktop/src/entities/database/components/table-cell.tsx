@@ -1,17 +1,19 @@
+import type { editor } from 'monaco-editor'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '../utils/table'
 import type { TableCellProps } from '~/components/table'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
-import { CtrlEnter } from '@conar/ui/components/custom/ctrl-enter'
+import { CtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftDownLine, RiArrowRightUpLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import dayjs from 'dayjs'
-import { useEffect, useMemo, useState } from 'react'
+import { KeyCode, KeyMod } from 'monaco-editor'
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
@@ -35,6 +37,28 @@ function CellPopoverContent({
   hasUpdateFn: boolean
 }) {
   const { value, initialValue, column, displayValue, setValue, update } = useCellContext()
+  const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
+
+  const save = (value: string) => {
+    update({ value, rowIndex })
+    onClose()
+  }
+
+  const saveEvent = useEffectEvent(save)
+
+  useEffect(() => {
+    if (!monacoRef.current)
+      return
+
+    monacoRef.current.addAction({
+      id: 'conar.execute-on-enter',
+      label: 'Execute on Enter',
+      keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
+      run: (e) => {
+        saveEvent(e.getValue() ?? '')
+      },
+    })
+  }, [monacoRef])
 
   const canEdit = !!column?.isEditable && hasUpdateFn
   const canSetNull = !!column?.isNullable && initialValue !== null
@@ -42,11 +66,6 @@ function CellPopoverContent({
 
   const setNull = () => {
     update({ value: null, rowIndex })
-    onClose()
-  }
-
-  const save = (value: string) => {
-    update({ value, rowIndex })
     onClose()
   }
 
@@ -78,13 +97,13 @@ function CellPopoverContent({
           )
         : (
             <Monaco
+              ref={monacoRef}
               data-mask
               value={value}
               language={column?.type?.includes('json') ? 'json' : undefined}
               className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(45vh,40rem)]')}
               onChange={setValue}
               options={monacoOptions}
-              onEnter={e => save(e.getValue() ?? '')}
             />
           )}
       <div className="flex justify-between items-center gap-2 p-2 border-t">

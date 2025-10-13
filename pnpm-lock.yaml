@@ -373,6 +373,9 @@ importers:
       '@orpc/server':
         specifier: 'catalog:'
         version: 1.9.3(@opentelemetry/api@1.9.0)(crossws@0.3.5)(ws@8.18.3)
+      '@orpc/tanstack-query':
+        specifier: ^1.9.3
+        version: 1.9.3(@opentelemetry/api@1.9.0)(@orpc/client@1.9.3(@opentelemetry/api@1.9.0))(@tanstack/query-core@5.90.2)
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.56.0
@@ -472,6 +475,9 @@ importers:
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
+      js-base64:
+        specifier: ^3.7.8
+        version: 3.7.8
       marked:
         specifier: ^16.4.0
         version: 16.4.0
@@ -2141,6 +2147,12 @@ packages:
 
   '@orpc/standard-server@1.9.3':
     resolution: {integrity: sha512-ggXGMXZw/TdJ3tw4utLqrnPlUpIJgEv0HxZuvu0MATMkU4WxUzITJg1ufteYt3E9Wn4AovebZQKyKU+TgAVnyQ==}
+
+  '@orpc/tanstack-query@1.9.3':
+    resolution: {integrity: sha512-Frlg7UUA4k1oiUtvPHpieZvuyjaVUt0piOrrzk4e6x9PnGVlD7VpRDofNFx3YnQWx6qoDf1tzeIUPWxmukRC/Q==}
+    peerDependencies:
+      '@orpc/client': 1.9.3
+      '@tanstack/query-core': '>=5.80.2'
 
   '@parcel/watcher-android-arm64@2.5.1':
     resolution: {integrity: sha512-KF8+j9nNbUN8vzOFDpRMsaKBHZ/mcjEjMToVMJOhTozkDonQFFrRcfdLWn6yWKCmJKmdVxSgHiYvTCef4/qcBA==}
@@ -6395,6 +6407,9 @@ packages:
         optional: true
       react:
         optional: true
+
+  js-base64@3.7.8:
+    resolution: {integrity: sha512-hNngCeKxIUQiEUN3GPJOkz4wF/YvdUdbNL9hsBcMQTkKzboD7T/q3OYOuuPZLUE6dBxSGpwhk5mwuDud7JVAow==}
 
   js-tiktoken@1.0.21:
     resolution: {integrity: sha512-biOj/6M5qdgx5TKjDnFT1ymSpM5tbd3ylwDtrQvFQSu0Z7bBYko2dF+W/aUkXUPuk6IVpRxk/3Q2sHOzGlS36g==}
@@ -10739,6 +10754,14 @@ snapshots:
   '@orpc/standard-server@1.9.3(@opentelemetry/api@1.9.0)':
     dependencies:
       '@orpc/shared': 1.9.3(@opentelemetry/api@1.9.0)
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+
+  '@orpc/tanstack-query@1.9.3(@opentelemetry/api@1.9.0)(@orpc/client@1.9.3(@opentelemetry/api@1.9.0))(@tanstack/query-core@5.90.2)':
+    dependencies:
+      '@orpc/client': 1.9.3(@opentelemetry/api@1.9.0)
+      '@orpc/shared': 1.9.3(@opentelemetry/api@1.9.0)
+      '@tanstack/query-core': 5.90.2
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
@@ -15748,6 +15771,8 @@ snapshots:
       '@babel/template': 7.27.2
       '@types/react': 19.2.2
       react: 19.2.0
+
+  js-base64@3.7.8: {}
 
   js-tiktoken@1.0.21:
     dependencies:

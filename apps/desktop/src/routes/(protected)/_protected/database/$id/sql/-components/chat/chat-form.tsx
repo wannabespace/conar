@@ -13,7 +13,7 @@ import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
-import { orpc } from '~/lib/orpc'
+import { orpcQuery } from '~/lib/orpc'
 import { chatInput } from '.'
 import { Route } from '../..'
 import { pageHooks, pageStore } from '../../-lib'
@@ -126,8 +126,7 @@ export function ChatForm() {
     })
   }, [router, database.id, chat.id])
 
-  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation({
-    mutationFn: (data: { prompt: string, chatId: string }) => orpc.ai.enhancePrompt(data),
+  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(orpcQuery.ai.enhancePrompt.mutationOptions({
     onSuccess: (data) => {
       if (input.length < 10) {
         return
@@ -142,7 +141,7 @@ export function ChatForm() {
         setInput(data)
       }
     },
-  })
+  }))
 
   // Handler for file input change
   const handleFileAttach = (e: ChangeEvent<HTMLInputElement>) => {

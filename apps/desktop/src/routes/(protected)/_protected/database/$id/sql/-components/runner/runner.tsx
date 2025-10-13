@@ -2,7 +2,8 @@ import type { ComponentRef } from 'react'
 import { Button } from '@conar/ui/components/button'
 import { CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { CtrlEnter } from '@conar/ui/components/custom/ctrl-enter'
+import { CtrlEnter, CtrlLetter } from '@conar/ui/components/custom/shortcuts'
+import { Kbd } from '@conar/ui/components/kbd'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
@@ -50,7 +51,7 @@ export function Runner() {
   }, [id, selectedLines])
 
   useEffect(() => {
-    const currentLineNumbers = queriesStore.map(q => q.lineNumber)
+    const currentLineNumbers = queriesStore.map(q => q.startLineNumber)
     const selectedLines = pageStore.state.selectedLines
     const newSelectedLines = selectedLines.filter(line => currentLineNumbers.includes(line))
 
@@ -77,7 +78,7 @@ export function Runner() {
 
   const queriesToRun = useMemo(() => {
     if (selectedLines.length > 0) {
-      return selectedLines.flatMap(lineNumber => queriesStore.find(query => query.lineNumber === lineNumber)?.queries || [])
+      return selectedLines.flatMap(lineNumber => queriesStore.find(query => query.startLineNumber === lineNumber)?.queries || [])
     }
 
     return queriesStore.flatMap(query => query.queries)
@@ -188,16 +189,24 @@ export function Runner() {
             </CardHeader>
             <div className="relative h-[calc(100%-theme(spacing.14))] flex-1">
               <RunnerEditor
-                className="h-full"
                 onRun={runQueriesWithAlert}
                 onSave={q => saveQueryDialogRef.current?.open(q)}
               />
-              <span className="pointer-events-none text-xs text-muted-foreground flex gap-1 items-center absolute bottom-2 right-6">
-                Press
-                {' '}
-                <CtrlEnter userAgent={navigator.userAgent} />
-                {' '}
-                to run the focused line
+              <span className="pointer-events-none text-xs text-muted-foreground flex flex-col items-end absolute bottom-2 right-6">
+                <span className="flex items-center gap-1">
+                  <Kbd asChild>
+                    <CtrlLetter letter="K" userAgent={navigator.userAgent} />
+                  </Kbd>
+                  {' '}
+                  to call the AI
+                </span>
+                <span className="flex items-center gap-1">
+                  <Kbd asChild>
+                    <CtrlEnter userAgent={navigator.userAgent} />
+                  </Kbd>
+                  {' '}
+                  to run the focused line
+                </span>
               </span>
             </div>
             <RunnerSaveDialog ref={saveQueryDialogRef} />

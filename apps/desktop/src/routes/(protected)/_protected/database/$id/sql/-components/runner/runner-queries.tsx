@@ -65,7 +65,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent side="left">
-                          Add to runner end
+                          Append to bottom of runner
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>

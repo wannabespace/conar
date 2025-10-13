@@ -11,6 +11,8 @@ import { useEffect, useEffectEvent, useRef } from 'react'
 
 ghDark.colors['editor.background'] = '#1e1f21'
 ghDark.colors['editor.lineHighlightBackground'] = '#252628'
+
+// Sync with packages/ui/src/styles/monaco.css
 ghDark.colors['editor.selectionBackground'] = '#5081f150'
 ghLight.colors['editor.selectionBackground'] = '#5081f150'
 
@@ -25,7 +27,6 @@ export function Monaco({
   language,
   options,
   onChange = noop,
-  onEnter = noop,
   completionService,
   ...props
 }: {
@@ -36,7 +37,6 @@ export function Monaco({
   language?: string
   onChange?: (value: string) => void
   options?: monaco.editor.IStandaloneEditorConstructionOptions
-  onEnter?: (event: monaco.editor.ICodeEditor) => void
   completionService?: CompletionService
 }) {
   const elementRef = useRef<HTMLDivElement>(null)
@@ -49,34 +49,34 @@ export function Monaco({
   }, [resolvedTheme])
 
   const onChangeEvent = useEffectEvent(onChange)
-  const onEnterEvent = useEffectEvent(onEnter)
+  const getOptionsEvent = useEffectEvent(() => {
+    return {
+      value: (() => {
+        if (language?.includes('json')) {
+          try {
+            return JSON.stringify(JSON.parse(value), null, 2)
+          }
+          catch {
+            return value
+          }
+        }
 
-  const getFormattedValue = useEffectEvent(() => {
-    if (language?.includes('json')) {
-      try {
-        return JSON.stringify(JSON.parse(value), null, 2)
-      }
-      catch {
         return value
-      }
-    }
-
-    return value
-  })
-
-  useEffect(() => {
-    if (!elementRef.current)
-      return
-
-    monacoInstance.current = monaco.editor.create(elementRef.current, {
-      value: getFormattedValue(),
+      })(),
       language,
       automaticLayout: true,
       minimap: { enabled: false },
       fontFamily: '"Geist Mono", monospace',
       tabSize: 2,
       ...options,
-    })
+    }
+  })
+
+  useEffect(() => {
+    if (!elementRef.current)
+      return
+
+    monacoInstance.current = monaco.editor.create(elementRef.current, getOptionsEvent())
 
     if (ref) {
       ref.current = monacoInstance.current
@@ -85,13 +85,6 @@ export function Monaco({
     const timeout = setTimeout(() => {
       monacoInstance.current?.getAction('editor.action.formatDocument')?.run()
     }, 50)
-
-    monacoInstance.current.addAction({
-      id: 'conar.execute-on-enter',
-      label: 'Execute on Enter',
-      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-      run: e => onEnterEvent(e),
-    })
 
     const subscription = monacoInstance.current.onDidChangeModelContent(() => {
       if (!preventTriggerChangeEvent.current) {
@@ -105,9 +98,9 @@ export function Monaco({
       subscription.dispose()
       monacoInstance.current?.dispose()
     }
-  }, [elementRef, language, ref, options])
+  }, [elementRef, language, ref])
 
-  useEffect(() => {
+  useMountedEffect(() => {
     if (!monacoInstance.current || !options)
       return
 

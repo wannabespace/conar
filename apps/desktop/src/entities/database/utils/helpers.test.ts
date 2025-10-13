@@ -37,14 +37,14 @@ describe('hasDangerousSqlKeywords', () => {
 describe('getSQLQueries', () => {
   it('should parse single and multiple queries', () => {
     expect(getSQLQueries('SELECT * FROM users;')).toEqual([
-      { lineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
+      { id: 'U0VMRUNUICog', startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
     ])
     expect(getSQLQueries('SELECT * FROM users')).toEqual([
-      { lineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
+      { id: 'U0VMRUNUICog', startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
     ])
     expect(getSQLQueries('SELECT * FROM users;\nSELECT * FROM posts;')).toEqual([
-      { lineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
-      { lineNumber: 2, endLineNumber: 2, queries: ['SELECT * FROM posts'] },
+      { id: 'U0VMRUNUICog', startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
+      { id: 'U0VMRUNUICog_1', startLineNumber: 2, endLineNumber: 2, queries: ['SELECT * FROM posts'] },
     ])
   })
 
@@ -52,12 +52,12 @@ describe('getSQLQueries', () => {
     expect(getSQLQueries(`SELECT *
 FROM users
 WHERE id = 1;`)).toEqual([
-      { lineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] },
+      { id: 'U0VMRUNUICog', startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] },
     ])
     expect(getSQLQueries(`SELECT *
 FROM users
 WHERE id = 1`)).toEqual([
-      { lineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] },
+      { id: 'U0VMRUNUICog', startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] },
     ])
   })
 
@@ -66,20 +66,20 @@ WHERE id = 1`)).toEqual([
 SELECT * FROM users;
 -- Another comment
 SELECT * FROM posts;`)).toEqual([
-      { lineNumber: 2, endLineNumber: 2, queries: ['SELECT * FROM users'] },
-      { lineNumber: 4, endLineNumber: 4, queries: ['SELECT * FROM posts'] },
+      { id: 'U0VMRUNUICog', startLineNumber: 2, endLineNumber: 2, queries: ['SELECT * FROM users'] },
+      { id: 'U0VMRUNUICog_1', startLineNumber: 4, endLineNumber: 4, queries: ['SELECT * FROM posts'] },
     ])
     expect(getSQLQueries(`SELECT * FROM users -- get all users
 WHERE id = 1;`)).toEqual([
-      { lineNumber: 1, endLineNumber: 2, queries: ['SELECT * FROM users WHERE id = 1'] },
+      { id: 'U0VMRUNUICog', startLineNumber: 1, endLineNumber: 2, queries: ['SELECT * FROM users WHERE id = 1'] },
     ])
     expect(getSQLQueries(`/* This is a
 multi-line comment */
 SELECT * FROM users;
 /* Another comment */
 SELECT * FROM posts;`)).toEqual([
-      { lineNumber: 3, endLineNumber: 3, queries: ['SELECT * FROM users'] },
-      { lineNumber: 5, endLineNumber: 5, queries: ['SELECT * FROM posts'] },
+      { id: 'U0VMRUNUICog', startLineNumber: 3, endLineNumber: 3, queries: ['SELECT * FROM users'] },
+      { id: 'U0VMRUNUICog_1', startLineNumber: 5, endLineNumber: 5, queries: ['SELECT * FROM posts'] },
     ])
   })
 
@@ -94,15 +94,15 @@ SELECT * FROM posts;`)).toEqual([
     expect(getSQLQueries(`INSERT INTO users (name, email) VALUES ('John', 'john@example.com');
 UPDATE users SET active = true WHERE id = 1;
 DELETE FROM users WHERE id = 2;`)).toEqual([
-      { lineNumber: 1, endLineNumber: 1, queries: ['INSERT INTO users (name, email) VALUES (\'John\', \'john@example.com\')'] },
-      { lineNumber: 2, endLineNumber: 2, queries: ['UPDATE users SET active = true WHERE id = 1'] },
-      { lineNumber: 3, endLineNumber: 3, queries: ['DELETE FROM users WHERE id = 2'] },
+      { id: 'SU5TRVJUIElO', startLineNumber: 1, endLineNumber: 1, queries: ['INSERT INTO users (name, email) VALUES (\'John\', \'john@example.com\')'] },
+      { id: 'VVBEQVRFIHVz', startLineNumber: 2, endLineNumber: 2, queries: ['UPDATE users SET active = true WHERE id = 1'] },
+      { id: 'REVMRVRFIEZS', startLineNumber: 3, endLineNumber: 3, queries: ['DELETE FROM users WHERE id = 2'] },
     ])
   })
 
   it('should handle multiple queries on the same line', () => {
     expect(getSQLQueries('SELECT * FROM users; SELECT * FROM posts;')).toEqual([
-      { lineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users', 'SELECT * FROM posts'] },
+      { id: 'U0VMRUNUICog', startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users', 'SELECT * FROM posts'] },
     ])
   })
 
@@ -110,7 +110,7 @@ DELETE FROM users WHERE id = 2;`)).toEqual([
     expect(getSQLQueries(`SELECT *
 FROM users
 WHERE id = 1; SELECT * FROM posts;`)).toEqual([
-      { lineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1', 'SELECT * FROM posts'] },
+      { id: 'U0VMRUNUICog', startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1', 'SELECT * FROM posts'] },
     ])
   })
 })

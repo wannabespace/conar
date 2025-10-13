@@ -29,7 +29,7 @@ import {
   useLastOpenedTable,
 } from '~/entities/database'
 import { UserButton } from '~/entities/user'
-import { orpc } from '~/lib/orpc'
+import { orpcQuery } from '~/lib/orpc'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
 import { Route } from '../$id'
 import { useLoggerOpened } from '../-use-logger-opened'
@@ -47,10 +47,7 @@ function SupportButton() {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
 
-  const { mutate: sendSupport, isPending: loading } = useMutation({
-    mutationFn: async () => {
-      await orpc.contact({ message })
-    },
+  const { mutate: sendSupport, isPending: loading } = useMutation(orpcQuery.contact.mutationOptions({
     onSuccess: () => {
       toast.success('Support message sent successfully! We will get back to you as soon as possible.')
       setOpen(false)
@@ -60,11 +57,11 @@ function SupportButton() {
       console.error(err)
       toast.error('Failed to send message. Please try again later.')
     },
-  })
+  }))
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    sendSupport()
+    sendSupport({ message })
   }
 
   return (
