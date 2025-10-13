@@ -57,7 +57,7 @@ Conar is an AI-powered open-source project that simplifies database interactions
 
   This will start the PostgreSQL database & Redis in the background.
   ```bash
-  pnpm run docker:db
+  pnpm run docker:start
   ```
 
 - **🗄️ Prepare Database**

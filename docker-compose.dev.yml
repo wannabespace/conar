@@ -1,7 +1,7 @@
 # This is a development compose file needed only for the database.
 # Run the project using `pnpm run dev` and then run this command if you need to start the databases manually.
-# `pnpm run docker:db` to run the databases
-# `pnpm run docker:db:stop` to stop the databases
+# `pnpm run docker:start` to run the databases
+# `pnpm run docker:stop` to stop the databases
 
 services:
   postgresql:
