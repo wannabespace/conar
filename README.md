@@ -55,9 +55,9 @@ Conar is an AI-powered open-source project that simplifies database interactions
 
 - **🐳 Start Database with Docker Compose**
 
-  This will start the PostgreSQL database in the background.
+  This will start the PostgreSQL database & Redis in the background.
   ```bash
-  docker-compose -f docker-compose.dev.yml up -d
+  pnpm run docker:start
   ```
 
 - **🗄️ Prepare Database**
