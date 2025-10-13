@@ -1,21 +1,43 @@
 # This is a development compose file needed only for the database.
-# Run the project using `pnpm run dev` and then run this command if you need to start the database manually.
-# docker-compose -f docker-compose.dev.yml up -d
-
-version: '3.8'
+# Run the project using `pnpm run dev` and then run this command if you need to start the databases manually.
+# `pnpm run docker:db` to run the databases
+# `pnpm run docker:db:stop` to stop the databases
 
 services:
   postgresql:
-    image: 'bitnami/postgresql:16.6.0'
+    image: postgres:16-alpine
     ports:
       - '5432:5432'
     environment:
-      - POSTGRESQL_PASSWORD=postgres
-      - POSTGRESQL_USERNAME=postgres
-      - POSTGRESQL_DATABASE=conar
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=conar
     volumes:
-      - postgres_data:/bitnami/postgresql
+      - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    container_name: redis-server
+    image: redis/redis-stack:7.2.0-v19
+    restart: always
+    ports:
+      - '6379:6379'
+      - '8001:8001'
+    environment:
+      - REDIS_ARGS="--requirepass root"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [CMD, redis-cli, -a, root, ping]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
+  redis-data:
