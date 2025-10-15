@@ -35,7 +35,7 @@ export default class MenuBuilder {
     
     const halfWidth = this.half(width)
     const halfHeight = this.half(height)
-
+    
     switch (side) {
       case 'left':
         this.mainWindow.setBounds({ x: 0, y: 0, width: halfWidth, height })
