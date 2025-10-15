@@ -14,6 +14,7 @@ export type ElectronPreload = PromisifyElectron<typeof electron> & {
   app: {
     onDeepLink: (callback: (url: string) => void) => void
     onUpdatesStatus: (callback: (params: { status: UpdatesStatus, message?: string }) => void) => void
+    onNavigate: (callback: (path: string) => void) => void
   }
   versions: {
     node: () => string
@@ -60,6 +61,9 @@ contextBridge.exposeInMainWorld('electron', {
     },
     onUpdatesStatus: (callback) => {
       ipcRenderer.on('updates-status', (_event, { status, message }) => callback({ status, message }))
+    },
+    onNavigate: (callback) => {
+      ipcRenderer.on('navigate-to', (_event, path) => callback(path))
     },
     checkForUpdates: () => handleError(() => ipcRenderer.invoke('app.checkForUpdates')),
     quitAndInstall: () => handleError(() => ipcRenderer.invoke('app.quitAndInstall')),
