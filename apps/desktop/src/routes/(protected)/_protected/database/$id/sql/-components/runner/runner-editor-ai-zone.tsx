@@ -1,7 +1,8 @@
 import type { editor, Position } from 'monaco-editor'
-import type { RefObject } from 'react'
+import type { CSSProperties, RefObject } from 'react'
 import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Enter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverAnchor, PopoverContent } from '@conar/ui/components/popover'
 import { Textarea } from '@conar/ui/components/textarea'
@@ -61,6 +62,10 @@ function RunnerEditorAIZone({
   }), queryClient)
 
   function handleSubmit() {
+    if (!text.trim()) {
+      return
+    }
+
     originalSql.current = getSql()
 
     if (aiSuggestion) {
@@ -107,17 +112,22 @@ function RunnerEditorAIZone({
             <Button
               size="xs"
               className="absolute bottom-2 right-2"
-              disabled={isPending}
+              disabled={isPending || !text.trim()}
               onClick={handleSubmit}
             >
-              {aiSuggestion ? 'Apply' : 'Send'}
-              <Enter />
+              <LoadingContent loading={isPending} loaderClassName="size-4">
+                {aiSuggestion ? 'Apply' : 'Send'}
+                <Enter />
+              </LoadingContent>
             </Button>
           </div>
         </PopoverAnchor>
         {!!aiSuggestion && (
           <PopoverContent
-            className="p-0 w-lg h-[min(30vh,20rem)] overflow-hidden"
+            style={{
+              '--lines-height': `${aiSuggestion.split('\n').length * 18 * 2}px`,
+            } as CSSProperties}
+            className="p-0 w-lg h-[min(30vh,var(--lines-height))]"
             onOpenAutoFocus={(e) => {
               e.preventDefault()
               ref.current?.focus()
@@ -129,6 +139,7 @@ function RunnerEditorAIZone({
               language="sql"
               className="h-full"
               options={{
+                scrollBeyondLastLine: false,
                 renderIndicators: false,
                 lineNumbers: 'off',
               }}
