@@ -2,7 +2,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { Toaster } from '@conar/ui/components/sonner'
 import appCss from '@conar/ui/globals.css?url'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { ThemeProvider } from '@conar/ui/theme-provider'
+import { ThemeObserver } from '@conar/ui/theme-observer'
 import { Databuddy } from '@databuddy/sdk/react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -80,10 +80,9 @@ function RootComponent() {
       </head>
       <body className="bg-gray-100 dark:bg-neutral-950">
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <Outlet />
-            <ReactQueryDevtools buttonPosition="bottom-left" />
-          </ThemeProvider>
+          <Outlet />
+          <ThemeObserver />
+          <ReactQueryDevtools buttonPosition="bottom-left" />
         </QueryClientProvider>
         <Toaster />
         <Databuddy

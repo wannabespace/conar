@@ -4,6 +4,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { hasDangerousSqlKeywords } from '~/entities/database'
 import { drizzleProxy } from '~/entities/database/query'
+import { formatSql } from '~/lib/formatter'
 import { pageStore } from '../../-lib'
 
 export * from './runner'
@@ -22,7 +23,7 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
 
       const db = drizzleProxy(database, 'SQL Runner')
       const results = await Promise.all(queries.map(async query => [
-        query,
+        formatSql(query, database.type),
         await db.execute(query).catch(e => (e instanceof Error ? String(e.cause) || e.message : String(e)).replaceAll('Error: ', '')),
       ] as const))
 

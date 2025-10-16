@@ -11,12 +11,13 @@ import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { useVirtual } from '@conar/ui/hooks/use-virtual'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiCheckboxCircleLine, RiCloseCircleLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
+import { RiArrowDownLine, RiCheckboxCircleLine, RiCloseCircleLine, RiCloseLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useMemo, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
 import { formatSql } from '~/lib/formatter'
+import { loggerOpenedValue } from '~/routes/(protected)/_protected/database/-use-logger-opened'
 import { queriesLogStore } from '../query'
 
 type QueryStatus = 'error' | 'success' | 'pending'
@@ -264,13 +265,22 @@ export function QueryLogger({ database, className }: {
             </Button>
           </ButtonGroup>
         </div>
-        <Button
-          variant="outline"
-          size="icon-sm"
-          onClick={clearQueries}
-        >
-          <RiDeleteBinLine className="size-4 text-destructive" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={clearQueries}
+          >
+            <RiDeleteBinLine className="size-4 text-destructive" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={() => loggerOpenedValue.set(false)}
+          >
+            <RiCloseLine className="size-4" />
+          </Button>
+        </div>
       </div>
       <ScrollArea
         ref={scrollRef}

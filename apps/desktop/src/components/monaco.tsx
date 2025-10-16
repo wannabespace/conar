@@ -2,7 +2,7 @@ import type { CompletionService } from 'monaco-sql-languages'
 import type { RefObject } from 'react'
 import { noop } from '@conar/shared/utils/helpers'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { useTheme } from '@conar/ui/theme-provider'
+import { useTheme } from '@conar/ui/theme-observer'
 import * as monaco from 'monaco-editor'
 import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
 import ghDark from 'monaco-themes/themes/GitHub Dark.json'
@@ -105,7 +105,8 @@ export function Monaco({
       return
 
     monacoInstance.current.updateOptions(options)
-  }, [options])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(options)])
 
   useEffect(() => {
     if (!Object.values(LanguageIdEnum).includes(language as LanguageIdEnum))

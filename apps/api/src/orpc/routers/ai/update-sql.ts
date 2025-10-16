@@ -14,7 +14,7 @@ export const updateSQL = orpc
   }))
   .handler(async ({ input, signal, context }) => {
     const { text } = await generateText({
-      model: withPosthog(anthropic('claude-sonnet-4-5'), {
+      model: withPosthog(anthropic('claude-haiku-4-5'), {
         userId: context.user.id,
       }),
       messages: [

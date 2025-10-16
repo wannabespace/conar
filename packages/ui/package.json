@@ -8,7 +8,7 @@
     "./components/*": "./src/components/*.tsx",
     "./hooks/*": "./src/hooks/*.ts",
     "./hookas/*": "./src/hookas/*.ts",
-    "./theme-provider": "./src/theme-provider.tsx"
+    "./theme-observer": "./src/theme-observer.tsx"
   },
   "scripts": {
     "check-types": "tsc"
@@ -39,6 +39,7 @@
     "@remixicon/react": "catalog:",
     "@tailwindcss/typography": "^0.5.19",
     "@tanstack/react-router": "catalog:",
+    "@tanstack/react-store": "catalog:",
     "@tanstack/react-virtual": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -53,7 +54,7 @@
     "next-themes": "^0.4.6",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-hook-form": "^7.64.0",
+    "react-hook-form": "^7.65.0",
     "react-resizable-panels": "^3.0.6",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",

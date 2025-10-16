@@ -1,6 +1,6 @@
 import { title } from '@conar/shared/utils/title'
 import { Toaster } from '@conar/ui/components/sonner'
-import { ThemeProvider } from '@conar/ui/theme-provider'
+import { ThemeObserver } from '@conar/ui/theme-observer'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
@@ -39,28 +39,27 @@ function RootDocument() {
     <>
       <HeadContent />
       <EventsProvider>
-        <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
-            <UpdatesObserver />
-            <AuthObserver />
-            <Outlet />
-            <Toaster />
-            {import.meta.env.DEV && (
-              <TanStackDevtools
-                plugins={[
-                  {
-                    name: 'TanStack Query',
-                    render: <ReactQueryDevtoolsPanel />,
-                  },
-                  {
-                    name: 'TanStack Router',
-                    render: <TanStackRouterDevtoolsPanel router={router} />,
-                  },
-                ]}
-              />
-            )}
-          </QueryClientProvider>
-        </ThemeProvider>
+        <ThemeObserver />
+        <QueryClientProvider client={queryClient}>
+          <Outlet />
+          <UpdatesObserver />
+          <AuthObserver />
+          <Toaster />
+          {import.meta.env.DEV && (
+            <TanStackDevtools
+              plugins={[
+                {
+                  name: 'TanStack Query',
+                  render: <ReactQueryDevtoolsPanel />,
+                },
+                {
+                  name: 'TanStack Router',
+                  render: <TanStackRouterDevtoolsPanel router={router} />,
+                },
+              ]}
+            />
+          )}
+        </QueryClientProvider>
       </EventsProvider>
     </>
   )
