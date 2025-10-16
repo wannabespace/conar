@@ -63,7 +63,7 @@ export function RunnerEditor({
       },
     })
 
-    return enterAction.dispose
+    return () => enterAction.dispose()
   }, [monacoRef])
 
   useEffect(() => {

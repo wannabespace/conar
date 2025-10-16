@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@conar/ui/components/t
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiErrorWarningLine, RiLoader4Line, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
+import { Monaco } from '~/components/monaco'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
@@ -53,8 +54,18 @@ export function RunnerResults() {
                       {typeof data === 'string' && <RiErrorWarningLine className="size-4 text-destructive" />}
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent sideOffset={8} className="max-w-lg font-mono text-xs">
-                    {query}
+                  <TooltipContent sideOffset={8} className="p-0 w-lg">
+                    <Monaco
+                      value={query}
+                      language="sql"
+                      options={{
+                        scrollBeyondLastLine: false,
+                        readOnly: true,
+                        lineDecorationsWidth: 0,
+                        lineNumbers: 'off',
+                      }}
+                      className="h-64 max-h-[50vh]"
+                    />
                   </TooltipContent>
                 </Tooltip>
               </TabsTrigger>
