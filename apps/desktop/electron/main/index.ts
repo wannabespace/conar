@@ -7,7 +7,7 @@ import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import Store from 'electron-store'
 import { setupProtocolHandler } from './deep-link'
 import { initElectronEvents } from './events'
-import MenuBuilder from './menu'
+import { buildMenu } from './menu'
 
 const store = new Store()
 
@@ -52,8 +52,7 @@ export function createWindow() {
     mainWindow!.show()
   })
 
-  const menuBuilder = new MenuBuilder(mainWindow)
-  menuBuilder.buildMenu()
+  buildMenu(mainWindow)
 
   if (process.env.ELECTRON_RENDERER_URL) {
     mainWindow.webContents.openDevTools()
