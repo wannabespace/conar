@@ -62,9 +62,14 @@ export function databaseStore(id: string) {
     return storesMap.get(id)!
   }
 
+  const persistedState = JSON.parse(localStorage.getItem(`database-store-${id}`) || '{}')
+
+  persistedState.sql ||= defaultState.sql
+
   const state = pageStoreType(Object.assign(
+    {},
     defaultState,
-    JSON.parse(localStorage.getItem(`database-store-${id}`) || '{}'),
+    persistedState,
   ))
 
   if (import.meta.env.DEV && state instanceof type.errors) {
@@ -74,8 +79,6 @@ export function databaseStore(id: string) {
   const store = new Store<typeof pageStoreType.infer>(
     state instanceof type.errors ? defaultState : state,
   )
-
-  console.log(id, state instanceof type.errors ? defaultState : state, defaultState, state)
 
   store.subscribe(({ currentVal }) => {
     localStorage.setItem(`database-store-${id}`, JSON.stringify({
