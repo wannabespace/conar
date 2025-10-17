@@ -24,7 +24,7 @@ function prepareConnectionStringToCloud(connectionString: string, syncType: Sync
 }
 
 export interface DatabaseMutationMetadata {
-  sync?: boolean
+  sync?: false
 }
 
 export const databasesCollection = createCollection(drizzleCollectionOptions({
