@@ -17,10 +17,10 @@ interface PageStoreState {
     table: string
   } | null
   sql: string
+  selectedLines: number[]
 
   // TODO: remove it
   queriesToRun: string[]
-  selectedLines: number[]
 
   // TODO: remove it
   files: File[]
@@ -75,6 +75,9 @@ export function databaseStore(id: string) {
 
   store.subscribe(({ currentVal }) => {
     localStorage.setItem(`database-store-${id}`, JSON.stringify({
+      lastOpenedPage: currentVal.lastOpenedPage,
+      lastOpenedChatId: currentVal.lastOpenedChatId,
+      lastOpenedTable: currentVal.lastOpenedTable,
       sql: currentVal.sql,
       selectedLines: currentVal.selectedLines,
       loggerOpened: currentVal.loggerOpened,
