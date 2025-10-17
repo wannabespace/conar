@@ -1,6 +1,7 @@
 import type { FileRoutesById } from '~/routeTree.gen'
 import { arrayMove } from '@dnd-kit/sortable'
 import { Store, useStore } from '@tanstack/react-store'
+import { type } from 'arktype'
 import { getSQLQueries } from '~/entities/database/utils/helpers'
 
 export interface Tab {
@@ -9,29 +10,22 @@ export interface Tab {
   preview: boolean
 }
 
-interface PageStoreState {
-  lastOpenedPage: string | null
-  lastOpenedChatId: string | null
-  lastOpenedTable: {
-    schema: string
-    table: string
-  } | null
-  sql: string
-  selectedLines: number[]
+const pageStoreType = type({
+  lastOpenedPage: 'string | null',
+  lastOpenedChatId: 'string | null',
+  lastOpenedTable: type({ schema: 'string', table: 'string' }).or('null'),
+  sql: 'string',
+  selectedLines: 'number[]',
+  queriesToRun: 'string[]',
+  files: 'File[]',
+  loggerOpened: 'boolean',
+  chatInput: 'string',
+  tabs: 'object[]' as type.cast<Tab[]>,
+  tablesSearch: 'string',
+  tablesAccordionValue: 'string[]',
+})
 
-  // TODO: remove it
-  queriesToRun: string[]
-
-  // TODO: remove it
-  files: File[]
-  loggerOpened: boolean
-  chatInput: string
-  tabs: Tab[]
-  tablesSearch: string
-  tablesAccordionValue: string[]
-}
-
-const defaultState: PageStoreState = {
+const defaultState: typeof pageStoreType.infer = {
   lastOpenedPage: null,
   lastOpenedChatId: null,
   lastOpenedTable: null,
@@ -61,17 +55,21 @@ const defaultState: PageStoreState = {
   tablesAccordionValue: ['public'],
 }
 
-const storesMap = new Map<string, Store<PageStoreState>>()
+const storesMap = new Map<string, Store<typeof pageStoreType.infer>>()
 
 export function databaseStore(id: string) {
   if (storesMap.has(id)) {
     return storesMap.get(id)!
   }
 
-  const store = new Store<PageStoreState>(Object.assign(
+  const state = pageStoreType(Object.assign(
     defaultState,
     JSON.parse(localStorage.getItem(`database-store-${id}`) || '{}'),
   ))
+
+  const store = new Store<typeof pageStoreType.infer>(
+    state instanceof type.errors ? defaultState : state,
+  )
 
   store.subscribe(({ currentVal }) => {
     localStorage.setItem(`database-store-${id}`, JSON.stringify({
