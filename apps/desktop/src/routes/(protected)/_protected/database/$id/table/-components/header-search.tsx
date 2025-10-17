@@ -29,7 +29,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
           ref: SQL_FILTERS_LIST.find(f => f.operator === filter.operator)!,
           values: filter.values,
         } satisfies ActiveFilter)),
-      }))
+      } satisfies typeof state))
 
       if (data.filters.length === 0) {
         toast.info('No filters were generated, please try again with a different prompt')
@@ -65,7 +65,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         placeholder="Ask AI to filter data..."
         disabled={isPending}
         value={prompt}
-        onChange={e => store.setState(state => ({ ...state, prompt: e.target.value }))}
+        onChange={e => store.setState(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
       />
       <Button
         type="submit"

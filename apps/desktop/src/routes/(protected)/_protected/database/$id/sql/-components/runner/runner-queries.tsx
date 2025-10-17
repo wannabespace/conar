@@ -50,7 +50,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                               store.setState(state => ({
                                 ...state,
                                 sql: `${state.sql}\n\n-- ${query.name}\n${query.query}`,
-                              }))
+                              } satisfies typeof state))
                               setMovedId(query.id)
                             }}
                           >

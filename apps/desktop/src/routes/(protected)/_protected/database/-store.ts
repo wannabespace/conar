@@ -75,6 +75,8 @@ export function databaseStore(id: string) {
     state instanceof type.errors ? defaultState : state,
   )
 
+  console.log(id, state instanceof type.errors ? defaultState : state, defaultState, state)
+
   store.subscribe(({ currentVal }) => {
     localStorage.setItem(`database-store-${id}`, JSON.stringify({
       lastOpenedPage: currentVal.lastOpenedPage,
@@ -99,9 +101,7 @@ export function useSQLQueries(id: string) {
   const store = databaseStore(id)
 
   return useStore(store, state => getSQLQueries(state.sql), {
-    equal(objA, objB) {
-      return JSON.stringify(objA) === JSON.stringify(objB)
-    },
+    equal: (objA, objB) => JSON.stringify(objA) === JSON.stringify(objB),
   })
 }
 
@@ -121,14 +121,14 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
       store.setState(prev => ({
         ...prev,
         tabs: prev.tabs.map((tab, index) => index === existingPreviewTabIndex ? { table, schema, preview: true } : tab) ?? [],
-      }))
+      } satisfies typeof prev))
       return
     }
 
     store.setState(prev => ({
       ...prev,
       tabs: [...prev.tabs, { table, schema, preview: true }],
-    }))
+    } satisfies typeof prev))
     return
   }
 
@@ -136,7 +136,7 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
     store.setState(prev => ({
       ...prev,
       tabs: prev.tabs.map(tab => tab.table === table && tab.schema === schema ? { table, schema, preview: false } : tab) ?? [],
-    }))
+    } satisfies typeof prev))
   }
 }
 
@@ -146,7 +146,7 @@ export function removeTab(id: string, schema: string, table: string) {
   store.setState(prev => ({
     ...prev,
     tabs: prev.tabs.filter(tab => !(tab.table === table && tab.schema === schema)) ?? [],
-  }))
+  } satisfies typeof prev))
 }
 
 export function renameTab(id: string, schema: string, table: string, newTableName: string) {
@@ -155,21 +155,21 @@ export function renameTab(id: string, schema: string, table: string, newTableNam
   store.setState(prev => ({
     ...prev,
     tabs: prev.tabs.map(tab => tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab) ?? [],
-  }))
+  } satisfies typeof prev))
 }
 
 export function moveTab(id: string, activeId: string | number, overId: string | number) {
   const store = databaseStore(id)
 
-  store.setState((prev) => {
-    const items = prev.tabs ?? []
+  store.setState((state) => {
+    const items = state.tabs ?? []
 
     const oldIndex = items.findIndex(item => item.table === activeId)
     const newIndex = items.findIndex(item => item.table === overId)
 
     return {
-      ...prev,
+      ...state,
       tabs: arrayMove(items, oldIndex, newIndex),
-    }
+    } satisfies typeof state
   })
 }

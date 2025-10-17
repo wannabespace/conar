@@ -162,7 +162,7 @@ export function ChatForm() {
     store.setState(state => ({
       ...state,
       files: [...store.state.files, ...fileArr],
-    }))
+    } satisfies typeof state))
     e.target.value = ''
   }
 
@@ -175,7 +175,7 @@ export function ChatForm() {
             store.setState(state => ({
               ...state,
               files: store.state.files.filter((_, i) => i !== index),
-            }))
+            } satisfies typeof state))
           }}
         />
       )}
@@ -197,7 +197,7 @@ export function ChatForm() {
             store.setState(state => ({
               ...state,
               files: [...store.state.files, file],
-            }))
+            } satisfies typeof state))
           }}
         />
         <div className="px-2 pb-2 flex justify-between items-end pointer-events-none">

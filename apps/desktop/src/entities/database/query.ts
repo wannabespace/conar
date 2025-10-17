@@ -61,7 +61,7 @@ function queryLog(
         label: label || log?.label || '',
       },
     },
-  }))
+  } satisfies typeof state))
 
   if (error) {
     console.error('db query error', database.type, query, values, error)

@@ -161,7 +161,7 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
     store.setState(state => ({
       ...state,
       sql: `${state.sql}\n\n${query}`,
-    }))
+    } satisfies typeof state))
     await sleep(0)
     pageHooks.callHook('focusRunner')
   }

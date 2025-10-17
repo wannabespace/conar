@@ -38,7 +38,7 @@ export const Route = createFileRoute(
         ...state,
         ...(deps.filters ? { filters: deps.filters } : {}),
         ...(deps.orderBy ? { orderBy: deps.orderBy } : {}),
-      }))
+      } satisfies typeof state))
     }
 
     prefetchDatabaseCore(context.database)
@@ -96,7 +96,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
     store.setState(state => ({
       ...state,
       orderBy: newOrderBy,
-    }))
+    } satisfies typeof state))
   }, [columns, store])
 
   return (

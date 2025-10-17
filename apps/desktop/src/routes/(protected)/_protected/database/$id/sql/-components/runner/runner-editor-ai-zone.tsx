@@ -256,7 +256,7 @@ export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCod
               store.setState(state => ({
                 ...state,
                 sql: updatedLines.join('\n'),
-              }))
+              } satisfies typeof state))
             }}
           />,
         )

@@ -48,7 +48,7 @@ function RunnerQueryEditorZone({
       selectedLines: isChecked
         ? state.selectedLines.filter(l => l !== lineNumber)
         : [...state.selectedLines, lineNumber].toSorted((a, b) => a - b),
-    }))
+    } satisfies typeof state))
   }
 
   return (

@@ -331,7 +331,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => store.setState(state => ({ ...state, loggerOpened: !state.loggerOpened }))}
+                onClick={() => store.setState(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
               >
                 <RiFileListLine className="size-4" />
               </Button>

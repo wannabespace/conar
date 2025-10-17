@@ -33,12 +33,12 @@ function updateTheme() {
 
   if (theme === 'system') {
     const systemTheme = mediaQuery.matches ? 'dark' : 'light'
-    themeStore.setState(state => ({ ...state, resolvedTheme: systemTheme }))
+    themeStore.setState(state => ({ ...state, resolvedTheme: systemTheme } satisfies typeof state))
     root.classList.add(systemTheme)
     return
   }
 
-  themeStore.setState(state => ({ ...state, resolvedTheme: theme as ResolvedTheme }))
+  themeStore.setState(state => ({ ...state, resolvedTheme: theme as ResolvedTheme } satisfies typeof state))
   root.classList.add(theme)
 }
 
@@ -93,7 +93,7 @@ export function useTheme() {
     resolvedTheme: store.resolvedTheme,
     setTheme: (newTheme: Theme) => {
       localStorage.setItem(store.storageKey, newTheme)
-      themeStore.setState(state => ({ ...state, theme: newTheme }))
+      themeStore.setState(state => ({ ...state, theme: newTheme } satisfies typeof state))
     },
   }
 }

@@ -62,7 +62,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     store.setState(state => ({
       ...state,
       selected: validSelected,
-    }))
+    } satisfies typeof state))
   }, [store, rows, primaryColumns])
 
   const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
@@ -140,7 +140,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         ...state.orderBy,
         [columnId]: order,
       },
-    }))
+    } satisfies typeof state))
   }, [store])
 
   const removeOrder = useCallback((columnId: string) => {
@@ -151,7 +151,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     store.setState(state => ({
       ...state,
       orderBy: newOrderBy,
-    }))
+    } satisfies typeof state))
   }, [store])
 
   const onSort = useCallback((columnId: string) => {

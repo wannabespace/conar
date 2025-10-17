@@ -205,7 +205,7 @@ export function QueryLogger({ database, className }: {
     queriesLogStore.setState(state => ({
       ...state,
       [database.id]: {},
-    }))
+    } satisfies typeof state))
   }
 
   const toggleGroup = (status: QueryStatus) => {
@@ -277,7 +277,7 @@ export function QueryLogger({ database, className }: {
           <Button
             variant="outline"
             size="icon-sm"
-            onClick={() => store.setState(state => ({ ...state, loggerOpened: false }))}
+            onClick={() => store.setState(state => ({ ...state, loggerOpened: false } satisfies typeof state))}
           >
             <RiCloseLine className="size-4" />
           </Button>

@@ -54,7 +54,7 @@ export function Runner() {
       store.setState(state => ({
         ...state,
         selectedLines: newSelectedLines.toSorted((a, b) => a - b),
-      }))
+      } satisfies typeof state))
     }
   }, [store, queries])
 
@@ -64,7 +64,7 @@ export function Runner() {
     store.setState(state => ({
       ...state,
       sql: formatted,
-    }))
+    } satisfies typeof state))
     setIsFormatting(true)
   }
 
@@ -82,7 +82,7 @@ export function Runner() {
     store.setState(state => ({
       ...state,
       queriesToRun: queries,
-    }))
+    } satisfies typeof state))
     refetchRunner()
   }
 

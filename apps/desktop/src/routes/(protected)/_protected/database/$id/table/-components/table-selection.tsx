@@ -56,13 +56,13 @@ export function SelectionHeaderCell({ columnIndex, className, size, keys }: Tabl
             store.setState(state => ({
               ...state,
               selected: [],
-            }))
+            } satisfies typeof state))
           }
           else {
             store.setState(state => ({
               ...state,
               selected: rows?.map(row => keys.reduce((acc, key) => ({ ...acc, [key]: row[key] }), {})) ?? [],
-            }))
+            } satisfies typeof state))
           }
         }}
       />
@@ -84,13 +84,13 @@ export function SelectionCell({ rowIndex, columnIndex, className, size, keys }: 
             store.setState(state => ({
               ...state,
               selected: store.state.selected.filter(row => !keys.every(key => row[key] === rows[rowIndex]![key])),
-            }))
+            } satisfies typeof state))
           }
           else {
             store.setState(state => ({
               ...state,
               selected: [...state.selected, keys.reduce((acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] }), {})],
-            }))
+            } satisfies typeof state))
           }
         }}
       />

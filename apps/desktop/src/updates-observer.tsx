@@ -36,13 +36,13 @@ export function UpdatesObserver() {
 
   useEffect(() => {
     window.electron?.app.onUpdatesStatus(({ status, message }) => {
-      updatesStore.setState(state => ({ ...state, status, message }))
+      updatesStore.setState(state => ({ ...state, status, message } satisfies typeof state))
     })
   }, [])
 
   useEffect(() => {
     if (version) {
-      updatesStore.setState(state => ({ ...state, version }))
+      updatesStore.setState(state => ({ ...state, version } satisfies typeof state))
     }
   }, [version])
 

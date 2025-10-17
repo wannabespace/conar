@@ -33,7 +33,7 @@ export function HeaderActionsFilters() {
             store.setState(state => ({
               ...state,
               filters: [...state.filters, filter],
-            }))
+            } satisfies typeof state))
           }}
         />
       </PopoverContent>

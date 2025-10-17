@@ -83,7 +83,7 @@ export function RunnerEditor({
       onChange={q => store.setState(state => ({
         ...state,
         sql: q,
-      }))}
+      } satisfies typeof state))}
       completionService={completionService}
       className="size-full"
       options={{
