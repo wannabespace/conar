@@ -9,7 +9,7 @@ import { copy } from '@conar/ui/lib/copy'
 import { arktypeResolver } from '@hookform/resolvers/arktype'
 import { RiEyeLine, RiEyeOffLine, RiGithubFill, RiGoogleFill } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { nanoid } from 'nanoid'
 import { useEffect, useRef, useState } from 'react'
@@ -291,7 +291,17 @@ export function AuthForm({ type }: { type: Type }) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <div className="flex items-center justify-between">
+                  <FormLabel>Password</FormLabel>
+                  {type === 'sign-in' && (
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs text-muted-foreground hover:text-primary"
+                    >
+                      Forgot password?
+                    </Link>
+                  )}
+                </div>
                 <FormControl>
                   <div className="relative">
                     <Input
