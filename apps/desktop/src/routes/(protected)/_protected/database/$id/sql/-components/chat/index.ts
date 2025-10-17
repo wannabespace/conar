@@ -11,20 +11,9 @@ import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { databaseEnumsQuery, databaseTableColumnsQuery, rowsSql, tablesAndSchemasQuery } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
-import { pageStore } from '../../-page'
+import { databaseStore } from '../../../../-store'
 
 export * from './chat'
-
-export const chatInput = {
-  get(id: string) {
-    const data = JSON.parse(sessionStorage.getItem(`sql-chat-input-${id}`) || '""')
-
-    return typeof data === 'string' ? data : ''
-  },
-  set(id: string, input: string) {
-    sessionStorage.setItem(`sql-chat-input-${id}`, JSON.stringify(input))
-  },
-}
 
 function ensureChat(chatId: string, databaseId: string) {
   const existingChat = chatsCollection.get(chatId)
@@ -105,7 +94,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           chatsMessagesCollection.delete(options.messageId)
         }
 
-        const store = pageStore(database.id)
+        const store = databaseStore(database.id)
 
         return eventIteratorToStream(await orpc.ai.ask({
           ...options.body,

@@ -2,12 +2,12 @@ import type { editor, Position } from 'monaco-editor'
 import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { LanguageIdEnum } from 'monaco-sql-languages'
-import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef } from 'react'
 import { Monaco } from '~/components/monaco'
-import { getSQLQueries } from '~/entities/database'
 import { databaseCompletionService } from '~/entities/database/utils/monaco'
 import { Route } from '../..'
-import { pageHooks, pageStore } from '../../-page'
+import { pageHooks } from '../../-page'
+import { databaseStore, useSQLQueries } from '../../../../-store'
 import { useRunnerEditorAIZone } from './runner-editor-ai-zone'
 import { useRunnerEditorQueryZone } from './runner-editor-query-zone'
 
@@ -19,9 +19,9 @@ export function RunnerEditor({
   onSave: (query: string) => void
 }) {
   const { database } = Route.useRouteContext()
-  const store = useMemo(() => pageStore(database.id), [database.id])
+  const store = databaseStore(database.id)
   const sql = useStore(store, state => state.sql)
-  const queries = useStore(store, state => getSQLQueries(state.sql))
+  const queries = useSQLQueries(database.id)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   const onRunEvent = useEffectEvent(onRun)
@@ -33,7 +33,7 @@ export function RunnerEditor({
 
   useRunnerEditorAIZone(monacoRef)
 
-  const completionService = useMemo(() => databaseCompletionService(database), [database])
+  const completionService = databaseCompletionService(database)
 
   const getInlineQueriesEvent = useEffectEvent((position: Position) => {
     return queries.find(query =>

@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { hasDangerousSqlKeywords } from '~/entities/database'
 import { drizzleProxy } from '~/entities/database/query'
 import { formatSql } from '~/lib/formatter'
-import { pageStore } from '../../-page'
+import { databaseStore } from '../../../../-store'
 
 export * from './runner'
 
@@ -18,7 +18,7 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
         shouldRun = false
       }
 
-      const store = pageStore(database.id)
+      const store = databaseStore(database.id)
 
       const queries = store.state.queriesToRun
 

@@ -5,10 +5,12 @@ import { SQL_FILTERS_GROUPED } from '@conar/shared/filters/sql'
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect } from 'react'
 import { FiltersProvider } from '~/components/table'
-import { prefetchDatabaseCore, prefetchDatabaseTableCore, useLastOpenedTable } from '~/entities/database'
+import { prefetchDatabaseCore, prefetchDatabaseTableCore } from '~/entities/database'
+import { addTab, databaseStore } from '../../-store'
 import { Filters } from './-components/filters'
 import { Header } from './-components/header'
 import { Sidebar } from './-components/sidebar'
@@ -16,7 +18,6 @@ import { Table } from './-components/table'
 import { TablesTabs } from './-components/tabs'
 import { useTableColumns } from './-queries/use-columns-query'
 import { createPageStore, PageStoreContext } from './-store'
-import { addTab } from './-tabs'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/table/',
@@ -130,20 +131,27 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
 }
 
 function DatabaseTablesPage() {
-  const { database, store } = Route.useLoaderData()
+  const { database, store: tableStore } = Route.useLoaderData()
   const { schema, table } = Route.useSearch()
-  const [lastOpenedTable, setLastOpenedTable] = useLastOpenedTable(database.id)
+  const store = databaseStore(database.id)
+  const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
 
   useEffect(() => {
     if (schema && table) {
       if (schema !== lastOpenedTable?.schema || table !== lastOpenedTable?.table) {
-        setLastOpenedTable({ schema, table })
+        store.setState(state => ({
+          ...state,
+          lastOpenedTable: { schema, table },
+        } satisfies typeof state))
       }
     }
     else if (lastOpenedTable !== null) {
-      setLastOpenedTable(null)
+      store.setState(state => ({
+        ...state,
+        lastOpenedTable: null,
+      } satisfies typeof state))
     }
-  }, [schema, table, setLastOpenedTable, lastOpenedTable])
+  }, [schema, table, store, lastOpenedTable])
 
   return (
     <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} direction="horizontal" className="flex">
@@ -157,12 +165,12 @@ function DatabaseTablesPage() {
       </ResizablePanel>
       <ResizableHandle className="w-1 bg-transparent" />
       <ResizablePanel defaultSize={80} className="flex-1 border bg-background rounded-lg">
-        {schema && table && store
+        {schema && table && tableStore
           ? (
               <TableContent
                 table={table}
                 schema={schema}
-                store={store}
+                store={tableStore}
               />
             )
           : (

@@ -13,12 +13,13 @@ import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { getSQLQueries, hasDangerousSqlKeywords } from '~/entities/database'
+import { hasDangerousSqlKeywords } from '~/entities/database'
 import { queriesCollection } from '~/entities/query'
 import { formatSql } from '~/lib/formatter'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { pageHooks, pageStore } from '../../-page'
+import { pageHooks } from '../../-page'
+import { databaseStore, useSQLQueries } from '../../../../-store'
 import { RunnerAlertDialog } from './runner-alert-dialog'
 import { RunnerEditor } from './runner-editor'
 import { RunnerQueries } from './runner-queries'
@@ -29,9 +30,9 @@ export function Runner() {
   const { database } = Route.useRouteContext()
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
-  const store = useMemo(() => pageStore(database.id), [database.id])
+  const store = databaseStore(database.id)
   const selectedLines = useStore(store, state => state.selectedLines)
-  const queries = useStore(store, state => getSQLQueries(state.sql))
+  const queries = useSQLQueries(database.id)
   const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
     .where(({ queries }) => eq(queries.databaseId, database.id))

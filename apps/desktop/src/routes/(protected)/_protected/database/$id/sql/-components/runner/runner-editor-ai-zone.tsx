@@ -10,15 +10,13 @@ import { render } from '@conar/ui/lib/render'
 import { cn } from '@conar/ui/lib/utils'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { useMutation } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { MonacoDiff } from '~/components/monaco-diff'
-import { getSQLQueries } from '~/entities/database'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { Route } from '../..'
-import { pageStore } from '../../-page'
+import { databaseStore, useSQLQueries } from '../../../../-store'
 
 function RunnerEditorAIZone({
   database,
@@ -154,8 +152,8 @@ function RunnerEditorAIZone({
 
 export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { database } = Route.useRouteContext()
-  const store = useMemo(() => pageStore(database.id), [database.id])
-  const queries = useStore(store, state => getSQLQueries(state.sql))
+  const store = databaseStore(database.id)
+  const queries = useSQLQueries(database.id)
   const domElementRef = useRef<HTMLElement>(null)
 
   const [currentAIZoneLineNumber, setCurrentAIZoneLineNumber] = useState<number | null>(null)
@@ -231,7 +229,7 @@ export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCod
         const domNode = domElementRef.current || render(
           <RunnerEditorAIZone
             database={database}
-            getSql={() => pageStore(database.id)
+            getSql={() => store
               .state
               .sql
               .split('\n')
@@ -245,8 +243,6 @@ export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCod
               setCurrentAIZoneLineNumber(null)
             }}
             onUpdate={(newSql) => {
-              const store = pageStore(database.id)
-
               const lines = store.state.sql.split('\n')
               const startIdx = currentAIZoneQuery.startLineNumber - 1
               const endIdx = currentAIZoneQuery.endLineNumber

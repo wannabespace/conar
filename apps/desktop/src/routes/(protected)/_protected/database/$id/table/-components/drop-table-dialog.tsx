@@ -18,10 +18,10 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { dropTableSql, lastOpenedTable, tablesAndSchemasQuery } from '~/entities/database'
+import { dropTableSql, tablesAndSchemasQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { Route } from '..'
-import { removeTab } from '../-tabs'
+import { databaseStore, removeTab } from '../../../-store'
 
 interface DropTableDialogProps {
   ref: React.RefObject<{
@@ -47,8 +47,14 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
       setConfirmationText('')
       setCascade(false)
       setOpen(true)
-      if (lastOpenedTable(database.id).get()?.schema === schema && lastOpenedTable(database.id).get()?.table === table) {
-        lastOpenedTable(database.id).set(null)
+      const store = databaseStore(database.id)
+      const lastOpenedTable = store.state.lastOpenedTable
+
+      if (lastOpenedTable?.schema === schema && lastOpenedTable?.table === table) {
+        store.setState(state => ({
+          ...state,
+          lastOpenedTable: null,
+        } satisfies typeof state))
       }
     },
   }))

@@ -19,7 +19,7 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { renameTableSql, tablesAndSchemasQuery } from '~/entities/database'
 import { queryClient } from '~/main'
-import { renameTab } from '../-tabs'
+import { renameTab } from '../../../-store'
 
 interface RenameTableDialogProps {
   ref: React.RefObject<{

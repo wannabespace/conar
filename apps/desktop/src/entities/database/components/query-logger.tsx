@@ -17,7 +17,7 @@ import { useMemo, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
 import { formatSql } from '~/lib/formatter'
-import { loggerOpenedValue } from '~/routes/(protected)/_protected/database/-use-logger-opened'
+import { databaseStore } from '~/routes/(protected)/_protected/database/-store'
 import { queriesLogStore } from '../query'
 
 type QueryStatus = 'error' | 'success' | 'pending'
@@ -179,6 +179,7 @@ export function QueryLogger({ database, className }: {
   const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
   const queries = useStore(queriesLogStore, state => Object.values(state[database.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()))
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
+  const store = databaseStore(database.id)
 
   const filteredQueries = useMemo(() => {
     if (statusGroup) {
@@ -276,7 +277,7 @@ export function QueryLogger({ database, className }: {
           <Button
             variant="outline"
             size="icon-sm"
-            onClick={() => loggerOpenedValue.set(false)}
+            onClick={() => store.setState(state => ({ ...state, loggerOpened: false }))}
           >
             <RiCloseLine className="size-4" />
           </Button>

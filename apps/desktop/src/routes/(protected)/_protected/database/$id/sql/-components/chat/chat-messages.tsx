@@ -14,12 +14,13 @@ import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiFileCopyLine, RiRestartLine } from '@remixicon/react'
 import { isToolUIPart } from 'ai'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
 import { Route } from '../..'
-import { pageHooks, pageStore } from '../../-page'
+import { pageHooks } from '../../-page'
+import { databaseStore } from '../../../../-store'
 import { ChatImages } from './chat-images'
 import { ChatMessageTool } from './chat-message-tools'
 
@@ -154,7 +155,7 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
   const { database, chat } = Route.useLoaderData()
   const ref = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(ref)
-  const store = useMemo(() => pageStore(database.id), [database.id])
+  const store = databaseStore(database.id)
 
   async function handleAdd(query: string) {
     store.setState(state => ({

@@ -12,11 +12,10 @@ import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
 import { useIsFetching } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useMemo, useState } from 'react'
-import { getSQLQueries } from '~/entities/database'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { pageStore } from '../../-page'
+import { databaseStore, useSQLQueries } from '../../../../-store'
 
 function RunnerQueryEditorZone({
   database,
@@ -32,9 +31,9 @@ function RunnerQueryEditorZone({
   lineNumber: number
 }) {
   const [isCopying, setIsCopying] = useState(false)
-  const store = useMemo(() => pageStore(database.id), [database.id])
+  const store = databaseStore(database.id)
   const isChecked = useStore(store, state => state.selectedLines.includes(lineNumber))
-  const queries = useStore(store, state => getSQLQueries(state.sql))
+  const queries = useSQLQueries(database.id)
   const startFrom = useMemo(() => {
     const index = queries.findIndex(query => query.startLineNumber === lineNumber)
     const queriesBefore = queries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0)
@@ -140,8 +139,7 @@ export function useRunnerEditorQueryZone(monacoRef: RefObject<editor.IStandalone
   onSave: (query: string) => void
 }) {
   const { database } = Route.useRouteContext()
-  const store = useMemo(() => pageStore(database.id), [database.id])
-  const queries = useStore(store, state => getSQLQueries(state.sql))
+  const queries = useSQLQueries(database.id)
   const linesWithQueries = useMemo(() => queries.map(({ startLineNumber }) => startLineNumber), [queries])
 
   const getQueriesEvent = useEffectEvent((lineNumber: number) =>

@@ -3,7 +3,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
-import { lastOpenedChatId } from '~/entities/database'
+import { databaseStore } from '../../-store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
@@ -31,12 +31,16 @@ export const Route = createFileRoute(
 })
 
 function DatabaseSqlPage() {
-  const { id } = Route.useParams()
+  const { database } = Route.useLoaderData()
   const { chatId } = Route.useSearch()
+  const store = databaseStore(database.id)
 
   useEffect(() => {
-    lastOpenedChatId(id).set(chatId ?? null)
-  }, [id, chatId])
+    store.setState(state => ({
+      ...state,
+      lastOpenedChatId: chatId ?? null,
+    } satisfies typeof state))
+  }, [chatId, store])
 
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex">

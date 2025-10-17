@@ -10,13 +10,13 @@ import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCi
 import { useMutation } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { orpcQuery } from '~/lib/orpc'
-import { chatInput } from '.'
 import { Route } from '../..'
-import { pageHooks, pageStore } from '../../-page'
+import { pageHooks } from '../../-page'
+import { databaseStore } from '../../../../-store'
 import { ChatImages } from './chat-images'
 
 export function ChatForm() {
@@ -24,10 +24,10 @@ export function ChatForm() {
   const { error } = Route.useSearch()
   const router = useRouter()
   const location = useLocation()
-  const [input, setInput] = useState(chatInput.get(database.id))
   const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
-  const store = useMemo(() => pageStore(database.id), [database.id])
+  const store = databaseStore(database.id)
+  const input = useStore(store, state => state.chatInput)
   const files = useStore(store, state => state.files.map(file => ({
     name: file.name,
     url: URL.createObjectURL(file),
@@ -54,11 +54,11 @@ export function ChatForm() {
     try {
       const filesBase64 = await getBase64FromFiles(cachedFiles)
 
-      setInput('')
       store.setState(state => ({
         ...state,
+        chatInput: '',
         files: [],
-      }))
+      } satisfies typeof state))
 
       pageHooks.callHook('sendMessage')
 
@@ -87,11 +87,11 @@ export function ChatForm() {
       })
     }
     catch (error) {
-      setInput(cachedValue)
       store.setState(state => ({
         ...state,
+        chatInput: cachedValue,
         files: cachedFiles,
-      }))
+      } satisfies typeof state))
       toast.error('Failed to send message', {
         description: error instanceof Error
           ? error.message
@@ -114,8 +114,11 @@ export function ChatForm() {
   }, [error, handleSend, router, chat.id])
 
   useMountedEffect(() => {
-    chatInput.set(database.id, input)
-  }, [input, database.id])
+    store.setState(state => ({
+      ...state,
+      chatInput: input,
+    } satisfies typeof state))
+  }, [input, store])
 
   useEffect(() => {
     return pageHooks.hook('fix', async (error) => {
@@ -139,7 +142,10 @@ export function ChatForm() {
         })
       }
       else {
-        setInput(data)
+        store.setState(state => ({
+          ...state,
+          chatInput: data,
+        } satisfies typeof state))
       }
     },
   }))
@@ -178,7 +184,12 @@ export function ChatForm() {
           ref={ref}
           data-mask
           value={input}
-          setValue={setInput}
+          setValue={(value) => {
+            store.setState(state => ({
+              ...state,
+              chatInput: value,
+            } satisfies typeof state))
+          }}
           placeholder="Generate SQL query using natural language"
           className="min-h-[50px] max-h-[250px] p-2 text-sm outline-none overflow-y-auto"
           onEnter={handleSend}
