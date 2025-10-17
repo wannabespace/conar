@@ -15,6 +15,8 @@ import { Route as protectedProtectedIndexRouteImport } from './routes/(protected
 import { Route as publicAuthTwoFactorRouteImport } from './routes/(public)/_auth/two-factor'
 import { Route as publicAuthSignUpRouteImport } from './routes/(public)/_auth/sign-up'
 import { Route as publicAuthSignInRouteImport } from './routes/(public)/_auth/sign-in'
+import { Route as publicAuthResetPasswordRouteImport } from './routes/(public)/_auth/reset-password'
+import { Route as publicAuthForgotPasswordRouteImport } from './routes/(public)/_auth/forgot-password'
 import { Route as protectedProtectedCreateRouteImport } from './routes/(protected)/_protected/create'
 import { Route as publicAuthTwoFactorSetupRouteImport } from './routes/(public)/_auth/two-factor.setup'
 import { Route as protectedProtectedDatabaseIdRouteImport } from './routes/(protected)/_protected/database/$id'
@@ -51,6 +53,17 @@ const publicAuthSignInRoute = publicAuthSignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => publicAuthRoute,
 } as any)
+const publicAuthResetPasswordRoute = publicAuthResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => publicAuthRoute,
+} as any)
+const publicAuthForgotPasswordRoute =
+  publicAuthForgotPasswordRouteImport.update({
+    id: '/forgot-password',
+    path: '/forgot-password',
+    getParentRoute: () => publicAuthRoute,
+  } as any)
 const protectedProtectedCreateRoute =
   protectedProtectedCreateRouteImport.update({
     id: '/create',
@@ -96,6 +109,8 @@ const protectedProtectedDatabaseIdEnumsIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/create': typeof protectedProtectedCreateRoute
+  '/forgot-password': typeof publicAuthForgotPasswordRoute
+  '/reset-password': typeof publicAuthResetPasswordRoute
   '/sign-in': typeof publicAuthSignInRoute
   '/sign-up': typeof publicAuthSignUpRoute
   '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
@@ -109,6 +124,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/create': typeof protectedProtectedCreateRoute
+  '/forgot-password': typeof publicAuthForgotPasswordRoute
+  '/reset-password': typeof publicAuthResetPasswordRoute
   '/sign-in': typeof publicAuthSignInRoute
   '/sign-up': typeof publicAuthSignUpRoute
   '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
@@ -125,6 +142,8 @@ export interface FileRoutesById {
   '/(protected)/_protected': typeof protectedProtectedRouteWithChildren
   '/(public)/_auth': typeof publicAuthRouteWithChildren
   '/(protected)/_protected/create': typeof protectedProtectedCreateRoute
+  '/(public)/_auth/forgot-password': typeof publicAuthForgotPasswordRoute
+  '/(public)/_auth/reset-password': typeof publicAuthResetPasswordRoute
   '/(public)/_auth/sign-in': typeof publicAuthSignInRoute
   '/(public)/_auth/sign-up': typeof publicAuthSignUpRoute
   '/(public)/_auth/two-factor': typeof publicAuthTwoFactorRouteWithChildren
@@ -140,6 +159,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/create'
+    | '/forgot-password'
+    | '/reset-password'
     | '/sign-in'
     | '/sign-up'
     | '/two-factor'
@@ -153,6 +174,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/create'
+    | '/forgot-password'
+    | '/reset-password'
     | '/sign-in'
     | '/sign-up'
     | '/two-factor'
@@ -168,6 +191,8 @@ export interface FileRouteTypes {
     | '/(protected)/_protected'
     | '/(public)/_auth'
     | '/(protected)/_protected/create'
+    | '/(public)/_auth/forgot-password'
+    | '/(public)/_auth/reset-password'
     | '/(public)/_auth/sign-in'
     | '/(public)/_auth/sign-up'
     | '/(public)/_auth/two-factor'
@@ -227,6 +252,20 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof publicAuthSignInRouteImport
+      parentRoute: typeof publicAuthRoute
+    }
+    '/(public)/_auth/reset-password': {
+      id: '/(public)/_auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof publicAuthResetPasswordRouteImport
+      parentRoute: typeof publicAuthRoute
+    }
+    '/(public)/_auth/forgot-password': {
+      id: '/(public)/_auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof publicAuthForgotPasswordRouteImport
       parentRoute: typeof publicAuthRoute
     }
     '/(protected)/_protected/create': {
@@ -333,12 +372,16 @@ const publicAuthTwoFactorRouteWithChildren =
   publicAuthTwoFactorRoute._addFileChildren(publicAuthTwoFactorRouteChildren)
 
 interface publicAuthRouteChildren {
+  publicAuthForgotPasswordRoute: typeof publicAuthForgotPasswordRoute
+  publicAuthResetPasswordRoute: typeof publicAuthResetPasswordRoute
   publicAuthSignInRoute: typeof publicAuthSignInRoute
   publicAuthSignUpRoute: typeof publicAuthSignUpRoute
   publicAuthTwoFactorRoute: typeof publicAuthTwoFactorRouteWithChildren
 }
 
 const publicAuthRouteChildren: publicAuthRouteChildren = {
+  publicAuthForgotPasswordRoute: publicAuthForgotPasswordRoute,
+  publicAuthResetPasswordRoute: publicAuthResetPasswordRoute,
   publicAuthSignInRoute: publicAuthSignInRoute,
   publicAuthSignUpRoute: publicAuthSignUpRoute,
   publicAuthTwoFactorRoute: publicAuthTwoFactorRouteWithChildren,
