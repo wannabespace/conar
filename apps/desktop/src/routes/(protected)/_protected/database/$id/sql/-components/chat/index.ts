@@ -11,7 +11,7 @@ import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { databaseEnumsQuery, databaseTableColumnsQuery, rowsSql, tablesAndSchemasQuery } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
-import { pageStore } from '../../-lib'
+import { pageStore } from '../../-page'
 
 export * from './chat'
 
@@ -105,6 +105,8 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           chatsMessagesCollection.delete(options.messageId)
         }
 
+        const store = pageStore(database.id)
+
         return eventIteratorToStream(await orpc.ai.ask({
           ...options.body,
           id: options.chatId,
@@ -116,7 +118,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           trigger: options.trigger,
           messageId: options.messageId,
           context: [
-            `Current query in the SQL runner: ${pageStore.state.sql.trim() || 'Empty'}`,
+            `Current query in the SQL runner: ${store.state.sql.trim() || 'Empty'}`,
             'Database schemas and tables:',
             JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database })), null, 2),
           ].join('\n'),

@@ -6,7 +6,6 @@ import { CtrlEnter, CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Kbd } from '@conar/ui/components/kbd'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
-import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import NumberFlow from '@number-flow/react'
 import { RiBrush2Line, RiCheckLine, RiPlayFill, RiStarLine } from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
@@ -14,12 +13,12 @@ import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { hasDangerousSqlKeywords } from '~/entities/database'
+import { getSQLQueries, hasDangerousSqlKeywords } from '~/entities/database'
 import { queriesCollection } from '~/entities/query'
 import { formatSql } from '~/lib/formatter'
-import { runnerQueryOptions, runnerSelectedLines, runnerSql } from '.'
+import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { pageHooks, pageStore, queries } from '../../-lib'
+import { pageHooks, pageStore } from '../../-page'
 import { RunnerAlertDialog } from './runner-alert-dialog'
 import { RunnerEditor } from './runner-editor'
 import { RunnerQueries } from './runner-queries'
@@ -30,46 +29,38 @@ export function Runner() {
   const { database } = Route.useRouteContext()
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
-  const { id } = Route.useParams()
-  const selectedLines = useStore(pageStore, state => state.selectedLines)
-  const queriesStore = useStore(queries)
+  const store = useMemo(() => pageStore(database.id), [database.id])
+  const selectedLines = useStore(store, state => state.selectedLines)
+  const queries = useStore(store, state => getSQLQueries(state.sql))
   const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
-    .where(({ queries }) => eq(queries.databaseId, id))
+    .where(({ queries }) => eq(queries.databaseId, database.id))
     .select(({ queries }) => ({ queriesCount: count(queries.id) }))
     .findOne(),
   )
-  const sql = useStore(pageStore, state => state.sql)
+  const sql = useStore(store, state => state.sql)
   const [isFormatting, setIsFormatting] = useState(false)
 
-  useMountedEffect(() => {
-    runnerSql(id).set(sql)
-  }, [id, sql])
-
-  useMountedEffect(() => {
-    runnerSelectedLines(id).set(selectedLines)
-  }, [id, selectedLines])
-
   useEffect(() => {
-    const currentLineNumbers = queriesStore.map(q => q.startLineNumber)
-    const selectedLines = pageStore.state.selectedLines
+    const currentLineNumbers = queries.map(q => q.startLineNumber)
+    const selectedLines = store.state.selectedLines
     const newSelectedLines = selectedLines.filter(line => currentLineNumbers.includes(line))
 
     if (
       newSelectedLines.length !== selectedLines.length
       || newSelectedLines.some((line, i) => line !== selectedLines[i])
     ) {
-      pageStore.setState(prev => ({
-        ...prev,
+      store.setState(state => ({
+        ...state,
         selectedLines: newSelectedLines.toSorted((a, b) => a - b),
       }))
     }
-  }, [queriesStore])
+  }, [store, queries])
 
   function format() {
     const formatted = formatSql(sql, database.type)
 
-    pageStore.setState(state => ({
+    store.setState(state => ({
       ...state,
       sql: formatted,
     }))
@@ -78,16 +69,16 @@ export function Runner() {
 
   const queriesToRun = useMemo(() => {
     if (selectedLines.length > 0) {
-      return selectedLines.flatMap(lineNumber => queriesStore.find(query => query.startLineNumber === lineNumber)?.queries || [])
+      return selectedLines.flatMap(lineNumber => queries.find(query => query.startLineNumber === lineNumber)?.queries || [])
     }
 
-    return queriesStore.flatMap(query => query.queries)
-  }, [selectedLines, queriesStore])
+    return queries.flatMap(query => query.queries)
+  }, [selectedLines, queries])
 
   const { refetch: refetchRunner, status, error, fetchStatus } = useQuery(runnerQueryOptions({ database }))
 
   const runQueries = (queries: string[]) => {
-    pageStore.setState(state => ({
+    store.setState(state => ({
       ...state,
       queriesToRun: queries,
     }))

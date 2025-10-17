@@ -48,7 +48,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.1.1",
     "input-otp": "^1.4.2",
-    "lucide-react": "^0.545.0",
+    "lucide-react": "^0.546.0",
     "monaco-editor": "catalog:",
     "motion": "catalog:",
     "next-themes": "^0.4.6",

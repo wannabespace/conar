@@ -10,13 +10,13 @@ import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCi
 import { useMutation } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { orpcQuery } from '~/lib/orpc'
 import { chatInput } from '.'
 import { Route } from '../..'
-import { pageHooks, pageStore } from '../../-lib'
+import { pageHooks, pageStore } from '../../-page'
 import { ChatImages } from './chat-images'
 
 export function ChatForm() {
@@ -27,7 +27,8 @@ export function ChatForm() {
   const [input, setInput] = useState(chatInput.get(database.id))
   const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
-  const files = useStore(pageStore, state => state.files.map(file => ({
+  const store = useMemo(() => pageStore(database.id), [database.id])
+  const files = useStore(store, state => state.files.map(file => ({
     name: file.name,
     url: URL.createObjectURL(file),
   })))
@@ -48,13 +49,13 @@ export function ChatForm() {
     }
 
     const cachedValue = value.trim()
-    const cachedFiles = [...pageStore.state.files]
+    const cachedFiles = [...store.state.files]
 
     try {
       const filesBase64 = await getBase64FromFiles(cachedFiles)
 
       setInput('')
-      pageStore.setState(state => ({
+      store.setState(state => ({
         ...state,
         files: [],
       }))
@@ -87,7 +88,7 @@ export function ChatForm() {
     }
     catch (error) {
       setInput(cachedValue)
-      pageStore.setState(state => ({
+      store.setState(state => ({
         ...state,
         files: cachedFiles,
       }))
@@ -97,7 +98,7 @@ export function ChatForm() {
           : 'An unexpected error occurred. Please try again.',
       })
     }
-  }, [router, location.search.chatId, chat, database.id])
+  }, [router, location.search.chatId, chat, database.id, store])
 
   useEffect(() => {
     if (!error) {
@@ -152,9 +153,9 @@ export function ChatForm() {
 
     const fileArr = Array.from(fileList)
 
-    pageStore.setState(state => ({
+    store.setState(state => ({
       ...state,
-      files: [...state.files, ...fileArr],
+      files: [...store.state.files, ...fileArr],
     }))
     e.target.value = ''
   }
@@ -165,9 +166,9 @@ export function ChatForm() {
         <ChatImages
           images={files}
           onRemove={(index) => {
-            pageStore.setState(state => ({
+            store.setState(state => ({
               ...state,
-              files: state.files.filter((_, i) => i !== index),
+              files: store.state.files.filter((_, i) => i !== index),
             }))
           }}
         />
@@ -182,9 +183,9 @@ export function ChatForm() {
           className="min-h-[50px] max-h-[250px] p-2 text-sm outline-none overflow-y-auto"
           onEnter={handleSend}
           onImageAdd={(file) => {
-            pageStore.setState(state => ({
+            store.setState(state => ({
               ...state,
-              files: [...state.files, file],
+              files: [...store.state.files, file],
             }))
           }}
         />

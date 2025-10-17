@@ -49,28 +49,26 @@ export function Monaco({
   }, [resolvedTheme])
 
   const onChangeEvent = useEffectEvent(onChange)
-  const getOptionsEvent = useEffectEvent(() => {
-    return {
-      value: (() => {
-        if (language?.includes('json')) {
-          try {
-            return JSON.stringify(JSON.parse(value), null, 2)
-          }
-          catch {
-            return value
-          }
+  const getOptionsEvent = useEffectEvent(() => ({
+    value: (() => {
+      if (language?.includes('json')) {
+        try {
+          return JSON.stringify(JSON.parse(value), null, 2)
         }
+        catch {
+          return value
+        }
+      }
 
-        return value
-      })(),
-      language,
-      automaticLayout: true,
-      minimap: { enabled: false },
-      fontFamily: '"Geist Mono", monospace',
-      tabSize: 2,
-      ...options,
-    }
-  })
+      return value
+    })(),
+    language,
+    automaticLayout: true,
+    minimap: { enabled: false },
+    fontFamily: '"Geist Mono", monospace',
+    tabSize: 2,
+    ...options,
+  }))
 
   useEffect(() => {
     if (!elementRef.current)
@@ -132,22 +130,24 @@ export function Monaco({
 
     const currentValue = editor.getValue()
 
-    if (currentValue !== value) {
-      if (options?.readOnly) {
-        editor.setValue(value)
-      }
-      else {
-        preventTriggerChangeEvent.current = true
-        editor.executeEdits('', [
-          {
-            range: model.getFullModelRange(),
-            text: value,
-            forceMoveMarkers: true,
-          },
-        ])
-        editor.pushUndoStop()
-        preventTriggerChangeEvent.current = false
-      }
+    if (currentValue === value) {
+      return
+    }
+
+    if (options?.readOnly) {
+      editor.setValue(value)
+    }
+    else {
+      preventTriggerChangeEvent.current = true
+      editor.executeEdits('', [
+        {
+          range: model.getFullModelRange(),
+          text: value,
+          forceMoveMarkers: true,
+        },
+      ])
+      editor.pushUndoStop()
+      preventTriggerChangeEvent.current = false
     }
   }, [value, options?.readOnly, language])
 

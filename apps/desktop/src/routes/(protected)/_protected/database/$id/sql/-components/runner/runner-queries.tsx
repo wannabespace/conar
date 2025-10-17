@@ -9,14 +9,15 @@ import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiDeleteBin7Line, RiFileCopyLine, RiPlayListAddLine, RiSaveLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { queriesCollection } from '~/entities/query/sync'
 import { Route } from '../..'
-import { pageStore } from '../../-lib'
+import { pageStore } from '../../-page'
 import { RemoveQueryDialog } from './remove-query-dialog'
 
 export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
   const { database } = Route.useRouteContext()
+  const store = useMemo(() => pageStore(database.id), [database.id])
   const { data } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
     .where(({ queries }) => eq(queries.databaseId, database.id))
@@ -46,7 +47,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                             size="icon-sm"
                             variant="ghost"
                             onClick={() => {
-                              pageStore.setState(state => ({
+                              store.setState(state => ({
                                 ...state,
                                 sql: `${state.sql}\n\n-- ${query.name}\n${query.query}`,
                               }))

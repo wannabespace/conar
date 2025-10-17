@@ -9,13 +9,14 @@ import { copy } from '@conar/ui/lib/copy'
 import { render } from '@conar/ui/lib/render'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
-import { useStore } from '@tanstack/react-form'
 import { useIsFetching } from '@tanstack/react-query'
+import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useMemo, useState } from 'react'
+import { getSQLQueries } from '~/entities/database'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { pageStore, queries } from '../../-lib'
+import { pageStore } from '../../-page'
 
 function RunnerQueryEditorZone({
   database,
@@ -31,19 +32,21 @@ function RunnerQueryEditorZone({
   lineNumber: number
 }) {
   const [isCopying, setIsCopying] = useState(false)
-  const isChecked = useStore(pageStore, state => state.selectedLines.includes(lineNumber))
-  const startFrom = useStore(queries, (state) => {
-    const index = state.findIndex(query => query.startLineNumber === lineNumber)
-    const queriesBefore = state.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0)
+  const store = useMemo(() => pageStore(database.id), [database.id])
+  const isChecked = useStore(store, state => state.selectedLines.includes(lineNumber))
+  const queries = useStore(store, state => getSQLQueries(state.sql))
+  const startFrom = useMemo(() => {
+    const index = queries.findIndex(query => query.startLineNumber === lineNumber)
+    const queriesBefore = queries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0)
     return queriesBefore + 1
-  })
-  const queriesAmount = useStore(queries, state => state.find(query => query.startLineNumber === lineNumber)?.queries.length || 0)
+  }, [lineNumber, queries])
+  const queriesAmount = useMemo(() => queries.find(query => query.startLineNumber === lineNumber)?.queries.length || 0, [lineNumber, queries])
   const isFetching = useIsFetching(runnerQueryOptions({ database }), queryClient) > 0
 
   const onCheckedChange = () => {
-    pageStore.setState(state => ({
+    store.setState(state => ({
       ...state,
-      selectedLines: state.selectedLines.includes(lineNumber)
+      selectedLines: isChecked
         ? state.selectedLines.filter(l => l !== lineNumber)
         : [...state.selectedLines, lineNumber].toSorted((a, b) => a - b),
     }))
@@ -137,11 +140,12 @@ export function useRunnerEditorQueryZone(monacoRef: RefObject<editor.IStandalone
   onSave: (query: string) => void
 }) {
   const { database } = Route.useRouteContext()
-  const queriesArray = useStore(queries)
-  const linesWithQueries = useMemo(() => queriesArray.map(({ startLineNumber }) => startLineNumber), [queriesArray])
+  const store = useMemo(() => pageStore(database.id), [database.id])
+  const queries = useStore(store, state => getSQLQueries(state.sql))
+  const linesWithQueries = useMemo(() => queries.map(({ startLineNumber }) => startLineNumber), [queries])
 
   const getQueriesEvent = useEffectEvent((lineNumber: number) =>
-    queriesArray.find(query => query.startLineNumber === lineNumber)?.queries || [],
+    queries.find(query => query.startLineNumber === lineNumber)?.queries || [],
   )
 
   const onRunEvent = useEffectEvent(onRun)

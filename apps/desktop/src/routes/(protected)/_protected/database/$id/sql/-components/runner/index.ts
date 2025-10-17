@@ -1,11 +1,10 @@
 import type { databases } from '~/drizzle'
-import { localStorageValue } from '@conar/ui/hookas/use-local-storage'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { hasDangerousSqlKeywords } from '~/entities/database'
 import { drizzleProxy } from '~/entities/database/query'
 import { formatSql } from '~/lib/formatter'
-import { pageStore } from '../../-lib'
+import { pageStore } from '../../-page'
 
 export * from './runner'
 
@@ -19,7 +18,9 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
         shouldRun = false
       }
 
-      const queries = pageStore.state.queriesToRun
+      const store = pageStore(database.id)
+
+      const queries = store.state.queriesToRun
 
       const db = drizzleProxy(database, 'SQL Runner')
       const results = await Promise.all(queries.map(async query => [
@@ -40,12 +41,4 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
     throwOnError: false,
     enabled: false,
   })
-}
-
-export function runnerSql(id: string) {
-  return localStorageValue(`sql-${id}`, '')
-}
-
-export function runnerSelectedLines(id: string) {
-  return localStorageValue<number[]>(`selected-lines-${id}`, [])
 }

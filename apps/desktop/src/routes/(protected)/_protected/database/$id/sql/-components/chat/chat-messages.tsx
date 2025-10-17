@@ -14,12 +14,12 @@ import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiFileCopyLine, RiRestartLine } from '@remixicon/react'
 import { isToolUIPart } from 'ai'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
 import { Route } from '../..'
-import { pageHooks, pageStore } from '../../-lib'
+import { pageHooks, pageStore } from '../../-page'
 import { ChatImages } from './chat-images'
 import { ChatMessageTool } from './chat-message-tools'
 
@@ -51,7 +51,7 @@ function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick
   )
 }
 
-function ChatMessageParts({ parts, loading, onEdit }: { parts: UIMessage['parts'], loading?: boolean, onEdit?: (query: string) => void }) {
+function ChatMessageParts({ parts, loading, onAdd }: { parts: UIMessage['parts'], loading?: boolean, onAdd?: (query: string) => void }) {
   return parts.map((part, index) => {
     if (part.type === 'text') {
       return (
@@ -59,7 +59,7 @@ function ChatMessageParts({ parts, loading, onEdit }: { parts: UIMessage['parts'
           key={index}
           content={part.text}
           generating={loading}
-          onEdit={onEdit}
+          onAdd={onAdd}
         />
       )
     }
@@ -151,14 +151,15 @@ function AssistantMessageLoader({ children, className, ...props }: ComponentProp
 }
 
 function AssistantMessage({ message, isLast, status, className, ...props }: { message: UIMessage, isLast: boolean, status: ChatStatus } & ComponentProps<'div'>) {
-  const { chat } = Route.useLoaderData()
+  const { database, chat } = Route.useLoaderData()
   const ref = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(ref)
+  const store = useMemo(() => pageStore(database.id), [database.id])
 
-  async function handleEdit(query: string) {
-    pageStore.setState(state => ({
+  async function handleAdd(query: string) {
+    store.setState(state => ({
       ...state,
-      query,
+      sql: `${state.sql}\n\n${query}`,
     }))
     await sleep(0)
     pageHooks.callHook('focusRunner')
@@ -176,7 +177,7 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
           <ChatMessageParts
             parts={message.parts}
             loading={isLoading}
-            onEdit={handleEdit}
+            onAdd={handleAdd}
           />
         </div>
       </div>

@@ -1,6 +1,7 @@
 import type { ContextSelector } from '@fluentui/react-context-selector'
 import type { ComponentProps, ReactElement, ReactNode } from 'react'
 import { Button } from '@conar/ui/components/button'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
 import {
   Table,
@@ -11,16 +12,14 @@ import {
   TableRow,
 } from '@conar/ui/components/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 import NumberFlow from '@number-flow/react'
-import { RiArrowLeftDoubleLine, RiCodeLine, RiFileCopyLine, RiText } from '@remixicon/react'
+import { RiCheckLine, RiCodeLine, RiFileCopyLine, RiPlayListAddLine, RiText } from '@remixicon/react'
 import { marked } from 'marked'
 import { useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { toast } from 'sonner'
 import { trackEvent } from '~/lib/events'
 import { Monaco } from './monaco'
 
@@ -60,12 +59,14 @@ const monacoOptions = {
   folding: false,
 }
 
-function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: string) => void }) {
+function Pre({ children, onAdd }: { children?: ReactNode, onAdd?: (content: string) => void }) {
   const generating = useMarkdownContext(c => c.generating)
   const childrenProps = (typeof children === 'object' && (children as ReactElement<{ children?: ReactNode, className?: string }>)?.props) || null
   const content = childrenProps?.children?.toString().trim() || null
   const lang = (childrenProps?.className?.split('-')[1] || 'text') as keyof typeof langsMap
   const [opened, setOpened] = useState(false)
+  const [isCopying, setIsCopying] = useState(false)
+  const [isAppending, setIsAppending] = useState(false)
 
   if (!content)
     return null
@@ -104,11 +105,17 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                       variant="ghost"
                       onClick={(e) => {
                         e.stopPropagation()
-                        copy(content, 'Copied to clipboard')
+                        setIsCopying(true)
                         trackEvent('markdown_copy_to_clipboard')
                       }}
                     >
-                      <RiFileCopyLine className="size-3.5" />
+                      <ContentSwitch
+                        active={isCopying}
+                        activeContent={<RiCheckLine className="text-success" />}
+                        onSwitchEnd={() => setIsCopying(false)}
+                      >
+                        <RiFileCopyLine className="size-3.5" />
+                      </ContentSwitch>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -116,7 +123,7 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              {onEdit && lang === 'sql' && (
+              {onAdd && lang === 'sql' && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -125,16 +132,22 @@ function Pre({ children, onEdit }: { children?: ReactNode, onEdit?: (content: st
                         variant="ghost"
                         onClick={(e) => {
                           e.stopPropagation()
-                          onEdit(content)
-                          toast.success('Moved to runner')
+                          onAdd(content)
+                          setIsAppending(true)
                           trackEvent('markdown_move_to_runner')
                         }}
                       >
-                        <RiArrowLeftDoubleLine className="size-3.5" />
+                        <ContentSwitch
+                          active={isAppending}
+                          activeContent={<RiCheckLine className="text-success" />}
+                          onSwitchEnd={() => setIsAppending(false)}
+                        >
+                          <RiPlayListAddLine className="size-3.5" />
+                        </ContentSwitch>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Move to runner
+                      Append to bottom of runner
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -187,14 +200,14 @@ function P({ children, className }: { children?: ReactNode, className?: string }
   return <p className={className}>{children}</p>
 }
 
-function MarkdownBase({ content, onEdit }: { content: string, onEdit?: (content: string) => void }) {
+function MarkdownBase({ content, onAdd }: { content: string, onAdd?: (content: string) => void }) {
   const processedContent = content.replace(/\n/g, '  \n')
 
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        pre: ({ children }) => <Pre children={children} onEdit={onEdit} />,
+        pre: ({ children }) => <Pre children={children} onAdd={onAdd} />,
         table: MarkdownTable,
         thead: TableHeader,
         tbody: TableBody,
@@ -217,12 +230,12 @@ export function Markdown({
   content,
   id,
   className,
-  onEdit,
+  onAdd,
   generating,
   ...props
 }: {
   content: string
-  onEdit?: (content: string) => void
+  onAdd?: (content: string) => void
   generating?: boolean
 } & ComponentProps<'div'>) {
   const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content])
@@ -234,7 +247,7 @@ export function Markdown({
           <MarkdownBase
             key={id ? `${id}-block_${index}` : `block_${index}`}
             content={block}
-            onEdit={onEdit}
+            onAdd={onAdd}
           />
         ))}
       </div>

@@ -5,8 +5,7 @@ import { type } from 'arktype'
 import { useEffect } from 'react'
 import { lastOpenedChatId } from '~/entities/database'
 import { Chat, createChat } from './-components/chat'
-import { Runner, runnerSelectedLines, runnerSql } from './-components/runner'
-import { pageStore } from './-lib'
+import { Runner } from './-components/runner'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/sql/',
@@ -38,29 +37,6 @@ function DatabaseSqlPage() {
   useEffect(() => {
     lastOpenedChatId(id).set(chatId ?? null)
   }, [id, chatId])
-
-  useEffect(() => {
-    pageStore.setState(state => ({
-      ...state,
-      sql: runnerSql(id).get() || [
-        '-- Write your SQL query here based on your database schema',
-        '-- The examples below are for reference only and may not work with your database',
-        '',
-        '-- Example: Basic query with limit',
-        'SELECT * FROM users LIMIT 10;',
-        '',
-        '-- Example: Query with filtering',
-        'SELECT id, name, email FROM users WHERE created_at > \'2025-01-01\' ORDER BY name;',
-        '',
-        '-- Example: Join example',
-        'SELECT u.id, u.name, p.title FROM users u',
-        'JOIN posts p ON u.id = p.user_id',
-        'WHERE p.published = true',
-        'LIMIT 10;',
-      ].join('\n'),
-      selectedLines: runnerSelectedLines(id).get(),
-    }))
-  }, [id])
 
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex">

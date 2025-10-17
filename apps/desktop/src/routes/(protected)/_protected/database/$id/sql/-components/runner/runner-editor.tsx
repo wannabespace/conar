@@ -4,9 +4,10 @@ import { KeyCode, KeyMod } from 'monaco-editor'
 import { LanguageIdEnum } from 'monaco-sql-languages'
 import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
 import { Monaco } from '~/components/monaco'
+import { getSQLQueries } from '~/entities/database'
 import { databaseCompletionService } from '~/entities/database/utils/monaco'
 import { Route } from '../..'
-import { pageHooks, pageStore, queries } from '../../-lib'
+import { pageHooks, pageStore } from '../../-page'
 import { useRunnerEditorAIZone } from './runner-editor-ai-zone'
 import { useRunnerEditorQueryZone } from './runner-editor-query-zone'
 
@@ -18,8 +19,9 @@ export function RunnerEditor({
   onSave: (query: string) => void
 }) {
   const { database } = Route.useRouteContext()
-  const sql = useStore(pageStore, state => state.sql)
-  const queriesArray = useStore(queries)
+  const store = useMemo(() => pageStore(database.id), [database.id])
+  const sql = useStore(store, state => state.sql)
+  const queries = useStore(store, state => getSQLQueries(state.sql))
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   const onRunEvent = useEffectEvent(onRun)
@@ -34,7 +36,7 @@ export function RunnerEditor({
   const completionService = useMemo(() => databaseCompletionService(database), [database])
 
   const getInlineQueriesEvent = useEffectEvent((position: Position) => {
-    return queriesArray.find(query =>
+    return queries.find(query =>
       position.lineNumber >= query.startLineNumber
       && position.lineNumber <= query.endLineNumber,
     )?.queries ?? []
@@ -78,7 +80,7 @@ export function RunnerEditor({
       ref={monacoRef}
       language={LanguageIdEnum.PG}
       value={sql}
-      onChange={q => pageStore.setState(state => ({
+      onChange={q => store.setState(state => ({
         ...state,
         sql: q,
       }))}
