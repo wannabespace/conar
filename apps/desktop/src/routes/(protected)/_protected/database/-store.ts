@@ -67,6 +67,10 @@ export function databaseStore(id: string) {
     JSON.parse(localStorage.getItem(`database-store-${id}`) || '{}'),
   ))
 
+  if (import.meta.env.DEV && state instanceof type.errors) {
+    console.error('Invalid database store state', state.summary)
+  }
+
   const store = new Store<typeof pageStoreType.infer>(
     state instanceof type.errors ? defaultState : state,
   )
