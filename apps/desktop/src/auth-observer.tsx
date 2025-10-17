@@ -7,7 +7,7 @@ import { authClient, bearerToken } from './lib/auth'
 import { handleDeepLink } from './lib/deep-links'
 
 const authRoutes = ['/sign-in', '/sign-up']
-const publicRoutes = [...authRoutes]
+const publicRoutes = [...authRoutes, '/forgot-password', '/reset-password']
 
 export function AuthObserver() {
   const { data, error, isPending, refetch } = authClient.useSession()
@@ -62,6 +62,9 @@ export function AuthObserver() {
 
     if (type === 'session') {
       refetch()
+    }
+    else if (type === 'reset-password') {
+      router.navigate({ to: '/reset-password' })
     }
   }
 
