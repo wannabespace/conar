@@ -10,8 +10,8 @@ catalog:
   '@remixicon/react': ^4.7.0
   '@tanstack/react-query': ^5.90.5
   '@tanstack/react-query-devtools': ^5.90.2
-  '@tanstack/react-router': ^1.133.3
-  '@tanstack/react-router-devtools': ^1.133.3
+  '@tanstack/react-router': ^1.133.10
+  '@tanstack/react-router-devtools': ^1.133.10
   '@tanstack/react-store': ^0.8.0
   '@tanstack/react-virtual': ^3.13.12
   '@types/react': ^19.2.2
