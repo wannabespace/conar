@@ -6,7 +6,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
-import { sendResetPasswordEmail } from '~/lib/email/templates'
+import { sendResetPasswordEmail } from '~/lib/email'
 import { loops } from '~/lib/loops'
 
 async function loopsUpdateUser(user: User) {

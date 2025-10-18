@@ -1,7 +1,10 @@
 import type { User } from 'better-auth'
-import { generateResetLink, isResendConfigured, validateResetToken, verifyUserExists } from '~/lib/email/helpers'
+import {
+  generateResetLink,
+  sendEmailIfValid,
+  validateResetToken,
+} from '~/lib/email/helpers'
 import resetPasswordTemplate from '~/lib/email/templates/reset-password'
-import { resend } from '~/lib/resend'
 
 interface ResetPasswordEmailData {
   user: User
@@ -12,24 +15,12 @@ interface ResetPasswordEmailData {
  * Send password reset email to user
  * @param data - User data and reset token
  */
-export async function sendResetPasswordEmail(data: ResetPasswordEmailData) {
-  if (!isResendConfigured()) {
-    return
-  }
+export async function sendResetPasswordEmail({ user, token }: ResetPasswordEmailData) {
+  validateResetToken(token)
 
-  const existingUser = await verifyUserExists(data.user.email)
-  if (!existingUser) {
-    return
-  }
+  const resetLink = generateResetLink(token)
+  const subjectLine = 'Reset Your Conar Password'
+  const template = resetPasswordTemplate(user.name || 'User', resetLink)
 
-  validateResetToken(data.token)
-
-  const resetLink = generateResetLink(data.token)
-
-  await resend!.emails.send({
-    from: 'Conar <noreply@theharsh.xyz>',
-    to: data.user.email,
-    subject: 'Reset your Conar Password',
-    html: resetPasswordTemplate(existingUser.name || 'User', resetLink),
-  })
+  await sendEmailIfValid(user.email, subjectLine, template)
 }
