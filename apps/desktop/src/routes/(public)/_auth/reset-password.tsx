@@ -1,9 +1,7 @@
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@conar/ui/components/form'
-import { Input } from '@conar/ui/components/input'
 import { arktypeResolver } from '@hookform/resolvers/arktype'
-import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect, useState } from 'react'
@@ -11,10 +9,15 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/lib/error'
+import PasswordInput from './-components/password-input'
+import InvalidTokenBanner from './-components/token-banner'
 
 export const Route = createFileRoute('/(public)/_auth/reset-password')({
   component: ResetPasswordPage,
 })
+
+const RESET_TOKEN_KEY = 'conar.reset_token'
+const VALID_TOKEN_LENGTH = 24
 
 const schema = type({
   password: 'string >= 8',
@@ -26,17 +29,39 @@ function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [token, setToken] = useState<string | null>(null)
+  const [isValidatingToken, setIsValidatingToken] = useState(true)
+  const [isTokenExpired, setIsTokenExpired] = useState(false)
+
+  const handleInvalidToken = (description: string, shouldExpire = true) => {
+    toast.error('Invalid reset token', { description })
+    if (shouldExpire) {
+      setIsTokenExpired(true)
+      setIsValidatingToken(false)
+    }
+    else {
+      navigate({ to: '/forgot-password' })
+    }
+  }
 
   useEffect(() => {
-    const resetToken = sessionStorage.getItem('conar.reset_token')
-    if (!resetToken) {
-      toast.error('Invalid reset link', {
-        description: 'Please request a new password reset link.',
-      })
-      navigate({ to: '/forgot-password' })
-      return
+    const validateToken = () => {
+      const resetToken = sessionStorage.getItem(RESET_TOKEN_KEY)
+
+      if (!resetToken) {
+        handleInvalidToken('Please request a new password reset link.', false)
+        return
+      }
+
+      if (resetToken.length !== VALID_TOKEN_LENGTH) {
+        handleInvalidToken('The reset link is invalid or malformed.')
+        return
+      }
+
+      setToken(resetToken)
+      setIsValidatingToken(false)
     }
-    setToken(resetToken)
+
+    validateToken()
   }, [navigate])
 
   const form = useForm<typeof schema.infer>({
@@ -47,9 +72,28 @@ function ResetPasswordPage() {
     },
   })
 
+  const handleResetSuccess = () => {
+    sessionStorage.removeItem(RESET_TOKEN_KEY)
+    toast.success('Password reset successfully', {
+      description: 'You can now sign in with your new password.',
+    })
+    navigate({ to: '/sign-in' })
+  }
+
+  const handleResetError = () => {
+    setIsTokenExpired(true)
+    sessionStorage.removeItem(RESET_TOKEN_KEY)
+    toast.error('Reset link expired or invalid', {
+      description: 'The reset password token is invalid or expired.',
+    })
+  }
+
   const submit = async (values: typeof schema.infer) => {
     if (!token) {
-      toast.error('No reset token found')
+      toast.error('No reset token found', {
+        description: 'Please request a new password reset link.',
+      })
+      navigate({ to: '/forgot-password' })
       return
     }
 
@@ -67,21 +111,16 @@ function ResetPasswordPage() {
       })
 
       if (error) {
-        handleError(error)
+        handleResetError()
         return
       }
 
       if (data?.status) {
-        sessionStorage.removeItem('conar.reset_token')
-
-        toast.success('Password reset successfully', {
-          description: 'You can now sign in with your new password.',
-        })
-        navigate({ to: '/sign-in' })
+        handleResetSuccess()
       }
       else {
         toast.error('Password reset failed', {
-          description: 'Please try again or contact support.',
+          description: 'Please try again or request a new reset link.',
         })
       }
     }
@@ -90,8 +129,12 @@ function ResetPasswordPage() {
     }
   }
 
-  if (!token) {
-    return null
+  if (isValidatingToken || !token) {
+    return (
+      <LoadingContent loading>
+        <div />
+      </LoadingContent>
+    )
   }
 
   return (
@@ -105,6 +148,8 @@ function ResetPasswordPage() {
         </p>
       </div>
 
+      {isTokenExpired && <InvalidTokenBanner onNavigate={() => navigate({ to: '/forgot-password' })} />}
+
       <Form {...form}>
         <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
           <FormField
@@ -114,37 +159,11 @@ function ResetPasswordPage() {
               <FormItem>
                 <FormLabel>New Password</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Input
-                      placeholder="••••••••"
-                      type={showPassword ? 'text' : 'password'}
-                      autoCapitalize="none"
-                      autoComplete="new-password"
-                      spellCheck="false"
-                      required
-                      className="pe-10"
-                      {...field}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 size-7 -translate-y-1/2"
-                      onClick={() => setShowPassword(!showPassword)}
-                      tabIndex={-1}
-                    >
-                      {showPassword
-                        ? (
-                            <RiEyeOffLine className="size-4" />
-                          )
-                        : (
-                            <RiEyeLine className="size-4" />
-                          )}
-                      <span className="sr-only">
-                        {showPassword ? 'Hide password' : 'Show password'}
-                      </span>
-                    </Button>
-                  </div>
+                  <PasswordInput
+                    field={field}
+                    showPassword={showPassword}
+                    onToggle={() => setShowPassword(!showPassword)}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -158,37 +177,11 @@ function ResetPasswordPage() {
               <FormItem>
                 <FormLabel>Confirm Password</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Input
-                      placeholder="••••••••"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      autoCapitalize="none"
-                      autoComplete="new-password"
-                      spellCheck="false"
-                      required
-                      className="pe-10"
-                      {...field}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 size-7 -translate-y-1/2"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      tabIndex={-1}
-                    >
-                      {showConfirmPassword
-                        ? (
-                            <RiEyeOffLine className="size-4" />
-                          )
-                        : (
-                            <RiEyeLine className="size-4" />
-                          )}
-                      <span className="sr-only">
-                        {showConfirmPassword ? 'Hide password' : 'Show password'}
-                      </span>
-                    </Button>
-                  </div>
+                  <PasswordInput
+                    field={field}
+                    showPassword={showConfirmPassword}
+                    onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -198,7 +191,7 @@ function ResetPasswordPage() {
           <Button
             className="w-full"
             type="submit"
-            disabled={form.formState.isSubmitting}
+            disabled={form.formState.isSubmitting || isTokenExpired}
           >
             <LoadingContent loading={form.formState.isSubmitting}>
               Reset password
