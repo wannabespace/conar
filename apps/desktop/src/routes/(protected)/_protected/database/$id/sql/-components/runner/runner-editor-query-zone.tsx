@@ -114,6 +114,7 @@ function RunnerQueryEditorZone({
           </TooltipProvider>
           {Array.from({ length: queriesAmount }).map((_, index) => (
             <Button
+              // eslint-disable-next-line react/no-array-index-key
               key={index}
               size="xs"
               className="focus:outline-none!"

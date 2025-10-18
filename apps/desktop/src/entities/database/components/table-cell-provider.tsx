@@ -16,6 +16,7 @@ interface CellContextValue {
 
 const CellContext = createContext<CellContextValue>(null!)
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCellContext() {
   return use(CellContext)
 }

@@ -120,15 +120,16 @@ export function ChatForm() {
     } satisfies typeof state))
   }, [input, store])
 
-  useEffect(() => {
-    return pageHooks.hook('fix', async (error) => {
-      await router.navigate({
-        to: '/database/$id/sql',
-        params: { id: database.id },
-        search: { chatId: chat.id, error },
-      })
-    })
-  }, [router, database.id, chat.id])
+  // TODO: implement fix query
+  // useEffect(() => {
+  //   return pageHooks.hook('fix', async (error) => {
+  //     await router.navigate({
+  //       to: '/database/$id/sql',
+  //       params: { id: database.id },
+  //       search: { chatId: chat.id, error },
+  //     })
+  //   })
+  // }, [router, database.id, chat.id])
 
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(orpcQuery.ai.enhancePrompt.mutationOptions({
     onSuccess: (data) => {

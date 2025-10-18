@@ -4,25 +4,28 @@ import { Store, useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { getSQLQueries } from '~/entities/database/utils/helpers'
 
-export interface Tab {
-  table: string
-  schema: string
-  preview: boolean
-}
+export const tabType = type({
+  table: 'string',
+  schema: 'string',
+  preview: 'boolean',
+})
 
 const pageStoreType = type({
   lastOpenedPage: 'string | null',
   lastOpenedChatId: 'string | null',
-  lastOpenedTable: type({ schema: 'string', table: 'string' }).or('null'),
+  lastOpenedTable: type({
+    schema: 'string',
+    table: 'string',
+  }).or('null'),
   sql: 'string',
   selectedLines: 'number[]',
   queriesToRun: 'string[]',
   files: 'File[]',
   loggerOpened: 'boolean',
   chatInput: 'string',
-  tabs: 'object[]' as type.cast<Tab[]>,
+  tabs: tabType.array(),
   tablesSearch: 'string',
-  tablesAccordionValue: 'string[]',
+  tablesTreeOpenedSchemas: 'string[] | null',
 })
 
 const defaultState: typeof pageStoreType.infer = {
@@ -52,7 +55,7 @@ const defaultState: typeof pageStoreType.infer = {
   chatInput: '',
   tabs: [],
   tablesSearch: '',
-  tablesAccordionValue: ['public'],
+  tablesTreeOpenedSchemas: null,
 }
 
 const storesMap = new Map<string, Store<typeof pageStoreType.infer>>()
@@ -91,7 +94,7 @@ export function databaseStore(id: string) {
       chatInput: currentVal.chatInput,
       tabs: currentVal.tabs,
       tablesSearch: currentVal.tablesSearch,
-      tablesAccordionValue: currentVal.tablesAccordionValue,
+      tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
     }))
   })
 

@@ -187,6 +187,7 @@ function P({ children, className }: { children?: ReactNode, className?: string }
       <p className={className}>
         {children.split('').map((char, index) => (
           <span
+            // eslint-disable-next-line react/no-array-index-key
             key={index}
             className={cn(generating && 'animate-in fade-in duration-200')}
           >

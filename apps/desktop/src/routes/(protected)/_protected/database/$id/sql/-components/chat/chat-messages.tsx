@@ -57,6 +57,7 @@ function ChatMessageParts({ parts, loading, onAdd }: { parts: UIMessage['parts']
     if (part.type === 'text') {
       return (
         <Markdown
+          // eslint-disable-next-line react/no-array-index-key
           key={index}
           content={part.text}
           generating={loading}
@@ -68,6 +69,7 @@ function ChatMessageParts({ parts, loading, onAdd }: { parts: UIMessage['parts']
     if (part.type === 'reasoning') {
       return (
         <div
+          // eslint-disable-next-line react/no-array-index-key
           key={index}
           className={cn(loading && 'animate-in fade-in duration-200')}
         >
@@ -80,6 +82,7 @@ function ChatMessageParts({ parts, loading, onAdd }: { parts: UIMessage['parts']
     if (isToolUIPart(part)) {
       return (
         <ChatMessageTool
+          // eslint-disable-next-line react/no-array-index-key
           key={index}
           className={cn(loading && 'animate-in fade-in duration-200')}
           part={part}

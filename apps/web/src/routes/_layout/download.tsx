@@ -36,6 +36,7 @@ function Version() {
       <NumberFlowGroup>
         {versionNumbers.map((number, index) => (
           <NumberFlow
+            // eslint-disable-next-line react/no-array-index-key
             key={index}
             value={number}
             prefix={index === 0 ? 'Current version ' : ''}

@@ -1,6 +1,6 @@
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { ComponentProps, RefObject } from 'react'
-import type { Tab } from '../../../-store'
+import type { tabType } from '../../../-store'
 import type { databases } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -94,7 +94,7 @@ function SortableTab({
   onFocus,
 }: {
   id: string
-  item: { id: string, tab: Tab }
+  item: { id: string, tab: typeof tabType.infer }
   showSchema: boolean
   onClose: () => void
   onDoubleClick: () => void

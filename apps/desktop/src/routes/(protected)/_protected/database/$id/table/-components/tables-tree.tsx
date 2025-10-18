@@ -38,7 +38,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const ref = useRef<HTMLDivElement>(null)
   const store = databaseStore(database.id)
-  const tablesAccordionValue = useStore(store, state => state.tablesAccordionValue)
+  const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
 
@@ -51,7 +51,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
 
   const searchAccordionValue = useMemo(() => search
     ? filteredTablesAndSchemas.map(schema => schema.name)
-    : tablesAccordionValue, [search, filteredTablesAndSchemas, tablesAccordionValue])
+    : tablesTreeOpenedSchemas, [search, filteredTablesAndSchemas, tablesTreeOpenedSchemas])
 
   return (
     <ScrollArea ref={ref} className={cn('h-full overflow-y-auto p-2', className)}>
@@ -69,7 +69,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
           if (!search) {
             store.setState(state => ({
               ...state,
-              tablesAccordionValue: v,
+              tablesTreeOpenedSchemas: v,
             } satisfies typeof state))
           }
         }}

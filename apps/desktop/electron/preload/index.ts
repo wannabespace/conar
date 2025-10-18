@@ -31,6 +31,7 @@ async function handleError(func: () => any, log?: () => any) {
   }
   catch (error) {
     if (import.meta.env.DEV && log) {
+      // eslint-disable-next-line no-console
       console.debug('preload error', log())
     }
 

@@ -12,13 +12,11 @@ import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { toast } from 'sonner'
 import { hasDangerousSqlKeywords } from '~/entities/database'
 import { queriesCollection } from '~/entities/query'
 import { formatSql } from '~/lib/formatter'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { pageHooks } from '../../-page'
 import { databaseStore, useSQLQueries } from '../../../../-store'
 import { RunnerAlertDialog } from './runner-alert-dialog'
 import { RunnerEditor } from './runner-editor'
@@ -76,7 +74,7 @@ export function Runner() {
     return queries.flatMap(query => query.queries)
   }, [selectedLines, queries])
 
-  const { refetch: refetchRunner, status, error, fetchStatus } = useQuery(runnerQueryOptions({ database }))
+  const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions({ database }))
 
   const runQueries = (queries: string[]) => {
     store.setState(state => ({
@@ -96,22 +94,6 @@ export function Runner() {
       runQueries(queries)
     }
   }
-
-  useEffect(() => {
-    if (status === 'error') {
-      const message = error.cause ? String(error.cause) : error.message
-
-      toast.error(message, {
-        action: {
-          label: 'Fix with AI',
-          onClick: () => {
-            pageHooks.callHook('fix', message)
-          },
-        },
-        duration: 5000,
-      })
-    }
-  }, [error, status])
 
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
