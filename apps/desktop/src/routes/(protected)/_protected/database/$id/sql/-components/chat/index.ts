@@ -11,44 +11,9 @@ import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { databaseEnumsQuery, databaseTableColumnsQuery, rowsSql, tablesAndSchemasQuery } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
-import { pageStore } from './-lib'
+import { databaseStore } from '../../../../-store'
 
-export const chatQuery = {
-  get(id: string) {
-    return localStorage.getItem(`sql-${id}`) || [
-      '-- Write your SQL query here',
-      '',
-      '-- Please write your own queries based on your database schema',
-      '-- The examples below are for reference only and may not work with your database',
-      '',
-      '-- Example 1: Basic query with limit',
-      '-- SELECT * FROM users LIMIT 10;',
-      '',
-      '-- Example 2: Query with filtering',
-      '-- SELECT id, name, email FROM users WHERE created_at > \'2025-01-01\' ORDER BY name;',
-      '',
-      '-- Example 3: Join example',
-      '-- SELECT u.id, u.name, p.title FROM users u',
-      '-- JOIN posts p ON u.id = p.user_id',
-      '-- WHERE p.published = true',
-      '-- LIMIT 10;',
-    ].join('\n')
-  },
-  set(id: string, query: string) {
-    localStorage.setItem(`sql-${id}`, query)
-  },
-}
-
-export const chatInput = {
-  get(id: string) {
-    const data = JSON.parse(sessionStorage.getItem(`sql-chat-input-${id}`) || '""')
-
-    return typeof data === 'string' ? data : ''
-  },
-  set(id: string, input: string) {
-    sessionStorage.setItem(`sql-chat-input-${id}`, JSON.stringify(input))
-  },
-}
+export * from './chat'
 
 function ensureChat(chatId: string, databaseId: string) {
   const existingChat = chatsCollection.get(chatId)
@@ -129,6 +94,8 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           chatsMessagesCollection.delete(options.messageId)
         }
 
+        const store = databaseStore(database.id)
+
         return eventIteratorToStream(await orpc.ai.ask({
           ...options.body,
           id: options.chatId,
@@ -140,7 +107,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           trigger: options.trigger,
           messageId: options.messageId,
           context: [
-            `Current query in the SQL runner: ${pageStore.state.query.trim() || 'Empty'}`,
+            `Current query in the SQL runner: ${store.state.sql.trim() || 'Empty'}`,
             'Database schemas and tables:',
             JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database })), null, 2),
           ].join('\n'),

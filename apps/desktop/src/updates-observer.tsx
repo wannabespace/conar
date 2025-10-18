@@ -8,6 +8,7 @@ export type UpdatesStatus = 'no-updates' | 'checking' | 'downloading' | 'ready' 
 
 const TOAST_UPDATE_READY_ID = 'update-ready-toast'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const updatesStore = new Store<{
   version: string
   status: UpdatesStatus
@@ -18,6 +19,7 @@ export const updatesStore = new Store<{
   message: undefined,
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 export async function checkForUpdates() {
   await window.electron?.app.checkForUpdates()
 }
@@ -36,13 +38,13 @@ export function UpdatesObserver() {
 
   useEffect(() => {
     window.electron?.app.onUpdatesStatus(({ status, message }) => {
-      updatesStore.setState(state => ({ ...state, status, message }))
+      updatesStore.setState(state => ({ ...state, status, message } satisfies typeof state))
     })
   }, [])
 
   useEffect(() => {
     if (version) {
-      updatesStore.setState(state => ({ ...state, version }))
+      updatesStore.setState(state => ({ ...state, version } satisfies typeof state))
     }
   }, [version])
 

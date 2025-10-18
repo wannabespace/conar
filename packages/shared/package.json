@@ -16,14 +16,12 @@
   "scripts": {
     "check-types": "tsc"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@conar/configs": "workspace:*",
     "ai": "catalog:",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
     "nanoid": "catalog:",
     "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@conar/configs": "workspace:*"
   }
 }

@@ -1,5 +1,5 @@
 import { Toaster as Sonner } from 'sonner'
-import { useTheme } from '../theme-provider'
+import { useTheme } from '../theme-observer'
 
 function Toaster() {
   const { resolvedTheme } = useTheme()

@@ -18,8 +18,9 @@ import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
-import { Route } from '..'
-import { pageHooks, pageStore } from '../-lib'
+import { Route } from '../..'
+import { pageHooks } from '../../-page'
+import { databaseStore } from '../../../../-store'
 import { ChatImages } from './chat-images'
 import { ChatMessageTool } from './chat-message-tools'
 
@@ -51,15 +52,16 @@ function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick
   )
 }
 
-function ChatMessageParts({ parts, loading, onEdit }: { parts: UIMessage['parts'], loading?: boolean, onEdit?: (query: string) => void }) {
+function ChatMessageParts({ parts, loading, onAdd }: { parts: UIMessage['parts'], loading?: boolean, onAdd?: (query: string) => void }) {
   return parts.map((part, index) => {
     if (part.type === 'text') {
       return (
         <Markdown
+          // eslint-disable-next-line react/no-array-index-key
           key={index}
           content={part.text}
           generating={loading}
-          onEdit={onEdit}
+          onAdd={onAdd}
         />
       )
     }
@@ -67,6 +69,7 @@ function ChatMessageParts({ parts, loading, onEdit }: { parts: UIMessage['parts'
     if (part.type === 'reasoning') {
       return (
         <div
+          // eslint-disable-next-line react/no-array-index-key
           key={index}
           className={cn(loading && 'animate-in fade-in duration-200')}
         >
@@ -79,6 +82,7 @@ function ChatMessageParts({ parts, loading, onEdit }: { parts: UIMessage['parts'
     if (isToolUIPart(part)) {
       return (
         <ChatMessageTool
+          // eslint-disable-next-line react/no-array-index-key
           key={index}
           className={cn(loading && 'animate-in fade-in duration-200')}
           part={part}
@@ -151,15 +155,16 @@ function AssistantMessageLoader({ children, className, ...props }: ComponentProp
 }
 
 function AssistantMessage({ message, isLast, status, className, ...props }: { message: UIMessage, isLast: boolean, status: ChatStatus } & ComponentProps<'div'>) {
-  const { chat } = Route.useLoaderData()
+  const { database, chat } = Route.useLoaderData()
   const ref = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(ref)
+  const store = databaseStore(database.id)
 
-  async function handleEdit(query: string) {
-    pageStore.setState(state => ({
+  async function handleAdd(query: string) {
+    store.setState(state => ({
       ...state,
-      query,
-    }))
+      sql: `${state.sql}\n\n${query}`,
+    } satisfies typeof state))
     await sleep(0)
     pageHooks.callHook('focusRunner')
   }
@@ -176,7 +181,7 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
           <ChatMessageParts
             parts={message.parts}
             loading={isLoading}
-            onEdit={handleEdit}
+            onAdd={handleAdd}
           />
         </div>
       </div>

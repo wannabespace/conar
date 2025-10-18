@@ -61,7 +61,7 @@ function queryLog(
         label: label || log?.label || '',
       },
     },
-  }))
+  } satisfies typeof state))
 
   if (error) {
     console.error('db query error', database.type, query, values, error)
@@ -75,9 +75,20 @@ function queryLog(
 }
 
 export function drizzleProxy<T extends Record<string, unknown>>(database: typeof databases.$inferSelect, label?: string) {
-  const queryId = crypto.randomUUID()
-
   return proxiesMap[database.type]<T>(async (sql, params, method) => {
+    const queryId = crypto.randomUUID()
+
+    queryLog(database, queryId, {
+      query: formatSql(sql, database.type)
+        .split('\n')
+        .filter(str => !str.startsWith('--'))
+        .join(' '),
+      values: params,
+      result: null,
+      error: null,
+      label,
+    })
+
     try {
       const result = await queryFn({
         type: database.type,
@@ -97,21 +108,6 @@ export function drizzleProxy<T extends Record<string, unknown>>(database: typeof
 
       throw error
     }
-  }, {
-    logger: {
-      logQuery(query, params) {
-        queryLog(database, queryId, {
-          query: formatSql(query, database.type)
-            .split('\n')
-            .filter(str => !str.startsWith('--'))
-            .join(' '),
-          values: params,
-          result: null,
-          error: null,
-          label,
-        })
-      },
-    },
   })
 }
 

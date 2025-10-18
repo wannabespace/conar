@@ -1,15 +1,18 @@
 import type { CompletionService } from 'monaco-sql-languages'
 import type { RefObject } from 'react'
+import { noop } from '@conar/shared/utils/helpers'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { useTheme } from '@conar/ui/theme-provider'
+import { useTheme } from '@conar/ui/theme-observer'
 import * as monaco from 'monaco-editor'
 import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
 import ghDark from 'monaco-themes/themes/GitHub Dark.json'
 import ghLight from 'monaco-themes/themes/GitHub Light.json'
-import { useEffect, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef } from 'react'
 
 ghDark.colors['editor.background'] = '#1e1f21'
 ghDark.colors['editor.lineHighlightBackground'] = '#252628'
+
+// Sync with packages/ui/src/styles/monaco.css
 ghDark.colors['editor.selectionBackground'] = '#5081f150'
 ghLight.colors['editor.selectionBackground'] = '#5081f150'
 
@@ -22,9 +25,8 @@ export function Monaco({
   ref,
   value,
   language,
-  onChange,
   options,
-  onEnter,
+  onChange = noop,
   completionService,
   ...props
 }: {
@@ -35,7 +37,6 @@ export function Monaco({
   language?: string
   onChange?: (value: string) => void
   options?: monaco.editor.IStandaloneEditorConstructionOptions
-  onEnter?: (value: string) => void
   completionService?: CompletionService
 }) {
   const elementRef = useRef<HTMLDivElement>(null)
@@ -47,28 +48,33 @@ export function Monaco({
     monaco.editor.setTheme(resolvedTheme === 'dark' ? 'github-dark' : 'github-light')
   }, [resolvedTheme])
 
+  const onChangeEvent = useEffectEvent(onChange)
+  const getOptionsEvent = useEffectEvent(() => ({
+    value: (() => {
+      if (language?.includes('json')) {
+        try {
+          return JSON.stringify(JSON.parse(value), null, 2)
+        }
+        catch {
+          return value
+        }
+      }
+
+      return value
+    })(),
+    language,
+    automaticLayout: true,
+    minimap: { enabled: false },
+    fontFamily: '"Geist Mono", monospace',
+    tabSize: 2,
+    ...options,
+  }))
+
   useEffect(() => {
     if (!elementRef.current)
       return
 
-    monacoInstance.current = monaco.editor.create(elementRef.current, {
-      value: language?.includes('json')
-        ? (() => {
-            try {
-              return JSON.stringify(JSON.parse(value), null, 2)
-            }
-            catch {
-              return value
-            }
-          })()
-        : value,
-      language,
-      automaticLayout: true,
-      minimap: { enabled: false },
-      fontFamily: '"Geist Mono", monospace',
-      tabSize: 2,
-      ...options,
-    })
+    monacoInstance.current = monaco.editor.create(elementRef.current, getOptionsEvent())
 
     if (ref) {
       ref.current = monacoInstance.current
@@ -78,41 +84,27 @@ export function Monaco({
       monacoInstance.current?.getAction('editor.action.formatDocument')?.run()
     }, 50)
 
-    if (onEnter) {
-      monacoInstance.current.addAction({
-        id: 'conar.execute-on-enter',
-        label: 'Execute on Enter',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-        run: (e) => {
-          onEnter(e.getValue())
-        },
-      })
-    }
-
-    let subscription: monaco.IDisposable | undefined
-
-    if (onChange) {
-      subscription = monacoInstance.current.onDidChangeModelContent(() => {
-        if (!preventTriggerChangeEvent.current) {
-          const val = monacoInstance.current?.getValue()
-          onChange(val ?? '')
-        }
-      })
-    }
+    const subscription = monacoInstance.current.onDidChangeModelContent(() => {
+      if (!preventTriggerChangeEvent.current) {
+        const val = monacoInstance.current?.getValue()
+        onChangeEvent(val ?? '')
+      }
+    })
 
     return () => {
       clearTimeout(timeout)
-      subscription?.dispose()
+      subscription.dispose()
       monacoInstance.current?.dispose()
     }
-  }, [elementRef, language, onChange, onEnter, ref])
+  }, [elementRef, language, ref])
 
-  useEffect(() => {
+  useMountedEffect(() => {
     if (!monacoInstance.current || !options)
       return
 
     monacoInstance.current.updateOptions(options)
-  }, [options])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(options)])
 
   useEffect(() => {
     if (!Object.values(LanguageIdEnum).includes(language as LanguageIdEnum))
@@ -138,24 +130,26 @@ export function Monaco({
 
     const currentValue = editor.getValue()
 
-    if (currentValue !== value) {
-      if (options?.readOnly || !onChange) {
-        editor.setValue(value)
-      }
-      else {
-        preventTriggerChangeEvent.current = true
-        editor.executeEdits('', [
-          {
-            range: model.getFullModelRange(),
-            text: value,
-            forceMoveMarkers: true,
-          },
-        ])
-        editor.pushUndoStop()
-        preventTriggerChangeEvent.current = false
-      }
+    if (currentValue === value) {
+      return
     }
-  }, [value])
+
+    if (options?.readOnly) {
+      editor.setValue(value)
+    }
+    else {
+      preventTriggerChangeEvent.current = true
+      editor.executeEdits('', [
+        {
+          range: model.getFullModelRange(),
+          text: value,
+          forceMoveMarkers: true,
+        },
+      ])
+      editor.pushUndoStop()
+      preventTriggerChangeEvent.current = false
+    }
+  }, [value, options?.readOnly, language])
 
   return <div ref={elementRef} {...props} />
 }

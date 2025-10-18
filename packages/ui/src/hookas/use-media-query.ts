@@ -9,6 +9,7 @@ export function useMediaQuery(
   React.useEffect(() => {
     const mediaQuery = window.matchMedia(query)
 
+    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
     setMatches(mediaQuery.matches)
 
     const handleChange = (event: MediaQueryListEvent) => {

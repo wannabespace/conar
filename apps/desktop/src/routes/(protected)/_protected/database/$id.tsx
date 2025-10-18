@@ -1,18 +1,17 @@
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import {
   databasesCollection,
-  getDatabasePageId,
   lastOpenedDatabases,
-  lastOpenedPage,
   prefetchDatabaseCore,
 } from '~/entities/database'
 import { QueryLogger } from '~/entities/database/components/query-logger'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
-import { useLoggerOpened } from './-use-logger-opened'
+import { databaseStore, getDatabasePageId } from './-store'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: DatabasePage,
@@ -40,13 +39,17 @@ function DatabasePage() {
   const currentPageId = useMatches({
     select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
-  const [loggerOpened] = useLoggerOpened()
+  const store = databaseStore(database.id)
+  const loggerOpened = useStore(store, state => state.loggerOpened)
 
   useEffect(() => {
     if (currentPageId) {
-      lastOpenedPage(database.id).set(currentPageId)
+      store.setState(state => ({
+        ...state,
+        lastOpenedPage: currentPageId,
+      } satisfies typeof state))
     }
-  }, [currentPageId, database.id])
+  }, [currentPageId, store])
 
   useEffect(() => {
     const last = lastOpenedDatabases.get()

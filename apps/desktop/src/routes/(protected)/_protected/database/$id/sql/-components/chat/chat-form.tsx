@@ -10,27 +10,50 @@ import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCi
 import { useMutation } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
-import { orpc } from '~/lib/orpc'
-import { Route } from '..'
-import { chatInput } from '../-chat'
-import { pageHooks, pageStore } from '../-lib'
+import { orpcQuery } from '~/lib/orpc'
+import { Route } from '../..'
+import { pageHooks } from '../../-page'
+import { databaseStore } from '../../../../-store'
 import { ChatImages } from './chat-images'
+
+function Images({ databaseId }: { databaseId: string }) {
+  const store = databaseStore(databaseId)
+  const files = useStore(store, state => state.files)
+
+  if (files.length === 0) {
+    return null
+  }
+
+  const images = files.map(file => ({
+    name: file.name,
+    url: URL.createObjectURL(file),
+  }))
+
+  return (
+    <ChatImages
+      images={images}
+      onRemove={(index) => {
+        store.setState(state => ({
+          ...state,
+          files: store.state.files.filter((_, i) => i !== index),
+        } satisfies typeof state))
+      }}
+    />
+  )
+}
 
 export function ChatForm() {
   const { database, chat } = Route.useLoaderData()
   const { error } = Route.useSearch()
   const router = useRouter()
   const location = useLocation()
-  const [input, setInput] = useState(chatInput.get(database.id))
   const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
-  const files = useStore(pageStore, state => state.files.map(file => ({
-    name: file.name,
-    url: URL.createObjectURL(file),
-  })))
+  const store = databaseStore(database.id)
+  const input = useStore(store, state => state.chatInput)
 
   useEffect(() => {
     if (ref.current) {
@@ -48,16 +71,16 @@ export function ChatForm() {
     }
 
     const cachedValue = value.trim()
-    const cachedFiles = [...pageStore.state.files]
+    const cachedFiles = [...store.state.files]
 
     try {
       const filesBase64 = await getBase64FromFiles(cachedFiles)
 
-      setInput('')
-      pageStore.setState(state => ({
+      store.setState(state => ({
         ...state,
+        chatInput: '',
         files: [],
-      }))
+      } satisfies typeof state))
 
       pageHooks.callHook('sendMessage')
 
@@ -86,18 +109,18 @@ export function ChatForm() {
       })
     }
     catch (error) {
-      setInput(cachedValue)
-      pageStore.setState(state => ({
+      store.setState(state => ({
         ...state,
+        chatInput: cachedValue,
         files: cachedFiles,
-      }))
+      } satisfies typeof state))
       toast.error('Failed to send message', {
         description: error instanceof Error
           ? error.message
           : 'An unexpected error occurred. Please try again.',
       })
     }
-  }, [router, location.search.chatId, chat, database.id])
+  }, [router, location.search.chatId, chat, database.id, store])
 
   useEffect(() => {
     if (!error) {
@@ -113,21 +136,24 @@ export function ChatForm() {
   }, [error, handleSend, router, chat.id])
 
   useMountedEffect(() => {
-    chatInput.set(database.id, input)
-  }, [input, database.id])
+    store.setState(state => ({
+      ...state,
+      chatInput: input,
+    } satisfies typeof state))
+  }, [input, store])
 
-  useEffect(() => {
-    return pageHooks.hook('fix', async (error) => {
-      await router.navigate({
-        to: '/database/$id/sql',
-        params: { id: database.id },
-        search: { chatId: chat.id, error },
-      })
-    })
-  }, [router, database.id, chat.id])
+  // TODO: implement fix query
+  // useEffect(() => {
+  //   return pageHooks.hook('fix', async (error) => {
+  //     await router.navigate({
+  //       to: '/database/$id/sql',
+  //       params: { id: database.id },
+  //       search: { chatId: chat.id, error },
+  //     })
+  //   })
+  // }, [router, database.id, chat.id])
 
-  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation({
-    mutationFn: (data: { prompt: string, chatId: string }) => orpc.ai.enhancePrompt(data),
+  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(orpcQuery.ai.enhancePrompt.mutationOptions({
     onSuccess: (data) => {
       if (input.length < 10) {
         return
@@ -139,10 +165,13 @@ export function ChatForm() {
         })
       }
       else {
-        setInput(data)
+        store.setState(state => ({
+          ...state,
+          chatInput: data,
+        } satisfies typeof state))
       }
     },
-  })
+  }))
 
   // Handler for file input change
   const handleFileAttach = (e: ChangeEvent<HTMLInputElement>) => {
@@ -153,40 +182,35 @@ export function ChatForm() {
 
     const fileArr = Array.from(fileList)
 
-    pageStore.setState(state => ({
+    store.setState(state => ({
       ...state,
-      files: [...state.files, ...fileArr],
-    }))
+      files: [...store.state.files, ...fileArr],
+    } satisfies typeof state))
     e.target.value = ''
   }
 
   return (
     <div className="flex flex-col gap-1">
-      {files.length > 0 && (
-        <ChatImages
-          images={files}
-          onRemove={(index) => {
-            pageStore.setState(state => ({
-              ...state,
-              files: state.files.filter((_, i) => i !== index),
-            }))
-          }}
-        />
-      )}
+      <Images databaseId={database.id} />
       <div className="flex flex-col gap-2 relative dark:bg-input/30 rounded-md border">
         <TipTap
           ref={ref}
           data-mask
           value={input}
-          setValue={setInput}
+          setValue={(value) => {
+            store.setState(state => ({
+              ...state,
+              chatInput: value,
+            } satisfies typeof state))
+          }}
           placeholder="Generate SQL query using natural language"
           className="min-h-[50px] max-h-[250px] p-2 text-sm outline-none overflow-y-auto"
           onEnter={handleSend}
           onImageAdd={(file) => {
-            pageStore.setState(state => ({
+            store.setState(state => ({
               ...state,
-              files: [...state.files, file],
-            }))
+              files: [...store.state.files, file],
+            } satisfies typeof state))
           }}
         />
         <div className="px-2 pb-2 flex justify-between items-end pointer-events-none">

@@ -21,11 +21,6 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
   )
 
   async function handleRefresh() {
-    store.setState(state => ({
-      ...state,
-      page: 1,
-    }))
-
     refetch()
     queryClient.invalidateQueries(databaseTableColumnsQuery({ database, table, schema }))
     queryClient.invalidateQueries(databaseConstraintsQuery({ database }))

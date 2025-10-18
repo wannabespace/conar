@@ -1,8 +1,11 @@
 import { cn } from '@conar/ui/lib/utils'
+import { Slot } from '@radix-ui/react-slot'
 
-function Kbd({ className, ...props }: React.ComponentProps<'kbd'>) {
+function Kbd({ className, asChild, ...props }: React.ComponentProps<'kbd'> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot : 'kbd'
+
   return (
-    <kbd
+    <Comp
       data-slot="kbd"
       className={cn(
         'bg-muted text-muted-foreground pointer-events-none inline-flex h-5 w-fit min-w-5 items-center justify-center gap-1 rounded-sm px-1 font-sans text-xs font-medium select-none',

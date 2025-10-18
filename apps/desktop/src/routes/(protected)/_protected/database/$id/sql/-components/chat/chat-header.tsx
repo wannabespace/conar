@@ -18,9 +18,9 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
-import { lastOpenedChatId } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
-import { Route } from '..'
+import { Route } from '../..'
+import { databaseStore } from '../../../../-store'
 
 type Group = 'today' | 'yesterday' | 'week' | 'month' | 'older'
 
@@ -73,6 +73,7 @@ function groupChats(data: typeof chats.$inferSelect[]) {
 
 export function ChatHeader({ chatId }: { chatId: string }) {
   const { id } = Route.useParams()
+  const store = databaseStore(id)
   const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'))
   const chat = allChats.find(chat => chat.id === chatId)
   const { data: messages } = useLiveQuery(q => q
@@ -112,7 +113,10 @@ export function ChatHeader({ chatId }: { chatId: string }) {
             variant="outline"
             size="icon-sm"
             asChild
-            onClick={() => lastOpenedChatId(id).remove()}
+            onClick={() => store.setState(state => ({
+              ...state,
+              lastOpenedChatId: null,
+            } satisfies typeof state))}
           >
             <Link
               to="/database/$id/sql"

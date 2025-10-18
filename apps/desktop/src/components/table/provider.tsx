@@ -59,18 +59,11 @@ export function TableProvider({
     overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
   })
 
-  const offsets = {
-    top: virtualRows[0]?.start ?? 0,
-    bottom: tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0),
-    left: virtualColumns[0]?.start ?? 0,
-    right: tableWidth - (virtualColumns[virtualColumns.length - 1]?.end ?? 0),
-  }
-
   if (scrollRef.current) {
-    scrollRef.current.style.setProperty('--table-scroll-left-offset', `${offsets.left}px`)
-    scrollRef.current.style.setProperty('--table-scroll-right-offset', `${offsets.right}px`)
-    scrollRef.current.style.setProperty('--table-scroll-top-offset', `${offsets.top}px`)
-    scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${offsets.bottom}px`)
+    scrollRef.current.style.setProperty('--table-scroll-left-offset', `${virtualColumns[0]?.start ?? 0}px`)
+    scrollRef.current.style.setProperty('--table-scroll-right-offset', `${tableWidth - (virtualColumns[virtualColumns.length - 1]?.end ?? 0)}px`)
+    scrollRef.current.style.setProperty('--table-scroll-top-offset', `${virtualRows[0]?.start ?? 0}px`)
+    scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0)}px`)
   }
 
   const context = useMemo(() => ({

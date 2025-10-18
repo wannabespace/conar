@@ -1,6 +1,6 @@
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { ComponentProps, RefObject } from 'react'
-import type { Tab } from '../-tabs'
+import type { tabType } from '../../../-store'
 import type { databases } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -14,10 +14,11 @@ import { CSS } from '@dnd-kit/utilities'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useRouter, useSearch } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
 import { getPageStoreState } from '../-store'
-import { addTab, moveTab, removeTab, useTabs } from '../-tabs'
+import { addTab, databaseStore, moveTab, removeTab } from '../../../-store'
 
 const os = getOS(navigator.userAgent)
 
@@ -93,7 +94,7 @@ function SortableTab({
   onFocus,
 }: {
   id: string
-  item: { id: string, tab: Tab }
+  item: { id: string, tab: typeof tabType.infer }
   showSchema: boolean
   onClose: () => void
   onDoubleClick: () => void
@@ -166,7 +167,8 @@ export function TablesTabs({ database }: {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const router = useRouter()
-  const tabs = useTabs(database.id)
+  const store = databaseStore(database.id)
+  const tabs = useStore(store, state => state.tabs)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

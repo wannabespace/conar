@@ -18,7 +18,7 @@ import { useTableColumns } from '~/routes/(protected)/_protected/database/$id/ta
 import { DEFAULT_ROW_HEIGHT } from '..'
 import { getDisplayValue } from '../lib/render'
 import { databaseRowsQuery } from '../queries/rows'
-import { DEFAULT_COLUMN_WIDTH } from '../utils'
+import { DEFAULT_COLUMN_WIDTH } from '../utils/helpers'
 import { TableCellContent } from './table-cell-content'
 
 const { useLoaderData } = getRouteApi('/(protected)/_protected/database/$id')

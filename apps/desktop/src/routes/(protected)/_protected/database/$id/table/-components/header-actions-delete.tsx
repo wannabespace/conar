@@ -29,7 +29,7 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
       store.setState(state => ({
         ...state,
         selected: [],
-      }))
+      } satisfies typeof state))
     },
     onError: (error) => {
       toast.error('Failed to delete rows', {

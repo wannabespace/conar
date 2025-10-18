@@ -11,12 +11,13 @@ import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { useVirtual } from '@conar/ui/hooks/use-virtual'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiCheckboxCircleLine, RiCloseCircleLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
+import { RiArrowDownLine, RiCheckboxCircleLine, RiCloseCircleLine, RiCloseLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useMemo, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
 import { formatSql } from '~/lib/formatter'
+import { databaseStore } from '~/routes/(protected)/_protected/database/-store'
 import { queriesLogStore } from '../query'
 
 type QueryStatus = 'error' | 'success' | 'pending'
@@ -79,6 +80,14 @@ function LogTrigger({ query, className, ...props }: { query: QueryLog } & Compon
   )
 }
 
+const monacoOptions = {
+  readOnly: true,
+  scrollBeyondLastLine: false,
+  lineNumbers: 'off' as const,
+  minimap: { enabled: false },
+  folding: false,
+}
+
 function Log({ query, className, database }: { query: QueryLog, className?: string, database: typeof databases.$inferSelect }) {
   const [isOpen, setIsOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
@@ -124,13 +133,7 @@ function Log({ query, className, database }: { query: QueryLog, className?: stri
             <Monaco
               value={formatSql(query.query, database.type)}
               language="sql"
-              options={{
-                readOnly: true,
-                scrollBeyondLastLine: false,
-                lineNumbers: 'off',
-                minimap: { enabled: false },
-                folding: false,
-              }}
+              options={monacoOptions}
               className="h-[50vh] border rounded-md overflow-hidden"
             />
           </div>
@@ -150,13 +153,7 @@ function Log({ query, className, database }: { query: QueryLog, className?: stri
               <Monaco
                 value={JSON.stringify(query.result)}
                 language="json"
-                options={{
-                  readOnly: true,
-                  scrollBeyondLastLine: false,
-                  lineNumbers: 'off',
-                  minimap: { enabled: false },
-                  folding: false,
-                }}
+                options={monacoOptions}
                 className="h-[50vh] border rounded-md overflow-hidden"
               />
             </div>
@@ -182,6 +179,7 @@ export function QueryLogger({ database, className }: {
   const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
   const queries = useStore(queriesLogStore, state => Object.values(state[database.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()))
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
+  const store = databaseStore(database.id)
 
   const filteredQueries = useMemo(() => {
     if (statusGroup) {
@@ -207,7 +205,7 @@ export function QueryLogger({ database, className }: {
     queriesLogStore.setState(state => ({
       ...state,
       [database.id]: {},
-    }))
+    } satisfies typeof state))
   }
 
   const toggleGroup = (status: QueryStatus) => {
@@ -268,13 +266,22 @@ export function QueryLogger({ database, className }: {
             </Button>
           </ButtonGroup>
         </div>
-        <Button
-          variant="outline"
-          size="icon-sm"
-          onClick={clearQueries}
-        >
-          <RiDeleteBinLine className="size-4 text-destructive" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={clearQueries}
+          >
+            <RiDeleteBinLine className="size-4 text-destructive" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={() => store.setState(state => ({ ...state, loggerOpened: false } satisfies typeof state))}
+          >
+            <RiCloseLine className="size-4" />
+          </Button>
+        </div>
       </div>
       <ScrollArea
         ref={scrollRef}

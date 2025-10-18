@@ -1,11 +1,11 @@
 import type { LinkProps } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
-import { useLastOpenedChatId, useLastOpenedPage, useLastOpenedTable } from '~/entities/database'
+import { databaseStore } from '~/routes/(protected)/_protected/database/-store'
 
 export function useDatabaseLinkParams(id: string) {
-  const [lastOpenedTable] = useLastOpenedTable(id)
-  const [lastOpenedPage] = useLastOpenedPage(id)
-  const [lastChatId] = useLastOpenedChatId(id)
+  const store = databaseStore(id)
+  const [lastOpenedTable, lastOpenedPage, lastChatId] = useStore(store, state => [state.lastOpenedTable, state.lastOpenedPage, state.lastOpenedChatId])
 
   return useMemo((): LinkProps => {
     if (lastOpenedPage) {

@@ -1,5 +1,5 @@
 import type { ColumnRenderer } from '~/components/table'
-import type { Column } from '~/entities/database/table'
+import type { Column } from '~/entities/database'
 import { Button } from '@conar/ui/components/button'
 import { Input } from '@conar/ui/components/input'
 import { useDebouncedMemo } from '@conar/ui/hookas/use-debounced-memo'

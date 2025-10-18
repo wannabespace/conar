@@ -10,8 +10,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { databasesCollection } from '~/entities/database'
-import { dbTestConnection } from '~/entities/database/query'
+import { databasesCollection, dbTestConnection } from '~/entities/database'
 
 export function PasswordForm({ database }: { database: typeof databases.$inferSelect }) {
   const router = useRouter()

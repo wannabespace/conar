@@ -1,7 +1,6 @@
 import type { Edge } from '@xyflow/react'
-import type { constraintsType, NodeType } from '~/entities/database'
+import type { Column, constraintsType, NodeType } from '~/entities/database'
 import type { columnType } from '~/entities/database/sql/columns'
-import type { Column } from '~/entities/database/table'
 import dagre from '@dagrejs/dagre'
 import { Position } from '@xyflow/react'
 

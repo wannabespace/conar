@@ -85,6 +85,14 @@ const STATE_LABELS: Record<ToolUIPart['state'], string> = {
   'output-error': 'Tool call failed',
 }
 
+const monacoOptions = {
+  readOnly: true,
+  scrollBeyondLastLine: false,
+  lineNumbers: 'off' as const,
+  minimap: { enabled: false },
+  folding: false,
+}
+
 export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
   const tool = part as ToolUIPart<InferUITools<typeof tools>>
   const label = getToolLabel(tool)
@@ -127,13 +135,7 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
           <Monaco
             value={JSON.stringify(tool.output)}
             language="json"
-            options={{
-              readOnly: true,
-              scrollBeyondLastLine: false,
-              lineNumbers: 'off',
-              minimap: { enabled: false },
-              folding: false,
-            }}
+            options={monacoOptions}
             className="h-[200px] max-h-[50vh] -mx-2"
           />
         )}

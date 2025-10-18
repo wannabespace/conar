@@ -3,11 +3,9 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
-import { lastOpenedChatId } from '~/entities/database'
-import { chatQuery, createChat } from './-chat'
-import { Chat as ChatComponent } from './-components/chat'
+import { databaseStore } from '../../-store'
+import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
-import { pageStore } from './-lib'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/sql/',
@@ -18,12 +16,7 @@ export const Route = createFileRoute(
     'error?': 'string',
   }),
   loaderDeps: ({ search }) => search,
-  loader: async ({ params, context, deps }) => {
-    pageStore.setState(state => ({
-      ...state,
-      query: chatQuery.get(params.id),
-    }))
-
+  loader: async ({ context, deps }) => {
     return {
       database: context.database,
       chat: await createChat({
@@ -38,30 +31,35 @@ export const Route = createFileRoute(
 })
 
 function DatabaseSqlPage() {
-  const { id } = Route.useParams()
+  const { database } = Route.useLoaderData()
   const { chatId } = Route.useSearch()
+  const store = databaseStore(database.id)
 
   useEffect(() => {
-    lastOpenedChatId(id).set(chatId ?? null)
-  }, [id, chatId])
+    store.setState(state => ({
+      ...state,
+      lastOpenedChatId: chatId ?? null,
+    } satisfies typeof state))
+  }, [chatId, store])
 
   return (
     <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex">
+      <ResizablePanel
+        defaultSize={70}
+        minSize={30}
+        maxSize={80}
+        className="flex flex-col gap-4 border bg-background rounded-lg"
+      >
+        <Runner />
+      </ResizablePanel>
+      <ResizableHandle className="w-1 bg-transparent" />
       <ResizablePanel
         defaultSize={30}
         minSize={20}
         maxSize={50}
         className="border bg-background rounded-lg"
       >
-        <ChatComponent className="h-full" />
-      </ResizablePanel>
-      <ResizableHandle className="w-1 bg-transparent" />
-      <ResizablePanel
-        minSize={30}
-        maxSize={80}
-        className="flex flex-col gap-4 border bg-background rounded-lg"
-      >
-        <Runner />
+        <Chat className="h-full" />
       </ResizablePanel>
     </ResizablePanelGroup>
   )

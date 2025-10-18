@@ -7,12 +7,12 @@ export function ContentSwitch({
   className,
   activeContent,
   active = true,
-  onActiveChange,
+  onSwitchEnd,
 }: {
   children: React.ReactNode
   className?: string
   activeContent: React.ReactNode
-  onActiveChange?: (active: boolean) => void
+  onSwitchEnd?: (active: boolean) => void
   active?: boolean
 }) {
   const [isActive, setIsActive] = useState(false)
@@ -24,7 +24,7 @@ export function ContentSwitch({
 
     const timeout = setTimeout(() => {
       setIsActive(false)
-      onActiveChange?.(false)
+      onSwitchEnd?.(false)
     }, 1500)
 
     return () => clearTimeout(timeout)

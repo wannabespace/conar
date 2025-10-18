@@ -1,5 +1,5 @@
 import type { Edge, Node, NodeProps } from '@xyflow/react'
-import type { Column } from '../table'
+import type { Column } from '../utils/table'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
 import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiTableLine } from '@remixicon/react'

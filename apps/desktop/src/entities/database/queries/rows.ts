@@ -2,7 +2,7 @@ import type { ActiveFilter } from '@conar/shared/filters'
 import type { databases } from '~/drizzle'
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query'
 import { rowsSql } from '../sql/rows'
-import { DEFAULT_LIMIT } from '../utils'
+import { DEFAULT_LIMIT } from '../utils/helpers'
 
 type Page = Awaited<ReturnType<typeof rowsSql>>[0]
 

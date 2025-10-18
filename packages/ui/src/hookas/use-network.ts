@@ -114,6 +114,7 @@ export function useNetwork(): NetworkState {
     const connection = nav.connection
 
     const updateNetworkState = () => {
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
       setNetworkState(getNetworkState())
     }
 
