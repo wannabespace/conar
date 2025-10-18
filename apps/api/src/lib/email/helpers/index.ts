@@ -1,12 +1,14 @@
+import type { EmailService } from '../services/email-service'
 import { eq } from 'drizzle-orm'
 import { db, users } from '~/drizzle'
 import { env } from '~/env'
 import { resend } from '~/lib/resend'
+import { ResendEmailService } from '../services/resend-service'
 
 /**
  * Check if Resend email service is configured
  */
-export function isResendConfigured(): boolean {
+function isResendConfigured(): boolean {
   if (!resend) {
     console.error('Resend is not configured for password reset')
     return false
@@ -53,4 +55,37 @@ export function validateResetToken(token: string | undefined): asserts token is 
  */
 export function generateResetLink(token: string): string {
   return `${env.WEB_URL}/reset-password?token=${token}`
+}
+
+/**
+ * Send email if user is valid
+ * @param email - User email
+ * @param subjectLine - Email subject line
+ * @param html - Email HTML content
+ * @param validateUser - Whether to validate user existence
+ */
+export async function sendEmailIfValid(
+  email: string,
+  subjectLine: string,
+  html: string,
+  validateUser = true,
+) {
+  if (!isResendConfigured())
+    return
+
+  if (validateUser) {
+    const userExists = await verifyUserExists(email)
+    if (!userExists)
+      return
+  }
+
+  const emailService: EmailService = new ResendEmailService()
+
+  try {
+    await emailService.sendEmail(email, subjectLine, html)
+  }
+  catch (error) {
+    console.error(`Failed to send email to ${email}:`, error)
+    throw error
+  }
 }
