@@ -61,13 +61,13 @@ export function generateResetLink(token: string): string {
  * Send email if user is valid
  * @param email - User email
  * @param subjectLine - Email subject line
- * @param html - Email HTML content
+ * @param template - Email Template content
  * @param validateUser - Whether to validate user existence
  */
 export async function sendEmailIfValid(
   email: string,
   subjectLine: string,
-  html: string,
+  template: string,
   validateUser = true,
 ) {
   if (!isResendConfigured())
@@ -80,6 +80,6 @@ export async function sendEmailIfValid(
   }
 
   const emailService: EmailService = new ResendEmailService()
-  
-  await emailService.sendEmail(email, subjectLine, html)
+
+  await emailService.sendEmail(email, subjectLine, template)
 }
