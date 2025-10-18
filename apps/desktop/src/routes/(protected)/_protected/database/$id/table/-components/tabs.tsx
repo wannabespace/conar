@@ -161,8 +161,12 @@ function SortableTab({
   )
 }
 
-export function TablesTabs({ database }: {
+export function TablesTabs({
+  database,
+  className,
+}: {
   database: typeof databases.$inferSelect
+  className?: string
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
@@ -270,7 +274,7 @@ export function TablesTabs({ database }: {
   return (
     <DndContext modifiers={[restrictToHorizontalAxis]} sensors={sensors} onDragEnd={handleDragEnd}>
       <SortableContext items={tabItems} strategy={horizontalListSortingStrategy}>
-        <ScrollArea ref={scrollRef} className="flex h-9 p-1 gap-1">
+        <ScrollArea ref={scrollRef} className={cn('flex p-1 gap-1', className)}>
           {tabItems.map(item => (
             <SortableTab
               key={item.id}

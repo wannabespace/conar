@@ -101,7 +101,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
 
   return (
     <PageStoreContext value={store}>
-      <TablesTabs database={database} />
+      <TablesTabs className="h-9" database={database} />
       <div
         key={table}
         className="h-[calc(100%-theme(spacing.9))]"

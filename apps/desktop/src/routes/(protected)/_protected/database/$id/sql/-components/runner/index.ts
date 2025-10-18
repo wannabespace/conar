@@ -12,12 +12,6 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
   return queryOptions({
     queryKey: ['sql', database.id],
     queryFn: async ({ signal }) => {
-      let shouldRun = true
-
-      signal.onabort = () => {
-        shouldRun = false
-      }
-
       const store = databaseStore(database.id)
 
       const queries = store.state.queriesToRun
@@ -28,7 +22,7 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
         await db.execute(query).catch(e => (e instanceof Error ? String(e.cause) || e.message : String(e)).replaceAll('Error: ', '')),
       ] as const))
 
-      if (!shouldRun) {
+      if (signal.aborted) {
         return null!
       }
 

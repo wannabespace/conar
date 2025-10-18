@@ -179,7 +179,7 @@ export function Runner() {
                     <CtrlEnter userAgent={navigator.userAgent} />
                   </Kbd>
                   {' '}
-                  to run the focused line
+                  to run the focused query
                 </span>
               </span>
             </div>
