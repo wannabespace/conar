@@ -19,6 +19,32 @@ import { pageHooks } from '../../-page'
 import { databaseStore } from '../../../../-store'
 import { ChatImages } from './chat-images'
 
+function Images({ databaseId }: { databaseId: string }) {
+  const store = databaseStore(databaseId)
+  const files = useStore(store, state => state.files)
+
+  if (files.length === 0) {
+    return null
+  }
+
+  const images = files.map(file => ({
+    name: file.name,
+    url: URL.createObjectURL(file),
+  }))
+
+  return (
+    <ChatImages
+      images={images}
+      onRemove={(index) => {
+        store.setState(state => ({
+          ...state,
+          files: store.state.files.filter((_, i) => i !== index),
+        } satisfies typeof state))
+      }}
+    />
+  )
+}
+
 export function ChatForm() {
   const { database, chat } = Route.useLoaderData()
   const { error } = Route.useSearch()
@@ -28,10 +54,6 @@ export function ChatForm() {
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const store = databaseStore(database.id)
   const input = useStore(store, state => state.chatInput)
-  const files = useStore(store, state => state.files.map(file => ({
-    name: file.name,
-    url: URL.createObjectURL(file),
-  })))
 
   useEffect(() => {
     if (ref.current) {
@@ -169,17 +191,7 @@ export function ChatForm() {
 
   return (
     <div className="flex flex-col gap-1">
-      {files.length > 0 && (
-        <ChatImages
-          images={files}
-          onRemove={(index) => {
-            store.setState(state => ({
-              ...state,
-              files: store.state.files.filter((_, i) => i !== index),
-            } satisfies typeof state))
-          }}
-        />
-      )}
+      <Images databaseId={database.id} />
       <div className="flex flex-col gap-2 relative dark:bg-input/30 rounded-md border">
         <TipTap
           ref={ref}

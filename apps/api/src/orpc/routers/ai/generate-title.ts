@@ -14,7 +14,7 @@ export const generateTitle = orpc
     messages: 'Array' as type.cast<AppUIMessage[]>,
   }))
   .handler(async ({ input, signal, context }) => {
-    const prompt = input.messages.map(message => message.parts
+    const prompt = input.messages.map(message => message.parts.filter(part => part.type === 'text')
       .map(part => JSON.stringify(part, null, 2))
       .join('\n'),
     ).join('\n')
