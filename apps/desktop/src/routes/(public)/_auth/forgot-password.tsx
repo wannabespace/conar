@@ -4,10 +4,10 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@conar/ui/components/form'
 import { Input } from '@conar/ui/components/input'
 import { arktypeResolver } from '@hookform/resolvers/arktype'
-import { RiMailLine } from '@remixicon/react'
+import { RiCheckboxCircleFill, RiMailLine } from '@remixicon/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
@@ -23,6 +23,27 @@ const schema = type({
 
 function ForgotPasswordPage() {
   const [emailSent, setEmailSent] = useState(false)
+
+  // Hide logo when email is sent (small hack)
+  useEffect(() => {
+    const logoElement = document.querySelector('.auth-logo')
+    if (logoElement) {
+      if (emailSent) {
+        (logoElement as HTMLElement).style.display = 'none'
+      }
+      else {
+        (logoElement as HTMLElement).style.display = 'flex'
+      }
+    }
+
+    // Cleanup on unmount
+    return () => {
+      const logoElement = document.querySelector('.auth-logo')
+      if (logoElement) {
+        (logoElement as HTMLElement).style.display = 'flex'
+      }
+    }
+  }, [emailSent])
 
   const emailForm = useForm<typeof schema.infer>({
     resolver: arktypeResolver(schema),
@@ -55,8 +76,26 @@ function ForgotPasswordPage() {
 
   if (emailSent) {
     return (
-      <>
-        <Card className="border-green-200 bg-green-50/50 dark:border-green-900/50 dark:bg-green-900/10">
+      <div className="flex flex-col items-center justify-center gap-6 py-8">
+        {/* Success Icon */}
+        <div className="relative">
+          <div className="absolute inset-0 animate-ping rounded-full bg-green-400/20" />
+          <RiCheckboxCircleFill className="relative size-20 text-green-500" />
+        </div>
+
+        {/* Success Message */}
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            Check your email
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-sm">
+            We've sent you an email with a link to reset your password.
+            Click the link to open the desktop app and create a new password.
+          </p>
+        </div>
+
+        {/* Info Card */}
+        <Card className="w-full border-green-200 bg-green-50/50 dark:border-green-900/50 dark:bg-green-900/10">
           <CardContent className="pt-6">
             <div className="flex gap-3">
               <div className="flex-shrink-0">
@@ -67,30 +106,29 @@ function ForgotPasswordPage() {
                   Email sent successfully
                 </p>
                 <p className="text-sm text-green-700 dark:text-green-200/80">
-                  Click the link in your email to reset your password. The link will automatically open the desktop app.
+                  The reset link will expire in 1 hour for security reasons.
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="text-center text-sm space-y-3 pt-2">
-          <button
+        {/* Actions */}
+        <div className="flex flex-col gap-3 w-full">
+          <Button
+            variant="outline"
             onClick={() => setEmailSent(false)}
-            className="text-muted-foreground hover:text-primary transition-colors"
+            className="w-full"
           >
             Send to a different email
-          </button>
-          <div>
-            <Link
-              to="/sign-in"
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
+          </Button>
+          <div className="text-center text-sm">
+            <Link to="/sign-in" className="text-muted-foreground hover:text-primary">
               Back to sign in
             </Link>
           </div>
         </div>
-      </>
+      </div>
     )
   }
 
