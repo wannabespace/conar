@@ -8,7 +8,6 @@ import { Popover, PopoverAnchor, PopoverContent } from '@conar/ui/components/pop
 import { Textarea } from '@conar/ui/components/textarea'
 import { render } from '@conar/ui/lib/render'
 import { cn } from '@conar/ui/lib/utils'
-import { useKeyboardEvent } from '@react-hookz/web'
 import { useMutation } from '@tanstack/react-query'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
@@ -39,10 +38,6 @@ function RunnerEditorAIZone({
     setAiSuggestion(null)
     setText('')
   }
-
-  useKeyboardEvent(e => e.key === 'Escape', () => {
-    fullClose()
-  })
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -105,6 +100,9 @@ function RunnerEditorAIZone({
                 if (e.key === 'Enter') {
                   e.preventDefault()
                   handleSubmit()
+                }
+                else if (e.key === 'Escape') {
+                  fullClose()
                 }
               }}
             />
@@ -190,7 +188,6 @@ export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCod
         const newLineCount = change.text.split('\n').length - 1
         const removedLineCount = changeEndLine - changeStartLine
 
-        // If change was on the line before the current AI zone line number
         if (changeStartLine < currentAIZoneLineNumber) {
           const lineDiff = newLineCount - removedLineCount
 
