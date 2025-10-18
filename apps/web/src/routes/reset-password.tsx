@@ -15,15 +15,39 @@ function RouteComponent() {
   const search = Route.useSearch()
   const token = 'token' in search ? search.token : ''
 
-  const getDeepLink = useCallback(() => `conar://reset-password?token=${token}`, [token])
+  const isValidToken = token && token.length === 24
+
+  const getDeepLink = useCallback(() => `conar://reset-password?token=${encodeURIComponent(token)}`, [token])
 
   const handleOpenApp = useCallback(() => {
+    if (!isValidToken) {
+      return
+    }
     location.assign(getDeepLink())
-  }, [getDeepLink])
+  }, [getDeepLink, isValidToken])
 
   useEffect(() => {
     handleOpenApp()
   }, [handleOpenApp])
+
+  if (!isValidToken) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle>
+              Invalid Reset Link
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-6">
+            <p>
+              This password reset link is invalid or has expired. Please request a new one.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">

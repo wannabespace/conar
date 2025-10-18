@@ -62,8 +62,10 @@ export async function handleSession(searchParams: URLSearchParams) {
 export async function handleResetPassword(searchParams: URLSearchParams) {
   const token = searchParams.get('token')
 
-  if (!token) {
-    toast.error('Invalid reset password link. Please request a new one.')
+  if (!token || token.length !== 24) {
+    toast.error('Invalid reset password link', {
+      description: 'Please request a new password reset link.',
+    })
     return
   }
 
