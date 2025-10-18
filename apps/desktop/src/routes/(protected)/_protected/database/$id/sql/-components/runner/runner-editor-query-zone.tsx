@@ -39,7 +39,10 @@ function RunnerQueryEditorZone({
     const queriesBefore = queries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0)
     return queriesBefore + 1
   }, [lineNumber, queries])
-  const queriesAmount = useMemo(() => queries.find(query => query.startLineNumber === lineNumber)?.queries.length || 0, [lineNumber, queries])
+  const queriesAmount = useMemo(
+    () => queries.find(query => query.startLineNumber === lineNumber)?.queries.length || 0,
+    [lineNumber, queries],
+  )
   const isFetching = useIsFetching(runnerQueryOptions({ database }), queryClient) > 0
 
   const onCheckedChange = () => {

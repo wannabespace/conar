@@ -6,7 +6,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Separator } from '@conar/ui/components/separator'
 import { RiCloseLine, RiCornerDownLeftLine, RiDatabase2Line, RiFilterLine } from '@remixicon/react'
-import { createContext, use, useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, use, useEffect, useRef, useState } from 'react'
 
 interface Column {
   id: string
@@ -283,7 +283,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
     }
   }, [valueRef, selectedFilter])
 
-  const column = useMemo(() => columns.find(column => column.id === selectedColumn), [columns, selectedColumn])
+  const column = columns.find(column => column.id === selectedColumn)
 
   useEffect(() => {
     if (column && selectedFilter && !selectedFilter.hasValue) {
@@ -335,10 +335,8 @@ export function FiltersProvider({
   columns: Column[]
   filtersGrouped: { group: FilterGroup, filters: Filter[] }[]
 }) {
-  const context = useMemo(() => ({ columns, filtersGrouped }), [columns, filtersGrouped])
-
   return (
-    <FilterInternalContext value={context}>
+    <FilterInternalContext value={{ columns, filtersGrouped }}>
       {children}
     </FilterInternalContext>
   )

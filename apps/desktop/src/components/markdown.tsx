@@ -17,7 +17,7 @@ import { createContext, useContextSelector } from '@fluentui/react-context-selec
 import NumberFlow from '@number-flow/react'
 import { RiCheckLine, RiCodeLine, RiFileCopyLine, RiPlayListAddLine, RiText } from '@remixicon/react'
 import { marked } from 'marked'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { trackEvent } from '~/lib/events'
@@ -239,7 +239,7 @@ export function Markdown({
   onAdd?: (content: string) => void
   generating?: boolean
 } & ComponentProps<'div'>) {
-  const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content])
+  const blocks = parseMarkdownIntoBlocks(content)
 
   return (
     <MarkdownContext.Provider value={{ generating }}>

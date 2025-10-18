@@ -13,7 +13,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftDownLine, RiArrowRightUpLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import dayjs from 'dayjs'
 import { KeyCode, KeyMod } from 'monaco-editor'
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
@@ -73,7 +73,7 @@ function CellPopoverContent({
     || column.type?.includes('time')
     || column.type?.includes('numeric')
 
-  const monacoOptions = useMemo(() => ({
+  const monacoOptions = {
     lineNumbers: isBig ? 'on' as const : 'off' as const,
     readOnly: !canEdit,
     scrollBeyondLastLine: false,
@@ -82,7 +82,7 @@ function CellPopoverContent({
       horizontalScrollbarSize: 5,
       verticalScrollbarSize: 5,
     },
-  }), [isBig, canEdit])
+  }
 
   return (
     <>
