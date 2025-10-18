@@ -13,6 +13,7 @@ const envType = type({
   REDIS_URL: 'string',
   POSTHOG_API_KEY: 'string',
   RESEND_API_KEY: 'string',
+  RESEND_FROM_EMAIL: 'string',
   LOOPS_API_KEY: 'string',
   OPENAI_API_KEY: 'string',
   ANTHROPIC_API_KEY: 'string',
