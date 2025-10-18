@@ -80,12 +80,6 @@ export async function sendEmailIfValid(
   }
 
   const emailService: EmailService = new ResendEmailService()
-
-  try {
-    await emailService.sendEmail(email, subjectLine, html)
-  }
-  catch (error) {
-    console.error(`Failed to send email to ${email}:`, error)
-    throw error
-  }
+  
+  await emailService.sendEmail(email, subjectLine, html)
 }
