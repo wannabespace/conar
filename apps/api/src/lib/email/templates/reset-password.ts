@@ -1,4 +1,4 @@
-export default function resetPasswordTemplate(name: string, resetLink: string) {
+export function resetPasswordTemplate(name: string, url: string) {
   return `
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="ltr" lang="en">
@@ -110,7 +110,7 @@ export default function resetPasswordTemplate(name: string, resetLink: string) {
                                 <tr>
                                   <td align="center">
                                     <a
-                                      href="${resetLink}"
+                                      href="${url}"
                                       style="line-height:100%;text-decoration:none;display:inline-block;max-width:100%;mso-padding-alt:0px;background-color:#4876EA;border-radius:8px;color:#ffffff;font-size:16px;font-weight:600;text-align:center;padding:14px 32px;box-shadow:0 2px 4px rgba(2,132,199,0.3)"
                                       target="_blank"
                                       ><span
@@ -132,7 +132,7 @@ export default function resetPasswordTemplate(name: string, resetLink: string) {
                             </p>
                             <p
                               style="font-size:12px;line-height:20px;color:#64748b;word-break:break-all;background-color:#f0f9ff;padding:14px;border-radius:8px;margin:0;margin-bottom:32px;font-family:monospace;border:1px solid #e0f2fe">
-                              ${resetLink}
+                              ${url}
                             </p>
                             <p
                               style="font-size:14px;line-height:24px;color:#64748b;margin:0;margin-bottom:12px">

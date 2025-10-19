@@ -2,7 +2,7 @@ import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useEffect } from 'react'
+import { useEffect, useEffectEvent } from 'react'
 
 export const Route = createFileRoute('/reset-password')({
   component: RouteComponent,
@@ -14,9 +14,15 @@ export const Route = createFileRoute('/reset-password')({
 function RouteComponent() {
   const { token } = Route.useSearch()
 
-  useEffect(() => {
+  const openApp = () => {
     location.assign(`conar://reset-password?token=${encodeURIComponent(token)}`)
-  }, [token])
+  }
+
+  const openAppEvent = useEffectEvent(openApp)
+
+  useEffect(() => {
+    openAppEvent()
+  }, [])
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -33,7 +39,7 @@ function RouteComponent() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <Button
-                onClick={() => location.assign(`conar://reset-password?token=${encodeURIComponent(token)}`)}
+                onClick={openApp}
                 className="w-full"
               >
                 <span>Open Conar App</span>
