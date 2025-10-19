@@ -3,7 +3,7 @@ import type { UpdatesStatus } from '~/updates-observer'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
+import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
 import { setupProtocolHandler } from './deep-link'
 import { initElectronEvents } from './events'
@@ -121,18 +121,4 @@ autoUpdater.on('download-progress', () => {
 })
 autoUpdater.on('update-downloaded', (event) => {
   sendUpdatesStatus('ready', typeof event.releaseNotes === 'string' ? event.releaseNotes : undefined)
-})
-
-// Handle manual update check from menu (i am not sure about this one)
-ipcMain.on('check-for-updates', () => {
-  console.log('Manual update check triggered from menu')
-  autoUpdater.checkForUpdates()
-})
-
-// Handle navigation from menu
-ipcMain.on('navigate-to', (_event, path: string) => {
-  console.log('Navigate to:', path)
-  if (mainWindow) {
-    mainWindow.webContents.send('navigate-to', path)
-  }
 })

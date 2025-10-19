@@ -2,12 +2,15 @@ import type {
   BrowserWindow,
   MenuItemConstructorOptions,
 } from 'electron'
+import { createRequire } from 'node:module'
 import {
   app,
   Menu,
   screen,
   shell,
 } from 'electron'
+
+const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
 type WindowSide = 'left' | 'right' | 'top' | 'bottom'
 
@@ -117,7 +120,7 @@ function buildDarwinTemplate(mainWindow: BrowserWindow): MenuItemConstructorOpti
       {
         label: 'Check for Updates...',
         click: () => {
-          mainWindow.webContents.send('check-for-updates')
+          autoUpdater.checkForUpdates()
         },
       },
       { type: 'separator' },
