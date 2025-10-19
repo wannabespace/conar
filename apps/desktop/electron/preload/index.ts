@@ -68,8 +68,8 @@ contextBridge.exposeInMainWorld('electron', {
     },
     onNavigate: (callback) => {
       const listener = (_event: Electron.IpcRendererEvent, path: string) => callback(path)
-      ipcRenderer.on('navigate-to', listener)
-      return () => ipcRenderer.off('navigate-to', listener)
+      ipcRenderer.on('app.navigate', listener)
+      return () => ipcRenderer.off('app.navigate', listener)
     },
     checkForUpdates: () => handleError(() => ipcRenderer.invoke('app.checkForUpdates')),
     quitAndInstall: () => handleError(() => ipcRenderer.invoke('app.quitAndInstall')),

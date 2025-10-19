@@ -153,7 +153,7 @@ function buildDarwinTemplate(mainWindow: BrowserWindow): MenuItemConstructorOpti
         label: 'New Connection',
         accelerator: 'Command+N',
         click: () => {
-          mainWindow.webContents.send('navigate-to', '/create')
+          mainWindow.webContents.send('app.navigate', '/create')
         },
       },
       { type: 'separator' },
@@ -353,7 +353,7 @@ function buildDefaultTemplate(mainWindow: BrowserWindow): MenuItemConstructorOpt
           label: '&New Connection',
           accelerator: 'Ctrl+N',
           click: () => {
-            mainWindow.webContents.send('navigate-to', '/create')
+            mainWindow.webContents.send('app.navigate', '/create')
           },
         },
         { type: 'separator' },
