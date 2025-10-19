@@ -45,7 +45,8 @@ function ProtectedLayout() {
       router.navigate({ to: path })
     }
 
-    window.electron?.app.onNavigate(handler)
+    const cleanup = window.electron?.app.onNavigate(handler)
+    return cleanup
   }, [router])
 
   return (
