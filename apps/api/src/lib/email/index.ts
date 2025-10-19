@@ -1,20 +1,32 @@
+import type { ComponentProps } from 'react'
 import { Resend } from 'resend'
 import { env } from '~/env'
+import { ResetPassword } from './templates/reset-password'
 
 export const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null
 
-export async function sendEmail({
-  email,
+const templates = {
+  ResetPassword,
+} as const
+
+export async function sendEmail<
+  T extends keyof typeof templates,
+  P extends ComponentProps<typeof templates[T]>,
+>({
+  to,
   subject,
   template,
+  props,
 }: {
-  email: string
+  to: string
   subject: string
-  template: string
-}) {
+  template: T
+} & (keyof P extends never
+  ? { props?: never }
+  : { props: P })) {
   if (!resend) {
     console.error('Resend email service is not configured.', {
-      email,
+      to,
       subject,
       template,
     })
@@ -22,11 +34,12 @@ export async function sendEmail({
   }
 
   try {
+    const Template = templates[template] as (props?: P) => React.ReactElement
     const { error } = await resend.emails.send({
       from: `Conar <${env.RESEND_FROM_EMAIL}>`,
-      to: email,
+      to,
       subject,
-      html: template,
+      react: Template(props),
     })
 
     if (error) {

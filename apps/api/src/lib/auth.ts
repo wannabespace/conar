@@ -8,7 +8,6 @@ import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
 import { sendEmail } from '~/lib/email'
 import { loops } from '~/lib/loops'
-import { resetPasswordTemplate } from './email/templates/reset-password'
 
 async function loopsUpdateUser(user: User) {
   try {
@@ -131,10 +130,17 @@ const config = {
     requireEmailVerification: false,
     sendResetPassword: async ({ user: { name, email }, url }) => {
       await sendEmail({
-        email,
-        subject: 'Reset Your Conar Password',
-        template: resetPasswordTemplate(name || email, url),
+        to: email,
+        subject: 'Reset your password',
+        template: 'ResetPassword',
+        props: {
+          name: name || email,
+          url,
+        },
       })
+    },
+    onPasswordReset: async () => {
+      // TODO: Send email to user when password is reset
     },
   },
   socialProviders: {
