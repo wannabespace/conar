@@ -37,9 +37,10 @@ export function UpdatesObserver() {
   const status = useStore(updatesStore, state => state.status)
 
   useEffect(() => {
-    window.electron?.app.onUpdatesStatus(({ status, message }) => {
+    const cleanup = window.electron?.app.onUpdatesStatus(({ status, message }) => {
       updatesStore.setState(state => ({ ...state, status, message } satisfies typeof state))
     })
+    return cleanup
   }, [])
 
   useEffect(() => {

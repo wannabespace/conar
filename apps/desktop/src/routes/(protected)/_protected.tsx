@@ -39,6 +39,16 @@ function ProtectedLayout() {
     router.navigate({ to: '/create' })
   })
 
+  // Listen for navigation events from menu
+  useEffect(() => {
+    const handler = (path: string) => {
+      router.navigate({ to: path })
+    }
+
+    const cleanup = window.electron?.app.onNavigate(handler)
+    return cleanup
+  }, [router])
+
   return (
     <>
       <ActionsCenter />
