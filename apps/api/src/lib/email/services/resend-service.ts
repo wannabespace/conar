@@ -1,9 +1,8 @@
-import type { EmailService } from './email-service'
 import { Resend } from 'resend'
 import { env } from '~/env'
 
-export class ResendEmailService implements EmailService {
-  async sendEmail(email: string, subjectLine: string, template: string): Promise<void> {
+export class ResendEmailService {
+  async sendEmail(email: string, subjectLine: string, template: string) {
     const resend = new Resend(env.RESEND_API_KEY!)
     const fromEmail = env.RESEND_FROM_EMAIL!
 
@@ -16,7 +15,6 @@ export class ResendEmailService implements EmailService {
       })
 
       if (!response?.data) {
-        console.error('Email sending failed: No response data received')
         throw new Error('Failed to send email: No response from email service')
       }
     }
