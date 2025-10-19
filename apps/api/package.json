@@ -46,6 +46,7 @@
     "pg": "^8.16.3",
     "postgres": "^3.4.7",
     "posthog-node": "^5.10.0",
+    "react-email": "^4.3.1",
     "redis": "^5.8.3",
     "resend": "^6.2.0",
     "resumable-stream": "^2.2.8",

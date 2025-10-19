@@ -6,8 +6,9 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
-import { sendResetPasswordEmail } from '~/lib/email'
+import { sendEmail } from '~/lib/email'
 import { loops } from '~/lib/loops'
+import { resetPasswordTemplate } from './email/templates/reset-password'
 
 async function loopsUpdateUser(user: User) {
   try {
@@ -128,8 +129,12 @@ const config = {
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
-    sendResetPassword: sendResetPasswordEmail,
-    resetPasswordTokenExpiresIn: 3600, // 1 hour
+    sendResetPassword: async ({ user: { name, email }, url }) => {
+      const subjectLine = 'Reset Your Conar Password'
+      const template = resetPasswordTemplate(name || email, url)
+      await sendEmail(email, subjectLine, template)
+    },
+    resetPasswordTokenExpiresIn: 3600,
   },
   socialProviders: {
     ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && {
