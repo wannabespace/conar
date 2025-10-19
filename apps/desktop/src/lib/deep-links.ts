@@ -1,6 +1,7 @@
 import { toast } from 'sonner'
 import { bearerToken, codeChallenge, successAuthToast } from '~/lib/auth'
 import { decrypt } from './encryption'
+import { RESET_TOKEN_KEY } from '@conar/shared/constants'
 
 export async function handleDeepLink(url: string): Promise<{ type: 'session' | 'reset-password' | 'unknown' }> {
   const { pathname, searchParams } = new URL(url.replace('conar://', 'https://conar.app/'))
@@ -70,5 +71,5 @@ export async function handleResetPassword(searchParams: URLSearchParams) {
   }
 
   // Store the token temporarily
-  sessionStorage.setItem('conar.reset_token', token)
+  sessionStorage.setItem(RESET_TOKEN_KEY, token)
 }
