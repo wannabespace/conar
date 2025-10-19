@@ -1,8 +1,8 @@
 import { eq } from 'drizzle-orm'
 import { db, users } from '~/drizzle'
 import { env } from '~/env'
+import { sendEmail } from '~/lib/email'
 import { resend } from '~/lib/email/config/resend'
-import { ResendEmailService } from '../services/resend-service'
 
 export async function verifyUserExists(email: string) {
   const [existingUser] = await db
@@ -40,7 +40,5 @@ export async function sendEmailIfValid(
       return
   }
 
-  const emailService = new ResendEmailService()
-
-  await emailService.sendEmail(email, subjectLine, template)
+  await sendEmail(email, subjectLine, template)
 }
