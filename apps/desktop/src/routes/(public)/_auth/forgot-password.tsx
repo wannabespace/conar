@@ -7,7 +7,7 @@ import { arktypeResolver } from '@hookform/resolvers/arktype'
 import { RiCheckboxCircleFill, RiMailLine } from '@remixicon/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
@@ -24,28 +24,7 @@ const schema = type({
 function ForgotPasswordPage() {
   const [emailSent, setEmailSent] = useState(false)
 
-  // Hide logo when email is sent (small hack)
-  useEffect(() => {
-    const logoElement = document.querySelector('.auth-logo')
-    if (logoElement) {
-      if (emailSent) {
-        (logoElement as HTMLElement).style.display = 'none'
-      }
-      else {
-        (logoElement as HTMLElement).style.display = 'flex'
-      }
-    }
-
-    // Cleanup on unmount
-    return () => {
-      const logoElement = document.querySelector('.auth-logo')
-      if (logoElement) {
-        (logoElement as HTMLElement).style.display = 'flex'
-      }
-    }
-  }, [emailSent])
-
-  const emailForm = useForm<typeof schema.infer>({
+  const form = useForm<typeof schema.infer>({
     resolver: arktypeResolver(schema),
     defaultValues: {
       email: '',
@@ -60,8 +39,7 @@ function ForgotPasswordPage() {
       })
 
       if (error) {
-        handleError(error)
-        return
+        throw new Error(error.message)
       }
 
       setEmailSent(true)
@@ -143,10 +121,10 @@ function ForgotPasswordPage() {
         </p>
       </div>
 
-      <Form {...emailForm}>
-        <form className="space-y-4" onSubmit={emailForm.handleSubmit(submitEmail)}>
+      <Form {...form}>
+        <form className="space-y-4" onSubmit={form.handleSubmit(submitEmail)}>
           <FormField
-            control={emailForm.control}
+            control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
@@ -170,9 +148,9 @@ function ForgotPasswordPage() {
           <Button
             className="w-full"
             type="submit"
-            disabled={emailForm.formState.isSubmitting}
+            disabled={form.formState.isSubmitting}
           >
-            <LoadingContent loading={emailForm.formState.isSubmitting}>
+            <LoadingContent loading={form.formState.isSubmitting}>
               Send reset link
             </LoadingContent>
           </Button>
