@@ -75,7 +75,8 @@ export function AuthObserver() {
       window.initialDeepLink = null
     }
 
-    window.electron?.app.onDeepLink(handle)
+    const cleanup = window.electron?.app.onDeepLink(handle)
+    return cleanup
   }, [])
 
   return <></>

@@ -7,6 +7,7 @@ import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
 import { setupProtocolHandler } from './deep-link'
 import { initElectronEvents } from './events'
+import { buildMenu } from './menu'
 
 const store = new Store()
 
@@ -50,6 +51,8 @@ export function createWindow() {
   mainWindow.on('ready-to-show', () => {
     mainWindow!.show()
   })
+
+  buildMenu(mainWindow)
 
   if (process.env.ELECTRON_RENDERER_URL) {
     mainWindow.webContents.openDevTools()
