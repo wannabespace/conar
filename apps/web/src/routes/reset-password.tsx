@@ -42,7 +42,7 @@ function RouteComponent() {
                 onClick={openApp}
                 className="w-full"
               >
-                <span>Open Conar App</span>
+                Open Conar
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
