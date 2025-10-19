@@ -3,7 +3,12 @@ import { toast } from 'sonner'
 import { bearerToken, codeChallenge, successAuthToast } from '~/lib/auth'
 import { decrypt } from './encryption'
 
-export async function handleDeepLink(url: string): Promise<{ type: 'session' | 'reset-password' | 'unknown' }> {
+export async function handleDeepLink(url: string): Promise<{
+  type:
+    | 'session'
+    | 'reset-password'
+    | 'unknown'
+}> {
   const { pathname, searchParams } = new URL(url.replace('conar://', 'https://conar.app/'))
 
   if (pathname === '/session') {
@@ -70,6 +75,5 @@ export async function handleResetPassword(searchParams: URLSearchParams) {
     return
   }
 
-  // Store the token temporarily
   sessionStorage.setItem(RESET_TOKEN_KEY, token)
 }

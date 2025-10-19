@@ -3,13 +3,12 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@conar/ui/components/form'
 import { Input } from '@conar/ui/components/input'
 import { arktypeResolver } from '@hookform/resolvers/arktype'
+import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
-import { handleError } from '~/lib/error'
 
 export const Route = createFileRoute('/(public)/_auth/forgot-password')({
   component: ForgotPasswordPage,
@@ -20,7 +19,6 @@ const schema = type({
 })
 
 function ForgotPasswordPage() {
-  const [emailSent, setEmailSent] = useState(false)
   const emailRef = useRef<HTMLInputElement>(null)
   const form = useForm<typeof schema.infer>({
     resolver: arktypeResolver(schema),
@@ -35,8 +33,8 @@ function ForgotPasswordPage() {
     }
   }, [emailRef])
 
-  const submitEmail = async (values: typeof schema.infer) => {
-    try {
+  const { mutate: sendEmail, status } = useMutation({
+    mutationFn: async (values: typeof schema.infer) => {
       const { error } = await authClient.forgetPassword({
         email: values.email,
         redirectTo: `${import.meta.env.VITE_PUBLIC_WEB_URL}/reset-password`,
@@ -45,18 +43,10 @@ function ForgotPasswordPage() {
       if (error) {
         throw error
       }
+    },
+  })
 
-      setEmailSent(true)
-      toast.success('Password reset email sent', {
-        description: 'Check your email and click the link to reset your password.',
-      })
-    }
-    catch (error) {
-      handleError(error)
-    }
-  }
-
-  if (emailSent) {
+  if (status === 'success') {
     return (
       <div className="flex flex-col justify-center gap-4">
         <div className="space-y-2">
@@ -88,7 +78,7 @@ function ForgotPasswordPage() {
         </p>
       </div>
       <Form {...form}>
-        <form className="space-y-4" onSubmit={form.handleSubmit(submitEmail)}>
+        <form className="space-y-4" onSubmit={form.handleSubmit(v => sendEmail(v))}>
           <FormField
             control={form.control}
             name="email"
@@ -117,9 +107,9 @@ function ForgotPasswordPage() {
           <Button
             className="w-full"
             type="submit"
-            disabled={form.formState.isSubmitting}
+            disabled={status === 'pending'}
           >
-            <LoadingContent loading={form.formState.isSubmitting}>
+            <LoadingContent loading={status === 'pending'}>
               Send reset link
             </LoadingContent>
           </Button>

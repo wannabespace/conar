@@ -3,7 +3,7 @@ import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@conar/ui/components/form'
 import { arktypeResolver } from '@hookform/resolvers/arktype'
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -155,7 +155,6 @@ function ResetPasswordPage() {
               </FormItem>
             )}
           />
-
           <Button
             className="w-full"
             type="submit"
@@ -164,6 +163,15 @@ function ResetPasswordPage() {
             <LoadingContent loading={form.formState.isSubmitting}>
               Reset password
             </LoadingContent>
+          </Button>
+          <Button
+            variant="link"
+            className="w-full text-center text-muted-foreground"
+            asChild
+          >
+            <Link to="/sign-in">
+              Back to sign in
+            </Link>
           </Button>
         </form>
       </Form>

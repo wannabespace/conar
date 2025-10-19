@@ -3,15 +3,19 @@ import { env } from '~/env'
 
 export const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null
 
-export async function sendEmail(
-  email: string,
-  subjectLine: string,
-  template: string,
-) {
+export async function sendEmail({
+  email,
+  subject,
+  template,
+}: {
+  email: string
+  subject: string
+  template: string
+}) {
   if (!resend) {
     console.error('Resend email service is not configured.', {
       email,
-      subjectLine,
+      subject,
       template,
     })
     return
@@ -21,7 +25,7 @@ export async function sendEmail(
     const { error } = await resend.emails.send({
       from: `Conar <${env.RESEND_FROM_EMAIL}>`,
       to: email,
-      subject: subjectLine,
+      subject,
       html: template,
     })
 
