@@ -3,6 +3,7 @@ import type {
   MenuItemConstructorOptions,
 } from 'electron'
 import { createRequire } from 'node:module'
+import { SOCIAL_LINKS } from '@conar/shared/constants'
 import {
   app,
   Menu,
@@ -13,19 +14,9 @@ import {
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
 type WindowSide = 'left' | 'right' | 'top' | 'bottom'
+type WindowQuarter = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'
 
-interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
-  selector?: string
-  submenu?: DarwinMenuItemConstructorOptions[] | Menu
-}
-
-interface WorkAreaSize {
-  width: number
-  height: number
-}
-
-// Helper functions
-function getWorkAreaSize(): WorkAreaSize {
+function getWorkAreaSize() {
   const display = screen.getPrimaryDisplay()
   return display.workAreaSize
 }
@@ -36,7 +27,6 @@ function half(value: number): number {
 
 function setWindowToHalf(mainWindow: BrowserWindow, side: WindowSide): void {
   const { width, height } = getWorkAreaSize()
-
   const halfWidth = half(width)
   const halfHeight = half(height)
 
@@ -52,6 +42,26 @@ function setWindowToHalf(mainWindow: BrowserWindow, side: WindowSide): void {
       break
     case 'bottom':
       mainWindow.setBounds({ x: 0, y: halfHeight, width, height: halfHeight })
+      break
+  }
+}
+
+function setWindowToQuarter(mainWindow: BrowserWindow, quarter: WindowQuarter) {
+  const { width, height } = getWorkAreaSize()
+  const halfWidth = half(width)
+  const halfHeight = half(height)
+  switch (quarter) {
+    case 'topLeft':
+      mainWindow.setBounds({ x: 0, y: 0, width: halfWidth, height: halfHeight })
+      break
+    case 'topRight':
+      mainWindow.setBounds({ x: halfWidth, y: 0, width: halfWidth, height: halfHeight })
+      break
+    case 'bottomLeft':
+      mainWindow.setBounds({ x: 0, y: halfHeight, width: halfWidth, height: halfHeight })
+      break
+    case 'bottomRight':
+      mainWindow.setBounds({ x: halfWidth, y: halfHeight, width: halfWidth, height: halfHeight })
       break
   }
 }
@@ -74,20 +84,20 @@ function getHelpMenu(): MenuItemConstructorOptions {
       {
         label: 'Documentation',
         click() {
-          shell.openExternal('https://github.com/wannabespace/conar#readme')
+          shell.openExternal(`${SOCIAL_LINKS.GITHUB}#readme`)
         },
       },
       { type: 'separator' },
       {
         label: 'Give us a Star on GitHub',
         click() {
-          shell.openExternal('https://github.com/wannabespace/conar')
+          shell.openExternal(SOCIAL_LINKS.GITHUB)
         },
       },
       {
         label: 'Report Issue',
         click() {
-          shell.openExternal('https://github.com/wannabespace/conar/issues')
+          shell.openExternal(`${SOCIAL_LINKS.GITHUB}/issues/new/choose`)
         },
       },
     ],
@@ -109,89 +119,133 @@ function setupDevelopmentEnvironment(mainWindow: BrowserWindow): void {
   })
 }
 
-function buildDarwinTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
-  const subMenuAbout: DarwinMenuItemConstructorOptions = {
-    label: 'Conar',
+function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
+  const isMac = process.platform === 'darwin'
+  const isDev = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
+  const cmdOrCtrl = isMac ? 'Command' : 'Ctrl'
+
+  const moveAndResizeSubmenu: MenuItemConstructorOptions = {
+    label: 'Move && Resize',
     submenu: [
-      {
-        label: 'About Conar',
-        selector: 'orderFrontStandardAboutPanel:',
-      },
-      {
-        label: 'Check for Updates...',
-        click: () => {
-          autoUpdater.checkForUpdates()
-        },
-      },
+      { label: 'Halves', enabled: false },
+      { label: 'Left', accelerator: 'Ctrl+Alt+Left', click: () => setWindowToHalf(mainWindow, 'left') },
+      { label: 'Right', accelerator: 'Ctrl+Alt+Right', click: () => setWindowToHalf(mainWindow, 'right') },
+      { label: 'Top', accelerator: 'Ctrl+Alt+Up', click: () => setWindowToHalf(mainWindow, 'top') },
+      { label: 'Bottom', accelerator: 'Ctrl+Alt+Down', click: () => setWindowToHalf(mainWindow, 'bottom') },
       { type: 'separator' },
-      {
-        label: 'Hide Conar',
-        accelerator: 'Command+H',
-        selector: 'hide:',
-      },
-      {
-        label: 'Hide Others',
-        accelerator: 'Command+Shift+H',
-        selector: 'hideOtherApplications:',
-      },
-      { label: 'Show All', selector: 'unhideAllApplications:' },
-      { type: 'separator' },
-      {
-        label: 'Quit',
-        accelerator: 'Command+Q',
-        click: () => {
-          app.quit()
-        },
-      },
+      { label: 'Quarters', enabled: false },
+      { label: 'Top Left', accelerator: 'Ctrl+Alt+1', click: () => setWindowToQuarter(mainWindow, 'topLeft') },
+      { label: 'Top Right', accelerator: 'Ctrl+Alt+2', click: () => setWindowToQuarter(mainWindow, 'topRight') },
+      { label: 'Bottom Left', accelerator: 'Ctrl+Alt+3', click: () => setWindowToQuarter(mainWindow, 'bottomLeft') },
+      { label: 'Bottom Right', accelerator: 'Ctrl+Alt+4', click: () => setWindowToQuarter(mainWindow, 'bottomRight') },
     ],
   }
 
-  const subMenuFile: MenuItemConstructorOptions = {
+  const template: MenuItemConstructorOptions[] = []
+
+  if (isMac) {
+    const appMenu = {
+      label: 'Conar',
+      submenu: [
+        {
+          label: 'About Conar',
+          selector: 'orderFrontStandardAboutPanel:',
+        },
+        {
+          label: 'Check for Updates...',
+          click: () => {
+            autoUpdater.checkForUpdates()
+          },
+        },
+        { type: 'separator' },
+        {
+          label: 'Hide Conar',
+          accelerator: 'Command+H',
+          selector: 'hide:',
+        },
+        {
+          label: 'Hide Others',
+          accelerator: 'Command+Shift+H',
+          selector: 'hideOtherApplications:',
+        },
+        { label: 'Show All', selector: 'unhideAllApplications:' },
+        { type: 'separator' },
+        {
+          label: 'Quit',
+          accelerator: 'Command+Q',
+          click: () => {
+            app.quit()
+          },
+        },
+      ],
+    } as MenuItemConstructorOptions
+    template.push(appMenu)
+  }
+
+  const fileMenuSubmenu: MenuItemConstructorOptions[] = [
+    {
+      label: 'New Connection',
+      accelerator: `${cmdOrCtrl}+N`,
+      click: () => {
+        mainWindow.webContents.send('app.navigate', '/create')
+      },
+    },
+    { type: 'separator' },
+    {
+      label: 'Close Window',
+      accelerator: `${cmdOrCtrl}+W`,
+      click: () => {
+        mainWindow.close()
+      },
+    },
+  ]
+
+  if (!isMac) {
+    fileMenuSubmenu.push({
+      label: 'Quit',
+      accelerator: 'Ctrl+Q',
+      click: () => {
+        app.quit()
+      },
+    })
+  }
+
+  template.push({
     label: 'File',
-    submenu: [
-      {
-        label: 'New Connection',
-        accelerator: 'Command+N',
-        click: () => {
-          mainWindow.webContents.send('app.navigate', '/create')
-        },
-      },
-      { type: 'separator' },
-      {
-        label: 'Close Window',
-        accelerator: 'Command+W',
-        click: () => {
-          mainWindow.close()
-        },
-      },
-    ],
-  }
+    submenu: fileMenuSubmenu,
+  })
 
-  const subMenuViewDev: MenuItemConstructorOptions = {
-    label: 'View',
-    submenu: [
+  const viewMenuSubmenu: MenuItemConstructorOptions[] = []
+
+  if (isDev) {
+    viewMenuSubmenu.push(
       {
         label: 'Reload',
-        accelerator: 'Command+R',
+        accelerator: `${cmdOrCtrl}+R`,
         click: () => {
           mainWindow.webContents.reload()
         },
       },
       {
         label: 'Force Reload',
-        accelerator: 'Shift+Command+R',
+        accelerator: `${cmdOrCtrl}+Shift+R`,
         click: () => {
           mainWindow.webContents.reloadIgnoringCache()
         },
       },
       {
         label: 'Toggle Developer Tools',
-        accelerator: 'Alt+Command+I',
+        accelerator: isMac ? 'Alt+Command+I' : 'Ctrl+Shift+I',
         click: () => {
           mainWindow.webContents.toggleDevTools()
         },
       },
-      { type: 'separator' },
+    )
+    viewMenuSubmenu.push({ type: 'separator' })
+  }
+
+  if (isMac) {
+    viewMenuSubmenu.push(
       {
         label: 'Actual Size',
         accelerator: 'Command+0',
@@ -216,228 +270,74 @@ function buildDarwinTemplate(mainWindow: BrowserWindow): MenuItemConstructorOpti
         },
       },
       { type: 'separator' },
-      {
-        label: 'Toggle Full Screen',
-        accelerator: 'Ctrl+Command+F',
-        click: () => {
-          mainWindow.setFullScreen(!mainWindow.isFullScreen())
-        },
-      },
-    ],
+    )
   }
 
-  const subMenuViewProd: MenuItemConstructorOptions = {
+  viewMenuSubmenu.push({
+    label: 'Toggle Full Screen',
+    accelerator: isMac ? 'Ctrl+Command+F' : 'F11',
+    click: () => {
+      mainWindow.setFullScreen(!mainWindow.isFullScreen())
+    },
+  })
+
+  template.push({
     label: 'View',
-    submenu: [
-      {
-        label: 'Actual Size',
-        accelerator: 'Command+0',
-        click: () => {
-          mainWindow.webContents.setZoomLevel(0)
-        },
-      },
-      {
-        label: 'Zoom In',
-        accelerator: 'Command+Plus',
-        click: () => {
-          const currentZoom = mainWindow.webContents.getZoomLevel()
-          mainWindow.webContents.setZoomLevel(currentZoom + 1)
-        },
-      },
-      {
-        label: 'Zoom Out',
-        accelerator: 'Command+-',
-        click: () => {
-          const currentZoom = mainWindow.webContents.getZoomLevel()
-          mainWindow.webContents.setZoomLevel(currentZoom - 1)
-        },
-      },
-      { type: 'separator' },
-      {
-        label: 'Toggle Full Screen',
-        accelerator: 'Ctrl+Command+F',
-        click: () => {
-          mainWindow.setFullScreen(!mainWindow.isFullScreen())
-        },
-      },
-    ],
-  }
+    submenu: viewMenuSubmenu,
+  })
 
-  const subMenuWindow: DarwinMenuItemConstructorOptions = {
-    label: 'Window',
-    submenu: [
-      {
-        label: 'Minimize',
-        accelerator: 'Command+M',
-        selector: 'performMiniaturize:',
-      },
-      {
-        label: 'Fill',
-        click: () => {
-          fillWindow(mainWindow)
-        },
-      },
-      {
-        label: 'Centre',
-        click: () => {
-          mainWindow.center()
-        },
-      },
-      { type: 'separator' },
-      {
-        label: 'Move',
-        submenu: [
-          {
-            label: 'Left',
-            click: () => {
-              setWindowToHalf(mainWindow, 'left')
-            },
-          },
-          {
-            label: 'Right',
-            click: () => {
-              setWindowToHalf(mainWindow, 'right')
-            },
-          },
-          {
-            label: 'Top',
-            click: () => {
-              setWindowToHalf(mainWindow, 'top')
-            },
-          },
-          {
-            label: 'Bottom',
-            click: () => {
-              setWindowToHalf(mainWindow, 'bottom')
-            },
-          },
-        ],
-      },
-      {
-        label: 'Full-Screen Tile',
-        submenu: [
-          {
-            label: 'Tile Window to Left of Screen',
-            click: () => {
-              setWindowToHalf(mainWindow, 'left')
-            },
-          },
-          {
-            label: 'Tile Window to Right of Screen',
-            click: () => {
-              setWindowToHalf(mainWindow, 'right')
-            },
-          },
-        ],
-      },
-      { type: 'separator' },
-      { label: 'Bring All to Front', selector: 'arrangeInFront:' },
-    ],
-  }
-
-  const subMenuView
-    = process.env.NODE_ENV === 'development'
-      || process.env.DEBUG_PROD === 'true'
-      ? subMenuViewDev
-      : subMenuViewProd
-
-  return [subMenuAbout, subMenuFile, subMenuView, subMenuWindow, getHelpMenu()]
-}
-
-function buildDefaultTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
-  const templateDefault: MenuItemConstructorOptions[] = [
+  const windowMenuSubmenu: MenuItemConstructorOptions[] = [
     {
-      label: '&File',
-      submenu: [
-        {
-          label: '&New Connection',
-          accelerator: 'Ctrl+N',
-          click: () => {
-            mainWindow.webContents.send('app.navigate', '/create')
-          },
-        },
-        { type: 'separator' },
-        {
-          label: '&Close Window',
-          accelerator: 'Ctrl+W',
-          click: () => {
-            mainWindow.close()
-          },
-        },
-        {
-          label: '&Quit',
-          accelerator: 'Ctrl+Q',
-          click: () => {
-            app.quit()
-          },
-        },
-      ],
+      label: 'Fill',
+      accelerator: 'Ctrl+Alt+F',
+      click: () => {
+        fillWindow(mainWindow)
+      },
     },
     {
-      label: '&View',
-      submenu:
-        process.env.NODE_ENV === 'development'
-        || process.env.DEBUG_PROD === 'true'
-          ? [
-              {
-                label: '&Reload',
-                accelerator: 'Ctrl+R',
-                click: () => {
-                  mainWindow.webContents.reload()
-                },
-              },
-              {
-                label: 'Toggle &Full Screen',
-                accelerator: 'F11',
-                click: () => {
-                  mainWindow.setFullScreen(
-                    !mainWindow.isFullScreen(),
-                  )
-                },
-              },
-            ]
-          : [
-              {
-                label: 'Toggle &Full Screen',
-                accelerator: 'F11',
-                click: () => {
-                  mainWindow.setFullScreen(
-                    !mainWindow.isFullScreen(),
-                  )
-                },
-              },
-            ],
+      label: 'Center',
+      accelerator: 'Ctrl+Alt+C',
+      click: () => {
+        mainWindow.center()
+      },
     },
+    moveAndResizeSubmenu,
+    { type: 'separator' },
     {
-      label: '&Window',
-      submenu: [
-        {
-          label: 'Minimize',
-          accelerator: 'Ctrl+M',
-          click: () => {
-            mainWindow.minimize()
-          },
-        },
-        {
-          label: 'Zoom',
-          click: () => {
-            mainWindow.maximize()
-          },
-        },
-        { type: 'separator' },
-        {
-          label: 'Close',
-          accelerator: 'Ctrl+W',
-          click: () => {
-            mainWindow.close()
-          },
-        },
-      ],
+      label: 'Minimize',
+      accelerator: `${cmdOrCtrl}+M`,
+      click: () => {
+        mainWindow.minimize()
+      },
     },
-    getHelpMenu(),
   ]
 
-  return templateDefault
+  if (!isMac) {
+    windowMenuSubmenu.push({
+      label: 'Maximize',
+      accelerator: 'Ctrl+Shift+M',
+      click: () => {
+        mainWindow.maximize()
+      },
+    })
+  }
+
+  windowMenuSubmenu.push({
+    label: 'Close',
+    accelerator: `${cmdOrCtrl}+W`,
+    click: () => {
+      mainWindow.close()
+    },
+  })
+
+  template.push({
+    label: 'Window',
+    submenu: windowMenuSubmenu,
+  })
+
+  template.push(getHelpMenu())
+
+  return template
 }
 
 export function buildMenu(mainWindow: BrowserWindow): Menu {
@@ -448,12 +348,9 @@ export function buildMenu(mainWindow: BrowserWindow): Menu {
     setupDevelopmentEnvironment(mainWindow)
   }
 
-  const template
-    = process.platform === 'darwin'
-      ? buildDarwinTemplate(mainWindow)
-      : buildDefaultTemplate(mainWindow)
-
+  const template = buildTemplate(mainWindow)
   const menu = Menu.buildFromTemplate(template)
+
   Menu.setApplicationMenu(menu)
 
   return menu
