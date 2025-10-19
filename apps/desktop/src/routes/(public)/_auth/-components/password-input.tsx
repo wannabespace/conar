@@ -10,15 +10,20 @@ interface PasswordFormFields {
 
 type PasswordFieldProps = ControllerRenderProps<PasswordFormFields, keyof PasswordFormFields>
 
-interface PasswordInputProps {
-  field: PasswordFieldProps
+interface PasswordInputProps extends PasswordFieldProps {
   showPassword: boolean
   onToggle: () => void
   placeholder?: string
   autoComplete?: string
 }
 
-export default function PasswordInput({ field, showPassword, onToggle, placeholder = '••••••••', autoComplete = 'new-password' }: PasswordInputProps) {
+export default function PasswordInput({
+  showPassword,
+  onToggle,
+  placeholder = '••••••••',
+  autoComplete = 'new-password',
+  ...props
+}: PasswordInputProps) {
   return (
     <div className="relative">
       <Input
@@ -29,7 +34,7 @@ export default function PasswordInput({ field, showPassword, onToggle, placehold
         spellCheck="false"
         required
         className="pe-10"
-        {...field}
+        {...props}
       />
       <Button
         type="button"
