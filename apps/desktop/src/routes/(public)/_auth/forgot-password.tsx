@@ -39,7 +39,7 @@ function ForgotPasswordPage() {
       })
 
       if (error) {
-        throw new Error(error.message)
+        throw error
       }
 
       setEmailSent(true)
