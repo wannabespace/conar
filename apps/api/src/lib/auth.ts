@@ -130,11 +130,12 @@ const config = {
     enabled: true,
     requireEmailVerification: false,
     sendResetPassword: async ({ user: { name, email }, url }) => {
-      const subjectLine = 'Reset Your Conar Password'
-      const template = resetPasswordTemplate(name || email, url)
-      await sendEmail(email, subjectLine, template)
+      await sendEmail({
+        email,
+        subject: 'Reset Your Conar Password',
+        template: resetPasswordTemplate(name || email, url),
+      })
     },
-    resetPasswordTokenExpiresIn: 3600,
   },
   socialProviders: {
     ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && {

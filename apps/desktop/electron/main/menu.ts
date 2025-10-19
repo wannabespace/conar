@@ -24,9 +24,6 @@ function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] 
   const isMac = process.platform === 'darwin'
   const cmdOrCtrl = isMac ? 'Command' : 'Ctrl'
 
-  const defaultMenu = Menu.getApplicationMenu()
-
-  console.log('default', defaultMenu)
   const template: MenuItemConstructorOptions[] = []
 
   if (isMac) {
