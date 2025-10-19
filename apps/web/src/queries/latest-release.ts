@@ -47,7 +47,7 @@ export const getLatestReleaseOptions = queryOptions({
   },
   select: (data) => {
     const version = data.tag_name
-    console.log(data.assets)
+
     const assets = {
       macos: data.assets?.filter(asset => asset.name.toLowerCase().endsWith('.dmg')) || [],
       linux: data.assets?.filter(asset => asset.name.toLowerCase().endsWith('.deb') || asset.name.toLowerCase().endsWith('.appimage') || asset.name.toLowerCase().endsWith('.rpm')) || [],

@@ -52,16 +52,18 @@ export function ThemeObserver({
 }: ThemeObserverProps) {
   if (!themeStore) {
     themeStore = new Store<ThemeStoreState>({
-      theme: isBrowser ? (localStorage.getItem(storageKey) as Theme) : defaultTheme,
+      theme: (isBrowser && (localStorage.getItem(storageKey) as Theme)) || defaultTheme,
       resolvedTheme: 'light',
       storageKey,
     })
 
-    themeStore.subscribe(({ prevVal, currentVal }) => {
-      if (prevVal.theme !== currentVal.theme) {
-        updateTheme()
-      }
-    })
+    if (isBrowser) {
+      themeStore.subscribe(({ prevVal, currentVal }) => {
+        if (prevVal.theme !== currentVal.theme) {
+          updateTheme()
+        }
+      })
+    }
     updateTheme()
   }
 
