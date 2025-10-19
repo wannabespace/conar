@@ -1,23 +1,33 @@
+import { RESET_TOKEN_KEY } from '@conar/shared/constants'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@conar/ui/components/form'
 import { arktypeResolver } from '@hookform/resolvers/arktype'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/lib/error'
-import InvalidTokenBanner from './-components/invalid-token-banner'
 import PasswordInput from './-components/password-input'
 
 export const Route = createFileRoute('/(public)/_auth/reset-password')({
+  loader: () => {
+    const resetToken = sessionStorage.getItem(RESET_TOKEN_KEY)
+
+    if (!resetToken) {
+      toast.error('Invalid reset token', {
+        description: 'Please request a new password reset link.',
+      })
+      throw redirect({ to: '/forgot-password' })
+    }
+
+    return { token: resetToken }
+  },
+
   component: ResetPasswordPage,
 })
-
-const RESET_TOKEN_KEY = 'conar.reset_token'
-const VALID_TOKEN_LENGTH = 24
 
 const schema = type({
   password: 'string >= 8',
@@ -26,45 +36,11 @@ const schema = type({
 
 function ResetPasswordPage() {
   const navigate = useNavigate()
+  const { token } = Route.useLoaderData()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [token, setToken] = useState<string | null>(null)
-  const [isValidatingToken, setIsValidatingToken] = useState(true)
-  const [isTokenExpired, setIsTokenExpired] = useState(false)
 
-  const handleInvalidToken = (description: string, shouldExpire = true) => {
-    toast.error('Invalid reset token', { description })
-    if (shouldExpire) {
-      setIsTokenExpired(true)
-      setIsValidatingToken(false)
-    }
-    else {
-      navigate({ to: '/forgot-password' })
-    }
-  }
-
-  useEffect(() => {
-    const validateToken = () => {
-      const resetToken = sessionStorage.getItem(RESET_TOKEN_KEY)
-
-      if (!resetToken) {
-        handleInvalidToken('Please request a new password reset link.', false)
-        return
-      }
-
-      if (resetToken.length !== VALID_TOKEN_LENGTH) {
-        handleInvalidToken('The reset link is invalid or malformed.')
-        return
-      }
-
-      setToken(resetToken)
-      setIsValidatingToken(false)
-    }
-
-    validateToken()
-  }, [navigate])
-
-  const form = useForm<typeof schema.infer>({
+  const form = useForm({
     resolver: arktypeResolver(schema),
     defaultValues: {
       password: '',
@@ -81,7 +57,6 @@ function ResetPasswordPage() {
   }
 
   const handleResetError = () => {
-    setIsTokenExpired(true)
     sessionStorage.removeItem(RESET_TOKEN_KEY)
     toast.error('Reset link expired or invalid', {
       description: 'The reset password token is invalid or expired.',
@@ -89,14 +64,6 @@ function ResetPasswordPage() {
   }
 
   const submit = async (values: typeof schema.infer) => {
-    if (!token) {
-      toast.error('No reset token found', {
-        description: 'Please request a new password reset link.',
-      })
-      navigate({ to: '/forgot-password' })
-      return
-    }
-
     if (values.password !== values.confirmPassword) {
       form.setError('confirmPassword', {
         message: 'Passwords do not match',
@@ -129,14 +96,6 @@ function ResetPasswordPage() {
     }
   }
 
-  if (isValidatingToken || !token) {
-    return (
-      <LoadingContent loading>
-        <div />
-      </LoadingContent>
-    )
-  }
-
   return (
     <>
       <div className="space-y-2">
@@ -147,8 +106,6 @@ function ResetPasswordPage() {
           Enter your new password below.
         </p>
       </div>
-
-      {isTokenExpired && <InvalidTokenBanner />}
 
       <Form {...form}>
         <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
@@ -191,7 +148,7 @@ function ResetPasswordPage() {
           <Button
             className="w-full"
             type="submit"
-            disabled={form.formState.isSubmitting || isTokenExpired}
+            disabled={form.formState.isSubmitting}
           >
             <LoadingContent loading={form.formState.isSubmitting}>
               Reset password
