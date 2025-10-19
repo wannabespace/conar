@@ -5,7 +5,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { arktypeResolver } from '@hookform/resolvers/arktype'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
@@ -39,6 +39,13 @@ function ResetPasswordPage() {
   const { token } = Route.useLoaderData()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const passwordRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (passwordRef.current) {
+      passwordRef.current.focus()
+    }
+  }, [passwordRef])
 
   const form = useForm({
     resolver: arktypeResolver(schema),
@@ -112,12 +119,16 @@ function ResetPasswordPage() {
           <FormField
             control={form.control}
             name="password"
-            render={({ field }) => (
+            render={({ field: { ref, ...field } }) => (
               <FormItem>
                 <FormLabel>New Password</FormLabel>
                 <FormControl>
                   <PasswordInput
-                    field={field}
+                    ref={(e) => {
+                      ref(e)
+                      passwordRef.current = e
+                    }}
+                    {...field}
                     showPassword={showPassword}
                     onToggle={() => setShowPassword(!showPassword)}
                   />
@@ -135,7 +146,7 @@ function ResetPasswordPage() {
                 <FormLabel>Confirm Password</FormLabel>
                 <FormControl>
                   <PasswordInput
-                    field={field}
+                    {...field}
                     showPassword={showConfirmPassword}
                     onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
                   />

@@ -294,12 +294,11 @@ export function AuthForm({ type }: { type: Type }) {
                 <div className="flex items-center justify-between">
                   <FormLabel>Password</FormLabel>
                   {type === 'sign-in' && (
-                    <Link
-                      to="/forgot-password"
-                      className="text-xs text-muted-foreground hover:text-primary"
-                    >
-                      Forgot password?
-                    </Link>
+                    <Button variant="link" size="xs" className="text-muted-foreground" asChild>
+                      <Link to="/forgot-password">
+                        Forgot password?
+                      </Link>
+                    </Button>
                   )}
                 </div>
                 <FormControl>
