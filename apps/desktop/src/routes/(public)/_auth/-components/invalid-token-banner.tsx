@@ -1,8 +1,8 @@
-interface InvalidTokenBannerProps {
-  onNavigate: () => void
-}
+import { useNavigate } from '@tanstack/react-router'
 
-export default function InvalidTokenBanner({ onNavigate }: InvalidTokenBannerProps) {
+export default function InvalidTokenBanner() {
+  const navigate = useNavigate()
+
   return (
     <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
       <p className="font-medium">This reset link is invalid or has expired.</p>
@@ -11,7 +11,7 @@ export default function InvalidTokenBanner({ onNavigate }: InvalidTokenBannerPro
         {' '}
         <button
           type="button"
-          onClick={onNavigate}
+          onClick={() => navigate({ to: '/forgot-password' })}
           className="underline hover:no-underline cursor-pointer"
         >
           here

@@ -9,8 +9,8 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/lib/error'
+import InvalidTokenBanner from './-components/invalid-token-banner'
 import PasswordInput from './-components/password-input'
-import InvalidTokenBanner from './-components/token-banner'
 
 export const Route = createFileRoute('/(public)/_auth/reset-password')({
   component: ResetPasswordPage,
@@ -148,7 +148,7 @@ function ResetPasswordPage() {
         </p>
       </div>
 
-      {isTokenExpired && <InvalidTokenBanner onNavigate={() => navigate({ to: '/forgot-password' })} />}
+      {isTokenExpired && <InvalidTokenBanner />}
 
       <Form {...form}>
         <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
