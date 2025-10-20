@@ -10,9 +10,11 @@
     "test:unit": "bun test",
     "type-check": "tsc --noEmit"
   },
+  "dependencies": {
+    "@conar/shared": "workspace:*"
+  },
   "devDependencies": {
     "@conar/configs": "workspace:*",
-    "@conar/shared": "workspace:*",
     "typescript": "catalog:"
   }
 }

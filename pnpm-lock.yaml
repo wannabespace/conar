@@ -675,19 +675,20 @@ importers:
   packages/configs: {}
 
   packages/connection:
+    dependencies:
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       '@conar/configs':
         specifier: workspace:*
         version: link:../configs
-      '@conar/shared':
-        specifier: workspace:*
-        version: link:../shared
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
 
   packages/shared:
-    devDependencies:
+    dependencies:
       '@conar/configs':
         specifier: workspace:*
         version: link:../configs
@@ -708,7 +709,7 @@ importers:
         version: 4.1.12
 
   packages/ui:
-    devDependencies:
+    dependencies:
       '@conar/configs':
         specifier: workspace:*
         version: link:../configs

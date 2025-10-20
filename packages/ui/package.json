@@ -13,7 +13,7 @@
   "scripts": {
     "check-types": "tsc"
   },
-  "devDependencies": {
+  "dependencies": {
     "@conar/configs": "workspace:*",
     "@conar/shared": "workspace:*",
     "@radix-ui/react-accordion": "^1.2.12",

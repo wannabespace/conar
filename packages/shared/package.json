@@ -16,7 +16,7 @@
   "scripts": {
     "check-types": "tsc"
   },
-  "devDependencies": {
+  "dependencies": {
     "@conar/configs": "workspace:*",
     "ai": "catalog:",
     "arktype": "catalog:",
