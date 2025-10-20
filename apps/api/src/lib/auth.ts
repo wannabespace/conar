@@ -145,8 +145,7 @@ const config = {
         subject: 'Your password was reset successfully',
         template: 'OnPasswordReset',
         props: {
-          name,
-          email,
+          name: name || email,
         },
       })
     },
