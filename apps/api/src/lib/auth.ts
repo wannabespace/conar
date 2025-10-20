@@ -139,8 +139,16 @@ const config = {
         },
       })
     },
-    onPasswordReset: async () => {
-      // TODO: Send email to user when password is reset
+    onPasswordReset: async ({ user: { name, email } }) => {
+      await sendEmail({
+        to: email,
+        subject: 'Your password was reset successfully',
+        template: 'OnPasswordReset',
+        props: {
+          name,
+          email,
+        },
+      })
     },
   },
   socialProviders: {

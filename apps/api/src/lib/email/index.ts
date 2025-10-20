@@ -1,12 +1,13 @@
 import type { ComponentProps } from 'react'
 import { Resend } from 'resend'
 import { env } from '~/env'
-import { ResetPassword } from './templates/reset-password'
+import { OnPasswordReset, ResetPassword } from '~/lib/email/templates'
 
 export const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null
 
 const templates = {
   ResetPassword,
+  OnPasswordReset,
 } as const
 
 export async function sendEmail<
