@@ -20,7 +20,7 @@ export function OnPasswordReset({ name }: { name: string }) {
         <Text className="mb-[10px]">
           Your password for your account has been successfully reset.
         </Text>
-        <Text className="mb-[10px]">
+        <Text>
           If you did not make this change, please contact our support team immediately.
         </Text>
       </Section>
