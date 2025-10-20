@@ -11,13 +11,13 @@ export function OnPasswordReset({ name }: { name: string }) {
       title="Your password was reset successfully"
     >
       <Section>
-        <Text className="mb-[10px]">
+        <Text>
           Hello,
           {' '}
           <strong>{name}</strong>
           !
         </Text>
-        <Text className="mb-[10px]">
+        <Text>
           Your password for your account has been successfully reset.
         </Text>
         <Text>

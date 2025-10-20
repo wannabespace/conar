@@ -12,13 +12,13 @@ export function ResetPassword({ name, url }: { name: string, url: string }) {
       title="Reset your password"
     >
       <Section className="mb-[20px]">
-        <Text className="mb-[10px]">
+        <Text>
           Hello,
           {' '}
           <strong>{name}</strong>
           !
         </Text>
-        <Text className="mb-[10px]">
+        <Text>
           We received a request to reset your password. Click the button below to set a new password:
         </Text>
       </Section>
@@ -28,7 +28,7 @@ export function ResetPassword({ name, url }: { name: string, url: string }) {
         </Button>
       </Section>
       <Section>
-        <Text className="mb-[10px]">
+        <Text>
           This link will expire in
           {' '}
           <strong>1 hour</strong>
