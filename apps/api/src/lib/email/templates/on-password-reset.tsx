@@ -4,11 +4,11 @@ import {
 } from '@react-email/components'
 import { Base } from '../components/base'
 
-export function OnPasswordReset({ name, email }: { name: string, email: string }) {
+export function OnPasswordReset({ name }: { name: string }) {
   return (
     <Base
       preview={`${name}, your password has been reset`}
-      title="Your Conar password was reset successfully"
+      title="Your password was reset successfully"
     >
       <Section className="mb-[20px]">
         <Text className="mb-[10px]">
@@ -18,9 +18,7 @@ export function OnPasswordReset({ name, email }: { name: string, email: string }
           !
         </Text>
         <Text className="mb-[10px]">
-          Your password for your Conar account (
-          {email}
-          ) has been successfully reset.
+          Your password for your account has been successfully reset.
         </Text>
         <Text className="mb-[10px]">
           If you did not make this change, please contact our support team immediately.

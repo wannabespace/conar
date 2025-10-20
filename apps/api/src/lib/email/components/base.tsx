@@ -41,7 +41,7 @@ export function Base({
             {children}
             <Section>
               <Text className="text-center mt-[40px] text-[12px]">
-                <Link className="text-primary" href={SOCIAL_LINKS.TWITTER}>X / Twitter</Link>
+                <Link className="text-primary" href={SOCIAL_LINKS.TWITTER}>X</Link>
                 {' '}
                 ・
                 {' '}
