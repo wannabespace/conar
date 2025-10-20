@@ -264,15 +264,23 @@ export function TableCell({
     status === 'error' && 'ring-destructive/50 bg-destructive/20',
     status === 'success' && 'ring-success/50 bg-success/10',
     status === 'saving' && 'animate-pulse bg-primary/10',
+    position === 'first' && 'pl-4',
+    position === 'last' && 'pr-4',
     (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1',
     className,
   )
 
+  function disableInteractIfPossible() {
+    if (!isPopoverOpen && !isForeignOpen && !isReferencesOpen) {
+      sleep(200).then(() => setCanInteract(false))
+    }
+  }
+
   if (!canInteract) {
     return (
       <TableCellContent
-        position={position}
         onMouseOver={() => setCanInteract(true)}
+        onMouseLeave={disableInteractIfPossible}
         className={cellClassName}
         style={style}
         value={value}
@@ -305,12 +313,6 @@ export function TableCell({
 
   const date = column ? getTimestamp(value, column) : null
 
-  function closePopover() {
-    if (!isPopoverOpen && !isForeignOpen && !isReferencesOpen) {
-      sleep(200).then(() => setCanInteract(false))
-    }
-  }
-
   return (
     <TableCellProvider
       column={column}
@@ -339,13 +341,12 @@ export function TableCell({
                 asChild
                 onClick={e => e.preventDefault()}
                 onDoubleClick={() => setIsPopoverOpen(true)}
-                onMouseLeave={closePopover}
+                onMouseLeave={disableInteractIfPossible}
               >
                 <TableCellContent
                   className={cellClassName}
                   style={style}
                   value={value}
-                  position={position}
                 >
                   <span className="truncate">{displayValue}</span>
                   {!!value && column.foreign && (
@@ -444,7 +445,7 @@ export function TableCell({
         </TooltipProvider>
         <PopoverContent
           className={cn('p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
-          onAnimationEnd={closePopover}
+          onAnimationEnd={disableInteractIfPossible}
         >
           <CellPopoverContent
             rowIndex={rowIndex}

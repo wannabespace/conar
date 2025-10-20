@@ -7,7 +7,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/
 import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
-import { useEffect } from 'react'
+import { useEffect, useEffectEvent } from 'react'
 import { FiltersProvider } from '~/components/table'
 import { prefetchDatabaseCore, prefetchDatabaseTableCore } from '~/entities/database'
 import { addTab, databaseStore } from '../../-store'
@@ -79,7 +79,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
 
   const columns = useTableColumns({ database, table, schema })
 
-  useEffect(() => {
+  const removeUnusedOrdersEvent = useEffectEvent(() => {
     if (!columns || columns.length === 0)
       return
 
@@ -97,6 +97,10 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
       ...state,
       orderBy: newOrderBy,
     } satisfies typeof state))
+  })
+
+  useEffect(() => {
+    removeUnusedOrdersEvent()
   }, [columns, store])
 
   return (
@@ -104,7 +108,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
       <TablesTabs className="h-9" database={database} />
       <div
         key={table}
-        className="h-[calc(100%-theme(spacing.9))]"
+        className="h-[calc(100%-(--spacing(9)))]"
         onClick={() => addTab(database.id, schema, table)}
       >
         <FiltersProvider
@@ -113,11 +117,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
         >
           <div className="h-full flex flex-col justify-between">
             <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
-              <Header
-                database={database}
-                table={table}
-                schema={schema}
-              />
+              <Header table={table} schema={schema} />
               <Filters />
             </div>
             <div className="flex-1 overflow-hidden">
@@ -136,7 +136,7 @@ function DatabaseTablesPage() {
   const store = databaseStore(database.id)
   const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
 
-  useEffect(() => {
+  const handleLastOpenedTableEvent = useEffectEvent(() => {
     if (schema && table) {
       if (schema !== lastOpenedTable?.schema || table !== lastOpenedTable?.table) {
         store.setState(state => ({
@@ -151,7 +151,11 @@ function DatabaseTablesPage() {
         lastOpenedTable: null,
       } satisfies typeof state))
     }
-  }, [schema, table, store, lastOpenedTable])
+  })
+
+  useEffect(() => {
+    handleLastOpenedTableEvent()
+  }, [schema, table, lastOpenedTable])
 
   return (
     <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} direction="horizontal" className="flex">
