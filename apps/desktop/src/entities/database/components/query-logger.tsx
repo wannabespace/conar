@@ -6,12 +6,13 @@ import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { ButtonGroup } from '@conar/ui/components/button-group'
 import { CardTitle } from '@conar/ui/components/card'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { useVirtual } from '@conar/ui/hooks/use-virtual'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiCheckboxCircleLine, RiCloseCircleLine, RiCloseLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
+import { RiArrowDownLine, RiCheckboxCircleLine, RiCheckLine, RiCloseCircleLine, RiCloseLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useMemo, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
@@ -179,6 +180,7 @@ export function QueryLogger({ database, className }: {
   const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
   const queries = useStore(queriesLogStore, state => Object.values(state[database.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()))
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
+  const [isClearing, setIsClearing] = useState(false)
   const store = databaseStore(database.id)
 
   const filteredQueries = useMemo(() => {
@@ -202,6 +204,7 @@ export function QueryLogger({ database, className }: {
   }, { success: 0, error: 0, pending: 0 })
 
   const clearQueries = () => {
+    setIsClearing(true)
     queriesLogStore.setState(state => ({
       ...state,
       [database.id]: {},
@@ -272,7 +275,13 @@ export function QueryLogger({ database, className }: {
             size="icon-sm"
             onClick={clearQueries}
           >
-            <RiDeleteBinLine className="size-4 text-destructive" />
+            <ContentSwitch
+              activeContent={<RiCheckLine className="size-4 text-success" />}
+              active={isClearing}
+              onSwitchEnd={setIsClearing}
+            >
+              <RiDeleteBinLine className="size-4 text-destructive" />
+            </ContentSwitch>
           </Button>
           <Button
             variant="outline"
