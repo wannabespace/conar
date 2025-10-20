@@ -79,10 +79,11 @@ function OpenPage() {
                       <div className="flex">
                         <Button
                           variant="outline"
-                          size="xs"
+                          size="sm"
                           onClick={handleCopyUrl}
+                          className="w-full"
                         >
-                          <span>Copy connection URL</span>
+                          Copy connection URL
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">

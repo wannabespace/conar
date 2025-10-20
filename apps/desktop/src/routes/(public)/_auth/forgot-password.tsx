@@ -58,9 +58,9 @@ function ForgotPasswordPage() {
             Click the link and create a new password.
           </p>
         </div>
-        <Button variant="outline" asChild>
+        <Button asChild>
           <Link to="/sign-in">
-            Back to Sign In
+            Back to sign In
           </Link>
         </Button>
       </div>

@@ -37,17 +37,17 @@ function RouteComponent() {
             Click the button below to open the Conar desktop app and reset your password.
           </p>
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Button
-                onClick={openApp}
-                className="w-full"
-              >
-                Open Conar
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              If the app didn't open automatically, click the button above.
+            <p className="text-sm text-muted-foreground">
+              If the app didn't open automatically, click the button below.
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={openApp}
+              className="w-full"
+            >
+              Open Conar
+            </Button>
           </div>
         </CardContent>
       </Card>
