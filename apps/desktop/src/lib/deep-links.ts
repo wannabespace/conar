@@ -1,6 +1,5 @@
-import { RESET_TOKEN_KEY } from '@conar/shared/constants'
 import { toast } from 'sonner'
-import { bearerToken, codeChallenge, successAuthToast } from '~/lib/auth'
+import { bearerToken, codeChallenge, resetToken, successAuthToast } from '~/lib/auth'
 import { decrypt } from './encryption'
 
 export async function handleDeepLink(url: string): Promise<{
@@ -68,12 +67,12 @@ export async function handleSession(searchParams: URLSearchParams) {
 export async function handleResetPassword(searchParams: URLSearchParams) {
   const token = searchParams.get('token')
 
-  if (!token || token.length !== 24) {
+  if (!token) {
     toast.error('Invalid reset password link', {
       description: 'Please request a new password reset link.',
     })
     return
   }
 
-  sessionStorage.setItem(RESET_TOKEN_KEY, token)
+  resetToken.set(token)
 }

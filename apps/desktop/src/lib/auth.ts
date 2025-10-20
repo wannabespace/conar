@@ -15,6 +15,7 @@ import { getApiUrl } from './utils'
 
 export const CODE_CHALLENGE_KEY = 'conar.code_challenge'
 export const BEARER_TOKEN_KEY = 'conar.bearer_token'
+export const RESET_TOKEN_KEY = 'conar.reset_token'
 
 export const bearerToken = {
   get: () => localStorage.getItem(BEARER_TOKEN_KEY),
@@ -22,10 +23,16 @@ export const bearerToken = {
   remove: () => localStorage.removeItem(BEARER_TOKEN_KEY),
 }
 
+export const resetToken = {
+  get: () => sessionStorage.getItem(RESET_TOKEN_KEY),
+  set: (resetToken: string) => sessionStorage.setItem(RESET_TOKEN_KEY, resetToken),
+  remove: () => sessionStorage.removeItem(RESET_TOKEN_KEY),
+}
+
 export const codeChallenge = {
-  get: () => localStorage.getItem(CODE_CHALLENGE_KEY),
-  set: (codeChallenge: string) => localStorage.setItem(CODE_CHALLENGE_KEY, codeChallenge),
-  remove: () => localStorage.removeItem(CODE_CHALLENGE_KEY),
+  get: () => sessionStorage.getItem(CODE_CHALLENGE_KEY),
+  set: (codeChallenge: string) => sessionStorage.setItem(CODE_CHALLENGE_KEY, codeChallenge),
+  remove: () => sessionStorage.removeItem(CODE_CHALLENGE_KEY),
 }
 
 export function successAuthToast(newUser: boolean) {

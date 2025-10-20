@@ -10,7 +10,7 @@ export function OnPasswordReset({ name }: { name: string }) {
       preview={`${name}, your password has been reset`}
       title="Your password was reset successfully"
     >
-      <Section className="mb-[20px]">
+      <Section>
         <Text className="mb-[10px]">
           Hello,
           {' '}

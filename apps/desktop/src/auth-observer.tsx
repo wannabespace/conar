@@ -1,13 +1,13 @@
-import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { useLocation, useRouter } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { useEffect, useEffectEvent } from 'react'
 import { toast } from 'sonner'
 import { identifyUser } from '~/lib/events'
 import { authClient, bearerToken } from './lib/auth'
 import { handleDeepLink } from './lib/deep-links'
 
-const authRoutes = ['/sign-in', '/sign-up']
-const publicRoutes = [...authRoutes, '/forgot-password', '/reset-password']
+// It means we can access these pages only without a token
+const authRoutes = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password']
+const publicRoutes = [...authRoutes]
 
 export function AuthObserver() {
   const { data, error, isPending, refetch } = authClient.useSession()
@@ -68,14 +68,16 @@ export function AuthObserver() {
     }
   }
 
-  useAsyncEffect(async () => {
+  const handleEvent = useEffectEvent(handle)
+
+  useEffect(() => {
     if (window.initialDeepLink) {
-      handle(window.initialDeepLink)
+      handleEvent(window.initialDeepLink)
 
       window.initialDeepLink = null
     }
 
-    const cleanup = window.electron?.app.onDeepLink(handle)
+    const cleanup = window.electron?.app.onDeepLink(handleEvent)
     return cleanup
   }, [])
 

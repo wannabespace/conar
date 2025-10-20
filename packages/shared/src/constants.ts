@@ -18,5 +18,3 @@ export const PORTS = {
     DESKTOP: 4002,
   },
 } as const
-
-export const RESET_TOKEN_KEY = 'conar.reset_token'

@@ -1,4 +1,3 @@
-import { RESET_TOKEN_KEY } from '@conar/shared/constants'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@conar/ui/components/form'
@@ -8,24 +7,23 @@ import { type } from 'arktype'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { authClient } from '~/lib/auth'
+import { authClient, resetToken } from '~/lib/auth'
 import { handleError } from '~/lib/error'
 import PasswordInput from './-components/password-input'
 
 export const Route = createFileRoute('/(public)/_auth/reset-password')({
   loader: () => {
-    const resetToken = sessionStorage.getItem(RESET_TOKEN_KEY)
+    const token = resetToken.get()
 
-    if (!resetToken) {
+    if (!token) {
       toast.error('Invalid reset token', {
         description: 'Please request a new password reset link.',
       })
       throw redirect({ to: '/forgot-password' })
     }
 
-    return { token: resetToken }
+    return { token }
   },
-
   component: ResetPasswordPage,
 })
 
@@ -56,7 +54,7 @@ function ResetPasswordPage() {
   })
 
   const handleResetSuccess = () => {
-    sessionStorage.removeItem(RESET_TOKEN_KEY)
+    resetToken.remove()
     toast.success('Password reset successfully', {
       description: 'You can now sign in with your new password.',
     })
@@ -64,7 +62,7 @@ function ResetPasswordPage() {
   }
 
   const handleResetError = () => {
-    sessionStorage.removeItem(RESET_TOKEN_KEY)
+    resetToken.remove()
     toast.error('Reset link expired or invalid', {
       description: 'The reset password token is invalid or expired.',
     })

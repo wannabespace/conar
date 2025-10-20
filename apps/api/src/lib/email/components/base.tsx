@@ -29,7 +29,7 @@ export function Base({
         <Body className="font-sans">
           <Preview>{preview}</Preview>
           <Container className="max-w-[480px] mx-auto p-[20px_0_48px]">
-            <Section className="mb-[30px]">
+            <Section className="mb-[20px]">
               <Img
                 src={`${env.WEB_URL}/logo.png`}
                 width="48"

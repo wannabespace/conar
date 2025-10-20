@@ -7,7 +7,7 @@ import { useCallback, useEffect } from 'react'
 import { authClient } from '~/lib/auth'
 
 export const Route = createFileRoute('/open')({
-  component: RouteComponent,
+  component: OpenPage,
   validateSearch: type({
     'code-challenge': 'string',
     'new-user?': 'boolean',
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/open')({
   }),
 })
 
-function RouteComponent() {
+function OpenPage() {
   const { 'code-challenge': codeChallenge, 'new-user': newUser, connnect } = Route.useSearch()
   const { data, isPending } = authClient.useSession()
 

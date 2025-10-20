@@ -9,7 +9,7 @@ export default antfu(
       'prefer-arrow-callback': 'off',
       'react/no-context-provider': 'off', // Due to context selector
       'react-hooks/exhaustive-deps': ['warn', {
-        additionalHooks: '(useMountedEffect)',
+        additionalHooks: '(useMountedEffect|useAsyncEffect)',
       }],
     },
     ignores: [

@@ -5,10 +5,10 @@ import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
 
 export const Route = createFileRoute('/reset-password')({
-  component: RouteComponent,
   validateSearch: type({
     token: 'string',
   }),
+  component: RouteComponent,
 })
 
 function RouteComponent() {
