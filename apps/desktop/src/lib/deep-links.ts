@@ -1,8 +1,13 @@
 import { toast } from 'sonner'
-import { bearerToken, codeChallenge, successAuthToast } from '~/lib/auth'
+import { bearerToken, codeChallenge, resetToken, successAuthToast } from '~/lib/auth'
 import { decrypt } from './encryption'
 
-export async function handleDeepLink(url: string): Promise<{ type: 'session' | 'unknown' }> {
+export async function handleDeepLink(url: string): Promise<{
+  type:
+    | 'session'
+    | 'reset-password'
+    | 'unknown'
+}> {
   const { pathname, searchParams } = new URL(url.replace('conar://', 'https://conar.app/'))
 
   if (pathname === '/session') {
@@ -10,6 +15,14 @@ export async function handleDeepLink(url: string): Promise<{ type: 'session' | '
 
     return {
       type: 'session',
+    }
+  }
+
+  if (pathname === '/reset-password') {
+    await handleResetPassword(searchParams)
+
+    return {
+      type: 'reset-password',
     }
   }
 
@@ -49,4 +62,17 @@ export async function handleSession(searchParams: URLSearchParams) {
   bearerToken.set(token)
   codeChallenge.remove()
   successAuthToast(!!newUser)
+}
+
+export async function handleResetPassword(searchParams: URLSearchParams) {
+  const token = searchParams.get('token')
+
+  if (!token) {
+    toast.error('Invalid reset password link', {
+      description: 'Please request a new password reset link.',
+    })
+    return
+  }
+
+  resetToken.set(token)
 }

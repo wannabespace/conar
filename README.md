@@ -1,4 +1,4 @@
-# <img src="https://conar.app/app-logo.png" alt="Conar Logo" width="25"/> Conar.app
+# <img src="https://conar.app/logo.png" alt="Conar Logo" width="25"/> Conar.app
 
 ![image](https://conar.app/github-demo.png)
 
