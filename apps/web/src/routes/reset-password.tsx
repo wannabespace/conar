@@ -46,7 +46,7 @@ function RouteComponent() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              If the app didn't open automatically, click the button above!
+              If the app didn't open automatically, click the button above.
             </p>
           </div>
         </CardContent>

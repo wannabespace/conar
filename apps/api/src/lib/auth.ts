@@ -142,7 +142,7 @@ const config = {
     onPasswordReset: async ({ user: { name, email } }) => {
       await sendEmail({
         to: email,
-        subject: 'Your password was reset successfully',
+        subject: 'Your password has been reset',
         template: 'OnPasswordReset',
         props: {
           name: name || email,
