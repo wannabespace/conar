@@ -9,9 +9,16 @@ import { setupProtocolHandler } from './deep-link'
 import { initElectronEvents } from './events'
 import { buildMenu } from './menu'
 
-const store = new Store()
+export const store = new Store<{
+  bounds?: Rectangle
+  betaUpdates?: true
+}>()
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
+
+const betaUpdates = store.get('betaUpdates')
+
+autoUpdater.channel = betaUpdates ? 'beta' : null
 
 initElectronEvents()
 
@@ -36,7 +43,10 @@ export function createWindow() {
     },
   })
 
-  mainWindow.setBounds(store.get('bounds') as Rectangle)
+  const bounds = store.get('bounds')
+
+  if (bounds)
+    mainWindow.setBounds(bounds)
 
   const isFullscreen = store.get('fullscreen', false) as boolean
   if (isFullscreen) {
