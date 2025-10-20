@@ -6,6 +6,7 @@ import { xai as xai1 } from '@ai-sdk/xai1'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { zValidator } from '@hono/zod-validator'
 import { smoothStream, streamText } from 'ai4'
+import { consola } from 'consola'
 import { Hono } from 'hono'
 import * as z from 'zod'
 
@@ -27,7 +28,7 @@ function generateStream({
   signal: AbortSignal
   currentQuery: string
 }) {
-  console.info('messages', messages)
+  consola.info('messages', messages)
 
   return streamText({
     messages: [
@@ -64,10 +65,10 @@ function generateStream({
     model,
     experimental_transform: smoothStream(),
     onFinish: (result) => {
-      console.info('result', result)
+      consola.info('result', result)
     },
     onError: (error) => {
-      console.error('error', error)
+      consola.error('error', error)
     },
   })
 }
@@ -122,7 +123,7 @@ ai.post('/sql-chat', zValidator('json', input), async (c) => {
     const isOverloaded = error instanceof Error && error.message.includes('Overloaded')
 
     if (isOverloaded) {
-      console.log('Request overloaded, trying to use fallback model')
+      consola.log('Request overloaded, trying to use fallback model')
 
       const result = generateStream({
         type,

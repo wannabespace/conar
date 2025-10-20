@@ -4,6 +4,7 @@ import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { consola } from 'consola'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
 import { sendEmail } from '~/lib/email'
@@ -27,7 +28,7 @@ async function loopsUpdateUser(user: User) {
   }
   catch (error) {
     if (error instanceof Error) {
-      console.error('Failed to update loops contact', error.message)
+      consola.error('Failed to update loops contact', error.message)
     }
     throw error
   }

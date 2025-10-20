@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react'
+import { consola } from 'consola'
 import { Resend } from 'resend'
 import { env } from '~/env'
 import { OnPasswordReset, ResetPassword } from '~/lib/email/templates'
@@ -26,7 +27,7 @@ export async function sendEmail<
   ? { props?: never }
   : { props: P })) {
   if (!resend) {
-    console.error('Resend email service is not configured.', {
+    consola.error('Resend email service is not configured.', {
       to,
       subject,
       template,
@@ -48,7 +49,7 @@ export async function sendEmail<
     }
   }
   catch (error) {
-    console.error(error instanceof Error ? error.message : 'Unknown error', error)
+    consola.error(error instanceof Error ? error.message : 'Unknown error', error)
 
     throw new Error('Unknown error occurred while sending email')
   }

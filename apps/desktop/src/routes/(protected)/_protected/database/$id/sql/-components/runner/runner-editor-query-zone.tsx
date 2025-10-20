@@ -17,6 +17,7 @@ import { runnerQueryOptions } from '.'
 import { Route } from '../..'
 import { databaseStore, useSQLQueries } from '../../../../-store'
 
+// eslint-disable-next-line react-refresh/only-export-components
 function RunnerQueryEditorZone({
   database,
   onRun,

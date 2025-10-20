@@ -111,8 +111,9 @@ function Visualizer() {
   }, [])
 
   useMountedEffect(() => {
-    recalculateLayout()
-  }, [schema, recalculateLayout])
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    recalculateLayoutEvent()
+  }, [schema])
 
   return (
     <div className="relative size-full overflow-hidden rounded-lg border/10 dark:border">

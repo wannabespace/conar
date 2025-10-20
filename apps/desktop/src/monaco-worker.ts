@@ -20,7 +20,6 @@ import 'monaco-sql-languages/esm/languages/trino/trino.contribution'
 import 'monaco-sql-languages/esm/languages/pgsql/pgsql.contribution'
 import 'monaco-sql-languages/esm/languages/impala/impala.contribution'
 
-// @ts-expect-error wrong type
 globalThis.MonacoEnvironment = {
   getWorker(_: unknown, label: string) {
     if (label === 'json') {

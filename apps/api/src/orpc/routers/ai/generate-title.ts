@@ -2,6 +2,7 @@ import type { AppUIMessage } from '@conar/shared/ai-tools'
 import { google } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { type } from 'arktype'
+import { consola } from 'consola'
 import { eq } from 'drizzle-orm'
 import { chats, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
@@ -46,7 +47,7 @@ export const generateTitle = orpc
       abortSignal: signal,
     })
 
-    console.info('generateTitle response', text)
+    consola.info('generateTitle response', text)
 
     await db.update(chats).set({ title: text }).where(eq(chats.id, input.chatId))
 

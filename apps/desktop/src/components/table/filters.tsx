@@ -6,7 +6,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Separator } from '@conar/ui/components/separator'
 import { RiCloseLine, RiCornerDownLeftLine, RiDatabase2Line, RiFilterLine } from '@remixicon/react'
-import { createContext, use, useEffect, useRef, useState } from 'react'
+import { createContext, use, useEffect, useMemo, useRef, useState } from 'react'
 
 interface Column {
   id: string
@@ -335,8 +335,10 @@ export function FiltersProvider({
   columns: Column[]
   filtersGrouped: { group: FilterGroup, filters: Filter[] }[]
 }) {
+  const context = useMemo(() => ({ columns, filtersGrouped }), [columns, filtersGrouped])
+
   return (
-    <FilterInternalContext value={{ columns, filtersGrouped }}>
+    <FilterInternalContext value={context}>
       {children}
     </FilterInternalContext>
   )

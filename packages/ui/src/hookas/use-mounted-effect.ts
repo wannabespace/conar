@@ -11,6 +11,9 @@ export function useMountedEffect(
       return effect()
     }
     isMounted.current = true
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps)
+  }, [
+    effect,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    ...(deps ?? []),
+  ])
 }

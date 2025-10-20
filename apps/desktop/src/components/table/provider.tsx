@@ -21,6 +21,7 @@ interface TableContextType {
 
 const TableContext = createContext<TableContextType>(null!)
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTableContext<T>(selector: ContextSelector<TableContextType, T>) {
   return useContextSelector(TableContext, selector)
 }
@@ -57,14 +58,15 @@ export function TableProvider({
     getScrollElement: () => scrollRef.current,
     estimateSize: index => columns[index]!.size ?? estimatedColumnSize,
     overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
+    onChange: () => {
+      if (scrollRef.current) {
+        scrollRef.current.style.setProperty('--table-scroll-left-offset', `${virtualColumns[0]?.start ?? 0}px`)
+        scrollRef.current.style.setProperty('--table-scroll-right-offset', `${tableWidth - (virtualColumns[virtualColumns.length - 1]?.end ?? 0)}px`)
+        scrollRef.current.style.setProperty('--table-scroll-top-offset', `${virtualRows[0]?.start ?? 0}px`)
+        scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0)}px`)
+      }
+    },
   })
-
-  if (scrollRef.current) {
-    scrollRef.current.style.setProperty('--table-scroll-left-offset', `${virtualColumns[0]?.start ?? 0}px`)
-    scrollRef.current.style.setProperty('--table-scroll-right-offset', `${tableWidth - (virtualColumns[virtualColumns.length - 1]?.end ?? 0)}px`)
-    scrollRef.current.style.setProperty('--table-scroll-top-offset', `${virtualRows[0]?.start ?? 0}px`)
-    scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0)}px`)
-  }
 
   const context = useMemo(() => ({
     scrollRef,

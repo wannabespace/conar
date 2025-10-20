@@ -1,6 +1,5 @@
 import type { ColumnRenderer } from '~/components/table'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
-import { RiErrorWarningLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo } from 'react'
@@ -30,11 +29,10 @@ export function TableError({ error }: { error: Error }) {
   return (
     <div className="sticky left-0 pointer-events-none h-full flex items-center pb-10 justify-center">
       <div className="flex flex-col items-center p-4 bg-card rounded-lg border max-w-md">
-        <div className="flex items-center gap-1 text-destructive mb-2">
-          <RiErrorWarningLine className="size-4" />
-          <span>Error occurred</span>
+        <div className="text-destructive mb-1">
+          Error occurred
         </div>
-        <p className="text-sm text-center text-muted-foreground">
+        <p className="text-sm font-mono text-center text-muted-foreground">
           {(error.cause ? String(error.cause) : error.message).replaceAll('Error: ', '')}
         </p>
       </div>

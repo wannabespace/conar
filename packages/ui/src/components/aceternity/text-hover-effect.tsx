@@ -24,6 +24,7 @@ export function TextHoverEffect({
       const cxPercentage = ((cursor.x - svgRect.left) / svgRect.width) * 100
       const cyPercentage = ((cursor.y - svgRect.top) / svgRect.height) * 100
 
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
       setMaskPosition({
         cx: `${cxPercentage}%`,
         cy: `${cyPercentage}%`,

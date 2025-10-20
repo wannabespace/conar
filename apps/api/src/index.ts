@@ -8,6 +8,7 @@ import { trpcServer } from '@hono/trpc-server'
 import { onError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { generateText } from 'ai'
+import { consola } from 'consola'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
@@ -50,10 +51,10 @@ app.use(
 const handler = new RPCHandler(router, {
   interceptors: [
     onError((error) => {
-      console.error(error)
+      consola.error(error)
     }),
     async ({ request, next }) => {
-      console.log('Desktop version: ', request.headers['x-desktop-version'] || 'Unknown')
+      consola.log('Desktop version: ', request.headers['x-desktop-version'] || 'Unknown')
       return next()
     },
   ],

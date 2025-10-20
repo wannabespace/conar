@@ -17,7 +17,7 @@ import { createContext, useContextSelector } from '@fluentui/react-context-selec
 import NumberFlow from '@number-flow/react'
 import { RiCheckLine, RiCodeLine, RiFileCopyLine, RiPlayListAddLine, RiText } from '@remixicon/react'
 import { marked } from 'marked'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { trackEvent } from '~/lib/events'
@@ -240,9 +240,10 @@ export function Markdown({
   generating?: boolean
 } & ComponentProps<'div'>) {
   const blocks = parseMarkdownIntoBlocks(content)
+  const context = useMemo(() => ({ generating }), [generating])
 
   return (
-    <MarkdownContext.Provider value={{ generating }}>
+    <MarkdownContext.Provider value={context}>
       <div className={cn('typography', generating && 'animate-in fade-in duration-200', className)} {...props}>
         {blocks.map((block, index) => (
           <MarkdownBase

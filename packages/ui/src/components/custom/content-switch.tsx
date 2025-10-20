@@ -1,13 +1,14 @@
+import { noop } from '@conar/shared/utils/helpers'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { cn } from '@conar/ui/lib/utils'
-import { useState } from 'react'
+import { useEffectEvent, useState } from 'react'
 
 export function ContentSwitch({
   children,
   className,
   activeContent,
   active = true,
-  onSwitchEnd,
+  onSwitchEnd = noop,
 }: {
   children: React.ReactNode
   className?: string
@@ -17,14 +18,18 @@ export function ContentSwitch({
 }) {
   const [isActive, setIsActive] = useState(false)
 
+  const onSwitchEndEvent = useEffectEvent(onSwitchEnd)
+
   useMountedEffect(() => {
     if (active) {
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
       setIsActive(true)
     }
 
     const timeout = setTimeout(() => {
       setIsActive(false)
-      onSwitchEnd?.(false)
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      onSwitchEndEvent(false)
     }, 3000)
 
     return () => clearTimeout(timeout)

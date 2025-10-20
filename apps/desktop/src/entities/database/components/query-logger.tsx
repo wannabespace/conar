@@ -220,17 +220,18 @@ export function QueryLogger({ database, className }: {
     getScrollElement: () => scrollRef.current,
     estimateSize: () => 31,
     overscan: 5,
+    onChange: () => {
+      const offsets = {
+        top: virtualItems[0]?.start ?? 0,
+        bottom: totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0),
+      }
+
+      if (scrollRef.current) {
+        scrollRef.current.style.setProperty('--scroll-top-offset', `${offsets.top}px`)
+        scrollRef.current.style.setProperty('--scroll-bottom-offset', `${offsets.bottom}px`)
+      }
+    },
   })
-
-  const offsets = {
-    top: virtualItems[0]?.start ?? 0,
-    bottom: totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0),
-  }
-
-  if (scrollRef.current) {
-    scrollRef.current.style.setProperty('--scroll-top-offset', `${offsets.top}px`)
-    scrollRef.current.style.setProperty('--scroll-bottom-offset', `${offsets.bottom}px`)
-  }
 
   return (
     <div className={cn('flex flex-col justify-between h-full', className)}>

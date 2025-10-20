@@ -21,10 +21,13 @@ function Skeleton() {
   return (
     <div className="space-y-3 w-full">
       {Array.from({ length: 10 }).map((_, i) => (
+        // eslint-disable-next-line react/no-array-index-key
         <div key={i} className="flex items-center gap-2 h-5 px-2">
           <div className="h-full w-5 shrink-0 rounded-md bg-muted animate-pulse" />
           <div
             className="h-full rounded-md bg-muted animate-pulse"
+            // React Compiler handles it
+            // eslint-disable-next-line react-hooks/purity
             style={{ width: `${Math.random() * 40 + 60 - 30}%` }}
           />
         </div>

@@ -17,6 +17,7 @@ import { queryClient } from '~/main'
 import { Route } from '../..'
 import { databaseStore, useSQLQueries } from '../../../../-store'
 
+// eslint-disable-next-line react-refresh/only-export-components
 function RunnerEditorAIZone({
   database,
   getSql,
@@ -31,7 +32,7 @@ function RunnerEditorAIZone({
   const [text, setText] = useState('')
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null)
   const ref = useRef<HTMLTextAreaElement>(null)
-  const originalSql = useRef('')
+  const [originalSql, setOriginalSql] = useState('')
 
   function fullClose() {
     onClose()
@@ -60,7 +61,7 @@ function RunnerEditorAIZone({
       return
     }
 
-    originalSql.current = getSql()
+    setOriginalSql(getSql())
 
     if (aiSuggestion) {
       onUpdate(aiSuggestion)
@@ -68,7 +69,7 @@ function RunnerEditorAIZone({
     }
     else {
       updateSQL({
-        sql: originalSql.current,
+        sql: originalSql,
         prompt: text,
         type: database.type,
       })
@@ -131,7 +132,7 @@ function RunnerEditorAIZone({
             }}
           >
             <MonacoDiff
-              originalValue={originalSql.current}
+              originalValue={originalSql}
               modifiedValue={aiSuggestion}
               language="sql"
               className="h-full"
@@ -170,10 +171,12 @@ export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCod
     setCurrentAIZoneLineNumber(null)
   }
 
-  if (currentAIZoneLineNumber === null) {
-    domElementRef.current = null
-    monacoRef.current?.focus()
-  }
+  useEffect(() => {
+    if (currentAIZoneLineNumber === null) {
+      domElementRef.current = null
+      monacoRef.current?.focus()
+    }
+  }, [currentAIZoneLineNumber, monacoRef])
 
   useEffect(() => {
     if (!monacoRef.current || currentAIZoneLineNumber === null)

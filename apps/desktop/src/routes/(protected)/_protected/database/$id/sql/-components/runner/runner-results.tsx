@@ -41,10 +41,12 @@ export function RunnerResults() {
           {results.map(([query, data], index) => {
             return (
               <TabsTrigger
+                // eslint-disable-next-line react/no-array-index-key
                 key={index}
                 value={`table-${index}`}
                 className="h-8"
               >
+                {/* eslint-disable-next-line react/no-array-index-key */}
                 <Tooltip key={index}>
                   <TooltipTrigger asChild>
                     <span className="flex items-center justify-center gap-1 w-full">
@@ -76,9 +78,10 @@ export function RunnerResults() {
           const isError = typeof data === 'string'
           return (
             <TabsContent
+              // eslint-disable-next-line react/no-array-index-key
               key={index}
               value={`table-${index}`}
-              className={results.length > 1 ? 'h-[calc(100%-theme(spacing.8))]' : 'h-full'}
+              className={results.length > 1 ? 'h-[calc(100%-(--spacing(8)))]' : 'h-full'}
             >
               {isError || data.length === 0
                 ? (

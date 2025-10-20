@@ -35,7 +35,7 @@
     "@conar/shared": "workspace:*",
     "@conar/ui": "workspace:*",
     "@remixicon/react": "catalog:",
-    "@tailwindcss/vite": "^4.1.14",
+    "@tailwindcss/vite": "^4.1.15",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",

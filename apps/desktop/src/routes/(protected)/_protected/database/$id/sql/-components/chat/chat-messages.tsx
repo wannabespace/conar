@@ -9,7 +9,6 @@ import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useElementSize } from '@conar/ui/hookas/use-element-size'
-import { useIsMounted } from '@conar/ui/hookas/use-is-mounted'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiFileCopyLine, RiRestartLine } from '@remixicon/react'
@@ -96,24 +95,28 @@ function ChatMessageParts({ parts, loading, onAdd }: { parts: UIMessage['parts']
 
 function UserMessage({ message, className, ...props }: { message: UIMessage } & ComponentProps<'div'>) {
   const [isVisible, setIsVisible] = useState(false)
-  const contentRef = useRef<HTMLDivElement>(null)
-  useIsMounted() // Just to trigger rerender to calculate the height on the ref
-
+  const partsRef = useRef<HTMLDivElement>(null)
+  const { height } = useElementSize(partsRef, {
+    width: 0,
+    height: 0,
+  })
   const images = message.parts.filter(part => part.type === 'file').map(part => part.url)
-  const canHide = contentRef.current ? contentRef.current.scrollHeight > 200 : false
+
+  const canHide = height > 200
 
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
       <UserAvatar className="size-7" />
       <div>
         <div
-          ref={contentRef}
           className={cn(
             'relative inline-flex bg-primary text-primary-foreground rounded-lg px-2 py-1 overflow-hidden',
             !isVisible && 'max-h-[100px]',
           )}
         >
-          <ChatMessageParts parts={message.parts} />
+          <div className="h-fit" ref={partsRef}>
+            <ChatMessageParts parts={message.parts} />
+          </div>
           {canHide && (
             <>
               <Button
@@ -124,7 +127,7 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
               >
                 <RiArrowDownSLine className={cn('duration-100', isVisible ? 'rotate-180' : 'rotate-0')} />
               </Button>
-              {!isVisible && <div className="absolute z-10 bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-primary to-transparent pointer-events-none" />}
+              {!isVisible && <div className="absolute z-10 bottom-0 left-0 right-0 h-16 bg-linear-to-t from-primary to-transparent pointer-events-none" />}
             </>
           )}
         </div>
@@ -265,7 +268,10 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
 
   useEffect(() => {
     if (userMessageRef.current) {
-      setPlaceholderHeight((scrollRef.current?.offsetHeight || 0) - (userMessageRef.current?.offsetHeight || 0) - MESSAGES_GAP)
+      // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks-extra/no-direct-set-state-in-use-effect
+      setPlaceholderHeight(
+        (scrollRef.current?.offsetHeight || 0) - (userMessageRef.current?.offsetHeight || 0) - MESSAGES_GAP,
+      )
     }
   }, [scrollRef, userMessageRef, messages.length])
 

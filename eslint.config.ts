@@ -8,6 +8,9 @@ export default antfu(
       'no-console': 'warn',
       'prefer-arrow-callback': 'off',
       'react/no-context-provider': 'off', // Due to context selector
+      'react-hooks/rules-of-hooks': ['error', {
+        additionalHooks: '(useMountedEffect|useAsyncEffect)',
+      }],
       'react-hooks/exhaustive-deps': ['warn', {
         additionalHooks: '(useMountedEffect|useAsyncEffect)',
       }],

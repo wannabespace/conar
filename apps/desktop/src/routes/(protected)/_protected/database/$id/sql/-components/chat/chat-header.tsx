@@ -11,12 +11,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@conar/ui/components/dropdown-menu'
-import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAddLine, RiHistoryLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
+import { useEffect, useEffectEvent } from 'react'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
@@ -81,8 +81,8 @@ export function ChatHeader({ chatId }: { chatId: string }) {
     .where(({ chatsMessages }) => eq(chatsMessages.chatId, chatId)))
   const shouldGenerateTitle = !!chat && chat.title === null && messages.length > 0
 
-  useAsyncEffect(async () => {
-    if (!shouldGenerateTitle) {
+  const generateTitleEvent = useEffectEvent(async () => {
+    if (!chat) {
       return
     }
 
@@ -94,6 +94,14 @@ export function ChatHeader({ chatId }: { chatId: string }) {
     chatsCollection.update(chat.id, (draft) => {
       draft.title = title
     })
+  })
+
+  useEffect(() => {
+    if (!shouldGenerateTitle) {
+      return
+    }
+
+    generateTitleEvent()
   }, [shouldGenerateTitle])
 
   const grouped = groupChats(allChats)
