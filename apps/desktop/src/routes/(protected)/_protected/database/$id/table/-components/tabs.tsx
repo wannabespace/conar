@@ -3,7 +3,7 @@ import type { ComponentProps, RefObject } from 'react'
 import type { tabType } from '../../../-store'
 import type { databases } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
-import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { cn } from '@conar/ui/lib/utils'
@@ -168,7 +168,6 @@ export function TablesTabs({
   database: typeof databases.$inferSelect
   className?: string
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null)
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const router = useRouter()
   const store = databaseStore(database.id)
@@ -274,24 +273,29 @@ export function TablesTabs({
   return (
     <DndContext modifiers={[restrictToHorizontalAxis]} sensors={sensors} onDragEnd={handleDragEnd}>
       <SortableContext items={tabItems} strategy={horizontalListSortingStrategy}>
-        <ScrollArea ref={scrollRef} className={cn('flex p-1 gap-1', className)}>
-          {tabItems.map(item => (
-            <SortableTab
-              key={item.id}
-              id={database.id}
-              item={item}
-              showSchema={!isOneSchema}
-              onClose={() => closeTab(item.tab.schema, item.tab.table)}
-              onDoubleClick={() => addTab(database.id, item.tab.schema, item.tab.table, false)}
-              onMouseOver={() => prefetchDatabaseTableCore({ database, schema: item.tab.schema, table: item.tab.table, query: getQueryOpts(item.tab.table) })}
-              onFocus={(ref) => {
-                ref.current?.scrollIntoView({
-                  block: 'nearest',
-                  inline: 'nearest',
-                })
-              }}
-            />
-          ))}
+        <ScrollArea>
+          <ScrollViewport
+            className={cn('flex p-1 gap-1', className)}
+          >
+            {tabItems.map(item => (
+              <SortableTab
+                key={item.id}
+                id={database.id}
+                item={item}
+                showSchema={!isOneSchema}
+                onClose={() => closeTab(item.tab.schema, item.tab.table)}
+                onDoubleClick={() => addTab(database.id, item.tab.schema, item.tab.table, false)}
+                onMouseOver={() => prefetchDatabaseTableCore({ database, schema: item.tab.schema, table: item.tab.table, query: getQueryOpts(item.tab.table) })}
+                onFocus={(ref) => {
+                  ref.current?.scrollIntoView({
+                    block: 'nearest',
+                    inline: 'nearest',
+                  })
+                }}
+              />
+            ))}
+          </ScrollViewport>
+          <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </SortableContext>
     </DndContext>

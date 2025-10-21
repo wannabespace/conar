@@ -39,7 +39,6 @@ function Skeleton() {
 export function TablesTree({ database, className, search }: { database: typeof databases.$inferSelect, className?: string, search?: string }) {
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas({ database })
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
-  const ref = useRef<HTMLDivElement>(null)
   const store = databaseStore(database.id)
   const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
@@ -57,7 +56,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
     : tablesTreeOpenedSchemas, [search, filteredTablesAndSchemas, tablesTreeOpenedSchemas])
 
   return (
-    <ScrollArea ref={ref} className={cn('h-full overflow-y-auto p-2', className)}>
+    <ScrollArea className={cn('h-full overflow-y-auto p-2', className)}>
       <DropTableDialog
         ref={dropTableDialogRef}
         database={database}

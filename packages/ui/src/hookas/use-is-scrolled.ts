@@ -12,37 +12,41 @@ export function useIsScrolled(
 ) {
   const [isScrolled, setIsScrolled] = React.useState(initial)
 
+  const handleScrollEvent = React.useEffectEvent(() => {
+    const element = ref.current
+
+    if (!element)
+      return
+
+    const scrollTop = element.scrollTop
+    const scrollLeft = element.scrollLeft
+
+    let scrolled = false
+    if (direction === 'vertical') {
+      scrolled = scrollTop > threshold
+    }
+    else if (direction === 'horizontal') {
+      scrolled = scrollLeft > threshold
+    }
+    else {
+      scrolled = scrollTop > threshold || scrollLeft > threshold
+    }
+
+    setIsScrolled(scrolled)
+  })
+
   React.useEffect(() => {
     const element = ref.current
 
     if (!element)
       return
 
-    const handleScroll = () => {
-      const scrollTop = element.scrollTop
-      const scrollLeft = element.scrollLeft
+    const abortController = new AbortController()
 
-      let scrolled = false
-      if (direction === 'vertical') {
-        scrolled = scrollTop > threshold
-      }
-      else if (direction === 'horizontal') {
-        scrolled = scrollLeft > threshold
-      }
-      else {
-        scrolled = scrollTop > threshold || scrollLeft > threshold
-      }
-
-      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
-      setIsScrolled(scrolled)
-    }
-
-    handleScroll()
-
-    element.addEventListener('scroll', handleScroll, { passive: true })
+    element.addEventListener('scroll', handleScrollEvent, { passive: true, signal: abortController.signal })
 
     return () => {
-      element.removeEventListener('scroll', handleScroll)
+      abortController.abort()
     }
   }, [ref, threshold, direction])
 

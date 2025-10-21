@@ -163,9 +163,9 @@ function DatabaseTablesPage() {
         defaultSize={20}
         minSize={10}
         maxSize={50}
-        className="flex flex-col h-full border bg-background rounded-lg"
+        className="h-full border bg-background rounded-lg"
       >
-        <Sidebar key={database.id} database={database} />
+        <Sidebar key={database.id} />
       </ResizablePanel>
       <ResizableHandle className="w-1 bg-transparent" />
       <ResizablePanel defaultSize={80} className="flex-1 border bg-background rounded-lg">
