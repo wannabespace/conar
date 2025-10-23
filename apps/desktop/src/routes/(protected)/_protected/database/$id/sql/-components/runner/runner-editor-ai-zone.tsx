@@ -29,7 +29,7 @@ function RunnerEditorAIZone({
   onUpdate: (sql: string) => void
   onClose: () => void
 }) {
-  const [text, setText] = useState('')
+  const [prompt, setPrompt] = useState('')
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null)
   const ref = useRef<HTMLTextAreaElement>(null)
   const [originalSql, setOriginalSql] = useState('')
@@ -37,7 +37,7 @@ function RunnerEditorAIZone({
   function fullClose() {
     onClose()
     setAiSuggestion(null)
-    setText('')
+    setPrompt('')
   }
 
   useEffect(() => {
@@ -57,7 +57,7 @@ function RunnerEditorAIZone({
   }), queryClient)
 
   function handleSubmit() {
-    if (!text.trim()) {
+    if (!prompt.trim()) {
       return
     }
 
@@ -72,7 +72,7 @@ function RunnerEditorAIZone({
     else {
       updateSQL({
         sql,
-        prompt: text,
+        prompt,
         type: database.type,
       })
     }
@@ -85,10 +85,10 @@ function RunnerEditorAIZone({
           <div className="h-full relative w-lg">
             <Textarea
               ref={ref}
-              value={text}
+              value={prompt}
               disabled={isPending}
               onChange={(e) => {
-                setText(e.target.value)
+                setPrompt(e.target.value)
                 setAiSuggestion(null)
               }}
               className={cn(
@@ -112,7 +112,7 @@ function RunnerEditorAIZone({
             <Button
               size="xs"
               className="absolute bottom-2 right-2"
-              disabled={isPending || !text.trim()}
+              disabled={isPending || !prompt.trim()}
               onClick={handleSubmit}
             >
               <LoadingContent loading={isPending} loaderClassName="size-4">
