@@ -61,7 +61,9 @@ function RunnerEditorAIZone({
       return
     }
 
-    setOriginalSql(getSql())
+    const sql = getSql()
+
+    setOriginalSql(sql)
 
     if (aiSuggestion) {
       onUpdate(aiSuggestion)
@@ -69,7 +71,7 @@ function RunnerEditorAIZone({
     }
     else {
       updateSQL({
-        sql: originalSql,
+        sql,
         prompt: text,
         type: database.type,
       })
@@ -98,7 +100,7 @@ function RunnerEditorAIZone({
               onKeyDown={(e) => {
                 e.stopPropagation()
 
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault()
                   handleSubmit()
                 }
