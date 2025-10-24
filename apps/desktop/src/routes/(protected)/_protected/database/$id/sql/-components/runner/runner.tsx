@@ -161,7 +161,7 @@ export function Runner() {
                 </div>
               </CardTitle>
             </CardHeader>
-            <div className="relative h-[calc(100%-theme(spacing.14))] flex-1">
+            <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
               <RunnerEditor
                 onRun={runQueriesWithAlert}
                 onSave={q => saveQueryDialogRef.current?.open(q)}
