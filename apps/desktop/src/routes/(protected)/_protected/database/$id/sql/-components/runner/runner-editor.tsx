@@ -8,29 +8,21 @@ import { databaseCompletionService } from '~/entities/database/utils/monaco'
 import { Route } from '../..'
 import { pageHooks } from '../../-page'
 import { databaseStore, useSQLQueries } from '../../../../-store'
+import { useRunnerContext } from './runner-context'
 import { useRunnerEditorAIZone } from './runner-editor-ai-zone'
 import { useRunnerEditorQueryZone } from './runner-editor-query-zone'
 
-export function RunnerEditor({
-  onRun,
-  onSave,
-}: {
-  onRun: (queries: string[]) => void
-  onSave: (query: string) => void
-}) {
+export function RunnerEditor() {
   const { database } = Route.useRouteContext()
   const store = databaseStore(database.id)
   const sql = useStore(store, state => state.sql)
   const queries = useSQLQueries(database.id)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
+  const run = useRunnerContext(({ run }) => run)
 
-  const onRunEvent = useEffectEvent(onRun)
+  const runEvent = useEffectEvent(run)
 
-  useRunnerEditorQueryZone(monacoRef, {
-    onRun,
-    onSave,
-  })
-
+  useRunnerEditorQueryZone(monacoRef)
   useRunnerEditorAIZone(monacoRef)
 
   const completionService = databaseCompletionService(database)
@@ -61,7 +53,7 @@ export function RunnerEditor({
         if (!inlineQuery)
           return
 
-        onRunEvent([inlineQuery])
+        runEvent([inlineQuery])
       },
     })
 

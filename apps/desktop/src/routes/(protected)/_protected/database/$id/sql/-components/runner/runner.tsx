@@ -19,6 +19,7 @@ import { runnerQueryOptions } from '.'
 import { Route } from '../..'
 import { databaseStore, useSQLQueries } from '../../../../-store'
 import { RunnerAlertDialog } from './runner-alert-dialog'
+import { RunnerContext } from './runner-context'
 import { RunnerEditor } from './runner-editor'
 import { RunnerQueries } from './runner-queries'
 import { RunnerResults } from './runner-results'
@@ -63,7 +64,6 @@ export function Runner() {
       ...state,
       sql: formatted,
     } satisfies typeof state))
-    setIsFormatting(true)
   }
 
   const queriesToRun = useMemo(() => {
@@ -95,103 +95,133 @@ export function Runner() {
     }
   }
 
+  const replace = ({
+    sql,
+    startLineNumber,
+    endLineNumber,
+  }: {
+    sql: string
+    startLineNumber: number
+    endLineNumber: number
+  }) => {
+    const lines = store.state.sql.split('\n')
+    const newSqlLines = sql.split('\n')
+    const updatedLines = [
+      ...lines.slice(0, startLineNumber - 1),
+      ...newSqlLines,
+      ...lines.slice(endLineNumber),
+    ]
+
+    store.setState(state => ({
+      ...state,
+      sql: updatedLines.join('\n'),
+    } satisfies typeof state))
+  }
+
   return (
-    <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
-      <ResizablePanel minSize={20}>
-        <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal">
-          <ResizablePanel minSize={50}>
-            <CardHeader className="bg-card py-3 h-14">
-              <CardTitle className="flex items-center gap-2 justify-between">
-                SQL Queries Runner
-                <div className="flex gap-2">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        className="relative"
-                        variant="secondary"
-                        size="sm"
+    <RunnerContext.Provider value={{
+      replace,
+      run: runQueriesWithAlert,
+      save: q => saveQueryDialogRef.current?.open(q),
+    }}
+    >
+      <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
+        <ResizablePanel minSize={20}>
+          <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal">
+            <ResizablePanel minSize={50}>
+              <CardHeader className="bg-card py-3 h-14">
+                <CardTitle className="flex items-center gap-2 justify-between">
+                  SQL Queries Runner
+                  <div className="flex gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          className="relative"
+                          variant="secondary"
+                          size="sm"
+                        >
+                          <RiStarLine />
+                          Saved
+                          <span className="bg-accent rounded-full text-xs px-1.5 h-5 flex items-center justify-center">
+                            {queriesCount}
+                          </span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="min-w-md p-0"
+                        onOpenAutoFocus={e => e.preventDefault()}
                       >
-                        <RiStarLine />
-                        Saved
-                        <span className="bg-accent rounded-full text-xs px-1.5 h-5 flex items-center justify-center">
-                          {queriesCount}
-                        </span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="min-w-md p-0"
-                      onOpenAutoFocus={e => e.preventDefault()}
+                        <RunnerQueries />
+                      </PopoverContent>
+                    </Popover>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        format()
+                        setIsFormatting(true)
+                      }}
                     >
-                      <RunnerQueries />
-                    </PopoverContent>
-                  </Popover>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => format()}
-                  >
-                    <ContentSwitch
-                      active={isFormatting}
-                      activeContent={<RiCheckLine className="text-success" />}
-                      onSwitchEnd={() => setIsFormatting(false)}
+                      <ContentSwitch
+                        active={isFormatting}
+                        activeContent={<RiCheckLine className="text-success" />}
+                        onSwitchEnd={() => setIsFormatting(false)}
+                      >
+                        <RiBrush2Line />
+                      </ContentSwitch>
+                      Format
+                    </Button>
+                    <Button
+                      disabled={fetchStatus === 'fetching'}
+                      size="sm"
+                      onClick={() => runQueriesWithAlert(queriesToRun)}
                     >
-                      <RiBrush2Line />
-                    </ContentSwitch>
-                    Format
-                  </Button>
-                  <Button
-                    disabled={fetchStatus === 'fetching'}
-                    size="sm"
-                    onClick={() => runQueriesWithAlert(queriesToRun)}
-                  >
-                    <RiPlayFill />
-                    Run
+                      <RiPlayFill />
+                      Run
+                      {' '}
+                      {selectedLines.length > 0 ? 'selected' : 'all'}
+                      {selectedLines.length > 0 && (
+                        <NumberFlow
+                          value={queriesToRun.length}
+                          prefix="("
+                          suffix=")"
+                          className="tabular-nums"
+                          spinTiming={{ duration: 200 }}
+                        />
+                      )}
+                    </Button>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
+                <RunnerEditor />
+                <span className="pointer-events-none text-xs text-muted-foreground flex flex-col items-end absolute bottom-2 right-6">
+                  <span className="flex items-center gap-1">
+                    <Kbd asChild>
+                      <CtrlLetter letter="K" userAgent={navigator.userAgent} />
+                    </Kbd>
                     {' '}
-                    {selectedLines.length > 0 ? 'selected' : 'all'}
-                    {selectedLines.length > 0 && (
-                      <NumberFlow
-                        value={queriesToRun.length}
-                        prefix="("
-                        suffix=")"
-                        className="tabular-nums"
-                        spinTiming={{ duration: 200 }}
-                      />
-                    )}
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
-              <RunnerEditor
-                onRun={runQueriesWithAlert}
-                onSave={q => saveQueryDialogRef.current?.open(q)}
-              />
-              <span className="pointer-events-none text-xs text-muted-foreground flex flex-col items-end absolute bottom-2 right-6">
-                <span className="flex items-center gap-1">
-                  <Kbd asChild>
-                    <CtrlLetter letter="K" userAgent={navigator.userAgent} />
-                  </Kbd>
-                  {' '}
-                  to call the AI
+                    to call the AI
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Kbd asChild>
+                      <CtrlEnter userAgent={navigator.userAgent} />
+                    </Kbd>
+                    {' '}
+                    to run the focused query
+                  </span>
                 </span>
-                <span className="flex items-center gap-1">
-                  <Kbd asChild>
-                    <CtrlEnter userAgent={navigator.userAgent} />
-                  </Kbd>
-                  {' '}
-                  to run the focused query
-                </span>
-              </span>
-            </div>
-            <RunnerSaveDialog ref={saveQueryDialogRef} />
-            <RunnerAlertDialog ref={alertDialogRef} onConfirm={runQueries} />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </ResizablePanel>
-      <ResizableHandle withHandle />
-      <ResizablePanel minSize={20}>
-        <RunnerResults />
-      </ResizablePanel>
-    </ResizablePanelGroup>
+              </div>
+              <RunnerSaveDialog ref={saveQueryDialogRef} />
+              <RunnerAlertDialog ref={alertDialogRef} onConfirm={runQueries} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel minSize={20}>
+          <RunnerResults />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </RunnerContext.Provider>
   )
 }

@@ -1,5 +1,5 @@
 import type { editor, Position } from 'monaco-editor'
-import type { CSSProperties, RefObject } from 'react'
+import type { CSSProperties, Dispatch, RefObject, SetStateAction } from 'react'
 import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -16,6 +16,7 @@ import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { databaseStore, useSQLQueries } from '../../../../-store'
+import { useRunnerContext } from './runner-context'
 
 // eslint-disable-next-line react-refresh/only-export-components
 function RunnerEditorAIZone({
@@ -125,7 +126,7 @@ function RunnerEditorAIZone({
         {!!aiSuggestion && (
           <PopoverContent
             style={{
-              '--lines-height': `${aiSuggestion.split('\n').length * 18 * 2}px`,
+              '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
             } as CSSProperties}
             className="p-0 w-lg h-[min(30vh,var(--lines-height))]"
             onOpenAutoFocus={(e) => {
@@ -142,6 +143,7 @@ function RunnerEditorAIZone({
                 scrollBeyondLastLine: false,
                 renderIndicators: false,
                 lineNumbers: 'off',
+                folding: false,
               }}
             />
           </PopoverContent>
@@ -151,35 +153,13 @@ function RunnerEditorAIZone({
   )
 }
 
-export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
-  const { database } = Route.useRouteContext()
-  const store = databaseStore(database.id)
-  const queries = useSQLQueries(database.id)
-  const domElementRef = useRef<HTMLElement>(null)
-
-  const [currentAIZoneLineNumber, setCurrentAIZoneLineNumber] = useState<number | null>(null)
-
-  const currentAIZoneQuery = useMemo(() => {
-    if (currentAIZoneLineNumber === null)
-      return null
-
-    return queries.find(query =>
-      currentAIZoneLineNumber >= query.startLineNumber
-      && currentAIZoneLineNumber <= query.endLineNumber,
-    ) ?? null
-  }, [currentAIZoneLineNumber, queries])
-
-  if (currentAIZoneLineNumber && !currentAIZoneQuery) {
-    setCurrentAIZoneLineNumber(null)
-  }
-
-  useEffect(() => {
-    if (currentAIZoneLineNumber === null) {
-      domElementRef.current = null
-      monacoRef.current?.focus()
-    }
-  }, [currentAIZoneLineNumber, monacoRef])
-
+function useTrackLineNumberChange(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>, {
+  currentAIZoneLineNumber,
+  setCurrentAIZoneLineNumber,
+}: {
+  currentAIZoneLineNumber: number | null
+  setCurrentAIZoneLineNumber: Dispatch<SetStateAction<number | null>>
+}) {
   useEffect(() => {
     if (!monacoRef.current || currentAIZoneLineNumber === null)
       return
@@ -204,7 +184,44 @@ export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCod
     })
 
     return () => disposable.dispose()
-  }, [monacoRef, currentAIZoneLineNumber])
+  }, [monacoRef, currentAIZoneLineNumber, setCurrentAIZoneLineNumber])
+}
+
+export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
+  const { database } = Route.useRouteContext()
+  const store = databaseStore(database.id)
+  const queries = useSQLQueries(database.id)
+  const domElementRef = useRef<HTMLElement>(null)
+  const replace = useRunnerContext(({ replace }) => replace)
+  const replaceEvent = useEffectEvent(replace)
+
+  const [currentAIZoneLineNumber, setCurrentAIZoneLineNumber] = useState<number | null>(null)
+
+  const currentAIZoneQuery = useMemo(() => {
+    if (currentAIZoneLineNumber === null)
+      return null
+
+    return queries.find(query =>
+      currentAIZoneLineNumber >= query.startLineNumber
+      && currentAIZoneLineNumber <= query.endLineNumber,
+    ) ?? null
+  }, [currentAIZoneLineNumber, queries])
+
+  if (currentAIZoneLineNumber && !currentAIZoneQuery) {
+    setCurrentAIZoneLineNumber(null)
+  }
+
+  useEffect(() => {
+    if (currentAIZoneLineNumber === null) {
+      domElementRef.current = null
+      monacoRef.current?.focus()
+    }
+  }, [currentAIZoneLineNumber, monacoRef])
+
+  useTrackLineNumberChange(monacoRef, {
+    currentAIZoneLineNumber,
+    setCurrentAIZoneLineNumber,
+  })
 
   useEffect(() => {
     if (!monacoRef.current || !currentAIZoneQuery)
@@ -244,21 +261,8 @@ export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCod
               highlightCollection.clear()
               setCurrentAIZoneLineNumber(null)
             }}
-            onUpdate={(newSql) => {
-              const lines = store.state.sql.split('\n')
-              const startIdx = currentAIZoneQuery.startLineNumber - 1
-              const endIdx = currentAIZoneQuery.endLineNumber
-              const newSqlLines = newSql.split('\n')
-              const updatedLines = [
-                ...lines.slice(0, startIdx),
-                ...newSqlLines,
-                ...lines.slice(endIdx),
-              ]
-
-              store.setState(state => ({
-                ...state,
-                sql: updatedLines.join('\n'),
-              } satisfies typeof state))
+            onUpdate={(sql) => {
+              replaceEvent({ sql, ...currentAIZoneQuery })
             }}
           />,
         )
