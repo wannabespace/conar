@@ -83,7 +83,7 @@ function getNodeSize(columns: NodeType['data']['columns']) {
   }
 }
 
-export function getLayoutedElements(nodes: NodeType[], edges: Edge[], direction = 'TB') {
+export function getLayoutElements(nodes: NodeType[], edges: Edge[], direction = 'TB') {
   const isHorizontal = direction === 'LR'
   dagreGraph.setGraph({ rankdir: direction })
 

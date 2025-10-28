@@ -1,49 +1,71 @@
+import type { constraintsType, tablesAndSchemasType } from '~/entities/database'
+import type { columnType } from '~/entities/database/sql/columns'
+import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { ReactFlowEdge } from '@conar/ui/components/react-flow/edge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
+import { useQueries, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
-import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react'
+import { useEffect, useEffectEvent, useMemo, useState } from 'react'
 import { animationHooks } from '~/enter'
-import { databaseConstraintsQuery, databaseTableColumnsQuery, ReactFlowNode, tablesAndSchemasQuery } from '~/entities/database'
-import { queryClient } from '~/main'
-import { getEdges, getLayoutedElements, getNodes } from './-lib'
+import { databaseConstraintsQuery, databaseTableColumnsQuery, prefetchDatabaseCore, ReactFlowNode, tablesAndSchemasQuery } from '~/entities/database'
+import { getEdges, getLayoutElements, getNodes } from './-lib'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/visualizer/',
 )({
-  loader: async ({ context }) => {
-    const tablesAndSchemas = await queryClient.ensureQueryData(tablesAndSchemasQuery({ database: context.database }))
-      .then(data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))))
-    const columns = (await Promise.all(
-      tablesAndSchemas.flatMap(({ schema, table }) =>
-        queryClient.ensureQueryData(databaseTableColumnsQuery({ database: context.database, schema, table })),
-      ),
-    )).flat()
-    const constraints = await queryClient.ensureQueryData(databaseConstraintsQuery({ database: context.database }))
+  component: VisualizerPage,
+  loader: ({ context }) => {
+    prefetchDatabaseCore(context.database)
 
-    return {
-      tablesAndSchemas,
-      columns,
-      constraints,
-    }
+    return { database: context.database }
   },
-  component: RouteComponent,
-  pendingComponent: () => (
-    <div className="size-full flex items-center border rounded-lg justify-center bg-background">
-      <AppLogo className="size-40 text-muted-foreground animate-pulse" />
-    </div>
-  ),
+  head: ({ loaderData }) => ({
+    meta: loaderData ? [{ title: title('Visualizer', loaderData.database.name) }] : [],
+  }),
 })
 
-function RouteComponent() {
-  const { id } = Route.useParams()
+function VisualizerPage() {
+  const { database } = Route.useLoaderData()
+  const { data: tablesAndSchemas } = useQuery({
+    ...tablesAndSchemasQuery({ database }),
+    select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))),
+  })
+  const columnsQueries = useQueries({
+    queries: tablesAndSchemas?.flatMap(({ schema, table }) =>
+      databaseTableColumnsQuery({ database, schema, table }),
+    ) ?? [],
+  })
+  const { data: constraints } = useQuery(databaseConstraintsQuery({ database }))
+
+  if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
+    return (
+      <div className="size-full flex items-center border rounded-lg justify-center bg-background">
+        <AppLogo className="size-40 text-muted-foreground animate-pulse" />
+      </div>
+    )
+  }
+
+  const columns = columnsQueries.flatMap(item => item.data).filter((item): item is typeof columnType.infer => !!item)
+
+  if (columns.length === 0 || tablesAndSchemas.length === 0) {
+    return (
+      <div className="size-full flex items-center border rounded-lg justify-center bg-background">
+        <p className="text-muted-foreground">No data to show</p>
+      </div>
+    )
+  }
 
   return (
     // Need to re-render the whole visualizer when the database changes due to recalculation of sizes
-    <ReactFlowProvider key={id}>
-      <Visualizer />
+    <ReactFlowProvider key={database.id}>
+      <Visualizer
+        tablesAndSchemas={tablesAndSchemas}
+        columns={columns}
+        constraints={constraints}
+      />
     </ReactFlowProvider>
   )
 }
@@ -55,20 +77,25 @@ const edgeTypes = {
   custom: ReactFlowEdge,
 }
 
-function Visualizer() {
-  const { id } = Route.useParams()
-  const { tablesAndSchemas, columns, constraints } = Route.useLoaderData()
-  const schemas = useMemo(() => [...new Set(tablesAndSchemas.map(({ schema }) => schema))], [tablesAndSchemas])
+function Visualizer({
+  tablesAndSchemas,
+  columns,
+  constraints,
+}: {
+  tablesAndSchemas: typeof tablesAndSchemasType.infer[]
+  columns: typeof columnType.infer[]
+  constraints: typeof constraintsType.infer[]
+}) {
+  const { database } = Route.useRouteContext()
+  const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
   const [schema, setSchema] = useState(schemas[0]!)
-  const schemaTables = useMemo(() => tablesAndSchemas
-    .filter(t => t.schema === schema)
-    .map(({ table }) => table), [tablesAndSchemas, schema])
+  const schemaTables = tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table)
 
-  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => {
+  const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
     const edges = getEdges({ constraints })
-    return getLayoutedElements(
+    return getLayoutElements(
       getNodes({
-        databaseId: id,
+        databaseId: database.id,
         schema,
         tables: schemaTables,
         columns,
@@ -77,16 +104,16 @@ function Visualizer() {
       }),
       edges,
     )
-  }, [id, schema, schemaTables, columns, constraints])
+  }, [database.id, schema, schemaTables, columns, constraints])
 
-  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges)
-  const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges)
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes)
 
-  const recalculateLayout = useCallback(() => {
+  const recalculateLayoutEvent = useEffectEvent(() => {
     const edges = getEdges({ constraints })
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+    const { nodes: layoutNodes, edges: layoutEdges } = getLayoutElements(
       getNodes({
-        databaseId: id,
+        databaseId: database.id,
         schema,
         tables: schemaTables,
         columns,
@@ -96,11 +123,9 @@ function Visualizer() {
       edges,
     )
 
-    setNodes(layoutedNodes)
-    setEdges(layoutedEdges)
-  }, [id, schema, schemaTables, columns, constraints, setNodes, setEdges])
-
-  const recalculateLayoutEvent = useEffectEvent(recalculateLayout)
+    setNodes(layoutNodes)
+    setEdges(layoutEdges)
+  })
 
   useEffect(() => {
     // It's needed for fixing lines between nodes
