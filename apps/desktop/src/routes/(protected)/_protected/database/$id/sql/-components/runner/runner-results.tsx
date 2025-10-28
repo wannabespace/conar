@@ -4,6 +4,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { RiErrorWarningLine, RiLoader4Line, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Monaco } from '~/components/monaco'
+import { formatSql } from '~/lib/formatter'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
@@ -54,15 +55,16 @@ export function RunnerResults() {
                     {error && <RiErrorWarningLine className="size-4 text-destructive" />}
                   </span>
                 </TooltipTrigger>
-                <TooltipContent sideOffset={8} className="p-0 w-lg">
+                <TooltipContent sideOffset={8} className="p-0 pl-2 w-lg">
                   <Monaco
-                    value={sql}
+                    value={formatSql(sql, database.type)}
                     language="sql"
                     options={{
                       scrollBeyondLastLine: false,
                       readOnly: true,
                       lineDecorationsWidth: 0,
                       lineNumbers: 'off',
+                      folding: false,
                     }}
                     className="h-64 max-h-[50vh]"
                   />
