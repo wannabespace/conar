@@ -16,16 +16,20 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
       const queries = store.state.queriesToRun
 
       const db = drizzleProxy(database, 'SQL Runner')
-      const results = await Promise.all(queries.map(({ sql }) => db.execute(sql)
+      const results = await Promise.all(queries.map(({ sql, startLineNumber, endLineNumber }) => db.execute(sql)
         .then(data => ({
           data,
           error: null,
           sql,
+          startLineNumber,
+          endLineNumber,
         }))
         .catch(e => ({
           data: null,
           error: (e instanceof Error ? String(e.cause) || e.message : String(e)).replaceAll('Error: ', ''),
           sql,
+          startLineNumber,
+          endLineNumber,
         }))))
 
       if (signal.aborted) {

@@ -53,7 +53,6 @@ export function RunnerResults() {
                     Result
                     {' '}
                     {results.length > 1 ? index + 1 : ''}
-                    {error && <div className="size-2 ml-0.5 bg-destructive rounded-full" />}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8} className="p-0 pl-2 w-lg">
@@ -67,7 +66,7 @@ export function RunnerResults() {
                       lineNumbers: 'off',
                       folding: false,
                     }}
-                    className="h-64 max-h-[50vh]"
+                    className="h-48 max-h-[50vh]"
                   />
                 </TooltipContent>
               </Tooltip>

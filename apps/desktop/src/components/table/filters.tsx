@@ -6,7 +6,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Separator } from '@conar/ui/components/separator'
 import { RiCloseLine, RiCornerDownLeftLine, RiDatabase2Line, RiFilterLine } from '@remixicon/react'
-import { createContext, use, useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, use, useEffect, useRef, useState } from 'react'
 
 interface Column {
   id: string
@@ -205,7 +205,7 @@ export function FilterItem({
   return (
     <div className="flex items-center border rounded-sm overflow-hidden h-6 bg-card">
       <Popover>
-        <PopoverTrigger className="text-xs flex items-center gap-1 px-2 h-full hover:bg-accent/50 transition-colors font-medium">
+        <PopoverTrigger data-mask className="text-xs flex items-center gap-1 px-2 h-full hover:bg-accent/50 transition-colors font-medium">
           <RiDatabase2Line className="size-3 text-primary/70" />
           {filter.column}
         </PopoverTrigger>
@@ -231,7 +231,7 @@ export function FilterItem({
           <Separator orientation="vertical" />
           <Popover>
             <PopoverTrigger className="text-xs px-2 h-full hover:bg-accent/50 transition-colors">
-              <div className="font-mono truncate max-w-60">
+              <div data-mask className="font-mono truncate max-w-60">
                 {filter.values?.join(', ')}
                 {(filter.values?.length === 0 || filter.values?.every(value => value === '')) && <span className="opacity-30">Empty</span>}
               </div>
@@ -335,10 +335,8 @@ export function FiltersProvider({
   columns: Column[]
   filtersGrouped: { group: FilterGroup, filters: Filter[] }[]
 }) {
-  const context = useMemo(() => ({ columns, filtersGrouped }), [columns, filtersGrouped])
-
   return (
-    <FilterInternalContext value={context}>
+    <FilterInternalContext value={{ columns, filtersGrouped }}>
       {children}
     </FilterInternalContext>
   )
