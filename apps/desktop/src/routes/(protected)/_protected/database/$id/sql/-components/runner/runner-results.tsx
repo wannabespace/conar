@@ -1,7 +1,8 @@
 import { Button } from '@conar/ui/components/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiErrorWarningLine, RiLoader4Line, RiStopLine } from '@remixicon/react'
+import { cn } from '@conar/ui/lib/utils'
+import { RiLoader4Line, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Monaco } from '~/components/monaco'
 import { formatSql } from '~/lib/formatter'
@@ -48,11 +49,11 @@ export function RunnerResults() {
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="flex items-center justify-center gap-1 w-full">
+                  <span className={cn('flex items-center justify-center gap-1 w-full', error && 'text-destructive')}>
                     Result
                     {' '}
                     {results.length > 1 ? index + 1 : ''}
-                    {error && <RiErrorWarningLine className="size-4 text-destructive" />}
+                    {error && <div className="size-2 ml-0.5 bg-destructive rounded-full" />}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8} className="p-0 pl-2 w-lg">

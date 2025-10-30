@@ -15,7 +15,7 @@ import { MonacoDiff } from '~/components/monaco-diff'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { Route } from '../..'
-import { databaseStore, useSQLQueries } from '../../../../-store'
+import { databaseStore, useEditorQueries } from '../../../../-store'
 import { useRunnerContext } from './runner-context'
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -190,7 +190,7 @@ function useTrackLineNumberChange(monacoRef: RefObject<editor.IStandaloneCodeEdi
 export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { database } = Route.useRouteContext()
   const store = databaseStore(database.id)
-  const queries = useSQLQueries(database.id)
+  const editorQueries = useEditorQueries(database.id)
   const domElementRef = useRef<HTMLElement>(null)
   const replace = useRunnerContext(({ replace }) => replace)
   const replaceEvent = useEffectEvent(replace)
@@ -201,11 +201,11 @@ export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCod
     if (currentAIZoneLineNumber === null)
       return null
 
-    return queries.find(query =>
+    return editorQueries.find(query =>
       currentAIZoneLineNumber >= query.startLineNumber
       && currentAIZoneLineNumber <= query.endLineNumber,
     ) ?? null
-  }, [currentAIZoneLineNumber, queries])
+  }, [currentAIZoneLineNumber, editorQueries])
 
   if (currentAIZoneLineNumber && !currentAIZoneQuery) {
     setCurrentAIZoneLineNumber(null)
@@ -288,7 +288,7 @@ export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCod
   }, [monacoRef, database, currentAIZoneQuery, store])
 
   const getInlineQueryEvent = useEffectEvent((position: Position) => {
-    return queries.find(query =>
+    return editorQueries.find(query =>
       position.lineNumber >= query.startLineNumber
       && position.lineNumber <= query.endLineNumber,
     ) ?? null

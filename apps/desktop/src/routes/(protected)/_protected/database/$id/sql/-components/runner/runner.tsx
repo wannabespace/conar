@@ -17,7 +17,7 @@ import { queriesCollection } from '~/entities/query'
 import { formatSql } from '~/lib/formatter'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { databaseStore, useSQLQueries } from '../../../../-store'
+import { databaseStore, useEditorQueries } from '../../../../-store'
 import { RunnerAlertDialog } from './runner-alert-dialog'
 import { RunnerContext } from './runner-context'
 import { RunnerEditor } from './runner-editor'
@@ -31,7 +31,7 @@ export function Runner() {
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
   const store = databaseStore(database.id)
   const selectedLines = useStore(store, state => state.selectedLines)
-  const queries = useSQLQueries(database.id)
+  const editorQueries = useEditorQueries(database.id)
   const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
     .where(({ queries }) => eq(queries.databaseId, database.id))
@@ -42,7 +42,7 @@ export function Runner() {
   const [isFormatting, setIsFormatting] = useState(false)
 
   useEffect(() => {
-    const currentLineNumbers = queries.map(q => q.startLineNumber)
+    const currentLineNumbers = editorQueries.map(q => q.startLineNumber)
     const selectedLines = store.state.selectedLines
     const newSelectedLines = selectedLines.filter(line => currentLineNumbers.includes(line))
 
@@ -55,7 +55,7 @@ export function Runner() {
         selectedLines: newSelectedLines.toSorted((a, b) => a - b),
       } satisfies typeof state))
     }
-  }, [store, queries])
+  }, [store, editorQueries])
 
   function format() {
     const formatted = formatSql(sql, database.type)
@@ -67,16 +67,26 @@ export function Runner() {
   }
 
   const queriesToRun = useMemo(() => {
+    let queries = editorQueries
+
     if (selectedLines.length > 0) {
-      return selectedLines.flatMap(lineNumber => queries.find(query => query.startLineNumber === lineNumber)?.queries || [])
+      queries = editorQueries.filter(query => selectedLines.includes(query.startLineNumber))
     }
 
-    return queries.flatMap(query => query.queries)
-  }, [selectedLines, queries])
+    return queries.flatMap(({ startLineNumber, endLineNumber, queries }) => queries.map(query => ({
+      startLineNumber,
+      endLineNumber,
+      sql: query,
+    })))
+  }, [selectedLines, editorQueries])
 
   const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions({ database }))
 
-  const runQueries = (queries: string[]) => {
+  const runQueries = (queries: {
+    startLineNumber: number
+    endLineNumber: number
+    sql: string
+  }[]) => {
     store.setState(state => ({
       ...state,
       queriesToRun: queries,
@@ -84,11 +94,11 @@ export function Runner() {
     refetchRunner()
   }
 
-  function runQueriesWithAlert(queries: string[]) {
-    const hasDangerousKeywords = queries.some(query => hasDangerousSqlKeywords(query))
+  function runQueriesWithAlert(queries: Parameters<typeof runQueries>[0]) {
+    const hasDangerousKeywords = queries.some(({ sql }) => hasDangerousSqlKeywords(sql))
 
     if (hasDangerousKeywords) {
-      alertDialogRef.current?.open(queries)
+      alertDialogRef.current?.confirm(queries.map(({ sql }) => sql), () => runQueries(queries))
     }
     else {
       runQueries(queries)
@@ -119,11 +129,12 @@ export function Runner() {
   }
 
   return (
-    <RunnerContext.Provider value={{
-      replace,
-      run: runQueriesWithAlert,
-      save: q => saveQueryDialogRef.current?.open(q),
-    }}
+    <RunnerContext.Provider
+      value={{
+        replace,
+        run: runQueriesWithAlert,
+        save: q => saveQueryDialogRef.current?.open(q),
+      }}
     >
       <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
         <ResizablePanel minSize={20}>
@@ -213,7 +224,7 @@ export function Runner() {
                 </span>
               </div>
               <RunnerSaveDialog ref={saveQueryDialogRef} />
-              <RunnerAlertDialog ref={alertDialogRef} onConfirm={runQueries} />
+              <RunnerAlertDialog ref={alertDialogRef} />
             </ResizablePanel>
           </ResizablePanelGroup>
         </ResizablePanel>

@@ -7,7 +7,7 @@ import { Monaco } from '~/components/monaco'
 import { databaseCompletionService } from '~/entities/database/utils/monaco'
 import { Route } from '../..'
 import { pageHooks } from '../../-page'
-import { databaseStore, useSQLQueries } from '../../../../-store'
+import { databaseStore, useEditorQueries } from '../../../../-store'
 import { useRunnerContext } from './runner-context'
 import { useRunnerEditorAIZone } from './runner-editor-ai-zone'
 import { useRunnerEditorQueryZone } from './runner-editor-query-zone'
@@ -16,7 +16,7 @@ export function RunnerEditor() {
   const { database } = Route.useRouteContext()
   const store = databaseStore(database.id)
   const sql = useStore(store, state => state.sql)
-  const queries = useSQLQueries(database.id)
+  const editorQueries = useEditorQueries(database.id)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const run = useRunnerContext(({ run }) => run)
 
@@ -27,11 +27,11 @@ export function RunnerEditor() {
 
   const completionService = databaseCompletionService(database)
 
-  const getInlineQueriesEvent = useEffectEvent((position: Position) => {
-    return queries.find(query =>
+  const getEditorQueriesEvent = useEffectEvent((position: Position) => {
+    return editorQueries.find(query =>
       position.lineNumber >= query.startLineNumber
       && position.lineNumber <= query.endLineNumber,
-    )?.queries ?? []
+    ) ?? null
   })
 
   useEffect(() => {
@@ -48,12 +48,21 @@ export function RunnerEditor() {
         if (!position)
           return
 
-        const inlineQuery = getInlineQueriesEvent(position).at(-1)
+        const editorQuery = getEditorQueriesEvent(position)
 
-        if (!inlineQuery)
+        if (!editorQuery)
           return
 
-        runEvent([inlineQuery])
+        const sql = editorQuery.queries.at(-1)
+
+        if (!sql)
+          return
+
+        runEvent([{
+          startLineNumber: editorQuery.startLineNumber,
+          endLineNumber: editorQuery.endLineNumber,
+          sql,
+        }])
       },
     })
 

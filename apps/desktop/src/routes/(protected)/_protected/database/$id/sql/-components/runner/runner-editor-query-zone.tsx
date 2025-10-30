@@ -4,21 +4,19 @@ import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { render } from '@conar/ui/lib/render'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCheckLine, RiFileCopyLine, RiSaveLine, RiSparkling2Line } from '@remixicon/react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
+import { useIsFetching } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useMemo, useState } from 'react'
-import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { databaseStore, useSQLQueries } from '../../../../-store'
+import { databaseStore, useEditorQueries } from '../../../../-store'
 import { useRunnerContext } from './runner-context'
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -27,30 +25,23 @@ function RunnerEditorQueryZone({
   onRun,
   onSave,
   onCopy,
-  onReplace,
   lineNumber,
 }: {
   database: typeof databases.$inferSelect
   onRun: (index: number) => void
   onSave: () => void
   onCopy: () => void
-  onReplace: (newQuery: string) => void
   lineNumber: number
 }) {
   const store = databaseStore(database.id)
-  const { data: queriesWithError, isFetching } = useQuery({
-    ...runnerQueryOptions({ database }),
-    select: data => data.filter((q): q is { data: null, error: string, sql: string } => !!q.error) ?? [],
-  }, queryClient)
   const [isCopying, setIsCopying] = useState(false)
+  const isFetching = useIsFetching(runnerQueryOptions({ database }), queryClient) > 0
   const isChecked = useStore(store, state => state.selectedLines.includes(lineNumber))
-  const queries = useSQLQueries(database.id)
+  const editorQueries = useEditorQueries(database.id)
+  const index = editorQueries.findIndex(query => query.startLineNumber === lineNumber)
+  const currentQueries = editorQueries[index]?.queries ?? []
 
-  const index = queries.findIndex(query => query.startLineNumber === lineNumber)
-  const currentQueries = queries[index]?.queries ?? []
-  const queryWithError = queriesWithError?.find(q => currentQueries.includes(q.sql))
-
-  const queriesBefore = queries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0)
+  const queriesBefore = editorQueries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0)
   const startFrom = queriesBefore + 1
 
   const onCheckedChange = () => {
@@ -62,12 +53,6 @@ function RunnerEditorQueryZone({
     } satisfies typeof state))
   }
 
-  const { mutate, isPending } = useMutation(orpcQuery.ai.fixSQL.mutationOptions({
-    onSuccess: (sql) => {
-      onReplace(sql)
-    },
-  }), queryClient)
-
   return (
     <div className={cn(
       'flex gap-2 items-center justify-between h-full',
@@ -76,7 +61,7 @@ function RunnerEditorQueryZone({
     >
       <div className="flex-1 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <label className={cn('flex items-center gap-2 text-xs', queryWithError && 'text-destructive')}>
+          <label className="flex items-center gap-2 text-xs">
             <Checkbox
               className="focus:outline-none!"
               checked={isChecked}
@@ -86,36 +71,6 @@ function RunnerEditorQueryZone({
             {' '}
             {currentQueries.length === 1 ? startFrom : `${startFrom} - ${startFrom + currentQueries.length - 1}`}
           </label>
-          {queryWithError && (
-            <>
-              <Separator orientation="vertical" className="h-4! mx-1" />
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      className="focus:outline-none!"
-                      onClick={() => mutate({
-                        sql: currentQueries.map(q => `${q};`).join(' '),
-                        type: database.type,
-                        error: queryWithError.error,
-                      })}
-                    >
-                      <LoadingContent loading={isPending} loaderClassName="size-3">
-                        <RiSparkling2Line className="size-3.5" />
-                        Fix quer
-                        {currentQueries.length === 1 ? 'y' : 'ies'}
-                      </LoadingContent>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Run this query again (last run had an error)
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </>
-          )}
         </div>
         <div className="flex items-center gap-1">
           <TooltipProvider>
@@ -184,19 +139,17 @@ function RunnerEditorQueryZone({
 
 export function useRunnerEditorQueryZone(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { database } = Route.useRouteContext()
-  const queries = useSQLQueries(database.id)
-  const linesWithQueries = useMemo(() => queries.map(({ startLineNumber }) => startLineNumber), [queries])
+  const editorQueries = useEditorQueries(database.id)
+  const linesWithQueries = useMemo(() => editorQueries.map(({ startLineNumber }) => startLineNumber), [editorQueries])
 
   const getQueriesEvent = useEffectEvent((lineNumber: number) =>
-    queries.find(query => query.startLineNumber === lineNumber),
+    editorQueries.find(query => query.startLineNumber === lineNumber),
   )
 
   const run = useRunnerContext(({ run }) => run)
   const runEvent = useEffectEvent(run)
   const save = useRunnerContext(({ save }) => save)
   const saveEvent = useEffectEvent(save)
-  const replace = useRunnerContext(({ replace }) => replace)
-  const replaceEvent = useEffectEvent(replace)
 
   useEffect(() => {
     if (!monacoRef.current)
@@ -218,7 +171,11 @@ export function useRunnerEditorQueryZone(monacoRef: RefObject<editor.IStandalone
                 if (!query)
                   return
 
-                runEvent([query.queries[index]!])
+                runEvent([{
+                  startLineNumber: query.startLineNumber,
+                  endLineNumber: query.endLineNumber,
+                  sql: query.queries.at(index)!,
+                }])
               }}
               onCopy={() => {
                 const query = getQueriesEvent(lineNumber)
@@ -235,14 +192,6 @@ export function useRunnerEditorQueryZone(monacoRef: RefObject<editor.IStandalone
                   return
 
                 saveEvent(query.queries.map(q => `${q};`).join(' '))
-              }}
-              onReplace={(sql) => {
-                const query = getQueriesEvent(lineNumber)
-
-                if (!query)
-                  return
-
-                replaceEvent({ sql, ...query })
               }}
             />,
           )

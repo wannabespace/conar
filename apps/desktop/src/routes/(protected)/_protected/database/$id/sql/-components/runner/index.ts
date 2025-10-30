@@ -16,7 +16,7 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
       const queries = store.state.queriesToRun
 
       const db = drizzleProxy(database, 'SQL Runner')
-      const results = await Promise.all(queries.map(sql => db.execute(sql)
+      const results = await Promise.all(queries.map(({ sql }) => db.execute(sql)
         .then(data => ({
           data,
           error: null,
@@ -32,7 +32,7 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
         return null!
       }
 
-      if (queries.some(query => hasDangerousSqlKeywords(query))) {
+      if (queries.some(({ sql }) => hasDangerousSqlKeywords(sql))) {
         toast.success('Query executed successfully!')
       }
 

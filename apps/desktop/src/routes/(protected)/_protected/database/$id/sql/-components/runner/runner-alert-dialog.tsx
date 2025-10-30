@@ -3,37 +3,47 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ShiftCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { useKeyboardEvent } from '@react-hookz/web'
 import { RiAlertLine } from '@remixicon/react'
-import { useImperativeHandle, useState } from 'react'
+import { useImperativeHandle, useRef, useState } from 'react'
 import { DANGEROUS_SQL_KEYWORDS } from '~/entities/database'
 
 const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
 
 export function RunnerAlertDialog({
   ref,
-  onConfirm,
 }: {
-  ref: React.RefObject<{ open: (queries: string[]) => void } | null>
-  onConfirm: (queries: string[]) => void
+  ref: React.RefObject<{ confirm: (queries: string[], callback: () => void) => void } | null>
 }) {
   const [open, setOpen] = useState(false)
   const [queries, setQueries] = useState<string[]>([])
   const dangerousKeywords = queries.flatMap(query => query.match(new RegExp(dangerousKeywordsPattern, 'gi')) || [])
   const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map(k => k.toUpperCase()))]
+  const callback = useRef<() => void>(null)
 
   useImperativeHandle(ref, () => ({
-    open: (queries) => {
+    confirm: (queries, c) => {
       setQueries(queries)
       setOpen(true)
+      callback.current = c
     },
   }))
 
-  useKeyboardEvent(e => isCtrlEnter(e) && e.shiftKey, () => {
-    onConfirm(queries)
+  const onConfirm = () => {
+    callback.current?.()
     setOpen(false)
-  })
+  }
+
+  useKeyboardEvent(e => isCtrlEnter(e) && e.shiftKey, onConfirm)
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog
+      open={open}
+      onOpenChange={(open) => {
+        setOpen(open)
+        if (!open) {
+          callback.current = null
+        }
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
@@ -55,7 +65,7 @@ export function RunnerAlertDialog({
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">
           <AlertDialogCancel className="border-muted-foreground/20">Cancel</AlertDialogCancel>
-          <AlertDialogAction variant="warning" onClick={() => onConfirm(queries)}>
+          <AlertDialogAction variant="warning" onClick={onConfirm}>
             <span className="flex items-center gap-2">
               Run Anyway
               <ShiftCtrlEnter userAgent={navigator.userAgent} />

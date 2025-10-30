@@ -12,7 +12,7 @@ export function hasDangerousSqlKeywords(query: string) {
   return new RegExp(dangerousKeywordsPattern, 'gi').test(uncommentedLines)
 }
 
-export function getSQLQueries(sql: string) {
+export function getEditorQueries(sql: string) {
   const lines = sql.split('\n')
   const queries: {
     startLineNumber: number

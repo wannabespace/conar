@@ -2,7 +2,7 @@ import type { FileRoutesById } from '~/routeTree.gen'
 import { arrayMove } from '@dnd-kit/sortable'
 import { Store, useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
-import { getSQLQueries } from '~/entities/database/utils/helpers'
+import { getEditorQueries } from '~/entities/database/utils/helpers'
 
 export const tabType = type({
   table: 'string',
@@ -19,7 +19,11 @@ const pageStoreType = type({
   }).or('null'),
   sql: 'string',
   selectedLines: 'number[]',
-  queriesToRun: 'string[]',
+  queriesToRun: type({
+    startLineNumber: 'number',
+    endLineNumber: 'number',
+    sql: 'string',
+  }).array(),
   files: 'File[]',
   loggerOpened: 'boolean',
   chatInput: 'string',
@@ -103,10 +107,10 @@ export function databaseStore(id: string) {
   return store
 }
 
-export function useSQLQueries(id: string) {
+export function useEditorQueries(id: string) {
   const store = databaseStore(id)
 
-  return useStore(store, state => getSQLQueries(state.sql), {
+  return useStore(store, state => getEditorQueries(state.sql), {
     equal: (objA, objB) => JSON.stringify(objA) === JSON.stringify(objB),
   })
 }
