@@ -2,11 +2,13 @@ import type { ColumnRenderer } from '~/components/table'
 import type { Column } from '~/entities/database'
 import { Button } from '@conar/ui/components/button'
 import { Input } from '@conar/ui/components/input'
+import { Separator } from '@conar/ui/components/separator'
 import { useDebouncedMemo } from '@conar/ui/hookas/use-debounced-memo'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { RiCloseLine, RiSearchLine } from '@remixicon/react'
 import { useMemo, useState } from 'react'
+import { ExportData } from '~/components/export-data'
 import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
@@ -68,24 +70,28 @@ export function RunnerResultsTable({
             {search && filteredData.length !== data.length && ` (filtered from ${data.length})`}
           </span>
         </div>
-        <div className="relative flex-1 max-w-60">
-          <Input
-            placeholder="Search results..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-7 pr-8 h-8 text-sm"
-          />
-          <RiSearchLine className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground size-3.5" />
-          {search && (
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2"
-              onClick={() => setSearch('')}
-            >
-              <RiCloseLine className="size-4" />
-            </Button>
-          )}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 max-w-60">
+            <Input
+              placeholder="Search results..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-7 pr-8 h-8 text-sm"
+            />
+            <RiSearchLine className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground size-3.5" />
+            {search && (
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2"
+                onClick={() => setSearch('')}
+              >
+                <RiCloseLine className="size-4" />
+              </Button>
+            )}
+          </div>
+          <Separator orientation="vertical" className="h-6!" />
+          <ExportData data={filteredData} filename="sql_results" />
         </div>
       </div>
       <TableProvider
