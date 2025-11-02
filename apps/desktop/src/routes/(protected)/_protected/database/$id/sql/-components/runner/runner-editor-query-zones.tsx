@@ -180,7 +180,7 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
                 if (!editorQuery)
                   return
 
-                const query = editorQuery.queries.at(index)!
+                const query = editorQuery.queries.at(index)
 
                 if (!query)
                   return
@@ -197,7 +197,9 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
                 if (!query)
                   return
 
-                copy(query.queries.map(q => `${q};`).join(' '))
+                const { startLineNumber, endLineNumber } = query
+
+                copy(store.state.sql.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
               }}
               onSave={() => {
                 const query = getQueriesEvent(lineNumber)
@@ -205,7 +207,9 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
                 if (!query)
                   return
 
-                saveEvent(query.queries.map(q => `${q};`).join(' '))
+                const { startLineNumber, endLineNumber } = query
+
+                saveEvent(store.state.sql.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
               }}
             />,
           )
@@ -235,5 +239,5 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
         })
       })
     }
-  }, [monacoRef, linesWithQueries, database])
+  }, [monacoRef, linesWithQueries, database, store])
 }
