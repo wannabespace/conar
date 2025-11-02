@@ -17,6 +17,7 @@ monaco.editor.defineTheme('sql-light', vsPlusTheme.lightThemeData)
 
 function useMonacoTheme() {
   const { resolvedTheme } = useTheme()
+
   useEffect(() => {
     monaco.editor.setTheme(resolvedTheme === 'dark' ? 'sql-dark' : 'sql-light')
   }, [resolvedTheme])
@@ -64,7 +65,7 @@ export function Monaco({
     fontFamily: '"Geist Mono", monospace',
     tabSize: 2,
     ...options,
-  }))
+  } satisfies monaco.editor.IStandaloneEditorConstructionOptions))
 
   useEffect(() => {
     if (!elementRef.current)
@@ -156,16 +157,13 @@ export function MonacoDiff({
 
   useMonacoTheme()
 
-  const getOptionsEvent = useEffectEvent(() => {
-    return {
-      automaticLayout: true,
-      minimap: { enabled: false },
-      fontFamily: '"Geist Mono", monospace',
-      tabSize: 2,
-      readOnly: true,
-      ...options,
-    }
-  })
+  const getOptionsEvent = useEffectEvent(() => ({
+    automaticLayout: true,
+    minimap: { enabled: false },
+    fontFamily: '"Geist Mono", monospace',
+    readOnly: true,
+    ...options,
+  } satisfies monaco.editor.IStandaloneDiffEditorConstructionOptions))
 
   const getValuesEvent = useEffectEvent(() => ({
     originalValue,
