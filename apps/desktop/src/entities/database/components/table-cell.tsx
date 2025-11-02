@@ -230,10 +230,8 @@ export function TableCell({
   style,
   position,
   size,
-  onSetValue,
   onSaveValue,
 }: {
-  onSetValue?: (rowIndex: number, columnName: string, value: unknown) => void
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
 } & TableCellProps) {
@@ -244,13 +242,13 @@ export function TableCell({
   const [isReferencesOpen, setIsReferencesOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
-  const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'success' | 'error' | 'pending'>('idle')
 
   useEffect(() => {
     if (status === 'success' || status === 'error') {
       const timeout = setTimeout(
         () => setStatus('idle'),
-        status === 'error' ? 3000 : 1500,
+        status === 'error' ? 3000 : 1000,
       )
 
       return () => clearTimeout(timeout)
@@ -263,7 +261,7 @@ export function TableCell({
     (isForeignOpen || isReferencesOpen) && 'ring-accent/60 bg-accent/30',
     status === 'error' && 'ring-destructive/50 bg-destructive/20',
     status === 'success' && 'ring-success/50 bg-success/10',
-    status === 'saving' && 'animate-pulse bg-primary/10',
+    status === 'pending' && 'animate-pulse bg-primary/10',
     position === 'first' && 'pl-4',
     position === 'last' && 'pr-4',
     (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1',
@@ -299,18 +297,12 @@ export function TableCell({
 
     console.error(error)
 
+    const description = String(error.cause || error.message)
+
     toast.error(`Failed to update cell "${column.id}"`, {
-      description: error.message,
+      description: description.startsWith('Error: ') ? description.slice(7) : description,
       duration: 3000,
     })
-  }
-
-  function onSaveSuccess() {
-    setStatus('success')
-  }
-
-  function onSavePending() {
-    setStatus('saving')
   }
 
   const date = column ? getTimestamp(value, column) : null
@@ -320,11 +312,10 @@ export function TableCell({
       column={column}
       initialValue={value}
       displayValue={displayValue}
-      onSetValue={onSetValue}
       onSaveValue={onSaveValue}
-      onSavePending={onSavePending}
+      onSavePending={() => setStatus('pending')}
+      onSaveSuccess={() => setStatus('success')}
       onSaveError={onSaveError}
-      onSaveSuccess={onSaveSuccess}
     >
       <Popover
         open={isPopoverOpen}
@@ -454,7 +445,7 @@ export function TableCell({
             isBig={isBig}
             setIsBig={setIsBig}
             onClose={() => setIsPopoverOpen(false)}
-            hasUpdateFn={!!onSetValue && !!onSaveValue}
+            hasUpdateFn={!!onSaveValue}
           />
         </PopoverContent>
       </Popover>
