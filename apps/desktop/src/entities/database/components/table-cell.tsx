@@ -297,6 +297,8 @@ export function TableCell({
     setIsPopoverOpen(true)
     setStatus('error')
 
+    console.error(error)
+
     toast.error(`Failed to update cell "${column.id}"`, {
       description: error.message,
       duration: 3000,

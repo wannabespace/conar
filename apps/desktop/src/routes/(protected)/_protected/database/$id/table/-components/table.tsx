@@ -122,10 +122,13 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       })),
     })
 
-    const realValue = result![columnId]
+    if (!result || !(columnId in result))
+      throw new Error('Cannot update the column. No value returned from the database.')
+
+    const realValue = result[columnId]
 
     if (value !== realValue)
-      setValue(rowIndex, columnId, realValue)
+      setValue(rowIndex, columnId, realValue ?? undefined)
 
     if (filters.length > 0 || Object.keys(orderBy).length > 0)
       queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
