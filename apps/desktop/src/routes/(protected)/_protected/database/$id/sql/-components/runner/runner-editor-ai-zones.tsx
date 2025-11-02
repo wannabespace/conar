@@ -13,6 +13,7 @@ import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { MonacoDiff } from '~/components/monaco'
+import { tablesAndSchemasQuery } from '~/entities/database'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { Route } from '../..'
@@ -58,7 +59,7 @@ function RunnerEditorAIZone({
     },
   }), queryClient)
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!prompt.trim()) {
       return
     }
@@ -76,6 +77,10 @@ function RunnerEditorAIZone({
         sql,
         prompt,
         type: database.type,
+        context: [
+          'Database schemas and tables:',
+          JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database })), null, 2),
+        ].join('\n'),
       })
     }
   }
