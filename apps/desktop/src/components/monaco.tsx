@@ -1,25 +1,19 @@
-import type { CompletionService } from 'monaco-sql-languages'
 import type { RefObject } from 'react'
 import { noop } from '@conar/shared/utils/helpers'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { useTheme } from '@conar/ui/theme-observer'
 import * as monaco from 'monaco-editor'
-import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
-import ghDark from 'monaco-themes/themes/GitHub Dark.json'
-import ghLight from 'monaco-themes/themes/GitHub Light.json'
+import { vsPlusTheme } from 'monaco-sql-languages'
 import { useEffect, useEffectEvent, useRef } from 'react'
 
-ghDark.colors['editor.background'] = '#1e1f21'
-ghDark.colors['editor.lineHighlightBackground'] = '#252628'
-
 // Sync with packages/ui/src/styles/monaco.css
-ghDark.colors['editor.selectionBackground'] = '#5081f150'
-ghLight.colors['editor.selectionBackground'] = '#5081f150'
+vsPlusTheme.darkThemeData.colors['editor.selectionBackground'] = '#5081f150'
+vsPlusTheme.lightThemeData.colors['editor.selectionBackground'] = '#5081f150'
 
-// @ts-expect-error wrong type
-monaco.editor.defineTheme('github-dark', ghDark)
-// @ts-expect-error wrong type
-monaco.editor.defineTheme('github-light', ghLight)
+vsPlusTheme.darkThemeData.colors['editor.background'] = '#1e1f21'
+
+monaco.editor.defineTheme('sql-dark', vsPlusTheme.darkThemeData)
+monaco.editor.defineTheme('sql-light', vsPlusTheme.lightThemeData)
 
 export function Monaco({
   ref,
@@ -27,7 +21,6 @@ export function Monaco({
   language,
   options,
   onChange = noop,
-  completionService,
   ...props
 }: {
   ref?: RefObject<monaco.editor.IStandaloneCodeEditor | null>
@@ -37,7 +30,6 @@ export function Monaco({
   language?: string
   onChange?: (value: string) => void
   options?: monaco.editor.IStandaloneEditorConstructionOptions
-  completionService?: CompletionService
 }) {
   const elementRef = useRef<HTMLDivElement>(null)
   const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
@@ -45,7 +37,7 @@ export function Monaco({
   const preventTriggerChangeEvent = useRef(false)
 
   useEffect(() => {
-    monaco.editor.setTheme(resolvedTheme === 'dark' ? 'github-dark' : 'github-light')
+    monaco.editor.setTheme(resolvedTheme === 'dark' ? 'sql-dark' : 'sql-light')
   }, [resolvedTheme])
 
   const onChangeEvent = useEffectEvent(onChange)
@@ -80,9 +72,7 @@ export function Monaco({
       ref.current = monacoInstance.current
     }
 
-    const timeout = setTimeout(() => {
-      monacoInstance.current?.getAction('editor.action.formatDocument')?.run()
-    }, 50)
+    monacoInstance.current?.getAction('editor.action.formatDocument')?.run()
 
     const subscription = monacoInstance.current.onDidChangeModelContent(() => {
       if (!preventTriggerChangeEvent.current) {
@@ -92,7 +82,6 @@ export function Monaco({
     })
 
     return () => {
-      clearTimeout(timeout)
       subscription.dispose()
       monacoInstance.current?.dispose()
     }
@@ -105,18 +94,6 @@ export function Monaco({
     monacoInstance.current.updateOptions(options)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(options)])
-
-  useEffect(() => {
-    if (!Object.values(LanguageIdEnum).includes(language as LanguageIdEnum))
-      return
-
-    setupLanguageFeatures(language as LanguageIdEnum, {
-      completionItems: {
-        enable: true,
-        completionService,
-      },
-    })
-  }, [language, completionService])
 
   useMountedEffect(() => {
     if (!monacoInstance.current)

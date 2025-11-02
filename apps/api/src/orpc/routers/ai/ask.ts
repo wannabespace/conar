@@ -92,6 +92,7 @@ function generateStream({
           '- Answer in markdown and paste the SQL code in a code block, do not use headings',
           '- Answer in the same language as the user\'s message',
           '- Use quotes for table and column names to prevent SQL errors with case sensitivity',
+          '- If a user asks to change specific query generate SQL only for the query, not for whole editor',
           '',
           'Additional information:',
           `- Current date and time: ${new Date().toISOString()}`,

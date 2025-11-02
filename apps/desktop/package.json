@@ -73,6 +73,7 @@
     "@vitejs/plugin-react": "catalog:",
     "@xyflow/react": "catalog:",
     "ai": "catalog:",
+    "arkregex": "^0.0.2",
     "arktype": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "better-auth": "catalog:",

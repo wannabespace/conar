@@ -1,6 +1,6 @@
 import type { FileRoutesById } from '~/routeTree.gen'
 import { arrayMove } from '@dnd-kit/sortable'
-import { Store, useStore } from '@tanstack/react-store'
+import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { getEditorQueries } from '~/entities/database/utils/helpers'
 
@@ -19,6 +19,11 @@ const pageStoreType = type({
   }).or('null'),
   sql: 'string',
   selectedLines: 'number[]',
+  editorQueries: type({
+    startLineNumber: 'number',
+    endLineNumber: 'number',
+    queries: 'string[]',
+  }).array(),
   queriesToRun: type({
     startLineNumber: 'number',
     endLineNumber: 'number',
@@ -52,6 +57,7 @@ const defaultState: typeof pageStoreType.infer = {
     'WHERE p.published = true',
     'LIMIT 10;',
   ].join('\n'),
+  editorQueries: [],
   queriesToRun: [],
   selectedLines: [],
   files: [],
@@ -69,9 +75,10 @@ export function databaseStore(id: string) {
     return storesMap.get(id)!
   }
 
-  const persistedState = JSON.parse(localStorage.getItem(`database-store-${id}`) || '{}')
+  const persistedState = JSON.parse(localStorage.getItem(`database-store-${id}`) || '{}') as typeof defaultState
 
   persistedState.sql ||= defaultState.sql
+  persistedState.editorQueries ||= getEditorQueries(persistedState.sql)
 
   const state = pageStoreType(Object.assign(
     {},
@@ -87,7 +94,14 @@ export function databaseStore(id: string) {
     state instanceof type.errors ? defaultState : state,
   )
 
-  store.subscribe(({ currentVal }) => {
+  store.subscribe(({ currentVal, prevVal }) => {
+    if (prevVal.sql !== currentVal.sql) {
+      store.setState(state => ({
+        ...state,
+        editorQueries: getEditorQueries(state.sql),
+      } satisfies typeof state))
+    }
+
     localStorage.setItem(`database-store-${id}`, JSON.stringify({
       lastOpenedPage: currentVal.lastOpenedPage,
       lastOpenedChatId: currentVal.lastOpenedChatId,
@@ -99,20 +113,12 @@ export function databaseStore(id: string) {
       tabs: currentVal.tabs,
       tablesSearch: currentVal.tablesSearch,
       tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
-    }))
+    } satisfies Omit<typeof currentVal, 'queriesToRun' | 'files' | 'editorQueries'>))
   })
 
   storesMap.set(id, store)
 
   return store
-}
-
-export function useEditorQueries(id: string) {
-  const store = databaseStore(id)
-
-  return useStore(store, state => getEditorQueries(state.sql), {
-    equal: (objA, objB) => JSON.stringify(objA) === JSON.stringify(objB),
-  })
 }
 
 type LastOpenedPage = Extract<keyof FileRoutesById, `/(protected)/_protected/database/$id/${string}`>

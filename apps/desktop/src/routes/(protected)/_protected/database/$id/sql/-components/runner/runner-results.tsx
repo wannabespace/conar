@@ -2,8 +2,9 @@ import { Button } from '@conar/ui/components/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiLoader4Line, RiStopLine } from '@remixicon/react'
+import { RiChatAiLine, RiLoader4Line, RiStopLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { Monaco } from '~/components/monaco'
 import { formatSql } from '~/lib/formatter'
 import { queryClient } from '~/main'
@@ -12,6 +13,7 @@ import { Route } from '../..'
 import { RunnerResultsTable } from './runner-results-table'
 
 export function RunnerResults() {
+  const { chatId } = Route.useSearch()
   const { database } = Route.useRouteContext()
   const { data: results, fetchStatus: queryStatus } = useQuery(runnerQueryOptions({ database }))
 
@@ -73,7 +75,7 @@ export function RunnerResults() {
             </TabsTrigger>
           ))}
         </TabsList>
-        {results.map(({ data, error }, index) => (
+        {results.map(({ data, error, startLineNumber, endLineNumber }, index) => (
           <TabsContent
             // eslint-disable-next-line react/no-array-index-key
             key={index}
@@ -84,9 +86,29 @@ export function RunnerResults() {
               ? (
                   <div className="h-full flex flex-col gap-2 items-center justify-center">
                     Error executing query
-                    <pre className="bg-red-50 text-red-700 py-1 px-2 rounded text-xs font-mono overflow-x-auto dark:bg-red-950 dark:text-red-300">
+                    <pre className="bg-red-50 text-red-700 py-1 px-2 mb-2 rounded text-xs font-mono overflow-x-auto dark:bg-red-950 dark:text-red-300">
                       {error}
                     </pre>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      asChild
+                    >
+                      <Link
+                        to="/database/$id/sql"
+                        params={{ id: database.id }}
+                        search={{
+                          chatId,
+                          error: [
+                            `Fix the following SQL error by correcting the SQL query on the lines ${startLineNumber} - ${endLineNumber}:`,
+                            error,
+                          ].join('\n'),
+                        }}
+                      >
+                        <RiChatAiLine />
+                        Fix in chat
+                      </Link>
+                    </Button>
                   </div>
                 )
               : !data || data.length === 0

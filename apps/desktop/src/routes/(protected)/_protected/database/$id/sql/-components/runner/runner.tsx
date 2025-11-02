@@ -17,7 +17,7 @@ import { queriesCollection } from '~/entities/query'
 import { formatSql } from '~/lib/formatter'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { databaseStore, useEditorQueries } from '../../../../-store'
+import { databaseStore } from '../../../../-store'
 import { RunnerAlertDialog } from './runner-alert-dialog'
 import { RunnerContext } from './runner-context'
 import { RunnerEditor } from './runner-editor'
@@ -25,24 +25,12 @@ import { RunnerQueries } from './runner-queries'
 import { RunnerResults } from './runner-results'
 import { RunnerSaveDialog } from './runner-save-dialog'
 
-export function Runner() {
+function useTrackSelectedLinesChange() {
   const { database } = Route.useRouteContext()
-  const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
-  const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
   const store = databaseStore(database.id)
-  const selectedLines = useStore(store, state => state.selectedLines)
-  const editorQueries = useEditorQueries(database.id)
-  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
-    .from({ queries: queriesCollection })
-    .where(({ queries }) => eq(queries.databaseId, database.id))
-    .select(({ queries }) => ({ queriesCount: count(queries.id) }))
-    .findOne(),
-  )
-  const sql = useStore(store, state => state.sql)
-  const [isFormatting, setIsFormatting] = useState(false)
+  const currentLineNumbers = useStore(store, state => state.editorQueries.map(q => q.startLineNumber))
 
   useEffect(() => {
-    const currentLineNumbers = editorQueries.map(q => q.startLineNumber)
     const selectedLines = store.state.selectedLines
     const newSelectedLines = selectedLines.filter(line => currentLineNumbers.includes(line))
 
@@ -55,7 +43,26 @@ export function Runner() {
         selectedLines: newSelectedLines.toSorted((a, b) => a - b),
       } satisfies typeof state))
     }
-  }, [store, editorQueries])
+  }, [store, currentLineNumbers])
+}
+
+export function Runner() {
+  const { database } = Route.useRouteContext()
+  const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
+  const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
+  const store = databaseStore(database.id)
+  const selectedLines = useStore(store, state => state.selectedLines)
+  const editorQueries = useStore(store, state => state.editorQueries)
+  const sql = useStore(store, state => state.sql)
+  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
+    .from({ queries: queriesCollection })
+    .where(({ queries }) => eq(queries.databaseId, database.id))
+    .select(({ queries }) => ({ queriesCount: count(queries.id) }))
+    .findOne(),
+  )
+  const [isFormatting, setIsFormatting] = useState(false)
+
+  useTrackSelectedLinesChange()
 
   function format() {
     const formatted = formatSql(sql, database.type)
@@ -67,11 +74,9 @@ export function Runner() {
   }
 
   const queriesToRun = useMemo(() => {
-    let queries = editorQueries
-
-    if (selectedLines.length > 0) {
-      queries = editorQueries.filter(query => selectedLines.includes(query.startLineNumber))
-    }
+    const queries = selectedLines.length > 0
+      ? editorQueries.filter(query => selectedLines.includes(query.startLineNumber))
+      : editorQueries
 
     return queries.flatMap(({ startLineNumber, endLineNumber, queries }) => queries.map(query => ({
       startLineNumber,
@@ -82,11 +87,7 @@ export function Runner() {
 
   const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions({ database }))
 
-  const runQueries = (queries: {
-    startLineNumber: number
-    endLineNumber: number
-    sql: string
-  }[]) => {
+  const runQueries = (queries: typeof queriesToRun) => {
     store.setState(state => ({
       ...state,
       queriesToRun: queries,
@@ -98,40 +99,19 @@ export function Runner() {
     const hasDangerousKeywords = queries.some(({ sql }) => hasDangerousSqlKeywords(sql))
 
     if (hasDangerousKeywords) {
-      alertDialogRef.current?.confirm(queries.map(({ sql }) => sql), () => runQueries(queries))
+      alertDialogRef.current?.confirm(
+        queries.map(({ sql }) => sql),
+        () => runQueries(queries),
+      )
     }
     else {
       runQueries(queries)
     }
   }
 
-  const replace = ({
-    sql,
-    startLineNumber,
-    endLineNumber,
-  }: {
-    sql: string
-    startLineNumber: number
-    endLineNumber: number
-  }) => {
-    const lines = store.state.sql.split('\n')
-    const newSqlLines = sql.split('\n')
-    const updatedLines = [
-      ...lines.slice(0, startLineNumber - 1),
-      ...newSqlLines,
-      ...lines.slice(endLineNumber),
-    ]
-
-    store.setState(state => ({
-      ...state,
-      sql: updatedLines.join('\n'),
-    } satisfies typeof state))
-  }
-
   return (
     <RunnerContext.Provider
       value={{
-        replace,
         run: runQueriesWithAlert,
         save: q => saveQueryDialogRef.current?.open(q),
       }}
