@@ -18,16 +18,16 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
   const store = databaseStore(database.id)
 
   const replace = ({
-    sql,
+    query,
     startLineNumber,
     endLineNumber,
   }: {
-    sql: string
+    query: string
     startLineNumber: number
     endLineNumber: number
   }) => {
     const lines = store.state.sql.split('\n')
-    const newSqlLines = sql.split('\n')
+    const newSqlLines = query.split('\n')
     const updatedLines = [
       ...lines.slice(0, startLineNumber - 1),
       ...newSqlLines,
@@ -92,8 +92,8 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
         editor.revealLineInCenter(lineCount)
       }
     })
-    const replaceQueryHook = runnerHooks.hook('replaceQuery', ({ sql, startLineNumber, endLineNumber }) => {
-      replaceEvent({ sql, startLineNumber, endLineNumber })
+    const replaceQueryHook = runnerHooks.hook('replaceQuery', ({ query, startLineNumber, endLineNumber }) => {
+      replaceEvent({ query, startLineNumber, endLineNumber })
     })
 
     return () => {

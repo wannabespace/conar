@@ -260,9 +260,9 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
               highlightCollection.clear()
               setCurrentAIZoneLineNumber(null)
             }}
-            onUpdate={(sql) => {
+            onUpdate={(query) => {
               runnerHooks.callHook('replaceQuery', {
-                sql,
+                query,
                 startLineNumber: currentAIZoneQuery.startLineNumber,
                 endLineNumber: currentAIZoneQuery.endLineNumber,
               })

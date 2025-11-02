@@ -10,5 +10,5 @@ export const runnerHooks = createHooks<{
   scrollToBottom: () => void
   appendToBottom: (query: string) => void
   appendToBottomAndFocus: (query: string) => void
-  replaceQuery: ({ sql, startLineNumber, endLineNumber }: { sql: string, startLineNumber: number, endLineNumber: number }) => void
+  replaceQuery: ({ query, startLineNumber, endLineNumber }: { query: string, startLineNumber: number, endLineNumber: number }) => void
 }>()

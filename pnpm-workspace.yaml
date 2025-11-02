@@ -4,25 +4,25 @@ packages:
 
 catalog:
   '@number-flow/react': ^0.5.10
-  '@orpc/client': ^1.10.2
-  '@orpc/server': ^1.10.2
+  '@orpc/client': ^1.10.3
+  '@orpc/server': ^1.10.3
   '@playwright/test': ^1.56.1
   '@remixicon/react': ^4.7.0
-  '@tanstack/react-query': ^5.90.5
+  '@tanstack/react-query': ^5.90.6
   '@tanstack/react-query-devtools': ^5.90.2
-  '@tanstack/react-router': ^1.133.32
-  '@tanstack/react-router-devtools': ^1.133.34
+  '@tanstack/react-router': ^1.134.9
+  '@tanstack/react-router-devtools': ^1.134.9
   '@tanstack/react-store': ^0.8.0
   '@tanstack/react-virtual': ^3.13.12
   '@types/react': ^19.2.2
   '@types/react-dom': ^19.2.2
   '@vitejs/plugin-react': ^5.1.0
-  '@xyflow/react': ^12.9.0
-  ai: ^5.0.81
+  '@xyflow/react': ^12.9.2
+  ai: ^5.0.86
   arktype: 2.1.20
   babel-plugin-react-compiler: ^1.0.0
   better-auth: ^1.3.17
-  drizzle-kit: ^0.31.5
+  drizzle-kit: ^0.31.6
   drizzle-orm: 0.44.5
   monaco-editor: ^0.54.0
   motion: ^12.23.24

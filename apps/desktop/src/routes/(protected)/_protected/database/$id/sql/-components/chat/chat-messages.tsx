@@ -73,7 +73,7 @@ function ChatMessageCodeActions({ content }: { content: string }) {
 
   function replaceQuery(query: typeof editorQueries[number]) {
     runnerHooks.callHook('replaceQuery', {
-      sql: content.replace(COMMENT_REGEX, ''),
+      query: content.replace(COMMENT_REGEX, ''),
       startLineNumber: query.startLineNumber,
       endLineNumber: query.endLineNumber,
     })
