@@ -81,7 +81,7 @@ export function Runner() {
     return queries.flatMap(({ startLineNumber, endLineNumber, queries }) => queries.map(query => ({
       startLineNumber,
       endLineNumber,
-      sql: query,
+      query,
     })))
   }, [selectedLines, editorQueries])
 
@@ -95,17 +95,17 @@ export function Runner() {
     refetchRunner()
   }
 
-  function runQueriesWithAlert(queries: Parameters<typeof runQueries>[0]) {
-    const hasDangerousKeywords = queries.some(({ sql }) => hasDangerousSqlKeywords(sql))
+  function runQueriesWithAlert(editorQueries: Parameters<typeof runQueries>[0]) {
+    const hasDangerousKeywords = editorQueries.some(({ query }) => hasDangerousSqlKeywords(query))
 
     if (hasDangerousKeywords) {
       alertDialogRef.current?.confirm(
-        queries.map(({ sql }) => sql),
-        () => runQueries(queries),
+        editorQueries.map(({ query }) => query),
+        () => runQueries(editorQueries),
       )
     }
     else {
-      runQueries(queries)
+      runQueries(editorQueries)
     }
   }
 

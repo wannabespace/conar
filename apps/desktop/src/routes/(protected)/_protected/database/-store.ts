@@ -27,7 +27,7 @@ const pageStoreType = type({
   queriesToRun: type({
     startLineNumber: 'number',
     endLineNumber: 'number',
-    sql: 'string',
+    query: 'string',
   }).array(),
   files: 'File[]',
   loggerOpened: 'boolean',

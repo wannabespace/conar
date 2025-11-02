@@ -5,9 +5,9 @@ interface RunnerContextType {
   run: (queries: {
     startLineNumber: number
     endLineNumber: number
-    sql: string
+    query: string
   }[]) => void
-  save: (sql: string) => void
+  save: (query: string) => void
 }
 
 export const RunnerContext = createContext<RunnerContextType>(null!)

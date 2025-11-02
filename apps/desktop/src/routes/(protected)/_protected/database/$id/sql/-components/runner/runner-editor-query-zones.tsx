@@ -175,15 +175,20 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
               database={database}
               lineNumber={lineNumber}
               onRun={(index) => {
-                const query = getQueriesEvent(lineNumber)
+                const editorQuery = getQueriesEvent(lineNumber)
+
+                if (!editorQuery)
+                  return
+
+                const query = editorQuery.queries.at(index)!
 
                 if (!query)
                   return
 
                 runEvent([{
-                  startLineNumber: query.startLineNumber,
-                  endLineNumber: query.endLineNumber,
-                  sql: query.queries.at(index)!,
+                  startLineNumber: editorQuery.startLineNumber,
+                  endLineNumber: editorQuery.endLineNumber,
+                  query,
                 }])
               }}
               onCopy={() => {

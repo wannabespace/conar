@@ -156,15 +156,15 @@ export function RunnerEditor() {
         if (!editorQuery)
           return
 
-        const sql = editorQuery.queries.at(-1)
+        const query = editorQuery.queries.at(-1)
 
-        if (!sql)
+        if (!query)
           return
 
         runEvent([{
           startLineNumber: editorQuery.startLineNumber,
           endLineNumber: editorQuery.endLineNumber,
-          sql,
+          query,
         }])
       },
     })

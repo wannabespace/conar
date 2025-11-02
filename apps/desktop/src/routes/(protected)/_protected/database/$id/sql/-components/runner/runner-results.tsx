@@ -42,7 +42,7 @@ export function RunnerResults() {
     return (
       <Tabs defaultValue="table-0" className="size-full gap-0">
         <TabsList className="rounded-none w-full bg-muted/50">
-          {results.map(({ sql, error }, index) => (
+          {results.map(({ query, error }, index) => (
             <TabsTrigger
               // eslint-disable-next-line react/no-array-index-key
               key={index}
@@ -59,7 +59,7 @@ export function RunnerResults() {
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8} className="p-0 pl-2 w-lg">
                   <Monaco
-                    value={formatSql(sql, database.type)}
+                    value={formatSql(query, database.type)}
                     language="sql"
                     options={{
                       scrollBeyondLastLine: false,
