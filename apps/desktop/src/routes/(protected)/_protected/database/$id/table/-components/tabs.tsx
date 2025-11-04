@@ -247,7 +247,7 @@ export function TablesTabs({
     removeTab(database.id, schema, table)
   }
 
-  useKeyboardEvent(e => e.key === 'w' && (os.type === 'macos' ? e.metaKey : e.ctrlKey), (e) => {
+  useKeyboardEvent(e => e.key === 'w' && (e.metaKey || e.ctrlKey), (e) => {
     e.preventDefault()
 
     if (schemaParam && tableParam) {

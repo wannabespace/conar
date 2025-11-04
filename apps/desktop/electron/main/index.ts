@@ -54,12 +54,16 @@ export function createWindow() {
   }
 
   mainWindow.on('close', () => {
-    store.set('bounds', mainWindow!.getBounds())
-    store.set('fullscreen', mainWindow!.isFullScreen())
+    if (!mainWindow)
+      return
+
+    store.set('bounds', mainWindow.getBounds())
+    store.set('fullscreen', mainWindow.isFullScreen())
+    mainWindow = null
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow!.show()
+    mainWindow?.show()
   })
 
   buildMenu(mainWindow)
@@ -110,7 +114,7 @@ app.on('activate', () => {
 })
 
 function sendUpdatesStatus(status: UpdatesStatus, message?: string) {
-  mainWindow!.webContents.send('updates-status', { status, message })
+  mainWindow?.webContents.send('updates-status', { status, message })
 }
 
 autoUpdater.on('checking-for-update', () => {

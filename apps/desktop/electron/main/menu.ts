@@ -1,7 +1,7 @@
-import type { BrowserWindow, MenuItemConstructorOptions } from 'electron'
+import type { MenuItemConstructorOptions } from 'electron'
 import { createRequire } from 'node:module'
 import { SOCIAL_LINKS } from '@conar/shared/constants'
-import { app, Menu, shell } from 'electron'
+import { app, BrowserWindow, Menu, shell } from 'electron'
 import { createWindow } from './index'
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
@@ -89,7 +89,11 @@ function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] 
         label: 'Close Window',
         accelerator: `${cmdOrCtrl}+W`,
         click: () => {
-          mainWindow.close()
+          const currentWindow = BrowserWindow.getAllWindows().find(window => window.isFocused())
+          if (!currentWindow)
+            return
+
+          currentWindow.close()
         },
       },
     ],
@@ -142,10 +146,7 @@ function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] 
 }
 
 export function buildMenu(mainWindow: BrowserWindow): Menu {
-  if (
-    process.env.NODE_ENV === 'development'
-    || process.env.DEBUG_PROD === 'true'
-  ) {
+  if (process.env.NODE_ENV === 'development') {
     setupDevelopmentEnvironment(mainWindow)
   }
 
