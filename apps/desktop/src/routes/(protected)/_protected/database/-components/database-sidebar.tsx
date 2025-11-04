@@ -11,7 +11,7 @@ import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSettings3Line, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
@@ -111,6 +111,25 @@ function SupportButton() {
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function SettingsButton() {
+  const { database } = Route.useLoaderData()
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link to="/database/$id/settings" params={{ id: database.id }}>
+            <Button size="icon" variant="ghost">
+              <RiSettings3Line className="size-4" />
+            </Button>
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">Settings</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
@@ -358,16 +377,16 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <div className="relative mb-2">
-          <ThemeToggle>
-            <Button size="icon" variant="ghost">
-              <RiSunLine className="size-4 dark:hidden" />
-              <RiMoonLine className="size-4 hidden dark:block" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
-          </ThemeToggle>
+        <ThemeToggle>
+          <Button size="icon" variant="ghost">
+            <RiSunLine className="size-4 dark:hidden" />
+            <RiMoonLine className="size-4 hidden dark:block" />
+          </Button>
+        </ThemeToggle>
+        {false && <SettingsButton />}
+        <div className="mt-2">
+          <UserButton />
         </div>
-        <UserButton />
       </div>
     </div>
   )
