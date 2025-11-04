@@ -17,31 +17,20 @@ import { queriesCollection } from '~/entities/query'
 import { formatSql } from '~/lib/formatter'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { databaseStore, useSQLQueries } from '../../../../-store'
+import { databaseStore } from '../../../../-store'
 import { RunnerAlertDialog } from './runner-alert-dialog'
+import { RunnerContext } from './runner-context'
 import { RunnerEditor } from './runner-editor'
 import { RunnerQueries } from './runner-queries'
 import { RunnerResults } from './runner-results'
 import { RunnerSaveDialog } from './runner-save-dialog'
 
-export function Runner() {
+function useTrackSelectedLinesChange() {
   const { database } = Route.useRouteContext()
-  const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
-  const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
   const store = databaseStore(database.id)
-  const selectedLines = useStore(store, state => state.selectedLines)
-  const queries = useSQLQueries(database.id)
-  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
-    .from({ queries: queriesCollection })
-    .where(({ queries }) => eq(queries.databaseId, database.id))
-    .select(({ queries }) => ({ queriesCount: count(queries.id) }))
-    .findOne(),
-  )
-  const sql = useStore(store, state => state.sql)
-  const [isFormatting, setIsFormatting] = useState(false)
+  const currentLineNumbers = useStore(store, state => state.editorQueries.map(q => q.startLineNumber))
 
   useEffect(() => {
-    const currentLineNumbers = queries.map(q => q.startLineNumber)
     const selectedLines = store.state.selectedLines
     const newSelectedLines = selectedLines.filter(line => currentLineNumbers.includes(line))
 
@@ -54,7 +43,26 @@ export function Runner() {
         selectedLines: newSelectedLines.toSorted((a, b) => a - b),
       } satisfies typeof state))
     }
-  }, [store, queries])
+  }, [store, currentLineNumbers])
+}
+
+export function Runner() {
+  const { database } = Route.useRouteContext()
+  const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
+  const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
+  const store = databaseStore(database.id)
+  const selectedLines = useStore(store, state => state.selectedLines)
+  const editorQueries = useStore(store, state => state.editorQueries)
+  const sql = useStore(store, state => state.sql)
+  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
+    .from({ queries: queriesCollection })
+    .where(({ queries }) => eq(queries.databaseId, database.id))
+    .select(({ queries }) => ({ queriesCount: count(queries.id) }))
+    .findOne(),
+  )
+  const [isFormatting, setIsFormatting] = useState(false)
+
+  useTrackSelectedLinesChange()
 
   function format() {
     const formatted = formatSql(sql, database.type)
@@ -63,20 +71,23 @@ export function Runner() {
       ...state,
       sql: formatted,
     } satisfies typeof state))
-    setIsFormatting(true)
   }
 
   const queriesToRun = useMemo(() => {
-    if (selectedLines.length > 0) {
-      return selectedLines.flatMap(lineNumber => queries.find(query => query.startLineNumber === lineNumber)?.queries || [])
-    }
+    const queries = selectedLines.length > 0
+      ? editorQueries.filter(query => selectedLines.includes(query.startLineNumber))
+      : editorQueries
 
-    return queries.flatMap(query => query.queries)
-  }, [selectedLines, queries])
+    return queries.flatMap(({ startLineNumber, endLineNumber, queries }) => queries.map(query => ({
+      startLineNumber,
+      endLineNumber,
+      query,
+    })))
+  }, [selectedLines, editorQueries])
 
   const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions({ database }))
 
-  const runQueries = (queries: string[]) => {
+  const runQueries = (queries: typeof queriesToRun) => {
     store.setState(state => ({
       ...state,
       queriesToRun: queries,
@@ -84,114 +95,124 @@ export function Runner() {
     refetchRunner()
   }
 
-  function runQueriesWithAlert(queries: string[]) {
-    const hasDangerousKeywords = queries.some(query => hasDangerousSqlKeywords(query))
+  function runQueriesWithAlert(editorQueries: Parameters<typeof runQueries>[0]) {
+    const hasDangerousKeywords = editorQueries.some(({ query }) => hasDangerousSqlKeywords(query))
 
     if (hasDangerousKeywords) {
-      alertDialogRef.current?.open(queries)
+      alertDialogRef.current?.confirm(
+        editorQueries.map(({ query }) => query),
+        () => runQueries(editorQueries),
+      )
     }
     else {
-      runQueries(queries)
+      runQueries(editorQueries)
     }
   }
 
   return (
-    <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
-      <ResizablePanel minSize={20}>
-        <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal">
-          <ResizablePanel minSize={50}>
-            <CardHeader className="bg-card py-3 h-14">
-              <CardTitle className="flex items-center gap-2 justify-between">
-                SQL Queries Runner
-                <div className="flex gap-2">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        className="relative"
-                        variant="secondary"
-                        size="sm"
+    <RunnerContext.Provider
+      value={{
+        run: runQueriesWithAlert,
+        save: q => saveQueryDialogRef.current?.open(q),
+      }}
+    >
+      <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
+        <ResizablePanel minSize={20}>
+          <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal">
+            <ResizablePanel minSize={50}>
+              <CardHeader className="bg-card py-3 h-14">
+                <CardTitle className="flex items-center gap-2 justify-between">
+                  SQL Queries Runner
+                  <div className="flex gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          className="relative"
+                          variant="secondary"
+                          size="sm"
+                        >
+                          <RiStarLine />
+                          Saved
+                          <span className="bg-accent rounded-full text-xs px-1.5 h-5 flex items-center justify-center">
+                            {queriesCount}
+                          </span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="min-w-md p-0"
+                        onOpenAutoFocus={e => e.preventDefault()}
                       >
-                        <RiStarLine />
-                        Saved
-                        <span className="bg-accent rounded-full text-xs px-1.5 h-5 flex items-center justify-center">
-                          {queriesCount}
-                        </span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="min-w-md p-0"
-                      onOpenAutoFocus={e => e.preventDefault()}
+                        <RunnerQueries />
+                      </PopoverContent>
+                    </Popover>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        format()
+                        setIsFormatting(true)
+                      }}
                     >
-                      <RunnerQueries />
-                    </PopoverContent>
-                  </Popover>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => format()}
-                  >
-                    <ContentSwitch
-                      active={isFormatting}
-                      activeContent={<RiCheckLine className="text-success" />}
-                      onSwitchEnd={() => setIsFormatting(false)}
+                      <ContentSwitch
+                        active={isFormatting}
+                        activeContent={<RiCheckLine className="text-success" />}
+                        onSwitchEnd={() => setIsFormatting(false)}
+                      >
+                        <RiBrush2Line />
+                      </ContentSwitch>
+                      Format
+                    </Button>
+                    <Button
+                      disabled={fetchStatus === 'fetching'}
+                      size="sm"
+                      onClick={() => runQueriesWithAlert(queriesToRun)}
                     >
-                      <RiBrush2Line />
-                    </ContentSwitch>
-                    Format
-                  </Button>
-                  <Button
-                    disabled={fetchStatus === 'fetching'}
-                    size="sm"
-                    onClick={() => runQueriesWithAlert(queriesToRun)}
-                  >
-                    <RiPlayFill />
-                    Run
+                      <RiPlayFill />
+                      Run
+                      {' '}
+                      {selectedLines.length > 0 ? 'selected' : 'all'}
+                      {selectedLines.length > 0 && (
+                        <NumberFlow
+                          value={queriesToRun.length}
+                          prefix="("
+                          suffix=")"
+                          className="tabular-nums"
+                          spinTiming={{ duration: 200 }}
+                        />
+                      )}
+                    </Button>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
+                <RunnerEditor />
+                <span className="pointer-events-none text-xs text-muted-foreground flex flex-col items-end absolute bottom-2 right-6">
+                  <span className="flex items-center gap-1">
+                    <Kbd asChild>
+                      <CtrlLetter letter="K" userAgent={navigator.userAgent} />
+                    </Kbd>
                     {' '}
-                    {selectedLines.length > 0 ? 'selected' : 'all'}
-                    {selectedLines.length > 0 && (
-                      <NumberFlow
-                        value={queriesToRun.length}
-                        prefix="("
-                        suffix=")"
-                        className="tabular-nums"
-                        spinTiming={{ duration: 200 }}
-                      />
-                    )}
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <div className="relative h-[calc(100%-theme(spacing.14))] flex-1">
-              <RunnerEditor
-                onRun={runQueriesWithAlert}
-                onSave={q => saveQueryDialogRef.current?.open(q)}
-              />
-              <span className="pointer-events-none text-xs text-muted-foreground flex flex-col items-end absolute bottom-2 right-6">
-                <span className="flex items-center gap-1">
-                  <Kbd asChild>
-                    <CtrlLetter letter="K" userAgent={navigator.userAgent} />
-                  </Kbd>
-                  {' '}
-                  to call the AI
+                    to call the AI
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Kbd asChild>
+                      <CtrlEnter userAgent={navigator.userAgent} />
+                    </Kbd>
+                    {' '}
+                    to run the focused query
+                  </span>
                 </span>
-                <span className="flex items-center gap-1">
-                  <Kbd asChild>
-                    <CtrlEnter userAgent={navigator.userAgent} />
-                  </Kbd>
-                  {' '}
-                  to run the focused query
-                </span>
-              </span>
-            </div>
-            <RunnerSaveDialog ref={saveQueryDialogRef} />
-            <RunnerAlertDialog ref={alertDialogRef} onConfirm={runQueries} />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </ResizablePanel>
-      <ResizableHandle withHandle />
-      <ResizablePanel minSize={20}>
-        <RunnerResults />
-      </ResizablePanel>
-    </ResizablePanelGroup>
+              </div>
+              <RunnerSaveDialog ref={saveQueryDialogRef} />
+              <RunnerAlertDialog ref={alertDialogRef} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel minSize={20}>
+          <RunnerResults />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </RunnerContext.Provider>
   )
 }

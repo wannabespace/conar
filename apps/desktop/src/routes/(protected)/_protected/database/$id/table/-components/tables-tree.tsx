@@ -21,10 +21,13 @@ function Skeleton() {
   return (
     <div className="space-y-3 w-full">
       {Array.from({ length: 10 }).map((_, i) => (
+        // eslint-disable-next-line react/no-array-index-key
         <div key={i} className="flex items-center gap-2 h-5 px-2">
           <div className="h-full w-5 shrink-0 rounded-md bg-muted animate-pulse" />
           <div
             className="h-full rounded-md bg-muted animate-pulse"
+            // React Compiler handles it
+            // eslint-disable-next-line react-hooks/purity
             style={{ width: `${Math.random() * 40 + 60 - 30}%` }}
           />
         </div>
@@ -36,7 +39,6 @@ function Skeleton() {
 export function TablesTree({ database, className, search }: { database: typeof databases.$inferSelect, className?: string, search?: string }) {
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas({ database })
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
-  const ref = useRef<HTMLDivElement>(null)
   const store = databaseStore(database.id)
   const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
@@ -54,7 +56,7 @@ export function TablesTree({ database, className, search }: { database: typeof d
     : tablesTreeOpenedSchemas, [search, filteredTablesAndSchemas, tablesTreeOpenedSchemas])
 
   return (
-    <ScrollArea ref={ref} className={cn('h-full overflow-y-auto p-2', className)}>
+    <ScrollArea className={cn('h-full overflow-y-auto p-2', className)}>
       <DropTableDialog
         ref={dropTableDialogRef}
         database={database}

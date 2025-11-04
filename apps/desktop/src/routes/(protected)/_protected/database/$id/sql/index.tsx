@@ -12,8 +12,8 @@ export const Route = createFileRoute(
 )({
   component: DatabaseSqlPage,
   validateSearch: type({
-    'chatId?': 'string.uuid.v7',
-    'error?': 'string',
+    'chatId?': 'string.uuid.v7 | undefined',
+    'error?': 'string | undefined',
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ context, deps }) => {

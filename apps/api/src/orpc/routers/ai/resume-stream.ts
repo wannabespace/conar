@@ -1,5 +1,6 @@
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
+import { consola } from 'consola'
 import { eq } from 'drizzle-orm'
 import { createResumableStreamContext } from 'resumable-stream'
 import { chats, db } from '~/drizzle'
@@ -54,7 +55,7 @@ export const resumeStream = orpc
       return new Response(stream, { status: 200 })
     }
     catch (error) {
-      console.error('error resuming stream', error)
+      consola.error('error resuming stream', error)
 
       await db.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
 

@@ -2,6 +2,7 @@ import { google } from '@ai-sdk/google'
 import { SQL_FILTERS_GROUPED, SQL_OPERATORS } from '@conar/shared/filters/sql'
 import { generateObject } from 'ai'
 import { type } from 'arktype'
+import { consola } from 'consola'
 import { z } from 'zod'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
@@ -13,7 +14,7 @@ export const filters = orpc
     context: 'string',
   }))
   .handler(async ({ input, signal, context }) => {
-    console.info('sql filters input', input.prompt)
+    consola.info('sql filters input', input.prompt)
 
     const { object } = await generateObject({
       model: withPosthog(google('gemini-2.0-flash'), {
@@ -77,7 +78,7 @@ export const filters = orpc
       output: 'object',
     })
 
-    console.info('sql filters result object', object)
+    consola.info('sql filters result object', object)
 
     return object
   })

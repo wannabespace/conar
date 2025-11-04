@@ -10,12 +10,12 @@ import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCi
 import { useMutation } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useCallback, useEffect, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { orpcQuery } from '~/lib/orpc'
 import { Route } from '../..'
-import { pageHooks } from '../../-page'
+import { chatHooks } from '../../-page'
 import { databaseStore } from '../../../../-store'
 import { ChatImages } from './chat-images'
 
@@ -61,7 +61,7 @@ export function ChatForm() {
     }
   }, [ref])
 
-  const handleSend = useCallback(async (value: string) => {
+  const handleSend = async (value: string) => {
     if (
       value.trim() === ''
       || chat.status === 'streaming'
@@ -82,7 +82,7 @@ export function ChatForm() {
         files: [],
       } satisfies typeof state))
 
-      pageHooks.callHook('sendMessage')
+      chatHooks.callHook('scrollToBottom')
 
       if (location.search.chatId !== chat.id) {
         router.navigate({
@@ -120,7 +120,9 @@ export function ChatForm() {
           : 'An unexpected error occurred. Please try again.',
       })
     }
-  }, [router, location.search.chatId, chat, database.id, store])
+  }
+
+  const handleSendEffect = useEffectEvent(handleSend)
 
   useEffect(() => {
     if (!error) {
@@ -132,8 +134,8 @@ export function ChatForm() {
       search: { chatId: chat.id },
       replace: true,
     })
-    handleSend(`Fix the following SQL error by correcting the current query: ${error}`)
-  }, [error, handleSend, router, chat.id])
+    handleSendEffect(error)
+  }, [error, router, chat.id])
 
   useMountedEffect(() => {
     store.setState(state => ({
@@ -141,17 +143,6 @@ export function ChatForm() {
       chatInput: input,
     } satisfies typeof state))
   }, [input, store])
-
-  // TODO: implement fix query
-  // useEffect(() => {
-  //   return pageHooks.hook('fix', async (error) => {
-  //     await router.navigate({
-  //       to: '/database/$id/sql',
-  //       params: { id: database.id },
-  //       search: { chatId: chat.id, error },
-  //     })
-  //   })
-  // }, [router, database.id, chat.id])
 
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(orpcQuery.ai.enhancePrompt.mutationOptions({
     onSuccess: (data) => {

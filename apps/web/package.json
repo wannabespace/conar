@@ -9,9 +9,9 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@databuddy/sdk": "^2.2.0",
+    "@databuddy/sdk": "^2.2.1",
     "@number-flow/react": "catalog:",
-    "@octokit/rest": "^22.0.0",
+    "@octokit/rest": "^22.0.1",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
     "@tanstack/react-router": "catalog:",
@@ -26,7 +26,7 @@
     "react-dom": "catalog:",
     "react-markdown": "^10.1.0",
     "sonner": "^2.0.7",
-    "superjson": "^2.2.2",
+    "superjson": "^2.2.5",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
@@ -35,7 +35,7 @@
     "@conar/shared": "workspace:*",
     "@conar/ui": "workspace:*",
     "@remixicon/react": "catalog:",
-    "@tailwindcss/vite": "^4.1.14",
+    "@tailwindcss/vite": "^4.1.16",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",

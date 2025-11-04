@@ -14,7 +14,7 @@ import { useVirtual } from '@conar/ui/hooks/use-virtual'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiCheckboxCircleLine, RiCheckLine, RiCloseCircleLine, RiCloseLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
 import { formatSql } from '~/lib/formatter'
@@ -222,15 +222,12 @@ export function QueryLogger({ database, className }: {
     overscan: 5,
   })
 
-  const offsets = {
-    top: virtualItems[0]?.start ?? 0,
-    bottom: totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0),
-  }
-
-  if (scrollRef.current) {
-    scrollRef.current.style.setProperty('--scroll-top-offset', `${offsets.top}px`)
-    scrollRef.current.style.setProperty('--scroll-bottom-offset', `${offsets.bottom}px`)
-  }
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.style.setProperty('--scroll-top-offset', `${virtualItems[0]?.start ?? 0}px`)
+      scrollRef.current.style.setProperty('--scroll-bottom-offset', `${totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0)}px`)
+    }
+  }, [scrollRef, virtualItems, totalSize])
 
   return (
     <div className={cn('flex flex-col justify-between h-full', className)}>

@@ -1,6 +1,6 @@
 import type { databases, databases as databasesTable } from '~/drizzle'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
-import { useKeyboardEvent } from '@react-hookz/web'
+import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { RiAddLine, RiDashboardLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
@@ -9,6 +9,7 @@ import { Store, useStore } from '@tanstack/react-store'
 import { DatabaseIcon, databasesCollection, prefetchDatabaseCore, tablesAndSchemasQuery, useDatabaseLinkParams } from '~/entities/database'
 import { trackEvent } from '~/lib/events'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const actionsCenterStore = new Store({
   isOpen: false,
 })
@@ -94,7 +95,7 @@ export function ActionsCenter() {
   return (
     <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
       <CommandInput placeholder="Type a command..." />
-      <CommandList className="max-h-[35rem]">
+      <CommandList className="max-h-140">
         <CommandEmpty>No commands found.</CommandEmpty>
         <CommandGroup heading="Commands">
           <CommandItem

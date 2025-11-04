@@ -1,19 +1,22 @@
-import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { RiCheckLine, RiCloseLine, RiLoopLeftLine } from '@remixicon/react'
+import { useStore } from '@tanstack/react-store'
 import { databaseConstraintsQuery, useDatabaseTablesAndSchemas } from '~/entities/database'
 import { queryClient } from '~/main'
+import { Route } from '..'
+import { databaseStore } from '../../../-store'
 import { TablesTree } from './tables-tree'
 
-export function Sidebar({ database }: { database: typeof databases.$inferSelect }) {
+export function Sidebar() {
+  const { database } = Route.useLoaderData()
   const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useDatabaseTablesAndSchemas({ database })
-  const [search, setSearch] = useSessionStorage(`database-tables-search-${database.id}`, '')
+  const store = databaseStore(database.id)
+  const search = useStore(store, state => state.tablesSearch)
 
   async function handleRefresh() {
     await Promise.all([
@@ -23,8 +26,8 @@ export function Sidebar({ database }: { database: typeof databases.$inferSelect 
   }
 
   return (
-    <>
-      <div className="flex flex-col gap-2 p-4 pb-0">
+    <div className="flex flex-col h-full">
+      <div className="flex flex-col gap-2 p-4 pb-0 shrink-0">
         <div className="flex items-center justify-between gap-2">
           <CardTitle>Tables</CardTitle>
           <TooltipProvider>
@@ -62,13 +65,13 @@ export function Sidebar({ database }: { database: typeof databases.$inferSelect 
               placeholder="Search tables"
               className="pr-8"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => store.setState(state => ({ ...state, tablesSearch: e.target.value } satisfies typeof state))}
             />
             {search && (
               <button
                 type="button"
                 className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer p-1"
-                onClick={() => setSearch('')}
+                onClick={() => store.setState(state => ({ ...state, tablesSearch: '' } satisfies typeof state))}
               >
                 <RiCloseLine className="size-4 text-muted-foreground" />
               </button>
@@ -76,11 +79,13 @@ export function Sidebar({ database }: { database: typeof databases.$inferSelect 
           </div>
         )}
       </div>
-      <TablesTree
-        className="flex-1"
-        database={database}
-        search={search}
-      />
-    </>
+      <div className="flex-1 min-h-0 flex flex-col">
+        <TablesTree
+          className="flex-1"
+          database={database}
+          search={search}
+        />
+      </div>
+    </div>
   )
 }

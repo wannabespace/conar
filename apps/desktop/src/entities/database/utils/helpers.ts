@@ -3,7 +3,7 @@ export const DEFAULT_LIMIT = 100
 export const DEFAULT_ROW_HEIGHT = 32
 export const DEFAULT_COLUMN_WIDTH = 240
 
-export const DANGEROUS_SQL_KEYWORDS = ['DELETE', 'UPDATE', 'INSERT', 'DROP', 'RENAME', 'TRUNCATE', 'ALTER']
+export const DANGEROUS_SQL_KEYWORDS = ['DELETE', 'UPDATE', 'INSERT', 'DROP', 'RENAME', 'TRUNCATE', 'ALTER'] as const
 
 export function hasDangerousSqlKeywords(query: string) {
   const uncommentedLines = query.split('\n').filter(line => !line.trim().startsWith('--')).join('\n')
@@ -12,7 +12,7 @@ export function hasDangerousSqlKeywords(query: string) {
   return new RegExp(dangerousKeywordsPattern, 'gi').test(uncommentedLines)
 }
 
-export function getSQLQueries(sql: string) {
+export function getEditorQueries(sql: string) {
   const lines = sql.split('\n')
   const queries: {
     startLineNumber: number

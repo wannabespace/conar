@@ -35,15 +35,15 @@ export function useElementSize<T extends Element = Element>(
       previousObserver.current = null
     }
 
+    let observer: ResizeObserver | null = null
+
     if (element?.nodeType === Node.ELEMENT_NODE) {
-      const observer = new ResizeObserver(([entry]) => {
+      observer = new ResizeObserver(([entry]) => {
         if (entry && entry.borderBoxSize) {
           const { inlineSize: width, blockSize: height }
             = entry.borderBoxSize[0]!
 
-          if (width !== size.width || height !== size.height) {
-            setSize({ width, height })
-          }
+          setSize(prev => width !== prev.width || height !== prev.height ? { width, height } : prev)
         }
       })
 

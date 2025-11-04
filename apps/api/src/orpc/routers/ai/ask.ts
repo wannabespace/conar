@@ -8,6 +8,7 @@ import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryable } from 'ai-retry'
 import { type } from 'arktype'
+import { consola } from 'consola'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
 import { chats, chatsMessages, db } from '~/drizzle'
@@ -65,7 +66,7 @@ function generateStream({
   chatId: string
   userId: string
 }) {
-  console.info('messages', JSON.stringify(messages.map(message => ({
+  consola.info('messages', JSON.stringify(messages.map(message => ({
     id: message.id,
     chatId,
     role: message.role,
@@ -88,9 +89,10 @@ function generateStream({
           '- Consider performance implications for complex queries',
           '- The SQL code will be executed directly in a production database editor',
           '- Generate SQL query only for the provided schemas, tables, columns and enums',
-          '- Answer in markdown and paste the SQL code in a code block, do not use headings',
+          '- Answer in markdown and paste the SQL code in a code block, each query in a separate code block, do not use headings',
           '- Answer in the same language as the user\'s message',
           '- Use quotes for table and column names to prevent SQL errors with case sensitivity',
+          '- If a user asks to change specific lines generate SQL only for the lines, not for whole SQL',
           '',
           'Additional information:',
           `- Current date and time: ${new Date().toISOString()}`,
@@ -180,20 +182,20 @@ export const ask = orpc
         target: chatsMessages.id,
         set: input.prompt,
       }).catch((error) => {
-        console.error('error on submit-message', error)
+        consola.error('error on submit-message', error)
         throw error
       })
     }
 
     if (input.trigger === 'regenerate-message' && input.messageId) {
       await db.delete(chatsMessages).where(eq(chatsMessages.id, input.messageId)).catch((error) => {
-        console.error('error on regenerate-message', error)
+        consola.error('error on regenerate-message', error)
         throw error
       })
     }
 
     const messages = await getMessages(input.id).catch((error) => {
-      console.error('error on getMessages', error)
+      consola.error('error on getMessages', error)
       throw error
     })
 
@@ -219,7 +221,7 @@ export const ask = orpc
           }
         },
         onFinish: async (result) => {
-          console.info('stream finished', JSON.stringify({
+          consola.info('stream finished', JSON.stringify({
             ...result.responseMessage,
             parts: result.responseMessage.parts.map(part => part.type),
           }, null, 2))
@@ -240,12 +242,12 @@ export const ask = orpc
             await db.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
           }
           catch (error) {
-            console.error('error onFinish transaction', error)
+            consola.error('error onFinish transaction', error)
             throw error
           }
         },
         onError: (error) => {
-          console.error('error toUIMessageStream onError', error)
+          consola.error('error toUIMessageStream onError', error)
 
           return handleError(error)
         },
@@ -257,13 +259,13 @@ export const ask = orpc
         await db.update(chats).set({ activeStreamId: streamId }).where(eq(chats.id, input.id))
       }
       catch (error) {
-        console.error('error on createNewResumableStream', error)
+        consola.error('error on createNewResumableStream', error)
       }
 
       return streamToEventIterator(stream)
     }
     catch (error) {
-      console.error('error on ask', error)
+      consola.error('error on ask', error)
       throw new ORPCError('INTERNAL_SERVER_ERROR', {
         message: error instanceof Error ? error.message : 'Sorry, I was unable to generate a response due to an error. Please try again.',
       })

@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@conar/ui/components/form'
 import { Input } from '@conar/ui/components/input'
 import { Separator } from '@conar/ui/components/separator'
-import { useAsyncEffect } from '@conar/ui/hookas/use-async-effect'
 import { copy } from '@conar/ui/lib/copy'
 import { arktypeResolver } from '@hookform/resolvers/arktype'
 import { RiEyeLine, RiEyeOffLine, RiGithubFill, RiGoogleFill } from '@remixicon/react'
@@ -12,7 +11,7 @@ import { useMutation } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { nanoid } from 'nanoid'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { authClient, bearerToken, codeChallenge, successAuthToast } from '~/lib/auth'
@@ -66,24 +65,32 @@ function SocialAuthForm({ type }: { type: Type }) {
   const [isManualAuthOpen, setIsManualAuthOpen] = useState(false)
   const [manualAuthUrl, setManualAuthUrl] = useState('')
 
-  useAsyncEffect(async () => {
-    if (isManualAuthOpen) {
-      const text = await navigator.clipboard.readText()
+  const setManualUrlFromClipboardEvent = useEffectEvent(async () => {
+    const text = await navigator.clipboard.readText()
 
-      if (text.startsWith('conar://session')) {
-        setManualAuthUrl(text)
-      }
+    if (text.startsWith('conar://session')) {
+      setManualAuthUrl(text)
+    }
+  })
+
+  useEffect(() => {
+    if (isManualAuthOpen) {
+      setManualUrlFromClipboardEvent()
     }
   }, [isManualAuthOpen])
 
-  useAsyncEffect(async () => {
-    if (manualAuthUrl.startsWith('conar://session')) {
-      setIsDialogOpen(false)
-      const { type } = await handleDeepLink(manualAuthUrl)
+  const handleManualAuthEvent = useEffectEvent(async () => {
+    setIsDialogOpen(false)
+    const { type } = await handleDeepLink(manualAuthUrl)
 
-      if (type === 'session') {
-        refetch()
-      }
+    if (type === 'session') {
+      refetch()
+    }
+  })
+
+  useEffect(() => {
+    if (manualAuthUrl.startsWith('conar://session')) {
+      handleManualAuthEvent()
     }
   }, [manualAuthUrl])
 

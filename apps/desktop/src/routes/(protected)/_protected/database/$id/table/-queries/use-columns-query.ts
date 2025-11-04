@@ -1,18 +1,26 @@
 import type { databases } from '~/drizzle'
+import { useQueries } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { useDatabaseConstraints, useDatabaseTableColumns } from '~/entities/database'
+import { databaseConstraintsQuery, databaseTableColumnsQuery } from '~/entities/database'
 
 export function useTableColumns({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
-  const { data: columns } = useDatabaseTableColumns({ database, table, schema })
-  const { data: constraints } = useDatabaseConstraints({ database })
+  const [columns, constraints] = useQueries({
+    queries: [
+      databaseTableColumnsQuery({ database, table, schema }),
+      databaseConstraintsQuery({ database }),
+    ],
+    combine: ([columns, constraints]) => {
+      return [columns.data ?? [], constraints.data ?? []]
+    },
+  })
 
   return useMemo(() => {
     return columns
-      ?.map((column) => {
-        const columnConstraints = constraints?.filter(c => c.column === column.id)
-        const foreignConstraint = columnConstraints?.find(c => c.type === 'foreignKey' && c.schema === schema && c.table === table)
-        const uniqueConstraint = columnConstraints?.find(c => c.type === 'unique')
-        const primaryConstraint = columnConstraints?.find(c => c.type === 'primaryKey')
+      .map((column) => {
+        const columnConstraints = constraints.filter(c => c.column === column.id && c.schema === schema && c.table === table)
+        const foreignConstraint = columnConstraints.find(c => c.type === 'foreignKey')
+        const uniqueConstraint = columnConstraints.find(c => c.type === 'unique')
+        const primaryConstraint = columnConstraints.find(c => c.type === 'primaryKey')
 
         return {
           ...column,
@@ -27,7 +35,7 @@ export function useTableColumns({ database, table, schema }: { database: typeof 
               }
             : undefined,
           references: constraints
-            ?.filter(c => c.type === 'foreignKey'
+            .filter(c => c.type === 'foreignKey'
               && c.usageColumn === column.id
               && c.usageSchema === schema
               && c.usageTable === table
@@ -47,6 +55,6 @@ export function useTableColumns({ database, table, schema }: { database: typeof 
         if (!a.primaryKey && b.primaryKey)
           return 1
         return 0
-      }) ?? []
+      })
   }, [columns, constraints, schema, table])
 }

@@ -94,7 +94,7 @@ export function RunnerResultsTable({
         estimatedRowSize={DEFAULT_ROW_HEIGHT}
         estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
       >
-        <Table className="h-[calc(100%-theme(spacing.10))]">
+        <Table className="h-[calc(100%-(--spacing(10)))]">
           <TableHeader />
           <TableBody data-mask />
         </Table>

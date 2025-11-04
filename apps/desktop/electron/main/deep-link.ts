@@ -48,7 +48,7 @@ export function setupProtocolHandler(win: BrowserWindow) {
 }
 
 function sendDeepLink(url: string) {
-  if (mainWindow === null) {
+  if (!mainWindow) {
     deepLinkUrl = url
     return
   }
@@ -59,7 +59,6 @@ function sendDeepLink(url: string) {
 
   mainWindow.focus()
 
-  // Show the app on macOS
   if (process.platform === 'darwin') {
     app.dock?.show()
     mainWindow.setAlwaysOnTop(true)

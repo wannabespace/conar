@@ -3,17 +3,36 @@ import type { databases } from '~/drizzle'
 import { and, or, sql } from 'drizzle-orm'
 import { runSql } from '../query'
 
-export function buildWhere(filters: ActiveFilter[], concatOperator: 'AND' | 'OR' = 'AND') {
-  const concat = concatOperator === 'AND' ? and : or
+const concatOperatorsMap = {
+  AND: and,
+  OR: or,
+}
+
+export function buildWhere(filters: ActiveFilter[], concatOperator: keyof typeof concatOperatorsMap = 'AND') {
+  const concat = concatOperatorsMap[concatOperator]
 
   return concat(
     ...filters.map((filter) => {
       if (filter.ref.hasValue && filter.values.length > 0) {
         if (filter.values.length === 1) {
-          return sql`${sql.identifier(filter.column)} ${sql.raw(filter.ref.operator)} ${sql.param(filter.values[0])}`
+          return sql.join(
+            [
+              sql.identifier(filter.column),
+              sql.raw(filter.ref.operator),
+              sql.param(filter.values[0]),
+            ],
+            sql.raw(' '),
+          )
         }
 
-        return sql`${sql.identifier(filter.column)} ${sql.raw(filter.ref.operator)} (${sql.join(filter.values.map(v => sql.param(v)), sql.raw(', '))})`
+        return sql.join(
+          [
+            sql.identifier(filter.column),
+            sql.raw(filter.ref.operator),
+            sql`(${sql.join(filter.values.map(v => sql.param(v)), sql.raw(', '))})`,
+          ],
+          sql.raw(' '),
+        )
       }
 
       return sql.join(

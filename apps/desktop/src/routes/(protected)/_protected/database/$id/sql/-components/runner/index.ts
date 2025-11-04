@@ -1,9 +1,9 @@
 import type { databases } from '~/drizzle'
+import { getErrorMessage } from '@conar/shared/utils/error'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { hasDangerousSqlKeywords } from '~/entities/database'
 import { drizzleProxy } from '~/entities/database/query'
-import { formatSql } from '~/lib/formatter'
 import { databaseStore } from '../../../../-store'
 
 export * from './runner'
@@ -17,16 +17,27 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
       const queries = store.state.queriesToRun
 
       const db = drizzleProxy(database, 'SQL Runner')
-      const results = await Promise.all(queries.map(async query => [
-        formatSql(query, database.type),
-        await db.execute(query).catch(e => (e instanceof Error ? String(e.cause) || e.message : String(e)).replaceAll('Error: ', '')),
-      ] as const))
+      const results = await Promise.all(queries.map(({ query, startLineNumber, endLineNumber }) => db.execute(query)
+        .then(data => ({
+          data,
+          error: null,
+          query,
+          startLineNumber,
+          endLineNumber,
+        }))
+        .catch(e => ({
+          data: null,
+          error: getErrorMessage(e),
+          query,
+          startLineNumber,
+          endLineNumber,
+        }))))
 
       if (signal.aborted) {
         return null!
       }
 
-      if (queries.some(query => hasDangerousSqlKeywords(query))) {
+      if (queries.some(({ query }) => hasDangerousSqlKeywords(query))) {
         toast.success('Query executed successfully!')
       }
 

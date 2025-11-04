@@ -4,6 +4,7 @@ import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { render } from '@conar/ui/lib/render'
@@ -11,13 +12,15 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
 import { useIsFetching } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useEffectEvent, useMemo, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { databaseStore, useSQLQueries } from '../../../../-store'
+import { databaseStore } from '../../../../-store'
+import { useRunnerContext } from './runner-context'
 
-function RunnerQueryEditorZone({
+// eslint-disable-next-line react-refresh/only-export-components
+function RunnerEditorQueryZone({
   database,
   onRun,
   onSave,
@@ -31,19 +34,21 @@ function RunnerQueryEditorZone({
   lineNumber: number
 }) {
   const [isCopying, setIsCopying] = useState(false)
+  const isFetching = useIsFetching(runnerQueryOptions({ database }), queryClient) > 0
+
   const store = databaseStore(database.id)
   const isChecked = useStore(store, state => state.selectedLines.includes(lineNumber))
-  const queries = useSQLQueries(database.id)
-  const startFrom = useMemo(() => {
-    const index = queries.findIndex(query => query.startLineNumber === lineNumber)
-    const queriesBefore = queries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0)
-    return queriesBefore + 1
-  }, [lineNumber, queries])
-  const queriesAmount = useMemo(
-    () => queries.find(query => query.startLineNumber === lineNumber)?.queries.length || 0,
-    [lineNumber, queries],
-  )
-  const isFetching = useIsFetching(runnerQueryOptions({ database }), queryClient) > 0
+
+  const index = useStore(store, state => state.editorQueries.findIndex(query => query.startLineNumber === lineNumber))
+  const { queriesLength, queryNumber } = useStore(store, (state) => {
+    const queriesBefore = state.editorQueries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
+    const queriesLength = state.editorQueries[index]?.queries.length ?? 0
+
+    return {
+      queriesLength,
+      queryNumber: queriesLength === 1 ? queriesBefore : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`,
+    }
+  })
 
   const onCheckedChange = () => {
     store.setState(state => ({
@@ -61,27 +66,29 @@ function RunnerQueryEditorZone({
     )}
     >
       <div className="flex-1 flex items-center justify-between gap-2">
-        <label className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Checkbox
-            className="focus:outline-none!"
-            checked={isChecked}
-            onCheckedChange={() => onCheckedChange()}
-          />
-          Query
-          {' '}
-          {queriesAmount === 1 ? startFrom : `${startFrom} - ${startFrom + queriesAmount - 1}`}
-        </label>
         <div className="flex items-center gap-2">
+          <label className="flex items-center gap-2 text-xs">
+            <Checkbox
+              className="focus:outline-none!"
+              checked={isChecked}
+              onCheckedChange={() => onCheckedChange()}
+            />
+            Query
+            {' '}
+            {queryNumber}
+          </label>
+        </div>
+        <div className="flex items-center gap-1">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="secondary"
+                  variant="ghost"
                   size="icon-xs"
                   className="focus:outline-none!"
                   onClick={() => onSave()}
                 >
-                  <RiSaveLine />
+                  <RiSaveLine className="size-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -93,7 +100,7 @@ function RunnerQueryEditorZone({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="secondary"
+                  variant="ghost"
                   size="icon-xs"
                   className="focus:outline-none!"
                   onClick={() => {
@@ -106,7 +113,7 @@ function RunnerQueryEditorZone({
                     activeContent={<RiCheckLine className="text-success" />}
                     onSwitchEnd={() => setIsCopying(false)}
                   >
-                    <RiFileCopyLine />
+                    <RiFileCopyLine className="size-3.5" />
                   </ContentSwitch>
                 </Button>
               </TooltipTrigger>
@@ -115,7 +122,8 @@ function RunnerQueryEditorZone({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          {Array.from({ length: queriesAmount }).map((_, index) => (
+          <Separator orientation="vertical" className="h-4! mx-1" />
+          {Array.from({ length: queriesLength }).map((_, index) => (
             <Button
               // eslint-disable-next-line react/no-array-index-key
               key={index}
@@ -126,7 +134,7 @@ function RunnerQueryEditorZone({
             >
               Run
               {' '}
-              {queriesAmount === 1 ? '' : index + 1}
+              {queriesLength === 1 ? '' : index + 1}
             </Button>
           ))}
         </div>
@@ -135,67 +143,101 @@ function RunnerQueryEditorZone({
   )
 }
 
-export function useRunnerEditorQueryZone(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>, {
-  onRun,
-  onSave,
-}: {
-  onRun: (queries: string[]) => void
-  onSave: (query: string) => void
-}) {
+export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { database } = Route.useRouteContext()
-  const queries = useSQLQueries(database.id)
-  const linesWithQueries = useMemo(() => queries.map(({ startLineNumber }) => startLineNumber), [queries])
+  const store = databaseStore(database.id)
+  const linesWithQueries = useStore(store, state => state.editorQueries.map(({ startLineNumber }) => startLineNumber))
 
   const getQueriesEvent = useEffectEvent((lineNumber: number) =>
-    queries.find(query => query.startLineNumber === lineNumber)?.queries || [],
+    store.state.editorQueries.find(query => query.startLineNumber === lineNumber),
   )
 
-  const onRunEvent = useEffectEvent(onRun)
+  const run = useRunnerContext(({ run }) => run)
+  const runEvent = useEffectEvent(run)
+  const save = useRunnerContext(({ save }) => save)
+  const saveEvent = useEffectEvent(save)
+
+  const elementsRef = useRef<Record<number, HTMLDivElement>>([])
 
   useEffect(() => {
     if (!monacoRef.current)
       return
 
     const editor = monacoRef.current
-    const viewZoneIds: string[] = []
+    const elements = elementsRef.current
+    const viewZoneIds: { id: string, lineNumber: number }[] = []
 
     queueMicrotask(() => {
       editor.changeViewZones((changeAccessor) => {
         linesWithQueries.forEach((lineNumber) => {
-          const element = render(
-            <RunnerQueryEditorZone
+          elements[lineNumber] ||= render(
+            <RunnerEditorQueryZone
               database={database}
               lineNumber={lineNumber}
               onRun={(index) => {
-                onRunEvent([getQueriesEvent(lineNumber)[index]!])
+                const editorQuery = getQueriesEvent(lineNumber)
+
+                if (!editorQuery)
+                  return
+
+                const query = editorQuery.queries.at(index)
+
+                if (!query)
+                  return
+
+                runEvent([{
+                  startLineNumber: editorQuery.startLineNumber,
+                  endLineNumber: editorQuery.endLineNumber,
+                  query,
+                }])
               }}
               onCopy={() => {
-                copy(getQueriesEvent(lineNumber).map(q => `${q};`).join(' '))
+                const query = getQueriesEvent(lineNumber)
+
+                if (!query)
+                  return
+
+                const { startLineNumber, endLineNumber } = query
+
+                copy(store.state.sql.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
               }}
               onSave={() => {
-                onSave(getQueriesEvent(lineNumber).map(q => `${q};`).join(' '))
+                const query = getQueriesEvent(lineNumber)
+
+                if (!query)
+                  return
+
+                const { startLineNumber, endLineNumber } = query
+
+                saveEvent(store.state.sql.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
               }}
             />,
           )
 
-          element.style.zIndex = '100'
+          elements[lineNumber]!.style.zIndex = '100'
 
           const zoneId = changeAccessor.addZone({
             afterLineNumber: lineNumber - 1,
             heightInPx: 32,
-            domNode: element,
+            domNode: elements[lineNumber]!,
           })
 
-          viewZoneIds.push(zoneId)
+          viewZoneIds.push({ id: zoneId, lineNumber })
         })
       })
     })
 
     return () => {
       editor.changeViewZones((changeAccessor) => {
-        viewZoneIds.forEach(id => changeAccessor.removeZone(id))
+        viewZoneIds.forEach(({ id, lineNumber }) => {
+          changeAccessor.removeZone(id)
+
+          if (!linesWithQueries.includes(lineNumber)) {
+            elements[lineNumber]?.remove()
+            delete elements[lineNumber]
+          }
+        })
       })
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [monacoRef, JSON.stringify(linesWithQueries), database])
+  }, [monacoRef, linesWithQueries, database, store])
 }

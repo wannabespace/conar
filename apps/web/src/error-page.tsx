@@ -41,6 +41,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
               {error instanceof TraversalError && (
                 <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[300px] font-mono">
                   {error.arkErrors.map((err, index) => (
+                    // eslint-disable-next-line react/no-array-index-key
                     <div key={index} className="mb-4 last:mb-0">
                       <div className="font-semibold text-destructive">
                         Error

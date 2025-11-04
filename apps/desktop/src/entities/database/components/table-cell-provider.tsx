@@ -5,16 +5,14 @@ import { useMutation } from '@tanstack/react-query'
 import { createContext, use, useMemo, useState } from 'react'
 import { getEditableValue } from '../lib/render'
 
-interface CellContextValue {
+const CellContext = createContext<{
   value: string
   setValue: Dispatch<SetStateAction<string>>
   column: Column
   initialValue: unknown
   displayValue: string
   update: UseMutateFunction<void, Error, { value: string | null, rowIndex: number }>
-}
-
-const CellContext = createContext<CellContextValue>(null!)
+}>(null!)
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useCellContext() {
@@ -26,46 +24,37 @@ export function TableCellProvider({
   column,
   initialValue,
   displayValue,
-  onSetValue,
   onSaveValue,
-  onSaveError,
-  onSaveSuccess,
   onSavePending,
+  onSaveSuccess,
+  onSaveError,
 }: {
   children: React.ReactNode
   column: Column
   initialValue: unknown
   displayValue: string
-  onSetValue?: (rowIndex: number, columnsId: string, value: unknown) => void
   onSaveValue?: (rowIndex: number, columnsId: string, value: unknown) => Promise<void>
-  onSaveError: (error: Error) => void
-  onSaveSuccess: () => void
   onSavePending: () => void
+  onSaveSuccess: () => void
+  onSaveError?: (error: Error) => void
 }) {
   const [value, setValue] = useState<string>(() => getEditableValue(initialValue, false))
 
   const { mutate: update } = useMutation({
     mutationFn: async ({ rowIndex, value }: { value: string | null, rowIndex: number }) => {
-      if (!onSetValue || !onSaveValue)
+      if (!onSaveValue)
         return
 
       onSavePending()
 
-      onSetValue(rowIndex, column.id, value)
-      try {
-        await onSaveValue(
-          rowIndex,
-          column.id,
-          value,
-        )
-      }
-      catch (e) {
-        onSetValue(rowIndex, column.id, initialValue)
-        throw e
-      }
+      await onSaveValue(
+        rowIndex,
+        column.id,
+        value,
+      )
     },
-    onSuccess: onSaveSuccess,
     onError: onSaveError,
+    onSuccess: onSaveSuccess,
   })
 
   const context = useMemo(() => ({
@@ -84,5 +73,5 @@ export function TableCellProvider({
     update,
   ])
 
-  return <CellContext.Provider value={context}>{children}</CellContext.Provider>
+  return <CellContext value={context}>{children}</CellContext>
 }

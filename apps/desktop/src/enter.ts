@@ -20,7 +20,9 @@ export function enterAppAnimation() {
     root.classList.remove('scale-[1.2]', 'opacity-0')
     document.body.classList.remove('overflow-hidden')
     // 300 - transition duration
-    sleep(300).then(() => animationHooks.callHook('finished'))
+    sleep(300).then(() => {
+      animationHooks.callHook('finished')
+    })
   })
 
   if (preloader) {

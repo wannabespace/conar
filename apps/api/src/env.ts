@@ -1,5 +1,6 @@
 import process from 'node:process'
 import { type } from 'arktype'
+import { consola } from 'consola'
 
 export const nodeEnv = type('"production" | "development" | "test"').assert(process.env.NODE_ENV)
 
@@ -48,7 +49,7 @@ export const env = nodeEnv === 'production' || nodeEnv === 'test'
         devOptionalEnvs.reduce((acc, env) => {
           acc[env] = 'string?'
           if (!process.env[env]) {
-            console.warn(`"${env}" is not set in env file`)
+            consola.warn(`"${env}" is not set in env file`)
           }
           return acc
         }, {} as { [K in typeof devOptionalEnvs[number]]: 'string?' }),
