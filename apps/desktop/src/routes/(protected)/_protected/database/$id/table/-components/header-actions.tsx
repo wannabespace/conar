@@ -2,11 +2,13 @@ import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiCheckLine, RiLoopLeftLine } from '@remixicon/react'
+import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { databaseConstraintsQuery, databaseRowsQuery, databaseTableColumnsQuery } from '~/entities/database'
+import { ExportData } from '~/components/export-data'
+import { databaseConstraintsQuery, databaseRowsQuery, databaseTableColumnsQuery, rowsSql } from '~/entities/database'
 import { queryClient } from '~/main'
 import { usePageStoreContext } from '../-store'
 import { HeaderActionsColumns } from './header-actions-columns'
@@ -16,7 +18,7 @@ import { HeaderActionsFilters } from './header-actions-filters'
 export function HeaderActions({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
   const store = usePageStoreContext()
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
-  const { isFetching, dataUpdatedAt, refetch } = useInfiniteQuery(
+  const { isFetching, dataUpdatedAt, refetch, data: rows, isPending } = useInfiniteQuery(
     databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }),
   )
 
@@ -26,8 +28,48 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
     queryClient.invalidateQueries(databaseConstraintsQuery({ database }))
   }
 
+  const getAllData = async () => {
+    const data: Record<string, unknown>[] = []
+    const limit = 1000
+    let offset = 0
+
+    while (true) {
+      const batch = await rowsSql(database, {
+        schema,
+        table,
+        limit,
+        offset,
+        orderBy,
+        filters,
+      })
+
+      data.push(...batch)
+
+      if (batch.length < limit) {
+        break
+      }
+
+      offset += limit
+    }
+
+    return data
+  }
+
+  const getLimitedData = async (limit: number) => rowsSql(database, {
+    schema,
+    table,
+    limit,
+    offset: 0,
+    orderBy,
+    filters,
+  })
+
+  const getData = async (limit?: number) => {
+    return limit ? getLimitedData(limit) : getAllData()
+  }
+
   return (
-    <div className="flex gap-2">
+    <div className="flex items-center gap-2">
       <HeaderActionsDelete
         table={table}
         schema={schema}
@@ -68,6 +110,22 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+      <Separator orientation="vertical" className="h-6!" />
+      <ExportData
+        filename={`${schema}_${table}`}
+        getData={getData}
+        trigger={({ isExporting }) => (
+          <Button
+            variant="outline"
+            size="icon"
+            disabled={isExporting || rows?.length === 0 || isPending}
+          >
+            <LoadingContent loading={isExporting}>
+              <RiExportLine />
+            </LoadingContent>
+          </Button>
+        )}
+      />
     </div>
   )
 }

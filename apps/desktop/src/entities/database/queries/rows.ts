@@ -2,7 +2,7 @@ import type { ActiveFilter } from '@conar/shared/filters'
 import type { databases } from '~/drizzle'
 import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query'
 import { rowsSql } from '../sql/rows'
-import { DEFAULT_LIMIT } from '../utils/helpers'
+import { DEFAULT_PAGE_LIMIT } from '../utils/helpers'
 
 type Page = Awaited<ReturnType<typeof rowsSql>>[0]
 
@@ -19,12 +19,15 @@ export function databaseRowsQuery({
   database: typeof databases.$inferSelect
   table: string
   schema: string
-  query: { orderBy: Record<string, 'ASC' | 'DESC'>, filters: ActiveFilter[] }
+  query: {
+    orderBy: Record<string, 'ASC' | 'DESC'>
+    filters: ActiveFilter[]
+  }
 }) {
   return infiniteQueryOptions({
     initialPageParam: 0,
     getNextPageParam: (lastPage: PageResult, _allPages: PageResult[], lastPageParam: number) => {
-      return lastPage.rows.length === 0 || lastPage.rows.length < DEFAULT_LIMIT ? null : lastPageParam + DEFAULT_LIMIT
+      return lastPage.rows.length === 0 || lastPage.rows.length < DEFAULT_PAGE_LIMIT ? null : lastPageParam + DEFAULT_PAGE_LIMIT
     },
     queryKey: [
       'database',
@@ -39,11 +42,11 @@ export function databaseRowsQuery({
         orderBy: query.orderBy,
       },
     ],
-    queryFn: async ({ pageParam: offset = 0 }) => {
+    queryFn: async ({ pageParam: offset }) => {
       const result = await rowsSql(database, {
         schema,
         table,
-        limit: DEFAULT_LIMIT,
+        limit: DEFAULT_PAGE_LIMIT,
         offset,
         orderBy: query.orderBy,
         filters: query.filters,

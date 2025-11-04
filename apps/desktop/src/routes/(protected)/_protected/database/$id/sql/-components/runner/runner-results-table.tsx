@@ -1,12 +1,15 @@
 import type { ColumnRenderer } from '~/components/table'
 import type { Column } from '~/entities/database'
 import { Button } from '@conar/ui/components/button'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
+import { Separator } from '@conar/ui/components/separator'
 import { useDebouncedMemo } from '@conar/ui/hookas/use-debounced-memo'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiCloseLine, RiSearchLine } from '@remixicon/react'
+import { RiCloseLine, RiExportLine, RiSearchLine } from '@remixicon/react'
 import { useMemo, useState } from 'react'
+import { ExportData } from '~/components/export-data'
 import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
@@ -58,6 +61,10 @@ export function RunnerResultsTable({
     } satisfies ColumnRenderer))
   }, [columns])
 
+  const getData = async (limit?: number) => {
+    return limit ? filteredData.slice(0, limit) : filteredData
+  }
+
   return (
     <div className="h-full">
       <div className="px-4 h-10 flex items-center justify-between gap-2">
@@ -75,24 +82,42 @@ export function RunnerResultsTable({
             ms)
           </span>
         </div>
-        <div className="relative flex-1 max-w-60">
-          <Input
-            placeholder="Search results..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-7 pr-8 h-8 text-sm"
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 max-w-60">
+            <Input
+              placeholder="Search results..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-7 pr-8 h-8 text-sm"
+            />
+            <RiSearchLine className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground size-3.5" />
+            {search && (
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2"
+                onClick={() => setSearch('')}
+              >
+                <RiCloseLine className="size-4" />
+              </Button>
+            )}
+          </div>
+          <Separator orientation="vertical" className="h-6!" />
+          <ExportData
+            getData={getData}
+            filename="runner_results"
+            trigger={({ isExporting }) => (
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={isExporting || filteredData.length === 0}
+              >
+                <LoadingContent loading={isExporting}>
+                  <RiExportLine />
+                </LoadingContent>
+              </Button>
+            )}
           />
-          <RiSearchLine className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground size-3.5" />
-          {search && (
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2"
-              onClick={() => setSearch('')}
-            >
-              <RiCloseLine className="size-4" />
-            </Button>
-          )}
         </div>
       </div>
       <TableProvider
