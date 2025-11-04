@@ -17,21 +17,26 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
       const queries = store.state.queriesToRun
 
       const db = drizzleProxy(database, 'SQL Runner')
-      const results = await Promise.all(queries.map(({ query, startLineNumber, endLineNumber }) => db.execute(query)
-        .then(data => ({
-          data,
-          error: null,
-          query,
-          startLineNumber,
-          endLineNumber,
-        }))
-        .catch(e => ({
-          data: null,
-          error: getErrorMessage(e),
-          query,
-          startLineNumber,
-          endLineNumber,
-        }))))
+      const results = await Promise.all(queries.map(({ query, startLineNumber, endLineNumber }) => {
+        const now = Date.now()
+        return db.execute(query)
+          .then(data => ({
+            data,
+            error: null,
+            query,
+            startLineNumber,
+            endLineNumber,
+            duration: Date.now() - now,
+          }))
+          .catch(e => ({
+            data: null,
+            error: getErrorMessage(e),
+            query,
+            startLineNumber,
+            endLineNumber,
+            duration: Date.now() - now,
+          }))
+      }))
 
       if (signal.aborted) {
         return null!
