@@ -384,7 +384,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
             <span className="sr-only">Toggle theme</span>
           </Button>
         </ThemeToggle>
-        <SettingsButton />
+        {false && <SettingsButton />}
         <div className="mt-2">
           <UserButton />
         </div>

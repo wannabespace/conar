@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
 import { title } from '@conar/shared/utils/title'
+import { Card, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { Switch } from '@conar/ui/components/switch'
 import { createFileRoute } from '@tanstack/react-router'
-import { SettingItem } from './-components/setting-item'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/settings/',
@@ -13,6 +14,35 @@ export const Route = createFileRoute(
     meta: loaderData ? [{ title: title(`Settings - ${loaderData.database.name}`) }] : [],
   }),
 })
+
+function SettingItem({ title, description, checked, onCheckedChange }: {
+  title: string
+  description: string
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+}) {
+  return (
+    <Card className="border-border/60 hover:border-border transition-colors">
+      <CardHeader className="p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-1 flex-1">
+            <CardTitle className="text-base font-semibold">{title}</CardTitle>
+            <CardDescription className="text-sm">
+              {description}
+            </CardDescription>
+          </div>
+          <div className="flex items-center">
+            <Switch
+              checked={checked}
+              onCheckedChange={onCheckedChange}
+              className="data-[state=checked]:bg-primary"
+            />
+          </div>
+        </div>
+      </CardHeader>
+    </Card>
+  )
+}
 
 function SettingSection({ title, children }: { title: string, children: ReactNode }) {
   return (
@@ -33,7 +63,6 @@ function DatabaseSettingsPage() {
             Manage your application preferences
           </p>
         </div>
-
         <div className="space-y-5">
           <SettingSection title="Updates">
             <SettingItem

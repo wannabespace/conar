@@ -71,3 +71,9 @@ runMigrations().then(async () => {
   ])
   root.render(<RouterProvider router={router} />)
 })
+
+if (import.meta.hot) {
+  import.meta.hot.accept(() => {
+    window.location.reload()
+  })
+}
