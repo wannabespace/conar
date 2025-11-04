@@ -2,6 +2,7 @@ import type { DatabaseQueryResult } from '@conar/shared/databases'
 import type { Type } from 'arktype'
 import type { databases } from '~/drizzle'
 import { DatabaseType } from '@conar/shared/enums/database-type'
+import { getErrorMessage } from '@conar/shared/utils/error'
 import { Store } from '@tanstack/react-store'
 // import { drizzle as mysqlProxy } from 'drizzle-orm/mysql-proxy'
 import { drizzle as pgProxy } from 'drizzle-orm/pg-proxy'
@@ -104,7 +105,7 @@ export function drizzleProxy<T extends Record<string, unknown>>(database: typeof
       return result
     }
     catch (error) {
-      queryLog(database, queryId, { error: error instanceof Error ? error.message : String(error) })
+      queryLog(database, queryId, { error: getErrorMessage(error) })
 
       throw error
     }
@@ -154,6 +155,9 @@ export async function runSql<T extends Type>({
     : query[database.type]
 
   const res = await queryFn({ db: drizzleProxy(database, label) })
+    .catch((e) => {
+      throw new Error(getErrorMessage(e), { cause: e })
+    })
 
   if (type) {
     return res.map(item => type.assert(item))

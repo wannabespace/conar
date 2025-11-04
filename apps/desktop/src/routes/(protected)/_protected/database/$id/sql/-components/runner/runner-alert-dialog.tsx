@@ -1,7 +1,7 @@
 import { isCtrlEnter } from '@conar/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { ShiftCtrlEnter } from '@conar/ui/components/custom/shortcuts'
-import { useKeyboardEvent } from '@react-hookz/web'
+import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { RiAlertLine } from '@remixicon/react'
 import { useImperativeHandle, useRef, useState } from 'react'
 import { DANGEROUS_SQL_KEYWORDS } from '~/entities/database'

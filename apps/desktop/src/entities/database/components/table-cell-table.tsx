@@ -81,8 +81,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
             Showing records from
             {' '}
             <Badge data-mask variant="secondary">
-              {schema}
-              .
+              {schema === 'public' ? '' : `${schema}.`}
               {table}
             </Badge>
             {' '}
@@ -109,7 +108,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
             </Link>
           </Button>
         </div>
-        <Table className="bg-background h-[calc(100%-theme(spacing.8))] rounded-b-lg">
+        <Table className="bg-background h-[calc(100%-(--spacing(8)))] rounded-b-lg">
           <TableHeader />
           {isRowsPending
             ? <TableBodySkeleton />

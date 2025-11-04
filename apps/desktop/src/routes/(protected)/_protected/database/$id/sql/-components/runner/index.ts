@@ -1,4 +1,5 @@
 import type { databases } from '~/drizzle'
+import { getErrorMessage } from '@conar/shared/utils/error'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { hasDangerousSqlKeywords } from '~/entities/database'
@@ -26,7 +27,7 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
         }))
         .catch(e => ({
           data: null,
-          error: (e instanceof Error ? String(e.cause) || e.message : String(e)).replaceAll('Error: ', ''),
+          error: getErrorMessage(e),
           query,
           startLineNumber,
           endLineNumber,

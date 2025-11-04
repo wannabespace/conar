@@ -51,7 +51,6 @@
     "@orpc/server": "catalog:",
     "@orpc/tanstack-query": "^1.10.3",
     "@playwright/test": "catalog:",
-    "@react-hookz/web": "^25.1.1",
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "^4.1.16",
     "@tanstack/react-db": "^0.1.38",

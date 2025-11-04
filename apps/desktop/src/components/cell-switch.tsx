@@ -1,7 +1,7 @@
 import { isCtrlEnter } from '@conar/shared/utils/os'
 import { Switch } from '@conar/ui/components/switch'
+import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { cn } from '@conar/ui/lib/utils'
-import { useKeyboardEvent } from '@react-hookz/web'
 
 export function CellSwitch({
   checked,

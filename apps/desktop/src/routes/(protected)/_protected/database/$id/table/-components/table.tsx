@@ -1,5 +1,6 @@
 import type { ColumnRenderer } from '~/components/table'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
+import { getErrorMessage } from '@conar/shared/utils/error'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo } from 'react'
@@ -33,7 +34,7 @@ export function TableError({ error }: { error: Error }) {
           Error occurred
         </div>
         <p className="text-sm font-mono text-center text-muted-foreground">
-          {(error.cause ? String(error.cause) : error.message).replaceAll('Error: ', '')}
+          {getErrorMessage(error)}
         </p>
       </div>
     </div>

@@ -36,7 +36,6 @@
     "@radix-ui/react-toggle": "^1.1.10",
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@react-hookz/web": "^25.1.1",
     "@remixicon/react": "catalog:",
     "@tailwindcss/typography": "^0.5.19",
     "@tanstack/react-router": "catalog:",

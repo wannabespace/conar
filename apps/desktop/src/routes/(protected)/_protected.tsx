@@ -1,6 +1,6 @@
 import { getOS } from '@conar/shared/utils/os'
+import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { useNetwork } from '@conar/ui/hookas/use-network'
-import { useKeyboardEvent } from '@react-hookz/web'
 import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useChatsMessagesSync, useChatsSync } from '~/entities/chat/sync'
