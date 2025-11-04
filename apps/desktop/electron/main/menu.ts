@@ -1,11 +1,21 @@
-import type { BrowserWindow, MenuItemConstructorOptions } from 'electron'
+import type { MenuItemConstructorOptions } from 'electron'
 import { createRequire } from 'node:module'
 import { SOCIAL_LINKS } from '@conar/shared/constants'
-import { app, Menu, shell } from 'electron'
+import { app, BrowserWindow, Menu, shell } from 'electron'
+import { createWindow } from './index'
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
-function setupDevelopmentEnvironment(mainWindow: BrowserWindow): void {
+function getFocusedWindow() {
+  return BrowserWindow.getAllWindows().find(window => window.isFocused())
+}
+
+function setupDevelopmentEnvironment(): void {
+  const mainWindow = getFocusedWindow()
+
+  if (!mainWindow)
+    return
+
   mainWindow.webContents.on('context-menu', (_, props) => {
     const { x, y } = props
 
@@ -20,7 +30,7 @@ function setupDevelopmentEnvironment(mainWindow: BrowserWindow): void {
   })
 }
 
-function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
+function buildTemplate(): MenuItemConstructorOptions[] {
   const isMac = process.platform === 'darwin'
   const cmdOrCtrl = isMac ? 'Command' : 'Ctrl'
 
@@ -73,7 +83,18 @@ function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] 
         label: 'New Connection',
         accelerator: `${cmdOrCtrl}+N`,
         click: () => {
-          mainWindow.webContents.send('app.navigate', '/create')
+          const win = getFocusedWindow()
+          if (!win)
+            return
+
+          win.webContents.send('app.navigate', '/create')
+        },
+      },
+      {
+        label: 'New Window',
+        accelerator: `${cmdOrCtrl}+Shift+N`,
+        click: () => {
+          createWindow()
         },
       },
       { type: 'separator' },
@@ -81,7 +102,11 @@ function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] 
         label: 'Close Window',
         accelerator: `${cmdOrCtrl}+W`,
         click: () => {
-          mainWindow.close()
+          const win = getFocusedWindow()
+          if (!win)
+            return
+
+          win.close()
         },
       },
     ],
@@ -133,15 +158,12 @@ function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] 
   return template
 }
 
-export function buildMenu(mainWindow: BrowserWindow): Menu {
-  if (
-    process.env.NODE_ENV === 'development'
-    || process.env.DEBUG_PROD === 'true'
-  ) {
-    setupDevelopmentEnvironment(mainWindow)
+export function buildMenu(): Menu {
+  if (process.env.NODE_ENV === 'development') {
+    setupDevelopmentEnvironment()
   }
 
-  const template = buildTemplate(mainWindow)
+  const template = buildTemplate()
   const menu = Menu.buildFromTemplate(template)
 
   Menu.setApplicationMenu(menu)

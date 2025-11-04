@@ -1,7 +1,5 @@
 import type { ContextSelector } from '@fluentui/react-context-selector'
 import type { ComponentProps, ReactElement, ReactNode } from 'react'
-import { Button } from '@conar/ui/components/button'
-import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
 import {
   Table,
@@ -11,16 +9,14 @@ import {
   TableHeader,
   TableRow,
 } from '@conar/ui/components/table'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 import NumberFlow from '@number-flow/react'
-import { RiCheckLine, RiCodeLine, RiFileCopyLine, RiPlayListAddLine, RiText } from '@remixicon/react'
+import { RiCodeLine, RiText } from '@remixicon/react'
 import { marked } from 'marked'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { trackEvent } from '~/lib/events'
 import { Monaco } from './monaco'
 
 const langsMap = {
@@ -43,6 +39,7 @@ const langsMap = {
 
 interface MarkdownContextType {
   generating?: boolean
+  codeActions?: (props: { content: string, lang: string }) => ReactNode
 }
 
 const MarkdownContext = createContext<MarkdownContextType>(null!)
@@ -59,14 +56,13 @@ const monacoOptions = {
   folding: false,
 }
 
-function Pre({ children, onAdd }: { children?: ReactNode, onAdd?: (content: string) => void }) {
+function Pre({ children }: { children?: ReactNode }) {
+  const codeActions = useMarkdownContext(c => c.codeActions)
   const generating = useMarkdownContext(c => c.generating)
   const childrenProps = (typeof children === 'object' && (children as ReactElement<{ children?: ReactNode, className?: string }>)?.props) || null
   const content = childrenProps?.children?.toString().trim() || null
   const lang = (childrenProps?.className?.split('-')[1] || 'text') as keyof typeof langsMap
   const [opened, setOpened] = useState(false)
-  const [isCopying, setIsCopying] = useState(false)
-  const [isAppending, setIsAppending] = useState(false)
 
   if (!content)
     return null
@@ -96,63 +92,7 @@ function Pre({ children, onAdd }: { children?: ReactNode, onAdd?: (content: stri
                 />
               </span>
             </div>
-            <div className="flex gap-1">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="icon-xs"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setIsCopying(true)
-                        trackEvent('markdown_copy_to_clipboard')
-                      }}
-                    >
-                      <ContentSwitch
-                        active={isCopying}
-                        activeContent={<RiCheckLine className="text-success" />}
-                        onSwitchEnd={() => setIsCopying(false)}
-                      >
-                        <RiFileCopyLine className="size-3.5" />
-                      </ContentSwitch>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Copy to clipboard
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              {onAdd && lang === 'sql' && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="icon-xs"
-                        variant="ghost"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onAdd(content)
-                          setIsAppending(true)
-                          trackEvent('markdown_move_to_runner')
-                        }}
-                      >
-                        <ContentSwitch
-                          active={isAppending}
-                          activeContent={<RiCheckLine className="text-success" />}
-                          onSwitchEnd={() => setIsAppending(false)}
-                        >
-                          <RiPlayListAddLine className="size-3.5" />
-                        </ContentSwitch>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Append to bottom of runner
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
+            {codeActions?.({ content, lang })}
           </div>
         </SingleAccordionTrigger>
         <SingleAccordionContent className="p-0">
@@ -201,14 +141,14 @@ function P({ children, className }: { children?: ReactNode, className?: string }
   return <p className={className}>{children}</p>
 }
 
-function MarkdownBase({ content, onAdd }: { content: string, onAdd?: (content: string) => void }) {
+function MarkdownBase({ content }: { content: string }) {
   const processedContent = content.replace(/\n/g, '  \n')
 
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        pre: ({ children }) => <Pre children={children} onAdd={onAdd} />,
+        pre: ({ children }) => <Pre children={children} />,
         table: MarkdownTable,
         thead: TableHeader,
         tbody: TableBody,
@@ -231,25 +171,23 @@ export function Markdown({
   content,
   id,
   className,
-  onAdd,
+  codeActions,
   generating,
   ...props
 }: {
   content: string
-  onAdd?: (content: string) => void
+  codeActions?: (props: { content: string, lang: string }) => ReactNode
   generating?: boolean
 } & ComponentProps<'div'>) {
   const blocks = parseMarkdownIntoBlocks(content)
-  const context = useMemo(() => ({ generating }), [generating])
 
   return (
-    <MarkdownContext.Provider value={context}>
+    <MarkdownContext.Provider value={{ generating, codeActions }}>
       <div className={cn('typography', generating && 'animate-in fade-in duration-200', className)} {...props}>
         {blocks.map((block, index) => (
           <MarkdownBase
             key={id ? `${id}-block_${index}` : `block_${index}`}
             content={block}
-            onAdd={onAdd}
           />
         ))}
       </div>

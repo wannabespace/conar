@@ -11,6 +11,7 @@ export const updateSQL = orpc
     sql: 'string',
     prompt: 'string',
     type: type.valueOf(DatabaseType),
+    context: 'string',
   }))
   .handler(async ({ input, signal, context }) => {
     const { text } = await generateText({
@@ -29,6 +30,9 @@ export const updateSQL = orpc
             'User\'s prompt can contain several SQL queries, you should update all of them.',
             'Always return a valid SQL query as output, without any explanations or markdown.',
             'This SQL will paste directly into a SQL editor.',
+            '',
+            'Database context:',
+            input.context,
           ].join('\n'),
         },
         {

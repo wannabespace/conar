@@ -12,12 +12,11 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useRef, useState } from 'react'
 import { queriesCollection } from '~/entities/query/sync'
 import { Route } from '../..'
-import { databaseStore } from '../../../../-store'
+import { runnerHooks } from '../../-page'
 import { RemoveQueryDialog } from './remove-query-dialog'
 
 export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
   const { database } = Route.useRouteContext()
-  const store = databaseStore(database.id)
   const { data } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
     .where(({ queries }) => eq(queries.databaseId, database.id))
@@ -47,10 +46,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                             size="icon-sm"
                             variant="ghost"
                             onClick={() => {
-                              store.setState(state => ({
-                                ...state,
-                                sql: `${state.sql}\n\n-- ${query.name}\n${query.query}`,
-                              } satisfies typeof state))
+                              runnerHooks.callHook('appendToBottomAndFocus', `-- ${query.name}\n${query.query}`)
                               setMovedId(query.id)
                             }}
                           >

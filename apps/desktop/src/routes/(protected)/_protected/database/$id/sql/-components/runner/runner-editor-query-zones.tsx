@@ -12,11 +12,11 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
 import { useIsFetching } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useEffectEvent, useMemo, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { databaseStore, useEditorQueries } from '../../../../-store'
+import { databaseStore } from '../../../../-store'
 import { useRunnerContext } from './runner-context'
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -33,16 +33,22 @@ function RunnerEditorQueryZone({
   onCopy: () => void
   lineNumber: number
 }) {
-  const store = databaseStore(database.id)
   const [isCopying, setIsCopying] = useState(false)
   const isFetching = useIsFetching(runnerQueryOptions({ database }), queryClient) > 0
-  const isChecked = useStore(store, state => state.selectedLines.includes(lineNumber))
-  const editorQueries = useEditorQueries(database.id)
-  const index = editorQueries.findIndex(query => query.startLineNumber === lineNumber)
-  const currentQueries = editorQueries[index]?.queries ?? []
 
-  const queriesBefore = editorQueries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0)
-  const startFrom = queriesBefore + 1
+  const store = databaseStore(database.id)
+  const isChecked = useStore(store, state => state.selectedLines.includes(lineNumber))
+
+  const index = useStore(store, state => state.editorQueries.findIndex(query => query.startLineNumber === lineNumber))
+  const { queriesLength, queryNumber } = useStore(store, (state) => {
+    const queriesBefore = state.editorQueries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
+    const queriesLength = state.editorQueries[index]?.queries.length ?? 0
+
+    return {
+      queriesLength,
+      queryNumber: queriesLength === 1 ? queriesBefore : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`,
+    }
+  })
 
   const onCheckedChange = () => {
     store.setState(state => ({
@@ -69,7 +75,7 @@ function RunnerEditorQueryZone({
             />
             Query
             {' '}
-            {currentQueries.length === 1 ? startFrom : `${startFrom} - ${startFrom + currentQueries.length - 1}`}
+            {queryNumber}
           </label>
         </div>
         <div className="flex items-center gap-1">
@@ -117,7 +123,7 @@ function RunnerEditorQueryZone({
             </Tooltip>
           </TooltipProvider>
           <Separator orientation="vertical" className="h-4! mx-1" />
-          {Array.from({ length: currentQueries.length }).map((_, index) => (
+          {Array.from({ length: queriesLength }).map((_, index) => (
             <Button
               // eslint-disable-next-line react/no-array-index-key
               key={index}
@@ -128,7 +134,7 @@ function RunnerEditorQueryZone({
             >
               Run
               {' '}
-              {currentQueries.length === 1 ? '' : index + 1}
+              {queriesLength === 1 ? '' : index + 1}
             </Button>
           ))}
         </div>
@@ -137,13 +143,13 @@ function RunnerEditorQueryZone({
   )
 }
 
-export function useRunnerEditorQueryZone(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
+export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { database } = Route.useRouteContext()
-  const editorQueries = useEditorQueries(database.id)
-  const linesWithQueries = useMemo(() => editorQueries.map(({ startLineNumber }) => startLineNumber), [editorQueries])
+  const store = databaseStore(database.id)
+  const linesWithQueries = useStore(store, state => state.editorQueries.map(({ startLineNumber }) => startLineNumber))
 
   const getQueriesEvent = useEffectEvent((lineNumber: number) =>
-    editorQueries.find(query => query.startLineNumber === lineNumber),
+    store.state.editorQueries.find(query => query.startLineNumber === lineNumber),
   )
 
   const run = useRunnerContext(({ run }) => run)
@@ -151,30 +157,38 @@ export function useRunnerEditorQueryZone(monacoRef: RefObject<editor.IStandalone
   const save = useRunnerContext(({ save }) => save)
   const saveEvent = useEffectEvent(save)
 
+  const elementsRef = useRef<Record<number, HTMLDivElement>>([])
+
   useEffect(() => {
     if (!monacoRef.current)
       return
 
     const editor = monacoRef.current
-    const viewZoneIds: string[] = []
+    const elements = elementsRef.current
+    const viewZoneIds: { id: string, lineNumber: number }[] = []
 
     queueMicrotask(() => {
       editor.changeViewZones((changeAccessor) => {
         linesWithQueries.forEach((lineNumber) => {
-          const element = render(
+          elements[lineNumber] ||= render(
             <RunnerEditorQueryZone
               database={database}
               lineNumber={lineNumber}
               onRun={(index) => {
-                const query = getQueriesEvent(lineNumber)
+                const editorQuery = getQueriesEvent(lineNumber)
+
+                if (!editorQuery)
+                  return
+
+                const query = editorQuery.queries.at(index)
 
                 if (!query)
                   return
 
                 runEvent([{
-                  startLineNumber: query.startLineNumber,
-                  endLineNumber: query.endLineNumber,
-                  sql: query.queries.at(index)!,
+                  startLineNumber: editorQuery.startLineNumber,
+                  endLineNumber: editorQuery.endLineNumber,
+                  query,
                 }])
               }}
               onCopy={() => {
@@ -183,7 +197,9 @@ export function useRunnerEditorQueryZone(monacoRef: RefObject<editor.IStandalone
                 if (!query)
                   return
 
-                copy(query.queries.map(q => `${q};`).join(' '))
+                const { startLineNumber, endLineNumber } = query
+
+                copy(store.state.sql.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
               }}
               onSave={() => {
                 const query = getQueriesEvent(lineNumber)
@@ -191,29 +207,37 @@ export function useRunnerEditorQueryZone(monacoRef: RefObject<editor.IStandalone
                 if (!query)
                   return
 
-                saveEvent(query.queries.map(q => `${q};`).join(' '))
+                const { startLineNumber, endLineNumber } = query
+
+                saveEvent(store.state.sql.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
               }}
             />,
           )
 
-          element.style.zIndex = '100'
+          elements[lineNumber]!.style.zIndex = '100'
 
           const zoneId = changeAccessor.addZone({
             afterLineNumber: lineNumber - 1,
             heightInPx: 32,
-            domNode: element,
+            domNode: elements[lineNumber]!,
           })
 
-          viewZoneIds.push(zoneId)
+          viewZoneIds.push({ id: zoneId, lineNumber })
         })
       })
     })
 
     return () => {
       editor.changeViewZones((changeAccessor) => {
-        viewZoneIds.forEach(id => changeAccessor.removeZone(id))
+        viewZoneIds.forEach(({ id, lineNumber }) => {
+          changeAccessor.removeZone(id)
+
+          if (!linesWithQueries.includes(lineNumber)) {
+            elements[lineNumber]?.remove()
+            delete elements[lineNumber]
+          }
+        })
       })
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [monacoRef, JSON.stringify(linesWithQueries), database])
+  }, [monacoRef, linesWithQueries, database, store])
 }

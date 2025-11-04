@@ -2,6 +2,7 @@ import type { editor } from 'monaco-editor'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '../utils/table'
 import type { TableCellProps } from '~/components/table'
+import { getErrorMessage } from '@conar/shared/utils/error'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
@@ -230,10 +231,8 @@ export function TableCell({
   style,
   position,
   size,
-  onSetValue,
   onSaveValue,
 }: {
-  onSetValue?: (rowIndex: number, columnName: string, value: unknown) => void
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
 } & TableCellProps) {
@@ -244,13 +243,13 @@ export function TableCell({
   const [isReferencesOpen, setIsReferencesOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
-  const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'success' | 'error' | 'pending'>('idle')
 
   useEffect(() => {
     if (status === 'success' || status === 'error') {
       const timeout = setTimeout(
         () => setStatus('idle'),
-        status === 'error' ? 3000 : 1500,
+        status === 'error' ? 3000 : 1000,
       )
 
       return () => clearTimeout(timeout)
@@ -263,7 +262,7 @@ export function TableCell({
     (isForeignOpen || isReferencesOpen) && 'ring-accent/60 bg-accent/30',
     status === 'error' && 'ring-destructive/50 bg-destructive/20',
     status === 'success' && 'ring-success/50 bg-success/10',
-    status === 'saving' && 'animate-pulse bg-primary/10',
+    status === 'pending' && 'animate-pulse bg-primary/10',
     position === 'first' && 'pl-4',
     position === 'last' && 'pr-4',
     (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1',
@@ -297,18 +296,14 @@ export function TableCell({
     setIsPopoverOpen(true)
     setStatus('error')
 
+    console.error(error)
+
+    const description = getErrorMessage(error)
+
     toast.error(`Failed to update cell "${column.id}"`, {
-      description: error.message,
+      description,
       duration: 3000,
     })
-  }
-
-  function onSaveSuccess() {
-    setStatus('success')
-  }
-
-  function onSavePending() {
-    setStatus('saving')
   }
 
   const date = column ? getTimestamp(value, column) : null
@@ -318,11 +313,10 @@ export function TableCell({
       column={column}
       initialValue={value}
       displayValue={displayValue}
-      onSetValue={onSetValue}
       onSaveValue={onSaveValue}
-      onSavePending={onSavePending}
+      onSavePending={() => setStatus('pending')}
+      onSaveSuccess={() => setStatus('success')}
       onSaveError={onSaveError}
-      onSaveSuccess={onSaveSuccess}
     >
       <Popover
         open={isPopoverOpen}
@@ -452,7 +446,7 @@ export function TableCell({
             isBig={isBig}
             setIsBig={setIsBig}
             onClose={() => setIsPopoverOpen(false)}
-            hasUpdateFn={!!onSetValue && !!onSaveValue}
+            hasUpdateFn={!!onSaveValue}
           />
         </PopoverContent>
       </Popover>

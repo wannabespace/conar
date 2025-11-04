@@ -16,7 +16,7 @@ import { db, users } from './drizzle'
 import { env, nodeEnv } from './env'
 import { auth } from './lib/auth'
 import { router } from './orpc/routers'
-import { ai } from './routers/ai'
+import { ai } from './routers/__ai__deprecated'
 import { createContext } from './trpc/context'
 import { trpcRouter } from './trpc/routers'
 

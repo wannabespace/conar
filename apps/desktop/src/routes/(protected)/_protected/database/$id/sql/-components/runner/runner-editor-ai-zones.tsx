@@ -9,14 +9,16 @@ import { Textarea } from '@conar/ui/components/textarea'
 import { render } from '@conar/ui/lib/render'
 import { cn } from '@conar/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
+import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
-import { MonacoDiff } from '~/components/monaco-diff'
+import { MonacoDiff } from '~/components/monaco'
+import { tablesAndSchemasQuery } from '~/entities/database'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { Route } from '../..'
-import { databaseStore, useEditorQueries } from '../../../../-store'
-import { useRunnerContext } from './runner-context'
+import { runnerHooks } from '../../-page'
+import { databaseStore } from '../../../../-store'
 
 // eslint-disable-next-line react-refresh/only-export-components
 function RunnerEditorAIZone({
@@ -57,7 +59,7 @@ function RunnerEditorAIZone({
     },
   }), queryClient)
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!prompt.trim()) {
       return
     }
@@ -75,6 +77,10 @@ function RunnerEditorAIZone({
         sql,
         prompt,
         type: database.type,
+        context: [
+          'Database schemas and tables:',
+          JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database })), null, 2),
+        ].join('\n'),
       })
     }
   }
@@ -187,13 +193,11 @@ function useTrackLineNumberChange(monacoRef: RefObject<editor.IStandaloneCodeEdi
   }, [monacoRef, currentAIZoneLineNumber, setCurrentAIZoneLineNumber])
 }
 
-export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
+export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { database } = Route.useRouteContext()
   const store = databaseStore(database.id)
-  const editorQueries = useEditorQueries(database.id)
+  const editorQueries = useStore(store, state => state.editorQueries)
   const domElementRef = useRef<HTMLElement>(null)
-  const replace = useRunnerContext(({ replace }) => replace)
-  const replaceEvent = useEffectEvent(replace)
 
   const [currentAIZoneLineNumber, setCurrentAIZoneLineNumber] = useState<number | null>(null)
 
@@ -261,8 +265,12 @@ export function useRunnerEditorAIZone(monacoRef: RefObject<editor.IStandaloneCod
               highlightCollection.clear()
               setCurrentAIZoneLineNumber(null)
             }}
-            onUpdate={(sql) => {
-              replaceEvent({ sql, ...currentAIZoneQuery })
+            onUpdate={(query) => {
+              runnerHooks.callHook('replaceQuery', {
+                query,
+                startLineNumber: currentAIZoneQuery.startLineNumber,
+                endLineNumber: currentAIZoneQuery.endLineNumber,
+              })
             }}
           />,
         )

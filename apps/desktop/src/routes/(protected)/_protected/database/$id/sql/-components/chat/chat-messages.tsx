@@ -2,26 +2,31 @@ import type { UIMessage } from '@ai-sdk/react'
 import type { ChatStatus } from 'ai'
 import type { ComponentProps, ReactNode } from 'react'
 import { useChat } from '@ai-sdk/react'
-import { sleep } from '@conar/shared/utils/helpers'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiFileCopyLine, RiRestartLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
+import { useStore } from '@tanstack/react-store'
 import { isToolUIPart } from 'ai'
+import { regex } from 'arkregex'
 import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { UserAvatar } from '~/entities/user'
 import { Route } from '../..'
-import { pageHooks } from '../../-page'
+import { chatHooks, runnerHooks } from '../../-page'
 import { databaseStore } from '../../../../-store'
 import { ChatImages } from './chat-images'
 import { ChatMessageTool } from './chat-message-tools'
+
+const COMMENT_REGEX = regex('^(?:--.*\n)+')
 
 function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   return (
@@ -51,7 +56,157 @@ function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick
   )
 }
 
-function ChatMessageParts({ parts, loading, onAdd }: { parts: UIMessage['parts'], loading?: boolean, onAdd?: (query: string) => void }) {
+function ChatMessageCodeActions({ content }: { content: string }) {
+  const { database } = Route.useRouteContext()
+  const store = databaseStore(database.id)
+  const editorQueries = useStore(store, state => state.editorQueries)
+
+  const [isCopying, setIsCopying] = useState(false)
+  const [isAppending, setIsAppending] = useState(false)
+  const [isReplacing, setIsReplacing] = useState(false)
+
+  function getQueryNumber(index: number) {
+    const queriesBefore = editorQueries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
+    const queriesLength = editorQueries[index]?.queries.length ?? 0
+    return queriesLength === 1 ? queriesBefore : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`
+  }
+
+  function replaceQuery(query: typeof editorQueries[number]) {
+    runnerHooks.callHook('replaceQuery', {
+      query: content.replace(COMMENT_REGEX, ''),
+      startLineNumber: query.startLineNumber,
+      endLineNumber: query.endLineNumber,
+    })
+    runnerHooks.callHook('scrollToLine', query.startLineNumber)
+
+    // Prevent the dropdown menu from focus
+    window.requestAnimationFrame(() => {
+      runnerHooks.callHook('focus', query.startLineNumber)
+    })
+    setIsReplacing(true)
+  }
+
+  return (
+    <div className="flex gap-1">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon-xs"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsCopying(true)
+                copy(content)
+              }}
+            >
+              <ContentSwitch
+                active={isCopying}
+                activeContent={<RiCheckLine className="text-success" />}
+                onSwitchEnd={() => setIsCopying(false)}
+              >
+                <RiFileCopyLine className="size-3.5" />
+              </ContentSwitch>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Copy to clipboard
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon-xs"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation()
+                runnerHooks.callHook('appendToBottomAndFocus', content)
+                setIsAppending(true)
+              }}
+            >
+              <ContentSwitch
+                active={isAppending}
+                activeContent={<RiCheckLine className="text-success" />}
+                onSwitchEnd={() => setIsAppending(false)}
+              >
+                <RiPlayListAddLine className="size-3.5" />
+              </ContentSwitch>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Append to bottom of runner
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <DropdownMenu>
+        <TooltipProvider>
+          <Tooltip>
+            <DropdownMenuTrigger asChild>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon-xs"
+                  variant="ghost"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <ContentSwitch
+                    active={isReplacing}
+                    activeContent={<RiCheckLine className="text-success" />}
+                    onSwitchEnd={() => setIsReplacing(false)}
+                  >
+                    <RiLoopLeftLine className="size-3.5" />
+                  </ContentSwitch>
+                </Button>
+              </TooltipTrigger>
+            </DropdownMenuTrigger>
+            <TooltipContent>
+              Replace a query in the runner
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <DropdownMenuContent
+          align="end"
+          className="min-w-[220px] max-h-64 overflow-auto"
+          onCloseAutoFocus={e => e.preventDefault()}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="px-2 py-2 text-xs font-medium text-muted-foreground">
+            Replace existing query
+          </div>
+          {editorQueries.length === 0 && (
+            <div className="px-3 py-2 text-xs text-muted-foreground select-none">
+              No queries found
+            </div>
+          )}
+          {editorQueries.map((q, index) => (
+            <DropdownMenuItem
+              key={`${q.startLineNumber}-${q.endLineNumber}`}
+              className="flex items-center justify-between w-full gap-2"
+              onClick={(e) => {
+                e.stopPropagation()
+                replaceQuery(q)
+              }}
+            >
+              <span className="text-xs font-medium">
+                Query
+                {' '}
+                {getQueryNumber(index)}
+              </span>
+              <span className="text-[10px] text-muted-foreground/70 font-mono">
+                {q.startLineNumber === q.endLineNumber
+                  ? `Line ${q.startLineNumber}`
+                  : `Lines ${q.startLineNumber} - ${q.endLineNumber}`}
+              </span>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  )
+}
+
+function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loading?: boolean }) {
   return parts.map((part, index) => {
     if (part.type === 'text') {
       return (
@@ -60,7 +215,7 @@ function ChatMessageParts({ parts, loading, onAdd }: { parts: UIMessage['parts']
           key={index}
           content={part.text}
           generating={loading}
-          onAdd={onAdd}
+          codeActions={props => <ChatMessageCodeActions {...props} />}
         />
       )
     }
@@ -158,19 +313,9 @@ function AssistantMessageLoader({ children, className, ...props }: ComponentProp
 }
 
 function AssistantMessage({ message, isLast, status, className, ...props }: { message: UIMessage, isLast: boolean, status: ChatStatus } & ComponentProps<'div'>) {
-  const { database, chat } = Route.useLoaderData()
+  const { chat } = Route.useLoaderData()
   const ref = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(ref)
-  const store = databaseStore(database.id)
-
-  async function handleAdd(query: string) {
-    store.setState(state => ({
-      ...state,
-      sql: `${state.sql}\n\n${query}`,
-    } satisfies typeof state))
-    await sleep(0)
-    pageHooks.callHook('focusRunner')
-  }
 
   const isLoading = isLast ? status === 'streaming' || status === 'submitted' : false
 
@@ -184,7 +329,6 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
           <ChatMessageParts
             parts={message.parts}
             loading={isLoading}
-            onAdd={handleAdd}
           />
         </div>
       </div>
@@ -261,7 +405,7 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
   const [placeholderHeight, setPlaceholderHeight] = useState(0)
 
   useEffect(() => {
-    return pageHooks.hook('sendMessage', () => {
+    return chatHooks.hook('scrollToBottom', () => {
       scrollToBottom()
     })
   }, [scrollToBottom])
