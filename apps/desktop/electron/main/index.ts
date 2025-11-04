@@ -66,7 +66,9 @@ export function createWindow() {
     mainWindow?.show()
   })
 
-  buildMenu(mainWindow)
+  mainWindow.on('focus', () => {
+    buildMenu()
+  })
 
   if (process.env.ELECTRON_RENDERER_URL) {
     mainWindow.webContents.openDevTools()

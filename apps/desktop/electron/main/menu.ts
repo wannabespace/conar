@@ -6,7 +6,16 @@ import { createWindow } from './index'
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
-function setupDevelopmentEnvironment(mainWindow: BrowserWindow): void {
+function getFocusedWindow() {
+  return BrowserWindow.getAllWindows().find(window => window.isFocused())
+}
+
+function setupDevelopmentEnvironment(): void {
+  const mainWindow = getFocusedWindow()
+
+  if (!mainWindow)
+    return
+
   mainWindow.webContents.on('context-menu', (_, props) => {
     const { x, y } = props
 
@@ -21,7 +30,7 @@ function setupDevelopmentEnvironment(mainWindow: BrowserWindow): void {
   })
 }
 
-function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
+function buildTemplate(): MenuItemConstructorOptions[] {
   const isMac = process.platform === 'darwin'
   const cmdOrCtrl = isMac ? 'Command' : 'Ctrl'
 
@@ -74,7 +83,11 @@ function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] 
         label: 'New Connection',
         accelerator: `${cmdOrCtrl}+N`,
         click: () => {
-          mainWindow.webContents.send('app.navigate', '/create')
+          const win = getFocusedWindow()
+          if (!win)
+            return
+
+          win.webContents.send('app.navigate', '/create')
         },
       },
       {
@@ -89,11 +102,11 @@ function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] 
         label: 'Close Window',
         accelerator: `${cmdOrCtrl}+W`,
         click: () => {
-          const currentWindow = BrowserWindow.getAllWindows().find(window => window.isFocused())
-          if (!currentWindow)
+          const win = getFocusedWindow()
+          if (!win)
             return
 
-          currentWindow.close()
+          win.close()
         },
       },
     ],
@@ -145,12 +158,12 @@ function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] 
   return template
 }
 
-export function buildMenu(mainWindow: BrowserWindow): Menu {
+export function buildMenu(): Menu {
   if (process.env.NODE_ENV === 'development') {
-    setupDevelopmentEnvironment(mainWindow)
+    setupDevelopmentEnvironment()
   }
 
-  const template = buildTemplate(mainWindow)
+  const template = buildTemplate()
   const menu = Menu.buildFromTemplate(template)
 
   Menu.setApplicationMenu(menu)
