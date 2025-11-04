@@ -2,6 +2,7 @@ import type { BrowserWindow, MenuItemConstructorOptions } from 'electron'
 import { createRequire } from 'node:module'
 import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { app, Menu, shell } from 'electron'
+import { createWindow } from './index'
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
@@ -74,6 +75,13 @@ function buildTemplate(mainWindow: BrowserWindow): MenuItemConstructorOptions[] 
         accelerator: `${cmdOrCtrl}+N`,
         click: () => {
           mainWindow.webContents.send('app.navigate', '/create')
+        },
+      },
+      {
+        label: 'New Window',
+        accelerator: `${cmdOrCtrl}+Shift+N`,
+        click: () => {
+          createWindow()
         },
       },
       { type: 'separator' },
