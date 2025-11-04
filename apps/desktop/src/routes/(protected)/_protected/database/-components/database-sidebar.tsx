@@ -381,7 +381,6 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
           <Button size="icon" variant="ghost">
             <RiSunLine className="size-4 dark:hidden" />
             <RiMoonLine className="size-4 hidden dark:block" />
-            <span className="sr-only">Toggle theme</span>
           </Button>
         </ThemeToggle>
         {false && <SettingsButton />}
