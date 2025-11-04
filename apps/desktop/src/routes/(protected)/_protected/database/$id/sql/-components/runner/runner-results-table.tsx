@@ -103,7 +103,7 @@ export function RunnerResultsTable({
               <Button
                 variant="outline"
                 size="icon-sm"
-                disabled={isExporting}
+                disabled={isExporting || filteredData.length === 0}
               >
                 <LoadingContent loading={isExporting}>
                   <RiExportLine />

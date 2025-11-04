@@ -18,7 +18,7 @@ import { HeaderActionsFilters } from './header-actions-filters'
 export function HeaderActions({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
   const store = usePageStoreContext()
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
-  const { isFetching, dataUpdatedAt, refetch } = useInfiniteQuery(
+  const { isFetching, dataUpdatedAt, refetch, data: rows, isPending } = useInfiniteQuery(
     databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }),
   )
 
@@ -118,7 +118,7 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
           <Button
             variant="outline"
             size="icon"
-            disabled={isExporting}
+            disabled={isExporting || rows?.length === 0 || isPending}
           >
             <LoadingContent loading={isExporting}>
               <RiExportLine />

@@ -20,7 +20,11 @@ import { useMutation } from '@tanstack/react-query'
 function contentGenerators(data: Record<string, unknown>[]) {
   return {
     csv: () => {
-      const headers = Object.keys(data[0]!)
+      if (data[0] === undefined) {
+        return ''
+      }
+
+      const headers = Object.keys(data[0])
       const csvRows = [
         headers.join(','),
         ...data.map(row =>
