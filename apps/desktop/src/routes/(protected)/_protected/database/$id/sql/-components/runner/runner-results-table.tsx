@@ -1,12 +1,13 @@
 import type { ColumnRenderer } from '~/components/table'
 import type { Column } from '~/entities/database'
 import { Button } from '@conar/ui/components/button'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
 import { Separator } from '@conar/ui/components/separator'
 import { useDebouncedMemo } from '@conar/ui/hookas/use-debounced-memo'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiCloseLine, RiSearchLine } from '@remixicon/react'
+import { RiCloseLine, RiExportLine, RiSearchLine } from '@remixicon/react'
 import { useMemo, useState } from 'react'
 import { ExportData } from '~/components/export-data'
 import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
@@ -58,6 +59,10 @@ export function RunnerResultsTable({
     } satisfies ColumnRenderer))
   }, [columns])
 
+  const getData = async (limit?: number) => {
+    return limit ? filteredData.slice(0, limit) : filteredData
+  }
+
   return (
     <div className="h-full">
       <div className="px-4 h-10 flex items-center justify-between gap-2">
@@ -91,7 +96,21 @@ export function RunnerResultsTable({
             )}
           </div>
           <Separator orientation="vertical" className="h-6!" />
-          <ExportData data={filteredData} filename="sql_results" />
+          <ExportData
+            getData={getData}
+            filename="runner_results"
+            trigger={({ isExporting }) => (
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={isExporting}
+              >
+                <LoadingContent loading={isExporting}>
+                  <RiExportLine />
+                </LoadingContent>
+              </Button>
+            )}
+          />
         </div>
       </div>
       <TableProvider

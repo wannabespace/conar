@@ -1,8 +1,11 @@
-import { Button } from '@conar/ui/components/button'
+import { downloadFile, escapeCSVValue } from '@conar/shared/utils/files'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@conar/ui/components/dropdown-menu'
 import {
@@ -11,78 +14,52 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@conar/ui/components/tooltip'
-import { RiBracesLine, RiExportLine, RiLoader4Fill, RiTableLine } from '@remixicon/react'
+import { RiBracesLine, RiTableLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { useCallback } from 'react'
 
-interface ExportDataProps {
-  data: Record<string, unknown>[]
-  filename?: string
-  fetchAllData?: () => Promise<Record<string, unknown>[]>
+function contentGenerators(data: Record<string, unknown>[]) {
+  return {
+    csv: () => {
+      const headers = Object.keys(data[0]!)
+      const csvRows = [
+        headers.join(','),
+        ...data.map(row =>
+          headers.map(header => escapeCSVValue(row[header])).join(','),
+        ),
+      ]
+      return csvRows.join('\n')
+    },
+    json: () => JSON.stringify(data, null, 2),
+  } satisfies Record<string, () => string>
 }
 
-type ExportFormat = 'csv' | 'json'
+const mimeTypes = {
+  csv: 'text/csv;charset=utf-8;',
+  json: 'application/json',
+}
 
-export function ExportData({ data, filename = 'export', fetchAllData }: ExportDataProps) {
-  const isEmpty = !data.length
+const EXPORT_LIMITS = [50, 100, 500, 1000] as const
 
-  const escapeCSVValue = useCallback((value: unknown): string => {
-    if (value === null || value === undefined)
-      return ''
+export function ExportData({
+  filename = 'export',
+  getData,
+  trigger,
+}: {
+  filename?: string
+  getData: (limit?: (typeof EXPORT_LIMITS)[number]) => Promise<Record<string, unknown>[]>
+  trigger: (props: { isExporting: boolean }) => React.ReactNode
+}) {
+  const { mutate: exportData, isPending: isExporting } = useMutation({
+    mutationFn: async ({
+      format,
+      limit,
+    }: {
+      format: keyof ReturnType<typeof contentGenerators>
+      limit?: (typeof EXPORT_LIMITS)[number]
+    }) => {
+      const data = await getData(limit)
 
-    const stringValue = String(value)
-
-    // Wrap in quotes if contains comma, newline, or quote
-    if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
-      return `"${stringValue.replace(/"/g, '""')}"`
-    }
-
-    return stringValue
-  }, [])
-
-  const downloadFile = useCallback((content: string, fileName: string, mimeType: string) => {
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-
-    try {
-      const link = document.createElement('a')
-      link.href = url
-      link.download = fileName
-      link.style.display = 'none'
-
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    }
-    finally {
-      URL.revokeObjectURL(url)
-    }
-  }, [])
-
-  const exportMutation = useMutation({
-    mutationFn: async (format: ExportFormat) => {
-      const exportData = fetchAllData ? await fetchAllData() : data
-
-      const contentGenerators = {
-        csv: () => {
-          const headers = Object.keys(exportData[0]!)
-          const csvRows = [
-            headers.join(','),
-            ...exportData.map(row =>
-              headers.map(header => escapeCSVValue(row[header])).join(','),
-            ),
-          ]
-          return csvRows.join('\n')
-        },
-        json: () => JSON.stringify(exportData, null, 2),
-      }
-
-      const mimeTypes = {
-        csv: 'text/csv;charset=utf-8;',
-        json: 'application/json',
-      }
-
-      const content = contentGenerators[format]()
+      const content = contentGenerators(data)[format]()
       const fileName = `${filename}.${format}`
       const mimeType = mimeTypes[format]
 
@@ -93,57 +70,66 @@ export function ExportData({ data, filename = 'export', fetchAllData }: ExportDa
     },
   })
 
-  const handleExport = useCallback((format: ExportFormat) => {
-    if (isEmpty)
-      return
-    exportMutation.mutate(format)
-  }, [isEmpty, exportMutation])
-
-  const isExporting = exportMutation.isPending
-
   return (
     <TooltipProvider>
       <Tooltip>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                disabled={isEmpty || isExporting}
-                aria-label="Export data"
-              >
-                {isExporting
-                  ? (
-                      <RiLoader4Fill className="animate-spin" aria-hidden="true" />
-                    )
-                  : (
-                      <RiExportLine aria-hidden="true" />
-                    )}
-              </Button>
+              {trigger({ isExporting })}
             </TooltipTrigger>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => handleExport('csv')}
-              className="cursor-pointer"
-              disabled={isExporting}
-            >
-              <RiTableLine aria-hidden="true" />
-              {isExporting ? 'Exporting...' : 'Export as CSV'}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleExport('json')}
-              className="cursor-pointer"
-              disabled={isExporting}
-            >
-              <RiBracesLine aria-hidden="true" />
-              {isExporting ? 'Exporting...' : 'Export as JSON'}
-            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger disabled={isExporting}>
+                <RiTableLine />
+                Export as CSV
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {EXPORT_LIMITS.map(limitOption => (
+                  <DropdownMenuItem
+                    key={limitOption}
+                    onClick={() => exportData({ format: 'csv', limit: limitOption })}
+                    disabled={isExporting}
+                  >
+                    {`First ${limitOption} rows`}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuItem
+                  onClick={() => exportData({ format: 'csv' })}
+                  disabled={isExporting}
+                >
+                  All rows
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger disabled={isExporting}>
+                <RiBracesLine />
+                Export as JSON
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {EXPORT_LIMITS.map(limitOption => (
+                  <DropdownMenuItem
+                    key={limitOption}
+                    onClick={() => exportData({ format: 'json', limit: limitOption })}
+                    disabled={isExporting}
+                  >
+                    {`First ${limitOption} rows`}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuItem
+                  onClick={() => exportData({ format: 'json' })}
+                  disabled={isExporting}
+                >
+                  All rows
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
           </DropdownMenuContent>
         </DropdownMenu>
-        <TooltipContent side="top" align="end">
-          {isExporting ? 'Exporting data...' : 'Export data'}
+        <TooltipContent>
+          Export data
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
