@@ -155,9 +155,6 @@ export async function runSql<T extends Type>({
     : query[database.type]
 
   const res = await queryFn({ db: drizzleProxy(database, label) })
-    .catch((e) => {
-      throw new Error(getErrorMessage(e), { cause: e })
-    })
 
   if (type) {
     return res.map(item => type.assert(item))
