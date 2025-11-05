@@ -29,16 +29,12 @@ export async function pgQuery({
 }: QueryParams): Promise<DatabaseQueryResult> {
   const config = parseConnectionString(connectionString)
 
-  const existingPool = poolMap.get(connectionString)
-
-  const pool = existingPool || new pg.Pool({
+  const pool = poolMap.get(connectionString) || new pg.Pool({
     ...config,
     ...(config.ssl ? { ssl: readSSLFiles(config.ssl) } : {}),
   })
 
-  if (!existingPool) {
-    poolMap.set(connectionString, pool)
-  }
+  poolMap.set(connectionString, pool)
 
   const result = await (method === 'all'
     ? pool.query({

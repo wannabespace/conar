@@ -1,31 +1,34 @@
-import type { CompletionService } from 'monaco-sql-languages'
 import type { RefObject } from 'react'
+import { noop } from '@conar/shared/utils/helpers'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { useTheme } from '@conar/ui/theme-provider'
+import { useTheme } from '@conar/ui/theme-observer'
 import * as monaco from 'monaco-editor'
-import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
-import ghDark from 'monaco-themes/themes/GitHub Dark.json'
-import ghLight from 'monaco-themes/themes/GitHub Light.json'
-import { useEffect, useRef } from 'react'
+import { vsPlusTheme } from 'monaco-sql-languages'
+import { useEffect, useEffectEvent, useRef } from 'react'
 
-ghDark.colors['editor.background'] = '#1e1f21'
-ghDark.colors['editor.lineHighlightBackground'] = '#252628'
-ghDark.colors['editor.selectionBackground'] = '#5081f150'
-ghLight.colors['editor.selectionBackground'] = '#5081f150'
+// Sync with packages/ui/src/styles/monaco.css
+vsPlusTheme.darkThemeData.colors['editor.selectionBackground'] = '#5081f150'
+vsPlusTheme.lightThemeData.colors['editor.selectionBackground'] = '#5081f150'
 
-// @ts-expect-error wrong type
-monaco.editor.defineTheme('github-dark', ghDark)
-// @ts-expect-error wrong type
-monaco.editor.defineTheme('github-light', ghLight)
+vsPlusTheme.darkThemeData.colors['editor.background'] = '#1e1f21'
+
+monaco.editor.defineTheme('sql-dark', vsPlusTheme.darkThemeData)
+monaco.editor.defineTheme('sql-light', vsPlusTheme.lightThemeData)
+
+function useMonacoTheme() {
+  const { resolvedTheme } = useTheme()
+
+  useEffect(() => {
+    monaco.editor.setTheme(resolvedTheme === 'dark' ? 'sql-dark' : 'sql-light')
+  }, [resolvedTheme])
+}
 
 export function Monaco({
   ref,
   value,
   language,
-  onChange,
   options,
-  onEnter,
-  completionService,
+  onChange = noop,
   ...props
 }: {
   ref?: RefObject<monaco.editor.IStandaloneCodeEditor | null>
@@ -35,96 +38,67 @@ export function Monaco({
   language?: string
   onChange?: (value: string) => void
   options?: monaco.editor.IStandaloneEditorConstructionOptions
-  onEnter?: (value: string) => void
-  completionService?: CompletionService
 }) {
   const elementRef = useRef<HTMLDivElement>(null)
   const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
-  const { resolvedTheme } = useTheme()
   const preventTriggerChangeEvent = useRef(false)
 
-  useEffect(() => {
-    monaco.editor.setTheme(resolvedTheme === 'dark' ? 'github-dark' : 'github-light')
-  }, [resolvedTheme])
+  useMonacoTheme()
+
+  const onChangeEvent = useEffectEvent(onChange)
+  const getOptionsEvent = useEffectEvent(() => ({
+    value: (() => {
+      if (language?.includes('json')) {
+        try {
+          return JSON.stringify(JSON.parse(value), null, 2)
+        }
+        catch {
+          return value
+        }
+      }
+
+      return value
+    })(),
+    language,
+    automaticLayout: true,
+    minimap: { enabled: false },
+    fontFamily: '"Geist Mono", monospace',
+    tabSize: 2,
+    ...options,
+  } satisfies monaco.editor.IStandaloneEditorConstructionOptions))
 
   useEffect(() => {
     if (!elementRef.current)
       return
 
-    monacoInstance.current = monaco.editor.create(elementRef.current, {
-      value: language?.includes('json')
-        ? (() => {
-            try {
-              return JSON.stringify(JSON.parse(value), null, 2)
-            }
-            catch {
-              return value
-            }
-          })()
-        : value,
-      language,
-      automaticLayout: true,
-      minimap: { enabled: false },
-      fontFamily: '"Geist Mono", monospace',
-      tabSize: 2,
-      ...options,
-    })
+    monacoInstance.current = monaco.editor.create(elementRef.current, getOptionsEvent())
 
     if (ref) {
       ref.current = monacoInstance.current
     }
 
-    const timeout = setTimeout(() => {
-      monacoInstance.current?.getAction('editor.action.formatDocument')?.run()
-    }, 50)
+    monacoInstance.current?.getAction('editor.action.formatDocument')?.run()
 
-    if (onEnter) {
-      monacoInstance.current.addAction({
-        id: 'conar.execute-on-enter',
-        label: 'Execute on Enter',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-        run: (e) => {
-          onEnter(e.getValue())
-        },
-      })
-    }
-
-    let subscription: monaco.IDisposable | undefined
-
-    if (onChange) {
-      subscription = monacoInstance.current.onDidChangeModelContent(() => {
-        if (!preventTriggerChangeEvent.current) {
-          const val = monacoInstance.current?.getValue()
-          onChange(val ?? '')
-        }
-      })
-    }
+    const subscription = monacoInstance.current.onDidChangeModelContent(() => {
+      if (!preventTriggerChangeEvent.current) {
+        const val = monacoInstance.current?.getValue()
+        onChangeEvent(val ?? '')
+      }
+    })
 
     return () => {
-      clearTimeout(timeout)
-      subscription?.dispose()
+      subscription.dispose()
       monacoInstance.current?.dispose()
     }
-  }, [elementRef, language, onChange, onEnter, ref])
+  }, [elementRef, language, ref])
 
-  useEffect(() => {
+  useMountedEffect(() => {
     if (!monacoInstance.current || !options)
       return
 
     monacoInstance.current.updateOptions(options)
-  }, [options])
-
-  useEffect(() => {
-    if (!Object.values(LanguageIdEnum).includes(language as LanguageIdEnum))
-      return
-
-    setupLanguageFeatures(language as LanguageIdEnum, {
-      completionItems: {
-        enable: true,
-        completionService,
-      },
-    })
-  }, [language, completionService])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(options)])
 
   useMountedEffect(() => {
     if (!monacoInstance.current)
@@ -138,24 +112,111 @@ export function Monaco({
 
     const currentValue = editor.getValue()
 
-    if (currentValue !== value) {
-      if (options?.readOnly || !onChange) {
-        editor.setValue(value)
-      }
-      else {
-        preventTriggerChangeEvent.current = true
-        editor.executeEdits('', [
-          {
-            range: model.getFullModelRange(),
-            text: value,
-            forceMoveMarkers: true,
-          },
-        ])
-        editor.pushUndoStop()
-        preventTriggerChangeEvent.current = false
-      }
+    if (currentValue === value) {
+      return
     }
-  }, [value])
+
+    if (options?.readOnly) {
+      editor.setValue(value)
+    }
+    else {
+      preventTriggerChangeEvent.current = true
+      editor.executeEdits('', [
+        {
+          range: model.getFullModelRange(),
+          text: value,
+          forceMoveMarkers: true,
+        },
+      ])
+      editor.pushUndoStop()
+      preventTriggerChangeEvent.current = false
+    }
+  }, [value, options?.readOnly, language])
+
+  return <div ref={elementRef} {...props} />
+}
+
+export function MonacoDiff({
+  ref,
+  originalValue,
+  modifiedValue,
+  language,
+  options,
+  ...props
+}: {
+  ref?: RefObject<monaco.editor.IStandaloneDiffEditor | null>
+  className?: string
+  style?: React.CSSProperties
+  originalValue: string
+  modifiedValue: string
+  language?: string
+  options?: monaco.editor.IStandaloneDiffEditorConstructionOptions
+}) {
+  const elementRef = useRef<HTMLDivElement>(null)
+  const diffEditorInstance = useRef<monaco.editor.IStandaloneDiffEditor | null>(null)
+
+  useMonacoTheme()
+
+  const getOptionsEvent = useEffectEvent(() => ({
+    automaticLayout: true,
+    minimap: { enabled: false },
+    fontFamily: '"Geist Mono", monospace',
+    readOnly: true,
+    ...options,
+  } satisfies monaco.editor.IStandaloneDiffEditorConstructionOptions))
+
+  const getValuesEvent = useEffectEvent(() => ({
+    originalValue,
+    modifiedValue,
+  }))
+
+  useEffect(() => {
+    if (!elementRef.current)
+      return
+
+    diffEditorInstance.current = monaco.editor.createDiffEditor(
+      elementRef.current,
+      getOptionsEvent(),
+    )
+
+    const { originalValue, modifiedValue } = getValuesEvent()
+    diffEditorInstance.current.setModel({
+      original: monaco.editor.createModel(originalValue, language),
+      modified: monaco.editor.createModel(modifiedValue, language),
+    })
+
+    if (ref) {
+      ref.current = diffEditorInstance.current
+    }
+
+    return () => {
+      diffEditorInstance.current?.dispose()
+    }
+  }, [elementRef, language, ref])
+
+  useMountedEffect(() => {
+    if (!diffEditorInstance.current || !options)
+      return
+
+    diffEditorInstance.current.updateOptions(options)
+  }, [options])
+
+  useMountedEffect(() => {
+    if (!diffEditorInstance.current)
+      return
+
+    const editor = diffEditorInstance.current
+    const originalModel = editor.getModel()?.original
+    const modifiedModel = editor.getModel()?.modified
+
+    if (originalModel && originalModel.getValue() !== originalValue) {
+      originalModel.setValue(originalValue)
+    }
+
+    if (modifiedModel && modifiedModel.getValue() !== modifiedValue) {
+      modifiedModel.setValue(modifiedValue)
+    }
+  }, [originalValue, modifiedValue])
 
   return <div ref={elementRef} {...props} />
 }

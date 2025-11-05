@@ -7,10 +7,18 @@ import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
 import { setupProtocolHandler } from './deep-link'
 import { initElectronEvents } from './events'
+import { buildMenu } from './menu'
 
-const store = new Store()
+export const store = new Store<{
+  bounds?: Rectangle
+  betaUpdates?: true
+}>()
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
+
+const betaUpdates = store.get('betaUpdates')
+
+autoUpdater.channel = betaUpdates ? 'beta' : null
 
 initElectronEvents()
 
@@ -35,7 +43,10 @@ export function createWindow() {
     },
   })
 
-  mainWindow.setBounds(store.get('bounds') as Rectangle)
+  const bounds = store.get('bounds')
+
+  if (bounds)
+    mainWindow.setBounds(bounds)
 
   const isFullscreen = store.get('fullscreen', false) as boolean
   if (isFullscreen) {
@@ -43,12 +54,20 @@ export function createWindow() {
   }
 
   mainWindow.on('close', () => {
-    store.set('bounds', mainWindow!.getBounds())
-    store.set('fullscreen', mainWindow!.isFullScreen())
+    if (!mainWindow)
+      return
+
+    store.set('bounds', mainWindow.getBounds())
+    store.set('fullscreen', mainWindow.isFullScreen())
+    mainWindow = null
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow!.show()
+    mainWindow?.show()
+  })
+
+  mainWindow.on('focus', () => {
+    buildMenu()
   })
 
   if (process.env.ELECTRON_RENDERER_URL) {
@@ -97,7 +116,7 @@ app.on('activate', () => {
 })
 
 function sendUpdatesStatus(status: UpdatesStatus, message?: string) {
-  mainWindow!.webContents.send('updates-status', { status, message })
+  mainWindow?.webContents.send('updates-status', { status, message })
 }
 
 autoUpdater.on('checking-for-update', () => {

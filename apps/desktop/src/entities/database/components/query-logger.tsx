@@ -1,19 +1,24 @@
+import type { ComponentProps } from 'react'
 import type { QueryLog } from '../query'
 import type { databases } from '~/drizzle'
+import { sleep } from '@conar/shared/utils/helpers'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { ButtonGroup } from '@conar/ui/components/button-group'
 import { CardTitle } from '@conar/ui/components/card'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@conar/ui/components/collapsible'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { Label } from '@conar/ui/components/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { useVirtual } from '@conar/ui/hooks/use-virtual'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiArrowDownSLine, RiArrowRightSLine, RiCheckboxCircleLine, RiCloseCircleLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
+import { RiArrowDownLine, RiCheckboxCircleLine, RiCheckLine, RiCloseCircleLine, RiCloseLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
 import { formatSql } from '~/lib/formatter'
+import { databaseStore } from '~/routes/(protected)/_protected/database/-store'
 import { queriesLogStore } from '../query'
 
 type QueryStatus = 'error' | 'success' | 'pending'
@@ -37,12 +42,56 @@ function getQueryStatus(query: QueryLog) {
   return 'pending'
 }
 
-function Log({ query, className, database }: { query: QueryLog, className?: string, database: typeof databases.$inferSelect }) {
-  const [isExpanded, setIsExpanded] = useState(false)
-
+function LogTrigger({ query, className, ...props }: { query: QueryLog } & ComponentProps<'button'>) {
   const status = getQueryStatus(query)
   const truncatedQuery = query.query.replaceAll('\n', ' ')
   const shortQuery = truncatedQuery.length > 500 ? `${truncatedQuery.substring(0, 500)}...` : truncatedQuery
+
+  return (
+    <button
+      type="button"
+      className={cn(
+        'cursor-pointer w-full flex items-center gap-2 justify-between border-t py-1 px-4 hover:bg-muted/50',
+        className,
+      )}
+      {...props}
+    >
+      <span className="text-xs text-muted-foreground text-left tabular-nums">
+        {query.createdAt.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        })}
+      </span>
+      {getStatusIcon(status)}
+      <Badge
+        variant="secondary"
+        className="text-xs"
+      >
+        {query.label}
+      </Badge>
+      <code className="text-xs font-mono flex-1 truncate text-left">
+        {shortQuery}
+      </code>
+    </button>
+  )
+}
+
+const monacoOptions = {
+  readOnly: true,
+  scrollBeyondLastLine: false,
+  lineNumbers: 'off' as const,
+  minimap: { enabled: false },
+  folding: false,
+}
+
+function Log({ query, className, database }: { query: QueryLog, className?: string, database: typeof databases.$inferSelect }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [canInteract, setCanInteract] = useState(false)
 
   const formatValues = (values?: unknown[]) => {
     if (!values || values.length === 0)
@@ -50,87 +99,77 @@ function Log({ query, className, database }: { query: QueryLog, className?: stri
     return `[${values.map(v => typeof v === 'string' ? `"${v}"` : String(v)).join(', ')}]`
   }
 
+  if (!canInteract) {
+    return (
+      <LogTrigger
+        query={query}
+        className={className}
+        onMouseEnter={() => setCanInteract(true)}
+      />
+    )
+  }
+
+  function closePopover() {
+    if (!isOpen) {
+      sleep(200).then(() => setCanInteract(false))
+    }
+  }
+
   return (
-    <div className={cn('border-t', className)}>
-      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <CollapsibleTrigger
-          className={cn(
-            'cursor-pointer w-full flex items-center gap-2 justify-between p-1 hover:bg-muted/50',
-            isExpanded && 'rounded-b-0',
-          )}
-        >
-          {isExpanded
-            ? <RiArrowDownSLine className="size-4 -mr-1" />
-            : <RiArrowRightSLine className="size-4 -mr-1" />}
-          {getStatusIcon(status)}
-          <Badge
-            variant="secondary"
-            className="text-xs"
-          >
-            {query.label}
-          </Badge>
-          <code className="text-xs font-mono flex-1 truncate text-left">
-            {shortQuery}
-          </code>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="p-3 space-y-3 flex gap-2">
-            <div className="flex-1">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Query</label>
-                <Monaco
-                  value={formatSql(query.query, database.type)}
-                  language="sql"
-                  options={{
-                    readOnly: true,
-                    scrollBeyondLastLine: false,
-                    lineNumbers: 'off',
-                    minimap: { enabled: false },
-                    folding: false,
-                  }}
-                  className="h-[200px]"
-                />
-              </div>
-              {query.values && query.values.length > 0 && (
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Values</label>
-                  <pre className="bg-muted p-2 rounded text-xs font-mono overflow-x-auto">
-                    {formatValues(query.values)}
-                  </pre>
-                </div>
-              )}
-            </div>
-            <div className="flex-1">
-              {!!query.result && (
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Result</label>
-                  <Monaco
-                    value={JSON.stringify(query.result)}
-                    language="json"
-                    options={{
-                      readOnly: true,
-                      scrollBeyondLastLine: false,
-                      lineNumbers: 'off',
-                      minimap: { enabled: false },
-                      folding: false,
-                    }}
-                    className="h-[200px]"
-                  />
-                </div>
-              )}
-              {query.error && (
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-destructive">Error</label>
-                  <pre className="bg-red-50 dark:bg-red-950 p-2 rounded text-xs font-mono overflow-x-auto text-red-700 dark:text-red-300">
-                    {query.error}
-                  </pre>
-                </div>
-              )}
-            </div>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <LogTrigger
+          query={query}
+          className={cn(className, isOpen && 'bg-accent/30')}
+          onMouseLeave={closePopover}
+        />
+      </PopoverTrigger>
+      <PopoverContent
+        className="flex gap-4 w-[95vw]"
+        onAnimationEnd={closePopover}
+      >
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="space-y-2">
+            <Label>Query</Label>
+            <Monaco
+              value={formatSql(query.query, database.type)}
+              language="sql"
+              options={monacoOptions}
+              className="h-[50vh] border rounded-md overflow-hidden"
+            />
           </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </div>
+          {query.values && query.values.length > 0 && (
+            <div className="space-y-2">
+              <Label>Values</Label>
+              <pre className="bg-accent/50 p-2 rounded text-xs font-mono overflow-x-auto">
+                {formatValues(query.values)}
+              </pre>
+            </div>
+          )}
+        </div>
+        <div className="flex-1 min-w-0 space-y-2">
+          {!!query.result && (
+            <div className="space-y-2">
+              <Label>Result</Label>
+              <Monaco
+                value={JSON.stringify(query.result)}
+                language="json"
+                options={monacoOptions}
+                className="h-[50vh] border rounded-md overflow-hidden"
+              />
+            </div>
+          )}
+          {query.error && (
+            <div className="space-y-2">
+              <Label className="text-destructive">Error</Label>
+              <pre className="bg-red-50 dark:bg-red-950 p-2 rounded text-xs font-mono overflow-x-auto text-red-700 dark:text-red-300">
+                {query.error}
+              </pre>
+            </div>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
 
@@ -141,6 +180,8 @@ export function QueryLogger({ database, className }: {
   const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
   const queries = useStore(queriesLogStore, state => Object.values(state[database.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()))
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
+  const [isClearing, setIsClearing] = useState(false)
+  const store = databaseStore(database.id)
 
   const filteredQueries = useMemo(() => {
     if (statusGroup) {
@@ -163,10 +204,11 @@ export function QueryLogger({ database, className }: {
   }, { success: 0, error: 0, pending: 0 })
 
   const clearQueries = () => {
+    setIsClearing(true)
     queriesLogStore.setState(state => ({
       ...state,
       [database.id]: {},
-    }))
+    } satisfies typeof state))
   }
 
   const toggleGroup = (status: QueryStatus) => {
@@ -180,15 +222,12 @@ export function QueryLogger({ database, className }: {
     overscan: 5,
   })
 
-  const offsets = {
-    top: virtualItems[0]?.start ?? 0,
-    bottom: totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0),
-  }
-
-  if (scrollRef.current) {
-    scrollRef.current.style.setProperty('--scroll-top-offset', `${offsets.top}px`)
-    scrollRef.current.style.setProperty('--scroll-bottom-offset', `${offsets.bottom}px`)
-  }
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.style.setProperty('--scroll-top-offset', `${virtualItems[0]?.start ?? 0}px`)
+      scrollRef.current.style.setProperty('--scroll-bottom-offset', `${totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0)}px`)
+    }
+  }, [scrollRef, virtualItems, totalSize])
 
   return (
     <div className={cn('flex flex-col justify-between h-full', className)}>
@@ -227,13 +266,28 @@ export function QueryLogger({ database, className }: {
             </Button>
           </ButtonGroup>
         </div>
-        <Button
-          variant="outline"
-          size="icon-sm"
-          onClick={clearQueries}
-        >
-          <RiDeleteBinLine className="size-4 text-destructive" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={clearQueries}
+          >
+            <ContentSwitch
+              activeContent={<RiCheckLine className="size-4 text-success" />}
+              active={isClearing}
+              onSwitchEnd={setIsClearing}
+            >
+              <RiDeleteBinLine className="size-4 text-destructive" />
+            </ContentSwitch>
+          </Button>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={() => store.setState(state => ({ ...state, loggerOpened: false } satisfies typeof state))}
+          >
+            <RiCloseLine className="size-4" />
+          </Button>
+        </div>
       </div>
       <ScrollArea
         ref={scrollRef}

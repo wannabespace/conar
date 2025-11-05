@@ -11,10 +11,10 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@conar/configs": "workspace:*",
     "@conar/shared": "workspace:*"
   },
   "devDependencies": {
+    "@conar/configs": "workspace:*",
     "typescript": "catalog:"
   }
 }

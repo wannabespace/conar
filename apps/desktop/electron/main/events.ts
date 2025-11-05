@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 import { decrypt, encrypt } from '@conar/shared/encryption'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { app, ipcMain } from 'electron'
+import { store } from '.'
 import { pgQuery, pgTestConnection } from './pg'
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
@@ -66,6 +67,16 @@ const _app = {
   },
   quitAndInstall: () => {
     autoUpdater.quitAndInstall()
+  },
+  channelUpdates: (type: 'default' | 'beta') => {
+    autoUpdater.channel = type === 'default' ? null : 'beta'
+
+    if (type === 'beta') {
+      store.set('betaUpdates', true)
+    }
+    else {
+      store.delete('betaUpdates')
+    }
   },
 }
 

@@ -1,7 +1,6 @@
 import type { Edge } from '@xyflow/react'
-import type { constraintsType, NodeType } from '~/entities/database'
+import type { Column, constraintsType, NodeType } from '~/entities/database'
 import type { columnType } from '~/entities/database/sql/columns'
-import type { Column } from '~/entities/database/table'
 import dagre from '@dagrejs/dagre'
 import { Position } from '@xyflow/react'
 
@@ -84,7 +83,7 @@ function getNodeSize(columns: NodeType['data']['columns']) {
   }
 }
 
-export function getLayoutedElements(nodes: NodeType[], edges: Edge[], direction = 'TB') {
+export function getLayoutElements(nodes: NodeType[], edges: Edge[], direction = 'TB') {
   const isHorizontal = direction === 'LR'
   dagreGraph.setGraph({ rankdir: direction })
 

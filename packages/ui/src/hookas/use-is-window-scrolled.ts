@@ -8,6 +8,7 @@ export function useIsWindowScrolled({ threshold = 10, initial = false }: { thres
       const scrollTop = window.scrollY
       const scrollLeft = window.scrollX
 
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
       setIsScrolled(scrollTop > threshold || scrollLeft > threshold)
     }
 

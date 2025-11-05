@@ -46,7 +46,7 @@ export function HeaderActionsColumns({ database, table, schema }: { database: ty
                 onSelect={() => store.setState(state => ({
                   ...state,
                   hiddenColumns: (hiddenColumns.length === 0 && columns?.map(col => col.id)) || [],
-                }))}
+                } satisfies typeof state))}
               >
                 <span className="size-4">
                   {hiddenColumns.length === 0 && <RiCheckLine className="size-4 opacity-50" />}
@@ -67,13 +67,13 @@ export function HeaderActionsColumns({ database, table, schema }: { database: ty
                     hiddenColumns: hiddenColumns.includes(column.id)
                       ? hiddenColumns.filter(id => id !== column.id)
                       : [...hiddenColumns, column.id],
-                  }))}
+                  } satisfies typeof state))}
                 >
                   <span className="size-4 shrink-0">
                     {!hiddenColumns.includes(column.id) && <RiCheckLine className="size-4 opacity-50" />}
                   </span>
                   <RiDatabase2Line className="size-4 opacity-50 shrink-0" />
-                  <span className="truncate">{column.id}</span>
+                  <span data-mask className="truncate">{column.id}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

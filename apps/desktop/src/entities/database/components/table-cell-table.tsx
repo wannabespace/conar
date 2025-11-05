@@ -18,7 +18,7 @@ import { useTableColumns } from '~/routes/(protected)/_protected/database/$id/ta
 import { DEFAULT_ROW_HEIGHT } from '..'
 import { getDisplayValue } from '../lib/render'
 import { databaseRowsQuery } from '../queries/rows'
-import { DEFAULT_COLUMN_WIDTH } from '../utils'
+import { DEFAULT_COLUMN_WIDTH } from '../utils/helpers'
 import { TableCellContent } from './table-cell-content'
 
 const { useLoaderData } = getRouteApi('/(protected)/_protected/database/$id')
@@ -81,8 +81,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
             Showing records from
             {' '}
             <Badge data-mask variant="secondary">
-              {schema}
-              .
+              {schema === 'public' ? '' : `${schema}.`}
               {table}
             </Badge>
             {' '}
@@ -109,7 +108,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
             </Link>
           </Button>
         </div>
-        <Table className="bg-background h-[calc(100%-theme(spacing.8))] rounded-b-lg">
+        <Table className="bg-background h-[calc(100%-(--spacing(8)))] rounded-b-lg">
           <TableHeader />
           {isRowsPending
             ? <TableBodySkeleton />

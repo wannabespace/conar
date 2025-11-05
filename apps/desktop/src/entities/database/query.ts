@@ -2,6 +2,7 @@ import type { DatabaseQueryResult } from '@conar/shared/databases'
 import type { Type } from 'arktype'
 import type { databases } from '~/drizzle'
 import { DatabaseType } from '@conar/shared/enums/database-type'
+import { getErrorMessage } from '@conar/shared/utils/error'
 import { Store } from '@tanstack/react-store'
 // import { drizzle as mysqlProxy } from 'drizzle-orm/mysql-proxy'
 import { drizzle as pgProxy } from 'drizzle-orm/pg-proxy'
@@ -61,7 +62,7 @@ function queryLog(
         label: label || log?.label || '',
       },
     },
-  }))
+  } satisfies typeof state))
 
   if (error) {
     console.error('db query error', database.type, query, values, error)
@@ -75,9 +76,20 @@ function queryLog(
 }
 
 export function drizzleProxy<T extends Record<string, unknown>>(database: typeof databases.$inferSelect, label?: string) {
-  const queryId = crypto.randomUUID()
-
   return proxiesMap[database.type]<T>(async (sql, params, method) => {
+    const queryId = crypto.randomUUID()
+
+    queryLog(database, queryId, {
+      query: formatSql(sql, database.type)
+        .split('\n')
+        .filter(str => !str.startsWith('--'))
+        .join(' '),
+      values: params,
+      result: null,
+      error: null,
+      label,
+    })
+
     try {
       const result = await queryFn({
         type: database.type,
@@ -93,25 +105,10 @@ export function drizzleProxy<T extends Record<string, unknown>>(database: typeof
       return result
     }
     catch (error) {
-      queryLog(database, queryId, { error: error instanceof Error ? error.message : String(error) })
+      queryLog(database, queryId, { error: getErrorMessage(error) })
 
       throw error
     }
-  }, {
-    logger: {
-      logQuery(query, params) {
-        queryLog(database, queryId, {
-          query: formatSql(query, database.type)
-            .split('\n')
-            .filter(str => !str.startsWith('--'))
-            .join(' '),
-          values: params,
-          result: null,
-          error: null,
-          label,
-        })
-      },
-    },
   })
 }
 

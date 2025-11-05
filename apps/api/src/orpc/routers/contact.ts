@@ -1,6 +1,7 @@
 import { SUPPORT_EMAIL } from '@conar/shared/constants'
 import { type } from 'arktype'
-import { resend } from '~/lib/resend'
+import { consola } from 'consola'
+import { resend } from '~/lib/email'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const contact = orpc
@@ -10,7 +11,7 @@ export const contact = orpc
   }))
   .handler(async ({ input, context }) => {
     if (!resend) {
-      console.error('Resend is not configured')
+      consola.error('Resend is not configured')
       return
     }
 
@@ -33,5 +34,5 @@ export const contact = orpc
       throw error
     }
 
-    console.log('Support message sent successfully', data.data)
+    consola.log('Support message sent successfully', data.data)
   })

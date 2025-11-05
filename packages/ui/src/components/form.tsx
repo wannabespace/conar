@@ -30,8 +30,10 @@ function FormField<
 >({
   ...props
 }: ControllerProps<TFieldValues, TName>) {
+  const context = React.useMemo(() => ({ name: props.name }), [props.name])
+
   return (
-    <FormFieldContext value={{ name: props.name }}>
+    <FormFieldContext value={context}>
       <Controller {...props} />
     </FormFieldContext>
   )
@@ -70,9 +72,10 @@ function useFormField() {
 
 function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
   const id = React.useId()
+  const context = React.useMemo(() => ({ id }), [id])
 
   return (
-    <FormItemContext value={{ id }}>
+    <FormItemContext value={context}>
       <div
         data-slot="form-item"
         className={cn('grid gap-2', className)}
@@ -158,5 +161,6 @@ export {
   FormItem,
   FormLabel,
   FormMessage,
+  // eslint-disable-next-line react-refresh/only-export-components
   useFormField,
 }

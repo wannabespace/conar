@@ -1,6 +1,7 @@
 import type { ORPCRouter } from '@conar/api/src/orpc/routers'
 import { createORPCClient, onError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
+import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { bearerToken } from './auth'
 import { handleError } from './error'
 import { getApiUrl } from './utils'
@@ -26,3 +27,4 @@ const link = new RPCLink({
 })
 
 export const orpc: ORPCRouter = createORPCClient(link)
+export const orpcQuery = createTanstackQueryUtils(orpc)

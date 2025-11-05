@@ -45,6 +45,7 @@ export function useMediaControls(
     media.addEventListener('durationchange', () => setState(s => ({ ...s, duration: media.duration })), { signal: abortController.signal })
     media.addEventListener('ended', () => setState(s => ({ ...s, isPlaying: false })), { signal: abortController.signal })
 
+    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
     setState({
       isPlaying: !media.paused,
       isMuted: media.muted,

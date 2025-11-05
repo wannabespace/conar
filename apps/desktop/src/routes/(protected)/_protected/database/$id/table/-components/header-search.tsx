@@ -10,7 +10,7 @@ import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { useDatabaseEnums } from '~/entities/database'
-import { orpc } from '~/lib/orpc'
+import { orpcQuery } from '~/lib/orpc'
 import { Route } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
@@ -19,8 +19,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
   const { database } = Route.useLoaderData()
   const store = usePageStoreContext()
   const prompt = useStore(store, state => state.prompt)
-  const { mutate: generateFilter, isPending } = useMutation({
-    mutationFn: (data: { prompt: string, context: string }) => orpc.ai.filters(data),
+  const { mutate: generateFilter, isPending } = useMutation(orpcQuery.ai.filters.mutationOptions({
     onSuccess: (data) => {
       store.setState(state => ({
         ...state,
@@ -30,13 +29,13 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
           ref: SQL_FILTERS_LIST.find(f => f.operator === filter.operator)!,
           values: filter.values,
         } satisfies ActiveFilter)),
-      }))
+      } satisfies typeof state))
 
       if (data.filters.length === 0) {
         toast.info('No filters were generated, please try again with a different prompt')
       }
     },
-  })
+  }))
   const columns = useTableColumns({ database, table, schema })
   const { data: enums } = useDatabaseEnums({ database })
   const context = useMemo(() => `
@@ -66,7 +65,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         placeholder="Ask AI to filter data..."
         disabled={isPending}
         value={prompt}
-        onChange={e => store.setState(state => ({ ...state, prompt: e.target.value }))}
+        onChange={e => store.setState(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
       />
       <Button
         type="submit"

@@ -16,7 +16,7 @@ const VirtualColumn = memo(function VirtualColumn({
   value: unknown
   rowIndex: number
 }) {
-  const columns = useTableContext(context => context.columns)
+  const columnsLength = useTableContext(context => context.columns.length)
 
   if (!column.cell) {
     return (
@@ -27,7 +27,7 @@ const VirtualColumn = memo(function VirtualColumn({
           flexShrink: 0,
         }}
       >
-        {value as string}
+        {String(value)}
       </div>
     )
   }
@@ -41,7 +41,7 @@ const VirtualColumn = memo(function VirtualColumn({
       columnIndex={virtualColumn.index}
       position={virtualColumn.index === 0
         ? 'first'
-        : virtualColumn.index === columns.length - 1
+        : virtualColumn.index === columnsLength - 1
           ? 'last'
           : 'middle'}
       style={{
@@ -52,6 +52,10 @@ const VirtualColumn = memo(function VirtualColumn({
     />
   )
 })
+
+const spacerStyle: CSSProperties = {
+  contain: 'layout style size',
+}
 
 const Row = memo(function Row({
   size,
@@ -65,9 +69,6 @@ const Row = memo(function Row({
   const rows = useTableContext(context => context.rows)
   const row = rows[rowIndex]
   const lastIndex = rows.length - 1
-  const spacerStyle: CSSProperties = {
-    contain: 'layout style size',
-  }
 
   return (
     <div
@@ -105,9 +106,6 @@ const Row = memo(function Row({
 export function TableBody({ className, style, ...props }: ComponentProps<'div'>) {
   const virtualRows = useTableContext(context => context.virtualRows)
   const tableWidth = useTableContext(context => context.tableWidth)
-  const spacerStyle: CSSProperties = {
-    contain: 'layout style size',
-  }
 
   return (
     <div

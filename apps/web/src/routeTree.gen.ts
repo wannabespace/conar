@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as OpenRouteImport } from './routes/open'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
@@ -16,6 +17,11 @@ import { Route as LayoutTermsOfServiceRouteImport } from './routes/_layout/terms
 import { Route as LayoutPrivacyPolicyRouteImport } from './routes/_layout/privacy-policy'
 import { Route as LayoutDownloadRouteImport } from './routes/_layout/download'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OpenRoute = OpenRouteImport.update({
   id: '/open',
   path: '/open',
@@ -48,6 +54,7 @@ const LayoutDownloadRoute = LayoutDownloadRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/open': typeof OpenRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/download': typeof LayoutDownloadRoute
   '/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
@@ -55,6 +62,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/open': typeof OpenRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/download': typeof LayoutDownloadRoute
   '/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
@@ -64,6 +72,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
   '/open': typeof OpenRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_layout/download': typeof LayoutDownloadRoute
   '/_layout/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
@@ -73,16 +82,24 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/open'
+    | '/reset-password'
     | '/download'
     | '/privacy-policy'
     | '/terms-of-service'
     | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/open' | '/download' | '/privacy-policy' | '/terms-of-service' | '/'
+  to:
+    | '/open'
+    | '/reset-password'
+    | '/download'
+    | '/privacy-policy'
+    | '/terms-of-service'
+    | '/'
   id:
     | '__root__'
     | '/_layout'
     | '/open'
+    | '/reset-password'
     | '/_layout/download'
     | '/_layout/privacy-policy'
     | '/_layout/terms-of-service'
@@ -92,10 +109,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
   OpenRoute: typeof OpenRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/open': {
       id: '/open'
       path: '/open'
@@ -161,6 +186,7 @@ const LayoutRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
   OpenRoute: OpenRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

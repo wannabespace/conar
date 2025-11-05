@@ -16,6 +16,7 @@ async function compileMigrations() {
     'utf8',
   )
 
+  // eslint-disable-next-line no-console
   console.log('Migrations compiled!')
 }
 

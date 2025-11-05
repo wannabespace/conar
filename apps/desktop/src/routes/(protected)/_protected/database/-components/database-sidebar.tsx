@@ -11,10 +11,11 @@ import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSettings3Line, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ThemeToggle } from '~/components/theme-toggle'
@@ -22,17 +23,14 @@ import {
   DatabaseIcon,
   databasesCollection,
   lastOpenedDatabases,
-  lastOpenedTable,
   useDatabaseLinkParams,
-  useLastOpenedChatId,
   useLastOpenedDatabases,
-  useLastOpenedTable,
 } from '~/entities/database'
 import { UserButton } from '~/entities/user'
-import { orpc } from '~/lib/orpc'
+import { orpcQuery } from '~/lib/orpc'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
 import { Route } from '../$id'
-import { useLoggerOpened } from '../-use-logger-opened'
+import { databaseStore } from '../-store'
 
 const os = getOS(navigator.userAgent)
 
@@ -47,10 +45,7 @@ function SupportButton() {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
 
-  const { mutate: sendSupport, isPending: loading } = useMutation({
-    mutationFn: async () => {
-      await orpc.contact({ message })
-    },
+  const { mutate: sendSupport, isPending: loading } = useMutation(orpcQuery.contact.mutationOptions({
     onSuccess: () => {
       toast.success('Support message sent successfully! We will get back to you as soon as possible.')
       setOpen(false)
@@ -60,11 +55,11 @@ function SupportButton() {
       console.error(err)
       toast.error('Failed to send message. Please try again later.')
     },
-  })
+  }))
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    sendSupport()
+    sendSupport({ message })
   }
 
   return (
@@ -116,6 +111,25 @@ function SupportButton() {
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function SettingsButton() {
+  const { database } = Route.useLoaderData()
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link to="/database/$id/settings" params={{ id: database.id }}>
+            <Button size="icon" variant="ghost">
+              <RiSettings3Line className="size-4" />
+            </Button>
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">Settings</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
@@ -186,45 +200,52 @@ function LastOpenedDatabases() {
 }
 
 function MainLinks() {
-  const { id } = Route.useParams()
+  const { database } = Route.useLoaderData()
   const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
   const matches = useMatches({
     select: matches => matches.map(match => match.routeId),
   })
-  const [lastTable, setLastTable] = useLastOpenedTable(id)
+  const store = databaseStore(database.id)
+  const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
 
   useEffect(() => {
-    if (tableParam && schemaParam && tableParam !== lastTable?.table && schemaParam !== lastTable?.schema) {
-      setLastTable({ schema: schemaParam, table: tableParam })
+    if (tableParam && schemaParam && tableParam !== lastOpenedTable?.table && schemaParam !== lastOpenedTable?.schema) {
+      store.setState(state => ({
+        ...state,
+        lastOpenedTable: { schema: schemaParam, table: tableParam },
+      } satisfies typeof state))
     }
-  }, [setLastTable, lastTable, tableParam, schemaParam])
+  }, [store, lastOpenedTable, tableParam, schemaParam])
 
   const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/table/')
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
   const isActiveVisualizer = matches.includes('/(protected)/_protected/database/$id/visualizer/')
 
-  const isCurrentTableAsLastOpened = lastTable?.schema === schemaParam && lastTable?.table === tableParam
+  const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
 
   const route = useMemo(() => {
-    if (!isCurrentTableAsLastOpened && lastTable) {
+    if (!isCurrentTableAsLastOpened && lastOpenedTable) {
       return {
         to: '/database/$id/table',
-        params: { id },
-        search: { schema: lastTable.schema, table: lastTable.table },
+        params: { id: database.id },
+        search: { schema: lastOpenedTable.schema, table: lastOpenedTable.table },
       } satisfies LinkProps
     }
 
-    return { to: '/database/$id/table', params: { id } } satisfies LinkProps
-  }, [id, isCurrentTableAsLastOpened, lastTable])
+    return { to: '/database/$id/table', params: { id: database.id } } satisfies LinkProps
+  }, [database.id, isCurrentTableAsLastOpened, lastOpenedTable])
 
   function onTablesClick() {
-    if (isCurrentTableAsLastOpened && lastTable) {
-      lastOpenedTable(id).set(null)
+    if (isCurrentTableAsLastOpened && lastOpenedTable) {
+      store.setState(state => ({
+        ...state,
+        lastOpenedTable: null,
+      } satisfies typeof state))
     }
   }
 
-  const [lastOpenedChatId] = useLastOpenedChatId(id)
+  const lastOpenedChatId = useStore(store, state => state.lastOpenedChatId)
 
   return (
     <>
@@ -233,7 +254,7 @@ function MainLinks() {
           <TooltipTrigger asChild>
             <Link
               to="/database/$id/sql"
-              params={{ id }}
+              params={{ id: database.id }}
               search={lastOpenedChatId ? { chatId: lastOpenedChatId } : undefined}
               className={classes(isActiveSql)}
             >
@@ -264,7 +285,7 @@ function MainLinks() {
           <TooltipTrigger asChild>
             <Link
               to="/database/$id/enums"
-              params={{ id }}
+              params={{ id: database.id }}
               className={classes(isActiveEnums)}
             >
               <RiListUnordered className="size-4" />
@@ -276,7 +297,7 @@ function MainLinks() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Link to="/database/$id/visualizer" params={{ id }} className={classes(isActiveVisualizer)}>
+            <Link to="/database/$id/visualizer" params={{ id: database.id }} className={classes(isActiveVisualizer)}>
               <RiNodeTree className="size-4" />
             </Link>
           </TooltipTrigger>
@@ -288,8 +309,9 @@ function MainLinks() {
 }
 
 export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'div'>) {
+  const { database } = Route.useLoaderData()
   const [lastOpenedDatabases] = useLastOpenedDatabases()
-  const [loggerOpened, setLoggerOpened] = useLoggerOpened()
+  const store = databaseStore(database.id)
 
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
@@ -325,7 +347,11 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost" onClick={() => setLoggerOpened(!loggerOpened)}>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => store.setState(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
+              >
                 <RiFileListLine className="size-4" />
               </Button>
             </TooltipTrigger>
@@ -351,16 +377,16 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <div className="relative mb-2">
-          <ThemeToggle>
-            <Button size="icon" variant="ghost">
-              <RiSunLine className="size-4 dark:hidden" />
-              <RiMoonLine className="size-4 hidden dark:block" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
-          </ThemeToggle>
+        <ThemeToggle>
+          <Button size="icon" variant="ghost">
+            <RiSunLine className="size-4 dark:hidden" />
+            <RiMoonLine className="size-4 hidden dark:block" />
+          </Button>
+        </ThemeToggle>
+        {false && <SettingsButton />}
+        <div className="mt-2">
+          <UserButton />
         </div>
-        <UserButton />
       </div>
     </div>
   )

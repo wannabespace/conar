@@ -35,6 +35,7 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
         }, remaining)
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [fn, delay, ...deps],
   )
 

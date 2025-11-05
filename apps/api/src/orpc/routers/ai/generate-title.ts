@@ -2,6 +2,7 @@ import type { AppUIMessage } from '@conar/shared/ai-tools'
 import { google } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { type } from 'arktype'
+import { consola } from 'consola'
 import { eq } from 'drizzle-orm'
 import { chats, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
@@ -14,7 +15,7 @@ export const generateTitle = orpc
     messages: 'Array' as type.cast<AppUIMessage[]>,
   }))
   .handler(async ({ input, signal, context }) => {
-    const prompt = input.messages.map(message => message.parts
+    const prompt = input.messages.map(message => message.parts.filter(part => part.type === 'text')
       .map(part => JSON.stringify(part, null, 2))
       .join('\n'),
     ).join('\n')
@@ -46,7 +47,7 @@ export const generateTitle = orpc
       abortSignal: signal,
     })
 
-    console.info('generateTitle response', text)
+    consola.info('generateTitle response', text)
 
     await db.update(chats).set({ title: text }).where(eq(chats.id, input.chatId))
 

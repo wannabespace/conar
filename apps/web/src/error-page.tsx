@@ -3,7 +3,7 @@ import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Toaster } from '@conar/ui/components/sonner'
-import { ThemeProvider } from '@conar/ui/theme-provider'
+import { ThemeObserver } from '@conar/ui/theme-observer'
 import { RiAlertLine, RiArrowGoBackLine, RiLoopLeftLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { TraversalError } from 'arktype'
@@ -12,7 +12,9 @@ export function ErrorPage({ error }: ErrorComponentProps) {
   const router = useRouter()
 
   return (
-    <ThemeProvider>
+    <>
+      <ThemeObserver />
+      <Toaster />
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="relative z-20 w-full max-w-lg">
           <Card>
@@ -39,6 +41,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
               {error instanceof TraversalError && (
                 <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[300px] font-mono">
                   {error.arkErrors.map((err, index) => (
+                    // eslint-disable-next-line react/no-array-index-key
                     <div key={index} className="mb-4 last:mb-0">
                       <div className="font-semibold text-destructive">
                         Error
@@ -84,7 +87,6 @@ export function ErrorPage({ error }: ErrorComponentProps) {
           </Card>
         </div>
       </div>
-      <Toaster />
-    </ThemeProvider>
+    </>
   )
 }

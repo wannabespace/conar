@@ -1,5 +1,5 @@
 import type { TableHeaderCellProps } from '~/components/table'
-import type { Column } from '~/entities/database/table'
+import type { Column } from '~/entities/database'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'

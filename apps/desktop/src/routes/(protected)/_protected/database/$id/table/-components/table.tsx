@@ -1,6 +1,6 @@
 import type { ColumnRenderer } from '~/components/table'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
-import { RiErrorWarningLine } from '@remixicon/react'
+import { getErrorMessage } from '@conar/shared/utils/error'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo } from 'react'
@@ -30,12 +30,11 @@ export function TableError({ error }: { error: Error }) {
   return (
     <div className="sticky left-0 pointer-events-none h-full flex items-center pb-10 justify-center">
       <div className="flex flex-col items-center p-4 bg-card rounded-lg border max-w-md">
-        <div className="flex items-center gap-1 text-destructive mb-2">
-          <RiErrorWarningLine className="size-4" />
-          <span>Error occurred</span>
+        <div className="text-destructive mb-1">
+          Error occurred
         </div>
-        <p className="text-sm text-center text-muted-foreground">
-          {error.message}
+        <p className="text-sm font-mono text-center text-muted-foreground">
+          {getErrorMessage(error)}
         </p>
       </div>
     </div>
@@ -62,7 +61,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     store.setState(state => ({
       ...state,
       selected: validSelected,
-    }))
+    } satisfies typeof state))
   }, [store, rows, primaryColumns])
 
   const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
@@ -92,7 +91,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       : data)
   }, [database, table, schema, store])
 
-  const saveValue = useCallback(async (rowIndex: number, columnId: string, value: unknown) => {
+  const saveValue = useCallback(async (rowIndex: number, columnId: string, newValue: unknown) => {
     const rowsQueryOpts = databaseRowsQuery({
       database,
       table,
@@ -112,25 +111,36 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       throw new Error('No primary keys found. Please use SQL Runner to update this row.')
 
     const rows = data.pages.flatMap(page => page.rows)
+    const initialValue = rows[rowIndex]![columnId]
 
-    const [result] = await setSql(database, {
-      schema,
-      table,
-      values: { [columnId]: prepareValue(value, columns?.find(c => c.id === columnId)?.type) },
-      filters: primaryColumns.map(column => ({
-        column,
-        ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
-        values: [rows[rowIndex]![column]],
-      })),
-    })
+    try {
+      setValue(rowIndex, columnId, newValue)
+      const [result] = await setSql(database, {
+        schema,
+        table,
+        values: { [columnId]: prepareValue(newValue, columns?.find(c => c.id === columnId)?.type) },
+        filters: primaryColumns.map(column => ({
+          column,
+          ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
+          values: [rows[rowIndex]![column]],
+        })),
+      })
 
-    const realValue = result![columnId]
+      if (!result || !(columnId in result))
+        throw new Error('Cannot update the column. No value returned from the database.')
 
-    if (value !== realValue)
-      setValue(rowIndex, columnId, realValue)
+      const realValue = result[columnId]
 
-    if (filters.length > 0 || Object.keys(orderBy).length > 0)
-      queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
+      if (newValue !== realValue)
+        setValue(rowIndex, columnId, realValue ?? undefined)
+
+      if (filters.length > 0 || Object.keys(orderBy).length > 0)
+        queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
+    }
+    catch (e) {
+      setValue(rowIndex, columnId, initialValue)
+      throw e
+    }
   }, [database, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
 
   const setOrder = useCallback((columnId: string, order: 'ASC' | 'DESC') => {
@@ -140,7 +150,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         ...state.orderBy,
         [columnId]: order,
       },
-    }))
+    } satisfies typeof state))
   }, [store])
 
   const removeOrder = useCallback((columnId: string) => {
@@ -151,7 +161,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     store.setState(state => ({
       ...state,
       orderBy: newOrderBy,
-    }))
+    } satisfies typeof state))
   }, [store])
 
   const onSort = useCallback((columnId: string) => {
@@ -184,7 +194,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         cell: props => (
           <TableCell
             column={column}
-            onSetValue={setValue}
             onSaveValue={saveValue}
             {...props}
           />
@@ -208,7 +217,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     }
 
     return sortedColumns
-  }, [columns, hiddenColumns, primaryColumns, setValue, saveValue, onSort])
+  }, [columns, hiddenColumns, primaryColumns, saveValue, onSort])
 
   return (
     <TableProvider

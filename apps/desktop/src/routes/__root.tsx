@@ -1,6 +1,6 @@
 import { title } from '@conar/shared/utils/title'
 import { Toaster } from '@conar/ui/components/sonner'
-import { ThemeProvider } from '@conar/ui/theme-provider'
+import { ThemeObserver } from '@conar/ui/theme-observer'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
@@ -13,7 +13,7 @@ import { ErrorPage } from '~/error-page'
 import { authClient } from '~/lib/auth'
 import { EventsProvider } from '~/lib/events'
 import { queryClient, router } from '~/main'
-import { checkForUpdates, UpdatesObserver } from '~/updates-observer'
+import { useUpdatesObserver } from '~/updates-observer'
 
 export const Route = createRootRoute({
   component: RootDocument,
@@ -23,10 +23,10 @@ export const Route = createRootRoute({
   }),
 })
 
-checkForUpdates()
-
 function RootDocument() {
   const { isPending } = authClient.useSession()
+
+  useUpdatesObserver()
 
   useEffect(() => {
     if (isPending)
@@ -39,28 +39,26 @@ function RootDocument() {
     <>
       <HeadContent />
       <EventsProvider>
-        <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
-            <UpdatesObserver />
-            <AuthObserver />
-            <Outlet />
-            <Toaster />
-            {import.meta.env.DEV && (
-              <TanStackDevtools
-                plugins={[
-                  {
-                    name: 'TanStack Query',
-                    render: <ReactQueryDevtoolsPanel />,
-                  },
-                  {
-                    name: 'TanStack Router',
-                    render: <TanStackRouterDevtoolsPanel router={router} />,
-                  },
-                ]}
-              />
-            )}
-          </QueryClientProvider>
-        </ThemeProvider>
+        <ThemeObserver />
+        <QueryClientProvider client={queryClient}>
+          <Outlet />
+          <AuthObserver />
+          <Toaster />
+          {import.meta.env.DEV && (
+            <TanStackDevtools
+              plugins={[
+                {
+                  name: 'TanStack Query',
+                  render: <ReactQueryDevtoolsPanel />,
+                },
+                {
+                  name: 'TanStack Router',
+                  render: <TanStackRouterDevtoolsPanel router={router} />,
+                },
+              ]}
+            />
+          )}
+        </QueryClientProvider>
       </EventsProvider>
     </>
   )

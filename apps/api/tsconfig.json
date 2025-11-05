@@ -2,6 +2,7 @@
   "extends": "@conar/configs/ts/base.json",
   "compilerOptions": {
     "composite": true,
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]

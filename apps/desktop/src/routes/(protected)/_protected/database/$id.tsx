@@ -1,18 +1,17 @@
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import {
   databasesCollection,
-  getDatabasePageId,
   lastOpenedDatabases,
-  lastOpenedPage,
   prefetchDatabaseCore,
 } from '~/entities/database'
 import { QueryLogger } from '~/entities/database/components/query-logger'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
-import { useLoggerOpened } from './-use-logger-opened'
+import { databaseStore, getDatabasePageId } from './-store'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: DatabasePage,
@@ -40,13 +39,17 @@ function DatabasePage() {
   const currentPageId = useMatches({
     select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
-  const [loggerOpened] = useLoggerOpened()
+  const store = databaseStore(database.id)
+  const loggerOpened = useStore(store, state => state.loggerOpened)
 
   useEffect(() => {
     if (currentPageId) {
-      lastOpenedPage(database.id).set(currentPageId)
+      store.setState(state => ({
+        ...state,
+        lastOpenedPage: currentPageId,
+      } satisfies typeof state))
     }
-  }, [currentPageId, database.id])
+  }, [currentPageId, store])
 
   useEffect(() => {
     const last = lastOpenedDatabases.get()
@@ -61,7 +64,7 @@ function DatabasePage() {
   return (
     <div className="min-h-[inherit] h-screen flex bg-gray-100 dark:bg-neutral-950/60">
       <DatabaseSidebar className="w-16" />
-      <div className="h-[calc(100%-theme(spacing.4))] w-[calc(100%-theme(spacing.16)-theme(spacing.2))] m-2 ml-0 flex flex-col">
+      <div className="h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))] m-2 ml-0 flex flex-col">
         <ResizablePanelGroup
           direction="vertical"
           className="flex-1 min-h-0"

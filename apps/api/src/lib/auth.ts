@@ -4,8 +4,10 @@ import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { consola } from 'consola'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
+import { sendEmail } from '~/lib/email'
 import { loops } from '~/lib/loops'
 
 async function loopsUpdateUser(user: User) {
@@ -26,7 +28,7 @@ async function loopsUpdateUser(user: User) {
   }
   catch (error) {
     if (error instanceof Error) {
-      console.error('Failed to update loops contact', error.message)
+      consola.error('Failed to update loops contact', error.message)
     }
     throw error
   }
@@ -126,6 +128,28 @@ const config = {
   }),
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: false,
+    sendResetPassword: async ({ user: { name, email }, url }) => {
+      await sendEmail({
+        to: email,
+        subject: 'Reset your password',
+        template: 'ResetPassword',
+        props: {
+          name: name || email,
+          url,
+        },
+      })
+    },
+    onPasswordReset: async ({ user: { name, email } }) => {
+      await sendEmail({
+        to: email,
+        subject: 'Your password has been reset',
+        template: 'OnPasswordReset',
+        props: {
+          name: name || email,
+        },
+      })
+    },
   },
   socialProviders: {
     ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && {

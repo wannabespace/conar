@@ -2,6 +2,7 @@ import { google } from '@ai-sdk/google'
 import { SQL_FILTERS_GROUPED, SQL_OPERATORS } from '@conar/shared/filters/sql'
 import { generateObject } from 'ai'
 import { type } from 'arktype'
+import { consola } from 'consola'
 import { z } from 'zod'
 import { protectedProcedure } from '~/trpc'
 
@@ -11,7 +12,7 @@ export const filters = protectedProcedure
     context: 'string',
   }))
   .mutation(async ({ input, signal }) => {
-    console.info('sql filters input', input)
+    consola.info('sql filters input', input)
 
     const { object } = await generateObject({
       model: google('gemini-2.0-flash'),
@@ -49,7 +50,7 @@ export const filters = protectedProcedure
       output: 'array',
     })
 
-    console.info('sql filters result object', object)
+    consola.info('sql filters result object', object)
 
     return object
   })

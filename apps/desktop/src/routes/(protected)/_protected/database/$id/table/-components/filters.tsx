@@ -25,13 +25,13 @@ export function Filters() {
             onRemove={() => store.setState(state => ({
               ...state,
               filters: state.filters.filter(f => f !== filter),
-            }))}
+            } satisfies typeof state))}
             onEdit={({ column, ref, values }) => store.setState(state => ({
               ...state,
               filters: state.filters.map(f => f === filter
                 ? { column, ref, values }
                 : f),
-            }))}
+            } satisfies typeof state))}
           />
         ))}
         <Popover open={isOpened} onOpenChange={toggleForm}>
@@ -51,7 +51,7 @@ export function Filters() {
                 store.setState(state => ({
                   ...state,
                   filters: [...state.filters, filter],
-                }))
+                } satisfies typeof state))
               }}
             />
           </PopoverContent>
@@ -63,7 +63,7 @@ export function Filters() {
         onClick={() => store.setState(state => ({
           ...state,
           filters: [],
-        }))}
+        } satisfies typeof state))}
       >
         <RiFilterOffLine className="size-3 text-destructive" />
         Clear
