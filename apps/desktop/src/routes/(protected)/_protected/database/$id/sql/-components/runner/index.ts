@@ -13,7 +13,6 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
     queryKey: ['sql', database.id],
     queryFn: async ({ signal }) => {
       const store = databaseStore(database.id)
-
       const queries = store.state.queriesToRun
 
       const db = drizzleProxy(database, 'SQL Runner')
