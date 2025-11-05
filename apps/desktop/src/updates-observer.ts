@@ -3,12 +3,18 @@ import { Store, useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { version as packageVersion } from '../package.json'
+import { queryClient } from './main'
 
 export type UpdatesStatus = 'no-updates' | 'checking' | 'downloading' | 'ready' | 'error'
 
 const TOAST_UPDATE_READY_ID = 'update-ready-toast'
 
-// eslint-disable-next-line react-refresh/only-export-components
+export async function checkForUpdates() {
+  await window.electron?.app.checkForUpdates()
+}
+
+checkForUpdates()
+
 export const updatesStore = new Store<{
   version: string
   status: UpdatesStatus
@@ -19,12 +25,7 @@ export const updatesStore = new Store<{
   message: undefined,
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
-export async function checkForUpdates() {
-  await window.electron?.app.checkForUpdates()
-}
-
-export function UpdatesObserver() {
+export function useUpdatesObserver() {
   const { data: version } = useQuery<string>({
     queryKey: ['version'],
     queryFn: () => {
@@ -33,7 +34,7 @@ export function UpdatesObserver() {
 
       return window.electron.versions.app()
     },
-  })
+  }, queryClient)
   const status = useStore(updatesStore, state => state.status)
 
   useEffect(() => {
@@ -69,6 +70,4 @@ export function UpdatesObserver() {
       return () => clearInterval(interval)
     }
   }, [status])
-
-  return null
 }

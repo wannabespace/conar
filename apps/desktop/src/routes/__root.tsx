@@ -13,7 +13,7 @@ import { ErrorPage } from '~/error-page'
 import { authClient } from '~/lib/auth'
 import { EventsProvider } from '~/lib/events'
 import { queryClient, router } from '~/main'
-import { checkForUpdates, UpdatesObserver } from '~/updates-observer'
+import { useUpdatesObserver } from '~/updates-observer'
 
 export const Route = createRootRoute({
   component: RootDocument,
@@ -23,10 +23,10 @@ export const Route = createRootRoute({
   }),
 })
 
-checkForUpdates()
-
 function RootDocument() {
   const { isPending } = authClient.useSession()
+
+  useUpdatesObserver()
 
   useEffect(() => {
     if (isPending)
@@ -42,7 +42,6 @@ function RootDocument() {
         <ThemeObserver />
         <QueryClientProvider client={queryClient}>
           <Outlet />
-          <UpdatesObserver />
           <AuthObserver />
           <Toaster />
           {import.meta.env.DEV && (
