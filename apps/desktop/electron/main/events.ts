@@ -68,16 +68,6 @@ const _app = {
   quitAndInstall: () => {
     autoUpdater.quitAndInstall()
   },
-  channelUpdates: (type: 'default' | 'beta') => {
-    autoUpdater.channel = type === 'default' ? null : 'beta'
-
-    if (type === 'beta') {
-      store.set('betaUpdates', true)
-    }
-    else {
-      store.delete('betaUpdates')
-    }
-  },
 }
 
 const versions = {
