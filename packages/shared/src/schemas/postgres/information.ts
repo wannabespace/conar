@@ -17,6 +17,19 @@ export const tables = informationSchema.table('tables', {
   commit_action: text().notNull(),
 })
 
+export const views = informationSchema.table('views', {
+  table_catalog: text().notNull(),
+  table_schema: text().notNull(),
+  table_name: text().notNull(),
+  view_definition: text().notNull(),
+  check_option: text().notNull(),
+  is_updatable: text().notNull().$type<'YES' | 'NO'>(),
+  is_insertable_into: text().notNull().$type<'YES' | 'NO'>(),
+  is_trigger_updatable: text().notNull().$type<'YES' | 'NO'>(),
+  is_trigger_deletable: text().notNull().$type<'YES' | 'NO'>(),
+  is_trigger_insertable_into: text().notNull().$type<'YES' | 'NO'>(),
+})
+
 export const columns = informationSchema.table('columns', {
   table_catalog: text().notNull(),
   table_schema: text().notNull(),
