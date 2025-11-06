@@ -9,6 +9,8 @@ import { setupProtocolHandler } from './deep-link'
 import { initElectronEvents } from './events'
 import { buildMenu } from './menu'
 
+initElectronEvents()
+
 export const store = new Store<{
   bounds?: Rectangle
   betaUpdates?: true
@@ -19,8 +21,6 @@ const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as ty
 const betaUpdates = store.get('betaUpdates')
 
 autoUpdater.channel = betaUpdates ? 'beta' : null
-
-initElectronEvents()
 
 let mainWindow: BrowserWindow | null = null
 
