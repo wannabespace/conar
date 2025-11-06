@@ -6,7 +6,6 @@
   "directories": {
     "output": "release/${version}"
   },
-  "generateUpdatesFilesForAllChannels": true,
   "publish": {
     "private": false,
     "provider": "github",
