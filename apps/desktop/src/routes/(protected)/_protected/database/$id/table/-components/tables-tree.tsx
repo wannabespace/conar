@@ -11,7 +11,7 @@ import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiPushpinFill
 import { Link, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
-import { memo, useCallback, useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { useDatabaseTablesAndSchemas } from '~/entities/database'
 import { addTab, databaseStore, togglePinTable } from '../../../-store'
 import { DropTableDialog } from './drop-table-dialog'
@@ -47,31 +47,31 @@ interface TableItemProps {
   renameTableDialogRef: React.MutableRefObject<ComponentRef<typeof RenameTableDialog> | null>
 }
 
-const TableItem = memo(({ database, schema, table, isPinned, search, tableParam, dropTableDialogRef, renameTableDialogRef }: TableItemProps) => {
-  const handleTogglePin = useCallback((e: React.MouseEvent) => {
+function TableItem({ database, schema, table, isPinned, search, tableParam, dropTableDialogRef, renameTableDialogRef }: TableItemProps) {
+  const handleTogglePin = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     togglePinTable(database.id, schema, table)
-  }, [database.id, schema, table])
+  }
 
-  const handleDoubleClick = useCallback(() => {
+  const handleDoubleClick = () => {
     addTab(database.id, schema, table)
-  }, [database.id, schema, table])
+  }
 
-  const handleCopyName = useCallback((e: React.MouseEvent) => {
+  const handleCopyName = (e: React.MouseEvent) => {
     e.stopPropagation()
     copyToClipboard(table, 'Table name copied')
-  }, [table])
+  }
 
-  const handleRename = useCallback((e: React.MouseEvent) => {
+  const handleRename = (e: React.MouseEvent) => {
     e.stopPropagation()
     renameTableDialogRef.current?.rename(schema, table)
-  }, [schema, table, renameTableDialogRef])
+  }
 
-  const handleDrop = useCallback((e: React.MouseEvent) => {
+  const handleDrop = (e: React.MouseEvent) => {
     e.stopPropagation()
     dropTableDialogRef.current?.drop(schema, table)
-  }, [schema, table, dropTableDialogRef])
+  }
 
   return (
     <Link
@@ -154,9 +154,7 @@ const TableItem = memo(({ database, schema, table, isPinned, search, tableParam,
       </DropdownMenu>
     </Link>
   )
-})
-
-TableItem.displayName = 'TableItem'
+}
 
 export function TablesTree({ database, className, search }: { database: typeof databases.$inferSelect, className?: string, search?: string }) {
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas({ database })
@@ -175,7 +173,6 @@ export function TablesTree({ database, className, search }: { database: typeof d
       ).toSorted((a, b) => a.localeCompare(b)),
     })).filter(schema => schema.tables.length) || []
 
-    // Create a Set for O(1) lookup instead of O(n) with .some()
     const pinnedSet = new Set(
       pinnedTables.map(t => `${t.schema}:${t.table}`),
     )
