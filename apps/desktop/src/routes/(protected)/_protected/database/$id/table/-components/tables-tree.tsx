@@ -182,7 +182,6 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                       tableParam === table && 'text-primary opacity-100',
                                     )}
                                   />
-                                  <RiPushpinLine className="size-3 text-primary shrink-0" />
                                   <span className="truncate">
                                     {search
                                       ? (
@@ -198,13 +197,28 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                         )
                                       : table}
                                   </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    className={cn(
+                                      'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 ml-auto transition-opacity',
+                                      tableParam === table && 'hover:bg-primary/10',
+                                    )}
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      togglePinTable(database.id, schema.name, table)
+                                    }}
+                                  >
+                                    <RiPushpinFill className="size-3 text-primary" />
+                                  </Button>
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <Button
                                         variant="ghost"
                                         size="icon-xs"
                                         className={cn(
-                                          'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 ml-auto transition-opacity',
+                                          'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 transition-opacity',
                                           tableParam === table && 'hover:bg-primary/10',
                                         )}
                                         onClick={e => e.stopPropagation()}
@@ -213,15 +227,6 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="min-w-48">
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          togglePinTable(database.id, schema.name, table)
-                                        }}
-                                      >
-                                        <RiPushpinFill className="size-4" />
-                                        Unpin
-                                      </DropdownMenuItem>
                                       <DropdownMenuItem
                                         onClick={(e) => {
                                           e.stopPropagation()
@@ -303,13 +308,28 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                         )
                                       : table}
                                   </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    className={cn(
+                                      'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 ml-auto transition-opacity',
+                                      tableParam === table && 'hover:bg-primary/10',
+                                    )}
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      togglePinTable(database.id, schema.name, table)
+                                    }}
+                                  >
+                                    <RiPushpinLine className="size-3" />
+                                  </Button>
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <Button
                                         variant="ghost"
                                         size="icon-xs"
                                         className={cn(
-                                          'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 ml-auto transition-opacity',
+                                          'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 transition-opacity',
                                           tableParam === table && 'hover:bg-primary/10',
                                         )}
                                         onClick={e => e.stopPropagation()}
@@ -318,15 +338,6 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="min-w-48">
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          togglePinTable(database.id, schema.name, table)
-                                        }}
-                                      >
-                                        <RiPushpinLine className="size-4" />
-                                        Pin
-                                      </DropdownMenuItem>
                                       <DropdownMenuItem
                                         onClick={(e) => {
                                           e.stopPropagation()
