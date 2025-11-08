@@ -35,6 +35,10 @@ const pageStoreType = type({
   tabs: tabType.array(),
   tablesSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
+  pinnedTables: type({
+    schema: 'string',
+    table: 'string',
+  }).array(),
 })
 
 const defaultState: typeof pageStoreType.infer = {
@@ -66,6 +70,7 @@ const defaultState: typeof pageStoreType.infer = {
   tabs: [],
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
+  pinnedTables: [],
 }
 
 const storesMap = new Map<string, Store<typeof pageStoreType.infer>>()
@@ -113,6 +118,7 @@ export function databaseStore(id: string) {
       tabs: currentVal.tabs,
       tablesSearch: currentVal.tablesSearch,
       tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
+      pinnedTables: currentVal.pinnedTables,
     } satisfies Omit<typeof currentVal, 'queriesToRun' | 'files' | 'editorQueries'>))
   })
 
@@ -156,21 +162,27 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
   }
 }
 
-export function removeTab(id: string, schema: string, table: string) {
-  const store = databaseStore(id)
-
-  store.setState(prev => ({
-    ...prev,
-    tabs: prev.tabs.filter(tab => !(tab.table === table && tab.schema === schema)) ?? [],
-  } satisfies typeof prev))
-}
-
 export function renameTab(id: string, schema: string, table: string, newTableName: string) {
   const store = databaseStore(id)
 
   store.setState(prev => ({
     ...prev,
     tabs: prev.tabs.map(tab => tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab) ?? [],
+    pinnedTables: prev.pinnedTables.map(t =>
+      t.table === table && t.schema === schema ? { ...t, table: newTableName } : t,
+    ),
+  } satisfies typeof prev))
+}
+
+export function removeTab(id: string, schema: string, table: string) {
+  const store = databaseStore(id)
+
+  store.setState(prev => ({
+    ...prev,
+    tabs: prev.tabs.filter(tab => !(tab.table === table && tab.schema === schema)) ?? [],
+    pinnedTables: prev.pinnedTables.filter(
+      t => !(t.table === table && t.schema === schema),
+    ),
   } satisfies typeof prev))
 }
 
@@ -187,5 +199,30 @@ export function moveTab(id: string, activeId: string | number, overId: string | 
       ...state,
       tabs: arrayMove(items, oldIndex, newIndex),
     } satisfies typeof state
+  })
+}
+
+export function togglePinTable(id: string, schema: string, table: string) {
+  const store = databaseStore(id)
+
+  store.setState((state) => {
+    const isPinned = state.pinnedTables.some(
+      t => t.schema === schema && t.table === table,
+    )
+
+    if (isPinned) {
+      return {
+        ...state,
+        pinnedTables: state.pinnedTables.filter(
+          t => !(t.schema === schema && t.table === table),
+        ),
+      } satisfies typeof state
+    }
+    else {
+      return {
+        ...state,
+        pinnedTables: [...state.pinnedTables, { schema, table }],
+      } satisfies typeof state
+    }
   })
 }
