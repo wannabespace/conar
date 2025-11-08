@@ -11,7 +11,7 @@ import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiPushpinFill
 import { Link, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
-import { useMemo, useRef } from 'react'
+import { memo, useCallback, useMemo, useRef } from 'react'
 import { useDatabaseTablesAndSchemas } from '~/entities/database'
 import { addTab, databaseStore, togglePinTable } from '../../../-store'
 import { DropTableDialog } from './drop-table-dialog'
@@ -36,6 +36,128 @@ function Skeleton() {
   )
 }
 
+interface TableItemProps {
+  database: typeof databases.$inferSelect
+  schema: string
+  table: string
+  isPinned: boolean
+  search?: string
+  tableParam: string | undefined
+  dropTableDialogRef: React.MutableRefObject<ComponentRef<typeof DropTableDialog> | null>
+  renameTableDialogRef: React.MutableRefObject<ComponentRef<typeof RenameTableDialog> | null>
+}
+
+const TableItem = memo(({ database, schema, table, isPinned, search, tableParam, dropTableDialogRef, renameTableDialogRef }: TableItemProps) => {
+  const handleTogglePin = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    togglePinTable(database.id, schema, table)
+  }, [database.id, schema, table])
+
+  const handleDoubleClick = useCallback(() => {
+    addTab(database.id, schema, table)
+  }, [database.id, schema, table])
+
+  const handleCopyName = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    copyToClipboard(table, 'Table name copied')
+  }, [table])
+
+  const handleRename = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    renameTableDialogRef.current?.rename(schema, table)
+  }, [schema, table, renameTableDialogRef])
+
+  const handleDrop = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    dropTableDialogRef.current?.drop(schema, table)
+  }, [schema, table, dropTableDialogRef])
+
+  return (
+    <Link
+      to="/database/$id/table"
+      params={{ id: database.id }}
+      search={{
+        schema,
+        table,
+      }}
+      preloadDelay={200}
+      onDoubleClick={handleDoubleClick}
+      className={cn(
+        'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/30',
+        tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
+      )}
+    >
+      <RiTableLine
+        className={cn(
+          'size-4 text-muted-foreground shrink-0 opacity-50',
+          tableParam === table && 'text-primary opacity-100',
+        )}
+      />
+      <span className="truncate">
+        {search
+          ? (
+              <span
+                // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
+                dangerouslySetInnerHTML={{
+                  __html: table.replace(
+                    new RegExp(search, 'gi'),
+                    match => `<mark class="text-white bg-primary/50">${match}</mark>`,
+                  ),
+                }}
+              />
+            )
+          : table}
+      </span>
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        className={cn(
+          'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 ml-auto transition-opacity',
+          tableParam === table && 'hover:bg-primary/10',
+        )}
+        onClick={handleTogglePin}
+      >
+        {isPinned ? <RiPushpinFill className="size-3 text-primary" /> : <RiPushpinLine className="size-3" />}
+      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className={cn(
+              'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 transition-opacity',
+              tableParam === table && 'hover:bg-primary/10',
+            )}
+            onClick={e => e.stopPropagation()}
+          >
+            <RiMoreLine className="size-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-48">
+          <DropdownMenuItem onClick={handleCopyName}>
+            <RiFileCopyLine className="size-4" />
+            Copy Name
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleRename}>
+            <RiEditLine className="size-4" />
+            Rename
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={handleDrop}
+          >
+            <RiDeleteBin7Line className="size-4" />
+            Drop
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </Link>
+  )
+})
+
+TableItem.displayName = 'TableItem'
+
 export function TablesTree({ database, className, search }: { database: typeof databases.$inferSelect, className?: string, search?: string }) {
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas({ database })
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
@@ -53,14 +175,17 @@ export function TablesTree({ database, className, search }: { database: typeof d
       ).toSorted((a, b) => a.localeCompare(b)),
     })).filter(schema => schema.tables.length) || []
 
+    // Create a Set for O(1) lookup instead of O(n) with .some()
+    const pinnedSet = new Set(
+      pinnedTables.map(t => `${t.schema}:${t.table}`),
+    )
+
     return schemas.map((schema) => {
       const pinned: string[] = []
       const unpinned: string[] = []
 
       schema.tables.forEach((table) => {
-        const isPinned = pinnedTables.some(
-          t => t.schema === schema.name && t.table === table,
-        )
+        const isPinned = pinnedSet.has(`${schema.name}:${table}`)
         if (isPinned) {
           pinned.push(table)
         }
@@ -162,102 +287,16 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                 exit={{ opacity: 0, height: 0 }}
                                 transition={{ duration: 0.2 }}
                               >
-                                <Link
-                                  to="/database/$id/table"
-                                  params={{ id: database.id }}
-                                  search={{
-                                    schema: schema.name,
-                                    table,
-                                  }}
-                                  preloadDelay={200}
-                                  onDoubleClick={() => addTab(database.id, schema.name, table)}
-                                  className={cn(
-                                    'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/30',
-                                    tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
-                                  )}
-                                >
-                                  <RiTableLine
-                                    className={cn(
-                                      'size-4 text-muted-foreground shrink-0 opacity-50',
-                                      tableParam === table && 'text-primary opacity-100',
-                                    )}
-                                  />
-                                  <span className="truncate">
-                                    {search
-                                      ? (
-                                          <span
-                                            // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
-                                            dangerouslySetInnerHTML={{
-                                              __html: table.replace(
-                                                new RegExp(search, 'gi'),
-                                                match => `<mark class="text-white bg-primary/50">${match}</mark>`,
-                                              ),
-                                            }}
-                                          />
-                                        )
-                                      : table}
-                                  </span>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon-xs"
-                                    className={cn(
-                                      'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 ml-auto transition-opacity',
-                                      tableParam === table && 'hover:bg-primary/10',
-                                    )}
-                                    onClick={(e) => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                      togglePinTable(database.id, schema.name, table)
-                                    }}
-                                  >
-                                    <RiPushpinFill className="size-3 text-primary" />
-                                  </Button>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon-xs"
-                                        className={cn(
-                                          'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 transition-opacity',
-                                          tableParam === table && 'hover:bg-primary/10',
-                                        )}
-                                        onClick={e => e.stopPropagation()}
-                                      >
-                                        <RiMoreLine className="size-3" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="min-w-48">
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          copyToClipboard(table, 'Table name copied')
-                                        }}
-                                      >
-                                        <RiFileCopyLine className="size-4" />
-                                        Copy Name
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          renameTableDialogRef.current?.rename(schema.name, table)
-                                        }}
-                                      >
-                                        <RiEditLine className="size-4" />
-                                        Rename
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        variant="destructive"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          dropTableDialogRef.current?.drop(schema.name, table)
-                                        }}
-                                      >
-                                        <RiDeleteBin7Line className="size-4" />
-                                        Drop
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </Link>
+                                <TableItem
+                                  database={database}
+                                  schema={schema.name}
+                                  table={table}
+                                  isPinned
+                                  search={search}
+                                  tableParam={tableParam}
+                                  dropTableDialogRef={dropTableDialogRef}
+                                  renameTableDialogRef={renameTableDialogRef}
+                                />
                               </motion.div>
                             ))}
                             {/* Separator */}
@@ -273,102 +312,16 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                 exit={{ opacity: 0, height: 0 }}
                                 transition={{ duration: 0.2 }}
                               >
-                                <Link
-                                  to="/database/$id/table"
-                                  params={{ id: database.id }}
-                                  search={{
-                                    schema: schema.name,
-                                    table,
-                                  }}
-                                  preloadDelay={200}
-                                  onDoubleClick={() => addTab(database.id, schema.name, table)}
-                                  className={cn(
-                                    'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/30',
-                                    tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
-                                  )}
-                                >
-                                  <RiTableLine
-                                    className={cn(
-                                      'size-4 text-muted-foreground shrink-0 opacity-50',
-                                      tableParam === table && 'text-primary opacity-100',
-                                    )}
-                                  />
-                                  <span className="truncate">
-                                    {search
-                                      ? (
-                                          <span
-                                            // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
-                                            dangerouslySetInnerHTML={{
-                                              __html: table.replace(
-                                                new RegExp(search, 'gi'),
-                                                match => `<mark class="text-white bg-primary/50">${match}</mark>`,
-                                              ),
-                                            }}
-                                          />
-                                        )
-                                      : table}
-                                  </span>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon-xs"
-                                    className={cn(
-                                      'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 ml-auto transition-opacity',
-                                      tableParam === table && 'hover:bg-primary/10',
-                                    )}
-                                    onClick={(e) => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                      togglePinTable(database.id, schema.name, table)
-                                    }}
-                                  >
-                                    <RiPushpinLine className="size-3" />
-                                  </Button>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon-xs"
-                                        className={cn(
-                                          'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 transition-opacity',
-                                          tableParam === table && 'hover:bg-primary/10',
-                                        )}
-                                        onClick={e => e.stopPropagation()}
-                                      >
-                                        <RiMoreLine className="size-3" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="min-w-48">
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          copyToClipboard(table, 'Table name copied')
-                                        }}
-                                      >
-                                        <RiFileCopyLine className="size-4" />
-                                        Copy Name
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          renameTableDialogRef.current?.rename(schema.name, table)
-                                        }}
-                                      >
-                                        <RiEditLine className="size-4" />
-                                        Rename
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        variant="destructive"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          dropTableDialogRef.current?.drop(schema.name, table)
-                                        }}
-                                      >
-                                        <RiDeleteBin7Line className="size-4" />
-                                        Drop
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </Link>
+                                <TableItem
+                                  database={database}
+                                  schema={schema.name}
+                                  table={table}
+                                  isPinned={false}
+                                  search={search}
+                                  tableParam={tableParam}
+                                  dropTableDialogRef={dropTableDialogRef}
+                                  renameTableDialogRef={renameTableDialogRef}
+                                />
                               </motion.div>
                             ))}
                           </AnimatePresence>

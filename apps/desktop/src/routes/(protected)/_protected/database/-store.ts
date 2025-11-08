@@ -226,3 +226,29 @@ export function togglePinTable(id: string, schema: string, table: string) {
     }
   })
 }
+
+export function cleanupPinnedTables(
+  id: string,
+  validTables: Array<{ schema: string, table: string }>,
+) {
+  const store = databaseStore(id)
+
+  store.setState((state) => {
+    const validTablesSet = new Set(
+      validTables.map(t => `${t.schema}:${t.table}`),
+    )
+
+    const cleanedPinnedTables = state.pinnedTables.filter(t =>
+      validTablesSet.has(`${t.schema}:${t.table}`),
+    )
+
+    if (cleanedPinnedTables.length !== state.pinnedTables.length) {
+      return {
+        ...state,
+        pinnedTables: cleanedPinnedTables,
+      } satisfies typeof state
+    }
+
+    return state
+  })
+}
