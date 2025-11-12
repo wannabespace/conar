@@ -45,7 +45,7 @@
     "ioredis-mock": "^8.13.1",
     "loops": "^6.0.1",
     "nanoid": "catalog:",
-    "pg": "^8.16.3",
+    "pg": "catalog:",
     "postgres": "^3.4.7",
     "posthog-node": "^5.11.0",
     "react": "catalog:",
@@ -62,7 +62,7 @@
     "@electric-sql/pglite": "^0.3.11",
     "@playwright/test": "catalog:",
     "@types/ioredis-mock": "^8.2.6",
-    "@types/pg": "^8.15.6",
+    "@types/pg": "catalog:",
     "@types/react": "catalog:",
     "drizzle-kit": "catalog:"
   }
