@@ -90,7 +90,7 @@ function TableItem({ schema, table, isPinned = false, search, onRename, onDrop }
         variant="ghost"
         size="icon-xs"
         className={cn(
-          'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 ml-auto transition-opacity',
+          'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 ml-auto transition-opacity -mr-1',
           tableParam === table && 'hover:bg-primary/10',
         )}
         onClick={(e) => {
@@ -181,9 +181,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
       }))
       .filter(schema => schema.tables.length)
 
-    const pinnedSet = new Set(
-      pinnedTables.map(t => `${t.schema}:${t.table}`),
-    )
+    const pinnedSet = new Set(pinnedTables.map(t => `${t.schema}:${t.table}`))
 
     return schemas.map((schema) => {
       const pinned: string[] = []

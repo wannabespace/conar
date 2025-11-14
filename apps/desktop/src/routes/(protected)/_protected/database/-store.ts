@@ -2,6 +2,7 @@ import type { FileRoutesById } from '~/routeTree.gen'
 import { arrayMove } from '@dnd-kit/sortable'
 import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
+import { toast } from 'sonner'
 import { getEditorQueries } from '~/entities/database/utils/helpers'
 
 export const tabType = type({
@@ -204,6 +205,8 @@ export function moveTab(id: string, activeId: string | number, overId: string | 
   })
 }
 
+const MAX_PINNED_TABLES = 10
+
 export function togglePinTable(id: string, schema: string, table: string) {
   const store = databaseStore(id)
 
@@ -215,17 +218,18 @@ export function togglePinTable(id: string, schema: string, table: string) {
     if (isPinned) {
       return {
         ...state,
-        pinnedTables: state.pinnedTables.filter(
-          t => !(t.schema === schema && t.table === table),
-        ),
+        pinnedTables: state.pinnedTables.filter(t => !(t.schema === schema && t.table === table)),
       } satisfies typeof state
     }
-    else {
-      return {
-        ...state,
-        pinnedTables: [...state.pinnedTables, { schema, table }],
-      } satisfies typeof state
+
+    if (state.pinnedTables.length >= MAX_PINNED_TABLES) {
+      toast.info(`Only ${MAX_PINNED_TABLES} tables can be pinned. Last pinned table removed.`)
     }
+
+    return {
+      ...state,
+      pinnedTables: [{ schema, table }, ...state.pinnedTables].slice(0, MAX_PINNED_TABLES),
+    } satisfies typeof state
   })
 }
 
