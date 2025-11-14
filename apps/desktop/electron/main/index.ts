@@ -17,8 +17,6 @@ export const store = new Store<{
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
-initElectronEvents()
-
 let mainWindow: BrowserWindow | null = null
 
 export function createWindow() {
