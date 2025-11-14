@@ -1,9 +1,9 @@
 import type { ComponentRef } from 'react'
-import type { databases } from '~/drizzle'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -11,9 +11,10 @@ import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiPushpinFill
 import { Link, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useDatabaseTablesAndSchemas } from '~/entities/database'
-import { addTab, databaseStore, togglePinTable } from '../../../-store'
+import { Route } from '..'
+import { addTab, cleanupPinnedTables, databaseStore, togglePinTable } from '../../../-store'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 
@@ -37,41 +38,17 @@ function Skeleton() {
 }
 
 interface TableItemProps {
-  database: typeof databases.$inferSelect
   schema: string
   table: string
-  isPinned: boolean
+  isPinned?: boolean
   search?: string
-  tableParam: string | undefined
-  dropTableDialogRef: React.MutableRefObject<ComponentRef<typeof DropTableDialog> | null>
-  renameTableDialogRef: React.MutableRefObject<ComponentRef<typeof RenameTableDialog> | null>
+  onRename: () => void
+  onDrop: () => void
 }
 
-function TableItem({ database, schema, table, isPinned, search, tableParam, dropTableDialogRef, renameTableDialogRef }: TableItemProps) {
-  const handleTogglePin = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    togglePinTable(database.id, schema, table)
-  }
-
-  const handleDoubleClick = () => {
-    addTab(database.id, schema, table)
-  }
-
-  const handleCopyName = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    copyToClipboard(table, 'Table name copied')
-  }
-
-  const handleRename = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    renameTableDialogRef.current?.rename(schema, table)
-  }
-
-  const handleDrop = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    dropTableDialogRef.current?.drop(schema, table)
-  }
+function TableItem({ schema, table, isPinned = false, search, onRename, onDrop }: TableItemProps) {
+  const { table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
+  const { database } = Route.useRouteContext()
 
   return (
     <Link
@@ -82,7 +59,7 @@ function TableItem({ database, schema, table, isPinned, search, tableParam, drop
         table,
       }}
       preloadDelay={200}
-      onDoubleClick={handleDoubleClick}
+      onDoubleClick={() => addTab(database.id, schema, table)}
       className={cn(
         'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/30',
         tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
@@ -116,7 +93,11 @@ function TableItem({ database, schema, table, isPinned, search, tableParam, drop
           'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 ml-auto transition-opacity',
           tableParam === table && 'hover:bg-primary/10',
         )}
-        onClick={handleTogglePin}
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          togglePinTable(database.id, schema, table)
+        }}
       >
         {isPinned ? <RiPushpinFill className="size-3 text-primary" /> : <RiPushpinLine className="size-3" />}
       </Button>
@@ -135,17 +116,30 @@ function TableItem({ database, schema, table, isPinned, search, tableParam, drop
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-48">
-          <DropdownMenuItem onClick={handleCopyName}>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation()
+              copyToClipboard(table, 'Table name copied')
+            }}
+          >
             <RiFileCopyLine className="size-4" />
             Copy Name
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleRename}>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation()
+              onRename()
+            }}
+          >
             <RiEditLine className="size-4" />
             Rename
           </DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
-            onClick={handleDrop}
+            onClick={(e) => {
+              e.stopPropagation()
+              onDrop()
+            }}
           >
             <RiDeleteBin7Line className="size-4" />
             Drop
@@ -156,22 +150,36 @@ function TableItem({ database, schema, table, isPinned, search, tableParam, drop
   )
 }
 
-export function TablesTree({ database, className, search }: { database: typeof databases.$inferSelect, className?: string, search?: string }) {
+export function TablesTree({ className, search }: { className?: string, search?: string }) {
+  const { database } = Route.useRouteContext()
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas({ database })
-  const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
+  const { schema: schemaParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const store = databaseStore(database.id)
   const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const pinnedTables = useStore(store, state => state.pinnedTables)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
 
+  useEffect(() => {
+    if (!tablesAndSchemas)
+      return
+
+    cleanupPinnedTables(database.id, tablesAndSchemas.schemas.flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
+  }, [database, tablesAndSchemas])
+
   const filteredTablesAndSchemas = useMemo(() => {
-    const schemas = tablesAndSchemas?.schemas?.map(schema => ({
-      ...schema,
-      tables: schema.tables.filter(table =>
-        !search || table.toLowerCase().includes(search.toLowerCase()),
-      ).toSorted((a, b) => a.localeCompare(b)),
-    })).filter(schema => schema.tables.length) || []
+    if (!tablesAndSchemas)
+      return []
+
+    const schemas = tablesAndSchemas.schemas
+      .map(schema => ({
+        ...schema,
+        tables: schema.tables.filter(table =>
+          !search
+          || table.toLowerCase().includes(search.toLowerCase()),
+        ).toSorted((a, b) => a.localeCompare(b)),
+      }))
+      .filter(schema => schema.tables.length)
 
     const pinnedSet = new Set(
       pinnedTables.map(t => `${t.schema}:${t.table}`),
@@ -285,22 +293,18 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                 transition={{ duration: 0.2 }}
                               >
                                 <TableItem
-                                  database={database}
                                   schema={schema.name}
                                   table={table}
                                   isPinned
                                   search={search}
-                                  tableParam={tableParam}
-                                  dropTableDialogRef={dropTableDialogRef}
-                                  renameTableDialogRef={renameTableDialogRef}
+                                  onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
+                                  onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
                                 />
                               </motion.div>
                             ))}
-                            {/* Separator */}
                             {schema.pinnedTables.length > 0 && schema.unpinnedTables.length > 0 && (
-                              <div className="h-px bg-border my-2" />
+                              <Separator className="h-px! my-2" />
                             )}
-                            {/* Unpinned Tables */}
                             {schema.unpinnedTables.map(table => (
                               <motion.div
                                 key={table}
@@ -310,14 +314,11 @@ export function TablesTree({ database, className, search }: { database: typeof d
                                 transition={{ duration: 0.2 }}
                               >
                                 <TableItem
-                                  database={database}
                                   schema={schema.name}
                                   table={table}
-                                  isPinned={false}
                                   search={search}
-                                  tableParam={tableParam}
-                                  dropTableDialogRef={dropTableDialogRef}
-                                  renameTableDialogRef={renameTableDialogRef}
+                                  onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
+                                  onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
                                 />
                               </motion.div>
                             ))}

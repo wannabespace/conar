@@ -152,7 +152,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           schema: input.tableAndSchema.schemaName,
         })) satisfies InferToolOutput<typeof tools.columns>
 
-        chat.addToolResult({
+        chat.addToolOutput({
           tool: 'columns',
           toolCallId: toolCall.toolCallId,
           output,
@@ -165,7 +165,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           value: v,
         })))) satisfies InferToolOutput<typeof tools.enums>
 
-        chat.addToolResult({
+        chat.addToolOutput({
           tool: 'enums',
           toolCallId: toolCall.toolCallId,
           output,
@@ -201,7 +201,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           },
         })) satisfies InferToolOutput<typeof tools.select>
 
-        chat.addToolResult({
+        chat.addToolOutput({
           tool: 'select',
           toolCallId: toolCall.toolCallId,
           output,

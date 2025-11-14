@@ -165,24 +165,26 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
 export function renameTab(id: string, schema: string, table: string, newTableName: string) {
   const store = databaseStore(id)
 
+  const rename = <T extends { table: string, schema: string }>(tab: T) =>
+    tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab
+
   store.setState(prev => ({
     ...prev,
-    tabs: prev.tabs.map(tab => tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab) ?? [],
-    pinnedTables: prev.pinnedTables.map(t =>
-      t.table === table && t.schema === schema ? { ...t, table: newTableName } : t,
-    ),
+    tabs: prev.tabs.map(rename),
+    pinnedTables: prev.pinnedTables.map(rename),
   } satisfies typeof prev))
 }
 
 export function removeTab(id: string, schema: string, table: string) {
   const store = databaseStore(id)
 
+  const remove = <T extends { table: string, schema: string }>(tab: T) =>
+    tab.table !== table || tab.schema !== schema
+
   store.setState(prev => ({
     ...prev,
-    tabs: prev.tabs.filter(tab => !(tab.table === table && tab.schema === schema)) ?? [],
-    pinnedTables: prev.pinnedTables.filter(
-      t => !(t.table === table && t.schema === schema),
-    ),
+    tabs: prev.tabs.filter(remove) ?? [],
+    pinnedTables: prev.pinnedTables.filter(remove),
   } satisfies typeof prev))
 }
 
@@ -229,23 +231,19 @@ export function togglePinTable(id: string, schema: string, table: string) {
 
 export function cleanupPinnedTables(
   id: string,
-  validTables: Array<{ schema: string, table: string }>,
+  tables: { schema: string, table: string }[],
 ) {
   const store = databaseStore(id)
 
   store.setState((state) => {
-    const validTablesSet = new Set(
-      validTables.map(t => `${t.schema}:${t.table}`),
-    )
+    const tablesSet = new Set(tables.map(t => `${t.schema}:${t.table}`))
 
-    const cleanedPinnedTables = state.pinnedTables.filter(t =>
-      validTablesSet.has(`${t.schema}:${t.table}`),
-    )
+    const pinnedTables = state.pinnedTables.filter(t => tablesSet.has(`${t.schema}:${t.table}`))
 
-    if (cleanedPinnedTables.length !== state.pinnedTables.length) {
+    if (pinnedTables.length !== state.pinnedTables.length) {
       return {
         ...state,
-        pinnedTables: cleanedPinnedTables,
+        pinnedTables,
       } satisfies typeof state
     }
 

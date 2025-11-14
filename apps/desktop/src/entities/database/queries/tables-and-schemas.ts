@@ -1,6 +1,5 @@
 import type { databases } from '~/drizzle'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { cleanupPinnedTables } from '~/routes/(protected)/_protected/database/-store'
 import { tablesAndSchemasSql } from '../sql/tables-and-schemas'
 
 export function tablesAndSchemasQuery({ database }: { database: typeof databases.$inferSelect }) {
@@ -12,8 +11,6 @@ export function tablesAndSchemasQuery({ database }: { database: typeof databases
         name: schema,
         tables: tables!.map(table => table.table),
       }))
-
-      cleanupPinnedTables(database.id, results)
 
       return {
         totalSchemas: schemas.length,
