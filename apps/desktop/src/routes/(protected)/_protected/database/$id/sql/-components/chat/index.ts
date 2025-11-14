@@ -173,7 +173,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       }
       else if (toolCall.toolName === 'select') {
         const input = toolCall.input as InferToolInput<typeof tools.select>
-        const output = await rowsSql(database, {
+        const { result: output } = await rowsSql(database, {
           schema: input.tableAndSchema.schemaName,
           table: input.tableAndSchema.tableName,
           limit: input.limit,
@@ -196,7 +196,9 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           }),
           filtersConcatOperator: input.whereConcatOperator,
         }).catch(error => ({
-          error: error instanceof Error ? error.message : 'Error during the query execution',
+          result: {
+            error: error instanceof Error ? error.message : 'Error during the query execution',
+          },
         })) satisfies InferToolOutput<typeof tools.select>
 
         chat.addToolResult({

@@ -1,7 +1,5 @@
 import type { databases } from '~/drizzle'
-import { tables } from '@conar/shared/schemas/postgres/information'
 import { type } from 'arktype'
-import { and, eq, like, not, notInArray } from 'drizzle-orm'
 import { runSql } from '../query'
 
 export const tablesAndSchemasType = type({
@@ -11,20 +9,27 @@ export const tablesAndSchemasType = type({
 
 export function tablesAndSchemasSql(database: typeof databases.$inferSelect) {
   return runSql({
-    type: tablesAndSchemasType,
     database,
-    label: `Tables and Schemas`,
-    query: ({ db }) => db
-      .select({
-        schema: tables.table_schema,
-        table: tables.table_name,
-      })
-      .from(tables)
-      .where(and(
-        notInArray(tables.table_schema, ['pg_catalog', 'information_schema']),
-        not(like(tables.table_schema, 'pg_toast%')),
-        not(like(tables.table_schema, 'pg_temp%')),
-        eq(tables.table_type, 'BASE TABLE'),
-      )),
+    label: 'Tables and Schemas',
+    validate: tablesAndSchemasType.assert,
+    query: {
+      postgres: db => db
+        .selectFrom('information_schema.tables')
+        .select([
+          'table_schema as schema',
+          'table_name as table',
+        ])
+        .where(({ eb, and, not }) => and([
+          eb('table_schema', 'not in', ['pg_catalog', 'information_schema']),
+          not(eb('table_schema', 'like', 'pg_toast%')),
+          not(eb('table_schema', 'like', 'pg_temp%')),
+          eb('table_type', '=', 'BASE TABLE'),
+        ]))
+        .$assertType<typeof tablesAndSchemasType.inferIn>()
+        .compile(),
+      mysql: () => {
+        throw new Error('Not implemented')
+      },
+    },
   })
 }

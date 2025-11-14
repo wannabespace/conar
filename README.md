@@ -19,7 +19,7 @@ Conar is an AI-powered open-source project that simplifies database interactions
 
 - **💾 Multi-Database Support**
   - PostgreSQL
-  - MySQL (coming soon)
+  - MySQL
   - MongoDB (coming soon)
 
 - **🤖 AI-Powered Features**

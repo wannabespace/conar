@@ -1,9 +1,9 @@
 import type { databases } from '~/drizzle'
 import { getErrorMessage } from '@conar/shared/utils/error'
 import { queryOptions } from '@tanstack/react-query'
+import { CompiledQuery } from 'kysely'
 import { toast } from 'sonner'
-import { hasDangerousSqlKeywords } from '~/entities/database'
-import { drizzleProxy } from '~/entities/database/query'
+import { hasDangerousSqlKeywords, runSql } from '~/entities/database'
 import { databaseStore } from '../../../../-store'
 
 export * from './runner'
@@ -15,27 +15,31 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
       const store = databaseStore(database.id)
       const queries = store.state.queriesToRun
 
-      const db = drizzleProxy(database, 'SQL Runner')
-      const results = await Promise.all(queries.map(({ query, startLineNumber, endLineNumber }) => {
-        const now = Date.now()
-        return db.execute(query)
-          .then(data => ({
-            data,
-            error: null,
-            query,
-            startLineNumber,
-            endLineNumber,
-            duration: Date.now() - now,
-          }))
-          .catch(e => ({
-            data: null,
-            error: getErrorMessage(e),
-            query,
-            startLineNumber,
-            endLineNumber,
-            duration: Date.now() - now,
-          }))
-      }))
+      const results = await Promise.all(queries.map(({ query, startLineNumber, endLineNumber }) => runSql({
+        database,
+        query: {
+          postgres: () => CompiledQuery.raw(query),
+          mysql: () => CompiledQuery.raw(query),
+        },
+        label: `SQL Runner (${startLineNumber === endLineNumber ? startLineNumber : `${startLineNumber}-${endLineNumber}`})`,
+      })
+        .then(data => ({
+          data: data.result as Record<string, unknown>[],
+          error: null,
+          query,
+          startLineNumber,
+          endLineNumber,
+          duration: data.duration,
+        }))
+        .catch(e => ({
+          data: null,
+          error: getErrorMessage(e),
+          query,
+          startLineNumber,
+          endLineNumber,
+          duration: 0,
+        })),
+      ))
 
       if (signal.aborted) {
         return null!

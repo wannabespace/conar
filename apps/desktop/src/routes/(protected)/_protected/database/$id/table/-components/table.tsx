@@ -115,7 +115,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     try {
       setValue(rowIndex, columnId, newValue)
-      const [result] = await setSql(database, {
+      const { result: [result] } = await setSql(database, {
         schema,
         table,
         values: { [columnId]: prepareValue(newValue, columns?.find(c => c.id === columnId)?.type) },
