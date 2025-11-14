@@ -80,11 +80,7 @@ export function Sidebar() {
         )}
       </div>
       <div className="flex-1 min-h-0 flex flex-col">
-        <TablesTree
-          className="flex-1"
-          database={database}
-          search={search}
-        />
+        <TablesTree className="flex-1" search={search} />
       </div>
     </div>
   )

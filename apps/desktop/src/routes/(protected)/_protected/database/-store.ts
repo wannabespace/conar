@@ -2,6 +2,7 @@ import type { FileRoutesById } from '~/routeTree.gen'
 import { arrayMove } from '@dnd-kit/sortable'
 import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
+import { toast } from 'sonner'
 import { getEditorQueries } from '~/entities/database/utils/helpers'
 
 export const tabType = type({
@@ -35,6 +36,10 @@ const pageStoreType = type({
   tabs: tabType.array(),
   tablesSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
+  pinnedTables: type({
+    schema: 'string',
+    table: 'string',
+  }).array(),
 })
 
 const defaultState: typeof pageStoreType.infer = {
@@ -66,6 +71,7 @@ const defaultState: typeof pageStoreType.infer = {
   tabs: [],
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
+  pinnedTables: [],
 }
 
 const storesMap = new Map<string, Store<typeof pageStoreType.infer>>()
@@ -113,6 +119,7 @@ export function databaseStore(id: string) {
       tabs: currentVal.tabs,
       tablesSearch: currentVal.tablesSearch,
       tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
+      pinnedTables: currentVal.pinnedTables,
     } satisfies Omit<typeof currentVal, 'queriesToRun' | 'files' | 'editorQueries'>))
   })
 
@@ -156,21 +163,29 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
   }
 }
 
-export function removeTab(id: string, schema: string, table: string) {
-  const store = databaseStore(id)
-
-  store.setState(prev => ({
-    ...prev,
-    tabs: prev.tabs.filter(tab => !(tab.table === table && tab.schema === schema)) ?? [],
-  } satisfies typeof prev))
-}
-
 export function renameTab(id: string, schema: string, table: string, newTableName: string) {
   const store = databaseStore(id)
 
+  const rename = <T extends { table: string, schema: string }>(tab: T) =>
+    tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab
+
   store.setState(prev => ({
     ...prev,
-    tabs: prev.tabs.map(tab => tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab) ?? [],
+    tabs: prev.tabs.map(rename),
+    pinnedTables: prev.pinnedTables.map(rename),
+  } satisfies typeof prev))
+}
+
+export function removeTab(id: string, schema: string, table: string) {
+  const store = databaseStore(id)
+
+  const remove = <T extends { table: string, schema: string }>(tab: T) =>
+    tab.table !== table || tab.schema !== schema
+
+  store.setState(prev => ({
+    ...prev,
+    tabs: prev.tabs.filter(remove) ?? [],
+    pinnedTables: prev.pinnedTables.filter(remove),
   } satisfies typeof prev))
 }
 
@@ -187,5 +202,55 @@ export function moveTab(id: string, activeId: string | number, overId: string | 
       ...state,
       tabs: arrayMove(items, oldIndex, newIndex),
     } satisfies typeof state
+  })
+}
+
+const MAX_PINNED_TABLES = 10
+
+export function togglePinTable(id: string, schema: string, table: string) {
+  const store = databaseStore(id)
+
+  store.setState((state) => {
+    const isPinned = state.pinnedTables.some(
+      t => t.schema === schema && t.table === table,
+    )
+
+    if (isPinned) {
+      return {
+        ...state,
+        pinnedTables: state.pinnedTables.filter(t => !(t.schema === schema && t.table === table)),
+      } satisfies typeof state
+    }
+
+    if (state.pinnedTables.length >= MAX_PINNED_TABLES) {
+      toast.info(`Only ${MAX_PINNED_TABLES} tables can be pinned. Last pinned table removed.`)
+    }
+
+    return {
+      ...state,
+      pinnedTables: [{ schema, table }, ...state.pinnedTables].slice(0, MAX_PINNED_TABLES),
+    } satisfies typeof state
+  })
+}
+
+export function cleanupPinnedTables(
+  id: string,
+  tables: { schema: string, table: string }[],
+) {
+  const store = databaseStore(id)
+
+  store.setState((state) => {
+    const tablesSet = new Set(tables.map(t => `${t.schema}:${t.table}`))
+
+    const pinnedTables = state.pinnedTables.filter(t => tablesSet.has(`${t.schema}:${t.table}`))
+
+    if (pinnedTables.length !== state.pinnedTables.length) {
+      return {
+        ...state,
+        pinnedTables,
+      } satisfies typeof state
+    }
+
+    return state
   })
 }
