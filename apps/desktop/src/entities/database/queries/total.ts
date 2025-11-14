@@ -27,7 +27,7 @@ export function databaseTableTotalQuery({
         filters: query.filters,
       },
     ],
-    queryFn: () => totalSql(database, { schema, table, filters: query.filters }).then(result => result[0]!.total),
+    queryFn: () => totalSql(database, { schema, table, filters: query.filters }).then(data => data.result[0]!.total),
     throwOnError: false,
   })
 }

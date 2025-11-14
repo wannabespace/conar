@@ -20,3 +20,5 @@ export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Om
 }
 
 export function noop() {}
+
+export type Satisfies<T, U extends T> = U

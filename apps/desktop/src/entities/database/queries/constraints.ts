@@ -5,7 +5,7 @@ import { constraintsSql } from '../sql/constraints'
 export function databaseConstraintsQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
     queryKey: ['database', database.id, 'constraints'],
-    queryFn: () => constraintsSql(database),
+    queryFn: () => constraintsSql(database).then(data => data.result),
   })
 }
 

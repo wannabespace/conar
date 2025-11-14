@@ -1,6 +1,5 @@
 import type { SqlLanguage } from 'sql-formatter'
 import { DatabaseType } from '@conar/shared/enums/database-type'
-import posthog from 'posthog-js'
 import { format } from 'sql-formatter'
 
 export function formatSql(
@@ -9,6 +8,7 @@ export function formatSql(
 ) {
   const langMap: Record<DatabaseType, SqlLanguage> = {
     [DatabaseType.Postgres]: 'postgresql',
+    [DatabaseType.MySQL]: 'mysql',
   }
 
   try {
@@ -17,12 +17,7 @@ export function formatSql(
       keywordCase: 'upper',
     })
   }
-  catch (error) {
-    posthog.captureException(error, {
-      sql,
-      type,
-    })
-    console.error('sql formatter error', error)
+  catch {
     return sql
   }
 }

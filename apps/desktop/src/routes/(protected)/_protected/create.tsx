@@ -25,7 +25,7 @@ import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { DatabaseIcon, databasesCollection, dbTestConnection, prefetchDatabaseCore } from '~/entities/database'
+import { DatabaseIcon, databasesCollection, executeSql, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 
@@ -63,9 +63,9 @@ function StepType({ type, setType }: { type: DatabaseType, setType: (type: Datab
             <DatabaseIcon type={DatabaseType.Postgres} className="size-4 shrink-0 text-primary" />
             {databaseLabels[DatabaseType.Postgres]}
           </ToggleGroupItem>
-          <ToggleGroupItem value="" disabled aria-label="MySQL">
+          <ToggleGroupItem value={DatabaseType.MySQL} aria-label="MySQL">
             <MySQLIcon />
-            MySQL (soon)
+            MySQL
           </ToggleGroupItem>
           <ToggleGroupItem value="" disabled aria-label="MongoDB">
             <MongoIcon />
@@ -170,6 +170,14 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
   )
 }
 
+async function testConnection({ type, connectionString}: { connectionString: string, type: DatabaseType }) {
+  await executeSql({
+    sql: 'SELECT 1',
+    type,
+    connectionString,
+  })
+}
+
 function CreateConnectionPage() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
@@ -220,8 +228,8 @@ function CreateConnectionPage() {
     },
   })
 
-  const { mutate: testConnection, reset, status } = useMutation({
-    mutationFn: dbTestConnection,
+  const { mutate: test, reset, status } = useMutation({
+    mutationFn: testConnection,
     onSuccess: () => {
       setStep('save')
       toast.success('Connection successful. You can save the database.')
@@ -261,7 +269,7 @@ function CreateConnectionPage() {
         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
           Create a connection
         </h1>
-        <p className="leading-7 [&:not(:first-child)]:mt-2 mb-10 text-muted-foreground">
+        <p className="leading-7 not-first:mt-2 mb-10 text-muted-foreground">
           Connect to your database by providing the connection details.
         </p>
         <Stepper
@@ -317,7 +325,7 @@ function CreateConnectionPage() {
                   : (
                       <Button
                         disabled={status === 'pending' || !connectionString}
-                        onClick={() => testConnection(form.state.values)}
+                        onClick={() => test(form.state.values)}
                       >
                         <LoadingContent loading={status === 'pending'}>
                           {status === 'error' ? 'Try again' : 'Test connection'}

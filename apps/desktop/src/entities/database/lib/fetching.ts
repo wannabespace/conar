@@ -3,9 +3,9 @@ import type { databases } from '~/drizzle'
 import { queryClient } from '~/main'
 import { databaseTableColumnsQuery } from '../queries/columns'
 import { databaseConstraintsQuery } from '../queries/constraints'
-import { tablesAndSchemasQuery } from '../queries/context'
 import { databaseEnumsQuery } from '../queries/enums'
 import { databaseRowsQuery } from '../queries/rows'
+import { tablesAndSchemasQuery } from '../queries/tables-and-schemas'
 import { databaseTableTotalQuery } from '../queries/total'
 
 export async function prefetchDatabaseCore(database: typeof databases.$inferSelect) {

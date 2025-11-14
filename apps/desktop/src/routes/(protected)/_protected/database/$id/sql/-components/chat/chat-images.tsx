@@ -21,7 +21,7 @@ export function ChatImages({
               <img
                 src={image.url}
                 alt={image.name}
-                className={cn('size-10 object-cover border rounded-md flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all', imageClassName)}
+                className={cn('size-10 object-cover border rounded-md shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all', imageClassName)}
               />
               {onRemove && (
                 <span

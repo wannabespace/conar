@@ -78,7 +78,7 @@ export function RunnerResultsTable({
           </span>
           <span className="text-xs text-muted-foreground">
             (
-            {duration}
+            {duration.toFixed()}
             ms)
           </span>
         </div>

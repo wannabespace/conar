@@ -5,22 +5,19 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
-import { setupProtocolHandler } from './deep-link'
-import { initElectronEvents } from './events'
-import { buildMenu } from './menu'
+import { setupProtocolHandler } from './lib/deep-link'
+import { initElectronEvents } from './lib/events'
+import { buildMenu } from './lib/menu'
 
 initElectronEvents()
 
 export const store = new Store<{
   bounds?: Rectangle
-  betaUpdates?: true
 }>()
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
-const betaUpdates = store.get('betaUpdates')
-
-autoUpdater.channel = betaUpdates ? 'beta' : null
+initElectronEvents()
 
 let mainWindow: BrowserWindow | null = null
 
