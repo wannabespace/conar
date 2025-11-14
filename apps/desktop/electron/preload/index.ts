@@ -1,16 +1,8 @@
-import type { electron } from '../main/events'
+import type { electron } from '../main/lib/events'
 import type { UpdatesStatus } from '~/updates-observer'
 import { contextBridge, ipcRenderer } from 'electron'
 
-// eslint-disable-next-line ts/no-explicit-any
-export type PromisifyElectron<T extends Record<string, any>> = {
-  [K in keyof T]: {
-    // eslint-disable-next-line ts/no-explicit-any
-    [K2 in keyof T[K]]: (...args: Parameters<T[K][K2]>) => ReturnType<T[K][K2]> extends Promise<any> ? ReturnType<T[K][K2]> : Promise<ReturnType<T[K][K2]>>
-  }
-}
-
-export type ElectronPreload = PromisifyElectron<typeof electron> & {
+export type ElectronPreload = typeof electron & {
   app: {
     onDeepLink: (callback: (url: string) => void) => () => void
     onUpdatesStatus: (callback: (params: { status: UpdatesStatus, message?: string }) => void) => () => void
@@ -24,36 +16,28 @@ export type ElectronPreload = PromisifyElectron<typeof electron> & {
 }
 
 // eslint-disable-next-line ts/no-explicit-any
-async function handleError(func: () => any, log?: () => any) {
+async function handleError(func: () => Promise<any>) {
   try {
     const result = await func()
 
     return result
   }
   catch (error) {
-    if (import.meta.env.DEV && log) {
-      // eslint-disable-next-line no-console
-      console.debug('preload error', log())
-    }
-
     if (error instanceof Error) {
       const message = error.message.replace(/^Error invoking remote method '[^']+': /, '')
       const errorMessage = message.toLowerCase().startsWith('error: ') ? message.slice(7) : message
 
-      throw new TypeError(errorMessage.charAt(0).toUpperCase() + errorMessage.slice(1))
+      throw new Error(errorMessage.charAt(0).toUpperCase() + errorMessage.slice(1), { cause: error })
     }
     throw error
   }
 }
 
 contextBridge.exposeInMainWorld('electron', {
-  databases: {
-    test: arg => handleError(() => ipcRenderer.invoke('databases.test', arg), () => arg),
-    query: arg => handleError(() => ipcRenderer.invoke('databases.query', arg), () => arg),
-  },
+  sql: arg => handleError(() => ipcRenderer.invoke('sql', arg)),
   encryption: {
-    encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg), () => arg),
-    decrypt: arg => handleError(() => ipcRenderer.invoke('encryption.decrypt', arg), () => arg),
+    encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg)),
+    decrypt: arg => handleError(() => ipcRenderer.invoke('encryption.decrypt', arg)),
   },
   app: {
     onDeepLink: (callback) => {

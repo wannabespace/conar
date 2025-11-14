@@ -1,7 +1,5 @@
 import type { databases } from '~/drizzle'
-import { constraintColumnUsage, constraints, keyColumnUsage } from '@conar/shared/schemas/postgres/information'
 import { type } from 'arktype'
-import { and, eq, inArray, like, not } from 'drizzle-orm'
 import { runSql } from '../query'
 
 const constraintType = type('"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"')
@@ -19,39 +17,48 @@ const constraintTypeLabelMap = {
 export const constraintsType = type({
   schema: 'string',
   table: 'string',
-  usageSchema: 'string | null',
-  usageTable: 'string | null',
-  usageColumn: 'string | null',
+  usage_schema: 'string | null',
+  usage_table: 'string | null',
+  usage_column: 'string | null',
   name: 'string',
   type: constraintType,
   column: 'string | null',
-}).pipe(item => ({
-  ...item,
-  type: constraintTypeLabelMap[item.type as typeof neededConstraintTypes[number]],
-}))
+})
+  .pipe(({ type, usage_column, usage_table, usage_schema, ...item }) => ({
+    ...item,
+    type: constraintTypeLabelMap[type as typeof neededConstraintTypes[number]],
+    usageTable: usage_table,
+    usageColumn: usage_column,
+    usageSchema: usage_schema,
+  }))
 
 export function constraintsSql(database: typeof databases.$inferSelect) {
   return runSql({
-    type: constraintsType,
+    validate: constraintsType.assert,
     database,
     label: 'Constraints',
-    query: ({ db }) => db
-      .select({
-        schema: constraints.table_schema,
-        table: constraints.table_name,
-        name: constraints.constraint_name,
-        type: constraints.constraint_type,
-        column: keyColumnUsage.column_name,
-        usageSchema: constraintColumnUsage.table_schema,
-        usageTable: constraintColumnUsage.table_name,
-        usageColumn: constraintColumnUsage.column_name,
-      })
-      .from(constraints)
-      .leftJoin(keyColumnUsage, eq(constraints.constraint_name, keyColumnUsage.constraint_name))
-      .leftJoin(constraintColumnUsage, eq(constraints.constraint_name, constraintColumnUsage.constraint_name))
-      .where(and(
-        inArray(constraints.constraint_type, neededConstraintTypes),
-        not(like(constraints.table_schema, 'pg_%')),
-      )),
+    query: {
+      postgres: db => db
+        .selectFrom('information_schema.table_constraints')
+        .leftJoin('information_schema.key_column_usage', 'information_schema.table_constraints.constraint_name', 'information_schema.key_column_usage.constraint_name')
+        .leftJoin('information_schema.constraint_column_usage', 'information_schema.table_constraints.constraint_name', 'information_schema.constraint_column_usage.constraint_name')
+        .select([
+          'information_schema.table_constraints.table_schema as schema',
+          'information_schema.table_constraints.table_name as table',
+          'information_schema.table_constraints.constraint_name as name',
+          'information_schema.table_constraints.constraint_type as type',
+          'information_schema.key_column_usage.column_name as column',
+          'information_schema.constraint_column_usage.table_schema as usage_schema',
+          'information_schema.constraint_column_usage.table_name as usage_table',
+          'information_schema.constraint_column_usage.column_name as usage_column',
+        ])
+        .where('information_schema.table_constraints.constraint_type', 'in', neededConstraintTypes)
+        .where('information_schema.constraint_column_usage.table_schema', 'not like', 'pg_%')
+        .$assertType<typeof constraintsType.inferIn>()
+        .compile(),
+      mysql: () => {
+        throw new Error('Not implemented')
+      },
+    },
   })
 }

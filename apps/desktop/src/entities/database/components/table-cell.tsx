@@ -2,7 +2,6 @@ import type { editor } from 'monaco-editor'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '../utils/table'
 import type { TableCellProps } from '~/components/table'
-import { getErrorMessage } from '@conar/shared/utils/error'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
@@ -298,10 +297,8 @@ export function TableCell({
 
     console.error(error)
 
-    const description = getErrorMessage(error)
-
     toast.error(`Failed to update cell "${column.id}"`, {
-      description,
+      description: error.message,
       duration: 3000,
     })
   }

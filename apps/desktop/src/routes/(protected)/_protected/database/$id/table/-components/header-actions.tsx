@@ -34,7 +34,7 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
     let offset = 0
 
     while (true) {
-      const batch = await rowsSql(database, {
+      const { result: batch } = await rowsSql(database, {
         schema,
         table,
         limit,
@@ -62,7 +62,7 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
     offset: 0,
     orderBy,
     filters,
-  })
+  }).then(data => data.result)
 
   const getData = async (limit?: number) => {
     return limit ? getLimitedData(limit) : getAllData()

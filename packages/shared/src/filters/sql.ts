@@ -20,36 +20,36 @@ export const SQL_FILTERS_GROUPED = [
   {
     group: 'comparison',
     filters: [
-      { label: 'Equal', operator: '=', hasValue: true },
-      { label: 'Not equal', operator: '!=', hasValue: true },
-      { label: 'Greater than', operator: '>', hasValue: true },
-      { label: 'Greater than or equal', operator: '>=', hasValue: true },
-      { label: 'Less than', operator: '<', hasValue: true },
-      { label: 'Less than or equal', operator: '<=', hasValue: true },
+      { label: 'Equal', operator: '=' },
+      { label: 'Not equal', operator: '!=' },
+      { label: 'Greater than', operator: '>' },
+      { label: 'Greater than or equal', operator: '>=' },
+      { label: 'Less than', operator: '<' },
+      { label: 'Less than or equal', operator: '<=' },
     ],
   },
   {
 
     group: 'text',
     filters: [
-      { label: 'Like', operator: 'LIKE', hasValue: true },
-      { label: 'Ilike', operator: 'ILIKE', hasValue: true },
-      { label: 'Not like', operator: 'NOT LIKE', hasValue: true },
+      { label: 'Like', operator: 'LIKE' },
+      { label: 'Ilike', operator: 'ILIKE' },
+      { label: 'Not like', operator: 'NOT LIKE' },
     ],
   },
   {
 
     group: 'list',
     filters: [
-      { label: 'In', operator: 'IN', hasValue: true },
-      { label: 'Not in', operator: 'NOT IN', hasValue: true },
+      { label: 'In', operator: 'IN' },
+      { label: 'Not in', operator: 'NOT IN' },
     ],
   },
   {
     group: 'null',
     filters: [
-      { label: 'Is null', operator: 'IS NULL', hasValue: false },
-      { label: 'Is not null', operator: 'IS NOT NULL', hasValue: false },
+      { label: 'Is null', operator: 'IS', constValue: null },
+      { label: 'Is not null', operator: 'IS NOT', constValue: null },
     ],
   },
 ] as const satisfies { group: FilterGroup, filters: Filter[] }[]
