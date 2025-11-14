@@ -1,5 +1,4 @@
 import type { databases } from '~/drizzle'
-import { getErrorMessage } from '@conar/shared/utils/error'
 import { queryOptions } from '@tanstack/react-query'
 import { CompiledQuery } from 'kysely'
 import { toast } from 'sonner'
@@ -33,7 +32,7 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
         }))
         .catch(e => ({
           data: null,
-          error: getErrorMessage(e),
+          error: e.message,
           query,
           startLineNumber,
           endLineNumber,

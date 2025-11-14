@@ -1,7 +1,6 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import type { MysqlDatabase, PostgresDatabase } from './schemas'
 import type { databases } from '~/drizzle'
-import { getErrorMessage } from '@conar/shared/utils/error'
 import { Store } from '@tanstack/react-store'
 import { Kysely } from 'kysely'
 import { formatSql } from '~/lib/formatter'
@@ -126,7 +125,7 @@ export async function runSql<T extends object = Record<string, unknown>>({
     }
   }
   catch (error) {
-    queryLog(database, queryId, { error: getErrorMessage(error) })
+    queryLog(database, queryId, { error: error instanceof Error ? error.message : String(error) })
 
     throw error
   }

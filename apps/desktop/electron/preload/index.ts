@@ -16,7 +16,7 @@ export type ElectronPreload = typeof electron & {
 }
 
 // eslint-disable-next-line ts/no-explicit-any
-async function handleError(func: () => any) {
+async function handleError(func: () => Promise<any>) {
   try {
     const result = await func()
 
@@ -27,7 +27,7 @@ async function handleError(func: () => any) {
       const message = error.message.replace(/^Error invoking remote method '[^']+': /, '')
       const errorMessage = message.toLowerCase().startsWith('error: ') ? message.slice(7) : message
 
-      throw new TypeError(errorMessage.charAt(0).toUpperCase() + errorMessage.slice(1), { cause: error })
+      throw new Error(errorMessage.charAt(0).toUpperCase() + errorMessage.slice(1), { cause: error })
     }
     throw error
   }

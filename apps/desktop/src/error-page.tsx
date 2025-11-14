@@ -1,5 +1,4 @@
 import type { ErrorComponentProps } from '@tanstack/react-router'
-import { getErrorMessage } from '@conar/shared/utils/error'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -34,9 +33,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
   }, [])
 
   useEffect(() => {
-    const message = getErrorMessage(error)
-
-    if (CONNECTION_ERRORS.some(e => message.includes(e))) {
+    if (CONNECTION_ERRORS.some(e => error.message.includes(e))) {
       return
     }
 
@@ -62,23 +59,13 @@ export function ErrorPage({ error }: ErrorComponentProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {!(error instanceof TraversalError) && !!error.cause && (
-                <ScrollArea className="rounded-md bg-muted p-4 text-xs h-[300px] font-mono">
-                  <span className="text-muted-foreground">
-                    {getErrorMessage(error.cause)}
-                  </span>
-                  {error.stack && (
-                    <>
-                      <br />
-                      <br />
-                      <span className="text-muted-foreground">
-                        {error.stack
-                          .split('\n')
-                          .filter(line => !line.trim().startsWith('at '))
-                          .join('\n')
-                          .replace('Error: ', '')}
-                      </span>
-                    </>
+              {!(error instanceof TraversalError) && (
+                <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[300px] font-mono">
+                  {error.message}
+                  {!!error.cause && error.message !== String(error.cause) && (
+                    <span className="text-muted-foreground">
+                      {String(error.cause)}
+                    </span>
                   )}
                 </ScrollArea>
               )}
