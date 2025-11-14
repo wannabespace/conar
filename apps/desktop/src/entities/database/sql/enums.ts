@@ -1,8 +1,5 @@
 import type { databases } from '~/drizzle'
-import { pgNamespace } from '@conar/shared/schemas/postgres/catalog'
-import { pgEnum, pgType } from '@conar/shared/schemas/postgres/internal'
 import { type } from 'arktype'
-import { eq, notInArray } from 'drizzle-orm'
 import { runSql } from '../query'
 
 export const enumType = type({
@@ -29,18 +26,25 @@ export const enumsType = enumType.array().pipe((rows) => {
 
 export function enumsSql(database: typeof databases.$inferSelect) {
   return runSql({
-    type: enumType,
+    validate: enumType.assert,
     database,
     label: 'Enums',
-    query: ({ db }) => db
-      .select({
-        schema: pgNamespace.nspname,
-        name: pgType.typname,
-        value: pgEnum.enumlabel,
-      })
-      .from(pgType)
-      .innerJoin(pgEnum, eq(pgEnum.enumtypid, pgType.oid))
-      .innerJoin(pgNamespace, eq(pgNamespace.oid, pgType.typnamespace))
-      .where(notInArray(pgNamespace.nspname, ['pg_catalog', 'information_schema'])),
+    query: {
+      postgres: db => db
+        .selectFrom('pg_type')
+        .innerJoin('pg_enum', 'pg_type.oid', 'pg_enum.enumtypid')
+        .innerJoin('pg_catalog.pg_namespace', 'pg_type.typnamespace', 'pg_catalog.pg_namespace.oid')
+        .select([
+          'pg_catalog.pg_namespace.nspname as schema',
+          'pg_type.typname as name',
+          'pg_enum.enumlabel as value',
+        ])
+        .where('pg_catalog.pg_namespace.nspname', 'not in', ['pg_catalog', 'information_schema'])
+        .$assertType<typeof enumType.inferIn>()
+        .compile(),
+      mysql: () => {
+        throw new Error('Not implemented')
+      },
+    },
   })
 }

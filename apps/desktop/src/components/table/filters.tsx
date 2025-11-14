@@ -226,7 +226,7 @@ export function FilterItem({
           />
         </PopoverContent>
       </Popover>
-      {filter.ref.hasValue && (
+      {!filter.ref.constValue && (
         <>
           <Separator orientation="vertical" />
           <Popover>
@@ -286,7 +286,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
   const column = columns.find(column => column.id === selectedColumn)
 
   useEffect(() => {
-    if (column && selectedFilter && !selectedFilter.hasValue) {
+    if (column && selectedFilter && !!selectedFilter.constValue) {
       onAdd({ column: column.id, ref: selectedFilter, values })
     }
   }, [column, selectedFilter, values, onAdd])

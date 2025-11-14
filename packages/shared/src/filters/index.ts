@@ -1,7 +1,7 @@
 export interface Filter {
   label: string
   operator: string
-  hasValue: boolean
+  constValue?: unknown
 }
 
 export interface ActiveFilter<T extends Filter = Filter> {

@@ -4,6 +4,7 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
+    "./ssl": "./src/ssl/index.ts",
     "./server": "./src/server.ts"
   },
   "scripts": {
@@ -15,6 +16,8 @@
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
+    "@types/pg": "catalog:",
+    "mysql2": "catalog:",
     "typescript": "catalog:"
   }
 }

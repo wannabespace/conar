@@ -86,7 +86,7 @@ export function RunnerResults() {
               ? (
                   <div className="h-full flex flex-col gap-2 items-center justify-center">
                     Error executing query
-                    <pre className="bg-red-50 text-red-700 py-1 px-2 mb-2 rounded text-xs font-mono overflow-x-auto dark:bg-red-950 dark:text-red-300">
+                    <pre className="bg-red-50 text-red-700 py-1 px-2 mb-2 rounded text-xs font-mono break-all overflow-x-auto dark:bg-red-950 dark:text-red-300">
                       {error}
                     </pre>
                     <Button

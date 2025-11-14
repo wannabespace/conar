@@ -4,7 +4,7 @@ import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query'
 import { rowsSql } from '../sql/rows'
 import { DEFAULT_PAGE_LIMIT } from '../utils/helpers'
 
-type Page = Awaited<ReturnType<typeof rowsSql>>[0]
+type Page = Awaited<ReturnType<typeof rowsSql>>['result'][number]
 
 interface PageResult {
   rows: Page[]
@@ -43,7 +43,7 @@ export function databaseRowsQuery({
       },
     ],
     queryFn: async ({ pageParam: offset }) => {
-      const result = await rowsSql(database, {
+      const { result } = await rowsSql(database, {
         schema,
         table,
         limit: DEFAULT_PAGE_LIMIT,

@@ -6,7 +6,7 @@ export function databaseEnumsQuery({ database }: { database: typeof databases.$i
   return queryOptions({
     queryKey: ['database', database.id, 'enums'],
     queryFn: async () => {
-      const enums = await enumsSql(database)
+      const { result: enums } = await enumsSql(database)
 
       const map = new Map<string, { schema: string, name: string, values: string[] }>()
 

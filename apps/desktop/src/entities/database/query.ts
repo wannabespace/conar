@@ -1,33 +1,22 @@
-import type { DatabaseQueryResult } from '@conar/shared/databases'
-import type { Type } from 'arktype'
+import type { DatabaseType } from '@conar/shared/enums/database-type'
+import type { MysqlDatabase, PostgresDatabase } from './schemas'
 import type { databases } from '~/drizzle'
-import { DatabaseType } from '@conar/shared/enums/database-type'
-import { getErrorMessage } from '@conar/shared/utils/error'
 import { Store } from '@tanstack/react-store'
-// import { drizzle as mysqlProxy } from 'drizzle-orm/mysql-proxy'
-import { drizzle as pgProxy } from 'drizzle-orm/pg-proxy'
-import posthog from 'posthog-js'
+import { Kysely } from 'kysely'
 import { formatSql } from '~/lib/formatter'
-import { orpc } from '../../lib/orpc'
-
-const queryFn = window.electron ? window.electron.databases.query : orpc.proxy.databases.query
+import { DummyMysqlDialect, DummyPostgresDialect } from './dialects'
 
 export interface QueryLog {
   id: string
   query: string
   createdAt: Date
   values?: unknown[]
-  result: DatabaseQueryResult | null
+  result: Record<string, unknown>[] | null
   label: string
   error: string | null
 }
 
 export const queriesLogStore = new Store<Record<string, Record<string, QueryLog>>>({})
-
-const proxiesMap = {
-  [DatabaseType.Postgres]: pgProxy,
-  // [DatabaseType.MySQL]: mysqlProxy,
-} satisfies Record<DatabaseType, unknown>
 
 function queryLog(
   database: typeof databases.$inferSelect,
@@ -41,7 +30,7 @@ function queryLog(
   }: {
     query?: string
     values?: unknown[]
-    result?: DatabaseQueryResult | null
+    result?: Record<string, unknown>[] | null
     error?: string | null
     label?: string
   },
@@ -66,99 +55,78 @@ function queryLog(
 
   if (error) {
     console.error('db query error', database.type, query, values, error)
-    posthog.capture('database_query_error', {
-      type: database.type,
-      query,
-      values,
-      error,
-    })
   }
 }
 
-export function drizzleProxy<T extends Record<string, unknown>>(database: typeof databases.$inferSelect, label?: string) {
-  return proxiesMap[database.type]<T>(async (sql, params, method) => {
-    const queryId = crypto.randomUUID()
-
-    queryLog(database, queryId, {
-      query: formatSql(sql, database.type)
-        .split('\n')
-        .filter(str => !str.startsWith('--'))
-        .join(' '),
-      values: params,
-      result: null,
-      error: null,
-      label,
-    })
-
-    try {
-      const result = await queryFn({
-        type: database.type,
-        connectionString: database.connectionString,
-        // To prevent multiple queries
-        sql: sql.replaceAll(';', ''),
-        params,
-        method,
-      })
-
-      queryLog(database, queryId, { result })
-
-      return result
-    }
-    catch (error) {
-      queryLog(database, queryId, { error: getErrorMessage(error) })
-
-      throw error
-    }
-  })
+export function executeSql({ sql, values = [], type, connectionString }: { sql: string, values?: unknown[], type: DatabaseType, connectionString: string }) {
+  if (!window.electron) {
+    throw new Error('Electron is not available')
+  }
+  return window.electron.sql({ sql, values, type, connectionString })
 }
 
-export function dbTestConnection(params: {
-  type: DatabaseType
-  connectionString: string
-}) {
-  const method = window.electron ? window.electron.databases.test : orpc.proxy.databases.test
+const dialectsMap = {
+  postgres: () => new Kysely<PostgresDatabase>({
+    dialect: new DummyPostgresDialect(),
+    log: ['query', 'error'],
+  }),
+  mysql: () => new Kysely<MysqlDatabase>({
+    dialect: new DummyMysqlDialect(),
+    log: ['query', 'error'],
+  }),
+} satisfies Record<DatabaseType, () => unknown>
 
-  return method({
-    type: params.type,
-    connectionString: params.connectionString,
-  })
-}
-
-type SqlRunnerQuery<T extends Type> = ({ db }: { db: ReturnType<typeof drizzleProxy> }) => Promise<T['in']['infer'][]>
-type SqlRunnerQueryUnion<T extends Type> = SqlRunnerQuery<T> | Record<DatabaseType, SqlRunnerQuery<T>>
-
-export async function runSql<T extends Type>(params: {
-  type: T
-  database: typeof databases.$inferSelect
-  label: string
-  query: SqlRunnerQueryUnion<T>
-}): Promise<T['infer'][]>
-export async function runSql<T extends Type>(params: {
-  type?: T
-  database: typeof databases.$inferSelect
-  label: string
-  query: SqlRunnerQueryUnion<T>
-}): Promise<Record<string, unknown>[]>
-export async function runSql<T extends Type>({
-  type,
-  database,
+export async function runSql<T extends object = Record<string, unknown>>({
+  validate,
   label,
-  query,
+  database,
+  query: queryFn,
 }: {
-  type?: T
-  database: typeof databases.$inferSelect
+  validate?: (result: unknown) => T
   label: string
-  query: SqlRunnerQueryUnion<T>
-}): Promise<T['infer'][] | Record<string, unknown>[]> {
-  const queryFn = typeof query === 'function'
-    ? query
-    : query[database.type]
-
-  const res = await queryFn({ db: drizzleProxy(database, label) })
-
-  if (type) {
-    return res.map(item => type.assert(item))
+  database: typeof databases.$inferSelect
+  query: {
+    [D in DatabaseType]: (db: ReturnType<typeof dialectsMap[D]>) => { sql: string, parameters: readonly unknown[] }
   }
+}) {
+  const dialect = dialectsMap[database.type]()
+  // eslint-disable-next-line ts/no-explicit-any
+  const query = queryFn[database.type](dialect as any)
+  const queryId = crypto.randomUUID()
 
-  return res
+  queryLog(database, queryId, {
+    query: formatSql(query.sql, database.type)
+      .split('\n')
+      .filter(str => !str.startsWith('--'))
+      .join(' '),
+    values: query.parameters as unknown[],
+    result: null,
+    error: null,
+    label,
+  })
+
+  try {
+    if (!window.electron) {
+      throw new Error('Electron is not available')
+    }
+
+    const { result, duration } = await window.electron.sql({
+      sql: query.sql,
+      values: query.parameters as unknown[],
+      type: database.type,
+      connectionString: database.connectionString,
+    })
+
+    queryLog(database, queryId, { result })
+
+    return {
+      result: (validate ? result.map(row => validate(row)) : result) as T[],
+      duration,
+    }
+  }
+  catch (error) {
+    queryLog(database, queryId, { error: error instanceof Error ? error.message : String(error) })
+
+    throw error
+  }
 }

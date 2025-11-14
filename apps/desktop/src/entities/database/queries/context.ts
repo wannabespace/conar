@@ -6,7 +6,7 @@ export function tablesAndSchemasQuery({ database }: { database: typeof databases
   return queryOptions({
     queryKey: ['database', database.id, 'tables-and-schemas'],
     queryFn: async () => {
-      const results = await tablesAndSchemasSql(database)
+      const { result: results } = await tablesAndSchemasSql(database)
       const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(([schema, tables]) => ({
         name: schema,
         tables: tables!.map(table => table.table),

@@ -5,9 +5,9 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
-import { setupProtocolHandler } from './deep-link'
-import { initElectronEvents } from './events'
-import { buildMenu } from './menu'
+import { setupProtocolHandler } from './lib/deep-link'
+import { initElectronEvents } from './lib/events'
+import { buildMenu } from './lib/menu'
 
 export const store = new Store<{
   bounds?: Rectangle
