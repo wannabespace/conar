@@ -5,6 +5,7 @@
 export interface InformationSchema {
   tables: Tables
   columns: Columns
+  views: Views
   table_constraints: TableConstraints
   constraint_column_usage: ConstraintColumnUsage
   key_column_usage: KeyColumnUsage
@@ -27,6 +28,23 @@ interface Tables {
   is_insertable_into: boolean
   is_typed: boolean
   commit_action: string
+}
+
+/**
+ * @name views
+ * @type table
+ */
+interface Views {
+  table_catalog: string
+  table_schema: string
+  table_name: string
+  view_definition: string
+  check_option: string
+  is_updatable: 'YES' | 'NO'
+  is_insertable_into: 'YES' | 'NO'
+  is_trigger_updatable: 'YES' | 'NO'
+  is_trigger_deletable: 'YES' | 'NO'
+  is_trigger_insertable_into: 'YES' | 'NO'
 }
 
 /**

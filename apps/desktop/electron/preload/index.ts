@@ -57,7 +57,6 @@ contextBridge.exposeInMainWorld('electron', {
     },
     checkForUpdates: () => handleError(() => ipcRenderer.invoke('app.checkForUpdates')),
     quitAndInstall: () => handleError(() => ipcRenderer.invoke('app.quitAndInstall')),
-    channelUpdates: type => handleError(() => ipcRenderer.invoke('app.channelUpdates', type)),
   },
   versions: {
     node: () => process.versions.node,

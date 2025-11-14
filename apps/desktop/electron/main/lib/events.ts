@@ -2,7 +2,6 @@ import type { DatabaseType } from '@conar/shared/enums/database-type'
 import { createRequire } from 'node:module'
 import { decrypt, encrypt } from '@conar/shared/encryption'
 import { app, ipcMain } from 'electron'
-import { store } from '..'
 import { getPool as getMysqlPool } from '../databases/mysql'
 import { getPool as getPgPool } from '../databases/pg'
 
@@ -47,16 +46,6 @@ const _app = {
   },
   quitAndInstall: () => {
     autoUpdater.quitAndInstall()
-  },
-  channelUpdates: (type: 'default' | 'beta') => {
-    autoUpdater.channel = type === 'default' ? null : 'beta'
-
-    if (type === 'beta') {
-      store.set('betaUpdates', true)
-    }
-    else {
-      store.delete('betaUpdates')
-    }
   },
 }
 

@@ -11,14 +11,9 @@ import { buildMenu } from './lib/menu'
 
 export const store = new Store<{
   bounds?: Rectangle
-  betaUpdates?: true
 }>()
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
-
-const betaUpdates = store.get('betaUpdates')
-
-autoUpdater.channel = betaUpdates ? 'beta' : null
 
 initElectronEvents()
 
