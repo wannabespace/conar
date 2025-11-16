@@ -5,6 +5,7 @@ import { Chat } from '@ai-sdk/react'
 import { convertToAppUIMessage } from '@conar/shared/ai-tools'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { eventIteratorToStream } from '@orpc/client'
+import { encode } from '@toon-format/toon'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
@@ -109,7 +110,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           context: [
             `Current query in the SQL runner: ${store.state.sql.trim() || 'Empty'}`,
             'Database schemas and tables:',
-            JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database })), null, 2),
+            encode(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database }))),
           ].join('\n'),
         }, { signal: options.abortSignal }))
       },

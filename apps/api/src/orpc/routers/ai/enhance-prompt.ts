@@ -1,4 +1,5 @@
 import { openai } from '@ai-sdk/openai'
+import { encode } from '@toon-format/toon'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { withPosthog } from '~/lib/posthog'
@@ -36,7 +37,7 @@ export const enhancePrompt = orpc
             '- Maintain the user\'s original tone and intent',
             '',
             'Context from current chat conversation:',
-            JSON.stringify(messages, null, 2),
+            encode(messages),
             '',
             'Please rewrite the following user prompt to be more effective:',
           ].join('\n'),
