@@ -1,3 +1,4 @@
+import type { DialectType } from '../utils/types'
 import type { databases } from '~/drizzle'
 import { type } from 'arktype'
 import { runSql } from '../query'
@@ -32,6 +33,10 @@ export const constraintsType = type({
     usageSchema: usage_schema,
   }))
 
+type MysqlConstraint = DialectType<typeof constraintsType.inferIn, {
+  type: typeof neededConstraintTypes[number]
+}>
+
 export function constraintsSql(database: typeof databases.$inferSelect) {
   return runSql({
     validate: constraintsType.assert,
@@ -56,9 +61,23 @@ export function constraintsSql(database: typeof databases.$inferSelect) {
         .where('information_schema.constraint_column_usage.table_schema', 'not like', 'pg_%')
         .$assertType<typeof constraintsType.inferIn>()
         .compile(),
-      mysql: () => {
-        throw new Error('Not implemented')
-      },
+      mysql: db => db
+        .selectFrom('information_schema.TABLE_CONSTRAINTS')
+        .leftJoin('information_schema.KEY_COLUMN_USAGE', 'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME', 'information_schema.KEY_COLUMN_USAGE.CONSTRAINT_NAME')
+        .select([
+          'information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA as schema',
+          'information_schema.TABLE_CONSTRAINTS.TABLE_NAME as table',
+          'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME as name',
+          'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE as type',
+          'information_schema.KEY_COLUMN_USAGE.COLUMN_NAME as column',
+          'information_schema.KEY_COLUMN_USAGE.REFERENCED_TABLE_SCHEMA as usage_schema',
+          'information_schema.KEY_COLUMN_USAGE.REFERENCED_TABLE_NAME as usage_table',
+          'information_schema.KEY_COLUMN_USAGE.REFERENCED_COLUMN_NAME as usage_column',
+        ])
+        .where('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
+        .where('information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
+        .$assertType<MysqlConstraint>()
+        .compile(),
     },
   })
 }

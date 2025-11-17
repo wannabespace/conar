@@ -27,8 +27,8 @@ export function getPool(connectionString: string) {
     return existingPool
   }
 
-  const config = parseConnectionString(connectionString)
-  const ssl = parsePgSSLConfig(config.searchParams)
+  const { searchParams, ...config } = parseConnectionString(connectionString)
+  const ssl = parsePgSSLConfig(searchParams)
 
   const pool = new pg.Pool({
     ...config,

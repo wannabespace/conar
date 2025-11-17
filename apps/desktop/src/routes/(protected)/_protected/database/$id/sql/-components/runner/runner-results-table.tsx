@@ -67,7 +67,7 @@ export function RunnerResultsTable({
 
   return (
     <div className="h-full">
-      <div className="px-4 h-10 flex items-center justify-between gap-2">
+      <div className="pl-4 pr-1 h-10 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Results</span>
           <span className="text-xs text-muted-foreground">

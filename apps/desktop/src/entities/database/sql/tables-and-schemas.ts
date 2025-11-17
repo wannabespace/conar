@@ -27,9 +27,18 @@ export function tablesAndSchemasSql(database: typeof databases.$inferSelect) {
         ]))
         .$assertType<typeof tablesAndSchemasType.inferIn>()
         .compile(),
-      mysql: () => {
-        throw new Error('Not implemented')
-      },
+      mysql: db => db
+        .selectFrom('information_schema.TABLES')
+        .select([
+          'TABLE_SCHEMA as schema',
+          'TABLE_NAME as table',
+        ])
+        .where(({ eb, and }) => and([
+          eb('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys']),
+          eb('TABLE_TYPE', '=', 'BASE TABLE'),
+        ]))
+        .$assertType<typeof tablesAndSchemasType.inferIn>()
+        .compile(),
     },
   })
 }

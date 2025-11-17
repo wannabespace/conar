@@ -52,10 +52,6 @@ function queryLog(
       },
     },
   } satisfies typeof state))
-
-  if (error) {
-    console.error('db query error', database.type, query, values, error)
-  }
 }
 
 export function executeSql({ sql, values = [], type, connectionString }: { sql: string, values?: unknown[], type: DatabaseType, connectionString: string }) {
@@ -66,14 +62,8 @@ export function executeSql({ sql, values = [], type, connectionString }: { sql: 
 }
 
 const dialectsMap = {
-  postgres: () => new Kysely<PostgresDatabase>({
-    dialect: new DummyPostgresDialect(),
-    log: ['query', 'error'],
-  }),
-  mysql: () => new Kysely<MysqlDatabase>({
-    dialect: new DummyMysqlDialect(),
-    log: ['query', 'error'],
-  }),
+  postgres: () => new Kysely<PostgresDatabase>({ dialect: new DummyPostgresDialect() }),
+  mysql: () => new Kysely<MysqlDatabase>({ dialect: new DummyMysqlDialect() }),
 } satisfies Record<DatabaseType, () => unknown>
 
 export async function runSql<T extends object = Record<string, unknown>>({
@@ -117,6 +107,11 @@ export async function runSql<T extends object = Record<string, unknown>>({
       connectionString: database.connectionString,
     })
 
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.info(database.type, { sql: query.sql, params: query.parameters, result })
+    }
+
     queryLog(database, queryId, { result })
 
     return {
@@ -126,6 +121,10 @@ export async function runSql<T extends object = Record<string, unknown>>({
   }
   catch (error) {
     queryLog(database, queryId, { error: error instanceof Error ? error.message : String(error) })
+
+    if (import.meta.env.DEV) {
+      console.error(database.type, { sql: query.sql, params: query.parameters, error })
+    }
 
     throw error
   }

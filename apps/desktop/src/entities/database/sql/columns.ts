@@ -1,22 +1,32 @@
+import type { DialectType } from '../utils/types'
 import type { databases } from '~/drizzle'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 import { runSql } from '../query'
 
 export const columnType = type({
-  schema: 'string',
-  table: 'string',
-  id: 'string',
-  default: 'string | null',
-  type: 'string',
-  editable: 'boolean',
-  nullable: 'boolean',
+  'schema': 'string',
+  'table': 'string',
+  'id': 'string',
+  'default': 'string | null',
+  'type': 'string',
+  'editable?': 'boolean',
+  'nullable': 'boolean | 1 | 0', // MySQL returns 1 or 0 in runtime
 })
   .pipe(({ editable, nullable, ...data }) => ({
     ...data,
-    isEditable: editable,
-    isNullable: nullable,
+    isEditable: Boolean(editable ?? true),
+    isNullable: Boolean(nullable),
   }))
+
+type PostgresColumn = DialectType<typeof columnType.inferIn, {
+  editable: boolean
+  nullable: boolean
+}>
+
+type MysqlColumn = DialectType<typeof columnType.inferIn, {
+  nullable: boolean
+}>
 
 export function columnsSql(database: typeof databases.$inferSelect, { schema, table }: { schema: string, table: string }) {
   return runSql({
@@ -47,14 +57,14 @@ export function columnsSql(database: typeof databases.$inferSelect, { schema, ta
             .else(eb.fn.coalesce('data_type', 'udt_name'))
             .end()
             .as('type'),
-          eb.case()
-            .when('is_nullable', '=', 'YES')
+          eb.case('is_nullable')
+            .when('YES')
             .then(true)
             .else(false)
             .end()
             .as('nullable'),
-          eb.case()
-            .when('is_updatable', '=', 'YES')
+          eb.case('is_updatable')
+            .when('YES')
             .then(true)
             .else(false)
             .end()
@@ -64,11 +74,31 @@ export function columnsSql(database: typeof databases.$inferSelect, { schema, ta
           eb('table_schema', '=', schema),
           eb('table_name', '=', table),
         ]))
-        .$assertType<typeof columnType.inferIn>()
+        .$assertType<PostgresColumn>()
         .compile(),
-      mysql: () => {
-        throw new Error('Not implemented')
-      },
+      mysql: db => db
+        .selectFrom('information_schema.COLUMNS')
+        .select(eb => [
+          'TABLE_SCHEMA as schema',
+          'TABLE_NAME as table',
+          'COLUMN_NAME as id',
+          'COLUMN_DEFAULT as default',
+          eb.fn.coalesce('DATA_TYPE', 'COLUMN_TYPE').as('type'),
+          eb
+            .case()
+            .when('IS_NULLABLE', '=', 'YES')
+            .then(true)
+            .else(false)
+            .end()
+            .as('nullable'),
+        ])
+        .where(({ and, eb }) => and([
+          eb('TABLE_SCHEMA', '=', schema),
+          eb('TABLE_NAME', '=', table),
+          eb('DATA_TYPE', '!=', 'enum'),
+        ]))
+        .$assertType<MysqlColumn>()
+        .compile(),
     },
   })
 }

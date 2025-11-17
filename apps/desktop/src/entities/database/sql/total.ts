@@ -28,9 +28,14 @@ export function totalSql(database: typeof databases.$inferSelect, {
         .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
         .$assertType<typeof totalType.inferIn>()
         .compile(),
-      mysql: () => {
-        throw new Error('Not implemented')
-      },
+      mysql: db => db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .select(db.fn.countAll().as('total'))
+        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+        .$assertType<typeof totalType.inferIn>()
+        .compile(),
     },
   })
 }

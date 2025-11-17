@@ -42,9 +42,17 @@ export function enumsSql(database: typeof databases.$inferSelect) {
         .where('pg_catalog.pg_namespace.nspname', 'not in', ['pg_catalog', 'information_schema'])
         .$assertType<typeof enumType.inferIn>()
         .compile(),
-      mysql: () => {
-        throw new Error('Not implemented')
-      },
+      mysql: db => db
+        .selectFrom('information_schema.COLUMNS')
+        .select([
+          'TABLE_SCHEMA as schema',
+          'COLUMN_TYPE as value',
+          'COLUMN_NAME as name',
+        ])
+        .where('DATA_TYPE', '=', 'enum')
+        .where('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
+        .$assertType<typeof enumType.inferIn>()
+        .compile(),
     },
   })
 }

@@ -21,7 +21,7 @@
     "better-auth": "catalog:",
     "date-fns": "^4.1.0",
     "motion": "catalog:",
-    "postgres": "^3.4.7",
+    "postgres": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-markdown": "^10.1.0",

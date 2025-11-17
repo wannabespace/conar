@@ -1,6 +1,5 @@
 import type { databases } from '~/drizzle'
 import { queryOptions } from '@tanstack/react-query'
-import { CompiledQuery } from 'kysely'
 import { toast } from 'sonner'
 import { hasDangerousSqlKeywords, runSql } from '~/entities/database'
 import { databaseStore } from '../../../../-store'
@@ -17,8 +16,8 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
       const results = await Promise.all(queries.map(({ query, startLineNumber, endLineNumber }) => runSql({
         database,
         query: {
-          postgres: () => CompiledQuery.raw(query),
-          mysql: () => CompiledQuery.raw(query),
+          postgres: () => ({ sql: query, parameters: [] }),
+          mysql: () => ({ sql: query, parameters: [] }),
         },
         label: `SQL Runner (${startLineNumber === endLineNumber ? startLineNumber : `${startLineNumber}-${endLineNumber}`})`,
       })
