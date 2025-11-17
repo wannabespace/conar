@@ -25,7 +25,7 @@ import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { DatabaseIcon, databasesCollection, executeSql, prefetchDatabaseCore } from '~/entities/database'
+import { DatabaseIcon, databasesCollection, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 
 export const Route = createFileRoute(
@@ -187,10 +187,15 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
 }
 
 async function testConnection({ type, connectionString}: { connectionString: string, type: DatabaseType }) {
-  await executeSql({
+  if (!window.electron) {
+    throw new Error('Electron is not available')
+  }
+
+  await window.electron.sql({
     sql: 'SELECT 1',
     type,
     connectionString,
+    values: [],
   })
 }
 

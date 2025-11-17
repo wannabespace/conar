@@ -39,14 +39,13 @@ export function rowsSql(database: typeof databases.$inferSelect, {
   filtersConcatOperator?: 'AND' | 'OR'
   select?: string[]
 }) {
+  const label = `Rows for ${schema}.${table}`
   const orderBy = Object.entries(params.orderBy ?? {})
 
-  return runSql({
-    database,
-    label: `Rows for ${schema}.${table}`,
+  return runSql(database, {
     query: {
-      postgres: (db) => {
-        let query = db
+      postgres: ({ qb, execute, log }) => {
+        let query = qb
           .withSchema(schema)
           .withTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
@@ -62,10 +61,16 @@ export function rowsSql(database: typeof databases.$inferSelect, {
           })
         }
 
-        return query.compile()
+        const compiledQuery = query.compile()
+
+        const promise = execute(compiledQuery)
+
+        log({ ...compiledQuery, promise, label })
+
+        return promise
       },
-      mysql: (db) => {
-        let query = db
+      mysql: ({ qb, execute, log }) => {
+        let query = qb
           .withSchema(schema)
           .withTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
@@ -81,7 +86,13 @@ export function rowsSql(database: typeof databases.$inferSelect, {
           })
         }
 
-        return query.compile()
+        const compiledQuery = query.compile()
+
+        const promise = execute(compiledQuery)
+
+        log({ ...compiledQuery, promise, label })
+
+        return promise
       },
     },
   })

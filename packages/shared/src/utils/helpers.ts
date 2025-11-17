@@ -26,3 +26,9 @@ export type Prettify<T> = {
 } & {}
 
 export type Satisfies<T, U extends T> = U
+
+export type MaybePromise<T> = T | Promise<T>
+
+export type MaybeArray<T> = T | T[]
+
+export interface ErrorMessage<T extends string> { __errorMessage: T }

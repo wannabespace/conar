@@ -44,7 +44,7 @@ function getQueryStatus(query: QueryLog) {
 
 function LogTrigger({ query, className, ...props }: { query: QueryLog } & ComponentProps<'button'>) {
   const status = getQueryStatus(query)
-  const truncatedQuery = query.query.replaceAll('\n', ' ')
+  const truncatedQuery = query.sql.replaceAll('\n', ' ')
   const shortQuery = truncatedQuery.length > 500 ? `${truncatedQuery.substring(0, 500)}...` : truncatedQuery
 
   return (
@@ -132,7 +132,7 @@ function Log({ query, className, database }: { query: QueryLog, className?: stri
           <div className="space-y-2">
             <Label>Query</Label>
             <Monaco
-              value={formatSql(query.query, database.type)}
+              value={formatSql(query.sql, database.type)}
               language="sql"
               options={monacoOptions}
               className="h-[50vh] border rounded-md overflow-hidden"

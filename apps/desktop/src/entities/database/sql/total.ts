@@ -15,27 +15,43 @@ export function totalSql(database: typeof databases.$inferSelect, {
   table,
   filters,
 }: { schema: string, table: string, filters?: ActiveFilter[] }) {
-  return runSql({
+  const label = `Total for ${schema}.${table}`
+
+  return runSql(database, {
     validate: totalType.assert,
-    database,
-    label: `Total for ${schema}.${table}`,
     query: {
-      postgres: db => db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .selectFrom(table)
-        .select(db.fn.countAll().as('total'))
-        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-        .$assertType<typeof totalType.inferIn>()
-        .compile(),
-      mysql: db => db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .selectFrom(table)
-        .select(db.fn.countAll().as('total'))
-        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-        .$assertType<typeof totalType.inferIn>()
-        .compile(),
+      postgres: ({ qb, execute, log }) => {
+        const query = qb
+          .withSchema(schema)
+          .withTables<{ [table]: Record<string, unknown> }>()
+          .selectFrom(table)
+          .select(qb.fn.countAll().as('total'))
+          .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+          .$assertType<typeof totalType.inferIn>()
+          .compile()
+
+        const promise = execute(query)
+
+        log({ ...query, promise, label })
+
+        return promise
+      },
+      mysql: ({ qb, execute, log }) => {
+        const query = qb
+          .withSchema(schema)
+          .withTables<{ [table]: Record<string, unknown> }>()
+          .selectFrom(table)
+          .select(qb.fn.countAll().as('total'))
+          .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+          .$assertType<typeof totalType.inferIn>()
+          .compile()
+
+        const promise = execute(query)
+
+        log({ ...query, promise, label })
+
+        return promise
+      },
     },
   })
 }

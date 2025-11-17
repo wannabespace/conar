@@ -1,13 +1,15 @@
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { databases } from '~/drizzle'
 import { runSql } from '../query'
+import { buildWhere } from './rows'
 
-export function deleteRowsSql(database: typeof databases.$inferSelect, { table, schema, primaryKeys }: {
-  table: string
-  schema: string
-  // [{ id: 1, email: 'test@test.com' }, { id: 2, email: 'test2@test.com' }]
-  primaryKeys: Record<string, unknown>[]
-}) {
-  const label = `Delete Rows ${schema}.${table}`
+export function selectSql(database: typeof databases.$inferSelect, {
+  schema,
+  table,
+  select,
+  filters,
+}: { schema: string, table: string, select: string[], filters: ActiveFilter[] }) {
+  const label = `Select ${schema}.${table}`
 
   return runSql(database, {
     query: {
@@ -15,10 +17,9 @@ export function deleteRowsSql(database: typeof databases.$inferSelect, { table, 
         const query = qb
           .withSchema(schema)
           .withTables<{ [table]: Record<string, unknown> }>()
-          .deleteFrom(table)
-          .where(({ or, and, eb }) => or(primaryKeys.map(pk => and(
-            Object.entries(pk).map(([key, value]) => eb(key, '=', value)),
-          ))))
+          .selectFrom(table)
+          .select(select)
+          .where(eb => buildWhere(eb, filters))
           .compile()
 
         const promise = execute(query)
@@ -31,10 +32,9 @@ export function deleteRowsSql(database: typeof databases.$inferSelect, { table, 
         const query = qb
           .withSchema(schema)
           .withTables<{ [table]: Record<string, unknown> }>()
-          .deleteFrom(table)
-          .where(({ or, and, eb }) => or(primaryKeys.map(pk => and(
-            Object.entries(pk).map(([key, value]) => eb(key, '=', value)),
-          ))))
+          .selectFrom(table)
+          .select(select)
+          .where(eb => buildWhere(eb, filters))
           .compile()
 
         const promise = execute(query)

@@ -87,7 +87,6 @@ export function ThemeObserver({
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useTheme() {
   const store = useStore(themeStore)
 

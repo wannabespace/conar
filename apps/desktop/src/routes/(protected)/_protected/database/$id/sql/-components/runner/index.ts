@@ -13,13 +13,23 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
       const store = databaseStore(database.id)
       const queries = store.state.queriesToRun
 
-      const results = await Promise.all(queries.map(({ query, startLineNumber, endLineNumber }) => runSql({
-        database,
+      const results = await Promise.all(queries.map(({ query, startLineNumber, endLineNumber }) => runSql(database, {
         query: {
-          postgres: () => ({ sql: query, parameters: [] }),
-          mysql: () => ({ sql: query, parameters: [] }),
+          postgres: ({ execute, log }) => {
+            const promise = execute({ sql: query, parameters: [] })
+
+            log({ sql: query, parameters: [], promise, label: `SQL Runner (${startLineNumber === endLineNumber ? startLineNumber : `${startLineNumber}-${endLineNumber}`})` })
+
+            return promise
+          },
+          mysql: ({ execute, log }) => {
+            const promise = execute({ sql: query, parameters: [] })
+
+            log({ sql: query, parameters: [], promise, label: `SQL Runner (${startLineNumber === endLineNumber ? startLineNumber : `${startLineNumber}-${endLineNumber}`})` })
+
+            return promise
+          },
         },
-        label: `SQL Runner (${startLineNumber === endLineNumber ? startLineNumber : `${startLineNumber}-${endLineNumber}`})`,
       })
         .then(data => ({
           data: data.result as Record<string, unknown>[],

@@ -4,7 +4,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
-import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, setSql } from '~/entities/database'
+import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, selectSql, setSql } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { queryClient } from '~/main'
 import { Route } from '..'
@@ -114,19 +114,40 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     try {
       setValue(rowIndex, columnId, newValue)
-      const { result: [result] } = await setSql(database, {
+
+      const preparedValue = prepareValue(newValue, columns?.find(c => c.id === columnId)?.type)
+
+      const sqlFilters = primaryColumns.map(column => ({
+        column,
+        ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
+        values: [rows[rowIndex]![column]],
+      }))
+
+      await setSql(database, {
         schema,
         table,
-        values: { [columnId]: prepareValue(newValue, columns?.find(c => c.id === columnId)?.type) },
-        filters: primaryColumns.map(column => ({
-          column,
-          ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
-          values: [rows[rowIndex]![column]],
-        })),
+        values: { [columnId]: preparedValue },
+        filters: sqlFilters,
+      })
+      const valuesEntries = Object.entries({ [columnId]: preparedValue })
+      const modifiedColumns = valuesEntries.map(([column]) => column)
+
+      const updatedFilters = sqlFilters.map(filter => modifiedColumns.includes(filter.column)
+        ? {
+            ...filter,
+            values: [valuesEntries.find(([key]) => key === filter.column)![1]],
+          }
+        : filter)
+
+      const { result: [result] } = await selectSql(database, {
+        schema,
+        table,
+        select: modifiedColumns,
+        filters: updatedFilters,
       })
 
       if (!result || !(columnId in result))
-        throw new Error('Cannot update the column. No value returned from the database.')
+        return
 
       const realValue = result[columnId]
 

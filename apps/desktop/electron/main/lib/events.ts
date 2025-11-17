@@ -20,7 +20,7 @@ interface SqlParams {
 }
 
 const poolsMap: Record<DatabaseType, (params: Omit<SqlParams, 'type'>) => Promise<{
-  result: Record<string, unknown>[]
+  result: unknown
   duration: number
 }>> = {
   postgres: async ({ connectionString, sql, values }) => {
@@ -29,14 +29,14 @@ const poolsMap: Record<DatabaseType, (params: Omit<SqlParams, 'type'>) => Promis
     const result = await pool.query(sql, values)
     const duration = performance.now() - start
 
-    return { result: result.rows, duration }
+    return { result: result.rows as unknown, duration }
   },
   mysql: async ({ connectionString, sql, values }) => {
     const pool = getMysqlPool(connectionString)
     const start = performance.now()
     const [result] = await pool.query(sql, values)
 
-    return { result: result as Record<string, unknown>[], duration: performance.now() - start }
+    return { result: result as unknown, duration: performance.now() - start }
   },
 }
 

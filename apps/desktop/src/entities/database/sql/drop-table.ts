@@ -2,12 +2,12 @@ import type { databases } from '~/drizzle'
 import { runSql } from '../query'
 
 export function dropTableSql(database: typeof databases.$inferSelect, { table, schema, cascade }: { table: string, schema: string, cascade: boolean }) {
-  return runSql({
-    database,
-    label: `Drop Table ${schema}.${table}`,
+  const label = `Drop Table ${schema}.${table}`
+
+  return runSql(database, {
     query: {
-      postgres: (db) => {
-        let query = db
+      postgres: ({ qb, execute, log }) => {
+        let query = qb
           .withSchema(schema)
           .withTables<{ [table]: Record<string, unknown> }>()
           .schema
@@ -17,10 +17,16 @@ export function dropTableSql(database: typeof databases.$inferSelect, { table, s
           query = query.cascade()
         }
 
-        return query.compile()
+        const compiledQuery = query.compile()
+
+        const promise = execute(compiledQuery)
+
+        log({ ...compiledQuery, promise, label })
+
+        return promise
       },
-      mysql: (db) => {
-        let query = db
+      mysql: ({ qb, execute, log }) => {
+        let query = qb
           .withSchema(schema)
           .withTables<{ [table]: Record<string, unknown> }>()
           .schema
@@ -30,7 +36,13 @@ export function dropTableSql(database: typeof databases.$inferSelect, { table, s
           query = query.cascade()
         }
 
-        return query.compile()
+        const compiledQuery = query.compile()
+
+        const promise = execute(compiledQuery)
+
+        log({ ...compiledQuery, promise, label })
+
+        return promise
       },
     },
   })

@@ -9,7 +9,6 @@ import { Store, useStore } from '@tanstack/react-store'
 import { DatabaseIcon, databasesCollection, prefetchDatabaseCore, tablesAndSchemasQuery, useDatabaseLinkParams } from '~/entities/database'
 import { trackEvent } from '~/lib/events'
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const actionsCenterStore = new Store({
   isOpen: false,
 })

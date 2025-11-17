@@ -20,7 +20,6 @@ import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { databaseStore } from '../../../../-store'
 
-// eslint-disable-next-line react-refresh/only-export-components
 function RunnerEditorAIZone({
   database,
   getSql,
