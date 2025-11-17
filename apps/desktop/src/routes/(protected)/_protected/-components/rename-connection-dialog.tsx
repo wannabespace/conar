@@ -17,11 +17,15 @@ export function RenameConnectionDialog({ ref }: RenameConnectionDialogProps) {
   const [open, setOpen] = useState(false)
   const [database, setDatabase] = useState<typeof databases.$inferSelect | null>(null)
   const [newName, setNewName] = useState('')
+  const [newLabel, setNewLabel] = useState('')
+
+  const labelOptions = ['Dev', 'Prod', 'Staging']
 
   useImperativeHandle(ref, () => ({
     rename: (db: typeof databases.$inferSelect) => {
       setDatabase(db)
       setNewName(db.name)
+      setNewLabel(db.label || '')
       setOpen(true)
     },
   }), [])
@@ -33,12 +37,13 @@ export function RenameConnectionDialog({ ref }: RenameConnectionDialogProps) {
     e.preventDefault()
     databasesCollection.update(database.id, (draft) => {
       draft.name = newName.trim()
+      draft.label = newLabel.trim() || null
     })
     toast.success(`Connection renamed to "${newName.trim()}"`)
     setOpen(false)
   }
 
-  const canConfirm = newName.trim() !== '' && newName.trim() !== database?.name
+  const canConfirm = (newName.trim() !== '' && newName.trim() !== database?.name) || (newLabel.trim() !== (database?.label || ''))
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -63,6 +68,36 @@ export function RenameConnectionDialog({ ref }: RenameConnectionDialogProps) {
                   }
                 }}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="newDatabaseLabel" className="font-normal">
+                Connection label (optional)
+              </Label>
+              <Input
+                id="newDatabaseLabel"
+                value={newLabel}
+                placeholder="Enter a label or select from options below"
+                spellCheck={false}
+                autoComplete="off"
+                onChange={e => setNewLabel(e.target.value)}
+              />
+              <div className="flex flex-wrap gap-2 mt-1">
+                {labelOptions.map(option => (
+                  <Button
+                    key={option}
+                    type="button"
+                    variant={newLabel === option ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setNewLabel(option)}
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </div>
+              <div className="text-xs text-muted-foreground/70 mt-1">
+                Labels help distinguish between different environments (dev, prod, staging, etc.)
+              </div>
             </div>
           </div>
         </DialogHeader>
