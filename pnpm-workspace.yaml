@@ -22,7 +22,7 @@ catalog:
   ai: ^5.0.93
   arktype: 2.1.20
   babel-plugin-react-compiler: ^1.0.0
-  better-auth: ^1.3.17
+  better-auth: ^1.3.13
   drizzle-kit: ^0.31.7
   drizzle-orm: 0.44.5
   kysely: ^0.28.8
