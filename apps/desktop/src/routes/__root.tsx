@@ -8,6 +8,7 @@ import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { AuthObserver } from '~/auth-observer'
+import { GlobalBanner } from '~/components/global-banner'
 import { enterAppAnimation } from '~/enter'
 import { ErrorPage } from '~/error-page'
 import { authClient } from '~/lib/auth'
@@ -41,23 +42,28 @@ function RootDocument() {
       <EventsProvider>
         <ThemeObserver />
         <QueryClientProvider client={queryClient}>
-          <Outlet />
-          <AuthObserver />
-          <Toaster />
-          {import.meta.env.DEV && (
-            <TanStackDevtools
-              plugins={[
-                {
-                  name: 'TanStack Query',
-                  render: <ReactQueryDevtoolsPanel />,
-                },
-                {
-                  name: 'TanStack Router',
-                  render: <TanStackRouterDevtoolsPanel router={router} />,
-                },
-              ]}
-            />
-          )}
+          <div className="flex h-screen flex-col">
+            <GlobalBanner />
+            <div className="flex-1 min-h-0 overflow-auto">
+              <Outlet />
+            </div>
+            <AuthObserver />
+            <Toaster />
+            {import.meta.env.DEV && (
+              <TanStackDevtools
+                plugins={[
+                  {
+                    name: 'TanStack Query',
+                    render: <ReactQueryDevtoolsPanel />,
+                  },
+                  {
+                    name: 'TanStack Router',
+                    render: <TanStackRouterDevtoolsPanel router={router} />,
+                  },
+                ]}
+              />
+            )}
+          </div>
         </QueryClientProvider>
       </EventsProvider>
     </>
