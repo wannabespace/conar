@@ -29,7 +29,7 @@
     "@orpc/server": "catalog:",
     "@posthog/ai": "^6.5.0",
     "@react-email/components": "^0.5.7",
-    "@toon-format/toon": "^1.0.0",
+    "@toon-format/toon": "catalog:",
     "@trpc/server": "^11.7.1",
     "ai": "catalog:",
     "ai-retry": "^0.8.0",
