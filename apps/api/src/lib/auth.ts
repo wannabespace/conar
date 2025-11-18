@@ -63,12 +63,30 @@ function noSetCookiePlugin() {
   } satisfies BetterAuthPlugin
 }
 
+export function skipStateMismatch(): BetterAuthPlugin {
+  return {
+    id: 'skip-state-mismatch',
+    init(ctx) {
+      return {
+        context: {
+          ...ctx,
+          oauthConfig: {
+            skipStateCookieCheck: true,
+            ...ctx?.oauthConfig,
+          },
+        },
+      }
+    },
+  }
+}
+
 export const auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
   basePath: '/auth',
   plugins: [
+    skipStateMismatch(),
     bearer(),
     twoFactor(),
     organization({
