@@ -37,6 +37,11 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
       <div className="flex flex-1 flex-col min-w-0">
         <div className="font-medium tracking-tight truncate flex items-center gap-2">
           {database.name}
+          {database.label && (
+            <span className="px-2 py-0.5 text-xs rounded-full bg-muted-foreground/10 text-muted-foreground whitespace-nowrap">
+              {database.label}
+            </span>
+          )}
         </div>
         <div data-mask className="text-xs text-muted-foreground font-mono truncate">{connectionString.replaceAll('*', '•')}</div>
       </div>

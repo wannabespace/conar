@@ -122,8 +122,22 @@ function StepCredentials({ ref, type, connectionString, setConnectionString, onE
   )
 }
 
-function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud }: { type: DatabaseType, name: string, connectionString: string, setName: (name: string) => void, onRandomName: () => void, saveInCloud: boolean, setSaveInCloud: (saveInCloud: boolean) => void }) {
+function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel }: {
+  type: DatabaseType
+  name: string
+  connectionString: string
+  setName: (name: string) => void
+  onRandomName: () => void
+  saveInCloud: boolean
+  setSaveInCloud: (saveInCloud: boolean) => void
+  label: string
+  setLabel: (label: string) => void
+}) {
   const nameId = useId()
+  const labelId = useId()
+
+  // Predefined label options
+  const labelOptions = ['Dev', 'Prod', 'Staging']
 
   return (
     <Card className="w-full">
@@ -166,6 +180,37 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
               </TooltipProvider>
             </div>
           </div>
+
+          <div>
+            <Label htmlFor={labelId} className="mb-2">
+              Connection label (optional)
+            </Label>
+            <div className="flex flex-col gap-2">
+              <Input
+                id={labelId}
+                placeholder="Enter a label or select from options below"
+                value={label}
+                onChange={e => setLabel(e.target.value)}
+              />
+              <div className="flex flex-wrap gap-2 mt-1">
+                {labelOptions.map(option => (
+                  <Button
+                    key={option}
+                    type="button"
+                    variant={label === option ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setLabel(option)}
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </div>
+              <div className="text-xs text-muted-foreground/70 mt-1">
+                Labels help distinguish between different environments (dev, prod, staging, etc.)
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-2">
             <label className="text-sm flex items-center gap-2">
               <Checkbox
@@ -203,7 +248,13 @@ function CreateConnectionPage() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  function createConnection(data: { connectionString: string, name: string, type: DatabaseType, saveInCloud: boolean }) {
+  function createConnection(data: {
+    connectionString: string
+    name: string
+    type: DatabaseType
+    saveInCloud: boolean
+    label?: string
+  }) {
     const id = v7()
 
     const password = new SafeURL(data.connectionString.trim()).password
@@ -213,6 +264,7 @@ function CreateConnectionPage() {
       name: data.name,
       type: data.type,
       connectionString: data.connectionString,
+      label: data.label || null,
       isPasswordExists: !!password,
       isPasswordPopulated: !!password,
       syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
@@ -235,6 +287,7 @@ function CreateConnectionPage() {
       name: generateRandomName(),
       type: null as unknown as DatabaseType,
       saveInCloud: true,
+      label: '',
     },
     validators: {
       onChange: type({
@@ -242,6 +295,7 @@ function CreateConnectionPage() {
         type: type.valueOf(DatabaseType),
         connectionString: 'string > 1',
         saveInCloud: 'boolean',
+        label: 'string?',
       }),
     },
     onSubmit(e) {
@@ -265,7 +319,7 @@ function CreateConnectionPage() {
     },
   })
 
-  const [typeValue, connectionString, name, saveInCloud] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud])
+  const [typeValue, connectionString, name, saveInCloud, label] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud, values.label])
 
   return (
     <div className="min-h-screen flex flex-col justify-center">
@@ -372,6 +426,8 @@ function CreateConnectionPage() {
               onRandomName={() => form.setFieldValue('name', generateRandomName())}
               saveInCloud={saveInCloud}
               setSaveInCloud={saveInCloud => form.setFieldValue('saveInCloud', saveInCloud)}
+              label={label}
+              setLabel={label => form.setFieldValue('label', label)}
             />
             <div className="flex gap-2 justify-end mt-auto pt-4">
               <Button variant="outline" onClick={() => setStep('credentials')}>
