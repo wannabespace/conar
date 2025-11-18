@@ -1,6 +1,6 @@
 {
-  "id": "9d8ad5e0-ad7d-4ec6-9839-56ef01c6dc7f",
-  "prevId": "f3441a40-453b-473a-a6e0-11b4c11ead90",
+  "id": "a26bcc40-8bde-4e5d-aeaf-41b6683f4fd1",
+  "prevId": "9d8ad5e0-ad7d-4ec6-9839-56ef01c6dc7f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -151,8 +151,8 @@
           "notNull": true,
           "default": "now()"
         },
-        "organization_id": {
-          "name": "organization_id",
+        "workspace_id": {
+          "name": "workspace_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -205,11 +205,11 @@
           "method": "btree",
           "with": {}
         },
-        "invitations_organization_id_index": {
-          "name": "invitations_organization_id_index",
+        "invitations_workspace_id_index": {
+          "name": "invitations_workspace_id_index",
           "columns": [
             {
-              "expression": "organization_id",
+              "expression": "workspace_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -237,12 +237,12 @@
         }
       },
       "foreignKeys": {
-        "invitations_organization_id_workspaces_id_fk": {
-          "name": "invitations_organization_id_workspaces_id_fk",
+        "invitations_workspace_id_workspaces_id_fk": {
+          "name": "invitations_workspace_id_workspaces_id_fk",
           "tableFrom": "invitations",
           "tableTo": "workspaces",
           "columnsFrom": [
-            "organization_id"
+            "workspace_id"
           ],
           "columnsTo": [
             "id"
@@ -294,8 +294,8 @@
           "notNull": true,
           "default": "now()"
         },
-        "organization_id": {
-          "name": "organization_id",
+        "workspace_id": {
+          "name": "workspace_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -330,11 +330,11 @@
           "method": "btree",
           "with": {}
         },
-        "members_organization_id_index": {
-          "name": "members_organization_id_index",
+        "members_workspace_id_index": {
+          "name": "members_workspace_id_index",
           "columns": [
             {
-              "expression": "organization_id",
+              "expression": "workspace_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -347,12 +347,12 @@
         }
       },
       "foreignKeys": {
-        "members_organization_id_workspaces_id_fk": {
-          "name": "members_organization_id_workspaces_id_fk",
+        "members_workspace_id_workspaces_id_fk": {
+          "name": "members_workspace_id_workspaces_id_fk",
           "tableFrom": "members",
           "tableTo": "workspaces",
           "columnsFrom": [
-            "organization_id"
+            "workspace_id"
           ],
           "columnsTo": [
             "id"
@@ -406,7 +406,7 @@
         },
         "expires_at": {
           "name": "expires_at",
-          "type": "timestamp with time zone",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
@@ -434,8 +434,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "active_organization_id": {
-          "name": "active_organization_id",
+        "active_workspace_id": {
+          "name": "active_workspace_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -669,8 +669,8 @@
             "email"
           ]
         },
-        "users_normalized_email_unique": {
-          "name": "users_normalized_email_unique",
+        "users_normalizedEmail_unique": {
+          "name": "users_normalizedEmail_unique",
           "nullsNotDistinct": false,
           "columns": [
             "normalized_email"
@@ -782,7 +782,7 @@
           "name": "slug",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "logo": {
           "name": "logo",

@@ -1,4 +1,4 @@
-import type { BetterAuthOptions, BetterAuthPlugin, User } from 'better-auth'
+import type { BetterAuthPlugin, User } from 'better-auth'
 import { PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
@@ -63,12 +63,30 @@ function noSetCookiePlugin() {
   } satisfies BetterAuthPlugin
 }
 
-const config = {
+export function skipStateMismatch(): BetterAuthPlugin {
+  return {
+    id: 'skip-state-mismatch',
+    init(ctx) {
+      return {
+        context: {
+          ...ctx,
+          oauthConfig: {
+            skipStateCookieCheck: true,
+            ...ctx?.oauthConfig,
+          },
+        },
+      }
+    },
+  }
+}
+
+export const auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
   basePath: '/auth',
   plugins: [
+    skipStateMismatch(),
     bearer(),
     twoFactor(),
     organization({
@@ -84,6 +102,11 @@ const config = {
         invitation: {
           fields: {
             organizationId: 'workspaceId',
+          },
+        },
+        session: {
+          fields: {
+            activeOrganizationId: 'activeWorkspaceId',
           },
         },
       },
@@ -152,19 +175,15 @@ const config = {
     },
   },
   socialProviders: {
-    ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && {
-      google: {
-        clientId: env.GOOGLE_CLIENT_ID,
-        clientSecret: env.GOOGLE_CLIENT_SECRET,
-      },
-    }),
-    ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET && {
-      github: {
-        clientId: env.GITHUB_CLIENT_ID,
-        clientSecret: env.GITHUB_CLIENT_SECRET,
-      },
-    }),
+    google: {
+      enabled: !!env.GOOGLE_CLIENT_ID && !!env.GOOGLE_CLIENT_SECRET,
+      clientId: env.GOOGLE_CLIENT_ID!,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    },
+    github: {
+      enabled: !!env.GITHUB_CLIENT_ID && !!env.GITHUB_CLIENT_SECRET,
+      clientId: env.GITHUB_CLIENT_ID!,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
+    },
   },
-} satisfies BetterAuthOptions
-
-export const auth = betterAuth(config) as ReturnType<typeof betterAuth<typeof config>>
+})
