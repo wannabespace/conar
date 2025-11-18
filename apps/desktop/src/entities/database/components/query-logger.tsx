@@ -1,8 +1,7 @@
 import type { ComponentProps } from 'react'
-import type { QueryLog } from '../query'
+import type { QueryLog } from '../dialects'
 import type { databases } from '~/drizzle'
 import { sleep } from '@conar/shared/utils/helpers'
-import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { ButtonGroup } from '@conar/ui/components/button-group'
 import { CardTitle } from '@conar/ui/components/card'
@@ -19,7 +18,7 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
 import { formatSql } from '~/lib/formatter'
 import { databaseStore } from '~/routes/(protected)/_protected/database/-store'
-import { queriesLogStore } from '../query'
+import { queriesLogStore } from '../dialects'
 
 type QueryStatus = 'error' | 'success' | 'pending'
 
@@ -51,7 +50,7 @@ function LogTrigger({ query, className, ...props }: { query: QueryLog } & Compon
     <button
       type="button"
       className={cn(
-        'cursor-pointer w-full flex items-center gap-2 justify-between border-t py-1 px-4 hover:bg-muted/50',
+        'cursor-pointer w-full flex items-center gap-2 justify-between border-t py-1.5 px-4 hover:bg-muted/50',
         className,
       )}
       {...props}
@@ -68,12 +67,6 @@ function LogTrigger({ query, className, ...props }: { query: QueryLog } & Compon
         })}
       </span>
       {getStatusIcon(status)}
-      <Badge
-        variant="secondary"
-        className="text-xs"
-      >
-        {query.label}
-      </Badge>
       <code className="text-xs font-mono flex-1 truncate text-left">
         {shortQuery}
       </code>
@@ -218,7 +211,7 @@ export function QueryLogger({ database, className }: {
   const { virtualItems, totalSize } = useVirtual({
     count: filteredQueries.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => 31,
+    estimateSize: () => 29,
     overscan: 5,
   })
 

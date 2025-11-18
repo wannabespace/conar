@@ -1,5 +1,6 @@
 export * from './components/database-icon'
 export * from './components/react-flow-node'
+export * from './dialects'
 export * from './hooks/use-database-link-params'
 export * from './lib/fetching'
 export * from './lib/last-opened-databases'
