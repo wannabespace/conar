@@ -1,57 +1,36 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { databases } from '~/drizzle'
 import { type } from 'arktype'
-import { runSql } from '../query'
+import { createQuery } from '../query'
 import { buildWhere } from './rows'
 
-export const totalType = type({
-  total: 'string | number | bigint',
-}).pipe(({ total }) => ({
-  total: Number(total),
-}))
+export const totalQuery = createQuery({
+  type: type('string | number | bigint | undefined').pipe(v => v !== undefined ? Number(v) : undefined),
+  query: ({
+    schema,
+    table,
+    filters,
+  }: { schema: string, table: string, filters?: ActiveFilter[] }) => ({
+    postgres: async ({ db }) => {
+      const query = await db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .select(db.fn.countAll().as('total'))
+        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+        .execute()
 
-export function totalSql(database: typeof databases.$inferSelect, {
-  schema,
-  table,
-  filters,
-}: { schema: string, table: string, filters?: ActiveFilter[] }) {
-  const label = `Total for ${schema}.${table}`
-
-  return runSql(database, {
-    validate: totalType.assert,
-    query: {
-      postgres: ({ qb, execute, log }) => {
-        const query = qb
-          .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
-          .selectFrom(table)
-          .select(qb.fn.countAll().as('total'))
-          .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-          .$assertType<typeof totalType.inferIn>()
-          .compile()
-
-        const promise = execute(query)
-
-        log({ ...query, promise, label })
-
-        return promise
-      },
-      mysql: ({ qb, execute, log }) => {
-        const query = qb
-          .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
-          .selectFrom(table)
-          .select(qb.fn.countAll().as('total'))
-          .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-          .$assertType<typeof totalType.inferIn>()
-          .compile()
-
-        const promise = execute(query)
-
-        log({ ...query, promise, label })
-
-        return promise
-      },
+      return query[0]?.total
     },
-  })
-}
+    mysql: async ({ db }) => {
+      const query = await db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .select(db.fn.countAll().as('total'))
+        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+        .execute()
+
+      return query[0]?.total
+    },
+  }),
+})

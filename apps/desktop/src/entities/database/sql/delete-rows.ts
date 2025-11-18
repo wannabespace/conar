@@ -1,48 +1,27 @@
-import type { databases } from '~/drizzle'
-import { runSql } from '../query'
+import { createQuery } from '../query'
 
-export function deleteRowsSql(database: typeof databases.$inferSelect, { table, schema, primaryKeys }: {
-  table: string
-  schema: string
-  // [{ id: 1, email: 'test@test.com' }, { id: 2, email: 'test2@test.com' }]
-  primaryKeys: Record<string, unknown>[]
-}) {
-  const label = `Delete Rows ${schema}.${table}`
-
-  return runSql(database, {
-    query: {
-      postgres: ({ qb, execute, log }) => {
-        const query = qb
-          .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
-          .deleteFrom(table)
-          .where(({ or, and, eb }) => or(primaryKeys.map(pk => and(
-            Object.entries(pk).map(([key, value]) => eb(key, '=', value)),
-          ))))
-          .compile()
-
-        const promise = execute(query)
-
-        log({ ...query, promise, label })
-
-        return promise
-      },
-      mysql: ({ qb, execute, log }) => {
-        const query = qb
-          .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
-          .deleteFrom(table)
-          .where(({ or, and, eb }) => or(primaryKeys.map(pk => and(
-            Object.entries(pk).map(([key, value]) => eb(key, '=', value)),
-          ))))
-          .compile()
-
-        const promise = execute(query)
-
-        log({ ...query, promise, label })
-
-        return promise
-      },
-    },
-  })
-}
+export const deleteRowsQuery = createQuery({
+  query: ({ table, schema, primaryKeys }: {
+    table: string
+    schema: string
+    // [{ id: 1, email: 'test@test.com' }, { id: 2, email: 'test2@test.com' }]
+    primaryKeys: Record<string, unknown>[]
+  }) => ({
+    postgres: ({ db }) => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .deleteFrom(table)
+      .where(({ or, and, eb }) => or(primaryKeys.map(pk => and(
+        Object.entries(pk).map(([key, value]) => eb(key, '=', value)),
+      ))))
+      .execute(),
+    mysql: ({ db }) => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .deleteFrom(table)
+      .where(({ or, and, eb }) => or(primaryKeys.map(pk => and(
+        Object.entries(pk).map(([key, value]) => eb(key, '=', value)),
+      ))))
+      .execute(),
+  }),
+})

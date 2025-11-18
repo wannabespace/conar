@@ -15,21 +15,16 @@ const encryption = {
 interface SqlParams {
   sql: string
   values: unknown[]
-  type: DatabaseType
   connectionString: string
 }
 
-const poolsMap: Record<DatabaseType, (params: Omit<SqlParams, 'type'>) => Promise<{
-  result: unknown
-  duration: number
-}>> = {
+const sqlMap = {
   postgres: async ({ connectionString, sql, values }) => {
     const pool = getPgPool(connectionString)
     const start = performance.now()
     const result = await pool.query(sql, values)
-    const duration = performance.now() - start
 
-    return { result: result.rows as unknown, duration }
+    return { result: result.rows as unknown, duration: performance.now() - start }
   },
   mysql: async ({ connectionString, sql, values }) => {
     const pool = getMysqlPool(connectionString)
@@ -38,7 +33,10 @@ const poolsMap: Record<DatabaseType, (params: Omit<SqlParams, 'type'>) => Promis
 
     return { result: result as unknown, duration: performance.now() - start }
   },
-}
+} satisfies Record<DatabaseType, (param: SqlParams) => Promise<{
+  result: unknown
+  duration: number
+}>>
 
 const _app = {
   checkForUpdates: () => {
@@ -54,7 +52,7 @@ const versions = {
 }
 
 export const electron = {
-  sql: (params: SqlParams) => poolsMap[params.type](params),
+  sql: sqlMap,
   encryption,
   app: _app,
   versions,
@@ -62,10 +60,10 @@ export const electron = {
 
 export function initElectronEvents() {
   for (const [key, events] of Object.entries(electron)) {
-    if (typeof events === 'function') {
-      ipcMain.handle(key, (_event, arg) => events(arg))
-      continue
-    }
+    // if (typeof events === 'function') {
+    //   ipcMain.handle(key, (_event, arg) => events(arg))
+    //   continue
+    // }
 
     for (const [key2, handler] of Object.entries(events)) {
       ipcMain.handle(`${key}.${key2}`, (_event, arg) => handler(arg))

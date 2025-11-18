@@ -4,7 +4,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo } from 'react'
 import { Table, TableBody, TableProvider } from '~/components/table'
-import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, selectSql, setSql } from '~/entities/database'
+import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, selectQuery, setQuery } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { queryClient } from '~/main'
 import { Route } from '..'
@@ -123,7 +123,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         values: [rows[rowIndex]![column]],
       }))
 
-      await setSql(database, {
+      await setQuery.run(database, {
         schema,
         table,
         values: { [columnId]: preparedValue },
@@ -139,7 +139,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           }
         : filter)
 
-      const { result: [result] } = await selectSql(database, {
+      const [result] = await selectQuery.run(database, {
         schema,
         table,
         select: modifiedColumns,

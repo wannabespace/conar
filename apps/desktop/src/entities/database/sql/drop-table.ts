@@ -1,49 +1,32 @@
-import type { databases } from '~/drizzle'
-import { runSql } from '../query'
+import { createQuery } from '../query'
 
-export function dropTableSql(database: typeof databases.$inferSelect, { table, schema, cascade }: { table: string, schema: string, cascade: boolean }) {
-  const label = `Drop Table ${schema}.${table}`
+export const dropTableQuery = createQuery({
+  query: ({ table, schema, cascade }: { table: string, schema: string, cascade: boolean }) => ({
+    postgres: ({ db }) => {
+      let query = db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .schema
+        .dropTable(table)
 
-  return runSql(database, {
-    query: {
-      postgres: ({ qb, execute, log }) => {
-        let query = qb
-          .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
-          .schema
-          .dropTable(table)
+      if (cascade) {
+        query = query.cascade()
+      }
 
-        if (cascade) {
-          query = query.cascade()
-        }
-
-        const compiledQuery = query.compile()
-
-        const promise = execute(compiledQuery)
-
-        log({ ...compiledQuery, promise, label })
-
-        return promise
-      },
-      mysql: ({ qb, execute, log }) => {
-        let query = qb
-          .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
-          .schema
-          .dropTable(table)
-
-        if (cascade) {
-          query = query.cascade()
-        }
-
-        const compiledQuery = query.compile()
-
-        const promise = execute(compiledQuery)
-
-        log({ ...compiledQuery, promise, label })
-
-        return promise
-      },
+      return query.execute()
     },
-  })
-}
+    mysql: ({ db }) => {
+      let query = db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .schema
+        .dropTable(table)
+
+      if (cascade) {
+        query = query.cascade()
+      }
+
+      return query.execute()
+    },
+  }),
+})

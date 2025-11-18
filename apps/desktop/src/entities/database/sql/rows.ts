@@ -1,7 +1,7 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { BINARY_OPERATORS, ExpressionBuilder } from 'kysely'
-import type { databases } from '~/drizzle'
-import { runSql } from '../query'
+import { type } from 'arktype'
+import { createQuery } from '../query'
 
 // eslint-disable-next-line ts/no-explicit-any
 export function buildWhere<E extends ExpressionBuilder<any, any>>(eb: E, filters: ActiveFilter[], concatOperator: 'AND' | 'OR' = 'AND') {
@@ -20,80 +20,68 @@ export function buildWhere<E extends ExpressionBuilder<any, any>>(eb: E, filters
   )
 }
 
-export function rowsSql(database: typeof databases.$inferSelect, {
-  schema,
-  table,
-  limit,
-  offset,
-  filters,
-  filtersConcatOperator,
-  select,
-  ...params
-}: {
-  schema: string
-  table: string
-  limit: number
-  offset: number
-  orderBy?: Record<string, 'ASC' | 'DESC'>
-  filters?: ActiveFilter[]
-  filtersConcatOperator?: 'AND' | 'OR'
-  select?: string[]
-}) {
-  const label = `Rows for ${schema}.${table}`
-  const orderBy = Object.entries(params.orderBy ?? {})
+export const rowsQuery = createQuery({
+  type: type('Record<string, unknown>[]'),
+  query: ({
+    schema,
+    table,
+    limit,
+    offset,
+    orderBy,
+    filters,
+    filtersConcatOperator,
+    select,
+  }: {
+    schema: string
+    table: string
+    limit: number
+    offset: number
+    orderBy?: Record<string, 'ASC' | 'DESC'>
+    filters?: ActiveFilter[]
+    filtersConcatOperator?: 'AND' | 'OR'
+    select?: string[]
+  }) => ({
+    postgres: ({ db }) => {
+      const order = Object.entries(orderBy ?? {})
 
-  return runSql(database, {
-    query: {
-      postgres: ({ qb, execute, log }) => {
-        let query = qb
-          .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
-          .selectFrom(table)
-          .$if(select !== undefined, qb => qb.select(select!))
-          .$if(select === undefined, qb => qb.selectAll())
-          .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
-          .limit(limit)
-          .offset(offset)
+      let query = db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .$if(select !== undefined, qb => qb.select(select!))
+        .$if(select === undefined, qb => qb.selectAll())
+        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
+        .limit(limit)
+        .offset(offset)
 
-        if (orderBy.length > 0) {
-          orderBy.forEach(([column, order]) => {
-            query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
-          })
-        }
+      if (order.length > 0) {
+        order.forEach(([column, order]) => {
+          query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
+        })
+      }
 
-        const compiledQuery = query.compile()
-
-        const promise = execute(compiledQuery)
-
-        log({ ...compiledQuery, promise, label })
-
-        return promise
-      },
-      mysql: ({ qb, execute, log }) => {
-        let query = qb
-          .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
-          .selectFrom(table)
-          .$if(select !== undefined, qb => qb.select(select!))
-          .$if(select === undefined, qb => qb.selectAll())
-          .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
-          .limit(limit)
-          .offset(offset)
-
-        if (orderBy.length > 0) {
-          orderBy.forEach(([column, order]) => {
-            query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
-          })
-        }
-
-        const compiledQuery = query.compile()
-
-        const promise = execute(compiledQuery)
-
-        log({ ...compiledQuery, promise, label })
-
-        return promise
-      },
+      return query.execute()
     },
-  })
-}
+    mysql: ({ db }) => {
+      const order = Object.entries(orderBy ?? {})
+
+      let query = db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .$if(select !== undefined, qb => qb.select(select!))
+        .$if(select === undefined, qb => qb.selectAll())
+        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
+        .limit(limit)
+        .offset(offset)
+
+      if (order.length > 0) {
+        order.forEach(([column, order]) => {
+          query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
+        })
+      }
+
+      return query.execute()
+    },
+  }),
+})

@@ -21,7 +21,7 @@ export function RunnerResultsTable({
 }: {
   data: Record<string, unknown>[]
   columns: Column[]
-  duration: number
+  duration?: number
 }) {
   const [search, setSearch] = useState('')
 
@@ -76,11 +76,13 @@ export function RunnerResultsTable({
             {filteredData.length === 1 ? 'row' : 'rows'}
             {search && filteredData.length !== data.length && ` (filtered from ${data.length})`}
           </span>
-          <span className="text-xs text-muted-foreground">
-            (
-            {duration.toFixed()}
-            ms)
-          </span>
+          {duration !== undefined && (
+            <span className="text-xs text-muted-foreground">
+              (
+              {duration.toFixed()}
+              ms)
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <div className="relative flex-1 max-w-60">

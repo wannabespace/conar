@@ -17,7 +17,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { renameTableSql, tablesAndSchemasQuery } from '~/entities/database'
+import { databaseTablesAndSchemasQuery, renameTableQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { renameTab } from '../../../-store'
 
@@ -46,13 +46,13 @@ export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
 
   const { mutate: renameTable, isPending } = useMutation({
     mutationFn: async () => {
-      await renameTableSql(database, { schema, oldTable: table, newTable: newTableName })
+      await renameTableQuery.run(database, { schema, oldTable: table, newTable: newTableName })
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)
       setOpen(false)
 
-      await queryClient.invalidateQueries(tablesAndSchemasQuery({ database }))
+      await queryClient.invalidateQueries(databaseTablesAndSchemasQuery({ database }))
       renameTab(database.id, schema, table, newTableName)
 
       router.navigate({

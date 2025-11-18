@@ -1,41 +1,20 @@
-import type { databases } from '~/drizzle'
-import { runSql } from '../query'
+import { createQuery } from '../query'
 
-const label = 'Rename Table'
-
-export function renameTableSql(database: typeof databases.$inferSelect, { schema, oldTable, newTable }: { schema: string, oldTable: string, newTable: string }) {
-  return runSql(database, {
-    query: {
-      postgres: ({ qb, execute, log }) => {
-        const query = qb
-          .withSchema(schema)
-          .withTables<{ [oldTable]: Record<string, unknown> }>()
-          .schema
-          .alterTable(oldTable)
-          .renameTo(newTable)
-          .compile()
-
-        const promise = execute(query)
-
-        log({ ...query, promise, label })
-
-        return promise
-      },
-      mysql: ({ qb, execute, log }) => {
-        const query = qb
-          .withSchema(schema)
-          .withTables<{ [oldTable]: Record<string, unknown> }>()
-          .schema
-          .alterTable(oldTable)
-          .renameTo(newTable)
-          .compile()
-
-        const promise = execute(query)
-
-        log({ ...query, promise, label })
-
-        return promise
-      },
-    },
-  })
-}
+export const renameTableQuery = createQuery({
+  query: ({ schema, oldTable, newTable }: { schema: string, oldTable: string, newTable: string }) => ({
+    postgres: ({ db }) => db
+      .withSchema(schema)
+      .withTables<{ [oldTable]: Record<string, unknown> }>()
+      .schema
+      .alterTable(oldTable)
+      .renameTo(newTable)
+      .execute(),
+    mysql: ({ db }) => db
+      .withSchema(schema)
+      .withTables<{ [oldTable]: Record<string, unknown> }>()
+      .schema
+      .alterTable(oldTable)
+      .renameTo(newTable)
+      .execute(),
+  }),
+})

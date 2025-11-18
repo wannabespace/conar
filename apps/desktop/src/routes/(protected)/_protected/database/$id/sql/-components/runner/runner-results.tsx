@@ -75,7 +75,7 @@ export function RunnerResults() {
             </TabsTrigger>
           ))}
         </TabsList>
-        {results.map(({ data, error, startLineNumber, endLineNumber, duration }, index) => (
+        {results.map(({ data, error, startLineNumber, endLineNumber }, index) => (
           <TabsContent
             // eslint-disable-next-line react/no-array-index-key
             key={index}
@@ -120,7 +120,7 @@ export function RunnerResults() {
                   : (
                       <RunnerResultsTable
                         data={data}
-                        duration={duration}
+                        // duration={duration}
                         columns={Object.keys(data[0]!).map(key => ({ id: key }))}
                       />
                     )}

@@ -191,9 +191,8 @@ async function testConnection({ type, connectionString}: { connectionString: str
     throw new Error('Electron is not available')
   }
 
-  await window.electron.sql({
+  await window.electron.sql[type]({
     sql: 'SELECT 1',
-    type,
     connectionString,
     values: [],
   })
