@@ -5,23 +5,7 @@ import { enumsQuery } from '../sql/enums'
 export function databaseEnumsQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
     queryKey: ['database', database.id, 'enums'],
-    queryFn: async () => {
-      const enums = await enumsQuery.run(database)
-
-      const map = new Map<string, { schema: string, name: string, values: string[] }>()
-
-      for (const { schema, name, value } of enums) {
-        const key = `${schema}.${name}`
-        if (!map.has(key)) {
-          map.set(key, { schema, name, values: [value] })
-        }
-        else {
-          map.get(key)!.values.push(value)
-        }
-      }
-
-      return Array.from(map.values())
-    },
+    queryFn: () => enumsQuery.run(database),
   })
 }
 
