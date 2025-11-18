@@ -10,7 +10,7 @@ export const users = pgTable('users', {
   emailVerified: boolean().default(false).notNull(),
   image: text(),
   twoFactorEnabled: boolean().default(false),
-  normalizedEmail: text().unique('users_normalized_email_unique'),
+  normalizedEmail: text().unique(),
   isAnonymous: boolean(),
   secret: text().notNull().$defaultFn(() => nanoid()),
 }, t => [
@@ -19,14 +19,14 @@ export const users = pgTable('users', {
 
 export const sessions = pgTable('sessions', {
   ...baseTable,
-  expiresAt: timestamp({ withTimezone: true }).notNull(),
+  expiresAt: timestamp().notNull(),
   token: text().notNull().unique(),
   ipAddress: text(),
   userAgent: text(),
   userId: uuid()
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  activeOrganizationId: uuid(),
+  activeWorkspaceId: uuid(),
 }, t => [
   index().on(t.userId),
   index().on(t.token),
@@ -92,7 +92,7 @@ export const twoFactorsRelations = relations(twoFactors, ({ one }) => ({
 export const workspaces = pgTable('workspaces', {
   ...baseTable,
   name: text().notNull(),
-  slug: text().unique(),
+  slug: text().notNull().unique(),
   logo: text(),
   metadata: text(),
 }, t => [
@@ -101,7 +101,7 @@ export const workspaces = pgTable('workspaces', {
 
 export const members = pgTable('members', {
   ...baseTable,
-  organizationId: uuid()
+  workspaceId: uuid()
     .notNull()
     .references(() => workspaces.id, { onDelete: 'cascade' }),
   userId: uuid()
@@ -110,12 +110,12 @@ export const members = pgTable('members', {
   role: text().default('member').notNull(),
 }, t => [
   index().on(t.userId),
-  index().on(t.organizationId),
+  index().on(t.workspaceId),
 ])
 
 export const membersRelations = relations(members, ({ one }) => ({
   workspace: one(workspaces, {
-    fields: [members.organizationId],
+    fields: [members.workspaceId],
     references: [workspaces.id],
   }),
   user: one(users, {
@@ -126,7 +126,7 @@ export const membersRelations = relations(members, ({ one }) => ({
 
 export const invitations = pgTable('invitations', {
   ...baseTable,
-  organizationId: uuid()
+  workspaceId: uuid()
     .notNull()
     .references(() => workspaces.id, { onDelete: 'cascade' }),
   email: text().notNull(),
@@ -138,13 +138,13 @@ export const invitations = pgTable('invitations', {
     .references(() => users.id, { onDelete: 'cascade' }),
 }, t => [
   index().on(t.email),
-  index().on(t.organizationId),
+  index().on(t.workspaceId),
   index().on(t.inviterId),
 ])
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
   workspace: one(workspaces, {
-    fields: [invitations.organizationId],
+    fields: [invitations.workspaceId],
     references: [workspaces.id],
   }),
   inviter: one(users, {
