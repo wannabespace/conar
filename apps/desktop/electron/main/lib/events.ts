@@ -60,11 +60,6 @@ export const electron = {
 
 export function initElectronEvents() {
   for (const [key, events] of Object.entries(electron)) {
-    // if (typeof events === 'function') {
-    //   ipcMain.handle(key, (_event, arg) => events(arg))
-    //   continue
-    // }
-
     for (const [key2, handler] of Object.entries(events)) {
       ipcMain.handle(`${key}.${key2}`, (_event, arg) => handler(arg))
     }

@@ -1,1 +1,0 @@
-ALTER TYPE "public"."database_type" ADD VALUE 'mysql';

@@ -1,1 +1,0 @@
-ALTER TABLE "databases" ADD COLUMN "label" text;
