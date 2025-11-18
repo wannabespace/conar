@@ -1,5 +1,6 @@
 import type { AppUIMessage } from '@conar/shared/ai-tools'
 import { google } from '@ai-sdk/google'
+import { encode } from '@toon-format/toon'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { consola } from 'consola'
@@ -16,7 +17,7 @@ export const generateTitle = orpc
   }))
   .handler(async ({ input, signal, context }) => {
     const prompt = input.messages.map(message => message.parts.filter(part => part.type === 'text')
-      .map(part => JSON.stringify(part, null, 2))
+      .map(part => encode(part))
       .join('\n'),
     ).join('\n')
 
