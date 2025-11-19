@@ -1,6 +1,7 @@
 import type { RouterClient } from '@orpc/server'
 import { orpc } from '..'
 import { ai } from './ai'
+import { banner } from './banner'
 import { chats } from './chats'
 import { chatsMessages } from './chats-messages'
 import { contact } from './contact'
@@ -14,6 +15,7 @@ export const router = orpc.router({
   chatsMessages,
   queries,
   databases,
+  banner,
 })
 
 export type ORPCRouter = RouterClient<typeof router>
