@@ -33,7 +33,7 @@ export function TableCellReferences({
         <TabsContent
           key={reference.name}
           value={reference.name}
-          className="w-full h-[calc(100%-theme(spacing.8))]"
+          className="w-full h-[calc(100%-(--spacing(8)))]"
         >
           <TableCellTable
             schema={reference.schema}
