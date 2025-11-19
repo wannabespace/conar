@@ -4,6 +4,7 @@ import { DatabaseType } from '@conar/shared/enums/database-type'
 import { Store } from '@tanstack/react-store'
 import { MysqlDialect, PostgresDialect } from 'kysely'
 import { formatSql } from '~/lib/formatter'
+import { executeSqlWithConnectionString } from './query'
 
 export interface QueryLog {
   id: string
@@ -86,7 +87,8 @@ class ProxyDriver implements Driver {
   async acquireConnection() {
     return {
       executeQuery: async <R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> => {
-        const promise = window.electron!.sql[this.database.type]({
+        const promise = executeSqlWithConnectionString({
+          type: this.database.type,
           sql: compiledQuery.sql,
           values: compiledQuery.parameters as unknown[],
           connectionString: this.database.connectionString,

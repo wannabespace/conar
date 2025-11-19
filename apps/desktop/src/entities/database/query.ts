@@ -14,6 +14,23 @@ export function executeSql(database: typeof databases.$inferSelect, sql: string,
   return dialects[database.type](database).executeQuery(CompiledQuery.raw(sql, values))
 }
 
+export function executeSqlWithConnectionString({
+  type,
+  connectionString,
+  sql,
+  values,
+}: { type: DatabaseType, connectionString: string, sql: string, values: unknown[] }) {
+  if (!window.electron) {
+    throw new Error('Electron is not available')
+  }
+
+  return window.electron.sql[type]({
+    connectionString,
+    sql,
+    values,
+  })
+}
+
 export function createQuery<P = undefined, T extends Type = Type<unknown>>(options: {
   type?: T
   query: (params: P) => ({
