@@ -7,11 +7,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCloseLine, RiInformationLine, RiListUnordered } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useDatabaseEnums, useDatabaseTablesAndSchemas } from '~/entities/database'
 
 function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function Highlight({ text,search }: { text: string; search: string }) {
+  if(!search) return;
+
+  const regex = useMemo(() => new RegExp(escapeRegExp(search), 'gi'), [search]);
+
+  return (
+    <span
+    dangerouslySetInnerHTML={{
+      __html: text.replace(
+        regex,
+        match => `<mark class="text-white bg-primary/50">${match}</mark>`
+      ),
+    }}
+  />
+  )
 }
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id/enums/')({
@@ -99,14 +116,7 @@ function DatabaseEnumsPage() {
                           <CardTitle className="text-base font-medium">
                             {search && enumItem.name.toLowerCase().includes(search.toLowerCase())
                               ? (
-                                  <span
-                                    dangerouslySetInnerHTML={{
-                                      __html: enumItem.name.replace(
-                                        new RegExp(escapeRegExp(search), 'gi'),
-                                        match => `<mark class="text-white bg-primary/50">${match}</mark>`,
-                                      ),
-                                    }}
-                                  />
+                                <Highlight text={enumItem.name} search={search}/>
                                 )
                               : enumItem.name}
                           </CardTitle>
@@ -144,14 +154,7 @@ function DatabaseEnumsPage() {
                             >
                               {shouldHighlight
                                 ? (
-                                    <span
-                                      dangerouslySetInnerHTML={{
-                                        __html: value.replace(
-                                          new RegExp(escapeRegExp(search), 'gi'),
-                                          match => `<mark class="text-white bg-primary/50">${match}</mark>`,
-                                        ),
-                                      }}
-                                    />
+                                  <Highlight text={value} search={search}/>
                                   )
                                 : value}
                             </Badge>
