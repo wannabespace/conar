@@ -120,7 +120,6 @@ export function RunnerResults() {
                   : (
                       <RunnerResultsTable
                         data={data}
-                        // duration={duration}
                         columns={Object.keys(data[0]!).map(key => ({ id: key }))}
                       />
                     )}

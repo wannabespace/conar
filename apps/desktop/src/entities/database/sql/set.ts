@@ -9,27 +9,19 @@ export const setQuery = createQuery({
     values,
     filters,
   }: { schema: string, table: string, values: Record<string, unknown>, filters: ActiveFilter[] }) => ({
-    postgres: ({ db }) => {
-      const query = db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .updateTable(table)
-        .set(values)
-        .where(eb => buildWhere(eb, filters))
-        .execute()
-
-      return query
-    },
-    mysql: ({ db }) => {
-      const query = db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .updateTable(table)
-        .set(values)
-        .where(eb => buildWhere(eb, filters))
-        .execute()
-
-      return query
-    },
+    postgres: ({ db }) => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .updateTable(table)
+      .set(values)
+      .where(eb => buildWhere(eb, filters))
+      .execute(),
+    mysql: ({ db }) => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .updateTable(table)
+      .set(values)
+      .where(eb => buildWhere(eb, filters))
+      .execute(),
   }),
 })

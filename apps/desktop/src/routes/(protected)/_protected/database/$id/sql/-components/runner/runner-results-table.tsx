@@ -17,11 +17,9 @@ import { TableCell } from '~/entities/database/components/table-cell'
 export function RunnerResultsTable({
   data,
   columns,
-  duration,
 }: {
   data: Record<string, unknown>[]
   columns: Column[]
-  duration?: number
 }) {
   const [search, setSearch] = useState('')
 
@@ -76,13 +74,6 @@ export function RunnerResultsTable({
             {filteredData.length === 1 ? 'row' : 'rows'}
             {search && filteredData.length !== data.length && ` (filtered from ${data.length})`}
           </span>
-          {duration !== undefined && (
-            <span className="text-xs text-muted-foreground">
-              (
-              {duration.toFixed()}
-              ms)
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-2">
           <div className="relative flex-1 max-w-60">
