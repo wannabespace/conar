@@ -139,6 +139,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           }
         : filter)
 
+      if (filters.length > 0 || Object.keys(orderBy).length > 0)
+        queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
+
       const [result] = await selectQuery.run(database, {
         schema,
         table,
@@ -153,9 +156,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
       if (newValue !== realValue)
         setValue(rowIndex, columnId, realValue ?? undefined)
-
-      if (filters.length > 0 || Object.keys(orderBy).length > 0)
-        queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
     }
     catch (e) {
       setValue(rowIndex, columnId, initialValue)
@@ -211,13 +211,15 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           // 25 it's a ~size of the button, 6 it's a ~size of the number
           + (column.references?.length ? 25 + 6 : 0)
           + (column.foreign ? 25 : 0),
-        cell: props => (
-          <TableCell
-            column={column}
-            onSaveValue={saveValue}
-            {...props}
-          />
-        ),
+        cell: (props) => {
+          return (
+            <TableCell
+              column={column}
+              onSaveValue={saveValue}
+              {...props}
+            />
+          )
+        },
         header: props => (
           <TableHeaderCell
             column={column}

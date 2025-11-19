@@ -24,6 +24,7 @@ export function getPool(connectionString: string) {
   const ssl = parseMysqlSSLConfig(searchParams)
 
   const pool = mysql2.createPool({
+    dateStrings: true,
     ...config,
     ...(ssl ? { ssl: readSSLFiles(ssl) } : {}),
   })

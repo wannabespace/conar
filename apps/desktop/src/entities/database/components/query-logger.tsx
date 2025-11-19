@@ -57,7 +57,6 @@ function LogTrigger({ query, className, ...props }: { query: QueryLog } & Compon
     >
       <span className="text-xs text-muted-foreground text-left tabular-nums">
         {query.createdAt.toLocaleString('en-US', {
-          year: 'numeric',
           month: 'short',
           day: 'numeric',
           hour: '2-digit',
@@ -67,6 +66,9 @@ function LogTrigger({ query, className, ...props }: { query: QueryLog } & Compon
         })}
       </span>
       {getStatusIcon(status)}
+      <span className="text-xs text-muted-foreground text-left tabular-nums w-12">
+        {query.duration ? `${query.duration.toFixed()}ms` : ''}
+      </span>
       <code className="text-xs font-mono flex-1 truncate text-left">
         {shortQuery}
       </code>
