@@ -14,20 +14,24 @@ function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-function Highlight({ text,search }: { text: string; search: string }) {
-  if(!search) return;
+function Highlight({ text, search }: { text: string, search: string }) {
+  const regex = useMemo(
+    () => new RegExp(escapeRegExp(search), 'gi'),
+    [search],
+  )
 
-  const regex = useMemo(() => new RegExp(escapeRegExp(search), 'gi'), [search]);
+  if (!search)
+    return
 
   return (
     <span
-    dangerouslySetInnerHTML={{
-      __html: text.replace(
-        regex,
-        match => `<mark class="text-white bg-primary/50">${match}</mark>`
-      ),
-    }}
-  />
+      dangerouslySetInnerHTML={{
+        __html: text.replace(
+          regex,
+          match => `<mark class="text-white bg-primary/50">${match}</mark>`,
+        ),
+      }}
+    />
   )
 }
 
@@ -116,7 +120,7 @@ function DatabaseEnumsPage() {
                           <CardTitle className="text-base font-medium">
                             {search && enumItem.name.toLowerCase().includes(search.toLowerCase())
                               ? (
-                                <Highlight text={enumItem.name} search={search}/>
+                                  <Highlight text={enumItem.name} search={search} />
                                 )
                               : enumItem.name}
                           </CardTitle>
@@ -154,7 +158,7 @@ function DatabaseEnumsPage() {
                             >
                               {shouldHighlight
                                 ? (
-                                  <Highlight text={value} search={search}/>
+                                    <Highlight text={value} search={search} />
                                   )
                                 : value}
                             </Badge>
