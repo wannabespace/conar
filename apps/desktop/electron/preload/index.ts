@@ -23,6 +23,9 @@ async function handleError(func: () => Promise<any>) {
     return result
   }
   catch (error) {
+    if (import.meta.env.DEV) {
+      console.error(error)
+    }
     if (error instanceof Error) {
       const message = error.message.replace(/^Error invoking remote method '[^']+': /, '')
       const errorMessage = message.toLowerCase().startsWith('error: ') ? message.slice(7) : message

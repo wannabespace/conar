@@ -20,7 +20,6 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
           query,
           startLineNumber,
           endLineNumber,
-          // duration: data.duration,
         }))
         .catch(e => ({
           data: null,
@@ -28,7 +27,6 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
           query,
           startLineNumber,
           endLineNumber,
-          // duration: 0,
         })),
       ))
 
