@@ -26,19 +26,19 @@ export function useTableColumns({ database, table, schema }: { database: typeof 
           ...column,
           primaryKey: primaryConstraint?.name,
           unique: uniqueConstraint?.name,
-          foreign: foreignConstraint && foreignConstraint.usageSchema && foreignConstraint.usageTable && foreignConstraint.usageColumn
+          foreign: foreignConstraint && foreignConstraint.foreignSchema && foreignConstraint.foreignTable && foreignConstraint.foreignColumn
             ? {
                 name: foreignConstraint.name,
-                schema: foreignConstraint.usageSchema,
-                table: foreignConstraint.usageTable,
-                column: foreignConstraint.usageColumn,
+                schema: foreignConstraint.foreignSchema,
+                table: foreignConstraint.foreignTable,
+                column: foreignConstraint.foreignColumn,
               }
             : undefined,
           references: constraints
             .filter(c => c.type === 'foreignKey'
-              && c.usageColumn === column.id
-              && c.usageSchema === schema
-              && c.usageTable === table
+              && c.foreignColumn === column.id
+              && c.foreignSchema === schema
+              && c.foreignTable === table
               && !!c.column,
             )
             .map(c => ({

@@ -19,7 +19,6 @@ import { Route } from '../..'
 import { databaseStore } from '../../../../-store'
 import { useRunnerContext } from './runner-context'
 
-// eslint-disable-next-line react-refresh/only-export-components
 function RunnerEditorQueryZone({
   database,
   onRun,

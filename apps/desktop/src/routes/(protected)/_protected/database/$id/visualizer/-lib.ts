@@ -6,14 +6,14 @@ import { Position } from '@xyflow/react'
 
 export function getEdges({ constraints }: { constraints: typeof constraintsType.infer[] }): Edge[] {
   return constraints
-    .filter(c => c.type === 'foreignKey' && c.usageTable && c.usageColumn && c.table && c.column)
+    .filter(c => c.type === 'foreignKey' && c.foreignTable && c.foreignColumn && c.table && c.column)
     .map(c => ({
-      id: `${c.table}_${c.column}_${c.usageTable}_${c.usageColumn}`,
+      id: `${c.table}_${c.column}_${c.foreignTable}_${c.foreignColumn}`,
       type: 'custom',
       source: c.table,
-      target: c.usageTable!,
+      target: c.foreignTable!,
       sourceHandle: c.column!,
-      targetHandle: c.usageColumn!,
+      targetHandle: c.foreignColumn!,
     }))
 }
 
@@ -55,12 +55,12 @@ export function getNodes({
             type: c.type,
             isEditable: c.isEditable,
             isNullable: c.isNullable,
-            foreign: foreign && foreign.usageSchema && foreign.usageTable && foreign.usageColumn
+            foreign: foreign && foreign.foreignSchema && foreign.foreignTable && foreign.foreignColumn
               ? {
                   name: foreign.name,
-                  schema: foreign.usageSchema,
-                  table: foreign.usageTable,
-                  column: foreign.usageColumn,
+                  schema: foreign.foreignSchema,
+                  table: foreign.foreignTable,
+                  column: foreign.foreignColumn,
                 }
               : undefined,
             primaryKey: columnConstraints.find(constraint => constraint.type === 'primaryKey')?.name,

@@ -8,7 +8,7 @@ import { eventIteratorToStream } from '@orpc/client'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
-import { databaseEnumsQuery, databaseTableColumnsQuery, rowsSql, tablesAndSchemasQuery } from '~/entities/database'
+import { databaseEnumsQuery, databaseTableColumnsQuery, databaseTablesAndSchemasQuery, rowsQuery } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { databaseStore } from '../../../../-store'
@@ -109,7 +109,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           context: [
             `Current query in the SQL runner: ${store.state.sql.trim() || 'Empty'}`,
             'Database schemas and tables:',
-            JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database })), null, 2),
+            JSON.stringify(await queryClient.ensureQueryData(databaseTablesAndSchemasQuery({ database })), null, 2),
           ].join('\n'),
         }, { signal: options.abortSignal }))
       },
@@ -173,7 +173,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       }
       else if (toolCall.toolName === 'select') {
         const input = toolCall.input as InferToolInput<typeof tools.select>
-        const { result: output } = await rowsSql(database, {
+        const output = await rowsQuery.run(database, {
           schema: input.tableAndSchema.schemaName,
           table: input.tableAndSchema.tableName,
           limit: input.limit,
@@ -196,9 +196,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           }),
           filtersConcatOperator: input.whereConcatOperator,
         }).catch(error => ({
-          result: {
-            error: error instanceof Error ? error.message : 'Error during the query execution',
-          },
+          error: error instanceof Error ? error.message : 'Error during the query execution',
         })) satisfies InferToolOutput<typeof tools.select>
 
         chat.addToolOutput({

@@ -10,9 +10,7 @@ export const Route = createFileRoute('/_layout')({
   component: MainLayout,
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const NAVBAR_HEIGHT_BASE = 150
-// eslint-disable-next-line react-refresh/only-export-components
 export const NAVBAR_HEIGHT_SCROLLED = 60
 
 function MainLayout() {

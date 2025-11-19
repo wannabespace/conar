@@ -5,7 +5,7 @@ import { databaseTableColumnsQuery } from '../queries/columns'
 import { databaseConstraintsQuery } from '../queries/constraints'
 import { databaseEnumsQuery } from '../queries/enums'
 import { databaseRowsQuery } from '../queries/rows'
-import { tablesAndSchemasQuery } from '../queries/tables-and-schemas'
+import { databaseTablesAndSchemasQuery } from '../queries/tables-and-schemas'
 import { databaseTableTotalQuery } from '../queries/total'
 
 export async function prefetchDatabaseCore(database: typeof databases.$inferSelect) {
@@ -14,7 +14,7 @@ export async function prefetchDatabaseCore(database: typeof databases.$inferSele
   }
 
   await Promise.all([
-    queryClient.prefetchQuery(tablesAndSchemasQuery({ database })),
+    queryClient.prefetchQuery(databaseTablesAndSchemasQuery({ database })),
     queryClient.prefetchQuery(databaseEnumsQuery({ database })),
     queryClient.prefetchQuery(databaseConstraintsQuery({ database })),
   ])

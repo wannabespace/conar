@@ -1,6 +1,5 @@
-import type { databases } from '~/drizzle'
 import { type } from 'arktype'
-import { runSql } from '../query'
+import { createQuery } from '../query'
 
 const constraintType = type('"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"')
 
@@ -17,48 +16,60 @@ const constraintTypeLabelMap = {
 export const constraintsType = type({
   schema: 'string',
   table: 'string',
-  usage_schema: 'string | null',
-  usage_table: 'string | null',
-  usage_column: 'string | null',
+  foreign_schema: 'string | null',
+  foreign_table: 'string | null',
+  foreign_column: 'string | null',
   name: 'string',
   type: constraintType,
   column: 'string | null',
 })
-  .pipe(({ type, usage_column, usage_table, usage_schema, ...item }) => ({
+  .pipe(({ type, foreign_column, foreign_table, foreign_schema, ...item }) => ({
     ...item,
     type: constraintTypeLabelMap[type as typeof neededConstraintTypes[number]],
-    usageTable: usage_table,
-    usageColumn: usage_column,
-    usageSchema: usage_schema,
+    foreignTable: foreign_table,
+    foreignColumn: foreign_column,
+    foreignSchema: foreign_schema,
   }))
 
-export function constraintsSql(database: typeof databases.$inferSelect) {
-  return runSql({
-    validate: constraintsType.assert,
-    database,
-    label: 'Constraints',
-    query: {
-      postgres: db => db
-        .selectFrom('information_schema.table_constraints')
-        .leftJoin('information_schema.key_column_usage', 'information_schema.table_constraints.constraint_name', 'information_schema.key_column_usage.constraint_name')
-        .leftJoin('information_schema.constraint_column_usage', 'information_schema.table_constraints.constraint_name', 'information_schema.constraint_column_usage.constraint_name')
-        .select([
-          'information_schema.table_constraints.table_schema as schema',
-          'information_schema.table_constraints.table_name as table',
-          'information_schema.table_constraints.constraint_name as name',
-          'information_schema.table_constraints.constraint_type as type',
-          'information_schema.key_column_usage.column_name as column',
-          'information_schema.constraint_column_usage.table_schema as usage_schema',
-          'information_schema.constraint_column_usage.table_name as usage_table',
-          'information_schema.constraint_column_usage.column_name as usage_column',
-        ])
-        .where('information_schema.table_constraints.constraint_type', 'in', neededConstraintTypes)
-        .where('information_schema.constraint_column_usage.table_schema', 'not like', 'pg_%')
-        .$assertType<typeof constraintsType.inferIn>()
-        .compile(),
-      mysql: () => {
-        throw new Error('Not implemented')
-      },
-    },
-  })
-}
+export const constraintsQuery = createQuery({
+  type: constraintsType.array(),
+  query: () => ({
+    postgres: ({ db }) => db
+      .selectFrom('information_schema.table_constraints')
+      .leftJoin('information_schema.key_column_usage', 'information_schema.table_constraints.constraint_name', 'information_schema.key_column_usage.constraint_name')
+      .leftJoin('information_schema.constraint_column_usage', 'information_schema.table_constraints.constraint_name', 'information_schema.constraint_column_usage.constraint_name')
+      .select([
+        'information_schema.table_constraints.table_schema as schema',
+        'information_schema.table_constraints.table_name as table',
+        'information_schema.table_constraints.constraint_name as name',
+        'information_schema.table_constraints.constraint_type as type',
+        'information_schema.key_column_usage.column_name as column',
+        'information_schema.constraint_column_usage.table_schema as foreign_schema',
+        'information_schema.constraint_column_usage.table_name as foreign_table',
+        'information_schema.constraint_column_usage.column_name as foreign_column',
+      ])
+      .where('information_schema.table_constraints.constraint_type', 'in', neededConstraintTypes)
+      .where('information_schema.constraint_column_usage.table_schema', 'not like', 'pg_%')
+      .execute(),
+    mysql: ({ db }) => db
+      .selectFrom('information_schema.TABLE_CONSTRAINTS')
+      .leftJoin('information_schema.KEY_COLUMN_USAGE', join => join
+        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'information_schema.KEY_COLUMN_USAGE.CONSTRAINT_NAME')
+        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_SCHEMA', '=', 'information_schema.KEY_COLUMN_USAGE.CONSTRAINT_SCHEMA')
+        .onRef('information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA', '=', 'information_schema.KEY_COLUMN_USAGE.TABLE_SCHEMA')
+        .onRef('information_schema.TABLE_CONSTRAINTS.TABLE_NAME', '=', 'information_schema.KEY_COLUMN_USAGE.TABLE_NAME'))
+      .select([
+        'information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA as schema',
+        'information_schema.TABLE_CONSTRAINTS.TABLE_NAME as table',
+        'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME as name',
+        'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE as type',
+        'information_schema.KEY_COLUMN_USAGE.COLUMN_NAME as column',
+        'information_schema.KEY_COLUMN_USAGE.REFERENCED_TABLE_SCHEMA as foreign_schema',
+        'information_schema.KEY_COLUMN_USAGE.REFERENCED_TABLE_NAME as foreign_table',
+        'information_schema.KEY_COLUMN_USAGE.REFERENCED_COLUMN_NAME as foreign_column',
+      ])
+      .where('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
+      .where('information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
+      .execute(),
+  }),
+})

@@ -2,9 +2,11 @@ import type { ColumnRenderer } from '~/components/table'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
+import posthog from 'posthog-js'
 import { useCallback, useEffect, useMemo } from 'react'
+import { toast } from 'sonner'
 import { Table, TableBody, TableProvider } from '~/components/table'
-import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, setSql } from '~/entities/database'
+import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, selectQuery, setQuery } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
 import { queryClient } from '~/main'
 import { Route } from '..'
@@ -112,26 +114,23 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     const rows = data.pages.flatMap(page => page.rows)
     const initialValue = rows[rowIndex]![columnId]
 
+    setValue(rowIndex, columnId, newValue)
+
+    const sqlFilters = primaryColumns.map(column => ({
+      column,
+      ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
+      values: [rows[rowIndex]![column]],
+    }))
+
+    const setValues = { [columnId]: prepareValue(newValue, columns?.find(c => c.id === columnId)?.type) }
+
     try {
-      setValue(rowIndex, columnId, newValue)
-      const { result: [result] } = await setSql(database, {
+      await setQuery.run(database, {
         schema,
         table,
-        values: { [columnId]: prepareValue(newValue, columns?.find(c => c.id === columnId)?.type) },
-        filters: primaryColumns.map(column => ({
-          column,
-          ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
-          values: [rows[rowIndex]![column]],
-        })),
+        values: setValues,
+        filters: sqlFilters,
       })
-
-      if (!result || !(columnId in result))
-        throw new Error('Cannot update the column. No value returned from the database.')
-
-      const realValue = result[columnId]
-
-      if (newValue !== realValue)
-        setValue(rowIndex, columnId, realValue ?? undefined)
 
       if (filters.length > 0 || Object.keys(orderBy).length > 0)
         queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
@@ -139,6 +138,45 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     catch (e) {
       setValue(rowIndex, columnId, initialValue)
       throw e
+    }
+
+    const modifiedColumns = Object.keys(setValues)
+    const updatedFilters = sqlFilters.map(filter => filter.column in modifiedColumns
+      ? {
+          ...filter,
+          values: [setValues[filter.column]],
+        }
+      : filter)
+
+    try {
+      const [result] = await selectQuery.run(database, {
+        schema,
+        table,
+        select: modifiedColumns,
+        filters: updatedFilters,
+      })
+
+      if (!result || !(columnId in result))
+        return
+
+      const realValue = result[columnId]
+
+      if (newValue !== realValue)
+        setValue(rowIndex, columnId, realValue ?? undefined)
+    }
+    catch (e) {
+      posthog.captureException(e, {
+        setValues,
+        sqlFilters,
+        updatedFilters,
+        columnId,
+        rowIndex,
+        newValue,
+      })
+
+      toast.error('New value was saved, but the updated value was not selected', {
+        description: e instanceof Error ? e.message : String(e),
+      })
     }
   }, [database, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
 
@@ -190,13 +228,15 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           // 25 it's a ~size of the button, 6 it's a ~size of the number
           + (column.references?.length ? 25 + 6 : 0)
           + (column.foreign ? 25 : 0),
-        cell: props => (
-          <TableCell
-            column={column}
-            onSaveValue={saveValue}
-            {...props}
-          />
-        ),
+        cell: (props) => {
+          return (
+            <TableCell
+              column={column}
+              onSaveValue={saveValue}
+              {...props}
+            />
+          )
+        },
         header: props => (
           <TableHeaderCell
             column={column}

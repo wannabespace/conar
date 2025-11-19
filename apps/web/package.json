@@ -22,7 +22,7 @@
     "date-fns": "^4.1.0",
     "motion": "catalog:",
     "nitro": "3.0.1-alpha.1",
-    "postgres": "^3.4.7",
+    "postgres": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-markdown": "^10.1.0",

@@ -1,8 +1,7 @@
 import type { ComponentProps } from 'react'
-import type { QueryLog } from '../query'
+import type { QueryLog } from '../dialects'
 import type { databases } from '~/drizzle'
 import { sleep } from '@conar/shared/utils/helpers'
-import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { ButtonGroup } from '@conar/ui/components/button-group'
 import { CardTitle } from '@conar/ui/components/card'
@@ -19,7 +18,7 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
 import { formatSql } from '~/lib/formatter'
 import { databaseStore } from '~/routes/(protected)/_protected/database/-store'
-import { queriesLogStore } from '../query'
+import { queriesLogStore } from '../dialects'
 
 type QueryStatus = 'error' | 'success' | 'pending'
 
@@ -44,21 +43,20 @@ function getQueryStatus(query: QueryLog) {
 
 function LogTrigger({ query, className, ...props }: { query: QueryLog } & ComponentProps<'button'>) {
   const status = getQueryStatus(query)
-  const truncatedQuery = query.query.replaceAll('\n', ' ')
+  const truncatedQuery = query.sql.replaceAll('\n', ' ')
   const shortQuery = truncatedQuery.length > 500 ? `${truncatedQuery.substring(0, 500)}...` : truncatedQuery
 
   return (
     <button
       type="button"
       className={cn(
-        'cursor-pointer w-full flex items-center gap-2 justify-between border-t py-1 px-4 hover:bg-muted/50',
+        'cursor-pointer w-full flex items-center gap-2 justify-between border-t py-1.5 px-4 hover:bg-muted/50',
         className,
       )}
       {...props}
     >
       <span className="text-xs text-muted-foreground text-left tabular-nums">
         {query.createdAt.toLocaleString('en-US', {
-          year: 'numeric',
           month: 'short',
           day: 'numeric',
           hour: '2-digit',
@@ -68,12 +66,9 @@ function LogTrigger({ query, className, ...props }: { query: QueryLog } & Compon
         })}
       </span>
       {getStatusIcon(status)}
-      <Badge
-        variant="secondary"
-        className="text-xs"
-      >
-        {query.label}
-      </Badge>
+      <span className="text-xs text-muted-foreground text-left tabular-nums w-12">
+        {query.duration ? `${query.duration.toFixed()}ms` : ''}
+      </span>
       <code className="text-xs font-mono flex-1 truncate text-left">
         {shortQuery}
       </code>
@@ -132,7 +127,7 @@ function Log({ query, className, database }: { query: QueryLog, className?: stri
           <div className="space-y-2">
             <Label>Query</Label>
             <Monaco
-              value={formatSql(query.query, database.type)}
+              value={formatSql(query.sql, database.type)}
               language="sql"
               options={monacoOptions}
               className="h-[50vh] border rounded-md overflow-hidden"
@@ -218,7 +213,7 @@ export function QueryLogger({ database, className }: {
   const { virtualItems, totalSize } = useVirtual({
     count: filteredQueries.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => 31,
+    estimateSize: () => 29,
     overscan: 5,
   })
 

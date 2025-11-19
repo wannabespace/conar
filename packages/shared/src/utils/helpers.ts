@@ -21,4 +21,14 @@ export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Om
 
 export function noop() {}
 
+export type Prettify<T> = {
+  [K in keyof T]: T[K]
+} & {}
+
 export type Satisfies<T, U extends T> = U
+
+export type MaybePromise<T> = T | Promise<T>
+
+export type MaybeArray<T> = T | T[]
+
+export interface ErrorMessage<T extends string> { __errorMessage: T }

@@ -8,7 +8,7 @@ import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { ExportData } from '~/components/export-data'
-import { databaseConstraintsQuery, databaseRowsQuery, databaseTableColumnsQuery, rowsSql } from '~/entities/database'
+import { databaseConstraintsQuery, databaseRowsQuery, databaseTableColumnsQuery, rowsQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { usePageStoreContext } from '../-store'
 import { HeaderActionsColumns } from './header-actions-columns'
@@ -34,7 +34,7 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
     let offset = 0
 
     while (true) {
-      const { result: batch } = await rowsSql(database, {
+      const batch = await rowsQuery.run(database, {
         schema,
         table,
         limit,
@@ -55,14 +55,14 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
     return data
   }
 
-  const getLimitedData = async (limit: number) => rowsSql(database, {
+  const getLimitedData = async (limit: number) => rowsQuery.run(database, {
     schema,
     table,
     limit,
     offset: 0,
     orderBy,
     filters,
-  }).then(data => data.result)
+  })
 
   const getData = async (limit?: number) => {
     return limit ? getLimitedData(limit) : getAllData()

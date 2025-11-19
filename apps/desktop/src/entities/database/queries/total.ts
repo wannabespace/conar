@@ -1,7 +1,7 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { databases } from '~/drizzle'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { totalSql } from '../sql/total'
+import { totalQuery } from '../sql/total'
 
 export function databaseTableTotalQuery({
   database,
@@ -27,7 +27,7 @@ export function databaseTableTotalQuery({
         filters: query.filters,
       },
     ],
-    queryFn: () => totalSql(database, { schema, table, filters: query.filters }).then(data => data.result[0]!.total),
+    queryFn: () => totalQuery.run(database, { schema, table, filters: query.filters }),
     throwOnError: false,
   })
 }

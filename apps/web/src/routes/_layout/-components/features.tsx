@@ -169,7 +169,7 @@ function AIMessage({ children, ...props }: MessageProps) {
       <div className="bg-primary text-primary-foreground rounded-lg px-4 py-3 text-sm max-w-[85%] shadow-sm">
         {children}
       </div>
-      <div className="flex justify-center items-center size-7 bg-primary rounded-full flex-shrink-0 text-white text-xs font-medium shadow-sm">
+      <div className="flex justify-center items-center size-7 bg-primary rounded-full shrink-0 text-white text-xs font-medium shadow-sm">
         AI
       </div>
     </div>
@@ -211,28 +211,28 @@ function CloudSync() {
         icon={<RiCloudLine className="size-4" aria-hidden="true" />}
       />
       <div className="space-y-3 sm:space-y-4">
-        <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-muted/30 to-muted/50 rounded-xl border border-border/50">
-          <div className="size-10 sm:size-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-md flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-linear-to-r from-muted/30 to-muted/50 rounded-xl border border-border/50">
+          <div className="size-10 sm:size-12 bg-linear-to-br from-primary/20 to-primary/10 rounded-md flex items-center justify-center flex-shrink-0">
             <RiDatabase2Line className="size-5 sm:size-6 text-primary" aria-hidden="true" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-foreground">Local Database</div>
             <div className="text-xs text-muted-foreground font-mono truncate">postgresql://localhost:5432</div>
           </div>
-          <div className="text-xs flex flex-col items-end gap-1 flex-shrink-0">
+          <div className="text-xs flex flex-col items-end gap-1 shrink-0">
             <span className="text-green-600 dark:text-green-400 font-medium">Synced</span>
             <span className="text-muted-foreground hidden sm:block">without password</span>
           </div>
         </div>
-        <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-muted/30 to-muted/50 rounded-xl border border-border/50">
-          <div className="size-10 sm:size-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-md flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-linear-to-r from-muted/30 to-muted/50 rounded-xl border border-border/50">
+          <div className="size-10 sm:size-12 bg-linear-to-br from-primary/20 to-primary/10 rounded-md flex items-center justify-center flex-shrink-0">
             <RiDatabase2Line className="size-5 sm:size-6 text-primary" aria-hidden="true" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-foreground">Production Database</div>
             <div className="text-xs text-muted-foreground font-mono truncate">postgresql://prod.example.com:5432</div>
           </div>
-          <div className="text-xs flex items-center gap-1 flex-shrink-0">
+          <div className="text-xs flex items-center gap-1 shrink-0">
             <span className="text-green-600 dark:text-green-400 font-medium">Synced</span>
           </div>
         </div>

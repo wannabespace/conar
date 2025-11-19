@@ -21,7 +21,6 @@ interface TableContextType {
 
 const TableContext = createContext<TableContextType>(null!)
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useTableContext<T>(selector: ContextSelector<TableContextType, T>) {
   return useContextSelector(TableContext, selector)
 }
