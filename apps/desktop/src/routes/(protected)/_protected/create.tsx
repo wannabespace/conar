@@ -28,6 +28,7 @@ import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/componen
 import { DatabaseIcon, databasesCollection, executeSql, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
+import { colorOptions, labelOptions } from './constant'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/create',
@@ -107,7 +108,7 @@ function StepCredentials({ ref, type, connectionString, setConnectionString }: {
   )
 }
 
-function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel }: {
+function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel, color, setColor }: {
   type: DatabaseType
   name: string
   connectionString: string
@@ -117,12 +118,11 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
   setSaveInCloud: (saveInCloud: boolean) => void
   label: string
   setLabel: (label: string) => void
+  color: string
+  setColor: (color: string) => void
 }) {
   const nameId = useId()
   const labelId = useId()
-
-  // Predefined label options
-  const labelOptions = ['Dev', 'Prod', 'Staging']
 
   return (
     <Card className="w-full">
@@ -195,6 +195,39 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
             </div>
           </div>
 
+          <div>
+            <Label className="mb-2">
+              Connection color (optional)
+            </Label>
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap gap-2 mt-1">
+                <button
+                  type="button"
+                  className={`w-7 h-7 rounded-full border ${!color ? 'bg-muted border-primary' : 'border-border'} flex items-center justify-center transition-all`}
+                  onClick={() => setColor('')}
+                >
+                  {!color && (
+                    <span className="text-primary text-lg">×</span>
+                  )}
+                </button>
+                {colorOptions.map(colorOption => (
+                  <button
+                    key={colorOption}
+                    type="button"
+                    className={`w-7 h-7 rounded-full transition-all ${color === colorOption ? 'ring-2 ring-offset-2 ring-offset-background ring-primary' : ''}`}
+                    style={{
+                      backgroundColor: colorOption,
+                    }}
+                    onClick={() => setColor(colorOption)}
+                  />
+                ))}
+              </div>
+              <div className="text-xs text-muted-foreground/70 mt-1">
+                Colors help visually distinguish between different connections
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-2">
             <label className="text-sm flex items-center gap-2">
               <Checkbox
@@ -228,7 +261,7 @@ function CreateConnectionPage() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  function createDatabase(data: { connectionString: string, name: string, type: DatabaseType, saveInCloud: boolean, label?: string }) {
+  function createDatabase(data: { connectionString: string, name: string, type: DatabaseType, saveInCloud: boolean, label?: string, color?: string }) {
     const id = v7()
 
     const password = new SafeURL(data.connectionString.trim()).password
@@ -239,6 +272,7 @@ function CreateConnectionPage() {
       type: data.type,
       connectionString: data.connectionString,
       label: data.label || null,
+      color: data.color || null,
       isPasswordExists: !!password,
       isPasswordPopulated: !!password,
       syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
@@ -261,6 +295,7 @@ function CreateConnectionPage() {
       type: DatabaseType.Postgres,
       saveInCloud: true,
       label: '',
+      color: '',
     },
     validators: {
       onChange: type({
@@ -292,7 +327,7 @@ function CreateConnectionPage() {
     },
   })
 
-  const [typeValue, connectionString, name, saveInCloud, label] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud, values.label])
+  const [typeValue, connectionString, name, saveInCloud, label, color] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud, values.label, values.color])
 
   return (
     <div className="min-h-screen flex flex-col justify-center">
@@ -394,6 +429,8 @@ function CreateConnectionPage() {
               setSaveInCloud={saveInCloud => form.setFieldValue('saveInCloud', saveInCloud)}
               label={label}
               setLabel={label => form.setFieldValue('label', label)}
+              color={color}
+              setColor={color => form.setFieldValue('color', color)}
             />
             <div className="flex gap-2 justify-end mt-auto pt-4">
               <Button variant="outline" onClick={() => setStep('credentials')}>
