@@ -27,7 +27,6 @@ import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
 import { DatabaseIcon, databasesCollection, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
-import { MySQLIcon } from '~/icons/mysql'
 import { colorOptions, labelOptions } from './constant'
 
 export const Route = createFileRoute(
@@ -329,7 +328,7 @@ function CreateConnectionPage() {
       }),
     },
     onSubmit(e) {
-      createConnection(e.value)
+      createDatabase(e.value)
     },
   })
 
