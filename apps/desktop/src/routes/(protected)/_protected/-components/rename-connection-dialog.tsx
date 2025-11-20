@@ -46,7 +46,7 @@ export function RenameConnectionDialog({ ref }: RenameConnectionDialogProps) {
     setOpen(false)
   }
 
-  const canConfirm = (newName.trim() !== '' && newName.trim() !== database?.name) || (newLabel.trim() !== (database?.label || '') || (newColor.trim() !== (database?.color || '')))
+  const canConfirm = (newName.trim() !== '' && newName.trim() !== database?.name) || (newLabel.trim() !== (database?.label || '')) || (newColor.trim() !== (database?.color || ''))
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

@@ -28,7 +28,7 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
 
   return (
     <Link
-      className={`relative flex items-center justify-between gap-4 rounded-lg bg-muted/30 p-5 border overflow-hidden ${database.color ? `border-border/50` : ` border-border/50`} hover:border-primary transition-all duration-150 shadow-sm group`}
+      className="relative flex items-center justify-between gap-4 rounded-lg bg-muted/30 p-5 border overflow-hidden border-border/50 hover:border-primary transition-all duration-150 shadow-sm group"
       style={{
         ...(database.color && {
           backgroundColor: `${database.color}05`,
@@ -37,28 +37,27 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
       {...params}
     >
       {database.color && (
-        <div
-          className="absolute left-0 top-0 bottom-0 w-1.5"
-          style={{ backgroundColor: database.color }}
-        />
-      )}
-      {database.color && (
-        <div
-          className="absolute left-0 top-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ backgroundColor: database.color }}
-        />
-      )}
-      {database.color && (
-        <div
-          className="absolute right-0 top-0 bottom-0 w-[1px] opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ backgroundColor: database.color }}
-        />
-      )}
-      {database.color && (
-        <div
-          className="absolute left-0 bottom-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ backgroundColor: database.color }}
-        />
+        <>
+          <div
+            className="absolute left-0 top-0 bottom-0 w-1.5"
+            style={{ backgroundColor: database.color }}
+          />
+
+          <div
+            className="absolute left-0 top-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ backgroundColor: database.color }}
+          />
+
+          <div
+            className="absolute right-0 top-0 bottom-0 w-[1px] opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ backgroundColor: database.color }}
+          />
+
+          <div
+            className="absolute left-0 bottom-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ backgroundColor: database.color }}
+          />
+        </>
       )}
       <div
         className={`size-12 shrink-0 rounded-lg ${database.color ? 'bg-white/10' : 'bg-muted/70'} p-3`}
