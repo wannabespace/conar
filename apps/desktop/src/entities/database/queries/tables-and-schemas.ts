@@ -1,12 +1,12 @@
 import type { databases } from '~/drizzle'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { tablesAndSchemasSql } from '../sql/tables-and-schemas'
+import { tablesAndSchemasQuery } from '../sql/tables-and-schemas'
 
-export function tablesAndSchemasQuery({ database }: { database: typeof databases.$inferSelect }) {
+export function databaseTablesAndSchemasQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
     queryKey: ['database', database.id, 'tables-and-schemas'],
     queryFn: async () => {
-      const { result: results } = await tablesAndSchemasSql(database)
+      const results = await tablesAndSchemasQuery.run(database)
       const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(([schema, tables]) => ({
         name: schema,
         tables: tables!.map(table => table.table),
@@ -27,6 +27,6 @@ export function tablesAndSchemasQuery({ database }: { database: typeof databases
   })
 }
 
-export function useDatabaseTablesAndSchemas(...params: Parameters<typeof tablesAndSchemasQuery>) {
-  return useQuery(tablesAndSchemasQuery(...params))
+export function useDatabaseTablesAndSchemas(...params: Parameters<typeof databaseTablesAndSchemasQuery>) {
+  return useQuery(databaseTablesAndSchemasQuery(...params))
 }

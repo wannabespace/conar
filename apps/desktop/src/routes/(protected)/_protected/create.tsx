@@ -25,7 +25,7 @@ import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { DatabaseIcon, databasesCollection, executeSql, prefetchDatabaseCore } from '~/entities/database'
+import { DatabaseIcon, databasesCollection, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 import { MySQLIcon } from '~/icons/mysql'
 import { colorOptions, labelOptions } from './constant'
@@ -40,10 +40,24 @@ export const Route = createFileRoute(
 })
 
 function generateRandomName() {
-  const vehicle = faker.vehicle.model()
   const color = faker.color.human()
+  const animalKeys = Object.keys(faker.animal) as Array<keyof typeof faker.animal>
+  const categories = [
+    () => faker.animal.type(),
+    () => faker.animal[faker.helpers.arrayElement(animalKeys)](),
+    () => faker.vehicle.model(),
+    () => faker.internet.domainWord(),
+    () => faker.person.firstName(),
+    () => faker.food.dish(),
+    () => faker.word.noun(),
+    () => faker.company.name(),
+  ]
+  const main = faker.helpers.arrayElement(categories)()
 
-  return `${color.charAt(0).toUpperCase() + color.slice(1)} ${vehicle}`
+  return [color, main]
+    .map(str => (str.charAt(0).toUpperCase() + str.slice(1)))
+    .filter(Boolean)
+    .join(' ')
 }
 
 function StepType({ type, setType }: { type: DatabaseType, setType: (type: DatabaseType) => void }) {
@@ -65,8 +79,8 @@ function StepType({ type, setType }: { type: DatabaseType, setType: (type: Datab
             {databaseLabels[DatabaseType.Postgres]}
           </ToggleGroupItem>
           <ToggleGroupItem value={DatabaseType.MySQL} aria-label="MySQL">
-            <MySQLIcon />
-            MySQL
+            <DatabaseIcon type={DatabaseType.MySQL} className="size-4 shrink-0 text-primary" />
+            {databaseLabels[DatabaseType.MySQL]}
           </ToggleGroupItem>
           <ToggleGroupItem value="" disabled aria-label="MongoDB">
             <MongoIcon />
@@ -78,7 +92,7 @@ function StepType({ type, setType }: { type: DatabaseType, setType: (type: Datab
   )
 }
 
-function StepCredentials({ ref, type, connectionString, setConnectionString }: { ref: RefObject<HTMLInputElement | null>, type: DatabaseType, connectionString: string, setConnectionString: (connectionString: string) => void }) {
+function StepCredentials({ ref, type, connectionString, setConnectionString, onEnter }: { ref: RefObject<HTMLInputElement | null>, type: DatabaseType, connectionString: string, setConnectionString: (connectionString: string) => void, onEnter: () => void }) {
   const id = useId()
 
   return (
@@ -95,11 +109,13 @@ function StepCredentials({ ref, type, connectionString, setConnectionString }: {
           id={id}
           placeholder={`${getProtocols(type)[0]}://user:password@host:port/database?options`}
           ref={ref}
+          autoFocus
           value={connectionString}
           onChange={e => setConnectionString(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault()
+              onEnter()
             }
           }}
         />
@@ -142,6 +158,7 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
                 id={nameId}
                 className="field-sizing-content"
                 placeholder="My connection"
+                autoFocus
                 value={name}
                 onChange={e => setName(e.target.value)}
               />
@@ -249,10 +266,14 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
 }
 
 async function testConnection({ type, connectionString}: { connectionString: string, type: DatabaseType }) {
-  await executeSql({
+  if (!window.electron) {
+    throw new Error('Electron is not available')
+  }
+
+  await window.electron.sql[type]({
     sql: 'SELECT 1',
-    type,
     connectionString,
+    values: [],
   })
 }
 
@@ -281,6 +302,7 @@ function CreateConnectionPage() {
     })
 
     toast.success('Connection created successfully 🎉')
+
     const database = databasesCollection.get(id)!
 
     prefetchDatabaseCore(database)
@@ -292,7 +314,7 @@ function CreateConnectionPage() {
     defaultValues: {
       connectionString: '',
       name: generateRandomName(),
-      type: DatabaseType.Postgres,
+      type: null as unknown as DatabaseType,
       saveInCloud: true,
       label: '',
       color: '',
@@ -305,9 +327,9 @@ function CreateConnectionPage() {
         saveInCloud: 'boolean',
         label: 'string?',
       }),
-      onSubmit(e) {
-        createDatabase(e.value)
-      },
+    },
+    onSubmit(e) {
+      createConnection(e.value)
     },
   })
 
@@ -318,7 +340,7 @@ function CreateConnectionPage() {
       toast.success('Connection successful. You can save the database.')
     },
     onError: (error) => {
-      posthog.capture('connection_test_failed', {
+      posthog.capture('connection-test-failed', {
         error: error.message,
       })
       toast.error('We couldn\'t connect to the database', {
@@ -371,15 +393,13 @@ function CreateConnectionPage() {
             </StepperTrigger>
           </StepperList>
           <StepperContent value="type">
-            <StepType type={typeValue} setType={type => form.setFieldValue('type', type)} />
-            <div className="mt-auto flex justify-end gap-4 pt-4">
-              <Button
-                disabled={!typeValue}
-                onClick={() => setStep('credentials')}
-              >
-                Continue
-              </Button>
-            </div>
+            <StepType
+              type={typeValue}
+              setType={(type) => {
+                form.setFieldValue('type', type)
+                setStep('credentials')
+              }}
+            />
           </StepperContent>
           <StepperContent value="credentials">
             <StepCredentials
@@ -390,10 +410,19 @@ function CreateConnectionPage() {
                 reset()
                 form.setFieldValue('connectionString', connectionString)
               }}
+              onEnter={() => {
+                test(form.state.values)
+              }}
             />
             <div className="flex gap-2 justify-end mt-auto pt-4">
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep('type')}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    form.setFieldValue('type', null as unknown as DatabaseType)
+                    setStep('type')
+                  }}
+                >
                   Back
                 </Button>
                 {status === 'success'

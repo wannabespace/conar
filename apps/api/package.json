@@ -46,7 +46,7 @@
     "loops": "^6.0.1",
     "nanoid": "catalog:",
     "pg": "catalog:",
-    "postgres": "^3.4.7",
+    "postgres": "catalog:",
     "posthog-node": "^5.12.0",
     "react": "catalog:",
     "redis": "^5.9.0",

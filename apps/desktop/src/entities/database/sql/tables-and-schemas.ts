@@ -1,19 +1,16 @@
-import type { databases } from '~/drizzle'
 import { type } from 'arktype'
-import { runSql } from '../query'
+import { createQuery } from '../query'
 
 export const tablesAndSchemasType = type({
   schema: 'string',
   table: 'string',
 })
 
-export function tablesAndSchemasSql(database: typeof databases.$inferSelect) {
-  return runSql({
-    database,
-    label: 'Tables and Schemas',
-    validate: tablesAndSchemasType.assert,
-    query: {
-      postgres: db => db
+export const tablesAndSchemasQuery = createQuery({
+  type: tablesAndSchemasType.array(),
+  query: () => ({
+    postgres: async ({ db }) => {
+      const query = await db
         .selectFrom('information_schema.tables')
         .select([
           'table_schema as schema',
@@ -25,11 +22,24 @@ export function tablesAndSchemasSql(database: typeof databases.$inferSelect) {
           not(eb('table_schema', 'like', 'pg_temp%')),
           eb('table_type', '=', 'BASE TABLE'),
         ]))
-        .$assertType<typeof tablesAndSchemasType.inferIn>()
-        .compile(),
-      mysql: () => {
-        throw new Error('Not implemented')
-      },
+        .execute()
+
+      return query
     },
-  })
-}
+    mysql: ({ db }) => {
+      const query = db
+        .selectFrom('information_schema.TABLES')
+        .select([
+          'TABLE_SCHEMA as schema',
+          'TABLE_NAME as table',
+        ])
+        .where(({ eb, and }) => and([
+          eb('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys']),
+          eb('TABLE_TYPE', '=', 'BASE TABLE'),
+        ]))
+        .execute()
+
+      return query
+    },
+  }),
+})

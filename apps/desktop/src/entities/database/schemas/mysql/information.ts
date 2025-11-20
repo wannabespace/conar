@@ -3,144 +3,116 @@
  * @type schema
  */
 export interface InformationSchema {
-  tables: Tables
-  columns: Columns
-  views: Views
-  table_constraints: TableConstraints
-  constraint_column_usage: ConstraintColumnUsage
-  key_column_usage: KeyColumnUsage
+  TABLES: Tables
+  COLUMNS: Columns
+  VIEWS: Views
+  TABLE_CONSTRAINTS: TableConstraints
+  KEY_COLUMN_USAGE: KeyColumnUsage
 }
 
 /**
- * @name tables
+ * @name TABLES
  * @type table
  */
 interface Tables {
-  table_catalog: string
-  table_schema: string
-  table_name: string
-  table_type: 'BASE TABLE' | 'VIEW'
-  self_referencing_column_name: string | null
-  reference_generation: string
-  user_defined_type_catalog: string | null
-  user_defined_type_schema: string | null
-  user_defined_type_name: string | null
-  is_insertable_into: boolean
-  is_typed: boolean
-  commit_action: string
+  TABLE_CATALOG: string
+  TABLE_SCHEMA: string
+  TABLE_NAME: string
+  TABLE_TYPE: 'BASE TABLE' | 'VIEW' | 'SYSTEM VIEW'
+  ENGINE: string
+  VERSION: number
+  ROW_FORMAT: string
+  TABLE_ROWS: number
+  AVG_ROW_LENGTH: number
+  DATA_LENGTH: number
+  MAX_DATA_LENGTH: number
+  INDEX_LENGTH: number
+  DATA_FREE: number
+  AUTO_INCREMENT: number | null
+  CREATE_TIME: string
+  UPDATE_TIME: string
+  CHECK_TIME: string | null
+  TABLE_COLLATION: string | null
+  CHECKSUM: number | null
+  CREATE_OPTIONS: string | null
+  TABLE_COMMENT: string | null
 }
 
 /**
- * @name views
+ * @name VIEWS
  * @type table
  */
 interface Views {
-  table_catalog: string
-  table_schema: string
-  table_name: string
-  view_definition: string
-  check_option: string
-  is_updatable: 'YES' | 'NO'
-  is_insertable_into: 'YES' | 'NO'
-  is_trigger_updatable: 'YES' | 'NO'
-  is_trigger_deletable: 'YES' | 'NO'
-  is_trigger_insertable_into: 'YES' | 'NO'
+  TABLE_CATALOG: string
+  TABLE_SCHEMA: string
+  TABLE_NAME: string
+  VIEW_DEFINITION: string
+  CHECK_OPTION: 'NONE' | 'CASCADE' | 'LOCAL'
+  IS_UPDATABLE: 'YES' | 'NO'
+  DEFINER: string
+  SECURITY_TYPE: 'DEFINER' | 'INVOKER'
+  CHARACTER_SET_CLIENT: string
+  COLLATION_CONNECTION: string
 }
 
 /**
- * @name columns
+ * @name COLUMNS
  * @type table
  */
 interface Columns {
-  table_catalog: string
-  table_schema: string
-  table_name: string
-  column_name: string
-  ordinal_position: number | null
-  column_default: string | null
-  is_nullable: 'YES' | 'NO'
-  data_type: string
-  character_maximum_length: number | null
-  character_octet_length: number | null
-  numeric_precision: number | null
-  numeric_scale: number | null
-  datetime_precision: number | null
-  interval_type: string | null
-  interval_precision: number | null
-  character_set_catalog: string | null
-  character_set_schema: string | null
-  character_set_name: string | null
-  collation_catalog: string | null
-  collation_schema: string | null
-  collation_name: string | null
-  domain_catalog: string | null
-  domain_schema: string | null
-  domain_name: string | null
-  udt_catalog: string
-  udt_schema: string
-  udt_name: string
-  scope_catalog: string | null
-  scope_schema: string | null
-  scope_name: string | null
-  maximum_cardinality: number | null
-  dtd_identifier: string
-  is_self_referencing: 'YES' | 'NO'
-  is_identity: 'YES' | 'NO'
-  identity_generation: string | null
-  identity_start: number | null
-  identity_increment: number | null
-  identity_maximum: number | null
-  identity_minimum: number | null
-  identity_cycle: 'YES' | 'NO'
-  is_generated: string | null
-  generation_expression: string | null
-  is_updatable: 'YES' | 'NO'
+  TABLE_CATALOG: string
+  TABLE_SCHEMA: string
+  TABLE_NAME: string
+  COLUMN_NAME: string
+  ORDINAL_POSITION: number
+  COLUMN_DEFAULT: string | null
+  IS_NULLABLE: 'YES' | 'NO'
+  DATA_TYPE: string
+  CHARACTER_MAXIMUM_LENGTH: number | null
+  CHARACTER_OCTET_LENGTH: number | null
+  NUMERIC_PRECISION: number | null
+  NUMERIC_SCALE: number | null
+  DATETIME_PRECISION: number | null
+  CHARACTER_SET_NAME: string | null
+  COLLATION_NAME: string | null
+  COLUMN_TYPE: string
+  COLUMN_KEY: 'PRI' | 'UNI' | 'MUL' | ''
+  EXTRA: string
+  PRIVILEGES: string
+  COLUMN_COMMENT: string
+  GENERATION_EXPRESSION: string
+  SRS_ID: number
 }
 
 /**
- * @name table_constraints
+ * @name TABLE_CONSTRAINTS
  * @type table
  */
 interface TableConstraints {
-  constraint_catalog: string
-  constraint_schema: string
-  constraint_name: string
-  table_catalog: string
-  table_schema: string
-  table_name: string
-  constraint_type: 'PRIMARY KEY' | 'UNIQUE' | 'FOREIGN KEY' | 'CHECK' | 'EXCLUSION'
-  is_deferrable: 'YES' | 'NO'
-  initially_deferred: 'YES' | 'NO'
-  enforced: 'YES' | 'NO'
-  nulls_distinct: 'YES' | 'NO' | null
+  CONSTRAINT_CATALOG: string
+  CONSTRAINT_SCHEMA: string
+  CONSTRAINT_NAME: string
+  TABLE_SCHEMA: string
+  TABLE_NAME: string
+  CONSTRAINT_TYPE: 'PRIMARY KEY' | 'UNIQUE' | 'FOREIGN KEY'
+  ENFORCED: 'YES' | 'NO'
 }
 
 /**
- * @name constraint_column_usage
- * @type table
- */
-interface ConstraintColumnUsage {
-  table_catalog: string
-  table_schema: string
-  table_name: string
-  column_name: string
-  constraint_catalog: string
-  constraint_schema: string
-  constraint_name: string
-}
-
-/**
- * @name key_column_usage
+ * @name KEY_COLUMN_USAGE
  * @type table
  */
 interface KeyColumnUsage {
-  constraint_catalog: string
-  constraint_schema: string
-  constraint_name: string
-  table_catalog: string
-  table_schema: string
-  table_name: string
-  column_name: string
-  ordinal_position: number
-  position_in_unique_constraint: number | null
+  CONSTRAINT_CATALOG: string
+  CONSTRAINT_SCHEMA: string
+  CONSTRAINT_NAME: string
+  TABLE_CATALOG: string
+  TABLE_SCHEMA: string
+  TABLE_NAME: string
+  COLUMN_NAME: string
+  ORDINAL_POSITION: number
+  POSITION_IN_UNIQUE_CONSTRAINT: number | null
+  REFERENCED_TABLE_SCHEMA: string | null
+  REFERENCED_TABLE_NAME: string | null
+  REFERENCED_COLUMN_NAME: string | null
 }

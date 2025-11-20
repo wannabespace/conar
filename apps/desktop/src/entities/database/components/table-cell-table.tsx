@@ -50,7 +50,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
       .map(column => ({
         id: column.id,
         size: columnsSizeMap.get(column.type) ?? DEFAULT_COLUMN_WIDTH,
-        cell: ({ columnIndex, rowIndex, ...props }) => (
+        cell: props => (
           <TableCellContent {...props}>
             <span className="truncate">
               {getDisplayValue(props.value, props.size)}

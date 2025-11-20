@@ -9,8 +9,6 @@
     "./enums/*": "./src/enums/*.ts",
     "./filters": "./src/filters/index.ts",
     "./filters/*": "./src/filters/*.ts",
-    "./databases": "./src/databases.ts",
-    "./schemas/postgres/*": "./src/schemas/postgres/*.ts",
     "./utils/*": "./src/utils/*.ts"
   },
   "scripts": {

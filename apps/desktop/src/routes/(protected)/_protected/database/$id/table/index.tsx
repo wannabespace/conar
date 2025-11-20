@@ -33,14 +33,6 @@ export const Route = createFileRoute(
   loader: ({ context, deps }) => {
     const store = deps.table && deps.schema ? createPageStore({ id: context.database.id, schema: deps.schema, table: deps.table }) : null
 
-    if (store && (deps.filters || deps.orderBy)) {
-      store.setState(state => ({
-        ...state,
-        ...(deps.filters ? { filters: deps.filters } : {}),
-        ...(deps.orderBy ? { orderBy: deps.orderBy } : {}),
-      } satisfies typeof state))
-    }
-
     prefetchDatabaseCore(context.database)
 
     if (store) {
@@ -49,8 +41,8 @@ export const Route = createFileRoute(
         schema: deps.schema!,
         table: deps.table!,
         query: {
-          filters: store.state.filters ?? [],
-          orderBy: store.state.orderBy ?? {},
+          filters: store.state.filters,
+          orderBy: store.state.orderBy,
         },
       })
     }
@@ -76,6 +68,17 @@ export const Route = createFileRoute(
 
 function TableContent({ table, schema, store }: { table: string, schema: string, store: Store<typeof storeState.infer> }) {
   const { database } = Route.useLoaderData()
+  const deps = Route.useLoaderDeps()
+
+  useEffect(() => {
+    if (store && (deps.filters || deps.orderBy)) {
+      store.setState(state => ({
+        ...state,
+        ...(deps.filters ? { filters: deps.filters } : {}),
+        ...(deps.orderBy ? { orderBy: deps.orderBy } : {}),
+      } satisfies typeof state))
+    }
+  }, [store, deps])
 
   const columns = useTableColumns({ database, table, schema })
 

@@ -1,132 +1,55 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
+import type { Type } from 'arktype'
 import type { MysqlDatabase, PostgresDatabase } from './schemas'
 import type { databases } from '~/drizzle'
-import { Store } from '@tanstack/react-store'
-import { Kysely } from 'kysely'
-import { formatSql } from '~/lib/formatter'
-import { DummyMysqlDialect, DummyPostgresDialect } from './dialects'
+import { CompiledQuery, Kysely } from 'kysely'
+import { createDialect } from './dialects'
 
-export interface QueryLog {
-  id: string
-  query: string
-  createdAt: Date
-  values?: unknown[]
-  result: Record<string, unknown>[] | null
-  label: string
-  error: string | null
+const dialects = {
+  postgres: database => new Kysely<PostgresDatabase>({ dialect: createDialect(database) }),
+  mysql: database => new Kysely<MysqlDatabase>({ dialect: createDialect(database) }),
+} satisfies Record<DatabaseType, (database: typeof databases.$inferSelect, label: string) => unknown>
+
+export function executeSql(database: typeof databases.$inferSelect, sql: string, values: unknown[] = []) {
+  return dialects[database.type](database).executeQuery(CompiledQuery.raw(sql, values))
 }
 
-export const queriesLogStore = new Store<Record<string, Record<string, QueryLog>>>({})
-
-function queryLog(
-  database: typeof databases.$inferSelect,
-  id: string,
-  {
-    query,
-    values,
-    result,
-    error,
-    label,
-  }: {
-    query?: string
-    values?: unknown[]
-    result?: Record<string, unknown>[] | null
-    error?: string | null
-    label?: string
-  },
-) {
-  const log = queriesLogStore.state[database.id]?.[id]
-
-  queriesLogStore.setState(state => ({
-    ...state,
-    [database.id]: {
-      ...(state[database.id] || {}),
-      [id]: {
-        id,
-        createdAt: log?.createdAt || new Date(),
-        query: query || log?.query || '',
-        values: values || log?.values || [],
-        result: result || log?.result || null,
-        error: error || log?.error || null,
-        label: label || log?.label || '',
-      },
-    },
-  } satisfies typeof state))
-
-  if (error) {
-    console.error('db query error', database.type, query, values, error)
-  }
-}
-
-export function executeSql({ sql, values = [], type, connectionString }: { sql: string, values?: unknown[], type: DatabaseType, connectionString: string }) {
+export function executeSqlWithConnectionString({
+  type,
+  connectionString,
+  sql,
+  values,
+}: { type: DatabaseType, connectionString: string, sql: string, values: unknown[] }) {
   if (!window.electron) {
     throw new Error('Electron is not available')
   }
-  return window.electron.sql({ sql, values, type, connectionString })
+
+  return window.electron.sql[type]({
+    connectionString,
+    sql,
+    values,
+  })
 }
 
-const dialectsMap = {
-  postgres: () => new Kysely<PostgresDatabase>({
-    dialect: new DummyPostgresDialect(),
-    log: ['query', 'error'],
-  }),
-  mysql: () => new Kysely<MysqlDatabase>({
-    dialect: new DummyMysqlDialect(),
-    log: ['query', 'error'],
-  }),
-} satisfies Record<DatabaseType, () => unknown>
-
-export async function runSql<T extends object = Record<string, unknown>>({
-  validate,
-  label,
-  database,
-  query: queryFn,
-}: {
-  validate?: (result: unknown) => T
-  label: string
-  database: typeof databases.$inferSelect
-  query: {
-    [D in DatabaseType]: (db: ReturnType<typeof dialectsMap[D]>) => { sql: string, parameters: readonly unknown[] }
-  }
-}) {
-  const dialect = dialectsMap[database.type]()
-  // eslint-disable-next-line ts/no-explicit-any
-  const query = queryFn[database.type](dialect as any)
-  const queryId = crypto.randomUUID()
-
-  queryLog(database, queryId, {
-    query: formatSql(query.sql, database.type)
-      .split('\n')
-      .filter(str => !str.startsWith('--'))
-      .join(' '),
-    values: query.parameters as unknown[],
-    result: null,
-    error: null,
-    label,
+export function createQuery<P = undefined, T extends Type = Type<unknown>>(options: {
+  type?: T
+  query: (params: P) => ({
+    [D in DatabaseType]: (params: { db: ReturnType<typeof dialects[D]> }) => Promise<
+      T extends Type ? T['inferIn'] : unknown
+    >
   })
+}) {
+  return {
+    run: async (...p: [database: typeof databases.$inferSelect, ...(P extends undefined ? [] : [P])]): Promise<T extends Type ? T['inferOut'] : unknown> => {
+      const [database, params] = p
+      const result = await options.query(params)[database.type]({
+        // eslint-disable-next-line ts/no-explicit-any
+        db: dialects[database.type](database) as any,
+      })
 
-  try {
-    if (!window.electron) {
-      throw new Error('Electron is not available')
-    }
-
-    const { result, duration } = await window.electron.sql({
-      sql: query.sql,
-      values: query.parameters as unknown[],
-      type: database.type,
-      connectionString: database.connectionString,
-    })
-
-    queryLog(database, queryId, { result })
-
-    return {
-      result: (validate ? result.map(row => validate(row)) : result) as T[],
-      duration,
-    }
-  }
-  catch (error) {
-    queryLog(database, queryId, { error: error instanceof Error ? error.message : String(error) })
-
-    throw error
+      return options.type
+        ? options.type.assert(result) as T extends Type ? T['inferOut'] : unknown
+        : result
+    },
   }
 }
