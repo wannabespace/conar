@@ -7,10 +7,11 @@
     "output": "release/${version}"
   },
   "publish": {
-    "private": false,
     "provider": "github",
+    "private": false,
     "owner": "wannabespace",
-    "repo": "conar"
+    "repo": "conar",
+    "publisherName": "Wannabe Space, LLC"
   },
   "protocols": [
     {
@@ -37,8 +38,7 @@
         "arch": ["x64"]
       }
     ],
-    "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
-    "publisherName": "Wannabe Space, LLC"
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
   },
   "nsis": {
     "oneClick": false,
