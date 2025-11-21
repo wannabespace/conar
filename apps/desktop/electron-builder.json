@@ -37,7 +37,8 @@
         "arch": ["x64"]
       }
     ],
-    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
+    "publisherName": "Wannabe Space, LLC"
   },
   "nsis": {
     "oneClick": false,
