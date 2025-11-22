@@ -11,7 +11,7 @@
     "private": false,
     "owner": "wannabespace",
     "repo": "conar",
-    "publisherName": "Wannabe Space, LLC"
+    "publisherName": ["Wannabe Space, LLC"]
   },
   "protocols": [
     {
