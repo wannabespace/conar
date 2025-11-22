@@ -6,6 +6,7 @@ import { SafeURL } from '@conar/shared/utils/safe-url'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
+import { ButtonGroup } from '@conar/ui/components/button-group'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -136,7 +137,6 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
   const nameId = useId()
   const labelId = useId()
 
-  // Predefined label options
   const labelOptions = ['Dev', 'Prod', 'Staging']
 
   return (
@@ -150,7 +150,7 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
         <div className="flex flex-col gap-6">
           <div>
             <Label htmlFor={nameId} className="mb-2">
-              Connection name
+              Name
             </Label>
             <div className="flex w-full gap-2 items-end">
               <Input
@@ -183,31 +183,28 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
 
           <div>
             <Label htmlFor={labelId} className="mb-2">
-              Connection label (optional)
+              Label (optional)
             </Label>
             <div className="flex flex-col gap-2">
               <Input
                 id={labelId}
-                placeholder="Enter a label or select from options below"
+                placeholder="Development, Production, Staging, etc."
                 value={label}
                 onChange={e => setLabel(e.target.value)}
               />
-              <div className="flex flex-wrap gap-2 mt-1">
+              <ButtonGroup>
                 {labelOptions.map(option => (
                   <Button
                     key={option}
-                    type="button"
                     variant={label === option ? 'default' : 'outline'}
-                    size="sm"
+                    size="xs"
                     onClick={() => setLabel(option)}
+                    className="border!"
                   >
                     {option}
                   </Button>
                 ))}
-              </div>
-              <div className="text-xs text-muted-foreground/70 mt-1">
-                Labels help distinguish between different environments (dev, prod, staging, etc.)
-              </div>
+              </ButtonGroup>
             </div>
           </div>
 
