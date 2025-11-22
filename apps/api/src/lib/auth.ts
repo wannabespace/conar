@@ -64,23 +64,6 @@ function noSetCookiePlugin() {
   } satisfies BetterAuthPlugin
 }
 
-export function skipStateMismatch(): BetterAuthPlugin {
-  return {
-    id: 'skip-state-mismatch',
-    init(ctx) {
-      return {
-        context: {
-          ...ctx,
-          oauthConfig: {
-            skipStateCookieCheck: true,
-            ...ctx?.oauthConfig,
-          },
-        },
-      }
-    },
-  }
-}
-
 export const auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
@@ -88,7 +71,6 @@ export const auth = betterAuth({
   basePath: '/auth',
   plugins: [
     oldChangeEmail(),
-    skipStateMismatch(),
     bearer(),
     twoFactor(),
     organization({
@@ -126,6 +108,9 @@ export const auth = betterAuth({
         input: false,
       },
     },
+  },
+  account: {
+    skipStateCookieCheck: true,
   },
   databaseHooks: {
     user: {
