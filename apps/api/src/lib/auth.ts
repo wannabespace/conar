@@ -194,6 +194,7 @@ export const auth = betterAuth({
   },
 })
 
+// Legacy endpoint for changing email
 function oldChangeEmail(): BetterAuthPlugin {
   return {
     id: 'old-change-email',
@@ -208,9 +209,8 @@ function oldChangeEmail(): BetterAuthPlugin {
             redirectTo: 'string?',
           }),
         },
-        async (ctx) => {
-          const result = await auth.api.requestPasswordReset(ctx)
-          return result
+        (ctx) => {
+          return auth.api.requestPasswordReset(ctx)
         },
       ),
     },
