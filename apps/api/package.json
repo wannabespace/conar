@@ -23,6 +23,7 @@
     "@orpc/server": "catalog:",
     "@posthog/ai": "^7.1.1",
     "@react-email/components": "^1.0.1",
+    "@toon-format/toon": "catalog:",
     "ai": "catalog:",
     "ai-retry": "^0.8.0",
     "arktype": "catalog:",
