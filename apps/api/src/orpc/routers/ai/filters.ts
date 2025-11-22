@@ -1,6 +1,5 @@
 import { google } from '@ai-sdk/google'
 import { SQL_FILTERS_GROUPED, SQL_OPERATORS } from '@conar/shared/filters/sql'
-import { encode } from '@toon-format/toon'
 import { generateObject } from 'ai'
 import { type } from 'arktype'
 import { consola } from 'consola'
@@ -47,7 +46,7 @@ export const filters = orpc
         // ' - If no ordering is specified in the prompt, you may omit the orderBy object.',
         '',
         `Current time: ${new Date().toISOString()}`,
-        `Available operators: ${encode(SQL_FILTERS_GROUPED)}`,
+        `Available operators: ${JSON.stringify(SQL_FILTERS_GROUPED, null, 2)}`,
         '',
         'Table context:',
         input.context,

@@ -37,7 +37,10 @@ export const enhancePrompt = orpc
             '- Maintain the user\'s original tone and intent',
             '',
             'Context from current chat conversation:',
-            encode(messages),
+            encode(messages.map(m => ({
+              role: m.role,
+              parts: m.parts.filter(p => p.type === 'text'),
+            }))),
             '',
             'Please rewrite the following user prompt to be more effective:',
           ].join('\n'),

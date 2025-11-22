@@ -108,7 +108,11 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           trigger: options.trigger,
           messageId: options.messageId,
           context: [
-            `Current query in the SQL runner: ${store.state.sql.trim() || 'Empty'}`,
+            `Current query in the SQL runner:
+            \`\`\`sql
+            ${store.state.sql.trim() || '-- empty'}
+            \`\`\`
+            `,
             'Database schemas and tables:',
             encode(await queryClient.ensureQueryData(databaseTablesAndSchemasQuery({ database }))),
           ].join('\n'),
