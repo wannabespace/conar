@@ -36,6 +36,20 @@
       "when": 1757789759178,
       "tag": "0004_broad_jasper_sitwell",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1763463621234,
+      "tag": "0005_careless_tigra",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1763508154638,
+      "tag": "0006_famous_luminals",
+      "breakpoints": true
     }
   ]
 }

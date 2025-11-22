@@ -1,9 +1,10 @@
-import type { BetterAuthOptions, BetterAuthPlugin, User } from 'better-auth'
+import type { BetterAuthPlugin, User } from 'better-auth'
 import { PORTS } from '@conar/shared/constants'
+import { type } from 'arktype'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { anonymous, bearer, createAuthEndpoint, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { consola } from 'consola'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
@@ -63,12 +64,13 @@ function noSetCookiePlugin() {
   } satisfies BetterAuthPlugin
 }
 
-const config = {
+export const auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
   basePath: '/auth',
   plugins: [
+    oldChangeEmail(),
     bearer(),
     twoFactor(),
     organization({
@@ -86,6 +88,11 @@ const config = {
             organizationId: 'workspaceId',
           },
         },
+        session: {
+          fields: {
+            activeOrganizationId: 'activeWorkspaceId',
+          },
+        },
       },
     }),
     lastLoginMethod(),
@@ -97,9 +104,13 @@ const config = {
     additionalFields: {
       secret: {
         type: 'string',
+        returned: false,
         input: false,
       },
     },
+  },
+  account: {
+    skipStateCookieCheck: true,
   },
   databaseHooks: {
     user: {
@@ -119,8 +130,11 @@ const config = {
   advanced: {
     cookiePrefix: 'conar',
     database: {
-      generateId: false,
+      generateId: 'uuid',
     },
+  },
+  experimental: {
+    joins: true,
   },
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -152,19 +166,38 @@ const config = {
     },
   },
   socialProviders: {
-    ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && {
-      google: {
-        clientId: env.GOOGLE_CLIENT_ID,
-        clientSecret: env.GOOGLE_CLIENT_SECRET,
-      },
-    }),
-    ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET && {
-      github: {
-        clientId: env.GITHUB_CLIENT_ID,
-        clientSecret: env.GITHUB_CLIENT_SECRET,
-      },
-    }),
+    google: {
+      enabled: !!env.GOOGLE_CLIENT_ID && !!env.GOOGLE_CLIENT_SECRET,
+      clientId: env.GOOGLE_CLIENT_ID!,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    },
+    github: {
+      enabled: !!env.GITHUB_CLIENT_ID && !!env.GITHUB_CLIENT_SECRET,
+      clientId: env.GITHUB_CLIENT_ID!,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
+    },
   },
-} satisfies BetterAuthOptions
+})
 
-export const auth = betterAuth(config) as ReturnType<typeof betterAuth<typeof config>>
+// Legacy endpoint for changing email
+function oldChangeEmail(): BetterAuthPlugin {
+  return {
+    id: 'old-change-email',
+    endpoints: {
+      forgetPassword: createAuthEndpoint(
+        'forget-password',
+        {
+          method: 'POST',
+          operationId: 'forgetPassword',
+          body: type({
+            email: 'string.email',
+            redirectTo: 'string?',
+          }),
+        },
+        (ctx) => {
+          return auth.api.requestPasswordReset(ctx)
+        },
+      ),
+    },
+  }
+};

@@ -13,14 +13,13 @@ import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { MonacoDiff } from '~/components/monaco'
-import { tablesAndSchemasQuery } from '~/entities/database'
+import { databaseTablesAndSchemasQuery } from '~/entities/database'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { databaseStore } from '../../../../-store'
 
-// eslint-disable-next-line react-refresh/only-export-components
 function RunnerEditorAIZone({
   database,
   getSql,
@@ -79,7 +78,7 @@ function RunnerEditorAIZone({
         type: database.type,
         context: [
           'Database schemas and tables:',
-          JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database })), null, 2),
+          JSON.stringify(await queryClient.ensureQueryData(databaseTablesAndSchemasQuery({ database })), null, 2),
         ].join('\n'),
       })
     }

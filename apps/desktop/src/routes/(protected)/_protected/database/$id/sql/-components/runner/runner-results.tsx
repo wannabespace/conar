@@ -75,7 +75,7 @@ export function RunnerResults() {
             </TabsTrigger>
           ))}
         </TabsList>
-        {results.map(({ data, error, startLineNumber, endLineNumber, duration }, index) => (
+        {results.map(({ data, error, startLineNumber, endLineNumber }, index) => (
           <TabsContent
             // eslint-disable-next-line react/no-array-index-key
             key={index}
@@ -84,11 +84,11 @@ export function RunnerResults() {
           >
             {error
               ? (
-                  <div className="h-full flex flex-col gap-2 items-center justify-center">
+                  <div className="h-full flex flex-col gap-2 items-center justify-center max-w-2/3 mx-auto">
                     Error executing query
-                    <pre className="bg-red-50 text-red-700 py-1 px-2 mb-2 rounded text-xs font-mono break-all overflow-x-auto dark:bg-red-950 dark:text-red-300">
+                    <div className="bg-red-50 text-red-700 py-1 px-2 mb-2 rounded text-xs font-mono text-balance max-w-full dark:bg-red-950 dark:text-red-300">
                       {error}
-                    </pre>
+                    </div>
                     <Button
                       size="sm"
                       variant="outline"
@@ -111,7 +111,7 @@ export function RunnerResults() {
                     </Button>
                   </div>
                 )
-              : !data || data.length === 0
+              : !data || !data[0] || data.length === 0
                   ? (
                       <div className="h-full flex flex-col gap-2 items-center justify-center">
                         No data returned
@@ -120,7 +120,6 @@ export function RunnerResults() {
                   : (
                       <RunnerResultsTable
                         data={data}
-                        duration={duration}
                         columns={Object.keys(data[0]!).map(key => ({ id: key }))}
                       />
                     )}

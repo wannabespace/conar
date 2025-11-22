@@ -8,10 +8,10 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 async function compileMigrations() {
-  const migrations = readMigrationFiles({ migrationsFolder: './src/renderer/src/drizzle/migrations' })
+  const migrations = readMigrationFiles({ migrationsFolder: './src/drizzle/migrations' })
 
   await writeFile(
-    join(__dirname, '../src/renderer/src/drizzle/migrations.json'),
+    join(__dirname, '../src/drizzle/migrations.json'),
     JSON.stringify(migrations),
     'utf8',
   )

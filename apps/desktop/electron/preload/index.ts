@@ -23,6 +23,9 @@ async function handleError(func: () => Promise<any>) {
     return result
   }
   catch (error) {
+    if (import.meta.env.DEV) {
+      console.error(error)
+    }
     if (error instanceof Error) {
       const message = error.message.replace(/^Error invoking remote method '[^']+': /, '')
       const errorMessage = message.toLowerCase().startsWith('error: ') ? message.slice(7) : message
@@ -34,7 +37,10 @@ async function handleError(func: () => Promise<any>) {
 }
 
 contextBridge.exposeInMainWorld('electron', {
-  sql: arg => handleError(() => ipcRenderer.invoke('sql', arg)),
+  sql: {
+    postgres: arg => handleError(() => ipcRenderer.invoke('sql.postgres', arg)),
+    mysql: arg => handleError(() => ipcRenderer.invoke('sql.mysql', arg)),
+  },
   encryption: {
     encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg)),
     decrypt: arg => handleError(() => ipcRenderer.invoke('encryption.decrypt', arg)),

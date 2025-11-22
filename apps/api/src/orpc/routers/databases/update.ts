@@ -25,9 +25,11 @@ export const update = orpc
       throw new ORPCError('UNAUTHORIZED')
     }
 
+    const secret = await context.getUserSecret()
+
     const newConnectionString = new SafeURL(
       changes.connectionString
-      ?? decrypt({ encryptedText: database.connectionString, secret: context.user.secret }),
+      ?? decrypt({ encryptedText: database.connectionString, secret }),
     )
 
     if ((changes.syncType ?? database.syncType) !== SyncType.Cloud) {
@@ -38,7 +40,7 @@ export const update = orpc
       .update(databases)
       .set({
         ...changes,
-        connectionString: encrypt({ text: newConnectionString.toString(), secret: context.user.secret }),
+        connectionString: encrypt({ text: newConnectionString.toString(), secret }),
       })
       .where(eq(databases.id, id))
   })

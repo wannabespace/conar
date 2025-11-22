@@ -6,6 +6,7 @@ import { SafeURL } from '@conar/shared/utils/safe-url'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
+import { ButtonGroup } from '@conar/ui/components/button-group'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -25,9 +26,8 @@ import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { DatabaseIcon, databasesCollection, executeSql, prefetchDatabaseCore } from '~/entities/database'
+import { DatabaseIcon, databasesCollection, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
-import { MySQLIcon } from '~/icons/mysql'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/create',
@@ -39,10 +39,24 @@ export const Route = createFileRoute(
 })
 
 function generateRandomName() {
-  const vehicle = faker.vehicle.model()
   const color = faker.color.human()
+  const animalKeys = Object.keys(faker.animal) as Array<keyof typeof faker.animal>
+  const categories = [
+    () => faker.animal.type(),
+    () => faker.animal[faker.helpers.arrayElement(animalKeys)](),
+    () => faker.vehicle.model(),
+    () => faker.internet.domainWord(),
+    () => faker.person.firstName(),
+    () => faker.food.dish(),
+    () => faker.word.noun(),
+    () => faker.company.name(),
+  ]
+  const main = faker.helpers.arrayElement(categories)()
 
-  return `${color.charAt(0).toUpperCase() + color.slice(1)} ${vehicle}`
+  return [color, main]
+    .map(str => (str.charAt(0).toUpperCase() + str.slice(1)))
+    .filter(Boolean)
+    .join(' ')
 }
 
 function StepType({ type, setType }: { type: DatabaseType, setType: (type: DatabaseType) => void }) {
@@ -64,8 +78,8 @@ function StepType({ type, setType }: { type: DatabaseType, setType: (type: Datab
             {databaseLabels[DatabaseType.Postgres]}
           </ToggleGroupItem>
           <ToggleGroupItem value={DatabaseType.MySQL} aria-label="MySQL">
-            <MySQLIcon />
-            MySQL
+            <DatabaseIcon type={DatabaseType.MySQL} className="size-4 shrink-0 text-primary" />
+            {databaseLabels[DatabaseType.MySQL]}
           </ToggleGroupItem>
           <ToggleGroupItem value="" disabled aria-label="MongoDB">
             <MongoIcon />
@@ -77,7 +91,7 @@ function StepType({ type, setType }: { type: DatabaseType, setType: (type: Datab
   )
 }
 
-function StepCredentials({ ref, type, connectionString, setConnectionString }: { ref: RefObject<HTMLInputElement | null>, type: DatabaseType, connectionString: string, setConnectionString: (connectionString: string) => void }) {
+function StepCredentials({ ref, type, connectionString, setConnectionString, onEnter }: { ref: RefObject<HTMLInputElement | null>, type: DatabaseType, connectionString: string, setConnectionString: (connectionString: string) => void, onEnter: () => void }) {
   const id = useId()
 
   return (
@@ -94,11 +108,13 @@ function StepCredentials({ ref, type, connectionString, setConnectionString }: {
           id={id}
           placeholder={`${getProtocols(type)[0]}://user:password@host:port/database?options`}
           ref={ref}
+          autoFocus
           value={connectionString}
           onChange={e => setConnectionString(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault()
+              onEnter()
             }
           }}
         />
@@ -107,8 +123,21 @@ function StepCredentials({ ref, type, connectionString, setConnectionString }: {
   )
 }
 
-function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud }: { type: DatabaseType, name: string, connectionString: string, setName: (name: string) => void, onRandomName: () => void, saveInCloud: boolean, setSaveInCloud: (saveInCloud: boolean) => void }) {
+function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel }: {
+  type: DatabaseType
+  name: string
+  connectionString: string
+  setName: (name: string) => void
+  onRandomName: () => void
+  saveInCloud: boolean
+  setSaveInCloud: (saveInCloud: boolean) => void
+  label: string
+  setLabel: (label: string) => void
+}) {
   const nameId = useId()
+  const labelId = useId()
+
+  const labelOptions = ['Dev', 'Prod', 'Staging']
 
   return (
     <Card className="w-full">
@@ -121,13 +150,14 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
         <div className="flex flex-col gap-6">
           <div>
             <Label htmlFor={nameId} className="mb-2">
-              Connection name
+              Name
             </Label>
             <div className="flex w-full gap-2 items-end">
               <Input
                 id={nameId}
                 className="field-sizing-content"
                 placeholder="My connection"
+                autoFocus
                 value={name}
                 onChange={e => setName(e.target.value)}
               />
@@ -150,6 +180,34 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
               </TooltipProvider>
             </div>
           </div>
+
+          <div>
+            <Label htmlFor={labelId} className="mb-2">
+              Label (optional)
+            </Label>
+            <div className="flex flex-col gap-2">
+              <Input
+                id={labelId}
+                placeholder="Development, Production, Staging, etc."
+                value={label}
+                onChange={e => setLabel(e.target.value)}
+              />
+              <ButtonGroup>
+                {labelOptions.map(option => (
+                  <Button
+                    key={option}
+                    variant={label === option ? 'default' : 'outline'}
+                    size="xs"
+                    onClick={() => setLabel(option)}
+                    className="border!"
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </ButtonGroup>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-2">
             <label className="text-sm flex items-center gap-2">
               <Checkbox
@@ -171,10 +229,14 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
 }
 
 async function testConnection({ type, connectionString}: { connectionString: string, type: DatabaseType }) {
-  await executeSql({
+  if (!window.electron) {
+    throw new Error('Electron is not available')
+  }
+
+  await window.electron.sql[type]({
     sql: 'SELECT 1',
-    type,
     connectionString,
+    values: [],
   })
 }
 
@@ -183,7 +245,13 @@ function CreateConnectionPage() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  function createDatabase(data: { connectionString: string, name: string, type: DatabaseType, saveInCloud: boolean }) {
+  function createConnection(data: {
+    connectionString: string
+    name: string
+    type: DatabaseType
+    saveInCloud: boolean
+    label?: string
+  }) {
     const id = v7()
 
     const password = new SafeURL(data.connectionString.trim()).password
@@ -193,6 +261,7 @@ function CreateConnectionPage() {
       name: data.name,
       type: data.type,
       connectionString: data.connectionString,
+      label: data.label || null,
       isPasswordExists: !!password,
       isPasswordPopulated: !!password,
       syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
@@ -201,6 +270,7 @@ function CreateConnectionPage() {
     })
 
     toast.success('Connection created successfully 🎉')
+
     const database = databasesCollection.get(id)!
 
     prefetchDatabaseCore(database)
@@ -212,8 +282,9 @@ function CreateConnectionPage() {
     defaultValues: {
       connectionString: '',
       name: generateRandomName(),
-      type: DatabaseType.Postgres,
+      type: null as unknown as DatabaseType,
       saveInCloud: true,
+      label: '',
     },
     validators: {
       onChange: type({
@@ -221,10 +292,11 @@ function CreateConnectionPage() {
         type: type.valueOf(DatabaseType),
         connectionString: 'string > 1',
         saveInCloud: 'boolean',
+        label: 'string?',
       }),
-      onSubmit(e) {
-        createDatabase(e.value)
-      },
+    },
+    onSubmit(e) {
+      createConnection(e.value)
     },
   })
 
@@ -235,7 +307,7 @@ function CreateConnectionPage() {
       toast.success('Connection successful. You can save the database.')
     },
     onError: (error) => {
-      posthog.capture('connection_test_failed', {
+      posthog.capture('connection-test-failed', {
         error: error.message,
       })
       toast.error('We couldn\'t connect to the database', {
@@ -244,7 +316,7 @@ function CreateConnectionPage() {
     },
   })
 
-  const [typeValue, connectionString, name, saveInCloud] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud])
+  const [typeValue, connectionString, name, saveInCloud, label] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud, values.label])
 
   return (
     <div className="min-h-screen flex flex-col justify-center">
@@ -288,15 +360,13 @@ function CreateConnectionPage() {
             </StepperTrigger>
           </StepperList>
           <StepperContent value="type">
-            <StepType type={typeValue} setType={type => form.setFieldValue('type', type)} />
-            <div className="mt-auto flex justify-end gap-4 pt-4">
-              <Button
-                disabled={!typeValue}
-                onClick={() => setStep('credentials')}
-              >
-                Continue
-              </Button>
-            </div>
+            <StepType
+              type={typeValue}
+              setType={(type) => {
+                form.setFieldValue('type', type)
+                setStep('credentials')
+              }}
+            />
           </StepperContent>
           <StepperContent value="credentials">
             <StepCredentials
@@ -307,10 +377,19 @@ function CreateConnectionPage() {
                 reset()
                 form.setFieldValue('connectionString', connectionString)
               }}
+              onEnter={() => {
+                test(form.state.values)
+              }}
             />
             <div className="flex gap-2 justify-end mt-auto pt-4">
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep('type')}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    form.setFieldValue('type', null as unknown as DatabaseType)
+                    setStep('type')
+                  }}
+                >
                   Back
                 </Button>
                 {status === 'success'
@@ -344,6 +423,8 @@ function CreateConnectionPage() {
               onRandomName={() => form.setFieldValue('name', generateRandomName())}
               saveInCloud={saveInCloud}
               setSaveInCloud={saveInCloud => form.setFieldValue('saveInCloud', saveInCloud)}
+              label={label}
+              setLabel={label => form.setFieldValue('label', label)}
             />
             <div className="flex gap-2 justify-end mt-auto pt-4">
               <Button variant="outline" onClick={() => setStep('credentials')}>

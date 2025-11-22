@@ -1,8 +1,22 @@
-export function getEditableValue(value: unknown, oneLine: boolean) {
-  if (typeof value === 'object' && value !== null)
-    return oneLine ? JSON.stringify(value).replaceAll('\n', ' ') : JSON.stringify(value)
+function prepareValue(value: unknown) {
+  if (value instanceof Date)
+    return value.toISOString()
 
-  return oneLine ? String(value ?? '').replaceAll('\n', ' ') : String(value ?? '')
+  return value
+}
+
+export function getEditableValue(value: unknown, oneLine: boolean) {
+  const _value = prepareValue(value)
+
+  if (typeof _value === 'object' && _value !== null) {
+    return oneLine
+      ? JSON.stringify(_value).replaceAll('\n', ' ')
+      : JSON.stringify(_value, null, 2)
+  }
+
+  return oneLine
+    ? String(_value ?? '').replaceAll('\n', ' ')
+    : String(_value ?? '')
 }
 
 export function getDisplayValue(value: unknown, size: number) {

@@ -60,12 +60,21 @@ export function ErrorPage({ error }: ErrorComponentProps) {
             </CardHeader>
             <CardContent>
               {!(error instanceof TraversalError) && (
-                <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[300px] font-mono">
+                <ScrollArea className="rounded-md bg-muted p-4 text-sm h-[300px] font-mono">
                   {error.message}
-                  {!!error.cause && error.message !== String(error.cause) && (
-                    <span className="text-muted-foreground">
+                  {!!error.cause && !String(error.cause).includes(error.message) && (
+                    <span className="text-muted-foreground text-xs">
                       {String(error.cause)}
                     </span>
+                  )}
+                  {error.stack && (
+                    <div className="mt-4">
+                      <div className="text-muted-foreground text-xs">
+                        {error.stack.startsWith(`Error: ${error.message}`)
+                          ? error.stack.split('\n').slice(1).join('\n')
+                          : error.stack}
+                      </div>
+                    </div>
                   )}
                 </ScrollArea>
               )}
@@ -81,20 +90,10 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                         :
                       </div>
                       <div className="ml-2 mt-1">
-                        <div>
-                          {err.message}
-                        </div>
+                        {err.message}
                       </div>
                     </div>
                   ))}
-                  {error.stack && (
-                    <div className="mt-4">
-                      <h3 className="text-sm font-medium mb-2">Stack</h3>
-                      <div className="rounded-md bg-muted text-xs text-muted-foreground font-mono">
-                        {error.stack}
-                      </div>
-                    </div>
-                  )}
                 </ScrollArea>
               )}
             </CardContent>

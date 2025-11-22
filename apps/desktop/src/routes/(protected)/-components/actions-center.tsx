@@ -6,10 +6,9 @@ import { useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { Store, useStore } from '@tanstack/react-store'
-import { DatabaseIcon, databasesCollection, prefetchDatabaseCore, tablesAndSchemasQuery, useDatabaseLinkParams } from '~/entities/database'
+import { DatabaseIcon, databasesCollection, databaseTablesAndSchemasQuery, prefetchDatabaseCore, useDatabaseLinkParams } from '~/entities/database'
 import { trackEvent } from '~/lib/events'
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const actionsCenterStore = new Store({
   isOpen: false,
 })
@@ -20,7 +19,7 @@ function setIsOpen(isOpen: boolean) {
 
 function ActionsDatabaseTables({ database }: { database: typeof databases.$inferSelect }) {
   const { data: tablesAndSchemas } = useQuery({
-    ...tablesAndSchemasQuery({ database }),
+    ...databaseTablesAndSchemasQuery({ database }),
     throwOnError: false,
   })
   const router = useRouter()
@@ -69,7 +68,14 @@ function ActionsDatabase({ database }: { database: typeof databases.$inferSelect
       onSelect={() => onDatabaseSelect(database)}
     >
       <DatabaseIcon type={database.type} className="size-4 shrink-0" />
-      {database.name}
+      <div className="flex gap-2 items-center">
+        {database.name}
+        {database.label && (
+          <span className="px-2 py-0.5 text-xs rounded-full bg-muted-foreground/10 text-muted-foreground whitespace-nowrap">
+            {database.label}
+          </span>
+        )}
+      </div>
     </CommandItem>
   )
 }

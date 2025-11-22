@@ -4,34 +4,34 @@ packages:
 
 catalog:
   '@number-flow/react': ^0.5.10
-  '@orpc/client': ^1.11.2
-  '@orpc/server': ^1.11.2
+  '@orpc/client': ^1.11.3
+  '@orpc/server': ^1.11.3
   '@playwright/test': ^1.56.1
   '@remixicon/react': ^4.7.0
-  '@tanstack/react-query': ^5.90.9
-  '@tanstack/react-query-devtools': ^5.90.2
-  '@tanstack/react-router': ^1.136.1
-  '@tanstack/react-router-devtools': ^1.136.1
+  '@tanstack/react-query': ^5.90.10
+  '@tanstack/react-query-devtools': ^5.91.0
+  '@tanstack/react-router': ^1.139.1
+  '@tanstack/react-router-devtools': ^1.139.1
   '@tanstack/react-store': ^0.8.0
   '@tanstack/react-virtual': ^3.13.12
-  '@toon-format/toon': ^1.0.0
+  '@toon-format/toon': ^1.3.0
   '@types/pg': ^8.15.6
-  '@types/react': ^19.2.4
+  '@types/react': ^19.2.6
   '@types/react-dom': ^19.2.3
   '@vitejs/plugin-react': ^5.1.1
   '@xyflow/react': ^12.9.3
-  ai: ^5.0.93
-  arktype: 2.1.20
+  ai: ^5.0.99
+  arktype: ^2.1.27
   babel-plugin-react-compiler: ^1.0.0
-  better-auth: ^1.3.34
+  better-auth: ^1.4.0
   drizzle-kit: ^0.31.7
-  drizzle-orm: 0.44.5
-  kysely: ^0.28.8
-  monaco-editor: ^0.54.0
+  drizzle-orm: ^0.44.7
+  monaco-editor: ^0.55.1
   motion: ^12.23.24
-  mysql2: 3.15.3
+  mysql2: ^3.15.3
   nanoid: ^5.1.6
   pg: ^8.16.3
+  postgres: ^3.4.7
   react: ^19.2.0
   react-dom: ^19.2.0
   sonner: ^2.0.7
@@ -39,7 +39,7 @@ catalog:
   tw-animate-css: ^1.4.0
   typescript: ^5.9.3
   uuid: ^13.0.0
-  vite: ^7.2.2
+  vite: ^7.2.4
   zod: ^4.1.12
 
 onlyBuiltDependencies:

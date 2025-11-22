@@ -5,7 +5,7 @@ import { EntityContextType } from 'monaco-sql-languages'
 import { queryClient } from '~/main'
 import { databaseTableColumnsQuery } from '../queries/columns'
 import { databaseEnumsQuery } from '../queries/enums'
-import { tablesAndSchemasQuery } from '../queries/tables-and-schemas'
+import { databaseTablesAndSchemasQuery } from '../queries/tables-and-schemas'
 
 const keywordPriority = [
   'SELECT',
@@ -36,7 +36,7 @@ const keywordPriority = [
 ]
 
 export function databaseCompletionService(database: typeof databases.$inferSelect): CompletionService {
-  queryClient.prefetchQuery(tablesAndSchemasQuery({ database }))
+  queryClient.prefetchQuery(databaseTablesAndSchemasQuery({ database }))
   queryClient.prefetchQuery(databaseEnumsQuery({ database }))
 
   return async (
@@ -64,7 +64,7 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
     })
 
     const [tablesAndSchemas, enums] = await Promise.all([
-      queryClient.ensureQueryData(tablesAndSchemasQuery({ database })),
+      queryClient.ensureQueryData(databaseTablesAndSchemasQuery({ database })),
       queryClient.ensureQueryData(databaseEnumsQuery({ database })),
     ])
 
