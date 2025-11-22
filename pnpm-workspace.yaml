@@ -23,7 +23,7 @@ catalog:
   ai: ^5.0.99
   arktype: ^2.1.27
   babel-plugin-react-compiler: ^1.0.0
-  better-auth: ^1.4.0
+  better-auth: ^1.4.1
   drizzle-kit: ^0.31.7
   drizzle-orm: ^0.44.7
   monaco-editor: ^0.55.1

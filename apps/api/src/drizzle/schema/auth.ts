@@ -7,7 +7,6 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core'
-import { nanoid } from 'nanoid'
 import { baseTable } from '../base-table'
 
 export const users = pgTable('users', {
@@ -19,7 +18,7 @@ export const users = pgTable('users', {
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   normalizedEmail: text('normalized_email').unique(),
   isAnonymous: boolean('is_anonymous').default(false),
-  secret: text('secret').notNull().$defaultFn(() => nanoid()),
+  secret: text('secret').notNull(),
 })
 
 export const sessions = pgTable(

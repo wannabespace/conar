@@ -67,8 +67,8 @@ catalogs:
       specifier: ^1.0.0
       version: 1.0.0
     better-auth:
-      specifier: ^1.4.0
-      version: 1.4.0
+      specifier: ^1.4.1
+      version: 1.4.1
     drizzle-kit:
       specifier: ^0.31.7
       version: 0.31.7
@@ -180,8 +180,8 @@ importers:
         specifier: ^2.0.45
         version: 2.0.45(zod@4.1.12)
       '@ai-sdk/google':
-        specifier: ^2.0.41
-        version: 2.0.41(zod@4.1.12)
+        specifier: ^2.0.42
+        version: 2.0.42(zod@4.1.12)
       '@ai-sdk/openai':
         specifier: ^2.0.71
         version: 2.0.71(zod@4.1.12)
@@ -223,10 +223,10 @@ importers:
         version: 2.1.27
       better-auth:
         specifier: 'catalog:'
-        version: 1.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.9)
+        version: 1.4.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.9)
       better-auth-harmony:
         specifier: ^1.2.5
-        version: 1.2.5(better-auth@1.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
+        version: 1.2.5(better-auth@1.4.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
       consola:
         specifier: ^3.4.2
         version: 3.4.2
@@ -344,7 +344,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@dagrejs/dagre':
-        specifier: ^1.1.8
+        specifier: 1.1.8
         version: 1.1.8
       '@dnd-kit/core':
         specifier: ^6.3.1
@@ -465,7 +465,7 @@ importers:
         version: 1.0.0
       better-auth:
         specifier: 'catalog:'
-        version: 1.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.9)
+        version: 1.4.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.9)
       dayjs:
         specifier: ^1.11.19
         version: 1.11.19
@@ -597,7 +597,7 @@ importers:
         version: 2.1.27
       better-auth:
         specifier: 'catalog:'
-        version: 1.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.9)
+        version: 1.4.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.9)
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -884,8 +884,8 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/google@2.0.41':
-    resolution: {integrity: sha512-8C0TitxacNhKG2DXI+lsiR+f/2rNBFSpDxYg5vr3zPU+bkDMu53IeHjJpVxsX22hg4+uDzGrV91/saDrqUcXjw==}
+  '@ai-sdk/google@2.0.42':
+    resolution: {integrity: sha512-Jdn+3TZm4iIt62CUjjUoIOshqFIXyzNmUDfkSVV4FcjlSo5+AuhzI1KC7QiNHlqPNejzR6NLIqGJx96VAES34g==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -1229,8 +1229,8 @@ packages:
       '@types/react':
         optional: true
 
-  '@better-auth/core@1.4.0':
-    resolution: {integrity: sha512-HaHJ9jlxg4+clgspfrmRPrbkG2G2NFisgo2G+qFxfcRBpTAg+/VNLP4vfGMq7Pmj9CjZLLyk9sas/+zEE5ejuQ==}
+  '@better-auth/core@1.4.1':
+    resolution: {integrity: sha512-N4kyRdA472WGLoCjsJpUeYdZZvpoBDgP65hUeQQxTQYwBTqD9O17Tokax9CdNbkb4g34sTfxaJCfcncE3Hy4SA==}
     peerDependencies:
       '@better-auth/utils': 0.3.0
       '@better-fetch/fetch': 1.1.18
@@ -1239,10 +1239,10 @@ packages:
       kysely: ^0.28.5
       nanostores: ^1.0.1
 
-  '@better-auth/telemetry@1.4.0':
-    resolution: {integrity: sha512-nNTx9GP4o+5aZhP/ii1RzvkvYu+wnIZj55CoZPms/7+JHfS8qz3zhgy+/nVHGQhUpE52VekFPNTIURzkhAeeUg==}
+  '@better-auth/telemetry@1.4.1':
+    resolution: {integrity: sha512-yNeazXYvMbyuCe1AA6tYWsJEKgcS7gF9PmmACmrPVhVBe1ncDhVfWMZ++YCmA2h8hjkR9755ZyofiYRPbj+kXQ==}
     peerDependencies:
-      '@better-auth/core': 1.4.0
+      '@better-auth/core': 1.4.1
 
   '@better-auth/utils@0.3.0':
     resolution: {integrity: sha512-W+Adw6ZA6mgvnSnhOki270rwJ42t4XzSK6YWGF//BbVXL6SwCLWfyzBc1lN2m/4RM28KubdBKQ4X5VMoLRNPQw==}
@@ -4410,8 +4410,8 @@ packages:
     peerDependencies:
       better-auth: ^1.0.3
 
-  better-auth@1.4.0:
-    resolution: {integrity: sha512-W49RtERlaosdaLqwXhDxgOmxE0EC/8dVllIsnGpHqFgz4jO3CtW81ABNclXD1nJdy33xkebwX0NSPGn6/UFW/w==}
+  better-auth@1.4.1:
+    resolution: {integrity: sha512-HDVE69Nw6Y1FPTcmFEmPolfsjMfVB5U823Ij9yWBoM8MdHZ2lA3JVus4xQJ2oRE1riJTlcSLFcgJKWGD7V7hmw==}
     peerDependencies:
       '@lynx-js/react': '*'
       '@sveltejs/kit': '*'
@@ -8875,7 +8875,7 @@ snapshots:
       '@vercel/oidc': 3.0.5
       zod: 4.1.12
 
-  '@ai-sdk/google@2.0.41(zod@4.1.12)':
+  '@ai-sdk/google@2.0.42(zod@4.1.12)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.17(zod@4.1.12)
@@ -9341,7 +9341,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.6
 
-  '@better-auth/core@1.4.0(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.0)(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)':
+  '@better-auth/core@1.4.1(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.0)(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)':
     dependencies:
       '@better-auth/utils': 0.3.0
       '@better-fetch/fetch': 1.1.18
@@ -9352,9 +9352,9 @@ snapshots:
       nanostores: 1.0.1
       zod: 4.1.12
 
-  '@better-auth/telemetry@1.4.0(@better-auth/core@1.4.0(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.0)(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))':
+  '@better-auth/telemetry@1.4.1(@better-auth/core@1.4.1(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.0)(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))':
     dependencies:
-      '@better-auth/core': 1.4.0(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.0)(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)
+      '@better-auth/core': 1.4.1(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.0)(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)
       '@better-auth/utils': 0.3.0
       '@better-fetch/fetch': 1.1.18
 
@@ -12778,17 +12778,17 @@ snapshots:
 
   before-after-hook@4.0.0: {}
 
-  better-auth-harmony@1.2.5(better-auth@1.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)):
+  better-auth-harmony@1.2.5(better-auth@1.4.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)):
     dependencies:
-      better-auth: 1.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.9)
+      better-auth: 1.4.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.9)
       libphonenumber-js: 1.12.15
       mailchecker: 6.0.18
       validator: 13.15.15
 
-  better-auth@1.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.9):
+  better-auth@1.4.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(solid-js@1.9.9):
     dependencies:
-      '@better-auth/core': 1.4.0(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.0)(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)
-      '@better-auth/telemetry': 1.4.0(@better-auth/core@1.4.0(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.0)(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))
+      '@better-auth/core': 1.4.1(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.0)(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)
+      '@better-auth/telemetry': 1.4.1(@better-auth/core@1.4.1(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.0)(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))
       '@better-auth/utils': 0.3.0
       '@better-fetch/fetch': 1.1.18
       '@noble/ciphers': 2.0.0

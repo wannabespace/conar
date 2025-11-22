@@ -6,6 +6,7 @@ import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthEndpoint, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { consola } from 'consola'
+import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
 import { sendEmail } from '~/lib/email'
@@ -106,6 +107,7 @@ export const auth = betterAuth({
         type: 'string',
         returned: false,
         input: false,
+        defaultValue: () => nanoid(),
       },
     },
   },
