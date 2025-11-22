@@ -19,6 +19,7 @@ export const databases = pgTable('databases', ({ uuid, text, boolean }) => ({
   name: text().notNull(),
   connectionString: encryptedText().notNull(),
   label: text(),
+  color: text(),
   isPasswordExists: boolean('password_exists').notNull(),
   syncType: syncType().notNull(),
 })).enableRLS()
