@@ -57,7 +57,7 @@ export const sync = orpc
         .then(r => r.map(item => item.id)),
     ])
     const missingIds = inputIds.filter(id => !existingIds.includes(id))
-
+    const secret = await context.getUserSecret()
     const sync: typeof output.infer = []
 
     updatedItems.forEach((item) => {
@@ -65,7 +65,7 @@ export const sync = orpc
         type: 'update',
         value: {
           ...item,
-          connectionString: decrypt({ encryptedText: item.connectionString, secret: context.user.secret }),
+          connectionString: decrypt({ encryptedText: item.connectionString, secret }),
         },
       })
     })
@@ -75,7 +75,7 @@ export const sync = orpc
         type: 'insert',
         value: {
           ...item,
-          connectionString: decrypt({ encryptedText: item.connectionString, secret: context.user.secret }),
+          connectionString: decrypt({ encryptedText: item.connectionString, secret }),
         },
       })
     })

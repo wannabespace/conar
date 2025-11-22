@@ -21,7 +21,7 @@ export const create = orpc
 
     const [database] = await db.insert(databases).values({
       ...input,
-      connectionString: encrypt({ text: newConnectionString.toString(), secret: context.user.secret }),
+      connectionString: encrypt({ text: newConnectionString.toString(), secret: await context.getUserSecret() }),
       userId: context.user.id,
       syncType,
     }).returning()

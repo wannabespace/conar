@@ -21,10 +21,12 @@ export const list = orpc
       .where(eq(databases.userId, context.user.id))
       .orderBy(desc(databases.createdAt))
 
+    const secret = await context.getUserSecret()
+
     try {
       return list.map(database => ({
         ...database,
-        connectionString: decrypt({ encryptedText: database.connectionString, secret: context.user.secret }),
+        connectionString: decrypt({ encryptedText: database.connectionString, secret }),
       }))
     }
     catch {

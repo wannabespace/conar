@@ -1,4 +1,4 @@
-import { router } from '~/trpc'
+import { router } from '~/__trpc__deprecated'
 import { create } from './create'
 import { list } from './list'
 import { remove } from './remove'
