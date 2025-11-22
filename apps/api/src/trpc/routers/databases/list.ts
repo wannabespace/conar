@@ -19,6 +19,9 @@ export const list = protectedProcedure
       .where(eq(databases.userId, ctx.user.id))
       .orderBy(desc(databases.createdAt))
 
+    // eslint-disable-next-line no-console
+    console.log('user id to get databases', ctx.user.id)
+
     return list.map((database) => {
       return {
         ...database,
