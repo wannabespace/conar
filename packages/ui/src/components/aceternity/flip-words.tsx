@@ -37,27 +37,15 @@ export function FlipWords({
       }}
     >
       <motion.div
-        initial={{
-          opacity: 0,
-          y: 10,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 100,
-          damping: 10,
-        }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         exit={{
           opacity: 0,
-          y: -40,
-          x: 40,
-          filter: 'blur(8px)',
-          scale: 2,
+          filter: 'blur(4px)',
+          scale: 0.8,
           position: 'absolute',
         }}
+        transition={{ duration: 0.5 }}
         className={cn(
           'z-10 inline-block relative text-left text-neutral-900 dark:text-neutral-100 px-2',
           className,
