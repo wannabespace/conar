@@ -12,13 +12,13 @@ import { consola } from 'consola'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
+import { createContext } from './__trpc__deprecated/context'
+import { trpcRouter } from './__trpc__deprecated/routers'
 import { db, users } from './drizzle'
 import { env, nodeEnv } from './env'
 import { auth } from './lib/auth'
 import { router } from './orpc/routers'
 import { ai } from './routers/__ai__deprecated'
-import { createContext } from './trpc/context'
-import { trpcRouter } from './trpc/routers'
 
 const app = new Hono()
 

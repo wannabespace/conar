@@ -1,7 +1,7 @@
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
+import { protectedProcedure } from '~/__trpc__deprecated'
 import { databases, db } from '~/drizzle'
-import { protectedProcedure } from '~/trpc'
 
 export const remove = protectedProcedure
   .input(type({

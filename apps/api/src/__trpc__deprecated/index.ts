@@ -1,4 +1,4 @@
-import type { Context } from '~/trpc/context'
+import type { Context } from '~/__trpc__deprecated/context'
 import { initTRPC, TRPCError } from '@trpc/server'
 import { TraversalError } from 'arktype'
 import SuperJSON from 'superjson'

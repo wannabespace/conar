@@ -1,8 +1,8 @@
 import { TRPCError } from '@trpc/server'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
+import { protectedProcedure } from '~/__trpc__deprecated'
 import { databases, db } from '~/drizzle'
-import { protectedProcedure } from '~/trpc'
 
 export const update = protectedProcedure
   .input(type({

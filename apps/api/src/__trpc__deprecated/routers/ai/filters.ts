@@ -4,7 +4,7 @@ import { generateObject } from 'ai'
 import { type } from 'arktype'
 import { consola } from 'consola'
 import { z } from 'zod'
-import { protectedProcedure } from '~/trpc'
+import { protectedProcedure } from '~/__trpc__deprecated'
 
 export const filters = protectedProcedure
   .input(type({

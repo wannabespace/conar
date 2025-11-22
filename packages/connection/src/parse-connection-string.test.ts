@@ -68,4 +68,18 @@ describe('parseConnectionString', () => {
       searchParams: new URLSearchParams(),
     })
   })
+
+  it('should handle special characters in password', () => {
+    const connectionString = 'postgres://user:password@localhost:5432/database?options=-c search_path=auth'
+    const config = parseConnectionString(connectionString)
+
+    expect(config).toEqual({
+      user: 'user',
+      password: 'password',
+      host: 'localhost',
+      port: 5432,
+      database: 'database',
+      searchParams: new URLSearchParams([['options', '-c search_path=auth']]),
+    })
+  })
 })

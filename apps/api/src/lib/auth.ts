@@ -1,9 +1,10 @@
 import type { BetterAuthPlugin, User } from 'better-auth'
 import { PORTS } from '@conar/shared/constants'
+import { type } from 'arktype'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { anonymous, bearer, createAuthEndpoint, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { consola } from 'consola'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
@@ -86,6 +87,7 @@ export const auth = betterAuth({
   baseURL: env.API_URL,
   basePath: '/auth',
   plugins: [
+    oldChangeEmail(),
     skipStateMismatch(),
     bearer(),
     twoFactor(),
@@ -120,6 +122,7 @@ export const auth = betterAuth({
     additionalFields: {
       secret: {
         type: 'string',
+        returned: false,
         input: false,
       },
     },
@@ -142,8 +145,11 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix: 'conar',
     database: {
-      generateId: false,
+      generateId: 'uuid',
     },
+  },
+  experimental: {
+    joins: true,
   },
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -187,3 +193,26 @@ export const auth = betterAuth({
     },
   },
 })
+
+function oldChangeEmail(): BetterAuthPlugin {
+  return {
+    id: 'old-change-email',
+    endpoints: {
+      forgotPassword: createAuthEndpoint(
+        'forgot-password',
+        {
+          method: 'POST',
+          operationId: 'forgetPassword',
+          body: type({
+            email: 'string.email',
+            redirectTo: 'string?',
+          }),
+        },
+        async (ctx) => {
+          const result = await auth.api.requestPasswordReset(ctx)
+          return result
+        },
+      ),
+    },
+  }
+};
