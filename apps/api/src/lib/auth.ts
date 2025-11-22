@@ -198,8 +198,8 @@ function oldChangeEmail(): BetterAuthPlugin {
   return {
     id: 'old-change-email',
     endpoints: {
-      forgotPassword: createAuthEndpoint(
-        'forgot-password',
+      forgetPassword: createAuthEndpoint(
+        'forget-password',
         {
           method: 'POST',
           operationId: 'forgetPassword',
