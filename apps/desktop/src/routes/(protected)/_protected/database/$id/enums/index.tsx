@@ -1,39 +1,16 @@
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
+import { HighlightText } from '@conar/ui/components/custom/hightlight'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Input } from '@conar/ui/components/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiInformationLine, RiListUnordered } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useDatabaseEnums, useDatabaseTablesAndSchemas } from '~/entities/database'
-
-function escapeRegExp(string: string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-function Highlight({ text, search }: { text: string, search: string }) {
-  const regex = useMemo(
-    () => new RegExp(escapeRegExp(search), 'gi'),
-    [search],
-  )
-
-  if (!search)
-    return
-
-  return (
-    <span
-      dangerouslySetInnerHTML={{
-        __html: text.replace(
-          regex,
-          match => `<mark class="text-white bg-primary/50">${match}</mark>`,
-        ),
-      }}
-    />
-  )
-}
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id/enums/')({
   component: DatabaseEnumsPage,
@@ -48,8 +25,11 @@ function DatabaseEnumsPage() {
   const { data: enums } = useDatabaseEnums({ database })
   const { data } = useDatabaseTablesAndSchemas({ database })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
-  const [selectedSchema, setSelectedSchema] = useState(schemas[0] ?? 'public')
+  const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
+
+  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
+    setSelectedSchema(schemas[0])
 
   const filteredEnums = enums?.filter(enumItem =>
     enumItem.schema === selectedSchema
@@ -118,11 +98,7 @@ function DatabaseEnumsPage() {
                         <div className="flex items-center gap-2">
                           <RiListUnordered className="text-primary size-4" />
                           <CardTitle className="text-base font-medium">
-                            {search && enumItem.name.toLowerCase().includes(search.toLowerCase())
-                              ? (
-                                  <Highlight text={enumItem.name} search={search} />
-                                )
-                              : enumItem.name}
+                            <HighlightText text={enumItem.name} match={search} />
                           </CardTitle>
                           <TooltipProvider>
                             <Tooltip>
@@ -147,23 +123,25 @@ function DatabaseEnumsPage() {
                     </CardHeader>
                     <CardContent className="py-3 px-4">
                       <div className="flex flex-wrap gap-2">
-                        {enumItem.values.map((value) => {
-                          const shouldHighlight = search && value.toLowerCase().includes(search.toLowerCase())
-
-                          return (
-                            <Badge
-                              key={value}
-                              variant="outline"
-                              className={`px-2.5 py-1 text-xs rounded-md hover:bg-muted/80 transition-colors ${shouldHighlight ? 'bg-primary/10 border-primary/30' : ''}`}
-                            >
-                              {shouldHighlight
-                                ? (
-                                    <Highlight text={value} search={search} />
-                                  )
-                                : value}
-                            </Badge>
-                          )
-                        })}
+                        {enumItem.values.map(value => (
+                          <HighlightText
+                            key={value}
+                            text={value}
+                            match={search}
+                            render={({ html, matched }) => (
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'px-2.5 py-1 text-xs rounded-md hover:bg-muted/80 transition-colors',
+                                  matched && 'bg-primary/10 border-primary/30',
+                                )}
+                              >
+                                {/* eslint-disable-next-line react-dom/no-dangerously-set-innerhtml */}
+                                <span dangerouslySetInnerHTML={{ __html: html }} />
+                              </Badge>
+                            )}
+                          />
+                        ))}
                       </div>
                     </CardContent>
                   </Card>
