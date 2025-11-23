@@ -319,7 +319,7 @@ function CreateConnectionPage() {
   const [typeValue, connectionString, name, saveInCloud, label] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud, values.label])
 
   return (
-    <div className="min-h-screen flex flex-col justify-center">
+    <div className="flex flex-col justify-center">
       <form
         onSubmit={(e) => {
           e.preventDefault()
