@@ -277,7 +277,7 @@ export function TablesTabs({
           <ScrollViewport
             className={cn('flex p-1 gap-1', className)}
           >
-            {tabItems.map(item => (
+            {[...tabItems, ...tabItems, ...tabItems, ...tabItems, ...tabItems, ...tabItems, ...tabItems, ...tabItems].map(item => (
               <SortableTab
                 key={item.id}
                 id={database.id}
@@ -295,7 +295,7 @@ export function TablesTabs({
               />
             ))}
           </ScrollViewport>
-          <ScrollBar orientation="horizontal" />
+          <ScrollBar orientation="horizontal" className="h-2" />
         </ScrollArea>
       </SortableContext>
     </DndContext>

@@ -1,5 +1,6 @@
 import { title } from '@conar/shared/utils/title'
 import { Toaster } from '@conar/ui/components/sonner'
+import { cn } from '@conar/ui/lib/utils'
 import { ThemeObserver } from '@conar/ui/theme-observer'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -43,24 +44,29 @@ function RootDocument() {
         <ThemeObserver />
         <QueryClientProvider client={queryClient}>
           <AuthObserver />
-          <div className="flex h-screen flex-col">
+          <div className={cn(
+            'flex h-screen flex-col',
+            // For simple page layouts, we want the last child to be the full height of the screen
+            '*:last:min-h-[inherit] *:last:flex-1 *:last:h-full',
+          )}
+          >
             <GlobalBanner />
             <Outlet />
-            {import.meta.env.DEV && (
-              <TanStackDevtools
-                plugins={[
-                  {
-                    name: 'TanStack Query',
-                    render: <ReactQueryDevtoolsPanel />,
-                  },
-                  {
-                    name: 'TanStack Router',
-                    render: <TanStackRouterDevtoolsPanel router={router} />,
-                  },
-                ]}
-              />
-            )}
           </div>
+          {import.meta.env.DEV && (
+            <TanStackDevtools
+              plugins={[
+                {
+                  name: 'TanStack Query',
+                  render: <ReactQueryDevtoolsPanel />,
+                },
+                {
+                  name: 'TanStack Router',
+                  render: <TanStackRouterDevtoolsPanel router={router} />,
+                },
+              ]}
+            />
+          )}
         </QueryClientProvider>
         <Toaster />
       </EventsProvider>
