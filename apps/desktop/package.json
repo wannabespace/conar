@@ -88,7 +88,7 @@
     "js-base64": "^3.7.8",
     "kysely": "^0.28.8",
     "marked": "^17.0.1",
-    "monaco-editor": "catalog:",
+    "monaco-editor": "^0.54.0",
     "monaco-sql-languages": "^0.15.1",
     "monaco-themes": "^0.4.7",
     "motion": "catalog:",

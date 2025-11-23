@@ -26,7 +26,6 @@ catalog:
   better-auth: ^1.4.1
   drizzle-kit: ^0.31.7
   drizzle-orm: ^0.44.7
-  monaco-editor: ^0.55.1
   motion: ^12.23.24
   mysql2: ^3.15.3
   nanoid: ^5.1.6
