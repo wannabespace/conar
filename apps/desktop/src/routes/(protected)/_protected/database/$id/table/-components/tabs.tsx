@@ -277,7 +277,7 @@ export function TablesTabs({
           <ScrollViewport
             className={cn('flex p-1 gap-1', className)}
           >
-            {[...tabItems, ...tabItems, ...tabItems, ...tabItems, ...tabItems, ...tabItems, ...tabItems, ...tabItems].map(item => (
+            {tabItems.map(item => (
               <SortableTab
                 key={item.id}
                 id={database.id}
