@@ -46,7 +46,7 @@ function RootDocument() {
           <AuthObserver />
           <div className={cn(
             'flex h-screen flex-col',
-            // For simple page layouts, we want the last child to be the full height of the screen
+            // For simple page layouts, we want outlet to be the full height of the screen
             '*:last:min-h-[inherit] *:last:flex-1 *:last:h-full',
           )}
           >
