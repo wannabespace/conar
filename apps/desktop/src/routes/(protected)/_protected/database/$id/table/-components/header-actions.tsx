@@ -33,13 +33,15 @@ function HeaderActionsOrder() {
   }, [store])
 
   const removeOrder = useCallback((columnId: string) => {
-    const newOrderBy = { ...store.state.orderBy }
-    delete newOrderBy[columnId]
+    store.setState((state) => {
+      const newOrderBy = { ...state.orderBy }
+      delete newOrderBy[columnId]
 
-    store.setState(state => ({
-      ...state,
-      orderBy: newOrderBy,
-    }))
+      return {
+        ...state,
+        orderBy: newOrderBy,
+      }
+    })
   }, [store])
 
   const orderEntries = Object.entries(orderBy || {})
@@ -55,6 +57,7 @@ function HeaderActionsOrder() {
                 variant="outline"
                 size="icon"
                 className={hasOrders ? 'text-primary' : ''}
+                aria-label="Sort order"
               >
                 <RiArrowUpDownLine />
               </Button>
@@ -105,6 +108,7 @@ function HeaderActionsOrder() {
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => removeOrder(columnId)}
+                          aria-label={`Remove sort from ${columnId}`}
                           className="h-7"
                         >
                           <RiCloseLine className="size-4 text-muted-foreground" />
