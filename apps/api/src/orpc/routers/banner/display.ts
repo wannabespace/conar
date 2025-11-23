@@ -8,9 +8,9 @@ const bannerType = type({
 
 export const display = orpc
   .output(bannerType.or('null'))
-  .handler(async () => {
+  .handler(() => {
     return {
       text: 'Scheduled maintenance on Nov 20th, 2025 from 2-4 PM UTC',
-      type: 'info',
+      type: 'success',
     }
   })

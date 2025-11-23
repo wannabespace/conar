@@ -42,13 +42,10 @@ function RootDocument() {
       <EventsProvider>
         <ThemeObserver />
         <QueryClientProvider client={queryClient}>
+          <AuthObserver />
           <div className="flex h-screen flex-col">
             <GlobalBanner />
-            <div className="flex-1 min-h-0 overflow-auto">
-              <Outlet />
-            </div>
-            <AuthObserver />
-            <Toaster />
+            <Outlet />
             {import.meta.env.DEV && (
               <TanStackDevtools
                 plugins={[
@@ -65,6 +62,7 @@ function RootDocument() {
             )}
           </div>
         </QueryClientProvider>
+        <Toaster />
       </EventsProvider>
     </>
   )
