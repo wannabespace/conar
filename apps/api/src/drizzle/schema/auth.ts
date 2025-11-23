@@ -1,153 +1,187 @@
 import { relations } from 'drizzle-orm'
-import { boolean, index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
-import { nanoid } from 'nanoid'
+import {
+  boolean,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 
 export const users = pgTable('users', {
   ...baseTable,
-  name: text().notNull(),
-  email: text().notNull().unique(),
-  emailVerified: boolean().default(false).notNull(),
-  image: text(),
-  twoFactorEnabled: boolean().default(false),
-  normalizedEmail: text().unique('users_normalized_email_unique'),
-  isAnonymous: boolean(),
-  secret: text().notNull().$defaultFn(() => nanoid()),
-}, t => [
-  index().on(t.email),
-])
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  emailVerified: boolean('email_verified').default(false).notNull(),
+  image: text('image'),
+  twoFactorEnabled: boolean('two_factor_enabled').default(false),
+  normalizedEmail: text('normalized_email').unique(),
+  isAnonymous: boolean('is_anonymous').default(false),
+  secret: text('secret').notNull(),
+})
 
-export const sessions = pgTable('sessions', {
+export const sessions = pgTable(
+  'sessions',
+  {
+    ...baseTable,
+    expiresAt: timestamp('expires_at').notNull(),
+    token: text('token').notNull().unique(),
+    ipAddress: text('ip_address'),
+    userAgent: text('user_agent'),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    activeWorkspaceId: text('active_workspace_id'),
+  },
+  table => [index('sessions_userId_idx').on(table.userId)],
+)
+
+export const accounts = pgTable(
+  'accounts',
+  {
+    ...baseTable,
+    accountId: text('account_id').notNull(),
+    providerId: text('provider_id').notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    accessToken: text('access_token'),
+    refreshToken: text('refresh_token'),
+    idToken: text('id_token'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at'),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+    scope: text('scope'),
+    password: text('password'),
+  },
+  table => [index('accounts_userId_idx').on(table.userId)],
+)
+
+export const verifications = pgTable(
+  'verifications',
+  {
+    ...baseTable,
+    identifier: text('identifier').notNull(),
+    value: text('value').notNull(),
+    expiresAt: timestamp('expires_at').notNull(),
+  },
+  table => [index('verifications_identifier_idx').on(table.identifier)],
+)
+
+export const twoFactors = pgTable(
+  'two_factors',
+  {
+    ...baseTable,
+    secret: text('secret').notNull(),
+    backupCodes: text('backup_codes').notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+  },
+  table => [
+    index('twoFactors_secret_idx').on(table.secret),
+    index('twoFactors_userId_idx').on(table.userId),
+  ],
+)
+
+export const workspaces = pgTable('workspaces', {
   ...baseTable,
-  expiresAt: timestamp({ withTimezone: true }).notNull(),
-  token: text().notNull().unique(),
-  ipAddress: text(),
-  userAgent: text(),
-  userId: uuid()
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  activeOrganizationId: uuid(),
-}, t => [
-  index().on(t.userId),
-  index().on(t.token),
-])
+  name: text('name').notNull(),
+  slug: text('slug').notNull().unique(),
+  logo: text('logo'),
+  metadata: text('metadata'),
+})
 
-export const sessionsRelations = relations(sessions, ({ one }) => ({
-  user: one(users, {
+export const members = pgTable(
+  'members',
+  {
+    ...baseTable,
+    workspaceId: uuid('workspace_id')
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: text('role').default('member').notNull(),
+  },
+  table => [
+    index('members_workspaceId_idx').on(table.workspaceId),
+    index('members_userId_idx').on(table.userId),
+  ],
+)
+
+export const invitations = pgTable(
+  'invitations',
+  {
+    ...baseTable,
+    workspaceId: uuid('workspace_id')
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    email: text('email').notNull(),
+    role: text('role'),
+    status: text('status').default('pending').notNull(),
+    expiresAt: timestamp('expires_at').notNull(),
+    inviterId: uuid('inviter_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+  },
+  table => [
+    index('invitations_workspaceId_idx').on(table.workspaceId),
+    index('invitations_email_idx').on(table.email),
+  ],
+)
+
+export const userRelations = relations(users, ({ many }) => ({
+  sessions: many(sessions),
+  accounts: many(accounts),
+  twoFactors: many(twoFactors),
+  members: many(members),
+  invitations: many(invitations),
+}))
+
+export const sessionRelations = relations(sessions, ({ one }) => ({
+  users: one(users, {
     fields: [sessions.userId],
     references: [users.id],
   }),
 }))
 
-export const accounts = pgTable('accounts', {
-  ...baseTable,
-  accountId: text().notNull(),
-  providerId: text().notNull(),
-  userId: uuid()
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  accessToken: text(),
-  refreshToken: text(),
-  idToken: text(),
-  accessTokenExpiresAt: timestamp({ withTimezone: true }),
-  refreshTokenExpiresAt: timestamp({ withTimezone: true }),
-  scope: text(),
-  password: text(),
-}, t => [
-  index().on(t.userId),
-])
-
-export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, {
+export const accountRelations = relations(accounts, ({ one }) => ({
+  users: one(users, {
     fields: [accounts.userId],
     references: [users.id],
   }),
 }))
 
-export const verifications = pgTable('verifications', {
-  ...baseTable,
-  identifier: text().notNull(),
-  value: text().notNull(),
-  expiresAt: timestamp({ withTimezone: true }).notNull(),
-}, t => [
-  index().on(t.identifier),
-])
-
-export const twoFactors = pgTable('two_factors', {
-  ...baseTable,
-  secret: text().notNull(),
-  backupCodes: text().notNull(),
-  userId: uuid()
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-})
-
-export const twoFactorsRelations = relations(twoFactors, ({ one }) => ({
-  user: one(users, {
+export const twoFactorRelations = relations(twoFactors, ({ one }) => ({
+  users: one(users, {
     fields: [twoFactors.userId],
     references: [users.id],
   }),
 }))
 
-export const workspaces = pgTable('workspaces', {
-  ...baseTable,
-  name: text().notNull(),
-  slug: text().unique(),
-  logo: text(),
-  metadata: text(),
-}, t => [
-  index().on(t.slug),
-])
+export const workspaceRelations = relations(workspaces, ({ many }) => ({
+  members: many(members),
+  invitations: many(invitations),
+}))
 
-export const members = pgTable('members', {
-  ...baseTable,
-  organizationId: uuid()
-    .notNull()
-    .references(() => workspaces.id, { onDelete: 'cascade' }),
-  userId: uuid()
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  role: text().default('member').notNull(),
-}, t => [
-  index().on(t.userId),
-  index().on(t.organizationId),
-])
-
-export const membersRelations = relations(members, ({ one }) => ({
-  workspace: one(workspaces, {
-    fields: [members.organizationId],
+export const memberRelations = relations(members, ({ one }) => ({
+  workspaces: one(workspaces, {
+    fields: [members.workspaceId],
     references: [workspaces.id],
   }),
-  user: one(users, {
+  users: one(users, {
     fields: [members.userId],
     references: [users.id],
   }),
 }))
 
-export const invitations = pgTable('invitations', {
-  ...baseTable,
-  organizationId: uuid()
-    .notNull()
-    .references(() => workspaces.id, { onDelete: 'cascade' }),
-  email: text().notNull(),
-  role: text(),
-  status: text().default('pending').notNull(),
-  expiresAt: timestamp({ withTimezone: true }).notNull(),
-  inviterId: uuid()
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-}, t => [
-  index().on(t.email),
-  index().on(t.organizationId),
-  index().on(t.inviterId),
-])
-
-export const invitationsRelations = relations(invitations, ({ one }) => ({
-  workspace: one(workspaces, {
-    fields: [invitations.organizationId],
+export const invitationRelations = relations(invitations, ({ one }) => ({
+  workspaces: one(workspaces, {
+    fields: [invitations.workspaceId],
     references: [workspaces.id],
   }),
-  inviter: one(users, {
+  users: one(users, {
     fields: [invitations.inviterId],
     references: [users.id],
   }),

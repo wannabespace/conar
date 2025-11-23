@@ -1,10 +1,13 @@
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
+import { HighlightText } from '@conar/ui/components/custom/hightlight'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { Input } from '@conar/ui/components/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiInformationLine, RiListUnordered } from '@remixicon/react'
+import { cn } from '@conar/ui/lib/utils'
+import { RiCloseLine, RiInformationLine, RiListUnordered } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useDatabaseEnums, useDatabaseTablesAndSchemas } from '~/entities/database'
@@ -22,9 +25,19 @@ function DatabaseEnumsPage() {
   const { data: enums } = useDatabaseEnums({ database })
   const { data } = useDatabaseTablesAndSchemas({ database })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
-  const [selectedSchema, setSelectedSchema] = useState(schemas[0] ?? 'public')
+  const [selectedSchema, setSelectedSchema] = useState(schemas[0])
+  const [search, setSearch] = useState('')
 
-  const filteredEnums = enums?.filter(enumItem => enumItem.schema === selectedSchema) ?? []
+  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
+    setSelectedSchema(schemas[0])
+
+  const filteredEnums = enums?.filter(enumItem =>
+    enumItem.schema === selectedSchema
+    && (!search
+      || enumItem.name.toLowerCase().includes(search.toLowerCase())
+      || enumItem.values.some(value => value.toLowerCase().includes(search.toLowerCase()))
+    ),
+  ) ?? []
 
   return (
     <ScrollArea className="bg-background rounded-lg border h-full">
@@ -33,25 +46,44 @@ function DatabaseEnumsPage() {
           <h2 className="text-2xl font-bold">
             Enums
           </h2>
-          {schemas.length > 1 && (
-            <Select value={selectedSchema} onValueChange={setSelectedSchema}>
-              <SelectTrigger className="w-[180px]">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">
-                    schema
-                  </span>
-                  <SelectValue placeholder="Select schema" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {schemas.map(schema => (
-                  <SelectItem key={schema} value={schema}>
-                    {schema}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          <div className="flex gap-2">
+            <div className="relative">
+              <Input
+                placeholder="Search enums"
+                className="pr-8 w-[180px]"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              {search && (
+                <button
+                  type="button"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer p-1"
+                  onClick={() => setSearch('')}
+                >
+                  <RiCloseLine className="size-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+            {schemas.length > 1 && (
+              <Select value={selectedSchema} onValueChange={setSelectedSchema}>
+                <SelectTrigger className="w-[180px]">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">
+                      schema
+                    </span>
+                    <SelectValue placeholder="Select schema" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {schemas.map(schema => (
+                    <SelectItem key={schema} value={schema}>
+                      {schema}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
         </div>
         {filteredEnums.length
           ? (
@@ -65,7 +97,9 @@ function DatabaseEnumsPage() {
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <RiListUnordered className="text-primary size-4" />
-                          <CardTitle className="text-base font-medium">{enumItem.name}</CardTitle>
+                          <CardTitle className="text-base font-medium">
+                            <HighlightText text={enumItem.name} match={search} />
+                          </CardTitle>
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -90,13 +124,23 @@ function DatabaseEnumsPage() {
                     <CardContent className="py-3 px-4">
                       <div className="flex flex-wrap gap-2">
                         {enumItem.values.map(value => (
-                          <Badge
+                          <HighlightText
                             key={value}
-                            variant="outline"
-                            className="px-2.5 py-1 text-xs rounded-md hover:bg-muted/80 transition-colors"
-                          >
-                            {value}
-                          </Badge>
+                            text={value}
+                            match={search}
+                            render={({ html, matched }) => (
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'px-2.5 py-1 text-xs rounded-md hover:bg-muted/80 transition-colors',
+                                  matched && 'bg-primary/10 border-primary/30',
+                                )}
+                              >
+                                {/* eslint-disable-next-line react-dom/no-dangerously-set-innerhtml */}
+                                <span dangerouslySetInnerHTML={{ __html: html }} />
+                              </Badge>
+                            )}
+                          />
                         ))}
                       </div>
                     </CardContent>

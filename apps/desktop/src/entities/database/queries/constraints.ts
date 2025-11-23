@@ -1,11 +1,11 @@
 import type { databases } from '~/drizzle'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { constraintsSql } from '../sql/constraints'
+import { constraintsQuery } from '../sql/constraints'
 
 export function databaseConstraintsQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
     queryKey: ['database', database.id, 'constraints'],
-    queryFn: () => constraintsSql(database).then(data => data.result),
+    queryFn: () => constraintsQuery.run(database),
   })
 }
 

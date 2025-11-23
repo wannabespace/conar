@@ -5,10 +5,11 @@ import { Chat } from '@ai-sdk/react'
 import { convertToAppUIMessage } from '@conar/shared/ai-tools'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { eventIteratorToStream } from '@orpc/client'
+import { encode } from '@toon-format/toon'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
-import { databaseEnumsQuery, databaseTableColumnsQuery, rowsSql, tablesAndSchemasQuery } from '~/entities/database'
+import { databaseEnumsQuery, databaseTableColumnsQuery, databaseTablesAndSchemasQuery, rowsQuery } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { databaseStore } from '../../../../-store'
@@ -107,9 +108,13 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           trigger: options.trigger,
           messageId: options.messageId,
           context: [
-            `Current query in the SQL runner: ${store.state.sql.trim() || 'Empty'}`,
+            `Current query in the SQL runner:
+            \`\`\`sql
+            ${store.state.sql.trim() || '-- empty'}
+            \`\`\`
+            `,
             'Database schemas and tables:',
-            JSON.stringify(await queryClient.ensureQueryData(tablesAndSchemasQuery({ database })), null, 2),
+            encode(await queryClient.ensureQueryData(databaseTablesAndSchemasQuery({ database }))),
           ].join('\n'),
         }, { signal: options.abortSignal }))
       },
@@ -173,7 +178,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       }
       else if (toolCall.toolName === 'select') {
         const input = toolCall.input as InferToolInput<typeof tools.select>
-        const { result: output } = await rowsSql(database, {
+        const output = await rowsQuery.run(database, {
           schema: input.tableAndSchema.schemaName,
           table: input.tableAndSchema.tableName,
           limit: input.limit,
@@ -196,9 +201,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           }),
           filtersConcatOperator: input.whereConcatOperator,
         }).catch(error => ({
-          result: {
-            error: error instanceof Error ? error.message : 'Error during the query execution',
-          },
+          error: error instanceof Error ? error.message : 'Error during the query execution',
         })) satisfies InferToolOutput<typeof tools.select>
 
         chat.addToolOutput({

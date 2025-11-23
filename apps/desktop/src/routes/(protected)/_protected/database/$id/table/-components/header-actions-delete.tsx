@@ -9,7 +9,7 @@ import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { databaseRowsQuery, databaseTableTotalQuery, deleteRowsSql } from '~/entities/database'
+import { databaseRowsQuery, databaseTableTotalQuery, deleteRowsQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { usePageStoreContext } from '../-store'
 
@@ -20,7 +20,7 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      await deleteRowsSql(database, { table, schema, primaryKeys: selected })
+      await deleteRowsQuery.run(database, { table, schema, primaryKeys: selected })
     },
     onSuccess: () => {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)

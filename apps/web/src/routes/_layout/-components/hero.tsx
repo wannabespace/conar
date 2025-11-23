@@ -5,7 +5,7 @@ import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { DownloadButton } from '~/components/download-button'
 
-const words = ['Postgres']
+const words = ['Postgres', 'MySQL']
 
 export function Hero({ className }: { className?: string }) {
   const { scrollY } = useScroll()
@@ -32,7 +32,7 @@ export function Hero({ className }: { className?: string }) {
           >
             <FlipWords
               words={words}
-              duration={1000}
+              duration={2000}
             />
           </motion.span>
           <br />

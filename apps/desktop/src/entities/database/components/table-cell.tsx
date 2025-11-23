@@ -262,9 +262,7 @@ export function TableCell({
     status === 'error' && 'ring-destructive/50 bg-destructive/20',
     status === 'success' && 'ring-success/50 bg-success/10',
     status === 'pending' && 'animate-pulse bg-primary/10',
-    position === 'first' && 'pl-4',
-    position === 'last' && 'pr-4',
-    (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1',
+    (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1!',
     className,
   )
 
@@ -281,6 +279,7 @@ export function TableCell({
         onMouseLeave={disableInteractIfPossible}
         className={cellClassName}
         style={style}
+        position={position}
         value={value}
       >
         <span className="truncate">{displayValue}</span>
@@ -338,6 +337,7 @@ export function TableCell({
                   className={cellClassName}
                   style={style}
                   value={value}
+                  position={position}
                 >
                   <span className="truncate">{displayValue}</span>
                   {!!value && column.foreign && (

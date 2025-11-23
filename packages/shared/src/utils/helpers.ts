@@ -15,10 +15,24 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(fu
   return debounced
 }
 
+export function escapeSpecialCharacters(string: string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
   return Object.fromEntries(Object.entries(obj).filter(([key]) => !keys.includes(key as K))) as Omit<T, K>
 }
 
 export function noop() {}
 
+export type Prettify<T> = {
+  [K in keyof T]: T[K]
+} & {}
+
 export type Satisfies<T, U extends T> = U
+
+export type MaybePromise<T> = T | Promise<T>
+
+export type MaybeArray<T> = T | T[]
+
+export interface ErrorMessage<T extends string> { __errorMessage: T }

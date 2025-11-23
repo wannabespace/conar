@@ -10,7 +10,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
 import { useEffect, useEffectEvent, useMemo, useState } from 'react'
 import { animationHooks } from '~/enter'
-import { databaseConstraintsQuery, databaseTableColumnsQuery, prefetchDatabaseCore, ReactFlowNode, tablesAndSchemasQuery } from '~/entities/database'
+import { databaseConstraintsQuery, databaseTableColumnsQuery, databaseTablesAndSchemasQuery, prefetchDatabaseCore, ReactFlowNode } from '~/entities/database'
 import { getEdges, getLayoutElements, getNodes } from './-lib'
 
 export const Route = createFileRoute(
@@ -30,7 +30,7 @@ export const Route = createFileRoute(
 function VisualizerPage() {
   const { database } = Route.useLoaderData()
   const { data: tablesAndSchemas } = useQuery({
-    ...tablesAndSchemasQuery({ database }),
+    ...databaseTablesAndSchemasQuery({ database }),
     select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))),
   })
   const columnsQueries = useQueries({

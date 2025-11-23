@@ -3,6 +3,7 @@ export const selectSymbol = Symbol('table-selection')
 export const columnsSizeMap = new Map<string, number>([
   ['boolean', 160],
   ['number', 170],
+  ['int', 150],
   ['integer', 150],
   ['bigint', 170],
   ['timestamp', 240],

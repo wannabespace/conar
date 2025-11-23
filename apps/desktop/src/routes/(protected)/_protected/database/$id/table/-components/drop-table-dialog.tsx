@@ -18,7 +18,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { dropTableSql, tablesAndSchemasQuery } from '~/entities/database'
+import { databaseTablesAndSchemasQuery, dropTableQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { databaseStore, removeTab } from '../../../-store'
@@ -61,7 +61,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
 
   const { mutate: dropTable, isPending } = useMutation({
     mutationFn: async () => {
-      await dropTableSql(database, { table, schema, cascade })
+      await dropTableQuery.run(database, { table, schema, cascade })
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully dropped`)
@@ -69,7 +69,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
       setConfirmationText('')
       setCascade(false)
 
-      queryClient.invalidateQueries(tablesAndSchemasQuery({ database }))
+      queryClient.invalidateQueries(databaseTablesAndSchemasQuery({ database }))
 
       if (isCurrentTable) {
         await router.navigate({

@@ -9,13 +9,13 @@ import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
 
+initElectronEvents()
+
 export const store = new Store<{
   bounds?: Rectangle
 }>()
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
-
-initElectronEvents()
 
 let mainWindow: BrowserWindow | null = null
 

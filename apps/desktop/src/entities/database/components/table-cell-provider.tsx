@@ -14,7 +14,6 @@ const CellContext = createContext<{
   update: UseMutateFunction<void, Error, { value: string | null, rowIndex: number }>
 }>(null!)
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useCellContext() {
   return use(CellContext)
 }
