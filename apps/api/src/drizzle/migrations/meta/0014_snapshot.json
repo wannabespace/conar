@@ -90,7 +90,6 @@
         }
       },
       "indexes": {
-
         "accounts_userId_idx": {
           "name": "accounts_userId_idx",
           "columns": [
