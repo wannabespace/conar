@@ -15,7 +15,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useRef } from 'react'
 import { useDatabaseTablesAndSchemas } from '~/entities/database'
 import { Route } from '..'
-import { addTab, cleanupPinnedTables, databaseStore, togglePinTable } from '../../../-store'
+import { addTab, cleanupPinnedTables, databaseStore, togglePinTable } from '../../../../../../../entities/database/store'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 

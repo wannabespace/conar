@@ -1,10 +1,12 @@
 import type { ComponentRef } from 'react'
 import type { databases } from '~/drizzle'
 import { SafeURL } from '@conar/shared/utils/safe-url'
+import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Skeleton } from '@conar/ui/components/skeleton'
 import { copy } from '@conar/ui/lib/copy'
+import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
@@ -28,54 +30,34 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
 
   return (
     <Link
-      className="relative flex items-center justify-between gap-4 rounded-lg bg-muted/30 p-5 border overflow-hidden border-border/50 hover:border-primary transition-all duration-150 shadow-sm group"
-      style={{
-        ...(database.color && {
-          backgroundColor: `${database.color}05`,
-        }),
-      }}
+      className={cn(
+        'relative flex items-center justify-between gap-4',
+        'rounded-lg p-5 border overflow-hidden border-border/50 border-l-5 transition-all duration-100 group',
+        database.color
+          ? 'text-(--color) bg-(--color)/4 hover:border-(--color)/30 border-l-(--color)/20'
+          : 'bg-muted/30 hover:border-primary/40',
+      )}
+      style={database.color ? { '--color': database.color } : {}}
       {...params}
     >
-      {database.color && (
-        <>
-          <div
-            className="absolute left-0 top-0 bottom-0 w-1.5"
-            style={{ backgroundColor: database.color }}
-          />
-
-          <div
-            className="absolute left-0 top-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity"
-            style={{ backgroundColor: database.color }}
-          />
-
-          <div
-            className="absolute right-0 top-0 bottom-0 w-[1px] opacity-0 group-hover:opacity-100 transition-opacity"
-            style={{ backgroundColor: database.color }}
-          />
-
-          <div
-            className="absolute left-0 bottom-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity"
-            style={{ backgroundColor: database.color }}
-          />
-        </>
-      )}
       <div
-        className={`size-12 shrink-0 rounded-lg ${database.color ? 'bg-white/10' : 'bg-muted/70'} p-3`}
-        style={database.color ? { backgroundColor: `${database.color}15` } : {}}
+        className={cn(
+          'size-12 shrink-0 rounded-lg p-3',
+          database.color ? 'bg-(--color)/5' : 'bg-muted/70',
+        )}
       >
         <DatabaseIcon
           type={database.type}
-          className={`size-full ${database.color ? '' : 'text-primary'}`}
-          style={database.color ? { color: database.color } : {}}
+          className="size-full"
         />
       </div>
       <div className="flex flex-1 flex-col min-w-0">
         <div className="font-medium tracking-tight truncate flex items-center gap-2">
           {database.name}
           {database.label && (
-            <span className="px-2 py-0.5 text-xs rounded-full bg-muted-foreground/10 text-muted-foreground whitespace-nowrap">
+            <Badge variant="secondary">
               {database.label}
-            </span>
+            </Badge>
           )}
         </div>
         <div data-mask className="text-xs text-muted-foreground font-mono truncate">{connectionString.replaceAll('*', '•')}</div>

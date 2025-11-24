@@ -1,6 +1,6 @@
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { ComponentProps, RefObject } from 'react'
-import type { tabType } from '../../../-store'
+import type { tabType } from '../../../../../../../entities/database/store'
 import type { databases } from '~/drizzle'
 import { getOS } from '@conar/shared/utils/os'
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
@@ -18,7 +18,7 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
 import { getPageStoreState } from '../-store'
-import { addTab, databaseStore, moveTab, removeTab } from '../../../-store'
+import { addTab, databaseStore, moveTab, removeTab } from '../../../../../../../entities/database/store'
 
 const os = getOS(navigator.userAgent)
 

@@ -122,7 +122,7 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
                     )}
                     style={{
                       '--color': colorOption,
-                    } as React.CSSProperties}
+                    }}
                     onClick={() => setColor(colorOption)}
                   />
                 ))}
