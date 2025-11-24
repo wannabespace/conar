@@ -9,10 +9,9 @@ import { encode } from '@toon-format/toon'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
-import { databaseEnumsQuery, databaseTableColumnsQuery, databaseTablesAndSchemasQuery, rowsQuery } from '~/entities/database'
+import { databaseEnumsQuery, databaseStore, databaseTableColumnsQuery, databaseTablesAndSchemasQuery, rowsQuery } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
-import { databaseStore } from '../../../../-store'
 
 export * from './chat'
 

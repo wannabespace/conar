@@ -6,10 +6,9 @@ import { Input } from '@conar/ui/components/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCheckLine, RiCloseLine, RiLoopLeftLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { databaseConstraintsQuery, useDatabaseTablesAndSchemas } from '~/entities/database'
+import { databaseConstraintsQuery, databaseStore, useDatabaseTablesAndSchemas } from '~/entities/database'
 import { queryClient } from '~/main'
 import { Route } from '..'
-import { databaseStore } from '../../../-store'
 import { TablesTree } from './tables-tree'
 
 export function Sidebar() {

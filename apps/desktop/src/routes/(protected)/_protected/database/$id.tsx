@@ -5,13 +5,14 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import {
   databasesCollection,
+  databaseStore,
+  getDatabasePageId,
   lastOpenedDatabases,
   prefetchDatabaseCore,
 } from '~/entities/database'
 import { QueryLogger } from '~/entities/database/components/query-logger'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
-import { databaseStore, getDatabasePageId } from './-store'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: DatabasePage,
