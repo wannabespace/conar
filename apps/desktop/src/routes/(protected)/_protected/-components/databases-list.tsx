@@ -34,8 +34,8 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
         'relative flex items-center justify-between gap-4',
         'rounded-lg p-5 bg-muted/30 border overflow-hidden border-border/50 border-l-5 transition-all duration-100 group',
         database.color
-          ? 'text-(--color) hover:border-(--color)/30 border-l-(--color)/20'
-          : ' hover:border-primary/40',
+          ? 'hover:border-(--color)/60 border-l-(--color)/60'
+          : ' hover:border-primary/60',
       )}
       style={database.color ? { '--color': database.color } : {}}
       {...params}
