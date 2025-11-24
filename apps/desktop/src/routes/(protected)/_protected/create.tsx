@@ -1,4 +1,5 @@
 import type { RefObject } from 'react'
+import { COLOR_OPTIONS, LABEL_OPTIONS } from '@conar/shared/constants'
 import { databaseLabels, DatabaseType } from '@conar/shared/enums/database-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { getProtocols } from '@conar/shared/utils/connections'
@@ -14,6 +15,7 @@ import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { ToggleGroup, ToggleGroupItem } from '@conar/ui/components/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { cn } from '@conar/ui/lib/utils'
 import { faker } from '@faker-js/faker'
 import { RiArrowLeftSLine, RiLoopLeftLine } from '@remixicon/react'
 import { useForm, useStore } from '@tanstack/react-form'
@@ -28,7 +30,6 @@ import { ConnectionDetails } from '~/components/connection-details'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
 import { DatabaseIcon, databasesCollection, prefetchDatabaseCore } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
-import { colorOptions, labelOptions } from './constant'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/create',
@@ -194,7 +195,7 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
                 onChange={e => setLabel(e.target.value)}
               />
               <ButtonGroup>
-                {labelOptions.map(option => (
+                {LABEL_OPTIONS.map(option => (
                   <Button
                     key={option}
                     variant={label === option ? 'default' : 'outline'}
@@ -224,14 +225,17 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
                     <span className="text-primary text-lg">×</span>
                   )}
                 </button>
-                {colorOptions.map(colorOption => (
+                {COLOR_OPTIONS.map(colorOption => (
                   <button
                     key={colorOption}
                     type="button"
-                    className={`w-7 h-7 rounded-full transition-all ${color === colorOption ? 'ring-2 ring-offset-2 ring-offset-background ring-primary' : ''}`}
+                    className={cn(
+                      'w-7 h-7 rounded-full transition-all bg-(--color)',
+                      color === colorOption && 'ring-2 ring-offset-2 ring-offset-background ring-primary',
+                    )}
                     style={{
-                      backgroundColor: colorOption,
-                    }}
+                      '--color': colorOption,
+                    } as React.CSSProperties}
                     onClick={() => setColor(colorOption)}
                   />
                 ))}
@@ -241,7 +245,6 @@ function StepSave({ type, name, connectionString, setName, onRandomName, saveInC
               </div>
             </div>
           </div>
-
           <div className="flex flex-col gap-2">
             <label className="text-sm flex items-center gap-2">
               <Checkbox
@@ -279,7 +282,14 @@ function CreateConnectionPage() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  function createDatabase(data: { connectionString: string, name: string, type: DatabaseType, saveInCloud: boolean, label?: string, color?: string }) {
+  function createConnection(data: {
+    connectionString: string
+    name: string
+    type: DatabaseType
+    saveInCloud: boolean
+    label?: string
+    color?: string
+  }) {
     const id = v7()
 
     const password = new SafeURL(data.connectionString.trim()).password
@@ -326,7 +336,7 @@ function CreateConnectionPage() {
       }),
     },
     onSubmit(e) {
-      createDatabase(e.value)
+      createConnection(e.value)
     },
   })
 
