@@ -1,4 +1,3 @@
-import type { DragEndEvent } from '@dnd-kit/core'
 import type { ComponentProps, RefObject } from 'react'
 import type { tabType } from '../../../-store'
 import type { databases } from '~/drizzle'
@@ -8,17 +7,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { cn } from '@conar/ui/lib/utils'
-import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
-import { restrictToHorizontalAxis } from '@dnd-kit/modifiers'
-import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
+import { motion, Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
 import { prefetchDatabaseTableCore } from '~/entities/database'
 import { getPageStoreState } from '../-store'
-import { addTab, databaseStore, moveTab, removeTab } from '../../../-store'
+import { addTab, databaseStore, removeTab, reorderTabs } from '../../../-store'
 
 const os = getOS(navigator.userAgent)
 
@@ -105,13 +101,6 @@ function SortableTab({
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const ref = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(ref, 'full')
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: item.id })
 
   const isActive = schemaParam === item.tab.schema && tableParam === item.tab.table
 
@@ -122,21 +111,14 @@ function SortableTab({
   }, [isActive, onFocus, isVisible])
 
   return (
-    <div
-      ref={(e) => {
-        setNodeRef(e)
-        ref.current = e
-      }}
-      style={{
-        transform: CSS.Translate.toString(transform),
-        transition,
-      }}
+    <Reorder.Item
+      value={item}
+      as="div"
+      ref={ref}
       className={cn(
         'bg-background aria-pressed:z-10 relative rounded-sm',
         item.tab.preview && 'italic',
       )}
-      {...attributes}
-      {...listeners}
     >
       <TabButton
         active={schemaParam === item.tab.schema && tableParam === item.tab.table}
@@ -157,9 +139,13 @@ function SortableTab({
         )}
         {item.tab.table}
       </TabButton>
-    </div>
+    </Reorder.Item>
   )
 }
+
+const MotionScrollViewport = motion.create(({ ref, ...props }: ComponentProps<typeof ScrollViewport> & { ref?: React.RefObject<HTMLDivElement | null> }) => (
+  <ScrollViewport {...props} ref={ref as RefObject<HTMLDivElement | null>} />
+))
 
 export function TablesTabs({
   database,
@@ -172,14 +158,6 @@ export function TablesTabs({
   const router = useRouter()
   const store = databaseStore(database.id)
   const tabs = useStore(store, state => state.tabs)
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-  )
 
   const addNewTab = useEffectEvent((schema: string, table: string) => {
     const tab = tabs.find(tab => tab.table === table && tab.schema === schema)
@@ -259,45 +237,45 @@ export function TablesTabs({
     ? tabs.every(tab => tab.schema === tabs[0]?.schema) && schemaParam === tabs[0]?.schema
     : true, [tabs, schemaParam])
 
-  function handleDragEnd({ active, over }: DragEndEvent) {
-    if (over && active.id !== over.id) {
-      moveTab(database.id, active.id, over.id)
-    }
-  }
-
   const tabItems = useMemo(() => tabs.map(tab => ({
     id: tab.table,
     tab,
   })), [tabs])
 
   return (
-    <DndContext modifiers={[restrictToHorizontalAxis]} sensors={sensors} onDragEnd={handleDragEnd}>
-      <SortableContext items={tabItems} strategy={horizontalListSortingStrategy}>
-        <ScrollArea>
-          <ScrollViewport
-            className={cn('flex p-1 gap-1', className)}
-          >
-            {tabItems.map(item => (
-              <SortableTab
-                key={item.id}
-                id={database.id}
-                item={item}
-                showSchema={!isOneSchema}
-                onClose={() => closeTab(item.tab.schema, item.tab.table)}
-                onDoubleClick={() => addTab(database.id, item.tab.schema, item.tab.table, false)}
-                onMouseOver={() => prefetchDatabaseTableCore({ database, schema: item.tab.schema, table: item.tab.table, query: getQueryOpts(item.tab.table) })}
-                onFocus={(ref) => {
-                  ref.current?.scrollIntoView({
-                    block: 'nearest',
-                    inline: 'nearest',
-                  })
-                }}
-              />
-            ))}
-          </ScrollViewport>
-          <ScrollBar orientation="horizontal" className="h-2" />
-        </ScrollArea>
-      </SortableContext>
-    </DndContext>
+    <ScrollArea>
+      <MotionScrollViewport
+        layoutScroll
+        className={cn('flex p-1 gap-1', className)}
+      >
+        <Reorder.Group
+          axis="x"
+          values={tabItems}
+          onReorder={(newItems) => {
+            reorderTabs(database.id, newItems.map(item => item.tab))
+          }}
+          className="flex gap-1"
+        >
+          {tabItems.map(item => (
+            <SortableTab
+              key={item.id}
+              id={database.id}
+              item={item}
+              showSchema={!isOneSchema}
+              onClose={() => closeTab(item.tab.schema, item.tab.table)}
+              onDoubleClick={() => addTab(database.id, item.tab.schema, item.tab.table, false)}
+              onMouseOver={() => prefetchDatabaseTableCore({ database, schema: item.tab.schema, table: item.tab.table, query: getQueryOpts(item.tab.table) })}
+              onFocus={(ref) => {
+                ref.current?.scrollIntoView({
+                  block: 'nearest',
+                  inline: 'nearest',
+                })
+              }}
+            />
+          ))}
+        </Reorder.Group>
+      </MotionScrollViewport>
+      <ScrollBar orientation="horizontal" className="h-2" />
+    </ScrollArea>
   )
 }
