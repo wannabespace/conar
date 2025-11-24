@@ -1,6 +1,7 @@
 import type { ComponentRef } from 'react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
+import { HighlightText } from '@conar/ui/components/custom/hightlight'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Separator } from '@conar/ui/components/separator'
@@ -72,19 +73,7 @@ function TableItem({ schema, table, isPinned = false, search, onRename, onDrop }
         )}
       />
       <span className="truncate">
-        {search
-          ? (
-              <span
-                // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
-                dangerouslySetInnerHTML={{
-                  __html: table.replace(
-                    new RegExp(search, 'gi'),
-                    match => `<mark class="text-white bg-primary/50">${match}</mark>`,
-                  ),
-                }}
-              />
-            )
-          : table}
+        <HighlightText text={table} match={search} />
       </span>
       <Button
         variant="ghost"

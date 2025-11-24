@@ -1,6 +1,6 @@
 import { useNetwork } from '@conar/ui/hookas/use-network'
 import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { useEffect, useEffectEvent } from 'react'
 import { useChatsMessagesSync, useChatsSync } from '~/entities/chat/sync'
 import { useDatabasesSync } from '~/entities/database'
 import { useQueriesSync } from '~/entities/query/sync'
@@ -21,15 +21,22 @@ function ProtectedLayout() {
   const { sync: syncChats } = useChatsSync()
   const { sync: syncChatsMessages } = useChatsMessagesSync()
 
-  useEffect(() => {
-    if (!data?.user || !online)
-      return
-
+  const sync = useEffectEvent(() => {
     syncDatabases()
     syncChats()
     syncChatsMessages()
     syncQueries()
-  }, [data?.user, online, syncDatabases, syncQueries, syncChats, syncChatsMessages])
+  })
+
+  const hasUser = !!data?.user
+
+  useEffect(() => {
+    if (!hasUser || !online) {
+      return
+    }
+
+    sync()
+  }, [hasUser, online])
 
   useEffect(() => {
     const handler = (path: string) => {

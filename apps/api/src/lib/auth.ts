@@ -1,10 +1,12 @@
 import type { BetterAuthPlugin, User } from 'better-auth'
 import { PORTS } from '@conar/shared/constants'
+import { type } from 'arktype'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { anonymous, bearer, createAuthEndpoint, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { consola } from 'consola'
+import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
 import { sendEmail } from '~/lib/email'
@@ -63,30 +65,13 @@ function noSetCookiePlugin() {
   } satisfies BetterAuthPlugin
 }
 
-export function skipStateMismatch(): BetterAuthPlugin {
-  return {
-    id: 'skip-state-mismatch',
-    init(ctx) {
-      return {
-        context: {
-          ...ctx,
-          oauthConfig: {
-            skipStateCookieCheck: true,
-            ...ctx?.oauthConfig,
-          },
-        },
-      }
-    },
-  }
-}
-
 export const auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
   basePath: '/auth',
   plugins: [
-    skipStateMismatch(),
+    oldChangeEmail(),
     bearer(),
     twoFactor(),
     organization({
@@ -120,9 +105,14 @@ export const auth = betterAuth({
     additionalFields: {
       secret: {
         type: 'string',
+        returned: false,
         input: false,
+        defaultValue: () => nanoid(),
       },
     },
+  },
+  account: {
+    skipStateCookieCheck: true,
   },
   databaseHooks: {
     user: {
@@ -142,8 +132,11 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix: 'conar',
     database: {
-      generateId: false,
+      generateId: 'uuid',
     },
+  },
+  experimental: {
+    joins: true,
   },
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -187,3 +180,26 @@ export const auth = betterAuth({
     },
   },
 })
+
+// Legacy endpoint for changing email
+function oldChangeEmail(): BetterAuthPlugin {
+  return {
+    id: 'old-change-email',
+    endpoints: {
+      forgetPassword: createAuthEndpoint(
+        'forget-password',
+        {
+          method: 'POST',
+          operationId: 'forgetPassword',
+          body: type({
+            email: 'string.email',
+            redirectTo: 'string?',
+          }),
+        },
+        (ctx) => {
+          return auth.api.requestPasswordReset(ctx)
+        },
+      ),
+    },
+  }
+};

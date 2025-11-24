@@ -35,7 +35,7 @@ function ForgotPasswordPage() {
 
   const { mutate: sendEmail, status } = useMutation({
     mutationFn: async (values: typeof schema.infer) => {
-      const { error } = await authClient.forgetPassword({
+      const { error } = await authClient.requestPasswordReset({
         email: values.email,
         redirectTo: `${import.meta.env.VITE_PUBLIC_WEB_URL}/reset-password`,
       })

@@ -32,7 +32,7 @@ export function Hero({ className }: { className?: string }) {
           >
             <FlipWords
               words={words}
-              duration={1000}
+              duration={2000}
             />
           </motion.span>
           <br />
