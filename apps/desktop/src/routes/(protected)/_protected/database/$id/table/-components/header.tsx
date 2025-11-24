@@ -45,7 +45,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
                     value={total}
                     style={{
                       '--number-flow-mask-height': '0px',
-                    } as React.CSSProperties}
+                    }}
                   />
                 )
               : <span className="animate-pulse">...</span>}

@@ -18,3 +18,16 @@ export const PORTS = {
     DESKTOP: 4002,
   },
 } as const
+
+export const LABEL_OPTIONS = ['Dev', 'Prod', 'Staging']
+
+export const COLOR_OPTIONS = [
+  '#ef4444',
+  '#f97316',
+  '#f59e0b',
+  '#16a34a',
+  '#06b6d4',
+  '#2563eb',
+  '#9333ea',
+  '#db2777',
+]

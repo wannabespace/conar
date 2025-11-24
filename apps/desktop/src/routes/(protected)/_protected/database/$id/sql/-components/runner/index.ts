@@ -1,8 +1,7 @@
 import type { databases } from '~/drizzle'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { executeSql, hasDangerousSqlKeywords } from '~/entities/database'
-import { databaseStore } from '../../../../-store'
+import { databaseStore, executeSql, hasDangerousSqlKeywords } from '~/entities/database'
 
 export * from './runner'
 

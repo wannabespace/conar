@@ -15,15 +15,13 @@ function Toaster() {
         style: {
           '--z-index': '100',
           'zIndex': 'calc(var(--z-index) - var(--index))',
-        } as React.CSSProperties,
+        },
       }}
-      style={
-        {
-          '--normal-bg': 'var(--popover)',
-          '--normal-text': 'var(--popover-foreground)',
-          '--normal-border': 'var(--border)',
-        } as React.CSSProperties
-      }
+      style={{
+        '--normal-bg': 'var(--popover)',
+        '--normal-text': 'var(--popover-foreground)',
+        '--normal-border': 'var(--border)',
+      }}
     />
   )
 }

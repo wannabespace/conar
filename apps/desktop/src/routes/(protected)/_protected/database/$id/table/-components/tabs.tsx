@@ -1,6 +1,6 @@
 import type { ComponentProps, RefObject } from 'react'
-import type { tabType } from '../../../-store'
 import type { databases } from '~/drizzle'
+import type { tabType } from '~/entities/database'
 import { getOS } from '@conar/shared/utils/os'
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -12,9 +12,8 @@ import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { motion, Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
-import { prefetchDatabaseTableCore } from '~/entities/database'
+import { addTab, databaseStore, prefetchDatabaseTableCore, removeTab, reorderTabs } from '~/entities/database'
 import { getPageStoreState } from '../-store'
-import { addTab, databaseStore, removeTab, reorderTabs } from '../../../-store'
 
 const os = getOS(navigator.userAgent)
 
@@ -144,7 +143,7 @@ function SortableTab({
 }
 
 const MotionScrollViewport = motion.create(({ ref, ...props }: ComponentProps<typeof ScrollViewport> & { ref?: React.RefObject<HTMLDivElement | null> }) => (
-  <ScrollViewport {...props} ref={ref as RefObject<HTMLDivElement | null>} />
+  <ScrollViewport {...props} ref={ref} />
 ))
 
 export function TablesTabs({
