@@ -32,10 +32,10 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
     <Link
       className={cn(
         'relative flex items-center justify-between gap-4',
-        'rounded-lg p-5 border overflow-hidden border-border/50 border-l-5 transition-all duration-100 group',
+        'rounded-lg p-5 bg-muted/30 border overflow-hidden border-border/50 border-l-5 transition-all duration-100 group',
         database.color
-          ? 'text-(--color) bg-(--color)/4 hover:border-(--color)/30 border-l-(--color)/20'
-          : 'bg-muted/30 hover:border-primary/40',
+          ? 'text-(--color) hover:border-(--color)/30 border-l-(--color)/20'
+          : ' hover:border-primary/40',
       )}
       style={database.color ? { '--color': database.color } : {}}
       {...params}
@@ -43,7 +43,7 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
       <div
         className={cn(
           'size-12 shrink-0 rounded-lg p-3',
-          database.color ? 'bg-(--color)/5' : 'bg-muted/70',
+          'bg-muted/70',
         )}
       >
         <DatabaseIcon
