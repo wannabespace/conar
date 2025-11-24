@@ -113,4 +113,20 @@ WHERE id = 1; SELECT * FROM posts;`)).toEqual([
       { startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1', 'SELECT * FROM posts'] },
     ])
   })
+
+  it('should handle CREATE FUNCTION/procedure queries with $$...$$ bodies', () => {
+    expect(
+      getEditorQueries(
+        `CREATE OR REPLACE FUNCTION limpar_sessoes_expiradas () RETURNS void AS $$ BEGIN DELETE FROM public.sessions WHERE "expires" < NOW() - INTERVAL '1 day'; END; $$ LANGUAGE plpgsql;`,
+      ),
+    ).toEqual([
+      {
+        startLineNumber: 1,
+        endLineNumber: 1,
+        queries: [
+          `CREATE OR REPLACE FUNCTION limpar_sessoes_expiradas () RETURNS void AS $$ BEGIN DELETE FROM public.sessions WHERE "expires" < NOW() - INTERVAL '1 day'; END; $$ LANGUAGE plpgsql`,
+        ],
+      },
+    ])
+  })
 })
