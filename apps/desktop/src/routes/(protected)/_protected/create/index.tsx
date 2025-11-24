@@ -5,6 +5,7 @@ import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { RiArrowLeftSLine } from '@remixicon/react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
@@ -37,15 +38,6 @@ const createConnectionType = type({
   label: 'string | null',
   color: 'string | null',
 })
-
-const defaultValues: typeof createConnectionType.infer = {
-  connectionString: '',
-  name: generateRandomName(),
-  type: null,
-  saveInCloud: true,
-  label: null,
-  color: null,
-}
 
 function CreateConnectionPage() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
@@ -87,6 +79,15 @@ function CreateConnectionPage() {
     router.navigate({ to: '/database/$id/table', params: { id } })
   }
 
+  const defaultValues: typeof createConnectionType.infer = {
+    connectionString: '',
+    name: generateRandomName(),
+    type: null,
+    saveInCloud: true,
+    label: null,
+    color: null,
+  }
+
   const form = useForm({
     defaultValues,
     validators: {
@@ -125,7 +126,7 @@ function CreateConnectionPage() {
   const [typeValue, connectionString, name, saveInCloud, label, color] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud, values.label, values.color])
 
   return (
-    <div className="flex flex-col justify-center">
+    <ScrollArea className="py-[10vh]">
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -251,6 +252,6 @@ function CreateConnectionPage() {
           </StepperContent>
         </Stepper>
       </form>
-    </div>
+    </ScrollArea>
   )
 }

@@ -72,7 +72,9 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
 
           <div>
             <Label htmlFor={labelId} className="mb-2">
-              Label (optional)
+              Label
+              {' '}
+              <span className="text-xs text-muted-foreground/50">(optional)</span>
             </Label>
             <div className="flex flex-col gap-2">
               <Input
@@ -99,31 +101,24 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
 
           <div>
             <Label className="mb-2">
-              Connection color (optional)
+              Color
+              {' '}
+              <span className="text-xs text-muted-foreground/50">(optional)</span>
             </Label>
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap gap-2 mt-1">
-                <button
-                  type="button"
-                  className={`w-7 h-7 rounded-full border ${!color ? 'bg-muted border-primary' : 'border-border'} flex items-center justify-center transition-all`}
-                  onClick={() => setColor('')}
-                >
-                  {!color && (
-                    <span className="text-primary text-lg">×</span>
-                  )}
-                </button>
                 {COLOR_OPTIONS.map(colorOption => (
                   <button
                     key={colorOption}
                     type="button"
                     className={cn(
-                      'w-7 h-7 rounded-full transition-all bg-(--color)',
-                      color === colorOption && 'ring-2 ring-offset-2 ring-offset-background ring-primary',
+                      'size-6 rounded-full transition-all bg-(--color) cursor-pointer',
+                      color === colorOption && 'ring-2 ring-offset-2 ring-offset-background ring-(--color)',
                     )}
                     style={{
                       '--color': colorOption,
                     }}
-                    onClick={() => setColor(colorOption)}
+                    onClick={() => setColor(color === colorOption ? null : colorOption)}
                   />
                 ))}
               </div>
