@@ -295,7 +295,7 @@ export function TablesTabs({
               />
             ))}
           </ScrollViewport>
-          <ScrollBar orientation="horizontal" />
+          <ScrollBar orientation="horizontal" className="h-2" />
         </ScrollArea>
       </SortableContext>
     </DndContext>

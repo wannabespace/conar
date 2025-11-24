@@ -4,7 +4,6 @@ import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { xai } from '@ai-sdk/xai'
 import { PORTS } from '@conar/shared/constants'
-import { trpcServer } from '@hono/trpc-server'
 import { onError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { generateText } from 'ai'
@@ -15,10 +14,8 @@ import { logger } from 'hono/logger'
 import { db, users } from './drizzle'
 import { env, nodeEnv } from './env'
 import { auth } from './lib/auth'
+import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
-import { ai } from './routers/__ai__deprecated'
-import { createContext } from './trpc/context'
-import { trpcRouter } from './trpc/routers'
 
 const app = new Hono()
 
@@ -36,17 +33,7 @@ app.get('/', (c) => {
   return c.redirect(env.WEB_URL)
 })
 
-app.on(['GET', 'POST'], '/auth/*', (c) => {
-  return auth.handler(c.req.raw)
-})
-
-app.use(
-  '/trpc/*',
-  trpcServer({
-    router: trpcRouter,
-    createContext: (_, c) => createContext(c),
-  }),
-)
+app.on(['GET', 'POST'], '/auth/*', c => auth.handler(c.req.raw))
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -72,8 +59,6 @@ app.use('/rpc/*', async (c, next) => {
 
   await next()
 })
-
-app.route('/ai', ai)
 
 function createAnswer(type: 'error' | 'ok', service: string, message: string) {
   return {
@@ -156,8 +141,10 @@ app.get('/health', async (c) => {
       .catch(e => createAnswer('error', 'xai', e instanceof Error ? e.message : 'XAI connection failed')),
   ])
 
-  if (promises.some(promise => promise.status === 'error')) {
-    return c.json(promises.find(promise => promise.status === 'error'), 500)
+  const error = promises.find(promise => promise.status === 'error')
+
+  if (error) {
+    return c.json(error, 500)
   }
 
   return c.json({

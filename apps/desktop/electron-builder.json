@@ -7,10 +7,11 @@
     "output": "release/${version}"
   },
   "publish": {
-    "private": false,
     "provider": "github",
+    "private": false,
     "owner": "wannabespace",
-    "repo": "conar"
+    "repo": "conar",
+    "publisherName": ["Wannabe Space, LLC"]
   },
   "protocols": [
     {

@@ -1,6 +1,6 @@
 {
-  "id": "9568ba72-1013-4017-9b9d-1228d9e0a1af",
-  "prevId": "288668fe-dd89-409f-abdf-d3b880d9cbe5",
+  "id": "239e10ef-ff63-40dd-ae46-63b73243763a",
+  "prevId": "9568ba72-1013-4017-9b9d-1228d9e0a1af",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -90,7 +90,6 @@
         }
       },
       "indexes": {
-
         "accounts_userId_idx": {
           "name": "accounts_userId_idx",
           "columns": [
@@ -1068,6 +1067,12 @@
         },
         "label": {
           "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "color": {
+          "name": "color",
           "type": "text",
           "primaryKey": false,
           "notNull": false

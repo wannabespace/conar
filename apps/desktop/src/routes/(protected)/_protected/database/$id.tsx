@@ -62,7 +62,7 @@ function DatabasePage() {
   }
 
   return (
-    <div className="min-h-[inherit] h-screen flex bg-gray-100 dark:bg-neutral-950/60">
+    <div className="flex bg-gray-100 dark:bg-neutral-950/60">
       <DatabaseSidebar className="w-16" />
       <div className="h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))] m-2 ml-0 flex flex-col">
         <ResizablePanelGroup

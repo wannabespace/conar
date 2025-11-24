@@ -87,15 +87,17 @@ export function ThemeObserver({
   )
 }
 
+function setTheme(newTheme: Theme) {
+  localStorage.setItem(themeStore.state.storageKey, newTheme)
+  themeStore.setState(state => ({ ...state, theme: newTheme } satisfies typeof state))
+}
+
 export function useTheme() {
   const store = useStore(themeStore)
 
   return {
     theme: store.theme,
     resolvedTheme: store.resolvedTheme,
-    setTheme: (newTheme: Theme) => {
-      localStorage.setItem(store.storageKey, newTheme)
-      themeStore.setState(state => ({ ...state, theme: newTheme } satisfies typeof state))
-    },
+    setTheme,
   }
 }
