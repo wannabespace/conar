@@ -3,9 +3,11 @@ import { Button } from '@conar/ui/components/button'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
+import { RiCloseLine } from '@remixicon/react'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { databasesCollection } from '~/entities/database'
+import { labelOptions, colorOptions as predefinedColors } from '../constant'
 
 interface RenameConnectionDialogProps {
   ref?: React.RefObject<{
@@ -18,14 +20,14 @@ export function RenameConnectionDialog({ ref }: RenameConnectionDialogProps) {
   const [database, setDatabase] = useState<typeof databases.$inferSelect | null>(null)
   const [newName, setNewName] = useState('')
   const [newLabel, setNewLabel] = useState('')
-
-  const labelOptions = ['Dev', 'Prod', 'Staging']
+  const [newColor, setNewColor] = useState('')
 
   useImperativeHandle(ref, () => ({
     rename: (db: typeof databases.$inferSelect) => {
       setDatabase(db)
       setNewName(db.name)
       setNewLabel(db.label || '')
+      setNewColor(db.color || '')
       setOpen(true)
     },
   }), [])
@@ -38,12 +40,13 @@ export function RenameConnectionDialog({ ref }: RenameConnectionDialogProps) {
     databasesCollection.update(database.id, (draft) => {
       draft.name = newName.trim()
       draft.label = newLabel.trim() || null
+      draft.color = newColor.trim() || null
     })
     toast.success(`Connection renamed to "${newName.trim()}"`)
     setOpen(false)
   }
 
-  const canConfirm = (newName.trim() !== '' && newName.trim() !== database?.name) || (newLabel.trim() !== (database?.label || ''))
+  const canConfirm = (newName.trim() !== '' && newName.trim() !== database?.name) || (newLabel.trim() !== (database?.label || '')) || (newColor.trim() !== (database?.color || ''))
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -97,6 +100,38 @@ export function RenameConnectionDialog({ ref }: RenameConnectionDialogProps) {
               </div>
               <div className="text-xs text-muted-foreground/70 mt-1">
                 Labels help distinguish between different environments (dev, prod, staging, etc.)
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="font-normal">
+                Connection color (optional)
+              </Label>
+              <div className="flex flex-wrap gap-2 mt-1">
+                <button
+                  type="button"
+                  className={`w-6 h-6 rounded-full border ${!newColor ? 'bg-muted border-primary' : 'border-border'}`}
+                  onClick={() => setNewColor('')}
+                >
+                  {!newColor && (
+                    <RiCloseLine className="size-4 text-muted-foreground" />
+                  )}
+                </button>
+                {predefinedColors.map(color => (
+                  <button
+                    key={color}
+                    type="button"
+                    className="w-6 h-6 rounded-full transition-all"
+                    style={{
+                      backgroundColor: color,
+                      boxShadow: newColor === color ? `0 0 0 2px white, 0 0 0 4px ${color}` : 'none',
+                    }}
+                    onClick={() => setNewColor(color)}
+                  />
+                ))}
+              </div>
+              <div className="text-xs text-muted-foreground/70 mt-1">
+                Colors help visually distinguish between different connections
               </div>
             </div>
           </div>
