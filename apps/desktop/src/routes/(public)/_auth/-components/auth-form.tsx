@@ -207,7 +207,7 @@ export function AuthForm({ type }: { type: Type }) {
 
       if (error || !(data && data.token)) {
         if (data && !data.token) {
-          toast.error('In some reason, we were not able to sign you in. Please try again later.')
+          toast.error('For some reason, we were not able to sign you in. Please try again later.')
           return
         }
 
@@ -242,13 +242,13 @@ export function AuthForm({ type }: { type: Type }) {
         </span>
       </div>
       <form
-        className="space-y-4"
+        className="space-y-3"
         onSubmit={(e) => {
           e.preventDefault()
           form.handleSubmit()
         }}
       >
-        <FieldGroup>
+        <FieldGroup className="gap-4">
           <form.AppField name="email">
             {field => (
               <field.Input
@@ -280,25 +280,25 @@ export function AuthForm({ type }: { type: Type }) {
 
           {type === 'sign-in'
             ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Password</span>
-                    <Button variant="link" size="xs" className="text-muted-foreground" asChild>
-                      <Link to="/forgot-password">
-                        Forgot password?
-                      </Link>
-                    </Button>
-                  </div>
-                  <form.AppField name="password">
-                    {field => (
+                <form.AppField name="password">
+                  {field => (
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Password</span>
+                        <Button variant="link" size="xs" className="text-muted-foreground" asChild>
+                          <Link to="/forgot-password">
+                            Forgot password?
+                          </Link>
+                        </Button>
+                      </div>
                       <field.Password
                         showPassword={showPassword}
                         onToggle={() => setShowPassword(!showPassword)}
                         autoComplete="password"
                       />
-                    )}
-                  </form.AppField>
-                </div>
+                    </div>
+                  )}
+                </form.AppField>
               )
             : (
                 <form.AppField name="password">
