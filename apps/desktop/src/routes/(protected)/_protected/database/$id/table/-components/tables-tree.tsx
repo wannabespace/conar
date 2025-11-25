@@ -269,14 +269,19 @@ export function TablesTree({ className, search }: { className?: string, search?:
                           </span>
                         </AccordionTrigger>
                         <AccordionContent className="pb-0">
-                          <AnimatePresence>
+                          <AnimatePresence mode="popLayout">
                             {schema.pinnedTables.map(table => (
                               <motion.div
-                                key={table}
+                                key={`${schema.name}:${table}`}
+                                layout
                                 initial={search ? { opacity: 0, height: 0 } : false}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.2 }}
+                                transition={{
+                                  layout: { duration: 0.3, ease: 'easeInOut' },
+                                  opacity: { duration: 0.2 },
+                                  height: { duration: 0.2 },
+                                }}
                               >
                                 <TableItem
                                   schema={schema.name}
@@ -293,11 +298,16 @@ export function TablesTree({ className, search }: { className?: string, search?:
                             )}
                             {schema.unpinnedTables.map(table => (
                               <motion.div
-                                key={table}
+                                key={`${schema.name}:${table}`}
+                                layout
                                 initial={search ? { opacity: 0, height: 0 } : false}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.2 }}
+                                transition={{
+                                  layout: { duration: 0.3, ease: 'easeInOut' },
+                                  opacity: { duration: 0.2 },
+                                  height: { duration: 0.2 },
+                                }}
                               >
                                 <TableItem
                                   schema={schema.name}
