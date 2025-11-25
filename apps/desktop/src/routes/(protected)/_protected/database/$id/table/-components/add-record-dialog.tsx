@@ -45,7 +45,18 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
     if (!type)
       return value
 
-    return typeof value === 'string' && type.endsWith('[]') ? JSON.parse(value) : value
+    if (typeof value === 'string' && type.endsWith('[]')) {
+      try {
+        return JSON.parse(value)
+      }
+      catch (error) {
+        toast.error('Invalid array input: Please enter a valid JSON array.')
+        console.error('Invalid array input:', error)
+        return value
+      }
+    }
+
+    return value
   }
 
   const getPrimaryKeyInfo = async (db: typeof databases.$inferSelect, schema: string, tableName: string): Promise<PrimaryKeyInfo[]> => {
@@ -105,7 +116,6 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
         const tableColumns = await tableColumnsQuery.run(db, { schema: sch, table: tbl })
         console.log('Table columns:', tableColumns)
 
-        // Add isPrimary property to each column
         const columnsWithPrimary = tableColumns.map(col => ({
           ...col,
           defaultValue: col.default_value,
@@ -122,6 +132,9 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
         console.log('Primary key info before forEach:', JSON.stringify(pkInfo))
 
         columnsWithPrimary.forEach((col) => {
+          if (col.type === 'boolean') {
+            initialValues[col.id] = false
+          }
           let isPrimary = pkInfo.some((pk) => {
             console.log(`Comparing pk.column_name=${pk.column_name} with col.id=${col.id}`)
             return pk.column_name === col.id
@@ -155,26 +168,35 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
 
           console.log(`Column ${col.id}: isPrimary=${isPrimary}, type=${col.type}, defaultVal=${defaultVal}, hasAutoDefault=${hasAutoDefault}`)
 
-          if (isPrimary && !hasAutoDefault) {
-            if (col.type === 'uuid') {
+          if (isPrimary) {
+            // For integer/serial primary keys, always treat as auto-generated
+            if (col.type.includes('int') || col.type.includes('serial') || col.type.includes('number')) {
+              console.log(`Setting auto-generated for integer primary key ${col.id}`)
+              initialValues[col.id] = '(Auto-generated)'
+            }
+            // For UUID primary keys without auto-default, generate a UUID
+            else if (col.type === 'uuid' && !hasAutoDefault) {
               console.log(`Generating UUID for ${col.id}`)
               const newUuid = v7()
               console.log(`Generated UUID: ${newUuid}`)
               initialValues[col.id] = newUuid
             }
-            else if (col.type === 'cuid' || col.type === 'cuid2') {
+            // For CUID primary keys without auto-default, generate a UUID as placeholder
+            else if ((col.type === 'cuid' || col.type === 'cuid2') && !hasAutoDefault) {
               console.log(`Generating UUID for CUID field ${col.id}`)
               initialValues[col.id] = v7()
             }
-            else if (col.type.includes('char') || col.type.includes('text') || col.type.includes('varchar')) {
+            // For string primary keys without auto-default, generate a UUID string
+            else if ((col.type.includes('char') || col.type.includes('text') || col.type.includes('varchar')) && !hasAutoDefault) {
               console.log(`Generating string ID for ${col.id}`)
               initialValues[col.id] = v7()
             }
-
-            else if (col.type.includes('int') || col.type.includes('serial') || col.type.includes('number')) {
-              console.log(`Skipping auto-increment field ${col.id}`)
+            // For primary keys with auto-default, mark as auto-generated
+            else if (hasAutoDefault) {
+              console.log(`Setting auto-generated for primary key ${col.id} with auto-default`)
               initialValues[col.id] = '(Auto-generated)'
             }
+            // For other primary key types without auto-default
             else {
               console.log(`Setting null for primary key ${col.id} of type ${col.type}`)
               initialValues[col.id] = null
@@ -212,10 +234,10 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
         }
       })
 
+      // boolean by default false
       columns.forEach((col) => {
         if (col.type === 'boolean' && (values[col.id] === undefined || values[col.id] === null)) {
-          // For required boolean fields, default to false rather than null
-          values[col.id] = !col.isNullable ? false : null
+          values[col.id] = false
         }
       })
 
@@ -291,9 +313,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
 
     // for boolean
     if (column.type === 'boolean') {
-      // For boolean fields, ensure they always have a defined value (true/false)
-      // Default to false for required fields
-      const boolValue = value === true ? true : (value === false ? false : (!column.isNullable ? false : null))
+      const boolValue = value === true
 
       return (
         <div className="flex items-center space-x-2">
@@ -323,13 +343,21 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
 
     if (value === '(Auto-generated)') {
       return (
-        <Input
-          id={`field-${column.id}`}
-          value={String(value)}
-          disabled
-          className="bg-muted/50 text-muted-foreground italic"
-          placeholder={`Enter ${column.type}`}
-        />
+        <div className="flex items-center space-x-2 w-full">
+          <Input
+            id={`field-${column.id}`}
+            value={String(value)}
+            disabled
+            className="bg-muted/30 text-muted-foreground italic border-dashed"
+            placeholder={`Enter ${column.type}`}
+          />
+          <div className="text-xs text-muted-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 inline mr-1">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+            </svg>
+            Auto
+          </div>
+        </div>
       )
     }
 
@@ -359,15 +387,19 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
 
         <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
           {columns.map(column => (
-            <div key={column.id} className="grid grid-cols-5 items-center gap-4">
-              <Label htmlFor={`field-${column.id}`} className="text-right col-span-1">
+            <div key={column.id} className="grid grid-cols-12 items-center gap-4">
+              <Label
+                htmlFor={`field-${column.id}`}
+                className="text-right col-span-3 truncate pr-2 text-sm"
+                title={column.id}
+              >
                 {column.id}
                 {!column.isNullable && <span className="text-red-500 ml-0.5">*</span>}
               </Label>
-              <div className="col-span-3">
+              <div className="col-span-7">
                 {renderInputField(column)}
               </div>
-              <div className="col-span-1">
+              <div className="col-span-2 flex justify-end">
                 {column.isNullable && (
                   <Button
                     variant={values[column.id] === null ? 'default' : 'outline'}
