@@ -64,14 +64,6 @@ function ResetPasswordPage() {
     },
 
     onSubmit: async ({ value }) => {
-      if (value.password !== value.confirmPassword) {
-        form.setFieldMeta('confirmPassword', prev => ({
-          ...prev,
-          errors: ['Passwords do not match'],
-        }))
-        return
-      }
-
       try {
         const { error, data } = await authClient.resetPassword({
           newPassword: value.password,
@@ -116,7 +108,7 @@ function ResetPasswordPage() {
           form.handleSubmit()
         }}
       >
-        <FieldGroup>
+        <FieldGroup className="gap-4">
           <form.AppField name="password">
             {field => (
               <field.Password
@@ -128,7 +120,15 @@ function ResetPasswordPage() {
             )}
           </form.AppField>
 
-          <form.AppField name="confirmPassword">
+          <form.AppField
+            name="confirmPassword"
+            validators={{
+              onSubmit: ({ value, fieldApi }) =>
+                value !== fieldApi.form.getFieldValue('password')
+                  ? { message: 'Passwords do not match' }
+                  : undefined,
+            }}
+          >
             {field => (
               <field.Password
                 label="Confirm Password"
