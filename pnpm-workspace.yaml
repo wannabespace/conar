@@ -2,6 +2,9 @@ packages:
   - packages/*
   - apps/*
 
+patchedDependencies:
+  app-builder-lib: patches/app-builder-lib.patch
+
 catalog:
   '@number-flow/react': ^0.5.10
   '@orpc/client': ^1.11.3
