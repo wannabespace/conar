@@ -39,14 +39,6 @@ jobs:
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
         run: pnpm run build:desktop:vite
 
-      # - name: Upload Sourcemaps
-      #   env:
-      #     POSTHOG_CLI_ENV_ID: ${{ secrets.POSTHOG_CLI_ENV_ID }}
-      #     POSTHOG_CLI_TOKEN: ${{ secrets.POSTHOG_CLI_TOKEN }}
-      #   run: |
-      #     pnpm exec posthog-cli --host https://eu.posthog.com sourcemap inject --directory ./apps/desktop/out/renderer
-      #     pnpm exec posthog-cli --host https://eu.posthog.com sourcemap upload --directory ./apps/desktop/out/renderer
-
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -98,10 +90,10 @@ jobs:
           VERSION: ${{ steps.package-version.outputs.version }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         run: cd apps/desktop && pnpm run build:electron
