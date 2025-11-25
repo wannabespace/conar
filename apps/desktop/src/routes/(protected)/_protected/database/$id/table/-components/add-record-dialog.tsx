@@ -334,7 +334,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
       return (
         <Input
           id={`field-${column.id}`}
-          value={value !== null && value !== undefined ? String(value) : ''}
+          value={value instanceof Date ? value.toISOString().slice(0, 16) : (value !== null && value !== undefined ? String(value) : '')}
           onChange={e => handleValueChange(column.id, e.target.value)}
           placeholder={column.type}
         />
