@@ -31,3 +31,15 @@ export const COLOR_OPTIONS = [
   '#9333ea',
   '#db2777',
 ]
+
+export const TIMESTAMP_FIELDS = [
+  'created_at',
+  'updated_at',
+  'createdAt',
+  'updatedAt',
+  'creation_date',
+  'update_date',
+  'creation_time',
+  'update_time',
+  'timestamp',
+] as const

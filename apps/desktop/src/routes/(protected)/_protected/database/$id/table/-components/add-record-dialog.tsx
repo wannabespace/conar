@@ -1,5 +1,6 @@
 import type { databases } from '~/drizzle'
 import type { Column } from '~/entities/database/utils/table'
+import { TIMESTAMP_FIELDS } from '@conar/shared/constants'
 import { Button } from '@conar/ui/components/button'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
@@ -8,19 +9,13 @@ import { Switch } from '@conar/ui/components/switch'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
-import { databaseRowsQuery, executeSql } from '~/entities/database'
+import { databaseRowsQuery } from '~/entities/database'
+import { insertRecordQuery, primaryKeysQuery, tableColumnsQuery } from '~/entities/database/sql/record'
 import { queryClient } from '~/main'
 
 interface ExtendedColumn extends Column {
   defaultValue?: string | null
   isPrimary?: boolean
-}
-
-interface DatabaseColumn {
-  id: string
-  type: string
-  is_nullable: boolean
-  default_value: string | null
 }
 
 interface PrimaryKeyInfo {
@@ -54,57 +49,41 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
   }
 
   const getPrimaryKeyInfo = async (db: typeof databases.$inferSelect, schema: string, tableName: string): Promise<PrimaryKeyInfo[]> => {
-    let query = ''
-    let params: unknown[] = []
-
-    if (db.type === 'postgres') {
-      query = `
-        SELECT 
-          kcu.column_name, 
-          c.column_default,
-          c.is_nullable,
-          c.data_type
-        FROM information_schema.table_constraints tc
-        JOIN information_schema.key_column_usage kcu
-          ON tc.constraint_name = kcu.constraint_name
-          AND tc.table_schema = kcu.table_schema
-        JOIN information_schema.columns c
-          ON c.column_name = kcu.column_name
-          AND c.table_name = kcu.table_name
-          AND c.table_schema = kcu.table_schema
-        WHERE tc.constraint_type = 'PRIMARY KEY'
-          AND tc.table_schema = $1
-          AND tc.table_name = $2
-      `
-      params = [schema, tableName]
-    }
-    else if (db.type === 'mysql') {
-      query = `
-        SELECT 
-          k.COLUMN_NAME as column_name, 
-          c.COLUMN_DEFAULT as column_default,
-          c.IS_NULLABLE as is_nullable,
-          c.DATA_TYPE as data_type
-        FROM information_schema.TABLE_CONSTRAINTS t
-        JOIN information_schema.KEY_COLUMN_USAGE k
-          USING(CONSTRAINT_NAME, TABLE_SCHEMA, TABLE_NAME)
-        JOIN information_schema.COLUMNS c
-          ON c.COLUMN_NAME = k.COLUMN_NAME
-          AND c.TABLE_NAME = k.TABLE_NAME
-          AND c.TABLE_SCHEMA = k.TABLE_SCHEMA
-        WHERE t.CONSTRAINT_TYPE = 'PRIMARY KEY'
-          AND t.TABLE_SCHEMA = ?
-          AND t.TABLE_NAME = ?
-      `
-      params = [schema, tableName]
-    }
-
-    if (!query)
-      return []
-
     try {
-      const result = await executeSql(db, query, params)
-      return result.rows as PrimaryKeyInfo[]
+      const pkInfo = await primaryKeysQuery.run(db, { schema, table: tableName })
+      console.log('Primary key info from query:', pkInfo)
+
+      if (pkInfo && pkInfo.length > 0) {
+        const firstPk = pkInfo[0]
+
+        // if we need to normalize the data structure
+        if (firstPk && typeof firstPk === 'object') {
+          // If it has 'id' property but not 'column_name', it's in normalized format
+          if ('id' in firstPk && !('column_name' in firstPk)) {
+            // Convert to our expected format
+            return pkInfo.map((pk) => {
+              // Safe type casting with runtime checks
+              const id = 'id' in pk ? String(pk.id) : ''
+              const defaultValue = 'defaultValue' in pk ? pk.defaultValue as string | null : null
+              const isNullable = 'isNullable' in pk ? Boolean(pk.isNullable) : false
+              const type = 'type' in pk ? String(pk.type) : ''
+
+              return {
+                column_name: id,
+                column_default: defaultValue,
+                is_nullable: isNullable ? 'YES' : 'NO',
+                data_type: type,
+              }
+            })
+          }
+        }
+
+        // If it's already in the right format, return it
+        return pkInfo
+      }
+
+      console.log('No primary keys found with primaryKeysQuery')
+      return []
     }
     catch (error) {
       console.error('Error getting primary keys:', error)
@@ -123,67 +102,89 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
         const pkInfo = await getPrimaryKeyInfo(db, sch, tbl)
         setPrimaryKeys(pkInfo)
 
-        const columnsResult = await executeSql(
-          db,
-          `SELECT 
-            column_name as id, 
-            data_type as type,
-            is_nullable = 'YES' as is_nullable,
-            column_default as default_value
-          FROM information_schema.columns 
-          WHERE table_schema = $1 AND table_name = $2
-          ORDER BY ordinal_position`,
-          [sch, tbl],
-        )
+        const tableColumns = await tableColumnsQuery.run(db, { schema: sch, table: tbl })
+        console.log('Table columns:', tableColumns)
 
-        const tableColumns = columnsResult.rows.map((col: unknown) => {
-          const typedCol = col as DatabaseColumn
-          return {
-            id: typedCol.id,
-            type: typedCol.type,
-            isNullable: typedCol.is_nullable,
-            defaultValue: typedCol.default_value,
-            isEditable: true,
-            isPrimary: pkInfo.some(pk => pk.column_name === typedCol.id),
-          }
-        })
+        // Add isPrimary property to each column
+        const columnsWithPrimary = tableColumns.map(col => ({
+          ...col,
+          defaultValue: col.default_value,
+          isEditable: true,
+          isPrimary: pkInfo.some(pk => pk.column_name === col.id),
+        }))
 
-        setColumns(tableColumns)
+        console.log('Columns with primary info:', columnsWithPrimary)
+
+        setColumns(columnsWithPrimary)
 
         const initialValues: Record<string, unknown> = {}
 
-        tableColumns.forEach((col) => {
-          const isPrimary = pkInfo.some(pk => pk.column_name === col.id)
-          const hasAutoDefault = col.defaultValue
-            && (col.defaultValue.includes('nextval') // PostgreSQL sequences
-              || col.defaultValue.includes('uuid_generate') // PostgreSQL UUID functions
-              || col.defaultValue.includes('auto_increment')) // MySQL auto increment
+        console.log('Primary key info before forEach:', JSON.stringify(pkInfo))
 
-          if (isPrimary && !hasAutoDefault) {
-            if (col.type === 'uuid') {
-              initialValues[col.id] = v7()
+        columnsWithPrimary.forEach((col) => {
+          let isPrimary = pkInfo.some((pk) => {
+            console.log(`Comparing pk.column_name=${pk.column_name} with col.id=${col.id}`)
+            return pk.column_name === col.id
+          })
+
+          if (pkInfo.length === 0) {
+            if (col.id === 'id' || col.id === '_id'
+              || (col.id.endsWith('_id') && col.id.startsWith(table.toLowerCase()))
+              || (col.id.endsWith('Id') && col.id.startsWith(table.toLowerCase()))) {
+              console.log(`Potential primary key detected: ${col.id}`)
+              isPrimary = true
             }
-            else if (col.type.includes('int') || col.type.includes('serial')) {
-              // database handle
-            }
-            else {
-              initialValues[col.id] = null
+
+            if ((col.type === 'uuid' || col.type === 'cuid'
+              || col.type.includes('int') || col.type.includes('serial'))
+            && (col.id === 'id' || col.id.endsWith('Id') || col.id.endsWith('_id'))) {
+              console.log(`Type-based primary key detected: ${col.id} (${col.type})`)
+              isPrimary = true
             }
           }
 
+          // Check both defaultValue and default_value for auto-generated values
+          const defaultVal = col.defaultValue || col.default_value
+          const hasAutoDefault = defaultVal
+            && (defaultVal?.includes('nextval') // PostgreSQL sequences
+              || defaultVal?.includes('uuid_generate') // PostgreSQL UUID functions
+              || defaultVal?.includes('gen_random_uuid') // Another PostgreSQL UUID function
+              || defaultVal?.includes('auto_increment') // MySQL auto increment
+              || defaultVal?.includes('GENERATED') // SQL standard for generated columns
+              || defaultVal?.includes('IDENTITY')) // SQL Server identity columns
+
+          console.log(`Column ${col.id}: isPrimary=${isPrimary}, type=${col.type}, defaultVal=${defaultVal}, hasAutoDefault=${hasAutoDefault}`)
+
+          if (isPrimary && !hasAutoDefault) {
+            if (col.type === 'uuid') {
+              console.log(`Generating UUID for ${col.id}`)
+              const newUuid = v7()
+              console.log(`Generated UUID: ${newUuid}`)
+              initialValues[col.id] = newUuid
+            }
+            else if (col.type === 'cuid' || col.type === 'cuid2') {
+              console.log(`Generating UUID for CUID field ${col.id}`)
+              initialValues[col.id] = v7()
+            }
+            else if (col.type.includes('char') || col.type.includes('text') || col.type.includes('varchar')) {
+              console.log(`Generating string ID for ${col.id}`)
+              initialValues[col.id] = v7()
+            }
+
+            else if (col.type.includes('int') || col.type.includes('serial') || col.type.includes('number')) {
+              console.log(`Skipping auto-increment field ${col.id}`)
+              initialValues[col.id] = '(Auto-generated)'
+            }
+            else {
+              console.log(`Setting null for primary key ${col.id} of type ${col.type}`)
+              initialValues[col.id] = null
+            }
+          }
           else if (!hasAutoDefault) {
             initialValues[col.id] = null
           }
 
-          if (col.id === 'created_at'
-            || col.id === 'updated_at'
-            || col.id === 'createdAt'
-            || col.id === 'updatedAt'
-            || col.id === 'creation_date'
-            || col.id === 'update_date'
-            || col.id === 'creation_time'
-            || col.id === 'update_time'
-            || col.id === 'timestamp') {
+          if (TIMESTAMP_FIELDS.includes(col.id as (typeof TIMESTAMP_FIELDS)[number])) {
             initialValues[col.id] = new Date()
           }
         })
@@ -205,19 +206,13 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
     setIsSubmitting(true)
 
     try {
-      // assuming default values
-      const timestampFields = ['created_at', 'updated_at', 'createdAt', 'updatedAt', 'creation_date', 'update_date', 'creation_time', 'update_time', 'timestamp']
-
-      // Add any missing timestamp fields with current date
-      timestampFields.forEach((field) => {
+      TIMESTAMP_FIELDS.forEach((field) => {
         if (columns.some(col => col.id === field) && values[field] === undefined) {
           values[field] = new Date()
         }
       })
 
-      // Make sure boolean fields are properly handled (including false values)
       columns.forEach((col) => {
-        // If it's a boolean field and not yet set, make sure it has a proper boolean value
         if (col.type === 'boolean' && (values[col.id] === undefined || values[col.id] === null)) {
           // For required boolean fields, default to false rather than null
           values[col.id] = !col.isNullable ? false : null
@@ -228,21 +223,18 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
       const columnNames = Object.keys(values).filter((col) => {
         const column = columns.find(c => c.id === col)
 
-        if (timestampFields.includes(col)) {
+        if (TIMESTAMP_FIELDS.includes(col as (typeof TIMESTAMP_FIELDS)[number])) {
           return true
         }
 
-        // Always include boolean fields - both true and false values
         if (column && column.type === 'boolean') {
           return true
         }
 
-        // Include any field that has a defined value
         if (values[col] !== undefined) {
           return true
         }
 
-        // Include required fields without defaults
         return column && !column.isNullable && !column.defaultValue
       })
 
@@ -252,44 +244,18 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
         return
       }
 
-      let placeholders: string
-      if (database.type === 'mysql') {
-        placeholders = columnNames.map(() => '?').join(', ')
-      }
-      else {
-        placeholders = columnNames.map((_, i) => `$${i + 1}`).join(', ')
-      }
+      const filteredColumnNames = columnNames.filter(col => values[col] !== '(Auto-generated)')
 
-      const valueParams = columnNames.map(col =>
+      const valueParams = filteredColumnNames.map(col =>
         prepareValue(values[col], columns.find(c => c.id === col)?.type),
       )
 
-      //  appropriate identifier quoting based on database type
-      let columnIdentifiers: string
-      if (database.type === 'mysql') {
-        columnIdentifiers = columnNames.map(col => `\`${col}\``).join(', ')
-      }
-      else {
-        // PostgreSQL uses double quotes for identifiers
-        columnIdentifiers = columnNames.map(col => `"${col}"`).join(', ')
-      }
-
-      // Schema and table identifiers
-      let tableIdentifier: string
-      if (database.type === 'mysql') {
-        tableIdentifier = `\`${schema}\`.\`${table}\``
-      }
-      else {
-        tableIdentifier = `"${schema}"."${table}"`
-      }
-
-      const sql = `
-        INSERT INTO ${tableIdentifier} 
-        (${columnIdentifiers})
-        VALUES (${placeholders})
-      `
-
-      await executeSql(database, sql, valueParams)
+      await insertRecordQuery.run(database, {
+        schema,
+        table,
+        columns: filteredColumnNames,
+        values: valueParams,
+      })
 
       toast.success('Record added successfully')
 
@@ -351,6 +317,18 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
           value={value !== null && value !== undefined ? String(value) : ''}
           onChange={e => handleValueChange(column.id, e.target.value)}
           placeholder={column.type}
+        />
+      )
+    }
+
+    if (value === '(Auto-generated)') {
+      return (
+        <Input
+          id={`field-${column.id}`}
+          value={String(value)}
+          disabled
+          className="bg-muted/50 text-muted-foreground italic"
+          placeholder={`Enter ${column.type}`}
         />
       )
     }
