@@ -38,7 +38,13 @@
         "arch": ["x64"]
       }
     ],
-    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
+    "azureSignOptions": {
+      "publisherName": "Wannabe Space, LLC",
+      "endpoint": "https://eus.codesigning.azure.net/",
+      "codeSigningAccountName": "Conar",
+      "certificateProfileName": "Conar"
+    }
   },
   "nsis": {
     "oneClick": false,
