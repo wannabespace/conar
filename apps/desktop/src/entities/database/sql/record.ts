@@ -107,7 +107,7 @@ export const tableColumnsQuery = createQuery({
       .select([
         'COLUMN_NAME as id',
         'DATA_TYPE as type',
-        sql<boolean>`IS_NULLABLE = 'YES'`.as('is_nullable'),
+        sql<boolean>`CASE WHEN IS_NULLABLE = 'YES' THEN TRUE ELSE FALSE END`.as('is_nullable'),
         'COLUMN_DEFAULT as default_value',
       ])
       .where(eb => eb.and([
@@ -115,7 +115,13 @@ export const tableColumnsQuery = createQuery({
         eb('TABLE_NAME', '=', table),
       ]))
       .orderBy('ORDINAL_POSITION')
-      .execute(),
+      .execute()
+      .then((results) => {
+        return results.map(row => ({
+          ...row,
+          is_nullable: Boolean(row.is_nullable),
+        }))
+      }),
   }),
 })
 
