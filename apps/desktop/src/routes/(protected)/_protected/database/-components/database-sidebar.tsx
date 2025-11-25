@@ -164,9 +164,8 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
             <Link
               className={cn(
                 baseClasses(isActive),
-                'text-(--color)',
                 database.color && isActive
-                  ? 'bg-(--color)/10 hover:bg-(--color)/20 border-(--color)/20'
+                  ? 'text-(--color) bg-(--color)/10 hover:bg-(--color)/20 border-(--color)/20'
                   : '',
               )}
               style={database.color ? { '--color': database.color } : {}}
