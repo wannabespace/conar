@@ -18,6 +18,19 @@ import { Route } from '..'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 
+const MotionSeparator = motion.create(Separator)
+
+const treeVariants = {
+  show: { opacity: 1, height: 'auto' },
+  hide: { opacity: 0, height: 0 },
+}
+
+const treeTransition = {
+  layout: { duration: 0.2, ease: 'easeInOut' as const },
+  opacity: { duration: 0.1 },
+  height: { duration: 0.1 },
+}
+
 function Skeleton() {
   return (
     <div className="space-y-3 w-full">
@@ -274,14 +287,11 @@ export function TablesTree({ className, search }: { className?: string, search?:
                               <motion.div
                                 key={`${schema.name}:${table}`}
                                 layout
-                                initial={search ? { opacity: 0, height: 0 } : false}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{
-                                  layout: { duration: 0.3, ease: 'easeInOut' },
-                                  opacity: { duration: 0.2 },
-                                  height: { duration: 0.2 },
-                                }}
+                                variants={treeVariants}
+                                initial={search ? treeVariants.hide : false}
+                                animate="show"
+                                exit="hide"
+                                transition={treeTransition}
                               >
                                 <TableItem
                                   schema={schema.name}
@@ -294,20 +304,25 @@ export function TablesTree({ className, search }: { className?: string, search?:
                               </motion.div>
                             ))}
                             {schema.pinnedTables.length > 0 && schema.unpinnedTables.length > 0 && (
-                              <Separator className="h-px! my-2" />
+                              <MotionSeparator
+                                className="h-px! my-2"
+                                layout
+                                variants={treeVariants}
+                                initial={search ? treeVariants.hide : false}
+                                animate="show"
+                                exit="hide"
+                                transition={treeTransition}
+                              />
                             )}
                             {schema.unpinnedTables.map(table => (
                               <motion.div
                                 key={`${schema.name}:${table}`}
                                 layout
-                                initial={search ? { opacity: 0, height: 0 } : false}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{
-                                  layout: { duration: 0.3, ease: 'easeInOut' },
-                                  opacity: { duration: 0.2 },
-                                  height: { duration: 0.2 },
-                                }}
+                                variants={treeVariants}
+                                initial={search ? treeVariants.hide : false}
+                                animate="show"
+                                exit="hide"
+                                transition={treeTransition}
                               >
                                 <TableItem
                                   schema={schema.name}
