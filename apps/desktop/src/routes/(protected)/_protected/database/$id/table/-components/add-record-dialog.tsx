@@ -1,7 +1,7 @@
 import type { databases } from '~/drizzle'
 import type { Column } from '~/entities/database/utils/table'
 import { Button } from '@conar/ui/components/button'
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { Switch } from '@conar/ui/components/switch'
@@ -215,6 +215,16 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
         }
       })
 
+      // Make sure boolean fields are properly handled (including false values)
+      columns.forEach((col) => {
+        // If it's a boolean field and not yet set, make sure it has a proper boolean value
+        if (col.type === 'boolean' && (values[col.id] === undefined || values[col.id] === null)) {
+          // For required boolean fields, default to false rather than null
+          values[col.id] = !col.isNullable ? false : null
+        }
+      })
+
+      // Ensure we include all required fields and fields with values in the insert statement
       const columnNames = Object.keys(values).filter((col) => {
         const column = columns.find(c => c.id === col)
 
@@ -222,10 +232,17 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
           return true
         }
 
+        // Always include boolean fields - both true and false values
+        if (column && column.type === 'boolean') {
+          return true
+        }
+
+        // Include any field that has a defined value
         if (values[col] !== undefined) {
           return true
         }
 
+        // Include required fields without defaults
         return column && !column.isNullable && !column.defaultValue
       })
 
@@ -308,15 +325,19 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
 
     // for boolean
     if (column.type === 'boolean') {
+      // For boolean fields, ensure they always have a defined value (true/false)
+      // Default to false for required fields
+      const boolValue = value === true ? true : (value === false ? false : (!column.isNullable ? false : null))
+
       return (
         <div className="flex items-center space-x-2">
           <Switch
             id={`field-${column.id}`}
-            checked={value === true}
+            checked={boolValue === true}
             onCheckedChange={checked => handleValueChange(column.id, checked)}
           />
           <Label htmlFor={`field-${column.id}`}>
-            {value === true ? 'True' : 'False'}
+            {boolValue === true ? 'True' : 'False'}
           </Label>
         </div>
       )
@@ -353,6 +374,9 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Record</DialogTitle>
+          <DialogDescription>
+            Fill in the fields to add a new record to the table.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
