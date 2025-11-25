@@ -18,9 +18,9 @@ import { Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import { useEffect, useEffectEvent } from 'react'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
+import { databaseStore } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
-import { databaseStore } from '../../../../-store'
 
 type Group = 'today' | 'yesterday' | 'week' | 'month' | 'older'
 

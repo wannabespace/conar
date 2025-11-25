@@ -180,15 +180,13 @@ function Visualizer({
         defaultEdgeOptions={{
           type: 'custom',
         }}
-        style={
-          {
-            '--xy-background-pattern-dots-color-default': 'var(--color-border)',
-            '--xy-edge-stroke-width-default': 1.5,
-            '--xy-edge-stroke-default': 'var(--color-foreground)',
-            '--xy-edge-stroke-selected-default': 'var(--color-foreground)',
-            '--xy-attribution-background-color-default': 'transparent',
-          } as React.CSSProperties
-        }
+        style={{
+          '--xy-background-pattern-dots-color-default': 'var(--color-border)',
+          '--xy-edge-stroke-width-default': 1.5,
+          '--xy-edge-stroke-default': 'var(--color-foreground)',
+          '--xy-edge-stroke-selected-default': 'var(--color-foreground)',
+          '--xy-attribution-background-color-default': 'transparent',
+        }}
         attributionPosition="bottom-left"
       >
         <Background bgColor="var(--background)" variant={BackgroundVariant.Dots} gap={20} size={2} />

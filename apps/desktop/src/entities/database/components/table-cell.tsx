@@ -234,6 +234,7 @@ export function TableCell({
 }: {
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
+  className?: string
 } & TableCellProps) {
   const displayValue = getDisplayValue(value, size)
 
@@ -279,8 +280,7 @@ export function TableCell({
         onMouseLeave={disableInteractIfPossible}
         className={cellClassName}
         style={style}
-        position={position}
-        value={value}
+        cell={{ value, position }}
       >
         <span className="truncate">{displayValue}</span>
         {!!value && column.foreign && <ForeignButton />}
@@ -336,8 +336,7 @@ export function TableCell({
                 <TableCellContent
                   className={cellClassName}
                   style={style}
-                  value={value}
-                  position={position}
+                  cell={{ value, position }}
                 >
                   <span className="truncate">{displayValue}</span>
                   {!!value && column.foreign && (

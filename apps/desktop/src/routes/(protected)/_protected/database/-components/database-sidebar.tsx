@@ -22,6 +22,7 @@ import { ThemeToggle } from '~/components/theme-toggle'
 import {
   DatabaseIcon,
   databasesCollection,
+  databaseStore,
   lastOpenedDatabases,
   useDatabaseLinkParams,
   useLastOpenedDatabases,
@@ -30,11 +31,10 @@ import { UserButton } from '~/entities/user'
 import { orpcQuery } from '~/lib/orpc'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
 import { Route } from '../$id'
-import { databaseStore } from '../-store'
 
 const os = getOS(navigator.userAgent)
 
-function classes(isActive = false) {
+function baseClasses(isActive = false) {
   return cn(
     'cursor-pointer text-foreground size-9 rounded-md flex items-center justify-center border border-transparent',
     isActive && 'bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary',
@@ -162,7 +162,13 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
               </span>
             )}
             <Link
-              className={classes(isActive)}
+              className={cn(
+                baseClasses(isActive),
+                database.color && isActive
+                  ? 'text-(--color) bg-(--color)/10 hover:bg-(--color)/20 border-(--color)/20'
+                  : '',
+              )}
+              style={database.color ? { '--color': database.color } : {}}
               {...params}
             >
               <span className="font-bold text-sm">
@@ -256,7 +262,7 @@ function MainLinks() {
               to="/database/$id/sql"
               params={{ id: database.id }}
               search={lastOpenedChatId ? { chatId: lastOpenedChatId } : undefined}
-              className={classes(isActiveSql)}
+              className={baseClasses(isActiveSql)}
             >
               <RiPlayLargeLine className="size-4" />
             </Link>
@@ -268,7 +274,7 @@ function MainLinks() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              className={classes(isActiveTables)}
+              className={baseClasses(isActiveTables)}
               {...route}
               onClick={() => {
                 onTablesClick()
@@ -286,7 +292,7 @@ function MainLinks() {
             <Link
               to="/database/$id/enums"
               params={{ id: database.id }}
-              className={classes(isActiveEnums)}
+              className={baseClasses(isActiveEnums)}
             >
               <RiListUnordered className="size-4" />
             </Link>
@@ -297,7 +303,7 @@ function MainLinks() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Link to="/database/$id/visualizer" params={{ id: database.id }} className={classes(isActiveVisualizer)}>
+            <Link to="/database/$id/visualizer" params={{ id: database.id }} className={baseClasses(isActiveVisualizer)}>
               <RiNodeTree className="size-4" />
             </Link>
           </TooltipTrigger>

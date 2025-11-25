@@ -3,7 +3,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
-import { databaseStore } from '../../-store'
+import { databaseStore } from '~/entities/database'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 

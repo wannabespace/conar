@@ -48,7 +48,11 @@ export function TableHeaderCell({
   columnIndex,
   className,
   style,
-}: { column: Column, onSort?: () => void } & TableHeaderCellProps) {
+}: {
+  column: Column
+  onSort?: () => void
+  className?: string
+} & TableHeaderCellProps) {
   const store = usePageStoreContext()
   const order = useStore(store, state => state.orderBy?.[column.id] ?? null)
 

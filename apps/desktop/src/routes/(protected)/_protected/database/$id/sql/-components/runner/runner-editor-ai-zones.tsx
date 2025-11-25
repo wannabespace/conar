@@ -1,5 +1,5 @@
 import type { editor, Position } from 'monaco-editor'
-import type { CSSProperties, Dispatch, RefObject, SetStateAction } from 'react'
+import type { Dispatch, RefObject, SetStateAction } from 'react'
 import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -13,12 +13,11 @@ import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { MonacoDiff } from '~/components/monaco'
-import { databaseTablesAndSchemasQuery } from '~/entities/database'
+import { databaseStore, databaseTablesAndSchemasQuery } from '~/entities/database'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
-import { databaseStore } from '../../../../-store'
 
 function RunnerEditorAIZone({
   database,
@@ -132,7 +131,7 @@ function RunnerEditorAIZone({
           <PopoverContent
             style={{
               '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
-            } as CSSProperties}
+            }}
             className="p-0 w-lg h-[min(30vh,var(--lines-height))]"
             onOpenAutoFocus={(e) => {
               e.preventDefault()
