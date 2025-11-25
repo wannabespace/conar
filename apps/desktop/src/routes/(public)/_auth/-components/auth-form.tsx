@@ -1,18 +1,17 @@
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@conar/ui/components/form'
+import { FieldGroup } from '@conar/ui/components/field'
 import { Input } from '@conar/ui/components/input'
 import { Separator } from '@conar/ui/components/separator'
+import { useAppForm } from '@conar/ui/hooks/use-app-form'
 import { copy } from '@conar/ui/lib/copy'
-import { arktypeResolver } from '@hookform/resolvers/arktype'
-import { RiEyeLine, RiEyeOffLine, RiGithubFill, RiGoogleFill } from '@remixicon/react'
+import { RiGithubFill, RiGoogleFill } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { nanoid } from 'nanoid'
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { authClient, bearerToken, codeChallenge, successAuthToast } from '~/lib/auth'
 import { handleDeepLink } from '~/lib/deep-links'
@@ -21,11 +20,18 @@ import { handleError } from '~/lib/error'
 
 type Type = 'sign-up' | 'sign-in'
 
-const schema = type({
+const baseAuthSchema = type({
   email: 'string.email',
   password: 'string >= 8',
-  name: 'string?',
 })
+
+const signInSchema = baseAuthSchema
+
+const signUpSchema = baseAuthSchema.and({
+  name: 'string',
+})
+
+type SignUpFormData = typeof signUpSchema.infer
 
 function useSocialMutation(provider: 'google' | 'github', onSuccess: () => void) {
   return useMutation({
@@ -177,64 +183,54 @@ function SocialAuthForm({ type }: { type: Type }) {
 export function AuthForm({ type }: { type: Type }) {
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
-  const emailRef = useRef<HTMLInputElement>(null)
 
-  const form = useForm<typeof schema.infer>({
-    resolver: arktypeResolver(
-      type === 'sign-up'
-        ? schema.and({ name: 'string' })
-        : schema,
-    ),
-    defaultValues: {
-      email: '',
-      password: '',
-      name: '',
+  const form = useAppForm({
+    defaultValues: type === 'sign-up'
+      ? { email: '', password: '', name: '' }
+      : { email: '', password: '' },
+
+    validators: {
+      onSubmit: type === 'sign-up' ? signUpSchema : signInSchema,
     },
-  })
 
-  useEffect(() => {
-    if (emailRef.current) {
-      emailRef.current.focus()
-    }
-  }, [emailRef])
+    onSubmit: async ({ value }) => {
+      const { error, data } = type === 'sign-up'
+        ? await authClient.signUp.email({
+            email: value.email,
+            password: value.password,
+            name: (value as SignUpFormData).name,
+          })
+        : await authClient.signIn.email({
+            email: value.email,
+            password: value.password,
+          })
 
-  const submit = async (values: typeof schema.infer) => {
-    const { error, data } = type === 'sign-up'
-      ? await authClient.signUp.email({
-          email: values.email,
-          password: values.password,
-          name: values.name!,
-        })
-      : await authClient.signIn.email({
-          email: values.email,
-          password: values.password,
-        })
+      if (error || !(data && data.token)) {
+        if (data && !data.token) {
+          toast.error('In some reason, we were not able to sign you in. Please try again later.')
+          return
+        }
 
-    if (error || !(data && data.token)) {
-      if (data && !data.token) {
-        toast.error('In some reason, we were not able to sign you in. Please try again later.')
+        if (type === 'sign-up' && (error!.code === 'USER_ALREADY_EXISTS' || error!.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL')) {
+          toast.error('User already exists. Please sign in or use a different email address.', {
+            action: {
+              label: 'Sign in',
+              onClick: () => {
+                navigate({ to: '/sign-in' })
+              },
+            },
+          })
+        }
+        else {
+          handleError(error)
+        }
         return
       }
 
-      if (error!.code === 'USER_ALREADY_EXISTS' || error!.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL') {
-        toast.error('User already exists. Please sign in or use a different email address.', {
-          action: {
-            label: 'Sign in',
-            onClick: () => {
-              navigate({ to: '/sign-in' })
-            },
-          },
-        })
-      }
-      else {
-        handleError(error)
-      }
-      return
-    }
-
-    bearerToken.set(data.token)
-    successAuthToast(type === 'sign-up')
-  }
+      bearerToken.set(data.token)
+      successAuthToast(type === 'sign-up')
+    },
+  })
 
   return (
     <>
@@ -245,115 +241,89 @@ export function AuthForm({ type }: { type: Type }) {
           OR
         </span>
       </div>
-      <Form {...form}>
-        <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field: { ref, ...field } }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="example@gmail.com"
-                    type="email"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    spellCheck="false"
-                    required
-                    ref={(e) => {
-                      ref(e)
-                      emailRef.current = e
-                    }}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+      <form
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault()
+          form.handleSubmit()
+        }}
+      >
+        <FieldGroup>
+          <form.AppField name="email">
+            {field => (
+              <field.Input
+                label="Email"
+                placeholder="example@gmail.com"
+                type="email"
+                autoCapitalize="none"
+                autoComplete="email"
+                spellCheck={false}
+                required
+                autoFocus
+              />
             )}
-          />
+          </form.AppField>
+
           {type === 'sign-up' && (
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="John Doe"
-                      autoComplete="name"
-                      spellCheck="false"
-                      required
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            <form.AppField name="name">
+              {field => (
+                <field.Input
+                  label="Name"
+                  placeholder="John Doe"
+                  autoComplete="name"
+                  spellCheck={false}
+                  required
+                />
               )}
-            />
+            </form.AppField>
           )}
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center justify-between">
-                  <FormLabel>Password</FormLabel>
-                  {type === 'sign-in' && (
+
+          {type === 'sign-in'
+            ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Password</span>
                     <Button variant="link" size="xs" className="text-muted-foreground" asChild>
                       <Link to="/forgot-password">
                         Forgot password?
                       </Link>
                     </Button>
-                  )}
-                </div>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      placeholder="••••••••"
-                      type={showPassword ? 'text' : 'password'}
-                      autoCapitalize="none"
-                      autoComplete="password"
-                      spellCheck="false"
-                      required
-                      className="pe-10"
-                      {...field}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 size-7 -translate-y-1/2"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword
-                        ? (
-                            <RiEyeOffLine className="size-4" />
-                          )
-                        : (
-                            <RiEyeLine className="size-4" />
-                          )}
-                      <span className="sr-only">
-                        {showPassword ? 'Hide password' : 'Show password'}
-                      </span>
-                    </Button>
                   </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <form.AppField name="password">
+                    {field => (
+                      <field.Password
+                        showPassword={showPassword}
+                        onToggle={() => setShowPassword(!showPassword)}
+                        autoComplete="password"
+                      />
+                    )}
+                  </form.AppField>
+                </div>
+              )
+            : (
+                <form.AppField name="password">
+                  {field => (
+                    <field.Password
+                      label="Password"
+                      showPassword={showPassword}
+                      onToggle={() => setShowPassword(!showPassword)}
+                      autoComplete="password"
+                    />
+                  )}
+                </form.AppField>
+              )}
+
           <Button
             className="w-full"
             type="submit"
-            disabled={form.formState.isSubmitting}
+            disabled={form.state.isSubmitting}
           >
-            <LoadingContent loading={form.formState.isSubmitting}>
+            <LoadingContent loading={form.state.isSubmitting}>
               {type === 'sign-up' ? 'Get started' : 'Sign in'}
             </LoadingContent>
           </Button>
-        </form>
-      </Form>
+        </FieldGroup>
+      </form>
     </>
   )
 }

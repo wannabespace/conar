@@ -1,40 +1,25 @@
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@conar/ui/components/form'
-import { Input } from '@conar/ui/components/input'
-import { arktypeResolver } from '@hookform/resolvers/arktype'
+import { FieldGroup } from '@conar/ui/components/field'
+import { useAppForm } from '@conar/ui/hooks/use-app-form'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
 import { authClient } from '~/lib/auth'
 
 export const Route = createFileRoute('/(public)/_auth/forgot-password')({
   component: ForgotPasswordPage,
 })
 
-const schema = type({
+const emailSchema = type({
   email: 'string.email',
 })
 
+type FormData = typeof emailSchema.infer
+
 function ForgotPasswordPage() {
-  const emailRef = useRef<HTMLInputElement>(null)
-  const form = useForm<typeof schema.infer>({
-    resolver: arktypeResolver(schema),
-    defaultValues: {
-      email: '',
-    },
-  })
-
-  useEffect(() => {
-    if (emailRef.current) {
-      emailRef.current.focus()
-    }
-  }, [emailRef])
-
   const { mutate: sendEmail, status } = useMutation({
-    mutationFn: async (values: typeof schema.infer) => {
+    mutationFn: async (values: FormData) => {
       const { error } = await authClient.requestPasswordReset({
         email: values.email,
         redirectTo: `${import.meta.env.VITE_PUBLIC_WEB_URL}/reset-password`,
@@ -43,6 +28,20 @@ function ForgotPasswordPage() {
       if (error) {
         throw error
       }
+    },
+  })
+
+  const form = useAppForm({
+    defaultValues: {
+      email: '',
+    } satisfies FormData as FormData,
+
+    validators: {
+      onSubmit: emailSchema,
+    },
+
+    onSubmit: async ({ value }) => {
+      sendEmail(value)
     },
   })
 
@@ -77,33 +76,28 @@ function ForgotPasswordPage() {
           Enter your email address and we'll send you a reset link to reset your password.
         </p>
       </div>
-      <Form {...form}>
-        <form className="space-y-4" onSubmit={form.handleSubmit(v => sendEmail(v))}>
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field: { ref, ...field } }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="example@gmail.com"
-                    type="email"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    spellCheck="false"
-                    required
-                    ref={(e) => {
-                      ref(e)
-                      emailRef.current = e
-                    }}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+      <form
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault()
+          form.handleSubmit()
+        }}
+      >
+        <FieldGroup>
+          <form.AppField name="email">
+            {field => (
+              <field.Input
+                label="Email"
+                placeholder="example@gmail.com"
+                type="email"
+                autoCapitalize="none"
+                autoComplete="email"
+                spellCheck={false}
+                autoFocus
+              />
             )}
-          />
+          </form.AppField>
+
           <Button
             className="w-full"
             type="submit"
@@ -113,6 +107,7 @@ function ForgotPasswordPage() {
               Send reset link
             </LoadingContent>
           </Button>
+
           <Button
             variant="link"
             className="w-full text-center text-muted-foreground"
@@ -122,8 +117,8 @@ function ForgotPasswordPage() {
               Back to sign in
             </Link>
           </Button>
-        </form>
-      </Form>
+        </FieldGroup>
+      </form>
     </>
   )
 }

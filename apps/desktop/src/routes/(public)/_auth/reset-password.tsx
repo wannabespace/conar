@@ -1,15 +1,13 @@
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@conar/ui/components/form'
-import { arktypeResolver } from '@hookform/resolvers/arktype'
+import { FieldGroup } from '@conar/ui/components/field'
+import { useAppForm } from '@conar/ui/hooks/use-app-form'
 import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { authClient, resetToken } from '~/lib/auth'
 import { handleError } from '~/lib/error'
-import PasswordInput from './-components/password-input'
 
 export const Route = createFileRoute('/(public)/_auth/reset-password')({
   loader: () => {
@@ -27,31 +25,18 @@ export const Route = createFileRoute('/(public)/_auth/reset-password')({
   component: ResetPasswordPage,
 })
 
-const schema = type({
+const passwordSchema = type({
   password: 'string >= 8',
   confirmPassword: 'string >= 8',
 })
+
+type FormData = typeof passwordSchema.infer
 
 function ResetPasswordPage() {
   const navigate = useNavigate()
   const { token } = Route.useLoaderData()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const passwordRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (passwordRef.current) {
-      passwordRef.current.focus()
-    }
-  }, [passwordRef])
-
-  const form = useForm({
-    resolver: arktypeResolver(schema),
-    defaultValues: {
-      password: '',
-      confirmPassword: '',
-    },
-  })
 
   const handleResetSuccess = () => {
     resetToken.remove()
@@ -68,38 +53,50 @@ function ResetPasswordPage() {
     })
   }
 
-  const submit = async (values: typeof schema.infer) => {
-    if (values.password !== values.confirmPassword) {
-      form.setError('confirmPassword', {
-        message: 'Passwords do not match',
-      })
-      return
-    }
+  const form = useAppForm({
+    defaultValues: {
+      password: '',
+      confirmPassword: '',
+    } satisfies FormData as FormData,
 
-    try {
-      const { error, data } = await authClient.resetPassword({
-        newPassword: values.password,
-        token,
-      })
+    validators: {
+      onSubmit: passwordSchema,
+    },
 
-      if (error) {
-        handleResetError()
+    onSubmit: async ({ value }) => {
+      if (value.password !== value.confirmPassword) {
+        form.setFieldMeta('confirmPassword', prev => ({
+          ...prev,
+          errors: ['Passwords do not match'],
+        }))
         return
       }
 
-      if (data?.status) {
-        handleResetSuccess()
-      }
-      else {
-        toast.error('Password reset failed', {
-          description: 'Please try again or request a new reset link.',
+      try {
+        const { error, data } = await authClient.resetPassword({
+          newPassword: value.password,
+          token,
         })
+
+        if (error) {
+          handleResetError()
+          return
+        }
+
+        if (data?.status) {
+          handleResetSuccess()
+        }
+        else {
+          toast.error('Password reset failed', {
+            description: 'Please try again or request a new reset link.',
+          })
+        }
       }
-    }
-    catch (error) {
-      handleError(error)
-    }
-  }
+      catch (error) {
+        handleError(error)
+      }
+    },
+  })
 
   return (
     <>
@@ -112,53 +109,41 @@ function ResetPasswordPage() {
         </p>
       </div>
 
-      <Form {...form}>
-        <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field: { ref, ...field } }) => (
-              <FormItem>
-                <FormLabel>New Password</FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    ref={(e) => {
-                      ref(e)
-                      passwordRef.current = e
-                    }}
-                    {...field}
-                    showPassword={showPassword}
-                    onToggle={() => setShowPassword(!showPassword)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+      <form
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault()
+          form.handleSubmit()
+        }}
+      >
+        <FieldGroup>
+          <form.AppField name="password">
+            {field => (
+              <field.Password
+                label="New Password"
+                showPassword={showPassword}
+                onToggle={() => setShowPassword(!showPassword)}
+                autoFocus
+              />
             )}
-          />
+          </form.AppField>
 
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    {...field}
-                    showPassword={showConfirmPassword}
-                    onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <form.AppField name="confirmPassword">
+            {field => (
+              <field.Password
+                label="Confirm Password"
+                showPassword={showConfirmPassword}
+                onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+              />
             )}
-          />
+          </form.AppField>
+
           <Button
             className="w-full"
             type="submit"
-            disabled={form.formState.isSubmitting}
+            disabled={form.state.isSubmitting}
           >
-            <LoadingContent loading={form.formState.isSubmitting}>
+            <LoadingContent loading={form.state.isSubmitting}>
               Reset password
             </LoadingContent>
           </Button>
@@ -171,8 +156,8 @@ function ResetPasswordPage() {
               Back to sign in
             </Link>
           </Button>
-        </form>
-      </Form>
+        </FieldGroup>
+      </form>
     </>
   )
 }
