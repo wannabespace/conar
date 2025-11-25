@@ -42,8 +42,8 @@
     "azureSignOptions": {
       "publisherName": "Wannabe Space, LLC",
       "endpoint": "https://eus.codesigning.azure.net/",
-      "codeSigningAccountName": "conar",
-      "certificateProfileName": "conar"
+      "codeSigningAccountName": "Conar",
+      "certificateProfileName": "Conar"
     }
   },
   "nsis": {
