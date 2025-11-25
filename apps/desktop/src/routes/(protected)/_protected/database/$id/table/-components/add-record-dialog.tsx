@@ -1,11 +1,12 @@
 import type { databases } from '~/drizzle'
 import type { Column } from '~/entities/database/utils/table'
-import { TIMESTAMP_FIELDS } from '@conar/shared/constants'
+import { DatabaseType } from '@conar/shared/enums/database-type'
 import { Button } from '@conar/ui/components/button'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { Switch } from '@conar/ui/components/switch'
+import { createId } from '@paralleldrive/cuid2'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
@@ -45,6 +46,12 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
     if (!type)
       return value
 
+    if ((type === 'cuid' || type === 'cuid2' || type === 'char') && typeof value === 'string') {
+      if (value.includes('-')) {
+        return value.replace(/-/g, '').substring(0, 24)
+      }
+    }
+
     if (typeof value === 'string' && type.endsWith('[]')) {
       try {
         return JSON.parse(value)
@@ -54,6 +61,34 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
         console.error('Invalid array input:', error)
         return value
       }
+    }
+
+    if (value instanceof Date && (
+      type.includes('date')
+      || type.includes('time')
+      || type.includes('timestamp')
+    )) {
+      if (database?.type === DatabaseType.Postgres) {
+        return value.toISOString()
+      }
+      else if (database?.type === DatabaseType.MySQL) {
+        const pad = (num: number) => String(num).padStart(2, '0')
+
+        const year = value.getFullYear()
+        const month = pad(value.getMonth() + 1)
+        const day = pad(value.getDate())
+        const hours = pad(value.getHours())
+        const minutes = pad(value.getMinutes())
+        const seconds = pad(value.getSeconds())
+
+        if (type.includes('time') || type.includes('timestamp')) {
+          return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+        }
+        else {
+          return `${year}-${month}-${day}`
+        }
+      }
+      return value
     }
 
     return value
@@ -67,11 +102,9 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
       if (pkInfo && pkInfo.length > 0) {
         const firstPk = pkInfo[0]
 
-        // if we need to normalize the data structure
+        //  normalize the data structure
         if (firstPk && typeof firstPk === 'object') {
-          // If it has 'id' property but not 'column_name', it's in normalized format
           if ('id' in firstPk && !('column_name' in firstPk)) {
-            // Convert to our expected format
             return pkInfo.map((pk) => {
               // Safe type casting with runtime checks
               const id = 'id' in pk ? String(pk.id) : ''
@@ -89,7 +122,6 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
           }
         }
 
-        // If it's already in the right format, return it
         return pkInfo
       }
 
@@ -129,76 +161,86 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
 
         const initialValues: Record<string, unknown> = {}
 
-        console.log('Primary key info before forEach:', JSON.stringify(pkInfo))
-
         columnsWithPrimary.forEach((col) => {
           if (col.type === 'boolean') {
             initialValues[col.id] = false
           }
-          let isPrimary = pkInfo.some((pk) => {
-            console.log(`Comparing pk.column_name=${pk.column_name} with col.id=${col.id}`)
-            return pk.column_name === col.id
-          })
+          let isPrimary = pkInfo.some(pk => pk.column_name === col.id)
 
           if (pkInfo.length === 0) {
             if (col.id === 'id' || col.id === '_id'
               || (col.id.endsWith('_id') && col.id.startsWith(table.toLowerCase()))
               || (col.id.endsWith('Id') && col.id.startsWith(table.toLowerCase()))) {
-              console.log(`Potential primary key detected: ${col.id}`)
               isPrimary = true
             }
 
             if ((col.type === 'uuid' || col.type === 'cuid'
               || col.type.includes('int') || col.type.includes('serial'))
             && (col.id === 'id' || col.id.endsWith('Id') || col.id.endsWith('_id'))) {
-              console.log(`Type-based primary key detected: ${col.id} (${col.type})`)
               isPrimary = true
             }
           }
 
-          // Check both defaultValue and default_value for auto-generated values
           const defaultVal = col.defaultValue || col.default_value
           const hasAutoDefault = defaultVal
             && (defaultVal?.includes('nextval') // PostgreSQL sequences
-              || defaultVal?.includes('uuid_generate') // PostgreSQL UUID functions
-              || defaultVal?.includes('gen_random_uuid') // Another PostgreSQL UUID function
               || defaultVal?.includes('auto_increment') // MySQL auto increment
               || defaultVal?.includes('GENERATED') // SQL standard for generated columns
               || defaultVal?.includes('IDENTITY')) // SQL Server identity columns
 
-          console.log(`Column ${col.id}: isPrimary=${isPrimary}, type=${col.type}, defaultVal=${defaultVal}, hasAutoDefault=${hasAutoDefault}`)
-
           if (isPrimary) {
-            // For integer/serial primary keys, always treat as auto-generated
-            if (col.type.includes('int') || col.type.includes('serial') || col.type.includes('number')) {
-              console.log(`Setting auto-generated for integer primary key ${col.id}`)
+            if ((col.type.includes('int') || col.type.includes('serial') || col.type.includes('number'))
+              && (hasAutoDefault || col.type.includes('serial'))) {
               initialValues[col.id] = '(Auto-generated)'
             }
-            // For UUID primary keys without auto-default, generate a UUID
+
+            else if (col.type === 'bigint' || col.type.includes('int8')) {
+              initialValues[col.id] = ''
+            }
+
             else if (col.type === 'uuid' && !hasAutoDefault) {
-              console.log(`Generating UUID for ${col.id}`)
-              const newUuid = v7()
-              console.log(`Generated UUID: ${newUuid}`)
-              initialValues[col.id] = newUuid
+              initialValues[col.id] = v7()
             }
-            // For CUID primary keys without auto-default, generate a UUID as placeholder
+
             else if ((col.type === 'cuid' || col.type === 'cuid2') && !hasAutoDefault) {
-              console.log(`Generating UUID for CUID field ${col.id}`)
-              initialValues[col.id] = v7()
+              initialValues[col.id] = createId()
             }
-            // For string primary keys without auto-default, generate a UUID string
+            else if (col.type === 'char' && database?.type === DatabaseType.MySQL && !hasAutoDefault) {
+              let charLength = 24
+              if (col.type && typeof col.type === 'string') {
+                const lengthMatch = col.type.match(/\((\d+)\)/)
+                if (lengthMatch && lengthMatch[1]) {
+                  charLength = Number.parseInt(lengthMatch[1], 10)
+                }
+              }
+
+              if (charLength >= 36) {
+                initialValues[col.id] = v7()
+              }
+              else if (charLength >= 32) {
+                initialValues[col.id] = v7().replace(/-/g, '')
+              }
+              else if (charLength >= 24) {
+                initialValues[col.id] = createId()
+              }
+              else {
+                initialValues[col.id] = createId().substring(0, charLength)
+              }
+            }
+
             else if ((col.type.includes('char') || col.type.includes('text') || col.type.includes('varchar')) && !hasAutoDefault) {
-              console.log(`Generating string ID for ${col.id}`)
-              initialValues[col.id] = v7()
+              if (database?.type === DatabaseType.Postgres) {
+                initialValues[col.id] = v7()
+              }
+
+              else {
+                initialValues[col.id] = v7().replace(/-/g, '').substring(0, 24)
+              }
             }
-            // For primary keys with auto-default, mark as auto-generated
             else if (hasAutoDefault) {
-              console.log(`Setting auto-generated for primary key ${col.id} with auto-default`)
               initialValues[col.id] = '(Auto-generated)'
             }
-            // For other primary key types without auto-default
             else {
-              console.log(`Setting null for primary key ${col.id} of type ${col.type}`)
               initialValues[col.id] = null
             }
           }
@@ -206,8 +248,17 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
             initialValues[col.id] = null
           }
 
-          if (TIMESTAMP_FIELDS.includes(col.id as (typeof TIMESTAMP_FIELDS)[number])) {
-            initialValues[col.id] = new Date()
+          if (col.type?.includes('time') || col.type?.includes('date') || col.type?.includes('timestamp')) {
+            if (hasAutoDefault) {
+              initialValues[col.id] = '(Auto-generated)'
+            }
+            else {
+              initialValues[col.id] = new Date()
+            }
+          }
+
+          else if (col.type?.includes('time') || col.type?.includes('date')) {
+            initialValues[col.id] = null
           }
         })
 
@@ -228,9 +279,15 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
     setIsSubmitting(true)
 
     try {
-      TIMESTAMP_FIELDS.forEach((field) => {
-        if (columns.some(col => col.id === field) && values[field] === undefined) {
-          values[field] = new Date()
+      columns.forEach((column) => {
+        if (values[column.id] === '(Auto-generated)') {
+          delete values[column.id]
+        }
+
+        else if (column.type?.includes('time') || column.type?.includes('date')) {
+          if (!column.isNullable && !column.defaultValue && (values[column.id] === null || values[column.id] === '')) {
+            values[column.id] = new Date()
+          }
         }
       })
 
@@ -241,11 +298,10 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
         }
       })
 
-      // Ensure we include all required fields and fields with values in the insert statement
       const columnNames = Object.keys(values).filter((col) => {
         const column = columns.find(c => c.id === col)
 
-        if (TIMESTAMP_FIELDS.includes(col as (typeof TIMESTAMP_FIELDS)[number])) {
+        if (column && (column.type?.includes('time') || column.type?.includes('date'))) {
           return true
         }
 
@@ -329,13 +385,69 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
       )
     }
 
-    // for date / time
-    if (column.type?.includes('time') || column.type?.includes('date')) {
+    // for date / time fields
+    if (column.type?.includes('time') || column.type?.includes('date') || column.type?.includes('timestamp')) {
+      if (value === '(Auto-generated)') {
+        return (
+          <div className="flex items-center space-x-2 w-full">
+            <Input
+              id={`field-${column.id}`}
+              value={String(value)}
+              disabled
+              className="bg-muted/30 text-muted-foreground italic border-dashed"
+              placeholder={`Enter ${column.type}`}
+            />
+            <div className="text-xs text-muted-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 inline mr-1">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+              </svg>
+              Auto
+            </div>
+          </div>
+        )
+      }
+
+      const currentValue = value === null || value === ''
+        ? new Date()
+        : (value instanceof Date ? value : null)
+
+      const isDateTimeField = column.type?.includes('time') || column.type?.includes('timestamp')
+      const inputType = isDateTimeField ? 'datetime-local' : 'date'
+
+      let formattedDate = ''
+      try {
+        const dateToFormat = currentValue || new Date()
+        const localDate = new Date(
+          dateToFormat.getTime() - (dateToFormat.getTimezoneOffset() * 60000),
+        )
+
+        if (isDateTimeField) {
+          formattedDate = localDate.toISOString().slice(0, 16)
+        }
+        else {
+          formattedDate = localDate.toISOString().slice(0, 10)
+        }
+      }
+      catch (e) {
+        const now = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000))
+        formattedDate = isDateTimeField ? now.toISOString().slice(0, 16) : now.toISOString().slice(0, 10)
+        console.error('Error formatting date:', e)
+      }
+
       return (
         <Input
           id={`field-${column.id}`}
-          value={value instanceof Date ? value.toISOString().slice(0, 16) : (value !== null && value !== undefined ? String(value) : '')}
-          onChange={e => handleValueChange(column.id, e.target.value)}
+          type={inputType}
+          value={formattedDate}
+          onChange={(e) => {
+            if (e.target.value) {
+              const newDate = new Date(e.target.value)
+              handleValueChange(column.id, newDate)
+            }
+            else {
+              handleValueChange(column.id, null)
+            }
+          }}
           placeholder={column.type}
         />
       )
