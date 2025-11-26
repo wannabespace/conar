@@ -85,7 +85,8 @@ function CellPopoverContent({
     },
   }
 
-  const enumType = enums?.find(e => e.name === column.type || e.name === column.id)
+  const enumType = enums?.find(e => e.name === column.type || (column.type === 'enum' && e.name === column.id))
+
   return (
     <>
       {column?.type === 'boolean'
