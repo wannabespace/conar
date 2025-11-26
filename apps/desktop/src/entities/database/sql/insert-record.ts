@@ -189,10 +189,6 @@ export function buildInitialValues(
         initialValues[col.id] = new Date()
       }
     }
-
-    else if (col.type?.includes('time') || col.type?.includes('date')) {
-      initialValues[col.id] = null
-    }
   })
 
   return initialValues
