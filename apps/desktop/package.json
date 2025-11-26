@@ -28,6 +28,7 @@
     "@paralleldrive/cuid2": "^3.0.4",
     "electron-store": "^11.0.2",
     "electron-updater": "^6.6.2",
+    "lucide-react": "^0.554.0",
     "mysql2": "catalog:",
     "pg": "catalog:"
   },

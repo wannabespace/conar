@@ -2,11 +2,14 @@ import type { databases } from '~/drizzle'
 import type { Column } from '~/entities/database/utils/table'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { Button } from '@conar/ui/components/button'
+import { Calendar } from '@conar/ui/components/calender'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Switch } from '@conar/ui/components/switch'
 import { createId } from '@paralleldrive/cuid2'
+import { ChevronDownIcon } from 'lucide-react'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
@@ -41,6 +44,14 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
   const [values, setValues] = useState<Record<string, unknown>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const setPrimaryKeys = useState<PrimaryKeyInfo[]>([])[1]
+  const [calendarOpen, setCalendarOpen] = useState<Record<string, boolean>>({})
+
+  const toggleCalendar = (fieldId: string, state?: boolean) => {
+    setCalendarOpen(prev => ({
+      ...prev,
+      [fieldId]: state !== undefined ? state : !prev[fieldId],
+    }))
+  }
 
   function prepareValue(value: unknown, type?: string): unknown {
     if (!type)
@@ -409,47 +420,109 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
 
       const currentValue = value === null || value === ''
         ? new Date()
-        : (value instanceof Date ? value : null)
+        : (value instanceof Date ? value : new Date(String(value)))
 
       const isDateTimeField = column.type?.includes('time') || column.type?.includes('timestamp')
-      const inputType = isDateTimeField ? 'datetime-local' : 'date'
 
-      let formattedDate = ''
-      try {
-        const dateToFormat = currentValue || new Date()
-        const localDate = new Date(
-          dateToFormat.getTime() - (dateToFormat.getTimezoneOffset() * 60000),
-        )
+      const formattedDateDisplay = currentValue
+        ? currentValue.toLocaleDateString()
+        : 'Select date'
 
-        if (isDateTimeField) {
-          formattedDate = localDate.toISOString().slice(0, 16)
-        }
-        else {
-          formattedDate = localDate.toISOString().slice(0, 10)
-        }
-      }
-      catch (e) {
-        const now = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000))
-        formattedDate = isDateTimeField ? now.toISOString().slice(0, 16) : now.toISOString().slice(0, 10)
-        console.error('Error formatting date:', e)
-      }
+      const formattedTime = currentValue
+        ? `${String(currentValue.getHours()).padStart(2, '0')}:${String(currentValue.getMinutes()).padStart(2, '0')}:${String(currentValue.getSeconds()).padStart(2, '0')}`
+        : '00:00:00'
+
+      const isCalendarOpen = calendarOpen[column.id] || false
 
       return (
-        <Input
-          id={`field-${column.id}`}
-          type={inputType}
-          value={formattedDate}
-          onChange={(e) => {
-            if (e.target.value) {
-              const newDate = new Date(e.target.value)
-              handleValueChange(column.id, newDate)
-            }
-            else {
-              handleValueChange(column.id, null)
-            }
-          }}
-          placeholder={column.type}
-        />
+        <div className="flex flex-col gap-2 w-full">
+          {isDateTimeField
+            ? (
+                <div className="flex gap-2 w-full">
+                  <div className="flex-1">
+                    <Popover
+                      open={isCalendarOpen}
+                      onOpenChange={open => toggleCalendar(column.id, open)}
+                    >
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-between font-normal"
+                          type="button"
+                        >
+                          {formattedDateDisplay}
+                          <ChevronDownIcon className="ml-2 h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={currentValue}
+                          captionLayout="dropdown"
+                          onSelect={(date) => {
+                            if (date) {
+                              if (currentValue) {
+                                date.setHours(currentValue.getHours(), currentValue.getMinutes(), currentValue.getSeconds())
+                              }
+                              handleValueChange(column.id, date)
+                            }
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="w-1/2">
+                    <Input
+                      type="time"
+                      step="1"
+                      value={formattedTime}
+                      onChange={(e) => {
+                        const timeString = e.target.value
+                        const [hours, minutes, seconds] = timeString.split(':').map(Number)
+
+                        const updatedDate = new Date(currentValue || new Date())
+                        updatedDate.setHours(hours || 0)
+                        updatedDate.setMinutes(minutes || 0)
+                        updatedDate.setSeconds(seconds || 0)
+
+                        handleValueChange(column.id, updatedDate)
+                      }}
+                      className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                    />
+                  </div>
+                </div>
+              )
+            : (
+                <Popover
+                  open={isCalendarOpen}
+                  onOpenChange={open => toggleCalendar(column.id, open)}
+                >
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between font-normal"
+                      type="button"
+                    >
+                      {formattedDateDisplay}
+                      <ChevronDownIcon className="ml-2 h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={currentValue}
+                      captionLayout="dropdown"
+                      onSelect={(date) => {
+                        if (date) {
+                          handleValueChange(column.id, date)
+                          toggleCalendar(column.id, false)
+                        }
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              )}
+        </div>
       )
     }
 
