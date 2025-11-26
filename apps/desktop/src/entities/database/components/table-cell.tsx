@@ -102,7 +102,8 @@ function CellPopoverContent({
           ? (
               <div className="p-2">
                 <Select
-                  value={value}
+                  value={value === 'null' ? undefined : value}
+                  disabled={!canEdit}
                   onValueChange={(value) => {
                     setValue(value)
                     save(value)
