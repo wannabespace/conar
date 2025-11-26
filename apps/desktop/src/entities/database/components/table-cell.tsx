@@ -7,6 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '@conar/ui/components/button'
 import { CtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -36,7 +37,7 @@ function CellPopoverContent({
   onClose: () => void
   hasUpdateFn: boolean
 }) {
-  const { value, initialValue, column, displayValue, setValue, update } = useCellContext()
+  const { value, initialValue, column, displayValue, setValue, update, enums } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   const save = (value: string) => {
@@ -84,6 +85,7 @@ function CellPopoverContent({
     },
   }
 
+  const enumType = enums?.find(e => e.name === column.type || e.name === column.id)
   return (
     <>
       {column?.type === 'boolean'
@@ -95,17 +97,40 @@ function CellPopoverContent({
               onSave={save}
             />
           )
-        : (
-            <Monaco
-              ref={monacoRef}
-              data-mask
-              value={value}
-              language={column?.type?.includes('json') ? 'json' : undefined}
-              className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(45vh,40rem)]')}
-              onChange={setValue}
-              options={monacoOptions}
-            />
-          )}
+        : enumType
+          ? (
+              <div className="p-2">
+                <Select
+                  value={value}
+                  onValueChange={(value) => {
+                    setValue(value)
+                    save(value)
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select value" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {enumType.values.map(val => (
+                      <SelectItem key={val} value={val}>
+                        {val}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )
+          : (
+              <Monaco
+                ref={monacoRef}
+                data-mask
+                value={value}
+                language={column?.type?.includes('json') ? 'json' : undefined}
+                className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(45vh,40rem)]')}
+                onChange={setValue}
+                options={monacoOptions}
+              />
+            )}
       <div className="flex justify-between items-center gap-2 p-2 border-t">
         <div className="flex items-center gap-2">
           {!shouldHideToggleSize && (
@@ -231,10 +256,12 @@ export function TableCell({
   position,
   size,
   onSaveValue,
+  enums,
 }: {
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
   className?: string
+  enums?: { schema: string, name: string, values: string[] }[]
 } & TableCellProps) {
   const displayValue = getDisplayValue(value, size)
 
@@ -313,6 +340,7 @@ export function TableCell({
       onSavePending={() => setStatus('pending')}
       onSaveSuccess={() => setStatus('success')}
       onSaveError={onSaveError}
+      enums={enums}
     >
       <Popover
         open={isPopoverOpen}

@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { Table, TableBody, TableProvider } from '~/components/table'
 import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, selectQuery, setQuery } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
+import { useDatabaseEnums } from '~/entities/database/queries/enums'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { columnsSizeMap, selectSymbol } from '../-lib'
@@ -44,6 +45,7 @@ export function TableError({ error }: { error: Error }) {
 
 function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { database } = Route.useLoaderData()
+  const { data: enums } = useDatabaseEnums({ database })
   const columns = useTableColumns({ database, table, schema })
   const store = usePageStoreContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
@@ -233,6 +235,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
             <TableCell
               column={column}
               onSaveValue={saveValue}
+              enums={enums}
               {...props}
             />
           )
@@ -256,7 +259,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     }
 
     return sortedColumns
-  }, [columns, hiddenColumns, primaryColumns, saveValue, onSort])
+  }, [columns, hiddenColumns, primaryColumns, saveValue, onSort, enums])
 
   return (
     <TableProvider
