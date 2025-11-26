@@ -1,33 +1,25 @@
 import type { databases } from '~/drizzle'
+import type { ExtendedColumn } from '~/entities/database/sql/insert-record'
 import type { Column } from '~/entities/database/utils/table'
-import { DatabaseType } from '@conar/shared/enums/database-type'
 import { Button } from '@conar/ui/components/button'
 import { Calendar } from '@conar/ui/components/calender'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
+import { AutoCompleteIcon } from '@conar/ui/components/icons/auto-complete'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Switch } from '@conar/ui/components/switch'
-import { createId } from '@paralleldrive/cuid2'
+import { useMutation } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import { ChevronDownIcon } from 'lucide-react'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { v7 } from 'uuid'
 import { databaseRowsQuery } from '~/entities/database'
-import { insertRecordQuery, primaryKeysQuery, tableColumnsQuery } from '~/entities/database/sql/record'
+import { columnsQuery } from '~/entities/database/sql/columns'
+import { buildInitialValues, buildInsertPayload, getPrimaryKeyColumns } from '~/entities/database/sql/insert-record'
+import { insertRecordQuery } from '~/entities/database/sql/record'
 import { queryClient } from '~/main'
-
-interface ExtendedColumn extends Column {
-  defaultValue?: string | null
-  isPrimary?: boolean
-}
-
-interface PrimaryKeyInfo {
-  column_name: string
-  column_default: string | null
-  is_nullable: string
-  data_type: string
-}
+import { Route } from '..'
 
 interface AddRecordDialogProps {
   ref?: React.RefObject<{
@@ -37,13 +29,11 @@ interface AddRecordDialogProps {
 
 export function AddRecordDialog({ ref }: AddRecordDialogProps) {
   const [open, setOpen] = useState(false)
-  const [database, setDatabase] = useState<typeof databases.$inferSelect | null>(null)
+  const { database } = Route.useRouteContext()
   const [schema, setSchema] = useState('')
   const [table, setTable] = useState('')
   const [columns, setColumns] = useState<ExtendedColumn[]>([])
   const [values, setValues] = useState<Record<string, unknown>>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const setPrimaryKeys = useState<PrimaryKeyInfo[]>([])[1]
   const [calendarOpen, setCalendarOpen] = useState<Record<string, boolean>>({})
 
   const toggleCalendar = (fieldId: string, state?: boolean) => {
@@ -53,226 +43,30 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
     }))
   }
 
-  function prepareValue(value: unknown, type?: string): unknown {
-    if (!type)
-      return value
-
-    if ((type === 'cuid' || type === 'cuid2' || type === 'char') && typeof value === 'string') {
-      if (value.includes('-')) {
-        return value.replace(/-/g, '').substring(0, 24)
-      }
-    }
-
-    if (typeof value === 'string' && type.endsWith('[]')) {
-      try {
-        return JSON.parse(value)
-      }
-      catch (error) {
-        toast.error('Invalid array input: Please enter a valid JSON array.')
-        console.error('Invalid array input:', error)
-        return value
-      }
-    }
-
-    if (value instanceof Date && (
-      type.includes('date')
-      || type.includes('time')
-      || type.includes('timestamp')
-    )) {
-      if (database?.type === DatabaseType.Postgres) {
-        return value.toISOString()
-      }
-      else if (database?.type === DatabaseType.MySQL) {
-        const pad = (num: number) => String(num).padStart(2, '0')
-
-        const year = value.getFullYear()
-        const month = pad(value.getMonth() + 1)
-        const day = pad(value.getDate())
-        const hours = pad(value.getHours())
-        const minutes = pad(value.getMinutes())
-        const seconds = pad(value.getSeconds())
-
-        if (type.includes('time') || type.includes('timestamp')) {
-          return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-        }
-        else {
-          return `${year}-${month}-${day}`
-        }
-      }
-      return value
-    }
-
-    return value
-  }
-
-  const getPrimaryKeyInfo = async (db: typeof databases.$inferSelect, schema: string, tableName: string): Promise<PrimaryKeyInfo[]> => {
-    try {
-      const pkInfo = await primaryKeysQuery.run(db, { schema, table: tableName })
-      console.log('Primary key info from query:', pkInfo)
-
-      if (pkInfo && pkInfo.length > 0) {
-        const firstPk = pkInfo[0]
-
-        //  normalize the data structure
-        if (firstPk && typeof firstPk === 'object') {
-          if ('id' in firstPk && !('column_name' in firstPk)) {
-            return pkInfo.map((pk) => {
-              // Safe type casting with runtime checks
-              const id = 'id' in pk ? String(pk.id) : ''
-              const defaultValue = 'defaultValue' in pk ? pk.defaultValue as string | null : null
-              const isNullable = 'isNullable' in pk ? Boolean(pk.isNullable) : false
-              const type = 'type' in pk ? String(pk.type) : ''
-
-              return {
-                column_name: id,
-                column_default: defaultValue,
-                is_nullable: isNullable ? 'YES' : 'NO',
-                data_type: type,
-              }
-            })
-          }
-        }
-
-        return pkInfo
-      }
-
-      console.log('No primary keys found with primaryKeysQuery')
-      return []
-    }
-    catch (error) {
-      console.error('Error getting primary keys:', error)
-      return []
-    }
-  }
-
   useImperativeHandle(ref, () => ({
-    open: async (db, sch, tbl) => {
-      setDatabase(db)
+    open: async (dbOverride: typeof databases.$inferSelect, sch: string, tbl: string) => {
+      if (!database)
+        return
+      const db = dbOverride ?? database
       setSchema(sch)
       setTable(tbl)
       setValues({})
 
       try {
-        const pkInfo = await getPrimaryKeyInfo(db, sch, tbl)
-        setPrimaryKeys(pkInfo)
+        const primaryKeyColumns = await getPrimaryKeyColumns(db, sch, tbl)
 
-        const tableColumns = await tableColumnsQuery.run(db, { schema: sch, table: tbl })
-        console.log('Table columns:', tableColumns)
+        const tableColumns = await columnsQuery.run(db, { schema: sch, table: tbl })
 
         const columnsWithPrimary = tableColumns.map(col => ({
           ...col,
-          defaultValue: col.default_value,
+          defaultValue: col.default,
           isEditable: true,
-          isPrimary: pkInfo.some(pk => pk.column_name === col.id),
+          isPrimary: primaryKeyColumns.includes(col.id),
         }))
-
-        console.log('Columns with primary info:', columnsWithPrimary)
 
         setColumns(columnsWithPrimary)
 
-        const initialValues: Record<string, unknown> = {}
-
-        columnsWithPrimary.forEach((col) => {
-          if (col.type === 'boolean') {
-            initialValues[col.id] = false
-          }
-          let isPrimary = pkInfo.some(pk => pk.column_name === col.id)
-
-          if (pkInfo.length === 0) {
-            if (col.id === 'id' || col.id === '_id'
-              || (col.id.endsWith('_id') && col.id.startsWith(table.toLowerCase()))
-              || (col.id.endsWith('Id') && col.id.startsWith(table.toLowerCase()))) {
-              isPrimary = true
-            }
-
-            if ((col.type === 'uuid' || col.type === 'cuid'
-              || col.type.includes('int') || col.type.includes('serial'))
-            && (col.id === 'id' || col.id.endsWith('Id') || col.id.endsWith('_id'))) {
-              isPrimary = true
-            }
-          }
-
-          const defaultVal = col.defaultValue || col.default_value
-          const hasAutoDefault = defaultVal
-            && (defaultVal?.includes('nextval') // PostgreSQL sequences
-              || defaultVal?.includes('auto_increment') // MySQL auto increment
-              || defaultVal?.includes('GENERATED') // SQL standard for generated columns
-              || defaultVal?.includes('IDENTITY')) // SQL Server identity columns
-
-          if (isPrimary) {
-            if ((col.type.includes('int') || col.type.includes('serial') || col.type.includes('number'))
-              && (hasAutoDefault || col.type.includes('serial'))) {
-              initialValues[col.id] = '(Auto-generated)'
-            }
-
-            else if (col.type === 'bigint' || col.type.includes('int8')) {
-              initialValues[col.id] = ''
-            }
-
-            else if (col.type === 'uuid' && !hasAutoDefault) {
-              initialValues[col.id] = v7()
-            }
-
-            else if ((col.type === 'cuid' || col.type === 'cuid2') && !hasAutoDefault) {
-              initialValues[col.id] = createId()
-            }
-            else if (col.type === 'char' && database?.type === DatabaseType.MySQL && !hasAutoDefault) {
-              let charLength = 24
-              if (col.type && typeof col.type === 'string') {
-                const lengthMatch = col.type.match(/\((\d+)\)/)
-                if (lengthMatch && lengthMatch[1]) {
-                  charLength = Number.parseInt(lengthMatch[1], 10)
-                }
-              }
-
-              if (charLength >= 36) {
-                initialValues[col.id] = v7()
-              }
-              else if (charLength >= 32) {
-                initialValues[col.id] = v7().replace(/-/g, '')
-              }
-              else if (charLength >= 24) {
-                initialValues[col.id] = createId()
-              }
-              else {
-                initialValues[col.id] = createId().substring(0, charLength)
-              }
-            }
-
-            else if ((col.type.includes('char') || col.type.includes('text') || col.type.includes('varchar')) && !hasAutoDefault) {
-              if (database?.type === DatabaseType.Postgres) {
-                initialValues[col.id] = v7()
-              }
-
-              else {
-                initialValues[col.id] = v7().replace(/-/g, '').substring(0, 24)
-              }
-            }
-            else if (hasAutoDefault) {
-              initialValues[col.id] = '(Auto-generated)'
-            }
-            else {
-              initialValues[col.id] = null
-            }
-          }
-          else if (!hasAutoDefault) {
-            initialValues[col.id] = null
-          }
-
-          if (col.type?.includes('time') || col.type?.includes('date') || col.type?.includes('timestamp')) {
-            if (hasAutoDefault) {
-              initialValues[col.id] = '(Auto-generated)'
-            }
-            else {
-              initialValues[col.id] = new Date()
-            }
-          }
-
-          else if (col.type?.includes('time') || col.type?.includes('date')) {
-            initialValues[col.id] = null
-          }
-        })
-
+        const initialValues = buildInitialValues(database, primaryKeyColumns, table, columnsWithPrimary)
         setValues(initialValues)
         setOpen(true)
       }
@@ -283,71 +77,29 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
     },
   }), [])
 
-  const handleSubmit = async () => {
-    if (!database || !table || !schema)
-      return
-
-    setIsSubmitting(true)
-
-    try {
-      columns.forEach((column) => {
-        if (values[column.id] === '(Auto-generated)') {
-          delete values[column.id]
-        }
-
-        else if (column.type?.includes('time') || column.type?.includes('date')) {
-          if (!column.isNullable && !column.defaultValue && (values[column.id] === null || values[column.id] === '')) {
-            values[column.id] = new Date()
-          }
-        }
-      })
-
-      // boolean by default false
-      columns.forEach((col) => {
-        if (col.type === 'boolean' && (values[col.id] === undefined || values[col.id] === null)) {
-          values[col.id] = false
-        }
-      })
-
-      const columnNames = Object.keys(values).filter((col) => {
-        const column = columns.find(c => c.id === col)
-
-        if (column && (column.type?.includes('time') || column.type?.includes('date'))) {
-          return true
-        }
-
-        if (column && column.type === 'boolean') {
-          return true
-        }
-
-        if (values[col] !== undefined) {
-          return true
-        }
-
-        return column && !column.isNullable && !column.defaultValue
-      })
-
-      if (columnNames.length === 0) {
-        toast.error('No valid columns to insert')
-        setIsSubmitting(false)
-        return
-      }
-
-      const filteredColumnNames = columnNames.filter(col => values[col] !== '(Auto-generated)')
-
-      const valueParams = filteredColumnNames.map(col =>
-        prepareValue(values[col], columns.find(c => c.id === col)?.type),
-      )
-
-      await insertRecordQuery.run(database, {
+  const insertRecordMutation = useMutation({
+    mutationFn: async ({
+      columns,
+      values,
+      schema,
+      table,
+      database,
+    }: {
+      columns: string[]
+      values: unknown[]
+      schema: string
+      table: string
+      database: typeof databases.$inferSelect
+    }) => {
+      return insertRecordQuery.run(database, {
         schema,
         table,
-        columns: filteredColumnNames,
-        values: valueParams,
+        columns,
+        values,
       })
-
+    },
+    onSuccess: () => {
       toast.success('Record added successfully')
-
       queryClient.invalidateQueries({
         queryKey: databaseRowsQuery({
           database,
@@ -356,15 +108,38 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
           query: { filters: [], orderBy: {} },
         }).queryKey.slice(0, -1),
       })
-
       setOpen(false)
+    },
+    onError: (error: unknown) => {
+      console.error('Error inserting record:', error)
+      toast.error(`Failed to insert record: ${(error as Error).message}`)
+    },
+  })
+
+  const isSubmitting = insertRecordMutation.isPending
+
+  const handleSubmit = async () => {
+    if (!database || !table || !schema)
+      return
+
+    const payload = buildInsertPayload(database, columns, values)
+
+    if (!payload) {
+      toast.error('No valid columns to insert')
+      return
+    }
+
+    try {
+      await insertRecordMutation.mutateAsync({
+        columns: payload.columns,
+        values: payload.values,
+        schema,
+        table,
+        database,
+      })
     }
     catch (error) {
       console.error('Error inserting record:', error)
-      toast.error(`Failed to insert record: ${(error as Error).message}`)
-    }
-    finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -378,7 +153,6 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
   const renderInputField = (column: Column) => {
     const value = values[column.id]
 
-    // for boolean
     if (column.type === 'boolean') {
       const boolValue = value === true
 
@@ -396,8 +170,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
       )
     }
 
-    // for date / time fields
-    if (column.type?.includes('time') || column.type?.includes('date') || column.type?.includes('timestamp')) {
+    if (column.type?.includes('time') || column.type?.includes('date')) {
       if (value === '(Auto-generated)') {
         return (
           <div className="flex items-center space-x-2 w-full">
@@ -409,9 +182,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
               placeholder={`Enter ${column.type}`}
             />
             <div className="text-xs text-muted-foreground">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 inline mr-1">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
-              </svg>
+              <AutoCompleteIcon />
               Auto
             </div>
           </div>
@@ -422,14 +193,14 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
         ? new Date()
         : (value instanceof Date ? value : new Date(String(value)))
 
-      const isDateTimeField = column.type?.includes('time') || column.type?.includes('timestamp')
+      const isDateTimeField = column.type?.includes('time')
 
       const formattedDateDisplay = currentValue
-        ? currentValue.toLocaleDateString()
+        ? dayjs(currentValue).format('YYYY-MM-DD')
         : 'Select date'
 
       const formattedTime = currentValue
-        ? `${String(currentValue.getHours()).padStart(2, '0')}:${String(currentValue.getMinutes()).padStart(2, '0')}:${String(currentValue.getSeconds()).padStart(2, '0')}`
+        ? dayjs(currentValue).format('HH:mm:ss')
         : '00:00:00'
 
       const isCalendarOpen = calendarOpen[column.id] || false
@@ -537,9 +308,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
             placeholder={`Enter ${column.type}`}
           />
           <div className="text-xs text-muted-foreground">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 inline mr-1">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
-            </svg>
+            <AutoCompleteIcon />
             Auto
           </div>
         </div>

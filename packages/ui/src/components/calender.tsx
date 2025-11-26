@@ -1,5 +1,3 @@
-'use client'
-
 import type { DayButton } from 'react-day-picker'
 import { Button, buttonVariants } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'

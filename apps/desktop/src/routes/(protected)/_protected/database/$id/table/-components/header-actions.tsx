@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react'
 import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
@@ -30,9 +31,7 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
     queryClient.invalidateQueries(databaseConstraintsQuery({ database }))
   }
 
-  const addRecordDialogRef = useRef<{
-    open: (database: typeof databases.$inferSelect, schema: string, table: string) => void
-  } | null>(null)
+  const addRecordDialogRef = useRef<ComponentRef<typeof AddRecordDialog>>(null)
 
   const getAllData = async () => {
     const data: Record<string, unknown>[] = []
