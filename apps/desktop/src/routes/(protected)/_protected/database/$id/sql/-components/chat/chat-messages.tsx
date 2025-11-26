@@ -1,4 +1,5 @@
 import type { UIMessage } from '@ai-sdk/react'
+import type { SourceUrlPart } from '@conar/shared/ai-tools'
 import type { ChatStatus } from 'ai'
 import type { ComponentProps, ReactNode } from 'react'
 import { useChat } from '@ai-sdk/react'
@@ -12,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiEarthLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { isToolUIPart } from 'ai'
 import { regex } from 'arkregex'
@@ -25,6 +26,7 @@ import { Route } from '../..'
 import { chatHooks, runnerHooks } from '../../-page'
 import { ChatImages } from './chat-images'
 import { ChatMessageTool } from './chat-message-tools'
+import { FaviconWithFallback } from './favicon-with-fallback'
 
 const COMMENT_REGEX = regex('^(?:--.*\n)+')
 
@@ -330,8 +332,8 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
   )
 
   const sources = message.parts
-    .filter(part => part.type === 'source-url')
-    .map(part => ({ url: (part as { url: string }).url }))
+    .filter((part): part is SourceUrlPart => part.type === 'source-url')
+    .map(part => ({ url: part.url }))
 
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
@@ -354,31 +356,13 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
 
                 return (
                   <a
-                    key={index}
+                    key={`${source.url}-${index}`}
                     href={source.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-2 py-1 text-xs bg-accent hover:bg-accent/80 rounded-md border transition-colors group/source"
                   >
-                    {hostname
-                      ? (
-                          <>
-                            <img
-                              src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
-                              alt=""
-                              className="size-3 shrink-0"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none'
-                                const earthIcon = e.currentTarget.nextElementSibling
-                                if (earthIcon) {
-                                  (earthIcon as HTMLElement).style.display = 'block'
-                                }
-                              }}
-                            />
-                            <RiEarthLine className="size-3 shrink-0 text-muted-foreground hidden" />
-                          </>
-                        )
-                      : <RiEarthLine className="size-3 shrink-0 text-muted-foreground" />}
+                    <FaviconWithFallback hostname={hostname} />
                     <span className="font-medium truncate max-w-[200px] group-hover/source:text-primary">
                       {hostname.replace('www.', '')}
                     </span>

@@ -76,6 +76,12 @@ export type AppUIMessage = UIMessage<
   InferUITools<typeof tools>
 >
 
+export interface SourceUrlPart {
+  type: 'source-url'
+  url: string
+  sourceId: string
+}
+
 export function convertToAppUIMessage(message: UIMessage): AppUIMessage {
   return message as AppUIMessage
 }

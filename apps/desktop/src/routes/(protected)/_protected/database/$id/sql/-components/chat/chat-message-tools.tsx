@@ -8,6 +8,7 @@ import { RiEarthLine, RiErrorWarningLine, RiHammerLine, RiLoader4Line } from '@r
 import { AnimatePresence, motion } from 'motion/react'
 import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
+import { FaviconWithFallback } from './favicon-with-fallback'
 
 function getToolLabel(tool: ToolUIPart<InferUITools<typeof tools>>) {
   if (tool.type === 'tool-columns') {
@@ -166,31 +167,13 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
 
                   return (
                     <a
-                      key={`${result.url}-${index}`}
+                      key={`${part.toolCallId}-${index}`}
                       href={result.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 px-2 py-1 text-xs bg-accent hover:bg-accent/80 rounded-md border transition-colors group"
                     >
-                      {hostname
-                        ? (
-                            <>
-                              <img
-                                src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
-                                alt=""
-                                className="size-3 shrink-0"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none'
-                                  const earthIcon = e.currentTarget.nextElementSibling
-                                  if (earthIcon) {
-                                    (earthIcon as HTMLElement).style.display = 'block'
-                                  }
-                                }}
-                              />
-                              <RiEarthLine className="size-3 shrink-0 text-muted-foreground hidden" />
-                            </>
-                          )
-                        : <RiEarthLine className="size-3 shrink-0 text-muted-foreground" />}
+                      <FaviconWithFallback hostname={hostname} />
                       <span className="font-medium group-hover:text-primary">
                         {trimmedText}
                       </span>
