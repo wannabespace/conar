@@ -323,9 +323,6 @@ importers:
       electron-updater:
         specifier: ^6.6.2
         version: 6.6.2
-      lucide-react:
-        specifier: ^0.554.0
-        version: 0.554.0(react@19.2.0)
       mysql2:
         specifier: 'catalog:'
         version: 3.15.3
