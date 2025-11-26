@@ -4,6 +4,7 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { convertToAppUIMessage, tools } from '@conar/shared/ai-tools'
 import { DatabaseType } from '@conar/shared/enums/database-type'
+import { webSearch } from '@exalabs/ai-sdk'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryable } from 'ai-retry'
@@ -81,6 +82,7 @@ function generateStream({
           `You are an SQL tool that generates valid SQL code for ${type} database.`,
           'You can use several tools to improve response.',
           'You can generate select queries using the tools to get data directly from the database.',
+          'You can also search the web for information when the user asks about external resources, provides URLs, or needs current information beyond the database schema.',
           '',
           'Requirements:',
           `- Ensure the SQL is 100% valid and optimized for ${type} database`,
@@ -99,6 +101,7 @@ function generateStream({
           '',
           'You can use the following tools to help you generate the SQL code:',
           `- ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}`,
+          '- webSearch: Search the web for information when users provide URLs or ask about external content',
           '',
           'User provided context:',
           context,
@@ -113,7 +116,10 @@ function generateStream({
       userId,
     }),
     experimental_transform: smoothStream(),
-    tools,
+    tools: {
+      ...tools,
+      webSearch: webSearch(),
+    },
   })
 }
 
@@ -213,6 +219,7 @@ export const ask = orpc
       const stream = result.toUIMessageStream({
         originalMessages: messages,
         generateMessageId: () => v7(),
+        sendSources: true,
         messageMetadata: ({ part }) => {
           if (part.type === 'finish') {
             return {

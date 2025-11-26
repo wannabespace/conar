@@ -19,6 +19,7 @@
     "@ai-sdk/xai": "^2.0.36",
     "@conar/connection": "workspace:*",
     "@conar/shared": "workspace:*",
+    "@exalabs/ai-sdk": "^1.0.4",
     "@hono/arktype-validator": "^2.0.1",
     "@orpc/server": "catalog:",
     "@posthog/ai": "^7.2.0",

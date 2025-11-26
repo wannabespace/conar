@@ -118,11 +118,6 @@ catalogs:
       specifier: ^4.1.13
       version: 4.1.13
 
-patchedDependencies:
-  app-builder-lib:
-    hash: 405f899b7f3093a8a8b1e2b3f0cffc2167c088dea2093fabd09545678f7ca753
-    path: patches/app-builder-lib.patch
-
 importers:
 
   .:
@@ -199,6 +194,9 @@ importers:
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@exalabs/ai-sdk':
+        specifier: ^1.0.4
+        version: 1.0.4(ai@5.0.102(zod@4.1.13))
       '@hono/arktype-validator':
         specifier: ^2.0.1
         version: 2.0.1(arktype@2.1.27)(hono@4.10.6)
@@ -1859,6 +1857,11 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@exalabs/ai-sdk@1.0.4':
+    resolution: {integrity: sha512-BftMFleSjgGFvCOEmVryqAFHyNq4hvZ38xlb882i2iPXRzt/jHjPUwrcQ3rOoAkCN/iSID/2p7syP1C0+Lmi+A==}
+    peerDependencies:
+      ai: ^5.0.83
 
   '@faker-js/faker@10.1.0':
     resolution: {integrity: sha512-C3mrr3b5dRVlKPJdfrAXS8+dq+rq8Qm5SNRazca0JKgw1HQERFmrVb0towvMmw5uu8hHKNiQasMaR/tydf3Zsg==}
@@ -9988,6 +9991,11 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
+  '@exalabs/ai-sdk@1.0.4(ai@5.0.102(zod@4.1.13))':
+    dependencies:
+      ai: 5.0.102(zod@4.1.13)
+      zod: 3.25.76
+
   '@faker-js/faker@10.1.0': {}
 
   '@floating-ui/core@1.7.3':
@@ -12647,7 +12655,7 @@ snapshots:
 
   app-builder-bin@5.0.0-alpha.12: {}
 
-  app-builder-lib@26.0.12(patch_hash=405f899b7f3093a8a8b1e2b3f0cffc2167c088dea2093fabd09545678f7ca753)(dmg-builder@26.0.12)(electron-builder-squirrel-windows@26.0.12):
+  app-builder-lib@26.0.12(dmg-builder@26.0.12)(electron-builder-squirrel-windows@26.0.12):
     dependencies:
       '@develar/schema-utils': 2.6.5
       '@electron/asar': 3.2.18
@@ -13382,7 +13390,7 @@ snapshots:
 
   dmg-builder@26.0.12(electron-builder-squirrel-windows@26.0.12):
     dependencies:
-      app-builder-lib: 26.0.12(patch_hash=405f899b7f3093a8a8b1e2b3f0cffc2167c088dea2093fabd09545678f7ca753)(dmg-builder@26.0.12)(electron-builder-squirrel-windows@26.0.12)
+      app-builder-lib: 26.0.12(dmg-builder@26.0.12)(electron-builder-squirrel-windows@26.0.12)
       builder-util: 26.0.11
       builder-util-runtime: 9.3.1
       fs-extra: 10.1.0
@@ -13501,7 +13509,7 @@ snapshots:
 
   electron-builder-squirrel-windows@26.0.12(dmg-builder@26.0.12):
     dependencies:
-      app-builder-lib: 26.0.12(patch_hash=405f899b7f3093a8a8b1e2b3f0cffc2167c088dea2093fabd09545678f7ca753)(dmg-builder@26.0.12)(electron-builder-squirrel-windows@26.0.12)
+      app-builder-lib: 26.0.12(dmg-builder@26.0.12)(electron-builder-squirrel-windows@26.0.12)
       builder-util: 26.0.11
       electron-winstaller: 5.4.0
     transitivePeerDependencies:
@@ -13511,7 +13519,7 @@ snapshots:
 
   electron-builder@26.0.12(electron-builder-squirrel-windows@26.0.12):
     dependencies:
-      app-builder-lib: 26.0.12(patch_hash=405f899b7f3093a8a8b1e2b3f0cffc2167c088dea2093fabd09545678f7ca753)(dmg-builder@26.0.12)(electron-builder-squirrel-windows@26.0.12)
+      app-builder-lib: 26.0.12(dmg-builder@26.0.12)(electron-builder-squirrel-windows@26.0.12)
       builder-util: 26.0.11
       builder-util-runtime: 9.3.1
       chalk: 4.1.2

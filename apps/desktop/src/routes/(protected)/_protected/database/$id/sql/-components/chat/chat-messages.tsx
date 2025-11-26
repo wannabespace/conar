@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiEarthLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { isToolUIPart } from 'ai'
 import { regex } from 'arkregex'
@@ -244,6 +244,10 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loadi
       )
     }
 
+    if (part.type === 'source-url') {
+      return null
+    }
+
     return null
   })
 }
@@ -319,6 +323,16 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
 
   const isLoading = isLast ? status === 'streaming' || status === 'submitted' : false
 
+  const isSearchingWeb = isLoading && message.parts.some(part =>
+    isToolUIPart(part)
+    && part.type === 'tool-webSearch'
+    && (part.state === 'input-streaming' || part.state === 'input-available'),
+  )
+
+  const sources = message.parts
+    .filter(part => part.type === 'source-url')
+    .map(part => ({ url: (part as { url: string }).url }))
+
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
       <div
@@ -326,6 +340,53 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
         className="duration-150"
       >
         <div ref={ref}>
+          {sources.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {sources.map((source, index) => {
+                const hostname = (() => {
+                  try {
+                    return new URL(source.url).hostname
+                  }
+                  catch {
+                    return source.url
+                  }
+                })()
+
+                return (
+                  <a
+                    key={index}
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-2 py-1 text-xs bg-accent hover:bg-accent/80 rounded-md border transition-colors group/source"
+                  >
+                    {hostname
+                      ? (
+                          <>
+                            <img
+                              src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
+                              alt=""
+                              className="size-3 shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none'
+                                const earthIcon = e.currentTarget.nextElementSibling
+                                if (earthIcon) {
+                                  (earthIcon as HTMLElement).style.display = 'block'
+                                }
+                              }}
+                            />
+                            <RiEarthLine className="size-3 shrink-0 text-muted-foreground hidden" />
+                          </>
+                        )
+                      : <RiEarthLine className="size-3 shrink-0 text-muted-foreground" />}
+                    <span className="font-medium truncate max-w-[200px] group-hover/source:text-primary">
+                      {hostname.replace('www.', '')}
+                    </span>
+                  </a>
+                )
+              })}
+            </div>
+          )}
           <ChatMessageParts
             parts={message.parts}
             loading={isLoading}
@@ -335,7 +396,7 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
       <div className="sticky bottom-0 z-30 flex items-center justify-between -mr-1 mt-2 gap-1">
         <div className={cn('duration-150', isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
           <AssistantMessageLoader>
-            {status === 'submitted' ? 'Thinking...' : 'Writing...'}
+            {isSearchingWeb ? 'Searching the web...' : status === 'submitted' ? 'Thinking...' : 'Writing...'}
           </AssistantMessageLoader>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover/message:opacity-100 transition-opacity duration-150">

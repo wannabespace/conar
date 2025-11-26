@@ -58,6 +58,13 @@ export const tools = {
     }),
     outputSchema: z.any(),
   }),
+  webSearch: tool({
+    description: 'Search the web for information when the user asks about external resources, provided URLs, or needs current information beyond the database schema.',
+    inputSchema: z.object({
+      query: z.string().describe('The search query, or the url provided by user.'),
+    }),
+    outputSchema: z.any(),
+  }),
 }
 
 export type AppUIMessage = UIMessage<

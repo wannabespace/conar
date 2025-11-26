@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiErrorWarningLine, RiHammerLine, RiLoader4Line } from '@remixicon/react'
+import { RiEarthLine, RiErrorWarningLine, RiHammerLine, RiLoader4Line } from '@remixicon/react'
 import { AnimatePresence, motion } from 'motion/react'
 import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
@@ -28,6 +28,14 @@ function getToolLabel(tool: ToolUIPart<InferUITools<typeof tools>>) {
       return `Select data from ${schema ? `"${schema}".` : ''}${tool.input.tableAndSchema?.tableName ? `"${tool.input.tableAndSchema.tableName}"` : '...'}`
     }
     return 'Select data from ...'
+  }
+  if (tool.type === 'tool-webSearch') {
+    if (tool.input && typeof tool.input === 'object' && 'query' in tool.input) {
+      const query = typeof tool.input.query === 'string' ? tool.input.query : ''
+      const trimmedQuery = query.length > 30 ? `${query.slice(0, 30)}...` : query
+      return `Searching the web for "${trimmedQuery}"`
+    }
+    return 'Searching the web...'
   }
 
   return 'Unknown tool'
@@ -68,6 +76,10 @@ function getToolDescription(tool: ToolUIPart<InferUITools<typeof tools>>): React
     )
   }
 
+  if (tool.type === 'tool-webSearch') {
+    return 'Agent searched the web for information.'
+  }
+
   return null
 }
 
@@ -99,6 +111,8 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
   const description = getToolDescription(tool)
   const Icon = STATE_ICONS[tool.state]
 
+  const isWebSearch = tool.type === 'tool-webSearch'
+
   return (
     <SingleAccordion className={cn('my-4', className)}>
       <SingleAccordionTrigger>
@@ -116,7 +130,9 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Icon className="size-4 shrink-0" />
+                      {isWebSearch && tool.state === 'output-available'
+                        ? <RiEarthLine className="size-4 shrink-0 text-muted-foreground" />
+                        : <Icon className="size-4 shrink-0" />}
                     </TooltipTrigger>
                     <TooltipContent>
                       {STATE_LABELS[tool.state]}
@@ -131,7 +147,61 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
       </SingleAccordionTrigger>
       <SingleAccordionContent className="pb-0">
         {description && <div className="text-xs text-muted-foreground mb-4">{description}</div>}
-        {tool.state === 'output-available' && (
+        {tool.state === 'output-available' && isWebSearch && tool.type === 'tool-webSearch' && (
+          <div className="space-y-2 mb-2">
+            {tool.output && typeof tool.output === 'object' && 'results' in tool.output && Array.isArray(tool.output.results) && (
+              <div className="flex flex-wrap gap-2">
+                {tool.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }, index: number) => {
+                  const hostname = (() => {
+                    try {
+                      return new URL(result.url).hostname
+                    }
+                    catch {
+                      return ''
+                    }
+                  })()
+
+                  const displayText = result.title || hostname.replace('www.', '')
+                  const trimmedText = displayText.length > 40 ? `${displayText.slice(0, 40)}...` : displayText
+
+                  return (
+                    <a
+                      key={`${result.url}-${index}`}
+                      href={result.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-2 py-1 text-xs bg-accent hover:bg-accent/80 rounded-md border transition-colors group"
+                    >
+                      {hostname
+                        ? (
+                            <>
+                              <img
+                                src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
+                                alt=""
+                                className="size-3 shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none'
+                                  const earthIcon = e.currentTarget.nextElementSibling
+                                  if (earthIcon) {
+                                    (earthIcon as HTMLElement).style.display = 'block'
+                                  }
+                                }}
+                              />
+                              <RiEarthLine className="size-3 shrink-0 text-muted-foreground hidden" />
+                            </>
+                          )
+                        : <RiEarthLine className="size-3 shrink-0 text-muted-foreground" />}
+                      <span className="font-medium group-hover:text-primary">
+                        {trimmedText}
+                      </span>
+                    </a>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        {tool.state === 'output-available' && !isWebSearch && (
           <Monaco
             value={JSON.stringify(tool.output)}
             language="json"
@@ -140,7 +210,9 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
           />
         )}
         {tool.state === 'input-streaming' && (
-          <div className="text-xs text-muted-foreground italic">Waiting for tool response...</div>
+          <div className="text-xs text-muted-foreground italic">
+            {isWebSearch ? 'Searching the web...' : 'Waiting for tool response...'}
+          </div>
         )}
         {tool.state === 'output-error' && (
           <div className="text-xs text-destructive">Tool call failed.</div>
