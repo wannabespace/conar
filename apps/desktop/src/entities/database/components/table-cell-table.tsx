@@ -51,7 +51,11 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
         id: column.id,
         size: columnsSizeMap.get(column.type) ?? DEFAULT_COLUMN_WIDTH,
         cell: props => (
-          <TableCellContent cell={props}>
+          <TableCellContent
+            value={props.value}
+            position={props.position}
+            style={props.style}
+          >
             <span className="truncate">
               {getDisplayValue(props.value, props.size)}
             </span>

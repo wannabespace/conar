@@ -309,7 +309,8 @@ export function TableCell({
         onMouseLeave={disableInteractIfPossible}
         className={cellClassName}
         style={style}
-        cell={{ value, position }}
+        value={value}
+        position={position}
       >
         <span className="truncate">{displayValue}</span>
         {!!value && column.foreign && <ForeignButton />}
@@ -366,7 +367,8 @@ export function TableCell({
                 <TableCellContent
                   className={cellClassName}
                   style={style}
-                  cell={{ value, position }}
+                  value={value}
+                  position={position}
                 >
                   <span className="truncate">{displayValue}</span>
                   {!!value && column.foreign && (
