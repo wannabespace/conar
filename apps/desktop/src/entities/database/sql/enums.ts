@@ -42,19 +42,21 @@ export const enumsQuery = createQuery({
         .selectFrom('information_schema.COLUMNS')
         .select([
           'TABLE_SCHEMA as schema',
+          'TABLE_NAME as table',
           'COLUMN_TYPE as value',
           'COLUMN_NAME as name',
         ])
         .where('DATA_TYPE', '=', 'enum')
         .where('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
-        .groupBy('value')
         .groupBy('TABLE_SCHEMA')
+        .groupBy('TABLE_NAME')
         .groupBy('COLUMN_NAME')
+        .groupBy('COLUMN_TYPE')
         .execute()
 
       return query.map(row => ({
         schema: row.schema,
-        name: row.name,
+        name: `${row.table}.${row.name}`,
         values: row.value
           .replace(/^enum\(/, '')
           .replace(/\)$/, '')
