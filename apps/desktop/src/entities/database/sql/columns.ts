@@ -80,7 +80,6 @@ export const columnsQuery = createQuery({
       .where(({ and, eb }) => and([
         eb('TABLE_SCHEMA', '=', schema),
         eb('TABLE_NAME', '=', table),
-        eb('DATA_TYPE', '!=', 'enum'),
       ]))
       .execute(),
   }),

@@ -1,4 +1,4 @@
-import type { ComponentProps, ComponentType } from 'react'
+import type { ComponentType, CSSProperties } from 'react'
 
 export * from './body'
 export {
@@ -10,14 +10,16 @@ export * from './header'
 export * from './provider'
 export * from './table'
 
-export interface TableCellProps extends Pick<ComponentProps<'div'>, 'style' | 'className'>, Pick<ColumnRenderer, 'size' | 'id'> {
+export interface TableCellProps extends Pick<ColumnRenderer, 'size' | 'id'> {
+  style: CSSProperties
   rowIndex: number
   columnIndex: number
   value: unknown
   position: 'first' | 'last' | 'middle'
 }
 
-export interface TableHeaderCellProps extends Pick<ComponentProps<'div'>, 'style' | 'className'>, Pick<ColumnRenderer, 'size' | 'id'> {
+export interface TableHeaderCellProps extends Pick<ColumnRenderer, 'size' | 'id'> {
+  style: CSSProperties
   columnIndex: number
   position: 'first' | 'last' | 'middle'
 }

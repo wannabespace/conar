@@ -35,10 +35,20 @@
     "target": [
       {
         "target": "nsis",
-        "arch": ["x64"]
+        "arch": ["x64", "ia32"]
+      },
+      {
+        "target": "msi",
+        "arch": ["x64", "ia32"]
       }
     ],
-    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
+    "azureSignOptions": {
+      "publisherName": "Wannabe Space, LLC",
+      "endpoint": "https://eus.codesigning.azure.net/",
+      "codeSigningAccountName": "Conar",
+      "certificateProfileName": "Conar"
+    }
   },
   "nsis": {
     "oneClick": false,
