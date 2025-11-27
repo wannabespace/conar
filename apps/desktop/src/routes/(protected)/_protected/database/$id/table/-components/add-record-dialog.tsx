@@ -4,12 +4,11 @@ import type { Column } from '~/entities/database/utils/table'
 import { Button } from '@conar/ui/components/button'
 import { Calendar } from '@conar/ui/components/calendar'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
-import { AutoCompleteIcon } from '@conar/ui/components/icons/auto-complete'
-import { ChevronDownIcon } from '@conar/ui/components/icons/chevron-down'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Switch } from '@conar/ui/components/switch'
+import { RiArrowDownSLine, RiInformationFill } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useImperativeHandle, useState } from 'react'
@@ -181,7 +180,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
               placeholder={`Enter ${column.type}`}
             />
             <div className="text-xs text-muted-foreground">
-              <AutoCompleteIcon />
+              <RiInformationFill className="size-3 text-muted-foreground" />
               Auto
             </div>
           </div>
@@ -221,7 +220,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
                           type="button"
                         >
                           {formattedDateDisplay}
-                          <ChevronDownIcon className="ml-2 h-4 w-4" />
+                          <RiArrowDownSLine className="ml-2 h-4 w-4" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
@@ -274,7 +273,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
                       type="button"
                     >
                       {formattedDateDisplay}
-                      <ChevronDownIcon className="ml-2 h-4 w-4" />
+                      <RiArrowDownSLine className="ml-2 h-4 w-4" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -307,7 +306,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
             placeholder={`Enter ${column.type}`}
           />
           <div className="text-xs text-muted-foreground">
-            <AutoCompleteIcon />
+            <RiInformationFill className="size-3 text-muted-foreground" />
             Auto
           </div>
         </div>
