@@ -13,10 +13,10 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
+import { databaseStore } from '~/entities/database'
 import { orpcQuery } from '~/lib/orpc'
 import { Route } from '../..'
 import { chatHooks } from '../../-page'
-import { databaseStore } from '../../../../-store'
 import { ChatImages } from './chat-images'
 
 function Images({ databaseId }: { databaseId: string }) {

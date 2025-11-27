@@ -59,4 +59,4 @@ globalThis.MonacoEnvironment = {
   },
 }
 
-monaco.typescript.typescriptDefaults.setEagerModelSync(true)
+monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true)

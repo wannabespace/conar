@@ -13,10 +13,10 @@ import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
 import { useIsFetching } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { databaseStore } from '~/entities/database'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
-import { databaseStore } from '../../../../-store'
 import { useRunnerContext } from './runner-context'
 
 function RunnerEditorQueryZone({

@@ -5,13 +5,14 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import {
   databasesCollection,
+  databaseStore,
+  getDatabasePageId,
   lastOpenedDatabases,
   prefetchDatabaseCore,
 } from '~/entities/database'
 import { QueryLogger } from '~/entities/database/components/query-logger'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
-import { databaseStore, getDatabasePageId } from './-store'
 
 export const Route = createFileRoute('/(protected)/_protected/database/$id')({
   component: DatabasePage,
@@ -62,7 +63,7 @@ function DatabasePage() {
   }
 
   return (
-    <div className="min-h-[inherit] h-screen flex bg-gray-100 dark:bg-neutral-950/60">
+    <div className="flex bg-gray-100 dark:bg-neutral-950/60">
       <DatabaseSidebar className="w-16" />
       <div className="h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))] m-2 ml-0 flex flex-col">
         <ResizablePanelGroup

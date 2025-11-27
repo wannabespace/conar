@@ -37,7 +37,10 @@ function IndeterminateCheckbox({
   )
 }
 
-export function SelectionHeaderCell({ columnIndex, className, size, keys }: TableHeaderCellProps & { keys: string[] }) {
+export function SelectionHeaderCell({ columnIndex, className, size, keys }: TableHeaderCellProps & {
+  keys: string[]
+  className?: string
+}) {
   const rows = useTableContext(state => state.rows)
   const store = usePageStoreContext()
   const [checked, indeterminate] = useStore(store, state => [
@@ -70,7 +73,10 @@ export function SelectionHeaderCell({ columnIndex, className, size, keys }: Tabl
   )
 }
 
-export function SelectionCell({ rowIndex, columnIndex, className, size, keys }: TableCellProps & { keys: string[] }) {
+export function SelectionCell({ rowIndex, columnIndex, className, size, keys }: TableCellProps & {
+  keys: string[]
+  className?: string
+}) {
   const store = usePageStoreContext()
   const rows = useTableContext(state => state.rows)
   const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])))

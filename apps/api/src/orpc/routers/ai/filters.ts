@@ -14,7 +14,7 @@ export const filters = orpc
     context: 'string',
   }))
   .handler(async ({ input, signal, context }) => {
-    consola.info('sql filters input', input.prompt)
+    consola.info('[SQL FILTERS] input', input.prompt)
 
     const { object } = await generateObject({
       model: withPosthog(google('gemini-2.0-flash'), {
@@ -78,7 +78,7 @@ export const filters = orpc
       output: 'object',
     })
 
-    consola.info('sql filters result object', object)
+    consola.info('[SQL FILTERS] response', JSON.stringify(object, null, 2))
 
     return object
   })

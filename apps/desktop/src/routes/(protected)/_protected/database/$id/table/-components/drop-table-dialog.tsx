@@ -18,10 +18,9 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseTablesAndSchemasQuery, dropTableQuery } from '~/entities/database'
+import { databaseStore, databaseTablesAndSchemasQuery, dropTableQuery, removeTab } from '~/entities/database'
 import { queryClient } from '~/main'
 import { Route } from '..'
-import { databaseStore, removeTab } from '../../../-store'
 
 interface DropTableDialogProps {
   ref: React.RefObject<{

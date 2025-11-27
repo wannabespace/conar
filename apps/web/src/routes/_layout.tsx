@@ -20,7 +20,7 @@ function MainLayout() {
   const blurTranslateY = useTransform(() => `${Math.min((NAVBAR_HEIGHT_BASE - scrollY.get()) * -1, 0)}px`)
 
   return (
-    <motion.div style={{ '--navbar-height': navbarHeightPx } as React.CSSProperties}>
+    <motion.div style={{ '--navbar-height': navbarHeightPx }}>
       <div className="sticky top-0 w-full h-(--navbar-height) z-50 bg-gray-100 dark:bg-neutral-950">
         <div className="relative h-full flex items-center w-full container mx-auto">
           <Navbar className="w-full" />
