@@ -7,6 +7,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Switch } from '@conar/ui/components/switch'
 import { RiArrowDownSLine, RiInformationFill } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -14,6 +15,7 @@ import dayjs from 'dayjs'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { databaseRowsQuery } from '~/entities/database'
+import { useDatabaseEnums } from '~/entities/database/queries/enums'
 import { columnsQuery } from '~/entities/database/sql/columns'
 import { buildInitialValues, buildInsertPayload, getPrimaryKeyColumns, insertRecordQuery } from '~/entities/database/sql/record'
 import { queryClient } from '~/main'
@@ -28,6 +30,7 @@ interface AddRecordDialogProps {
 export function AddRecordDialog({ ref }: AddRecordDialogProps) {
   const [open, setOpen] = useState(false)
   const { database } = Route.useRouteContext()
+  const { data: enums } = useDatabaseEnums({ database })
   const [schema, setSchema] = useState('')
   const [table, setTable] = useState('')
   const [columns, setColumns] = useState<ExtendedColumn[]>([])
@@ -150,6 +153,28 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
 
   const renderInputField = (column: Column) => {
     const value = values[column.id]
+
+    const enumType = enums?.find(e => e.name === column.type || (column.type === 'enum' && e.name === column.id))
+
+    if (enumType) {
+      return (
+        <Select
+          value={String(value || '')}
+          onValueChange={val => handleValueChange(column.id, val)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={`Select ${column.id}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {enumType.values.map(val => (
+              <SelectItem key={val} value={val}>
+                {val}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )
+    }
 
     if (column.type === 'boolean') {
       const boolValue = value === true

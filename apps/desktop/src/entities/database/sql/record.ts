@@ -265,9 +265,10 @@ export const insertRecordQuery = createQuery({
       )
 
       return db
-        .withSchema(schema as unknown as never)
-        .insertInto(table as unknown as never)
-        .values(payload as never)
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .insertInto(table)
+        .values(payload)
         .execute()
     },
     mysql: ({ db }) => {
@@ -276,9 +277,10 @@ export const insertRecordQuery = createQuery({
       )
 
       return db
-        .withSchema(schema as unknown as never)
-        .insertInto(table as unknown as never)
-        .values(payload as never)
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .insertInto(table)
+        .values(payload)
         .execute()
     },
   }),
