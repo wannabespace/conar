@@ -73,7 +73,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
       }
       catch (error) {
         console.error('Error fetching table columns:', error)
-        toast.error('Failed to fetch table columns')
+        toast.error(`Failed to fetch table columns ${error instanceof Error ? error.message : String(error)}`)
       }
     },
   }), [])
@@ -113,7 +113,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
     },
     onError: (error: unknown) => {
       console.error('Error inserting record:', error)
-      toast.error(`Failed to insert record: ${(error as Error).message}`)
+      toast.error(`Failed to insert record: ${error instanceof Error ? error.message : String(error)}`)
     },
   })
 

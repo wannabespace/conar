@@ -29,7 +29,7 @@ export function prepareValue(value: unknown, type?: string, database?: typeof da
       return JSON.parse(value)
     }
     catch (error) {
-      toast.error('Invalid array input: Please enter a valid JSON array.')
+      toast.error(`Invalid array input: Please enter a valid JSON array. ${error instanceof Error ? error.message : String(error)}`)
       console.error('Invalid array input:', error)
       return value
     }
