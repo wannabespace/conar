@@ -25,8 +25,8 @@ export function createWindow() {
   mainWindow = new BrowserWindow({
     width,
     height,
-    minWidth: 500,
-    minHeight: 500,
+    minWidth: 600,
+    minHeight: 600,
     focusable: true,
     // titleBarStyle: 'default',
     // vibrancy: 'fullscreen-ui', // on MacOS
