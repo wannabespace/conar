@@ -16,6 +16,14 @@ pg.types.setTypeParser(pg.types.builtins.TIMETZ, parseDate)
 
 export const poolMap: Map<string, InstanceType<typeof pg.Pool>> = new Map()
 
+function removePool(connectionString: string) {
+  const pool = poolMap.get(connectionString)
+  if (pool) {
+    poolMap.delete(connectionString)
+    pool.end().catch(() => null)
+  }
+}
+
 app.on('before-quit', () => {
   poolMap.forEach(pool => pool.end())
 })
@@ -34,6 +42,10 @@ export function getPool(connectionString: string) {
     ...config,
     ...(typeof ssl === 'object' ? { ssl: readSSLFiles(ssl) } : {}),
     ...(typeof ssl === 'boolean' ? { ssl } : {}),
+  })
+
+  pool.on('remove', () => {
+    removePool(connectionString)
   })
 
   poolMap.set(connectionString, pool)
