@@ -5,19 +5,19 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
-import todesktop from '@todesktop/runtime'
 import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
 
-todesktop.init()
 initElectronEvents()
 
 export const store = new Store<{
   bounds?: Rectangle
 }>()
 
-const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
+const todesktop = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
+const { autoUpdater } = todesktop;
+todesktop.init()
 
 let mainWindow: BrowserWindow | null = null
 
@@ -120,7 +120,6 @@ autoUpdater.on('checking-for-update', () => {
   sendUpdatesStatus('checking')
 })
 autoUpdater.on('update-available', () => {
-  autoUpdater.downloadUpdate()
   sendUpdatesStatus('downloading')
 })
 autoUpdater.on('update-not-available', () => {
@@ -133,5 +132,5 @@ autoUpdater.on('download-progress', () => {
   sendUpdatesStatus('downloading')
 })
 autoUpdater.on('update-downloaded', (event) => {
-  sendUpdatesStatus('ready', typeof event.releaseNotes === 'string' ? event.releaseNotes : undefined)
+  sendUpdatesStatus('ready')
 })

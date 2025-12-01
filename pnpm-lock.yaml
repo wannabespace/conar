@@ -87,9 +87,6 @@ catalogs:
     pg:
       specifier: ^8.16.3
       version: 8.16.3
-    postgres:
-      specifier: ^3.4.7
-      version: 3.4.7
     react:
       specifier: ^19.2.0
       version: 19.2.0
@@ -315,9 +312,6 @@ importers:
       electron-store:
         specifier: ^11.0.2
         version: 11.0.2
-      electron-updater:
-        specifier: ^6.6.2
-        version: 6.6.2
       mysql2:
         specifier: 'catalog:'
         version: 3.15.3

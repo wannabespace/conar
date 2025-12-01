@@ -26,11 +26,10 @@
     "drizzle:generate-custom": "drizzle-kit generate --custom && bun run ./scripts/compile-migrations.ts"
   },
   "dependencies": {
+    "@todesktop/runtime": "2.1.3",
     "electron-store": "^11.0.2",
-    "electron-updater": "^6.6.2",
     "mysql2": "catalog:",
-    "pg": "catalog:",
-    "@todesktop/runtime": "2.1.3"
+    "pg": "catalog:"
   },
   "devDependencies": {
     "@ai-sdk/react": "^2.0.102",
@@ -70,6 +69,7 @@
     "@tiptap/extension-placeholder": "^3.11.0",
     "@tiptap/react": "^3.11.0",
     "@tiptap/starter-kit": "^3.11.0",
+    "@todesktop/cli": "1.18.0",
     "@toon-format/toon": "catalog:",
     "@types/pg": "catalog:",
     "@types/react": "catalog:",
@@ -113,8 +113,7 @@
     "uuid": "catalog:",
     "vite": "catalog:",
     "vite-tsconfig-paths": "^5.1.4",
-    "zod": "catalog:",
-    "@todesktop/cli": "1.18.0"
+    "zod": "catalog:"
   },
   "homepage": "https://conar.app"
 }

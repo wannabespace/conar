@@ -5,7 +5,7 @@ import { app, ipcMain } from 'electron'
 import { getPool as getMysqlPool } from '../databases/mysql'
 import { getPool as getPgPool } from '../databases/pg'
 
-const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
+const { autoUpdater } = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
 
 const encryption = {
   encrypt: async (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),
@@ -43,7 +43,7 @@ const _app = {
     return autoUpdater.checkForUpdates()
   },
   quitAndInstall: () => {
-    autoUpdater.quitAndInstall()
+    autoUpdater.restartAndInstall()
   },
 }
 
