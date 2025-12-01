@@ -5,10 +5,12 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
+import todesktop from '@todesktop/runtime'
 import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
 
+todesktop.init()
 initElectronEvents()
 
 export const store = new Store<{
