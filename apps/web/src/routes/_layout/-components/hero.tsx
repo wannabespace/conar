@@ -9,6 +9,7 @@ import { DownloadButton } from '~/components/download-button'
 const words = {
   [DatabaseType.Postgres]: 'Postgres',
   [DatabaseType.MySQL]: 'MySQL',
+  [DatabaseType.ClickHouse]: 'ClickHouse',
 } satisfies Record<DatabaseType, string>
 
 export function Hero({ className }: { className?: string }) {

@@ -41,7 +41,7 @@ export const rowsQuery = createQuery({
     filtersConcatOperator?: 'AND' | 'OR'
     select?: string[]
   }) => ({
-    postgres: ({ db }) => {
+    postgres: (db) => {
       const order = Object.entries(orderBy ?? {})
 
       let query = db
@@ -62,7 +62,28 @@ export const rowsQuery = createQuery({
 
       return query.execute()
     },
-    mysql: ({ db }) => {
+    mysql: (db) => {
+      const order = Object.entries(orderBy ?? {})
+
+      let query = db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .$if(select !== undefined, qb => qb.select(select!))
+        .$if(select === undefined, qb => qb.selectAll())
+        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
+        .limit(limit)
+        .offset(offset)
+
+      if (order.length > 0) {
+        order.forEach(([column, order]) => {
+          query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
+        })
+      }
+
+      return query.execute()
+    },
+    clickhouse: (db) => {
       const order = Object.entries(orderBy ?? {})
 
       let query = db

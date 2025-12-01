@@ -2,7 +2,7 @@ import type { databases } from '~/drizzle'
 import type { queryToRunType } from '~/entities/database'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { databaseStore, executeSql, hasDangerousSqlKeywords } from '~/entities/database'
+import { databaseStore, executeAndLogSql, hasDangerousSqlKeywords } from '~/entities/database'
 
 export * from './runner'
 
@@ -42,8 +42,8 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
         }
 
         try {
-          const result = await executeSql(database, query)
-          results.push(transformResult({ rows: result.rows, query, startLineNumber, endLineNumber }))
+          const { result } = await executeAndLogSql({ database, sql: query })
+          results.push(transformResult({ rows: result as unknown[], query, startLineNumber, endLineNumber }))
         }
         catch (error) {
           results.push(transformError({ error, query, startLineNumber, endLineNumber }))

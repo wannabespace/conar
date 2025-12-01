@@ -1,4 +1,5 @@
 import type { databases } from '~/drizzle'
+import { DatabaseType } from '@conar/shared/enums/database-type'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
@@ -118,16 +119,18 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
                 autoComplete="off"
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="cascade"
-                checked={cascade}
-                onCheckedChange={() => setCascade(!cascade)}
-              />
-              <Label htmlFor="cascade" className="font-normal">
-                Drop tables that depend on this table (CASCADE)
-              </Label>
-            </div>
+            {database.type !== DatabaseType.ClickHouse && (
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="cascade"
+                  checked={cascade}
+                  onCheckedChange={() => setCascade(!cascade)}
+                />
+                <Label htmlFor="cascade" className="font-normal">
+                  Drop tables that depend on this table (CASCADE)
+                </Label>
+              </div>
+            )}
           </div>
         </DialogHeader>
         <DialogFooter className="mt-4 flex gap-2">
