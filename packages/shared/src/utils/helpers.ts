@@ -46,7 +46,18 @@ export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(fun
       return cache.get(key)!
     }
     const result = func(...args)
-    cache.set(key, result)
+
+    // Handle promise rejections by removing from cache on failure
+    if (result instanceof Promise) {
+      cache.set(key, result)
+      result.catch(() => {
+        cache.delete(key)
+      })
+    }
+    else {
+      cache.set(key, result)
+    }
+
     return result
   }
 }
