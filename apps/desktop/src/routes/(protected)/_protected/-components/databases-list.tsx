@@ -3,6 +3,7 @@ import type { databases } from '~/drizzle'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
+import { ButtonGroup } from '@conar/ui/components/button-group'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Skeleton } from '@conar/ui/components/skeleton'
 import { copy } from '@conar/ui/lib/copy'
@@ -10,7 +11,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { DatabaseIcon, databasesCollection, useDatabaseLinkParams } from '~/entities/database'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
@@ -103,20 +104,22 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
   )
 }
 
-export function Empty() {
+export function Empty({ isFiltered }: { isFiltered?: boolean }) {
   return (
     <div className="text-center bg-card border-2 border-dashed border-border/50 rounded-xl p-14 w-full m-auto group">
       <h2 className="text-foreground font-medium mt-6">
-        No connections found
+        {isFiltered ? 'No connections match this filter' : 'No connections found'}
       </h2>
       <p className="text-sm text-muted-foreground mt-1 mb-4 whitespace-pre-line">
-        Create a new connection to get started.
+        {isFiltered ? 'Try selecting a different label or clear the filter.' : 'Create a new connection to get started.'}
       </p>
-      <Button asChild>
-        <Link to="/create">
-          Create a new connection
-        </Link>
-      </Button>
+      {!isFiltered && (
+        <Button asChild>
+          <Link to="/create">
+            Create a new connection
+          </Link>
+        </Button>
+      )}
     </div>
   )
 }
@@ -139,13 +142,50 @@ export function DatabasesList() {
     .orderBy(({ databases }) => databases.createdAt, 'desc'))
   const renameDialogRef = useRef<ComponentRef<typeof RenameConnectionDialog>>(null)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
+  const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
+
+  const availableLabels = databases
+    ? Array.from(new Set(databases.map(db => db.label).filter(Boolean) as string[])).sort()
+    : []
+
+  const filteredDatabases = !databases
+    ? undefined
+    : !selectedLabel
+        ? databases
+        : databases.filter(db => db.label === selectedLabel)
 
   return (
     <div className="flex flex-col gap-6">
       <RemoveConnectionDialog ref={removeDialogRef} />
       <RenameConnectionDialog ref={renameDialogRef} />
+      {availableLabels.length > 0 && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Filter by label:</span>
+          <ButtonGroup>
+            <Button
+              variant={selectedLabel === null ? 'default' : 'outline'}
+              size="xs"
+              onClick={() => setSelectedLabel(null)}
+              className="border!"
+            >
+              All
+            </Button>
+            {availableLabels.map(label => (
+              <Button
+                key={label}
+                variant={selectedLabel === label ? 'default' : 'outline'}
+                size="xs"
+                onClick={() => setSelectedLabel(label)}
+                className="border!"
+              >
+                {label}
+              </Button>
+            ))}
+          </ButtonGroup>
+        </div>
+      )}
       <div className="flex flex-col gap-2">
-        {!databases
+        {!filteredDatabases
           ? (
               <>
                 <DatabaseCardSkeleton />
@@ -153,8 +193,8 @@ export function DatabasesList() {
                 <DatabaseCardSkeleton />
               </>
             )
-          : databases?.length
-            ? databases.map(database => (
+          : filteredDatabases?.length
+            ? filteredDatabases.map(database => (
                 <DatabaseCard
                   key={database.id}
                   database={database}
@@ -166,7 +206,7 @@ export function DatabasesList() {
                   }}
                 />
               ))
-            : <Empty />}
+            : <Empty isFiltered={selectedLabel !== null} />}
       </div>
     </div>
   )
