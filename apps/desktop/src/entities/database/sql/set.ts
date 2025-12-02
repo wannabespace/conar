@@ -14,14 +14,21 @@ export const setQuery = createQuery({
     values: Record<string, unknown>
     filters: ActiveFilter[]
   }) => ({
-    postgres: ({ db }) => db
+    postgres: db => db
       .withSchema(schema)
       .withTables<{ [table]: Record<string, unknown> }>()
       .updateTable(table)
       .set(values)
       .where(eb => buildWhere(eb, filters))
       .execute(),
-    mysql: ({ db }) => db
+    mysql: db => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .updateTable(table)
+      .set(values)
+      .where(eb => buildWhere(eb, filters))
+      .execute(),
+    clickhouse: db => db
       .withSchema(schema)
       .withTables<{ [table]: Record<string, unknown> }>()
       .updateTable(table)

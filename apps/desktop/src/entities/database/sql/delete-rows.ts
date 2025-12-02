@@ -7,7 +7,7 @@ export const deleteRowsQuery = createQuery({
     // [{ id: 1, email: 'test@test.com' }, { id: 2, email: 'test2@test.com' }]
     primaryKeys: Record<string, unknown>[]
   }) => ({
-    postgres: ({ db }) => db
+    postgres: db => db
       .withSchema(schema)
       .withTables<{ [table]: Record<string, unknown> }>()
       .deleteFrom(table)
@@ -15,7 +15,15 @@ export const deleteRowsQuery = createQuery({
         Object.entries(pk).map(([key, value]) => eb(key, '=', value)),
       ))))
       .execute(),
-    mysql: ({ db }) => db
+    mysql: db => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .deleteFrom(table)
+      .where(({ or, and, eb }) => or(primaryKeys.map(pk => and(
+        Object.entries(pk).map(([key, value]) => eb(key, '=', value)),
+      ))))
+      .execute(),
+    clickhouse: db => db
       .withSchema(schema)
       .withTables<{ [table]: Record<string, unknown> }>()
       .deleteFrom(table)

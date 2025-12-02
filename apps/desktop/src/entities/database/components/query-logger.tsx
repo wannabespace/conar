@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import type { QueryLog } from '../dialects'
+import type { SqlLog } from '../sql'
 import type { databases } from '~/drizzle'
 import { sleep } from '@conar/shared/utils/helpers'
 import { Button } from '@conar/ui/components/button'
@@ -18,7 +18,7 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
 import { databaseStore } from '~/entities/database'
 import { formatSql } from '~/lib/formatter'
-import { queriesLogStore } from '../dialects'
+import { sqlLogsStore } from '../sql'
 
 type QueryStatus = 'error' | 'success' | 'pending'
 
@@ -33,7 +33,7 @@ function getStatusIcon(status: QueryStatus) {
   return <RiTimeLine className="size-4 text-warning" />
 }
 
-function getQueryStatus(query: QueryLog) {
+function getQueryStatus(query: SqlLog) {
   if (query.error)
     return 'error'
   if (query.result !== null)
@@ -41,7 +41,7 @@ function getQueryStatus(query: QueryLog) {
   return 'pending'
 }
 
-function LogTrigger({ query, className, ...props }: { query: QueryLog } & ComponentProps<'button'>) {
+function LogTrigger({ query, className, ...props }: { query: SqlLog } & ComponentProps<'button'>) {
   const status = getQueryStatus(query)
   const truncatedQuery = query.sql.replaceAll('\n', ' ')
   const shortQuery = truncatedQuery.length > 500 ? `${truncatedQuery.substring(0, 500)}...` : truncatedQuery
@@ -84,7 +84,7 @@ const monacoOptions = {
   folding: false,
 }
 
-function Log({ query, className, database }: { query: QueryLog, className?: string, database: typeof databases.$inferSelect }) {
+function Log({ query, className, database }: { query: SqlLog, className?: string, database: typeof databases.$inferSelect }) {
   const [isOpen, setIsOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
 
@@ -173,7 +173,7 @@ export function QueryLogger({ database, className }: {
   className?: string
 }) {
   const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
-  const queries = useStore(queriesLogStore, state => Object.values(state[database.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()))
+  const queries = useStore(sqlLogsStore, state => Object.values(state[database.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()))
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
   const [isClearing, setIsClearing] = useState(false)
   const store = databaseStore(database.id)
@@ -200,7 +200,7 @@ export function QueryLogger({ database, className }: {
 
   const clearQueries = () => {
     setIsClearing(true)
-    queriesLogStore.setState(state => ({
+    sqlLogsStore.setState(state => ({
       ...state,
       [database.id]: {},
     } satisfies typeof state))
