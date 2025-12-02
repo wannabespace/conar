@@ -33,9 +33,8 @@ function getToolLabel(tool: ToolUIPart<InferUITools<typeof tools>>) {
   if (tool.type === 'tool-webSearch') {
     if (tool.input && typeof tool.input === 'object' && 'query' in tool.input) {
       const query = typeof tool.input.query === 'string' ? tool.input.query : ''
-      const trimmedQuery = query.length > 30 ? `${query.slice(0, 30)}...` : query
 
-      return `Searching the web for "${trimmedQuery}"`
+      return `Searching the web for "${query}"`
     }
     return 'Searching the web...'
   }
@@ -115,7 +114,7 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
 
   return (
     <SingleAccordion className={cn('my-4', className)}>
-      <SingleAccordionTrigger>
+      <SingleAccordionTrigger className="min-w-0">
         <span className="relative flex items-center justify-center size-4 shrink-0">
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
@@ -141,9 +140,18 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
             </motion.span>
           </AnimatePresence>
         </span>
-        <span className="flex-1 min-w-0 truncate" title={label}>
-          {label}
-        </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+                {label}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="max-w-sm">{label}</div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </SingleAccordionTrigger>
       <SingleAccordionContent className="pb-0">
         {description && <div className="text-xs text-muted-foreground mb-4">{description}</div>}
@@ -165,21 +173,31 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
                           })()
 
                           const displayText = result.title || hostname.replace('www.', '')
-                          const trimmedText = displayText.length > 40 ? `${displayText.slice(0, 40)}...` : displayText
 
                           return (
-                            <a
-                              key={`${part.toolCallId}-${index}`}
-                              href={result.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-accent/20 hover:bg-accent/40 rounded-md border transition-colors group"
-                            >
-                              <FaviconWithFallback hostname={hostname} />
-                              <span className="font-medium group-hover:text-primary">
-                                {trimmedText}
-                              </span>
-                            </a>
+                            <TooltipProvider key={`${part.toolCallId}-${index}`}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <a
+                                    href={result.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 px-1.5 py-0.5 text-xs bg-accent/20 hover:bg-accent/40 rounded-md border transition-colors group min-w-0 max-w-full"
+                                  >
+                                    <FaviconWithFallback hostname={hostname} />
+                                    <span className="font-medium group-hover:text-primary overflow-hidden text-ellipsis whitespace-nowrap">
+                                      {displayText}
+                                    </span>
+                                  </a>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div className="max-w-xs">
+                                    <div className="font-medium">{displayText}</div>
+                                    <div className="text-xs text-muted-foreground mt-1">{result.url}</div>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           )
                         })}
                       </div>
