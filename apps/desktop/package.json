@@ -25,6 +25,7 @@
     "drizzle:generate-custom": "drizzle-kit generate --custom && bun run ./scripts/compile-migrations.ts"
   },
   "dependencies": {
+    "@clickhouse/client": "^1.14.0",
     "electron-store": "^11.0.2",
     "electron-updater": "^6.6.2",
     "mysql2": "catalog:",

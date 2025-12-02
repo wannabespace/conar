@@ -10,7 +10,7 @@ import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, selectQuer
 import { TableCell } from '~/entities/database/components/table-cell'
 import { queryClient } from '~/main'
 import { Route } from '..'
-import { columnsSizeMap, selectSymbol } from '../-lib'
+import { getColumnSize, selectSymbol } from '../-lib'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
 import { TableEmpty } from './table-empty'
@@ -224,7 +224,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       .toSorted((a, b) => a.primaryKey ? -1 : b.primaryKey ? 1 : 0)
       .map(column => ({
         id: column.id,
-        size: (columnsSizeMap.get(column.type) ?? DEFAULT_COLUMN_WIDTH)
+        size: getColumnSize(column.type)
           // 25 it's a ~size of the button, 6 it's a ~size of the number
           + (column.references?.length ? 25 + 6 : 0)
           + (column.foreign ? 25 : 0),
@@ -232,7 +232,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           return (
             <TableCell
               column={column}
-              onSaveValue={saveValue}
+              onSaveValue={primaryColumns.length > 0 ? saveValue : undefined}
               {...props}
             />
           )

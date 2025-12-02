@@ -18,14 +18,12 @@ export function StepType({ type, setType }: { type: DatabaseType | null, setType
           value={type ?? undefined}
           onValueChange={value => setType(value as DatabaseType)}
         >
-          <ToggleGroupItem value={DatabaseType.Postgres} aria-label="Postgres">
-            <DatabaseIcon type={DatabaseType.Postgres} className="size-4 shrink-0 text-primary" />
-            {databaseLabels[DatabaseType.Postgres]}
-          </ToggleGroupItem>
-          <ToggleGroupItem value={DatabaseType.MySQL} aria-label="MySQL">
-            <DatabaseIcon type={DatabaseType.MySQL} className="size-4 shrink-0 text-primary" />
-            {databaseLabels[DatabaseType.MySQL]}
-          </ToggleGroupItem>
+          {Object.values(DatabaseType).map(type => (
+            <ToggleGroupItem key={type} value={type} aria-label={databaseLabels[type]}>
+              <DatabaseIcon type={type} className="size-4 shrink-0 text-primary" />
+              {databaseLabels[type]}
+            </ToggleGroupItem>
+          ))}
           <ToggleGroupItem value="" disabled aria-label="MongoDB">
             <MongoIcon />
             MongoDB (soon)

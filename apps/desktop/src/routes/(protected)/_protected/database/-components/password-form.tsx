@@ -10,7 +10,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { databasesCollection, executeSqlWithConnectionString } from '~/entities/database'
+import { databasesCollection, executeSql } from '~/entities/database'
 
 export function PasswordForm({ database }: { database: typeof databases.$inferSelect }) {
   const router = useRouter()
@@ -25,11 +25,10 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
 
   const { mutate: savePassword, status } = useMutation({
     mutationFn: async (password: string) => {
-      await executeSqlWithConnectionString({
+      await executeSql({
         type: database.type,
-        sql: 'SELECT 1',
-        values: [],
         connectionString: newConnectionString,
+        sql: 'SELECT 1',
       })
       databasesCollection.update(database.id, {
         metadata: {
@@ -50,7 +49,8 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
     },
     onError: (error) => {
       toast.error('We couldn\'t connect to the database', {
-        description: error.message,
+        // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
+        description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
       })
     },
   })

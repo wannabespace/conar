@@ -1,3 +1,4 @@
+import { useNetwork } from '@conar/ui/hookas/use-network'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useEffect, useEffectEvent } from 'react'
 import { toast } from 'sonner'
@@ -13,6 +14,7 @@ export function AuthObserver() {
   const { data, error, isPending, refetch } = authClient.useSession()
   const router = useRouter()
   const location = useLocation()
+  const { online } = useNetwork()
 
   const isSignedInButServerError = !!bearerToken.get() && !!error
 
@@ -53,9 +55,9 @@ export function AuthObserver() {
   }, [router, isPending, data?.user, location.pathname, isSignedInButServerError])
 
   useEffect(() => {
-    if (isSignedInButServerError)
+    if (isSignedInButServerError && online)
       toast.error('Something went wrong with our server. You can continue working, but some features may not work as expected.')
-  }, [isSignedInButServerError])
+  }, [isSignedInButServerError, online])
 
   async function handle(url: string) {
     const { type } = await handleDeepLink(url)

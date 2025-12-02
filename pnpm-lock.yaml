@@ -87,9 +87,6 @@ catalogs:
     pg:
       specifier: ^8.16.3
       version: 8.16.3
-    postgres:
-      specifier: ^3.4.7
-      version: 3.4.7
     react:
       specifier: ^19.2.0
       version: 19.2.0
@@ -309,6 +306,9 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@clickhouse/client':
+        specifier: ^1.14.0
+        version: 1.14.0
       electron-store:
         specifier: ^11.0.2
         version: 11.0.2
@@ -1243,6 +1243,13 @@ packages:
 
   '@clack/prompts@0.8.2':
     resolution: {integrity: sha512-6b9Ab2UiZwJYA9iMyboYyW9yJvAO9V753ZhS+DHKEjZRKAxPPOb7MXXu84lsPFG+vZt6FRFniZ8rXi+zCIw4yQ==}
+
+  '@clickhouse/client-common@1.14.0':
+    resolution: {integrity: sha512-CyUcv2iCkZ1A++vmOSufYRpHR3aAWVfbrWed7ATzf0yyx/BW/2SEqlL07vBpSRa3BIkQe/DSOHVv8JkWZpUOwQ==}
+
+  '@clickhouse/client@1.14.0':
+    resolution: {integrity: sha512-co2spjR7wZoZ3Ck0H/jv76bpiuO3oJHtOmq9/gxFiod2DcT9NFg01u/hXcG8MJFnEJuMB6e3vGqS6IOnLwHqRw==}
+    engines: {node: '>=16'}
 
   '@commitlint/cli@20.1.0':
     resolution: {integrity: sha512-pW5ujjrOovhq5RcYv5xCpb4GkZxkO2+GtOdBW2/qrr0Ll9tl3PX0aBBobGQl3mdZUbOBgwAexEQLeH6uxL0VYg==}
@@ -9326,6 +9333,12 @@ snapshots:
       '@clack/core': 0.3.5
       picocolors: 1.1.1
       sisteransi: 1.0.5
+
+  '@clickhouse/client-common@1.14.0': {}
+
+  '@clickhouse/client@1.14.0':
+    dependencies:
+      '@clickhouse/client-common': 1.14.0
 
   '@commitlint/cli@20.1.0(@types/node@24.5.0)(typescript@5.9.3)':
     dependencies:

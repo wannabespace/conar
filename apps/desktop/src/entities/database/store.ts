@@ -10,6 +10,12 @@ export const tabType = type({
   preview: 'boolean',
 })
 
+export const queryToRunType = type({
+  startLineNumber: 'number',
+  endLineNumber: 'number',
+  query: 'string',
+})
+
 const pageStoreType = type({
   lastOpenedPage: 'string | null',
   lastOpenedChatId: 'string | null',
@@ -24,11 +30,7 @@ const pageStoreType = type({
     endLineNumber: 'number',
     queries: 'string[]',
   }).array(),
-  queriesToRun: type({
-    startLineNumber: 'number',
-    endLineNumber: 'number',
-    query: 'string',
-  }).array(),
+  queriesToRun: queryToRunType.array(),
   files: 'File[]',
   loggerOpened: 'boolean',
   chatInput: 'string',
