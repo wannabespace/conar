@@ -1,7 +1,7 @@
 import type { ComponentProps, RefObject } from 'react'
 import type { databases } from '~/drizzle'
 import type { tabType } from '~/entities/database'
-import { getOS } from '@conar/shared/utils/os'
+import { getOS, isCtrlAndKey } from '@conar/shared/utils/os'
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
@@ -11,9 +11,11 @@ import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { motion, Reorder } from 'motion/react'
-import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
-import { addTab, databaseStore, prefetchDatabaseTableCore, removeTab, reorderTabs } from '~/entities/database'
+import { useEffect, useEffectEvent, useRef } from 'react'
+import { addTab, databaseStore, prefetchDatabaseTableCore, removeTab, updateTabs } from '~/entities/database'
 import { getPageStoreState } from '../-store'
+
+const MotionScrollViewport = motion.create(ScrollViewport)
 
 const os = getOS(navigator.userAgent)
 
@@ -142,10 +144,6 @@ function SortableTab({
   )
 }
 
-const MotionScrollViewport = motion.create(({ ref, ...props }: ComponentProps<typeof ScrollViewport> & { ref?: React.RefObject<HTMLDivElement | null> }) => (
-  <ScrollViewport {...props} ref={ref} />
-))
-
 export function TablesTabs({
   database,
   className,
@@ -224,7 +222,7 @@ export function TablesTabs({
     removeTab(database.id, schema, table)
   }
 
-  useKeyboardEvent(e => e.key === 'w' && (e.metaKey || e.ctrlKey), (e) => {
+  useKeyboardEvent(e => isCtrlAndKey(e, 'w'), (e) => {
     e.preventDefault()
 
     if (schemaParam && tableParam) {
@@ -232,14 +230,14 @@ export function TablesTabs({
     }
   })
 
-  const isOneSchema = useMemo(() => tabs.length
+  const isOneSchema = tabs.length
     ? tabs.every(tab => tab.schema === tabs[0]?.schema) && schemaParam === tabs[0]?.schema
-    : true, [tabs, schemaParam])
+    : true
 
-  const tabItems = useMemo(() => tabs.map(tab => ({
-    id: tab.table,
+  const tabItems = tabs.map(tab => ({
+    id: `${tab.schema}:${tab.table}`,
     tab,
-  })), [tabs])
+  }))
 
   return (
     <ScrollArea>
@@ -251,7 +249,7 @@ export function TablesTabs({
           axis="x"
           values={tabItems}
           onReorder={(newItems) => {
-            reorderTabs(database.id, newItems.map(item => item.tab))
+            updateTabs(database.id, newItems.map(item => item.tab))
           }}
           className="flex gap-1"
         >

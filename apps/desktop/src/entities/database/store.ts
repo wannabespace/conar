@@ -190,7 +190,7 @@ export function removeTab(id: string, schema: string, table: string) {
   } satisfies typeof prev))
 }
 
-export function reorderTabs(id: string, newTabs: typeof tabType.infer[]) {
+export function updateTabs(id: string, newTabs: typeof tabType.infer[]) {
   const store = databaseStore(id)
 
   store.setState(state => ({
