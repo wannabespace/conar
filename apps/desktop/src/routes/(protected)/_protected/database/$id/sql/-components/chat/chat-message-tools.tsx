@@ -34,6 +34,7 @@ function getToolLabel(tool: ToolUIPart<InferUITools<typeof tools>>) {
     if (tool.input && typeof tool.input === 'object' && 'query' in tool.input) {
       const query = typeof tool.input.query === 'string' ? tool.input.query : ''
       const trimmedQuery = query.length > 30 ? `${query.slice(0, 30)}...` : query
+
       return `Searching the web for "${trimmedQuery}"`
     }
     return 'Searching the web...'
@@ -112,89 +113,92 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
   const description = getToolDescription(tool)
   const Icon = STATE_ICONS[tool.state]
 
-  const isWebSearch = tool.type === 'tool-webSearch'
-
   return (
     <SingleAccordion className={cn('my-4', className)}>
       <SingleAccordionTrigger>
-        <span className="flex items-center gap-2">
-          <span className="relative flex items-center justify-center size-4 shrink-0">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={tool.state}
-                initial={{ opacity: 0, scale: 0.8, rotate: 10 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 0.8, rotate: -10 }}
-                transition={{ duration: 0.15 }}
-                className="absolute inset-0 flex items-center justify-center"
-              >
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      {isWebSearch && tool.state === 'output-available'
-                        ? <RiEarthLine className="size-4 shrink-0 text-muted-foreground" />
-                        : <Icon className="size-4 shrink-0" />}
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {STATE_LABELS[tool.state]}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </motion.span>
-            </AnimatePresence>
-          </span>
+        <span className="relative flex items-center justify-center size-4 shrink-0">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={tool.state}
+              initial={{ opacity: 0, scale: 0.8, rotate: 10 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              exit={{ opacity: 0, scale: 0.8, rotate: -10 }}
+              transition={{ duration: 0.15 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {tool.type === 'tool-webSearch' && tool.state === 'output-available'
+                      ? <RiEarthLine className="size-4 shrink-0 text-muted-foreground" />
+                      : <Icon className="size-4 shrink-0" />}
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {STATE_LABELS[tool.state]}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </motion.span>
+          </AnimatePresence>
+        </span>
+        <span className="flex-1 min-w-0 truncate" title={label}>
           {label}
         </span>
       </SingleAccordionTrigger>
       <SingleAccordionContent className="pb-0">
         {description && <div className="text-xs text-muted-foreground mb-4">{description}</div>}
-        {tool.state === 'output-available' && isWebSearch && tool.type === 'tool-webSearch' && (
-          <div className="space-y-2 mb-2">
-            {tool.output && typeof tool.output === 'object' && 'results' in tool.output && Array.isArray(tool.output.results) && (
-              <div className="flex flex-wrap gap-2">
-                {tool.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }, index: number) => {
-                  const hostname = (() => {
-                    try {
-                      return new URL(result.url).hostname
-                    }
-                    catch {
-                      return ''
-                    }
-                  })()
+        {tool.state === 'output-available' && (
+          <>
+            {tool.type === 'tool-webSearch'
+              ? (
+                  <div className="space-y-2 mb-2">
+                    {tool.output && typeof tool.output === 'object' && 'results' in tool.output && Array.isArray(tool.output.results) && (
+                      <div className="flex flex-wrap gap-2">
+                        {tool.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }, index: number) => {
+                          const hostname = (() => {
+                            try {
+                              return new URL(result.url).hostname
+                            }
+                            catch {
+                              return ''
+                            }
+                          })()
 
-                  const displayText = result.title || hostname.replace('www.', '')
-                  const trimmedText = displayText.length > 40 ? `${displayText.slice(0, 40)}...` : displayText
+                          const displayText = result.title || hostname.replace('www.', '')
+                          const trimmedText = displayText.length > 40 ? `${displayText.slice(0, 40)}...` : displayText
 
-                  return (
-                    <a
-                      key={`${part.toolCallId}-${index}`}
-                      href={result.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-2 py-1 text-xs bg-accent hover:bg-accent/80 rounded-md border transition-colors group"
-                    >
-                      <FaviconWithFallback hostname={hostname} />
-                      <span className="font-medium group-hover:text-primary">
-                        {trimmedText}
-                      </span>
-                    </a>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )}
-        {tool.state === 'output-available' && !isWebSearch && (
-          <Monaco
-            value={JSON.stringify(tool.output)}
-            language="json"
-            options={monacoOptions}
-            className="h-[200px] max-h-[50vh] -mx-2"
-          />
+                          return (
+                            <a
+                              key={`${part.toolCallId}-${index}`}
+                              href={result.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-accent/20 hover:bg-accent/40 rounded-md border transition-colors group"
+                            >
+                              <FaviconWithFallback hostname={hostname} />
+                              <span className="font-medium group-hover:text-primary">
+                                {trimmedText}
+                              </span>
+                            </a>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              : (
+                  <Monaco
+                    value={JSON.stringify(tool.output)}
+                    language="json"
+                    options={monacoOptions}
+                    className="h-[200px] max-h-[50vh] -mx-2"
+                  />
+                )}
+          </>
         )}
         {tool.state === 'input-streaming' && (
           <div className="text-xs text-muted-foreground italic">
-            {isWebSearch ? 'Searching the web...' : 'Waiting for tool response...'}
+            {tool.type === 'tool-webSearch' ? 'Searching the web...' : 'Waiting for tool response...'}
           </div>
         )}
         {tool.state === 'output-error' && (
