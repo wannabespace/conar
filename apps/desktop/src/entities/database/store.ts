@@ -1,5 +1,4 @@
 import type { FileRoutesById } from '~/routeTree.gen'
-import { arrayMove } from '@dnd-kit/sortable'
 import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { toast } from 'sonner'
@@ -191,20 +190,13 @@ export function removeTab(id: string, schema: string, table: string) {
   } satisfies typeof prev))
 }
 
-export function moveTab(id: string, activeId: string | number, overId: string | number) {
+export function updateTabs(id: string, newTabs: typeof tabType.infer[]) {
   const store = databaseStore(id)
 
-  store.setState((state) => {
-    const items = state.tabs ?? []
-
-    const oldIndex = items.findIndex(item => item.table === activeId)
-    const newIndex = items.findIndex(item => item.table === overId)
-
-    return {
-      ...state,
-      tabs: arrayMove(items, oldIndex, newIndex),
-    } satisfies typeof state
-  })
+  store.setState(state => ({
+    ...state,
+    tabs: newTabs,
+  } satisfies typeof state))
 }
 
 const MAX_PINNED_TABLES = 10
