@@ -193,7 +193,7 @@ export function DatabasesList() {
                 <DatabaseCardSkeleton />
               </>
             )
-          : filteredDatabases?.length
+          : filteredDatabases.length
             ? filteredDatabases.map(database => (
                 <DatabaseCard
                   key={database.id}
