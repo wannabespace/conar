@@ -17,6 +17,7 @@ import { useRunnerEditorQueryZones } from './runner-editor-query-zones'
 const dialectsMap = {
   postgres: LanguageIdEnum.PG,
   mysql: LanguageIdEnum.MYSQL,
+  clickhouse: LanguageIdEnum.MYSQL,
 } satisfies Record<DatabaseType, LanguageIdEnum>
 
 function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {

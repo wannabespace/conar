@@ -36,3 +36,24 @@ export type MaybePromise<T> = T | Promise<T>
 export type MaybeArray<T> = T | T[]
 
 export interface ErrorMessage<T extends string> { __errorMessage: T }
+
+export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F) {
+  const cache = new Map<string, ReturnType<F>>()
+
+  return (...args: Parameters<F>) => {
+    const key = JSON.stringify(args)
+    if (cache.has(key)) {
+      return cache.get(key)!
+    }
+    const result = func(...args)
+    cache.set(key, result)
+
+    if (result instanceof Promise) {
+      result.catch(() => {
+        cache.delete(key)
+      })
+    }
+
+    return result
+  }
+}
