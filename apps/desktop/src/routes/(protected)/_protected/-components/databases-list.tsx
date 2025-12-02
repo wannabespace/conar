@@ -11,21 +11,19 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { DatabaseIcon, databasesCollection, useDatabaseLinkParams } from '~/entities/database'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
 function DatabaseCard({ database, onRemove, onRename }: { database: typeof databases.$inferSelect, onRemove: () => void, onRename: () => void }) {
-  const connectionString = useMemo(() => {
-    const url = new SafeURL(database.connectionString)
+  const url = new SafeURL(database.connectionString)
 
-    if (database.isPasswordExists || url.password) {
-      url.password = '*'.repeat(url.password.length || 6)
-    }
+  if (database.isPasswordExists || url.password) {
+    url.password = '*'.repeat(url.password.length || 6)
+  }
 
-    return url.toString()
-  }, [database.connectionString, database.isPasswordExists])
+  const connectionString = url.toString()
 
   const params = useDatabaseLinkParams(database.id)
 
