@@ -9,7 +9,7 @@ export const columnType = type({
   'default': 'string | null',
   'type': 'string',
   'editable?': 'boolean',
-  'nullable': 'boolean | 1 | 0', // MySQL returns 1 or 0 in runtime
+  'nullable': 'boolean | 1 | 0',
 })
   .pipe(({ editable, nullable, ...data }) => ({
     ...data,
@@ -17,10 +17,22 @@ export const columnType = type({
     isNullable: Boolean(nullable),
   }))
 
+function getClickhouseColumnType(type: string): string {
+  if (type.startsWith('Enum')) {
+    return type.match(/^Enum\d+/)?.[0] || 'Enum'
+  }
+
+  if (type.startsWith('Nullable(') && type.endsWith(')')) {
+    return type.slice(9, -1)
+  }
+
+  return type
+}
+
 export const columnsQuery = createQuery({
   type: columnType.array(),
   query: ({ schema, table }: { schema: string, table: string }) => ({
-    postgres: ({ db }) => db
+    postgres: db => db
       .selectFrom('information_schema.columns')
       .select(eb => [
         'table_schema as schema',
@@ -61,7 +73,7 @@ export const columnsQuery = createQuery({
         eb('table_name', '=', table),
       ]))
       .execute(),
-    mysql: ({ db }) => db
+    mysql: db => db
       .selectFrom('information_schema.COLUMNS')
       .select(eb => [
         'TABLE_SCHEMA as schema',
@@ -70,18 +82,46 @@ export const columnsQuery = createQuery({
         'COLUMN_DEFAULT as default',
         eb.fn.coalesce('DATA_TYPE', 'COLUMN_TYPE').as('type'),
         eb
-          .case()
-          .when('IS_NULLABLE', '=', 'YES')
-          .then(true)
-          .else(false)
+          .case('IS_NULLABLE')
+          .when('YES')
+          .then(1)
+          .else(0)
           .end()
+          .$castTo<1 | 0>()
           .as('nullable'),
       ])
       .where(({ and, eb }) => and([
         eb('TABLE_SCHEMA', '=', schema),
         eb('TABLE_NAME', '=', table),
-        eb('DATA_TYPE', '!=', 'enum'),
       ]))
       .execute(),
+    clickhouse: async (db) => {
+      const query = await db
+        .selectFrom('information_schema.columns')
+        .select(eb => [
+          'table_schema as schema',
+          'table_name as table',
+          'column_name as id',
+          'column_default as default',
+          'data_type as type',
+          eb.case('is_nullable')
+            .when(1)
+            .then(true)
+            .else(false)
+            .end()
+            .as('nullable'),
+          sql<boolean>`true`.as('editable'),
+        ])
+        .where(({ and, eb }) => and([
+          eb('table_schema', '=', schema),
+          eb('table_name', '=', table),
+        ]))
+        .execute()
+
+      return query.map(row => ({
+        ...row,
+        type: getClickhouseColumnType(row.type),
+      }))
+    },
   }),
 })

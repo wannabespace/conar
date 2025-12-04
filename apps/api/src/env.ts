@@ -25,6 +25,7 @@ const envType = type({
   GITHUB_CLIENT_ID: 'string',
   GITHUB_CLIENT_SECRET: 'string',
   BANNER_TEXT: 'string?',
+  EXA_API_KEY: 'string',
 })
 
 const devOptionalEnvs = [
@@ -41,6 +42,7 @@ const devOptionalEnvs = [
   'GOOGLE_CLIENT_SECRET',
   'GITHUB_CLIENT_ID',
   'GITHUB_CLIENT_SECRET',
+  'EXA_API_KEY',
 ] satisfies (keyof typeof envType.infer)[]
 
 export const env = nodeEnv === 'production' || nodeEnv === 'test'

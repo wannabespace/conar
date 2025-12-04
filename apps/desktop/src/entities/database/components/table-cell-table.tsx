@@ -13,7 +13,7 @@ import { TableEmpty } from '~/routes/(protected)/_protected/database/$id/table/-
 import { TableHeaderCell } from '~/routes/(protected)/_protected/database/$id/table/-components/table-header-cell'
 import { TableInfiniteLoader } from '~/routes/(protected)/_protected/database/$id/table/-components/table-infinite-loader'
 import { TableBodySkeleton } from '~/routes/(protected)/_protected/database/$id/table/-components/table-skeleton'
-import { columnsSizeMap } from '~/routes/(protected)/_protected/database/$id/table/-lib'
+import { getColumnSize } from '~/routes/(protected)/_protected/database/$id/table/-lib'
 import { useTableColumns } from '~/routes/(protected)/_protected/database/$id/table/-queries/use-columns-query'
 import { DEFAULT_ROW_HEIGHT } from '..'
 import { getDisplayValue } from '../lib/render'
@@ -49,9 +49,13 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
       .toSorted((a, b) => a.primaryKey ? -1 : b.primaryKey ? 1 : 0)
       .map(column => ({
         id: column.id,
-        size: columnsSizeMap.get(column.type) ?? DEFAULT_COLUMN_WIDTH,
+        size: getColumnSize(column.type),
         cell: props => (
-          <TableCellContent cell={props}>
+          <TableCellContent
+            value={props.value}
+            position={props.position}
+            style={props.style}
+          >
             <span className="truncate">
               {getDisplayValue(props.value, props.size)}
             </span>

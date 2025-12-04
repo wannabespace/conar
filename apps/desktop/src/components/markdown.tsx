@@ -48,6 +48,12 @@ function useMarkdownContext<T>(selector: ContextSelector<MarkdownContextType, T>
   return useContextSelector(MarkdownContext, selector)
 }
 
+function A({ target, rel, ...props }: ComponentProps<'a'>) {
+  return (
+    <a {...props} target="_blank" rel="noopener noreferrer" />
+  )
+}
+
 const monacoOptions = {
   readOnly: true,
   lineNumbers: 'off' as const,
@@ -156,6 +162,7 @@ function MarkdownBase({ content }: { content: string }) {
         p: P,
         th: TableHead,
         td: TableCell,
+        a: A,
       }}
       children={processedContent}
     />

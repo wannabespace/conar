@@ -1,7 +1,9 @@
 import type { InferUITools, UIDataTypes, UIMessage } from 'ai'
+import { SQL_OPERATORS } from '@conar/shared/filters/sql'
+import { webSearch } from '@exalabs/ai-sdk'
 import { tool } from 'ai'
 import * as z from 'zod'
-import { SQL_OPERATORS } from './filters/sql'
+import { env } from '~/env'
 
 export const tools = {
   columns: tool({
@@ -58,6 +60,7 @@ export const tools = {
     }),
     outputSchema: z.any(),
   }),
+  webSearch: webSearch({ apiKey: env.EXA_API_KEY }),
 }
 
 export type AppUIMessage = UIMessage<

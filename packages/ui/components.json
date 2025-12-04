@@ -13,8 +13,8 @@
   "aliases": {
     "components": "@conar/ui/components",
     "utils": "@conar/ui/lib/utils",
-    "hooks": "@conar/ui/hooks",
+    "ui": "@conar/ui/components",
     "lib": "@conar/ui/lib",
-    "ui": "@conar/ui/components"
+    "hooks": "@conar/ui/hooks"
   }
 }

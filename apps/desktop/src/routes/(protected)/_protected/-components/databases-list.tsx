@@ -32,10 +32,10 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
     <Link
       className={cn(
         'relative flex items-center justify-between gap-4',
-        'rounded-lg p-5 bg-muted/30 border overflow-hidden border-border/50 border-l-5 transition-all duration-100 group',
+        'rounded-lg p-5 bg-muted/30 border overflow-hidden border-border/50 border-l-4 group',
         database.color
           ? 'hover:border-(--color)/60 border-l-(--color)/60'
-          : ' hover:border-primary/60',
+          : 'hover:border-primary/60',
       )}
       style={database.color ? { '--color': database.color } : {}}
       {...params}
@@ -53,7 +53,9 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
       </div>
       <div className="flex flex-1 flex-col min-w-0">
         <div className="font-medium tracking-tight truncate flex items-center gap-2">
-          {database.name}
+          <span className={database.color ? 'text-(--color) group-hover:text-(--color)/80' : ''}>
+            {database.name}
+          </span>
           {database.label && (
             <Badge variant="secondary">
               {database.label}

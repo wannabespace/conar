@@ -1,3 +1,4 @@
+import { DatabaseType } from '@conar/shared/enums/database-type'
 import { FlipWords } from '@conar/ui/components/aceternity/flip-words'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
@@ -5,7 +6,11 @@ import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { DownloadButton } from '~/components/download-button'
 
-const words = ['Postgres', 'MySQL']
+const words = {
+  [DatabaseType.Postgres]: 'Postgres',
+  [DatabaseType.MySQL]: 'MySQL',
+  [DatabaseType.ClickHouse]: 'ClickHouse',
+} satisfies Record<DatabaseType, string>
 
 export function Hero({ className }: { className?: string }) {
   const { scrollY } = useScroll()
@@ -31,7 +36,7 @@ export function Hero({ className }: { className?: string }) {
             transition={{ duration: 0.5, delay: 0.05 }}
           >
             <FlipWords
-              words={words}
+              words={Object.values(words)}
               duration={2000}
             />
           </motion.span>
