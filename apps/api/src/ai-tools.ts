@@ -1,7 +1,9 @@
 import type { InferUITools, UIDataTypes, UIMessage } from 'ai'
+import { SQL_OPERATORS } from '@conar/shared/filters/sql'
+import { webSearch } from '@exalabs/ai-sdk'
 import { tool } from 'ai'
 import * as z from 'zod'
-import { SQL_OPERATORS } from './filters/sql'
+import { env } from '~/env'
 
 export const tools = {
   columns: tool({
@@ -58,13 +60,7 @@ export const tools = {
     }),
     outputSchema: z.any(),
   }),
-  webSearch: tool({
-    description: 'Search the web for information when the user asks about external resources, provided URLs, or needs current information beyond the database schema.',
-    inputSchema: z.object({
-      query: z.string().describe('The search query, or the url provided by user.'),
-    }),
-    outputSchema: z.any(),
-  }),
+  webSearch: webSearch({ apiKey: env.EXA_API_KEY }),
 }
 
 export type AppUIMessage = UIMessage<
@@ -75,12 +71,6 @@ export type AppUIMessage = UIMessage<
   UIDataTypes,
   InferUITools<typeof tools>
 >
-
-export interface SourceUrlPart {
-  type: 'source-url'
-  url: string
-  sourceId: string
-}
 
 export function convertToAppUIMessage(message: UIMessage): AppUIMessage {
   return message as AppUIMessage

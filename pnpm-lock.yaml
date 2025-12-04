@@ -87,6 +87,9 @@ catalogs:
     pg:
       specifier: ^8.16.3
       version: 8.16.3
+    postgres:
+      specifier: ^3.4.7
+      version: 3.4.7
     react:
       specifier: ^19.2.0
       version: 19.2.0
@@ -695,9 +698,6 @@ importers:
       '@conar/configs':
         specifier: workspace:*
         version: link:../configs
-      ai:
-        specifier: 'catalog:'
-        version: 5.0.102(zod@4.1.13)
       arktype:
         specifier: 'catalog:'
         version: 2.1.27

@@ -1,10 +1,8 @@
-import type { AppUIMessage } from '@conar/shared/ai-tools'
 import type { LanguageModel } from 'ai'
+import type { AppUIMessage } from '~/ai-tools'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
-import { convertToAppUIMessage, tools } from '@conar/shared/ai-tools'
 import { DatabaseType } from '@conar/shared/enums/database-type'
-import { webSearch } from '@exalabs/ai-sdk'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryable } from 'ai-retry'
@@ -12,8 +10,8 @@ import { type } from 'arktype'
 import { consola } from 'consola'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
+import { convertToAppUIMessage, tools } from '~/ai-tools'
 import { chats, chatsMessages, db } from '~/drizzle'
-import { env } from '~/env'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
 import { streamContext } from './resume-stream'
@@ -117,10 +115,7 @@ function generateStream({
       userId,
     }),
     experimental_transform: smoothStream(),
-    tools: {
-      ...tools,
-      webSearch: webSearch({ apiKey: env.EXA_API_KEY }),
-    },
+    tools,
   })
 }
 

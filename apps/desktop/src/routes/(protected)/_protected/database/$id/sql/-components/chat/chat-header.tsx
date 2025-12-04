@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '@conar/shared/ai-tools'
+import type { AppUIMessage } from '@conar/api/src/ai-tools'
 import type { chats } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'

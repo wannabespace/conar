@@ -1,4 +1,4 @@
-import type { tools } from '@conar/shared/ai-tools'
+import type { tools } from '@conar/api/src/ai-tools'
 import type { InferUITools, ToolUIPart } from 'ai'
 import type { ReactNode } from 'react'
 import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
@@ -123,7 +123,7 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
         <div className="text-xs text-muted-foreground mb-2">Agent searched the web for information.</div>
         {tool.state === 'output-available' && (
           <div className="space-y-2">
-            {tool.output && typeof tool.output === 'object' && 'results' in tool.output && Array.isArray(tool.output.results) && (
+            {!!tool.output && typeof tool.output === 'object' && 'results' in tool.output && Array.isArray(tool.output.results) && (
               <div className="flex flex-wrap gap-2">
                 {tool.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }, index: number) => {
                   const hostname = (() => {

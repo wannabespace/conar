@@ -1,5 +1,4 @@
 import type { UIMessage } from '@ai-sdk/react'
-import type { SourceUrlPart } from '@conar/shared/ai-tools'
 import type { ChatStatus } from 'ai'
 import type { ComponentProps, ReactNode } from 'react'
 import { useChat } from '@ai-sdk/react'
@@ -26,7 +25,6 @@ import { Route } from '../..'
 import { chatHooks, runnerHooks } from '../../-page'
 import { ChatImages } from './chat-images'
 import { ChatMessageTool } from './chat-message-tools'
-import { FaviconWithFallback } from './favicon-with-fallback'
 
 const COMMENT_REGEX = regex('^(?:--.*\n)+')
 
@@ -331,10 +329,6 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
     && (part.state === 'input-streaming' || part.state === 'input-available'),
   )
 
-  const sources = message.parts
-    .filter((part): part is SourceUrlPart => part.type === 'source-url')
-    .map(part => ({ url: part.url }))
-
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
       <div
@@ -342,35 +336,6 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
         className="duration-150"
       >
         <div ref={ref}>
-          {sources.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
-              {sources.map((source, index) => {
-                const hostname = (() => {
-                  try {
-                    return new URL(source.url).hostname
-                  }
-                  catch {
-                    return source.url
-                  }
-                })()
-
-                return (
-                  <a
-                    key={`${source.url}-${index}`}
-                    href={source.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-2 py-1 text-xs bg-accent hover:bg-accent/80 rounded-md border transition-colors group/source"
-                  >
-                    <FaviconWithFallback hostname={hostname} />
-                    <span className="font-medium truncate max-w-[200px] group-hover/source:text-primary">
-                      {hostname.replace('www.', '')}
-                    </span>
-                  </a>
-                )
-              })}
-            </div>
-          )}
           <ChatMessageParts
             parts={message.parts}
             loading={isLoading}

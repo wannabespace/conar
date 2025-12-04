@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '@conar/shared/ai-tools'
+import type { AppUIMessage } from '~/ai-tools'
 import { google } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { type } from 'arktype'
