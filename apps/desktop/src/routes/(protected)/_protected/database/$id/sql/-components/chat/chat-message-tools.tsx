@@ -226,8 +226,10 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
         </span>
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-left">
-              {label}
+            <TooltipTrigger asChild>
+              <span className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-left">
+                {label}
+              </span>
             </TooltipTrigger>
             <TooltipContent>
               {label}
