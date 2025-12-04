@@ -72,6 +72,7 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
       </>
     )
   }
+
   if (tool.type === 'tool-enums') {
     return (
       <>
@@ -82,6 +83,7 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
       </>
     )
   }
+
   if (tool.type === 'tool-select') {
     return (
       <>
