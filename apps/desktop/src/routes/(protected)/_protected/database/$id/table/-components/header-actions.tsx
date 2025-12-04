@@ -40,7 +40,7 @@ function HeaderActionsOrder() {
       return {
         ...state,
         orderBy: newOrderBy,
-      }
+      } satisfies typeof state
     })
   }, [store])
 
