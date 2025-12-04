@@ -244,10 +244,6 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loadi
       )
     }
 
-    if (part.type === 'source-url') {
-      return null
-    }
-
     return null
   })
 }
@@ -323,12 +319,6 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
 
   const isLoading = isLast ? status === 'streaming' || status === 'submitted' : false
 
-  const isSearchingWeb = isLoading && message.parts.some(part =>
-    isToolUIPart(part)
-    && part.type === 'tool-webSearch'
-    && (part.state === 'input-streaming' || part.state === 'input-available'),
-  )
-
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
       <div
@@ -345,7 +335,7 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
       <div className="sticky bottom-0 z-30 flex items-center justify-between -mr-1 mt-2 first:mt-0 gap-1">
         <div className={cn('duration-150', isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
           <AssistantMessageLoader>
-            {isSearchingWeb ? 'Searching the web...' : status === 'submitted' ? 'Thinking...' : 'Writing...'}
+            {status === 'submitted' ? 'Thinking...' : 'Writing...'}
           </AssistantMessageLoader>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover/message:opacity-100 transition-opacity duration-150">
@@ -405,7 +395,7 @@ function ErrorMessage({ error, className, ...props }: { error: Error } & Compone
   )
 }
 
-const MESSAGES_GAP = 32
+const MESSAGES_GAP = 16
 
 export function ChatMessages({ className }: ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()

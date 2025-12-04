@@ -241,7 +241,7 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
         <ToolDescription tool={tool} />
         {tool.state === 'input-streaming' && (
           <div className="text-xs text-muted-foreground italic">
-            {tool.type === 'tool-webSearch' ? 'Searching the web...' : 'Waiting for tool response...'}
+            Waiting for tool response...
           </div>
         )}
         {tool.state === 'output-error' && (
