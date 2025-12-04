@@ -10,7 +10,7 @@ export const totalQuery = createQuery({
     table,
     filters,
   }: { schema: string, table: string, filters?: ActiveFilter[] }) => ({
-    postgres: async ({ db }) => {
+    postgres: async (db) => {
       const query = await db
         .withSchema(schema)
         .withTables<{ [table]: Record<string, unknown> }>()
@@ -21,7 +21,18 @@ export const totalQuery = createQuery({
 
       return query[0]?.total
     },
-    mysql: async ({ db }) => {
+    mysql: async (db) => {
+      const query = await db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .select(db.fn.countAll().as('total'))
+        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+        .execute()
+
+      return query[0]?.total
+    },
+    clickhouse: async (db) => {
       const query = await db
         .withSchema(schema)
         .withTables<{ [table]: Record<string, unknown> }>()

@@ -3,7 +3,6 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./ai-tools": "./src/ai-tools.ts",
     "./constants": "./src/constants.ts",
     "./encryption": "./src/encryption.ts",
     "./enums/*": "./src/enums/*.ts",
@@ -16,7 +15,6 @@
   },
   "dependencies": {
     "@conar/configs": "workspace:*",
-    "ai": "catalog:",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
     "nanoid": "catalog:",

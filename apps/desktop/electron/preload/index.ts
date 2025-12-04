@@ -37,9 +37,10 @@ async function handleError(func: () => Promise<any>) {
 }
 
 contextBridge.exposeInMainWorld('electron', {
-  sql: {
-    postgres: arg => handleError(() => ipcRenderer.invoke('sql.postgres', arg)),
-    mysql: arg => handleError(() => ipcRenderer.invoke('sql.mysql', arg)),
+  query: {
+    postgres: arg => handleError(() => ipcRenderer.invoke('query.postgres', arg)),
+    mysql: arg => handleError(() => ipcRenderer.invoke('query.mysql', arg)),
+    clickhouse: arg => handleError(() => ipcRenderer.invoke('query.clickhouse', arg)),
   },
   encryption: {
     encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg)),

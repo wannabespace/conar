@@ -15,7 +15,7 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { databasesCollection, executeSqlWithConnectionString, prefetchDatabaseCore } from '~/entities/database'
+import { databasesCollection, executeSql, prefetchDatabaseCore } from '~/entities/database'
 import { generateRandomName } from '~/lib/utils'
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -106,11 +106,10 @@ function CreateConnectionPage() {
   })
 
   const { mutate: test, reset, status } = useMutation({
-    mutationFn: ({ type, connectionString }: { type: DatabaseType, connectionString: string }) => executeSqlWithConnectionString({
+    mutationFn: ({ type, connectionString }: { type: DatabaseType, connectionString: string }) => executeSql({
       type,
       connectionString,
       sql: 'SELECT 1',
-      values: [],
     }),
     onSuccess: () => {
       setStep('save')
@@ -118,12 +117,19 @@ function CreateConnectionPage() {
     },
     onError: (error) => {
       toast.error('We couldn\'t connect to the database', {
-        description: error.message,
+        // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
+        description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
       })
     },
   })
 
-  const [typeValue, connectionString, name, saveInCloud, label, color] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud, values.label, values.color])
+  const typeValue = useStore(form.store, state => state.values.type)
+  const connectionString = useStore(form.store, state => state.values.connectionString)
+  const name = useStore(form.store, state => state.values.name)
+  const saveInCloud = useStore(form.store, state => state.values.saveInCloud)
+  const label = useStore(form.store, state => state.values.label)
+  const color = useStore(form.store, state => state.values.color)
+  const isValid = useStore(form.store, state => state.isValid)
 
   return (
     <ScrollArea className="py-[10vh]">
@@ -241,7 +247,7 @@ function CreateConnectionPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={status === 'pending' || !form.state.isValid}
+                disabled={status === 'pending' || !isValid}
               >
                 <LoadingContent loading={status === 'pending'}>
                   <AppLogo className="w-4" />

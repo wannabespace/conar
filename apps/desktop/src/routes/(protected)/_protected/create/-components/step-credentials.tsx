@@ -1,6 +1,6 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import type { RefObject } from 'react'
-import { getProtocols } from '@conar/shared/utils/connections'
+import { placeholderMap } from '@conar/shared/utils/connections'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
@@ -27,7 +27,7 @@ export function StepCredentials({ ref, type, connectionString, setConnectionStri
         </Label>
         <Input
           id={id}
-          placeholder={`${getProtocols(type)[0]}://user:password@host:port/database?options`}
+          placeholder={placeholderMap[type]}
           ref={ref}
           autoFocus
           value={connectionString}

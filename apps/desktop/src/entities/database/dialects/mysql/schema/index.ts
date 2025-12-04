@@ -1,4 +1,4 @@
-import type { WithSchema } from '..'
+import type { WithSchema } from '../../../utils/types'
 import type { InformationSchema } from './information'
 import type { Public } from './public'
 

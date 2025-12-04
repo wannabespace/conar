@@ -11,9 +11,10 @@ import { TableCell } from '~/entities/database/components/table-cell'
 import { useDatabaseEnums } from '~/entities/database/queries/enums'
 import { queryClient } from '~/main'
 import { Route } from '..'
-import { columnsSizeMap, selectSymbol } from '../-lib'
+import { getColumnSize, selectSymbol } from '../-lib'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
+import { useHeaderActionsOrder } from './header-actions-order'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
 import { TableHeaderCell } from './table-header-cell'
@@ -52,6 +53,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
+  const { onOrder } = useHeaderActionsOrder()
 
   useEffect(() => {
     if (!rows || !store.state.selected)
@@ -182,41 +184,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     }
   }, [database, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
 
-  const setOrder = useCallback((columnId: string, order: 'ASC' | 'DESC') => {
-    store.setState(state => ({
-      ...state,
-      orderBy: {
-        ...state.orderBy,
-        [columnId]: order,
-      },
-    } satisfies typeof state))
-  }, [store])
-
-  const removeOrder = useCallback((columnId: string) => {
-    const newOrderBy = { ...store.state.orderBy }
-
-    delete newOrderBy[columnId]
-
-    store.setState(state => ({
-      ...state,
-      orderBy: newOrderBy,
-    } satisfies typeof state))
-  }, [store])
-
-  const onSort = useCallback((columnId: string) => {
-    const currentOrder = store.state.orderBy?.[columnId]
-
-    if (currentOrder === 'ASC') {
-      setOrder(columnId, 'DESC')
-    }
-    else if (currentOrder === 'DESC') {
-      removeOrder(columnId)
-    }
-    else {
-      setOrder(columnId, 'ASC')
-    }
-  }, [store, setOrder, removeOrder])
-
   const tableColumns = useMemo(() => {
     if (!columns)
       return []
@@ -226,7 +193,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       .toSorted((a, b) => a.primaryKey ? -1 : b.primaryKey ? 1 : 0)
       .map(column => ({
         id: column.id,
-        size: (columnsSizeMap.get(column.type) ?? DEFAULT_COLUMN_WIDTH)
+        size: getColumnSize(column.type)
           // 25 it's a ~size of the button, 6 it's a ~size of the number
           + (column.references?.length ? 25 + 6 : 0)
           + (column.foreign ? 25 : 0),
@@ -234,7 +201,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           return (
             <TableCell
               column={column}
-              onSaveValue={saveValue}
+              onSaveValue={primaryColumns.length > 0 ? saveValue : undefined}
               enums={enums}
               {...props}
             />
@@ -243,7 +210,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         header: props => (
           <TableHeaderCell
             column={column}
-            onSort={() => onSort(column.id)}
+            onSort={() => onOrder(column.id)}
             {...props}
           />
         ),
@@ -259,7 +226,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     }
 
     return sortedColumns
-  }, [columns, hiddenColumns, primaryColumns, saveValue, onSort, enums])
+  }, [columns, hiddenColumns, primaryColumns, saveValue, onOrder, enums])
 
   return (
     <TableProvider
