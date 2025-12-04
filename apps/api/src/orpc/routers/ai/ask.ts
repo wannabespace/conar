@@ -100,7 +100,6 @@ function generateStream({
           '',
           'You can use the following tools to help you generate the SQL code:',
           `- ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}`,
-          '- webSearch: Search the web for information when users provide URLs or ask about external content',
           '',
           'User provided context:',
           context,

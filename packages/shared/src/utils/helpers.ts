@@ -35,7 +35,14 @@ export type MaybePromise<T> = T | Promise<T>
 
 export type MaybeArray<T> = T | T[]
 
-export interface ErrorMessage<T extends string> { __errorMessage: T }
+export function getHostname(url: string) {
+  try {
+    return new URL(url).hostname
+  }
+  catch {
+    return null
+  }
+}
 
 export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F) {
   const cache = new Map<string, ReturnType<F>>()

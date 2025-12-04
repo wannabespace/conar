@@ -125,44 +125,31 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
           <div className="space-y-2">
             {!!tool.output && typeof tool.output === 'object' && 'results' in tool.output && Array.isArray(tool.output.results) && (
               <div className="flex flex-wrap gap-2">
-                {tool.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }, index: number) => {
-                  const hostname = (() => {
-                    try {
-                      return new URL(result.url).hostname
-                    }
-                    catch {
-                      return ''
-                    }
-                  })()
-
-                  const displayText = result.title || hostname.replace('www.', '')
-
-                  return (
-                    <TooltipProvider key={`${tool.toolCallId}-${index}`}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href={result.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 px-1.5 py-0.5 text-xs bg-accent/20 hover:bg-accent/40 rounded-md border transition-colors group min-w-0 max-w-full"
-                          >
-                            <FaviconWithFallback hostname={hostname} />
-                            <span className="font-medium group-hover:text-primary overflow-hidden text-ellipsis whitespace-nowrap">
-                              {displayText}
-                            </span>
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="max-w-xs">
-                            <div className="font-medium">{displayText}</div>
-                            <div className="text-xs text-muted-foreground mt-1">{result.url}</div>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )
-                })}
+                {tool.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }, index: number) => (
+                  <TooltipProvider key={`${tool.toolCallId}-${index}`}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <a
+                          href={result.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex flex-1 min-w-[200px] basis-1/3 max-w-full items-center gap-1 px-1.5 py-0.5 text-xs bg-accent/20 hover:bg-accent/40 rounded-md border transition-colors group"
+                        >
+                          <FaviconWithFallback url={result.url} className="size-3 shrink-0" />
+                          <span className="font-medium group-hover:text-primary overflow-hidden text-ellipsis whitespace-nowrap">
+                            {result.title}
+                          </span>
+                        </a>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="max-w-xs">
+                          <div className="font-medium">{result.title}</div>
+                          <div className="text-xs text-muted-foreground mt-1">{result.url}</div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ))}
               </div>
             )}
           </div>
