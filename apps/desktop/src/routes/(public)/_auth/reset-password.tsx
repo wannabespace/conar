@@ -2,6 +2,7 @@ import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { FieldGroup } from '@conar/ui/components/field'
 import { useAppForm } from '@conar/ui/hooks/use-app-form'
+import { useStore } from '@tanstack/react-form'
 import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useState } from 'react'
@@ -30,8 +31,6 @@ const passwordSchema = type({
   confirmPassword: 'string >= 8',
 })
 
-type FormData = typeof passwordSchema.infer
-
 function ResetPasswordPage() {
   const navigate = useNavigate()
   const { token } = Route.useLoaderData()
@@ -57,12 +56,10 @@ function ResetPasswordPage() {
     defaultValues: {
       password: '',
       confirmPassword: '',
-    } satisfies FormData as FormData,
-
+    } satisfies typeof passwordSchema.infer,
     validators: {
       onSubmit: passwordSchema,
     },
-
     onSubmit: async ({ value }) => {
       try {
         const { error, data } = await authClient.resetPassword({
@@ -90,6 +87,8 @@ function ResetPasswordPage() {
     },
   })
 
+  const isSubmitting = useStore(form.store, state => state.isSubmitting)
+
   return (
     <>
       <div className="space-y-2">
@@ -100,7 +99,6 @@ function ResetPasswordPage() {
           Enter your new password below.
         </p>
       </div>
-
       <form
         className="space-y-4"
         onSubmit={(e) => {
@@ -141,9 +139,9 @@ function ResetPasswordPage() {
           <Button
             className="w-full"
             type="submit"
-            disabled={form.state.isSubmitting}
+            disabled={isSubmitting}
           >
-            <LoadingContent loading={form.state.isSubmitting}>
+            <LoadingContent loading={isSubmitting}>
               Reset password
             </LoadingContent>
           </Button>

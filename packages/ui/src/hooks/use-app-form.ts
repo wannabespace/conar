@@ -1,16 +1,14 @@
-import { FormInput, FormPassword } from '@conar/ui/components/form'
+import { FieldInput, FieldPassword } from '@conar/ui/components/custom/form'
 import { createFormHook, createFormHookContexts } from '@tanstack/react-form'
 
-const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts()
+export const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts()
 
-const { useAppForm } = createFormHook({
+export const { useAppForm } = createFormHook({
   fieldComponents: {
-    Input: FormInput,
-    Password: FormPassword,
+    Input: FieldInput,
+    Password: FieldPassword,
   },
   formComponents: {},
   fieldContext,
   formContext,
 })
-
-export { useAppForm, useFieldContext, useFormContext }

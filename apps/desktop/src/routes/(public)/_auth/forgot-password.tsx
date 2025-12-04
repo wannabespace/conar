@@ -15,11 +15,9 @@ const emailSchema = type({
   email: 'string.email',
 })
 
-type FormData = typeof emailSchema.infer
-
 function ForgotPasswordPage() {
   const { mutate: sendEmail, status } = useMutation({
-    mutationFn: async (values: FormData) => {
+    mutationFn: async (values: typeof emailSchema.infer) => {
       const { error } = await authClient.requestPasswordReset({
         email: values.email,
         redirectTo: `${import.meta.env.VITE_PUBLIC_WEB_URL}/reset-password`,
@@ -34,15 +32,11 @@ function ForgotPasswordPage() {
   const form = useAppForm({
     defaultValues: {
       email: '',
-    } satisfies FormData as FormData,
-
+    } satisfies typeof emailSchema.infer,
     validators: {
       onSubmit: emailSchema,
     },
-
-    onSubmit: async ({ value }) => {
-      sendEmail(value)
-    },
+    onSubmit: ({ value }) => sendEmail(value),
   })
 
   if (status === 'success') {

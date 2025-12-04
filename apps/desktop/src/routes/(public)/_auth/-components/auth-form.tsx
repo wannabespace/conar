@@ -7,6 +7,7 @@ import { Separator } from '@conar/ui/components/separator'
 import { useAppForm } from '@conar/ui/hooks/use-app-form'
 import { copy } from '@conar/ui/lib/copy'
 import { RiGithubFill, RiGoogleFill } from '@remixicon/react'
+import { useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -30,8 +31,6 @@ const signInSchema = baseAuthSchema
 const signUpSchema = baseAuthSchema.and({
   name: 'string',
 })
-
-type SignUpFormData = typeof signUpSchema.infer
 
 function useSocialMutation(provider: 'google' | 'github', onSuccess: () => void) {
   return useMutation({
@@ -188,17 +187,15 @@ export function AuthForm({ type }: { type: Type }) {
     defaultValues: type === 'sign-up'
       ? { email: '', password: '', name: '' }
       : { email: '', password: '' },
-
     validators: {
       onSubmit: type === 'sign-up' ? signUpSchema : signInSchema,
     },
-
     onSubmit: async ({ value }) => {
       const { error, data } = type === 'sign-up'
         ? await authClient.signUp.email({
             email: value.email,
             password: value.password,
-            name: (value as SignUpFormData).name,
+            name: (value as typeof signUpSchema.infer).name,
           })
         : await authClient.signIn.email({
             email: value.email,
@@ -231,6 +228,8 @@ export function AuthForm({ type }: { type: Type }) {
       successAuthToast(type === 'sign-up')
     },
   })
+
+  const isSubmitting = useStore(form.store, state => state.isSubmitting)
 
   return (
     <>
@@ -318,7 +317,7 @@ export function AuthForm({ type }: { type: Type }) {
             type="submit"
             disabled={form.state.isSubmitting}
           >
-            <LoadingContent loading={form.state.isSubmitting}>
+            <LoadingContent loading={isSubmitting}>
               {type === 'sign-up' ? 'Get started' : 'Sign in'}
             </LoadingContent>
           </Button>
