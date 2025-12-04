@@ -35,12 +35,21 @@ export type MaybePromise<T> = T | Promise<T>
 
 export type MaybeArray<T> = T | T[]
 
-export function getHostname(url: string) {
+export function tryCatch<T>(fn: () => T): { data: T, error: null } | { data: null, error: unknown } {
   try {
-    return new URL(url).hostname
+    return { data: fn(), error: null }
   }
-  catch {
-    return null
+  catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<{ data: T, error: null } | { data: null, error: unknown }> {
+  try {
+    return { data: await fn(), error: null }
+  }
+  catch (error) {
+    return { data: null, error }
   }
 }
 

@@ -1,4 +1,4 @@
-import { getHostname } from '@conar/shared/utils/helpers'
+import { tryCatch } from '@conar/shared/utils/helpers'
 import { cn } from '@conar/ui/lib/utils'
 import { RiEarthLine } from '@remixicon/react'
 import { useState } from 'react'
@@ -6,7 +6,7 @@ import { useState } from 'react'
 export function FaviconWithFallback({ url, className }: { url: string, className?: string }) {
   const [isError, setIsError] = useState(false)
 
-  const hostname = getHostname(url)
+  const { data: hostname } = tryCatch(() => new URL(url).hostname)
 
   if (isError || !hostname) {
     return <RiEarthLine className={cn(className, 'text-muted-foreground')} />
