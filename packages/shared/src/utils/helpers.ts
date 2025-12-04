@@ -35,7 +35,23 @@ export type MaybePromise<T> = T | Promise<T>
 
 export type MaybeArray<T> = T | T[]
 
-export interface ErrorMessage<T extends string> { __errorMessage: T }
+export function tryCatch<T>(fn: () => T): { data: T, error: null } | { data: null, error: unknown } {
+  try {
+    return { data: fn(), error: null }
+  }
+  catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<{ data: T, error: null } | { data: null, error: unknown }> {
+  try {
+    return { data: await fn(), error: null }
+  }
+  catch (error) {
+    return { data: null, error }
+  }
+}
 
 export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F) {
   const cache = new Map<string, ReturnType<F>>()

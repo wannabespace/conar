@@ -87,6 +87,9 @@ catalogs:
     pg:
       specifier: ^8.16.3
       version: 8.16.3
+    postgres:
+      specifier: ^3.4.7
+      version: 3.4.7
     react:
       specifier: ^19.2.0
       version: 19.2.0
@@ -191,6 +194,9 @@ importers:
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@exalabs/ai-sdk':
+        specifier: ^1.0.4
+        version: 1.0.4(ai@5.0.102(zod@4.1.13))
       '@hono/arktype-validator':
         specifier: ^2.0.1
         version: 2.0.1(arktype@2.1.27)(hono@4.10.6)
@@ -692,9 +698,6 @@ importers:
       '@conar/configs':
         specifier: workspace:*
         version: link:../configs
-      ai:
-        specifier: 'catalog:'
-        version: 5.0.102(zod@4.1.13)
       arktype:
         specifier: 'catalog:'
         version: 2.1.27
@@ -1821,6 +1824,11 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@exalabs/ai-sdk@1.0.4':
+    resolution: {integrity: sha512-BftMFleSjgGFvCOEmVryqAFHyNq4hvZ38xlb882i2iPXRzt/jHjPUwrcQ3rOoAkCN/iSID/2p7syP1C0+Lmi+A==}
+    peerDependencies:
+      ai: ^5.0.83
 
   '@faker-js/faker@10.1.0':
     resolution: {integrity: sha512-C3mrr3b5dRVlKPJdfrAXS8+dq+rq8Qm5SNRazca0JKgw1HQERFmrVb0towvMmw5uu8hHKNiQasMaR/tydf3Zsg==}
@@ -9923,6 +9931,11 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
       levn: 0.4.1
+
+  '@exalabs/ai-sdk@1.0.4(ai@5.0.102(zod@4.1.13))':
+    dependencies:
+      ai: 5.0.102(zod@4.1.13)
+      zod: 3.25.76
 
   '@faker-js/faker@10.1.0': {}
 
