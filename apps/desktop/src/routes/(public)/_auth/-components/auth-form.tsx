@@ -315,7 +315,7 @@ export function AuthForm({ type }: { type: Type }) {
           <Button
             className="w-full"
             type="submit"
-            disabled={form.state.isSubmitting}
+            disabled={isSubmitting}
           >
             <LoadingContent loading={isSubmitting}>
               {type === 'sign-up' ? 'Get started' : 'Sign in'}
