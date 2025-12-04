@@ -1,10 +1,12 @@
 import type { ChangeEvent, ComponentRef } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { getBase64FromFiles } from '@conar/shared/utils/base64'
+import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -51,6 +53,7 @@ export function ChatForm() {
   const router = useRouter()
   const location = useLocation()
   const { status, stop } = useChat({ chat })
+  const elementRef = useRef<HTMLDivElement>(null)
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const store = databaseStore(database.id)
   const input = useStore(store, state => state.chatInput)
@@ -180,8 +183,22 @@ export function ChatForm() {
     e.target.value = ''
   }
 
+  useKeyboardEvent(e => isCtrlAndKey(e, 'n'), () => {
+    router.navigate({
+      to: '/database/$id/sql',
+      params: { id: database.id },
+      search: { chatId: undefined },
+    })
+  }, {
+    target: elementRef,
+    deps: [chat.id],
+  })
+
   return (
-    <div className="flex flex-col gap-1">
+    <div
+      ref={elementRef}
+      className="flex flex-col gap-1"
+    >
       <Images databaseId={database.id} />
       <div className="flex flex-col gap-2 relative dark:bg-input/30 rounded-md border">
         <TipTap
