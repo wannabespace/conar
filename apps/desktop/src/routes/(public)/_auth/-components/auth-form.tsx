@@ -241,7 +241,7 @@ export function AuthForm({ type }: { type: Type }) {
         </span>
       </div>
       <form
-        className="space-y-3"
+        className="space-y-4"
         onSubmit={(e) => {
           e.preventDefault()
           form.handleSubmit()
