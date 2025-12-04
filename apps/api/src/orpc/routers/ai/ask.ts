@@ -13,6 +13,7 @@ import { consola } from 'consola'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
 import { chats, chatsMessages, db } from '~/drizzle'
+import { env } from '~/env'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
 import { streamContext } from './resume-stream'
@@ -118,7 +119,7 @@ function generateStream({
     experimental_transform: smoothStream(),
     tools: {
       ...tools,
-      webSearch: webSearch(),
+      webSearch: webSearch({ apiKey: env.EXA_API_KEY }),
     },
   })
 }
