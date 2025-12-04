@@ -80,17 +80,6 @@ function buildTemplate(): MenuItemConstructorOptions[] {
     role: 'fileMenu',
     submenu: [
       {
-        label: 'New Connection',
-        accelerator: `${cmdOrCtrl}+N`,
-        click: () => {
-          const win = getFocusedWindow()
-          if (!win)
-            return
-
-          win.webContents.send('app.navigate', '/create')
-        },
-      },
-      {
         label: 'New Window',
         accelerator: `${cmdOrCtrl}+Shift+N`,
         click: () => {
