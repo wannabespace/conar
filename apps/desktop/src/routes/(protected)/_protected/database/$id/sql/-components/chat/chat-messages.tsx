@@ -275,7 +275,7 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
             !isVisible && 'max-h-[100px]',
           )}
         >
-          <div className="h-fit" ref={partsRef}>
+          <div className="h-fit [&_a]:text-white" ref={partsRef}>
             <ChatMessageParts parts={message.parts} />
           </div>
           {canHide && (
