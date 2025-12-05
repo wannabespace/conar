@@ -38,6 +38,7 @@
     "ioredis": "^5.8.2",
     "ioredis-mock": "^8.13.1",
     "loops": "^6.0.1",
+    "monacopilot": "^1.2.9",
     "nanoid": "catalog:",
     "pg": "catalog:",
     "postgres": "catalog:",

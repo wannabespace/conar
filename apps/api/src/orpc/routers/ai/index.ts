@@ -1,4 +1,5 @@
 import { ask } from './ask'
+import { codeCompletion } from './code-completion'
 import { enhancePrompt } from './enhance-prompt'
 import { filters } from './filters'
 import { fixSQL } from './fix-sql'
@@ -8,6 +9,7 @@ import { updateSQL } from './update-sql'
 
 export const ai = {
   ask,
+  codeCompletion,
   enhancePrompt,
   filters,
   generateTitle,

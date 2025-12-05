@@ -1,13 +1,18 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import type { editor, Position } from 'monaco-editor'
+import type { CompletionRegistration } from 'monacopilot'
 import type { RefObject } from 'react'
 import { useStore } from '@tanstack/react-store'
+import * as monaco from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
+import { registerCompletion } from 'monacopilot'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { Monaco } from '~/components/monaco'
 import { databaseStore } from '~/entities/database'
-import { databaseCompletionService } from '~/entities/database/utils/monaco'
+import { databaseAICompletionContext, databaseCompletionService } from '~/entities/database/utils/monaco'
+import { orpc } from '~/lib/orpc'
+import { getApiUrl } from '~/lib/utils'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { useRunnerContext } from './runner-context'
@@ -120,6 +125,7 @@ export function RunnerEditor() {
   const sql = useStore(store, state => state.sql)
   const editorQueries = useStore(store, state => state.editorQueries)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
+  const completionRef = useRef<CompletionRegistration | null>(null)
   const run = useRunnerContext(({ run }) => run)
 
   const runEvent = useEffectEvent(run)
@@ -136,6 +142,105 @@ export function RunnerEditor() {
         completionService: databaseCompletionService(database),
       },
     })
+  }, [database])
+
+  useEffect(() => {
+    if (!monacoRef.current)
+      return
+
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
+    let pendingResolve: ((value: { completion: string }) => void) | null = null
+
+    const setupCompletion = async () => {
+      const aiConfig = await databaseAICompletionContext(database)
+      const schemaContext = await aiConfig.buildSchemaContext()
+
+      if (completionRef.current) {
+        completionRef.current.deregister()
+      }
+
+      completionRef.current = registerCompletion(
+        monaco,
+        monacoRef.current!,
+        {
+          trigger: 'onTyping',
+          endpoint: `${getApiUrl()}/rpc/ai/codeCompletion`,
+          language: dialectsMap[database.type],
+          requestHandler: async () => {
+            if (debounceTimer) {
+              clearTimeout(debounceTimer)
+            }
+            if (pendingResolve) {
+              pendingResolve({ completion: '' })
+              pendingResolve = null
+            }
+
+            return new Promise((resolve) => {
+              pendingResolve = resolve
+
+              debounceTimer = setTimeout(async () => {
+                try {
+                  const model = monacoRef.current?.getModel()
+                  const position = monacoRef.current?.getPosition()
+
+                  if (!model || !position) {
+                    resolve({ completion: '' })
+                    return
+                  }
+
+                  const fileContent = model.getValue()
+                  const offset = model.getOffsetAt(position)
+                  const context = fileContent.substring(0, offset)
+                  const suffix = fileContent.substring(offset)
+
+                  const transformedBody = {
+                    context,
+                    suffix,
+                    instruction: 'Complete the SQL query with secure and safe optimised version',
+                    fileContent,
+                    databaseType: aiConfig.databaseType,
+                    schemaContext,
+                  }
+
+                  console.log('Sending completion request...')
+
+                  const result = await orpc.ai.codeCompletion(transformedBody)
+
+                  if (pendingResolve === resolve) {
+                    console.log('Received response, updating editor:', result)
+                    resolve(result)
+                  }
+                  else {
+                    console.log('Received response BUT ignored (stale):', result)
+                  }
+                }
+                catch (error) {
+                  console.error('Completion error:', error)
+                  resolve({ completion: '' })
+                }
+                finally {
+                  if (pendingResolve === resolve) {
+                    pendingResolve = null
+                  }
+                }
+              }, 800)
+            })
+          },
+        },
+      )
+    }
+
+    setupCompletion()
+
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer)
+      }
+      if (completionRef.current) {
+        completionRef.current.deregister()
+        completionRef.current = null
+      }
+    }
   }, [database])
 
   const getEditorQueriesEvent = useEffectEvent((position: Position) => {
