@@ -22,10 +22,6 @@ export async function identifyUser(userId: string | null, properties?: IdentifyU
   }
 }
 
-export function trackEvent(event: string, properties?: Record<string, unknown>) {
-  posthog.capture(event, properties)
-}
-
 export function EventsProvider({ children }: { children: React.ReactNode }) {
   if (import.meta.env.DEV)
     return children

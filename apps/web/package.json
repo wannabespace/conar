@@ -9,26 +9,26 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@databuddy/sdk": "^2.2.1",
+    "@databuddy/sdk": "catalog:",
     "@number-flow/react": "catalog:",
-    "@octokit/rest": "^22.0.1",
+    "@octokit/rest": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
     "@tanstack/react-router": "catalog:",
     "@tanstack/react-router-devtools": "catalog:",
-    "@tanstack/react-start": "^1.139.3",
+    "@tanstack/react-start": "catalog:",
     "arktype": "catalog:",
     "better-auth": "catalog:",
-    "date-fns": "^4.1.0",
+    "date-fns": "catalog:",
     "motion": "catalog:",
-    "nitro": "3.0.1-alpha.1",
+    "nitro": "catalog:",
     "postgres": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-markdown": "^10.1.0",
-    "sonner": "^2.0.7",
-    "superjson": "^2.2.5",
-    "tailwind-merge": "^3.4.0"
+    "react-markdown": "catalog:",
+    "sonner": "catalog:",
+    "superjson": "catalog:",
+    "tailwind-merge": "catalog:"
   },
   "devDependencies": {
     "@conar/api": "workspace:*",
@@ -36,16 +36,16 @@
     "@conar/shared": "workspace:*",
     "@conar/ui": "workspace:*",
     "@remixicon/react": "catalog:",
-    "@tailwindcss/vite": "^4.1.17",
+    "@tailwindcss/vite": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
-    "react-scan": "^0.4.3",
+    "react-scan": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "catalog:"
   }
 }

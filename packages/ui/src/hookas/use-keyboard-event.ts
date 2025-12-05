@@ -7,7 +7,8 @@ export function useKeyboardEvent(
   callback: (event: KeyboardEvent) => void,
   options: {
     event?: 'keydown' | 'keypress' | 'keyup'
-    target?: EventTarget
+    target?: HTMLElement | React.RefObject<HTMLElement | null>
+    deps?: React.DependencyList
   } = {},
 ): void {
   const { event = 'keydown', target = window } = options
@@ -21,7 +22,13 @@ export function useKeyboardEvent(
   React.useEffect(() => {
     const abortController = new AbortController()
 
-    target.addEventListener(event, (e) => {
+    const t = 'current' in target ? target.current : target
+
+    if (!t) {
+      return
+    }
+
+    t.addEventListener(event, (e) => {
       const event = e as KeyboardEvent
       const matches = getPredicateEvent(event)
 
@@ -35,5 +42,6 @@ export function useKeyboardEvent(
     return () => {
       abortController.abort()
     }
-  }, [event, target])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event, target, ...(options.deps || [])])
 }
