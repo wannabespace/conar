@@ -12,7 +12,6 @@ import { Monaco } from '~/components/monaco'
 import { databaseStore } from '~/entities/database'
 import { databaseAICompletionContext, databaseCompletionService } from '~/entities/database/utils/monaco'
 import { orpc } from '~/lib/orpc'
-import { getApiUrl } from '~/lib/utils'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { useRunnerContext } from './runner-context'
@@ -164,7 +163,6 @@ export function RunnerEditor() {
         monacoRef.current!,
         {
           trigger: 'onTyping',
-          endpoint: `${getApiUrl()}/rpc/ai/codeCompletion`,
           language: dialectsMap[database.type],
           requestHandler: async () => {
             if (debounceTimer) {
