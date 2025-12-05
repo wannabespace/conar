@@ -150,17 +150,31 @@ export function RunnerEditor() {
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
     let pendingResolve: ((value: { completion: string }) => void) | null = null
 
+    let isMounted = true
+
     const setupCompletion = async () => {
+      if (!isMounted)
+        return
+
       const aiConfig = await databaseAICompletionContext(database)
+      if (!isMounted)
+        return
+
       const schemaContext = await aiConfig.buildSchemaContext()
+
+      if (!isMounted)
+        return
 
       if (completionRef.current) {
         completionRef.current.deregister()
       }
 
+      if (!monacoRef.current)
+        return
+
       completionRef.current = registerCompletion(
         monaco,
-        monacoRef.current!,
+        monacoRef.current,
         {
           trigger: 'onTyping',
           language: dialectsMap[database.type],
@@ -175,8 +189,10 @@ export function RunnerEditor() {
 
             return new Promise((resolve) => {
               pendingResolve = resolve
-
               debounceTimer = setTimeout(async () => {
+                if (!isMounted)
+                  return
+
                 try {
                   const model = monacoRef.current?.getModel()
                   const position = monacoRef.current?.getPosition()
@@ -190,6 +206,11 @@ export function RunnerEditor() {
                   const offset = model.getOffsetAt(position)
                   const context = fileContent.substring(0, offset)
                   const suffix = fileContent.substring(offset)
+
+                  if (context.trim().length < 5) {
+                    resolve({ completion: '' })
+                    return
+                  }
 
                   const transformedBody = {
                     context,
@@ -210,13 +231,12 @@ export function RunnerEditor() {
                   }
                 }
                 catch (error) {
-                  console.error('Completion error:', error)
+                  console.error(error)
                   resolve({ completion: '' })
                 }
                 finally {
-                  if (pendingResolve === resolve) {
+                  if (pendingResolve === resolve)
                     pendingResolve = null
-                  }
                 }
               }, 800)
             })
@@ -228,9 +248,11 @@ export function RunnerEditor() {
     setupCompletion()
 
     return () => {
-      if (debounceTimer) {
+      isMounted = false
+      if (debounceTimer)
         clearTimeout(debounceTimer)
-      }
+      if (pendingResolve)
+        pendingResolve({ completion: '' })
       if (completionRef.current) {
         completionRef.current.deregister()
         completionRef.current = null
