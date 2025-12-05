@@ -125,6 +125,11 @@ export function RunnerEditor() {
   const editorQueries = useStore(store, state => state.editorQueries)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const completionRef = useRef<CompletionRegistration | null>(null)
+  const completionCacheRef = useRef<{
+    prefix: string
+    completion: string
+  } | null>(null)
+
   const run = useRunnerContext(({ run }) => run)
 
   const runEvent = useEffectEvent(run)
@@ -179,6 +184,30 @@ export function RunnerEditor() {
           trigger: 'onTyping',
           language: dialectsMap[database.type],
           requestHandler: async () => {
+            const model = monacoRef.current?.getModel()
+            const position = monacoRef.current?.getPosition()
+
+            if (model && position && completionCacheRef.current) {
+              const offset = model.getOffsetAt(position)
+              const textFull = model.getValue()
+              const textBefore = textFull.substring(0, offset)
+              const cached = completionCacheRef.current
+
+              if (textBefore.startsWith(cached.prefix)) {
+                const addedText = textBefore.slice(cached.prefix.length)
+
+                if (cached.completion.startsWith(addedText)) {
+                  const remainingCompletion = cached.completion.slice(addedText.length)
+
+                  if (remainingCompletion.length > 0) {
+                    return { completion: remainingCompletion }
+                  }
+
+                  return { completion: '' }
+                }
+              }
+            }
+
             if (debounceTimer) {
               clearTimeout(debounceTimer)
             }
@@ -207,7 +236,7 @@ export function RunnerEditor() {
                   const context = fileContent.substring(0, offset)
                   const suffix = fileContent.substring(offset)
 
-                  if (context.trim().length < 5) {
+                  if (context.trim().length < 2) {
                     resolve({ completion: '' })
                     return
                   }
@@ -224,6 +253,11 @@ export function RunnerEditor() {
                   const result = await orpc.ai.codeCompletion(transformedBody)
 
                   if (pendingResolve === resolve) {
+                    completionCacheRef.current = {
+                      prefix: context,
+                      completion: result.completion,
+                    }
+
                     resolve(result)
                   }
                   else {
@@ -238,7 +272,7 @@ export function RunnerEditor() {
                   if (pendingResolve === resolve)
                     pendingResolve = null
                 }
-              }, 800)
+              }, 500)
             })
           },
         },

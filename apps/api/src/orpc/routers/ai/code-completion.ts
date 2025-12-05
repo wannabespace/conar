@@ -49,6 +49,7 @@ Specific Instructions:
 - For UUID/CUID: Use generation functions (e.g. gen_random_uuid()) instead of hardcoded strings if possible.
 - For Foreign Keys: Do NOT plain guess IDs. Use subqueries (e.g. "(SELECT id FROM users ... LIMIT 1)") to make the query robust without needing external tools.
 - Look at "Current Code AFTER Cursor". Do NOT generate code that is already present there (like closing parenthesis or semicolons). Make your completion join smoothly with the suffix.
+- Intelligent Spacing: If the code before the cursor is a keyword or identifier (e.g., 'SELECT', 'FROM', 'tableName') and your completion starts with a keyword/identifier, ensure there is a space at the beginning of your completion.
 
 Generate ONLY the completion text that should be inserted at the cursor position.
 - Do NOT repeat the code that is already present before the cursor.
