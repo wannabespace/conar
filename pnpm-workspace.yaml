@@ -118,6 +118,7 @@ catalog:
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
   monaco-themes: ^0.4.8
+  monacopilot: ^1.2.9
   motion: ^12.23.25
   mysql2: ^3.15.3
   nanoid: ^5.1.6

@@ -342,6 +342,9 @@ catalogs:
     monaco-themes:
       specifier: ^0.4.8
       version: 0.4.8
+    monacopilot:
+      specifier: ^1.2.9
+      version: 1.2.9
     motion:
       specifier: ^12.23.25
       version: 12.23.25
@@ -588,7 +591,7 @@ importers:
         specifier: 'catalog:'
         version: 6.0.1
       monacopilot:
-        specifier: ^1.2.9
+        specifier: 'catalog:'
         version: 1.2.9(monaco-editor@0.54.0)
       nanoid:
         specifier: 'catalog:'
@@ -661,7 +664,7 @@ importers:
         specifier: 'catalog:'
         version: 6.6.2
       monacopilot:
-        specifier: ^1.2.9
+        specifier: 'catalog:'
         version: 1.2.9(monaco-editor@0.54.0)
       mysql2:
         specifier: 'catalog:'

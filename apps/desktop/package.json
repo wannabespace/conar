@@ -25,10 +25,10 @@
     "drizzle:generate-custom": "drizzle-kit generate --custom && bun run ./scripts/compile-migrations.ts"
   },
   "dependencies": {
-    "monacopilot": "^1.2.9",
     "@clickhouse/client": "catalog:",
     "electron-store": "catalog:",
     "electron-updater": "catalog:",
+    "monacopilot": "catalog:",
     "mysql2": "catalog:",
     "pg": "catalog:"
   },

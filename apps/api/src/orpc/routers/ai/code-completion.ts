@@ -60,8 +60,6 @@ Generate ONLY the completion text that should be inserted at the cursor position
         prompt: enhancedPrompt,
       })
 
-      console.log('Generated completion (raw):', result.text.substring(0, 100))
-
       let cleanText = result.text.trim()
       if (cleanText.startsWith('```')) {
         cleanText = cleanText.replace(/^```\w*\s*/, '').replace(/\s*```$/, '')

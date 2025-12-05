@@ -202,16 +202,13 @@ export function RunnerEditor() {
                     schemaContext,
                   }
 
-                  console.log('Sending completion request...')
-
                   const result = await orpc.ai.codeCompletion(transformedBody)
 
                   if (pendingResolve === resolve) {
-                    console.log('Received response, updating editor:', result)
                     resolve(result)
                   }
                   else {
-                    console.log('Received response BUT ignored (stale):', result)
+                    resolve({ completion: '' })
                   }
                 }
                 catch (error) {
