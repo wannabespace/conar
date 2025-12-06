@@ -1,4 +1,5 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
+import type { RefObject } from 'react'
 import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
@@ -62,4 +63,22 @@ export const PageStoreContext = createContext<Store<typeof storeState.infer>>(nu
 
 export function usePageStoreContext() {
   return use(PageStoreContext)
+}
+
+export const LastClickedIndexContext = createContext<RefObject<number | null>>(null!)
+
+export function useLastClickedIndexRef() {
+  return use(LastClickedIndexContext)
+}
+
+export interface SelectionState {
+  anchorIndex: number | null
+  focusIndex: number | null
+  lastExpandDirection: 'up' | 'down' | null
+}
+
+export const SelectionStateContext = createContext<RefObject<SelectionState>>(null!)
+
+export function useSelectionStateRef() {
+  return use(SelectionStateContext)
 }

@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react'
 import type { ColumnRenderer } from '~/components/table'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { useInfiniteQuery } from '@tanstack/react-query'
@@ -12,7 +13,7 @@ import { queryClient } from '~/main'
 import { Route } from '..'
 import { getColumnSize, selectSymbol } from '../-lib'
 import { useTableColumns } from '../-queries/use-columns-query'
-import { usePageStoreContext } from '../-store'
+import { usePageStoreContext, useSelectionStateRef } from '../-store'
 import { useHeaderActionsOrder } from './header-actions-order'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
@@ -47,6 +48,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { database } = Route.useLoaderData()
   const columns = useTableColumns({ database, table, schema })
   const store = usePageStoreContext()
+  const selectionStateRef = useSelectionStateRef()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }))
@@ -225,6 +227,101 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     return sortedColumns
   }, [columns, hiddenColumns, primaryColumns, saveValue, onOrder])
 
+  const handleKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
+    if (!event.shiftKey || !rows || rows.length === 0 || primaryColumns.length === 0)
+      return
+
+    const isArrowDown = event.key === 'ArrowDown'
+    const isArrowUp = event.key === 'ArrowUp'
+
+    if (!isArrowDown && !isArrowUp)
+      return
+
+    event.preventDefault()
+
+    const { anchorIndex, focusIndex } = selectionStateRef.current
+    const currentDirection = isArrowDown ? 'down' : 'up'
+
+    if (anchorIndex === null || focusIndex === null) {
+      const startIndex = isArrowDown ? 0 : rows.length - 1
+      selectionStateRef.current = { anchorIndex: startIndex, focusIndex: startIndex, lastExpandDirection: null }
+
+      const rowKeys = primaryColumns.reduce<Record<string, string>>(
+        (acc, key) => ({ ...acc, [key]: rows[startIndex]![key] as string }),
+        {},
+      )
+
+      store.setState(state => ({
+        ...state,
+        selected: [rowKeys],
+      } satisfies typeof state))
+      return
+    }
+
+    const newFocusIndex = isArrowDown
+      ? Math.min(focusIndex + 1, rows.length - 1)
+      : Math.max(focusIndex - 1, 0)
+
+    const atBoundary = newFocusIndex === focusIndex
+
+    if (anchorIndex === focusIndex) {
+      if (atBoundary) {
+        selectionStateRef.current = { anchorIndex: null, focusIndex: null, lastExpandDirection: null }
+        store.setState(state => ({
+          ...state,
+          selected: [],
+        } satisfies typeof state))
+        return
+      }
+
+      selectionStateRef.current = { anchorIndex, focusIndex: newFocusIndex, lastExpandDirection: currentDirection }
+
+      const start = Math.min(anchorIndex, newFocusIndex)
+      const end = Math.max(anchorIndex, newFocusIndex)
+      const rangeRows = rows.slice(start, end + 1)
+      const rangeKeys = rangeRows.map(row =>
+        primaryColumns.reduce<Record<string, string>>(
+          (acc, key) => ({ ...acc, [key]: row[key] as string }),
+          {},
+        ),
+      )
+
+      store.setState(state => ({
+        ...state,
+        selected: rangeKeys,
+      } satisfies typeof state))
+      return
+    }
+
+    if (atBoundary)
+      return
+
+    const wasExpandedDown = focusIndex > anchorIndex
+    const wasExpandedUp = focusIndex < anchorIndex
+    const isShrinking = (wasExpandedDown && isArrowUp) || (wasExpandedUp && isArrowDown)
+
+    selectionStateRef.current.focusIndex = newFocusIndex
+    if (!isShrinking) {
+      selectionStateRef.current.lastExpandDirection = currentDirection
+    }
+
+    const start = Math.min(anchorIndex, newFocusIndex)
+    const end = Math.max(anchorIndex, newFocusIndex)
+
+    const rangeRows = rows.slice(start, end + 1)
+    const rangeKeys = rangeRows.map(row =>
+      primaryColumns.reduce<Record<string, string>>(
+        (acc, key) => ({ ...acc, [key]: row[key] as string }),
+        {},
+      ),
+    )
+
+    store.setState(state => ({
+      ...state,
+      selected: rangeKeys,
+    } satisfies typeof state))
+  }, [rows, primaryColumns, store, selectionStateRef])
+
   return (
     <TableProvider
       rows={rows ?? []}
@@ -232,7 +329,11 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       estimatedRowSize={DEFAULT_ROW_HEIGHT}
       estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
     >
-      <div className="size-full relative bg-background">
+      <div
+        className="size-full relative bg-background outline-none"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+      >
         <Table>
           <TableHeader />
           {isRowsPending

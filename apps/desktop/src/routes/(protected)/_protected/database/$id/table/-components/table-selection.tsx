@@ -1,10 +1,10 @@
-import type { ComponentProps } from 'react'
+import type { ComponentProps, MouseEvent } from 'react'
 import type { TableCellProps, TableHeaderCellProps } from '~/components/table'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useTableContext } from '~/components/table'
-import { usePageStoreContext } from '../-store'
+import { useLastClickedIndexRef, usePageStoreContext, useSelectionStateRef } from '../-store'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -79,26 +79,71 @@ export function SelectionCell({ rowIndex, columnIndex, className, size, keys }: 
 }) {
   const store = usePageStoreContext()
   const rows = useTableContext(state => state.rows)
+  const lastClickedIndexRef = useLastClickedIndexRef()
+  const selectionStateRef = useSelectionStateRef()
   const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])))
+
+  const handleClick = (event: MouseEvent<HTMLInputElement>) => {
+    const lastIndex = lastClickedIndexRef.current
+
+    if (event.shiftKey && lastIndex !== null && lastIndex !== rowIndex) {
+      const start = Math.min(lastIndex, rowIndex)
+      const end = Math.max(lastIndex, rowIndex)
+
+      const rangeRows = rows.slice(start, end + 1)
+      const rangeKeys = rangeRows.map(row =>
+        keys.reduce<Record<string, string>>((acc, key) => ({ ...acc, [key]: row[key] as string }), {}),
+      )
+
+      store.setState((state) => {
+        const existingSelected = state.selected
+        const newSelected = [...existingSelected]
+
+        for (const rangeKey of rangeKeys) {
+          const alreadySelected = existingSelected.some(existing =>
+            keys.every(key => existing[key] === rangeKey[key]),
+          )
+          if (!alreadySelected) {
+            newSelected.push(rangeKey)
+          }
+        }
+
+        return {
+          ...state,
+          selected: newSelected,
+        } satisfies typeof state
+      })
+
+      selectionStateRef.current.focusIndex = rowIndex
+    }
+    else {
+      if (isSelected) {
+        store.setState(state => ({
+          ...state,
+          selected: store.state.selected.filter(row => !keys.every(key => row[key] === rows[rowIndex]![key])),
+        } satisfies typeof state))
+
+        selectionStateRef.current = { anchorIndex: null, focusIndex: null, lastExpandDirection: null }
+      }
+      else {
+        store.setState(state => ({
+          ...state,
+          selected: [...state.selected, keys.reduce((acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] }), {})],
+        } satisfies typeof state))
+
+        selectionStateRef.current = { anchorIndex: rowIndex, focusIndex: rowIndex, lastExpandDirection: null }
+      }
+    }
+
+    lastClickedIndexRef.current = rowIndex
+  }
 
   return (
     <div className={cn('flex items-center w-fit', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
       <IndeterminateCheckbox
         checked={isSelected}
-        onChange={() => {
-          if (isSelected) {
-            store.setState(state => ({
-              ...state,
-              selected: store.state.selected.filter(row => !keys.every(key => row[key] === rows[rowIndex]![key])),
-            } satisfies typeof state))
-          }
-          else {
-            store.setState(state => ({
-              ...state,
-              selected: [...state.selected, keys.reduce((acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] }), {})],
-            } satisfies typeof state))
-          }
-        }}
+        onClick={handleClick}
+        onChange={() => {}}
       />
     </div>
   )
