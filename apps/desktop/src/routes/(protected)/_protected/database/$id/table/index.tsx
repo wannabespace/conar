@@ -71,6 +71,15 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
   const lastClickedIndexRef = useRef<number | null>(null)
   const selectionStateRef = useRef<SelectionState>({ anchorIndex: null, focusIndex: null, lastExpandDirection: null })
 
+  const resetSelectionStateEvent = useEffectEvent(() => {
+    lastClickedIndexRef.current = null
+    selectionStateRef.current = { anchorIndex: null, focusIndex: null, lastExpandDirection: null }
+  })
+
+  useEffect(() => {
+    resetSelectionStateEvent()
+  }, [table, schema])
+
   useEffect(() => {
     if (store && (deps.filters || deps.orderBy)) {
       store.setState(state => ({

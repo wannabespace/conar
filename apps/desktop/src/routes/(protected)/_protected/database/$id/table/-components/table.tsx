@@ -265,14 +265,8 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     const atBoundary = newFocusIndex === focusIndex
 
     if (anchorIndex === focusIndex) {
-      if (atBoundary) {
-        selectionStateRef.current = { anchorIndex: null, focusIndex: null, lastExpandDirection: null }
-        store.setState(state => ({
-          ...state,
-          selected: [],
-        } satisfies typeof state))
+      if (atBoundary)
         return
-      }
 
       selectionStateRef.current = { anchorIndex, focusIndex: newFocusIndex, lastExpandDirection: currentDirection }
 
