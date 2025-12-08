@@ -1,22 +1,25 @@
 import type { OS } from '@conar/shared/utils/os'
 import type { RemixiconComponentType } from '@remixicon/react'
 import { formatBytes } from '@conar/shared/utils/files'
-import { getOS, osMap } from '@conar/shared/utils/os'
+import { osMap } from '@conar/shared/utils/os'
 import { Badge } from '@conar/ui/components/badge'
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { MountedSuspense } from '@conar/ui/components/custom/mounted-suspense'
 import { Linux } from '@conar/ui/components/icons/linux'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
 import { RiAppleFill, RiCheckLine, RiFileCopyLine, RiTerminalLine } from '@remixicon/react'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { Activity, useState } from 'react'
+import { useState } from 'react'
 import { DownloadButton } from '~/components/download-button'
 import { getLatestReleaseOptions } from '~/queries'
+import { getOSIsomorphic } from '~/utils/os'
 import { seo } from '~/utils/seo'
 
 export const Route = createFileRoute('/_layout/download')({
@@ -49,21 +52,20 @@ function Version() {
   )
 }
 
+const brewCommand = 'brew install --cask conar'
+
 function HomebrewInstall() {
   const [copied, setCopied] = useState(false)
   const [isMacOS] = useState(() => {
     if (typeof window === 'undefined')
       return false
-    const os = getOS(window.navigator.userAgent)
-    return os.type === 'macos'
+    const os = getOSIsomorphic()
+    return os?.type === 'macos'
   })
 
-  const brewCommand = 'brew install --cask conar'
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(brewCommand)
+  const handleCopy = () => {
+    copy(brewCommand, 'Command copied to clipboard')
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   if (!isMacOS) {
@@ -86,16 +88,23 @@ function HomebrewInstall() {
           size="sm"
           variant="ghost"
           onClick={handleCopy}
-          className="shrink-0 gap-2"
+          className="shrink-0"
         >
-          <Activity mode={copied ? 'visible' : 'hidden'}>
-            <RiCheckLine className="size-4" />
-            <span className="hidden sm:inline">Copied</span>
-          </Activity>
-          <Activity mode={copied ? 'hidden' : 'visible'}>
-            <RiFileCopyLine className="size-4" />
-            <span className="hidden sm:inline">Copy</span>
-          </Activity>
+          <ContentSwitch
+            active={copied}
+            onSwitchEnd={() => setCopied(false)}
+            activeContent={(
+              <span className="flex items-center gap-1.5">
+                <RiCheckLine className="size-4" />
+                <span className="hidden sm:inline">Copied</span>
+              </span>
+            )}
+          >
+            <span className="flex items-center gap-1.5">
+              <RiFileCopyLine className="size-4" />
+              <span className="hidden sm:inline">Copy</span>
+            </span>
+          </ContentSwitch>
         </Button>
       </Card>
     </div>
