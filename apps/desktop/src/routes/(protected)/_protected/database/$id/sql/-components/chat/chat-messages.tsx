@@ -265,8 +265,8 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
       <div>
         <div
           className={cn(
-            'relative inline-flex bg-primary text-primary-foreground rounded-lg px-2 py-1 overflow-hidden',
-            !isVisible && 'max-h-[100px]',
+            'relative inline-flex bg-primary text-primary-foreground rounded-lg px-2 py-1',
+            canHide && !isVisible && 'overflow-hidden max-h-[100px]',
           )}
         >
           <div className="h-fit [&_a]:text-white" ref={partsRef}>
