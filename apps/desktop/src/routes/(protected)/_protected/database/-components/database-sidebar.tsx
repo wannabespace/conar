@@ -37,7 +37,7 @@ const os = getOS(navigator.userAgent)
 
 function baseClasses(isActive = false) {
   return cn(
-    'cursor-pointer text-foreground size-9 rounded-md flex items-center justify-center border border-transparent',
+    'cursor-pointer text-foreground h-9 w-9 group-hover/sidebar:w-full rounded-md flex items-center justify-center group-hover/sidebar:justify-start group-hover/sidebar:px-3 border border-transparent transition-all duration-300',
     isActive && 'bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary',
   )
 }
@@ -69,8 +69,9 @@ function SupportButton() {
         <Tooltip>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
-              <Button size="icon" variant="ghost">
-                <RiMessageLine className="size-4" />
+              <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3">
+                <RiMessageLine className="size-4 shrink-0" />
+                <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Support</span>
               </Button>
             </DialogTrigger>
           </TooltipTrigger>
@@ -123,8 +124,9 @@ function SettingsButton() {
       <Tooltip>
         <TooltipTrigger asChild>
           <Link to="/database/$id/settings" params={{ id: database.id }}>
-            <Button size="icon" variant="ghost">
-              <RiSettings3Line className="size-4" />
+            <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3">
+              <RiSettings3Line className="size-4 shrink-0" />
+              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Settings</span>
             </Button>
           </Link>
         </TooltipTrigger>
@@ -172,7 +174,7 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
               style={database.color ? { '--color': database.color } : {}}
               {...params}
             >
-              <span className="font-bold text-sm">
+              <span className="font-bold text-sm group-hover/sidebar:hidden">
                 {database.name
                   .replace(/[^a-z0-9\s]/gi, '')
                   .split(/\s+/)
@@ -180,6 +182,10 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
                   .join('')
                   .slice(0, 2)
                   .toUpperCase()}
+              </span>
+              <span className="font-medium text-sm hidden group-hover/sidebar:flex items-center gap-2 ml-1 whitespace-nowrap overflow-hidden text-ellipsis">
+                <DatabaseIcon type={database.type} className="size-4 shrink-0" />
+                {database.name}
               </span>
             </Link>
           </div>
@@ -195,12 +201,51 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
   )
 }
 
-function LastOpenedDatabases() {
+function CurrentDatabase() {
+  const { database } = Route.useLoaderData()
+  const params = useDatabaseLinkParams(database.id)
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="relative group/db-item w-full">
+            <Link
+              className={cn(
+                baseClasses(true),
+                database.color
+                  ? 'text-(--color) bg-(--color)/10 hover:bg-(--color)/20 border-(--color)/20'
+                  : '',
+              )}
+              style={database.color ? { '--color': database.color } : {}}
+              {...params}
+            >
+              <DatabaseIcon type={database.type} className="size-4 shrink-0" />
+              <div className="hidden group-hover/sidebar:flex flex-col ml-3 overflow-hidden">
+                <span className="font-bold text-sm truncate leading-tight">{database.name}</span>
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Current Database</span>
+              </div>
+            </Link>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          Current:
+          {' '}
+          {database.name}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
+
+function RecentDatabases() {
+  const { database: currentDatabase } = Route.useLoaderData()
   const { data: databases } = useLiveQuery(q => q
     .from({ databases: databasesCollection })
     .orderBy(({ databases }) => databases.createdAt, 'desc'))
   const [lastOpenedDatabases] = useLastOpenedDatabases()
-  const filteredDatabases = (databases?.filter(database => lastOpenedDatabases.includes(database.id)) ?? [])
+
+  const filteredDatabases = (databases?.filter(database => lastOpenedDatabases.includes(database.id) && database.id !== currentDatabase.id) ?? [])
     .toSorted((a, b) => lastOpenedDatabases.indexOf(a.id) - lastOpenedDatabases.indexOf(b.id))
 
   return filteredDatabases.map(database => <LastOpenedDatabase key={database.id} database={database} />)
@@ -265,7 +310,8 @@ function MainLinks() {
               search={lastOpenedChatId ? { chatId: lastOpenedChatId } : undefined}
               className={baseClasses(isActiveSql)}
             >
-              <RiPlayLargeLine className="size-4" />
+              <RiPlayLargeLine className="size-4 shrink-0" />
+              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">SQL Runner</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">SQL Runner</TooltipContent>
@@ -281,7 +327,8 @@ function MainLinks() {
                 onTablesClick()
               }}
             >
-              <RiTableLine className="size-4" />
+              <RiTableLine className="size-4 shrink-0" />
+              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Tables</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">Tables</TooltipContent>
@@ -295,7 +342,8 @@ function MainLinks() {
               params={{ id: database.id }}
               className={baseClasses(isActiveEnums)}
             >
-              <RiListUnordered className="size-4" />
+              <RiListUnordered className="size-4 shrink-0" />
+              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Enums</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">
@@ -308,7 +356,8 @@ function MainLinks() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link to="/database/$id/visualizer" params={{ id: database.id }} className={baseClasses(isActiveVisualizer)}>
-              <RiNodeTree className="size-4" />
+              <RiNodeTree className="size-4 shrink-0" />
+              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Visualizer</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">Visualizer</TooltipContent>
@@ -324,80 +373,104 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
   const store = databaseStore(database.id)
 
   return (
-    <div className={cn('flex flex-col items-center', className)} {...props}>
-      <div className="flex flex-col p-4 pb-0">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                to="/"
-                className="p-2"
-              >
-                <AppLogo className="size-6 text-primary" />
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">Dashboard</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
-      <ScrollArea className="relative p-4 flex flex-col items-center flex-1 gap-2">
-        <div className="w-full">
-          <div className="flex w-full flex-col">
-            <MainLinks />
-            {lastOpenedDatabases.length > 1 && (
-              <>
-                <Separator className="my-4" />
-                <LastOpenedDatabases />
-              </>
-            )}
+    <>
+      <div className={className} />
+      <div
+        className={cn(
+          'absolute left-0 top-0 bottom-0 h-full z-50 flex flex-col items-center border-r bg-background transition-all duration-300 ease-in-out group/sidebar overflow-hidden shadow-xl',
+          className,
+          'hover:w-64 hover:items-stretch',
+        )}
+        {...props}
+      >
+        <div className="flex flex-col p-4 pb-0 items-center group-hover/sidebar:items-start group-hover/sidebar:px-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/"
+                  className="p-2 flex items-center group-hover/sidebar:w-full group-hover/sidebar:px-3 rounded-md hover:bg-muted"
+                >
+                  <AppLogo className="size-6 text-primary shrink-0" />
+                  <div className="ml-2 hidden group-hover/sidebar:flex flex-col overflow-hidden">
+                    <span className="font-bold text-lg leading-none">Conar</span>
+                    <span className="text-xs text-muted-foreground truncate" title={database.name}>{database.name}</span>
+                  </div>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Dashboard</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <ScrollArea className="relative p-4 flex flex-col items-center flex-1 gap-2 group-hover/sidebar:items-stretch">
+          <div className="w-full">
+            <div className="flex w-full flex-col">
+              <MainLinks />
+              <Separator className="my-4" />
+              <CurrentDatabase />
+              {lastOpenedDatabases.length > 1 && (
+                <>
+                  <Separator className="my-4" />
+                  <div className="hidden group-hover/sidebar:block px-2 pb-2 text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
+                    Recent Databases
+                  </div>
+                  <RecentDatabases />
+                </>
+              )}
+            </div>
+          </div>
+        </ScrollArea>
+        <div className="p-4 pt-0 flex flex-col items-center group-hover/sidebar:items-stretch">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => store.setState(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
+                  className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3"
+                >
+                  <RiFileListLine className="size-4 shrink-0" />
+                  <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Query Logger</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Query Logger</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Separator className="my-4" />
+          <SupportButton />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => actionsCenterStore.setState(state => ({ ...state, isOpen: true }))}
+                  className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3"
+                >
+                  <RiCommandLine className="size-4 shrink-0" />
+                  <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Command Palette</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {os?.type === 'macos' ? '⌘' : 'Ctrl'}
+                P
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <ThemeToggle>
+            <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3">
+              <RiSunLine className="size-4 dark:hidden shrink-0" />
+              <RiMoonLine className="size-4 hidden dark:block shrink-0" />
+              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Theme</span>
+            </Button>
+          </ThemeToggle>
+          {false && <SettingsButton />}
+          <div className="mt-2 flex justify-center group-hover/sidebar:justify-start">
+            <UserButton />
           </div>
         </div>
-      </ScrollArea>
-      <div className="p-4 pt-0 flex flex-col items-center">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => store.setState(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
-              >
-                <RiFileListLine className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Query Logger</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <Separator className="my-4" />
-        <SupportButton />
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => actionsCenterStore.setState(state => ({ ...state, isOpen: true }))}
-              >
-                <RiCommandLine className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              {os?.type === 'macos' ? '⌘' : 'Ctrl'}
-              P
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <ThemeToggle>
-          <Button size="icon" variant="ghost">
-            <RiSunLine className="size-4 dark:hidden" />
-            <RiMoonLine className="size-4 hidden dark:block" />
-          </Button>
-        </ThemeToggle>
-        {false && <SettingsButton />}
-        <div className="mt-2">
-          <UserButton />
-        </div>
       </div>
-    </div>
+    </>
   )
 }
