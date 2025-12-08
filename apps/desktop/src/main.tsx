@@ -1,3 +1,5 @@
+/* eslint-disable perfectionist/sort-imports */
+import '@conar/shared/arktype-config'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import dayjs from 'dayjs'
