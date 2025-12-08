@@ -1,7 +1,7 @@
 import type { OS } from '@conar/shared/utils/os'
 import type { RemixiconComponentType } from '@remixicon/react'
 import { formatBytes } from '@conar/shared/utils/files'
-import { osMap } from '@conar/shared/utils/os'
+import { getOS, osMap } from '@conar/shared/utils/os'
 import { Badge } from '@conar/ui/components/badge'
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
@@ -11,9 +11,10 @@ import { Linux } from '@conar/ui/components/icons/linux'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
-import { RiAppleFill } from '@remixicon/react'
+import { RiAppleFill, RiCheckLine, RiFileCopyLine, RiTerminalLine } from '@remixicon/react'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import { Activity, useState } from 'react'
 import { DownloadButton } from '~/components/download-button'
 import { getLatestReleaseOptions } from '~/queries'
 import { seo } from '~/utils/seo'
@@ -45,6 +46,59 @@ function Version() {
         ))}
       </NumberFlowGroup>
     </p>
+  )
+}
+
+function HomebrewInstall() {
+  const [copied, setCopied] = useState(false)
+  const [isMacOS] = useState(() => {
+    if (typeof window === 'undefined')
+      return false
+    const os = getOS(window.navigator.userAgent)
+    return os.type === 'macos'
+  })
+
+  const brewCommand = 'brew install --cask conar'
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(brewCommand)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  if (!isMacOS) {
+    return null
+  }
+
+  return (
+    <div className="w-full max-w-xl px-4 mb-8 sm:mb-12">
+      <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4">Install via Homebrew</h2>
+      <Card className="flex items-center justify-between p-3 sm:p-2 gap-4 sm:gap-8 w-full">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+          <div className="flex items-center justify-center size-8 bg-muted rounded-lg shrink-0">
+            <RiTerminalLine className="text-muted-foreground size-4" />
+          </div>
+          <code className="text-sm sm:text-base font-normal overflow-x-auto">
+            {brewCommand}
+          </code>
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={handleCopy}
+          className="shrink-0 gap-2"
+        >
+          <Activity mode={copied ? 'visible' : 'hidden'}>
+            <RiCheckLine className="size-4" />
+            <span className="hidden sm:inline">Copied</span>
+          </Activity>
+          <Activity mode={copied ? 'hidden' : 'visible'}>
+            <RiFileCopyLine className="size-4" />
+            <span className="hidden sm:inline">Copy</span>
+          </Activity>
+        </Button>
+      </Card>
+    </div>
   )
 }
 
@@ -99,7 +153,7 @@ function DownloadOption({ Icon, type, arch, asset }: {
   return (
     <Card className="flex items-center justify-between p-3 sm:p-2 gap-4 sm:gap-8 w-full">
       <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-        <div className="flex items-center justify-center size-8 bg-muted rounded-lg flex-shrink-0">
+        <div className="flex items-center justify-center size-8 bg-muted rounded-lg shrink-0">
           <Icon className="text-muted-foreground size-4" />
         </div>
         <div className="flex flex-col items-start">
@@ -157,6 +211,7 @@ function RouteComponent() {
           <DownloadButton />
           <Version />
         </div>
+        <HomebrewInstall />
         <div className="w-full max-w-xl px-4">
           <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4">All platforms</h2>
           <div className="space-y-2 w-full">
