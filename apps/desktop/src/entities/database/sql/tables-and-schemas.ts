@@ -1,4 +1,5 @@
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { createQuery } from '../query'
 
 export const tablesAndSchemasType = type({
@@ -44,5 +45,18 @@ export const tablesAndSchemasQuery = createQuery({
         eb('table_type', '=', 'BASE TABLE'),
       ]))
       .execute(),
+    sqlite: async (db) => {
+      const query = await db
+        .selectFrom('sqlite_master' as any) // eslint-disable-line ts/no-explicit-any
+        .select([
+          sql<string>`'main'`.as('schema'),
+          'name as table',
+        ])
+        .where('type', '=', 'table')
+        .where('name', 'not like', 'sqlite_%')
+        .execute()
+
+      return query as { schema: string, table: string }[]
+    },
   }),
 })

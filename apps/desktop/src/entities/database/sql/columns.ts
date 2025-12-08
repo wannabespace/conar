@@ -153,5 +153,22 @@ export const columnsQuery = createQuery({
         type: getClickhouseColumnType(row.type),
       }))
     },
+    sqlite: async (db) => {
+      // SQLite doesn't have information_schema, use PRAGMA table_info
+      const query = await db
+        .selectFrom(sql`pragma_table_info(${sql.ref(table)})`.as('pragma'))
+        .select([
+          sql<string>`'main'`.as('schema'),
+          sql<string>`${sql.val(table)}`.as('table'),
+          'name as id',
+          'dflt_value as default',
+          'type',
+          sql<boolean>`CASE WHEN "notnull" = 0 THEN true ELSE false END`.as('nullable'),
+          sql<boolean>`true`.as('editable'),
+        ])
+        .execute()
+
+      return query
+    },
   }),
 })

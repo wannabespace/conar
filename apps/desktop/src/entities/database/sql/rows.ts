@@ -104,5 +104,25 @@ export const rowsQuery = createQuery({
 
       return query.execute()
     },
+    sqlite: (db) => {
+      const order = Object.entries(orderBy ?? {})
+
+      let query = db
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .$if(select !== undefined, qb => qb.select(select!))
+        .$if(select === undefined, qb => qb.selectAll())
+        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
+        .limit(limit)
+        .offset(offset)
+
+      if (order.length > 0) {
+        order.forEach(([column, order]) => {
+          query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
+        })
+      }
+
+      return query.execute()
+    },
   }),
 })

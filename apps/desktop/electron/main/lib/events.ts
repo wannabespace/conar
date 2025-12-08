@@ -5,6 +5,7 @@ import { app, ipcMain } from 'electron'
 import { getClient as getClickhouseClient } from '../databases/clickhouse'
 import { getPool as getMysqlPool } from '../databases/mysql'
 import { getPool as getPgPool } from '../databases/pg'
+import { getDatabase as getSqliteDatabase } from '../databases/sqlite'
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
@@ -48,6 +49,26 @@ const queryMap = {
     await client.exec({ query: sql })
 
     return { result: [], duration: performance.now() - start }
+  },
+  sqlite: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
+    const db = getSqliteDatabase(connectionString)
+    const start = performance.now()
+
+    // Check if it's a SELECT query
+    const isSelect = sql.trim().toUpperCase().startsWith('SELECT')
+      || sql.trim().toUpperCase().startsWith('PRAGMA')
+
+    if (isSelect) {
+      const stmt = db.prepare(sql)
+      const result = values && values.length > 0 ? stmt.all(...values) : stmt.all()
+      return { result: result as unknown, duration: performance.now() - start }
+    }
+
+    // For INSERT, UPDATE, DELETE, etc.
+    const stmt = db.prepare(sql)
+    const info = values && values.length > 0 ? stmt.run(...values) : stmt.run()
+
+    return { result: [{ changes: info.changes, lastInsertRowid: info.lastInsertRowid }], duration: performance.now() - start }
   },
 // eslint-disable-next-line ts/no-explicit-any
 } satisfies Record<DatabaseType, (...args: any[]) => Promise<QueryResult>>

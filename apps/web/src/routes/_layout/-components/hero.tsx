@@ -10,6 +10,7 @@ const words = {
   [DatabaseType.Postgres]: 'Postgres',
   [DatabaseType.MySQL]: 'MySQL',
   [DatabaseType.ClickHouse]: 'ClickHouse',
+  [DatabaseType.SQLite]: 'SQLite',
 } satisfies Record<DatabaseType, string>
 
 export function Hero({ className }: { className?: string }) {

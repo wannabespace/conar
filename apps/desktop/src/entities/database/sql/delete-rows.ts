@@ -31,5 +31,12 @@ export const deleteRowsQuery = createQuery({
         Object.entries(pk).map(([key, value]) => eb(key, '=', value)),
       ))))
       .execute(),
+    sqlite: db => db
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .deleteFrom(table)
+      .where(({ or, and, eb }) => or(primaryKeys.map(pk => and(
+        Object.entries(pk).map(([key, value]) => eb(key, '=', value)),
+      ))))
+      .execute(),
   }),
 })
