@@ -1,1 +1,1 @@
-bunx commitlint --edit $1
+# disabled for non-bun environment

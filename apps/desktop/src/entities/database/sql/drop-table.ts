@@ -34,5 +34,10 @@ export const dropTableQuery = createQuery({
       .schema
       .dropTable(table)
       .execute(),
+    sqlite: db => db
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .schema
+      .dropTable(table)
+      .execute(),
   }),
 })

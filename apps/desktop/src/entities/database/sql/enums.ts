@@ -128,5 +128,9 @@ export const enumsQuery = createQuery({
         } satisfies typeof enumType.infer))
         .filter(res => res.values.length > 0)
     },
+    sqlite: async () => {
+      // SQLite doesn't have native enum types
+      return []
+    },
   }),
 })

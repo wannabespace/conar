@@ -10,6 +10,7 @@ export function formatSql(
     [DatabaseType.Postgres]: 'postgresql',
     [DatabaseType.MySQL]: 'mysql',
     [DatabaseType.ClickHouse]: 'mysql',
+    [DatabaseType.SQLite]: 'sqlite',
   }
 
   try {

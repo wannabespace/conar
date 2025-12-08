@@ -32,5 +32,11 @@ export const selectQuery = createQuery({
       .select(select)
       .where(eb => buildWhere(eb, filters))
       .execute(),
+    sqlite: db => db
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .selectFrom(table)
+      .select(select)
+      .where(eb => buildWhere(eb, filters))
+      .execute(),
   }),
 })

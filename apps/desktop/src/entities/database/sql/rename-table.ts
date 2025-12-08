@@ -18,5 +18,11 @@ export const renameTableQuery = createQuery({
       .renameTo(newTable)
       .execute(),
     clickhouse: db => sql`RENAME TABLE ${sql.id(schema, oldTable)} TO ${sql.id(schema, newTable)}`.execute(db),
+    sqlite: db => db
+      .withTables<{ [oldTable]: Record<string, unknown> }>()
+      .schema
+      .alterTable(oldTable)
+      .renameTo(newTable)
+      .execute(),
   }),
 })
