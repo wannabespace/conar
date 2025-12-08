@@ -26,7 +26,7 @@ const treeVariants = {
 }
 
 const treeTransition = {
-  layout: { duration: 0.2, ease: 'easeInOut' as const },
+  layout: { duration: 0.15, ease: 'easeInOut' as const },
   opacity: { duration: 0.1 },
   height: { duration: 0.1 },
 }
@@ -60,7 +60,7 @@ interface TableItemProps {
 }
 
 function TableItem({ schema, table, isPinned = false, search, onRename, onDrop }: TableItemProps) {
-  const { table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
+  const { table: tableParam, schema: schemaParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
   const { database } = Route.useRouteContext()
 
   return (
@@ -75,7 +75,7 @@ function TableItem({ schema, table, isPinned = false, search, onRename, onDrop }
       onDoubleClick={() => addTab(database.id, schema, table)}
       className={cn(
         'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/30',
-        tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
+        tableParam === table && schemaParam === schema && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
       )}
     >
       <RiTableLine

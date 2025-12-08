@@ -265,11 +265,11 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
       <div>
         <div
           className={cn(
-            'relative inline-flex bg-primary text-primary-foreground rounded-lg px-2 py-1 overflow-hidden',
-            !isVisible && 'max-h-[100px]',
+            'relative inline-flex bg-primary text-primary-foreground rounded-lg px-2 py-1',
+            canHide && !isVisible && 'overflow-hidden max-h-[100px]',
           )}
         >
-          <div className="h-fit" ref={partsRef}>
+          <div className="h-fit [&_a]:text-white" ref={partsRef}>
             <ChatMessageParts parts={message.parts} />
           </div>
           {canHide && (
@@ -332,7 +332,7 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
           />
         </div>
       </div>
-      <div className="sticky bottom-0 z-30 flex items-center justify-between -mr-1 mt-2 gap-1">
+      <div className="sticky bottom-0 z-30 flex items-center justify-between -mr-1 mt-2 first:mt-0 gap-1">
         <div className={cn('duration-150', isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
           <AssistantMessageLoader>
             {status === 'submitted' ? 'Thinking...' : 'Writing...'}
@@ -395,7 +395,7 @@ function ErrorMessage({ error, className, ...props }: { error: Error } & Compone
   )
 }
 
-const MESSAGES_GAP = 32
+const MESSAGES_GAP = 16
 
 export function ChatMessages({ className }: ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()

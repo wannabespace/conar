@@ -9,9 +9,7 @@ export function useTableColumns({ database, table, schema }: { database: typeof 
       databaseTableColumnsQuery({ database, table, schema }),
       databaseConstraintsQuery({ database }),
     ],
-    combine: ([columns, constraints]) => {
-      return [columns.data ?? [], constraints.data ?? []]
-    },
+    combine: ([columns, constraints]) => [columns.data ?? [], constraints.data ?? []],
   })
 
   return useMemo(() => {

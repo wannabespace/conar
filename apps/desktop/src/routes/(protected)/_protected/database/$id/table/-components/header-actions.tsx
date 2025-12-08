@@ -14,6 +14,7 @@ import { usePageStoreContext } from '../-store'
 import { HeaderActionsColumns } from './header-actions-columns'
 import { HeaderActionsDelete } from './header-actions-delete'
 import { HeaderActionsFilters } from './header-actions-filters'
+import { HeaderActionsOrder } from './header-actions-order'
 
 export function HeaderActions({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
   const store = usePageStoreContext()
@@ -81,6 +82,11 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
         schema={schema}
       />
       <HeaderActionsFilters />
+      <HeaderActionsOrder
+        database={database}
+        table={table}
+        schema={schema}
+      />
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

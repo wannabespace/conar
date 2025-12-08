@@ -1,4 +1,4 @@
-import { isCtrlEnter } from '@conar/shared/utils/os'
+import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { ShiftCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
@@ -32,7 +32,7 @@ export function RunnerAlertDialog({
     setOpen(false)
   }
 
-  useKeyboardEvent(e => isCtrlEnter(e) && e.shiftKey, onConfirm)
+  useKeyboardEvent(e => isCtrlAndKey(e, 'Enter') && e.shiftKey, onConfirm)
 
   return (
     <AlertDialog

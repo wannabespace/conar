@@ -1,10 +1,14 @@
 import type { TableHeaderCellProps } from '~/components/table'
 import type { Column } from '~/entities/database'
+import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine } from '@remixicon/react'
+import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
+import { databaseEnumsQuery } from '~/entities/database'
+import { Route } from '..'
 import { usePageStoreContext } from '../-store'
 
 const CANNOT_SORT_TYPES = ['json']
@@ -53,8 +57,13 @@ export function TableHeaderCell({
   onSort?: () => void
   className?: string
 } & TableHeaderCellProps) {
+  const { database } = Route.useLoaderData()
   const store = usePageStoreContext()
   const order = useStore(store, state => state.orderBy?.[column.id] ?? null)
+  const { data: enumData } = useQuery({
+    ...databaseEnumsQuery({ database }),
+    select: data => data?.find(e => e.name === column.enum),
+  })
 
   return (
     <div
@@ -169,9 +178,39 @@ export function TableHeaderCell({
                 </Tooltip>
               </TooltipProvider>
             )}
-            <span className="text-muted-foreground truncate font-mono">
-              {column.type}
-            </span>
+            {enumData
+              ? (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-muted-foreground truncate font-mono underline decoration-dotted cursor-pointer">
+                          {column.type}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="text-xs text-muted-foreground">
+                          Available values:
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {enumData.values.map((val: string) => (
+                            <Badge
+                              key={val}
+                              variant="secondary"
+                              className="font-mono text-xs"
+                            >
+                              {val}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )
+              : (
+                  <span className="text-muted-foreground truncate font-mono">
+                    {column.type}
+                  </span>
+                )}
           </div>
         )}
       </div>

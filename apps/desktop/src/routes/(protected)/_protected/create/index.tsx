@@ -123,7 +123,13 @@ function CreateConnectionPage() {
     },
   })
 
-  const [typeValue, connectionString, name, saveInCloud, label, color] = useStore(form.store, ({ values }) => [values.type, values.connectionString, values.name, values.saveInCloud, values.label, values.color])
+  const typeValue = useStore(form.store, state => state.values.type)
+  const connectionString = useStore(form.store, state => state.values.connectionString)
+  const name = useStore(form.store, state => state.values.name)
+  const saveInCloud = useStore(form.store, state => state.values.saveInCloud)
+  const label = useStore(form.store, state => state.values.label)
+  const color = useStore(form.store, state => state.values.color)
+  const isValid = useStore(form.store, state => state.isValid)
 
   return (
     <ScrollArea className="py-[10vh]">
@@ -241,7 +247,7 @@ function CreateConnectionPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={status === 'pending' || !form.state.isValid}
+                disabled={status === 'pending' || !isValid}
               >
                 <LoadingContent loading={status === 'pending'}>
                   <AppLogo className="w-4" />
