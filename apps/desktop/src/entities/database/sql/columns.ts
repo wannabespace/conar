@@ -168,7 +168,11 @@ export const columnsQuery = createQuery({
         ])
         .execute()
 
-      return query
+      return query.map(row => ({
+        ...row,
+        enum: undefined,
+        isArray: false,
+      }))
     },
   }),
 })

@@ -59,6 +59,8 @@ const queryMap = {
       || sql.trim().toUpperCase().startsWith('PRAGMA')
 
     if (isSelect) {
+      // Note: Prepared statements are created on each call for simplicity
+      // Future optimization: implement statement caching for frequently executed queries
       const stmt = db.prepare(sql)
       const result = values && values.length > 0 ? stmt.all(...values) : stmt.all()
       return { result: result as unknown, duration: performance.now() - start }

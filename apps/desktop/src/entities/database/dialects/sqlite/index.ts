@@ -54,7 +54,9 @@ class SqliteAdapter {
   }
 
   get supportsReturning() {
-    return true
+    // SQLite 3.35.0+ supports RETURNING for INSERT/UPDATE/DELETE
+    // For now, we'll indicate limited support is available
+    return false
   }
 }
 
