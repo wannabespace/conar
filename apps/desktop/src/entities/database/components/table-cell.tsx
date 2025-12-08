@@ -37,7 +37,7 @@ function CellPopoverContent({
   onClose: () => void
   hasUpdateFn: boolean
 }) {
-  const { value, initialValue, column, displayValue, setValue, update, enums } = useCellContext()
+  const { value, initialValue, column, displayValue, setValue, update, values } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   const save = (value: string) => {
@@ -73,6 +73,7 @@ function CellPopoverContent({
   const shouldHideToggleSize = column.type === 'boolean'
     || column.type?.includes('time')
     || column.type?.includes('numeric')
+    || (!!values && values.length > 0)
 
   const monacoOptions = {
     lineNumbers: isBig ? 'on' as const : 'off' as const,
@@ -85,8 +86,6 @@ function CellPopoverContent({
     },
   }
 
-  const enumType = enums?.find(e => e.name === column.type || (column.type === 'enum' && e.name === column.id))
-
   return (
     <>
       {column?.type === 'boolean'
@@ -98,7 +97,8 @@ function CellPopoverContent({
               onSave={save}
             />
           )
-        : enumType
+        // TODO: refactor this to support array values like in PG enum array columns or MySQL SET columns
+        : values && !column.isArray
           ? (
               <div className="p-2">
                 <Select
@@ -106,14 +106,13 @@ function CellPopoverContent({
                   disabled={!canEdit}
                   onValueChange={(value) => {
                     setValue(value)
-                    save(value)
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select value" />
                   </SelectTrigger>
                   <SelectContent>
-                    {enumType.values.map(val => (
+                    {values.map(val => (
                       <SelectItem key={val} value={val}>
                         {val}
                       </SelectItem>
@@ -223,7 +222,7 @@ function ForeignButton(props: ComponentProps<'button'>) {
   )
 }
 
-function ReferenceButton({ count, className, ...props }: ComponentProps<'button'> & { count: number }) {
+function ReferenceButton({ children, className, ...props }: ComponentProps<'button'>) {
   return (
     <Button
       variant="outline"
@@ -233,7 +232,7 @@ function ReferenceButton({ count, className, ...props }: ComponentProps<'button'
     >
       <RiArrowLeftDownLine className="size-3 text-muted-foreground" />
       <span className="text-xs text-muted-foreground">
-        {count}
+        {children}
       </span>
     </Button>
   )
@@ -258,12 +257,12 @@ export function TableCell({
   position,
   size,
   onSaveValue,
-  enums,
+  values,
 }: {
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
   className?: string
-  enums?: { schema: string, name: string, values: string[] }[]
+  values?: string[]
 } & TableCellProps) {
   const displayValue = getDisplayValue(value, size)
 
@@ -314,7 +313,7 @@ export function TableCell({
       >
         <span className="truncate">{displayValue}</span>
         {!!value && column.foreign && <ForeignButton />}
-        {!!value && column.references && column.references.length > 0 && <ReferenceButton count={column.references.length} />}
+        {!!value && column.references && column.references.length > 0 && <ReferenceButton>{column.references.length}</ReferenceButton>}
       </TableCellContent>
     )
   }
@@ -343,7 +342,7 @@ export function TableCell({
       onSavePending={() => setStatus('pending')}
       onSaveSuccess={() => setStatus('success')}
       onSaveError={onSaveError}
-      enums={enums}
+      values={values}
     >
       <Popover
         open={isPopoverOpen}
@@ -421,7 +420,6 @@ export function TableCell({
                           <TooltipTrigger asChild>
                             <PopoverTrigger asChild>
                               <ReferenceButton
-                                count={column.references.length}
                                 onDoubleClick={e => e.stopPropagation()}
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -430,7 +428,9 @@ export function TableCell({
                                   setIsPopoverOpen(false)
                                   setIsForeignOpen(false)
                                 }}
-                              />
+                              >
+                                {column.references.length}
+                              </ReferenceButton>
                             </PopoverTrigger>
                           </TooltipTrigger>
                           <TooltipContent className="text-sm">

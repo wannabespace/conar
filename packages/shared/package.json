@@ -8,7 +8,8 @@
     "./enums/*": "./src/enums/*.ts",
     "./filters": "./src/filters/index.ts",
     "./filters/*": "./src/filters/*.ts",
-    "./utils/*": "./src/utils/*.ts"
+    "./utils/*": "./src/utils/*.ts",
+    "./arktype-config": "./src/arktype-config.ts"
   },
   "scripts": {
     "check-types": "tsc"

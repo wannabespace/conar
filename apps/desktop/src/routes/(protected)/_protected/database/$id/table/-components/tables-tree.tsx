@@ -26,7 +26,7 @@ const treeVariants = {
 }
 
 const treeTransition = {
-  layout: { duration: 0.2, ease: 'easeInOut' as const },
+  layout: { duration: 0.15, ease: 'easeInOut' as const },
   opacity: { duration: 0.1 },
   height: { duration: 0.1 },
 }
