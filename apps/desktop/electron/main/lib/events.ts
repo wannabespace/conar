@@ -12,7 +12,10 @@ const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as ty
 
 function isConnectionError(error: unknown) {
   if (error instanceof Error) {
-    if (error.message.includes('ECONNRESET') || error.message.toLowerCase().includes('connection lost')) {
+    if (
+      error.message.includes('ECONNRESET')
+      || error.message.toLowerCase().includes('connection lost')
+    ) {
       return true
     }
   }
@@ -23,7 +26,11 @@ const MAX_RECONNECTION_ATTEMPTS = 5
 
 async function retryIfConnectionError<T>(func: () => Promise<T>, attempt: number = 0): Promise<T> {
   try {
-    return await func()
+    const result = await func()
+    if (attempt > 0) {
+      sendToast({ message: `Database connection successful after ${attempt} attempt${attempt > 1 ? 's' : ''}.`, type: 'success' })
+    }
+    return result
   }
   catch (error) {
     if (isConnectionError(error) && attempt < MAX_RECONNECTION_ATTEMPTS) {

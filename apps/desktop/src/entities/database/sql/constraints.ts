@@ -73,23 +73,33 @@ export const constraintsQuery = createQuery({
       .execute(),
     mssql: db => db
       .selectFrom('information_schema.TABLE_CONSTRAINTS')
-      .leftJoin('information_schema.KEY_COLUMN_USAGE', 'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME', 'information_schema.KEY_COLUMN_USAGE.CONSTRAINT_NAME')
-      .leftJoin('information_schema.CONSTRAINT_COLUMN_USAGE', 'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME', 'information_schema.CONSTRAINT_COLUMN_USAGE.CONSTRAINT_NAME')
+      .leftJoin('information_schema.KEY_COLUMN_USAGE', join => join
+        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'information_schema.KEY_COLUMN_USAGE.CONSTRAINT_NAME')
+        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_SCHEMA', '=', 'information_schema.KEY_COLUMN_USAGE.CONSTRAINT_SCHEMA')
+        .onRef('information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA', '=', 'information_schema.KEY_COLUMN_USAGE.TABLE_SCHEMA')
+        .onRef('information_schema.TABLE_CONSTRAINTS.TABLE_NAME', '=', 'information_schema.KEY_COLUMN_USAGE.TABLE_NAME'))
+      .leftJoin('information_schema.REFERENTIAL_CONSTRAINTS', join => join
+        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'information_schema.REFERENTIAL_CONSTRAINTS.CONSTRAINT_NAME')
+        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_SCHEMA', '=', 'information_schema.REFERENTIAL_CONSTRAINTS.CONSTRAINT_SCHEMA'))
+      .leftJoin('information_schema.KEY_COLUMN_USAGE as referenced_kcu', join => join
+        .onRef('information_schema.REFERENTIAL_CONSTRAINTS.UNIQUE_CONSTRAINT_NAME', '=', 'referenced_kcu.CONSTRAINT_NAME')
+        .onRef('information_schema.REFERENTIAL_CONSTRAINTS.UNIQUE_CONSTRAINT_SCHEMA', '=', 'referenced_kcu.CONSTRAINT_SCHEMA')
+        .onRef('information_schema.KEY_COLUMN_USAGE.ORDINAL_POSITION', '=', 'referenced_kcu.ORDINAL_POSITION'))
       .select([
         'information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA as schema',
         'information_schema.TABLE_CONSTRAINTS.TABLE_NAME as table',
         'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME as name',
         'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE as type',
         'information_schema.KEY_COLUMN_USAGE.COLUMN_NAME as column',
-        'information_schema.CONSTRAINT_COLUMN_USAGE.TABLE_SCHEMA as foreign_schema',
-        'information_schema.CONSTRAINT_COLUMN_USAGE.TABLE_NAME as foreign_table',
-        'information_schema.CONSTRAINT_COLUMN_USAGE.COLUMN_NAME as foreign_column',
+        'referenced_kcu.TABLE_SCHEMA as foreign_schema',
+        'referenced_kcu.TABLE_NAME as foreign_table',
+        'referenced_kcu.COLUMN_NAME as foreign_column',
       ])
       .where('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
-      .where('information_schema.CONSTRAINT_COLUMN_USAGE.TABLE_SCHEMA', 'not like', 'pg_%')
+      .where('information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'sys'])
       .execute(),
     clickhouse: async () => {
-      // ClickHouse doesn't support foreign keys and constraints
+      // ClickHouse doesn't support constraints
       return []
     },
   }),

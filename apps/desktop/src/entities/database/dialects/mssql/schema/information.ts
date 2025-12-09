@@ -9,6 +9,7 @@ export interface InformationSchema {
   TABLE_CONSTRAINTS: TableConstraints
   KEY_COLUMN_USAGE: KeyColumnUsage
   CONSTRAINT_COLUMN_USAGE: ConstraintColumnUsage
+  REFERENTIAL_CONSTRAINTS: ReferentialConstraints
 }
 
 /**
@@ -92,6 +93,7 @@ interface KeyColumnUsage {
   TABLE_SCHEMA: string
   TABLE_NAME: string
   COLUMN_NAME: string
+  ORDINAL_POSITION: number
 }
 
 /**
@@ -106,4 +108,20 @@ interface ConstraintColumnUsage {
   CONSTRAINT_CATALOG: string
   CONSTRAINT_SCHEMA: string
   CONSTRAINT_NAME: string
+}
+
+/**
+ * @name REFERENTIAL_CONSTRAINTS
+ * @type table
+ */
+interface ReferentialConstraints {
+  CONSTRAINT_CATALOG: string
+  CONSTRAINT_SCHEMA: string
+  CONSTRAINT_NAME: string
+  UNIQUE_CONSTRAINT_CATALOG: string
+  UNIQUE_CONSTRAINT_SCHEMA: string
+  UNIQUE_CONSTRAINT_NAME: string
+  MATCH_OPTION: 'NONE' | 'PARTIAL' | 'FULL'
+  UPDATE_RULE: 'NO ACTION' | 'CASCADE' | 'SET NULL' | 'SET DEFAULT'
+  DELETE_RULE: 'NO ACTION' | 'CASCADE' | 'SET NULL' | 'SET DEFAULT'
 }
