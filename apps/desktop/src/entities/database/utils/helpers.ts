@@ -6,8 +6,15 @@ export const DEFAULT_COLUMN_WIDTH = 240
 export const DANGEROUS_SQL_KEYWORDS = ['DELETE', 'UPDATE', 'DROP', 'RENAME', 'TRUNCATE', 'ALTER'] as const
 
 export function hasDangerousSqlKeywords(sql: string) {
+  const uncommentedLines = sql.split('\n').filter(line => !line.trim().startsWith('--')).join('\n')
   const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
-  return new RegExp(dangerousKeywordsPattern, 'gi').test(sql)
+  return new RegExp(dangerousKeywordsPattern, 'gi').test(uncommentedLines)
+}
+
+function isWord(word: string, line: string, idx: number) {
+  return (idx === 0 || /\W/.test(line[idx - 1]!))
+    && line.substring(idx, idx + word.length).toUpperCase() === word
+    && (idx + word.length === line.length || /\W/.test(line[idx + word.length]!))
 }
 
 export function getEditorQueries(sql: string) {
@@ -21,10 +28,10 @@ export function getEditorQueries(sql: string) {
   let queryStartLine = 1
   let inMultilineComment = false
   let dollarQuoteTag: string | null = null
-  let beginEndBlockDepth = 0 // Track nested BEGIN...END blocks
-  let beginEndStartLine: number | null = null // Track the starting line of the BEGIN block
+  let beginEndBlockDepth = 0
+  let beginEndStartLine: number | null = null
 
-  function splitQueryBySemicolons(query: string): string[] {
+  const splitQueryBySemicolons = (query: string): string[] => {
     const parts: string[] = []
     let currentPart = ''
     let currentTag: string | null = null
@@ -32,9 +39,7 @@ export function getEditorQueries(sql: string) {
     let localBeginEndBlockDepth = 0
 
     while (i < query.length) {
-      // Detect BEGIN (not inside a quoted string)
       if (currentTag === null) {
-        // Dollar-quoted string check
         const dollarMatch = query.substring(i).match(/^\$\$|\$[a-z_]\w*\$/i)
         if (dollarMatch) {
           currentTag = dollarMatch[0]
@@ -43,7 +48,6 @@ export function getEditorQueries(sql: string) {
           continue
         }
 
-        // Look for BEGIN and END, only outside dollar quotes
         const beginMatch = query.substring(i).match(/^(BEGIN)\b/i)
         const endMatch = query.substring(i).match(/^(END)\b/i)
         if (beginMatch && localBeginEndBlockDepth === 0) {
@@ -70,7 +74,6 @@ export function getEditorQueries(sql: string) {
         }
       }
       else {
-        // Inside a dollar-quoted string
         const tagIndex = query.indexOf(currentTag, i)
         if (tagIndex !== -1) {
           const tagLength = currentTag.length
@@ -92,7 +95,7 @@ export function getEditorQueries(sql: string) {
     return parts.filter(p => p.length > 0)
   }
 
-  function processDollarQuotes(line: string): { newTag: string | null } {
+  const processDollarQuotes = (line: string): { newTag: string | null } => {
     let currentTag = dollarQuoteTag
     let i = 0
 
@@ -120,16 +123,10 @@ export function getEditorQueries(sql: string) {
     return { newTag: currentTag }
   }
 
-  const isWord = (word: string, line: string, idx: number) =>
-    (idx === 0 || /\W/.test(line[idx - 1]!))
-    && line.substring(idx, idx + word.length).toUpperCase() === word
-    && (idx + word.length === line.length || /\W/.test(line[idx + word.length]!))
-
   for (let i = 0; i < lines.length; i++) {
     const lineNum = i + 1
     let line = lines[i]!
 
-    // Multiline comment blocks
     if (!inMultilineComment && line.includes('/*')) {
       inMultilineComment = true
     }
@@ -145,7 +142,6 @@ export function getEditorQueries(sql: string) {
     dollarQuoteTag = newTag
     const isInDollarQuote = dollarQuoteTag !== null
 
-    // Single-line comments
     const commentIndex = line.indexOf('--')
     if (commentIndex !== -1 && !wasInDollarQuote) {
       line = line.substring(0, commentIndex)
@@ -155,7 +151,6 @@ export function getEditorQueries(sql: string) {
     if (!line)
       continue
 
-    // BEGIN/END block detection at statement level (not inside dollar-quoted blocks)
     if (!isInDollarQuote) {
       for (let idx = 0; idx < line.length;) {
         if (isWord('BEGIN', line.toUpperCase(), idx)) {
