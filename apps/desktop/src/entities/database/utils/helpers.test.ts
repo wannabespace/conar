@@ -124,4 +124,23 @@ WHERE id = 1; SELECT * FROM posts;`)).toEqual([
       },
     ])
   })
+
+  it('should handle BEGIN and END blocks as a single query', () => {
+    expect(
+      getEditorQueries(
+        `BEGIN
+UPDATE users SET active = false WHERE id = 1;
+INSERT INTO audit_log (user_id, action) VALUES (1, 'deactivate');
+END;`,
+      ),
+    ).toEqual([
+      {
+        startLineNumber: 1,
+        endLineNumber: 4,
+        queries: [
+          `BEGIN UPDATE users SET active = false WHERE id = 1; INSERT INTO audit_log (user_id, action) VALUES (1, 'deactivate'); END`,
+        ],
+      },
+    ])
+  })
 })

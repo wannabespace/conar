@@ -1,0 +1,24 @@
+import type { IOptions } from 'mssql'
+import { createRequire } from 'node:module'
+import { parseConnectionString } from '@conar/connection'
+import { memoize } from '@conar/shared/utils/helpers'
+
+const mssql = createRequire(import.meta.url)('mssql') as typeof import('mssql')
+
+export const getPool = memoize((connectionString: string) => {
+  const { searchParams, ...config } = parseConnectionString(connectionString)
+  const lowerCaseSearchParams = new URLSearchParams(searchParams.toString().toLowerCase())
+  const options: IOptions = {
+    encrypt: lowerCaseSearchParams.get('encrypt') !== 'false',
+    trustServerCertificate: lowerCaseSearchParams.get('trustservercertificate') !== 'false',
+  }
+
+  return new mssql.ConnectionPool({
+    server: config.host,
+    port: config.port,
+    database: config.database,
+    user: config.user,
+    password: config.password,
+    options,
+  }).connect()
+})

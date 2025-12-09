@@ -71,6 +71,23 @@ export const constraintsQuery = createQuery({
       .where('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
       .where('information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
       .execute(),
+    mssql: db => db
+      .selectFrom('information_schema.TABLE_CONSTRAINTS')
+      .leftJoin('information_schema.KEY_COLUMN_USAGE', 'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME', 'information_schema.KEY_COLUMN_USAGE.CONSTRAINT_NAME')
+      .leftJoin('information_schema.CONSTRAINT_COLUMN_USAGE', 'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME', 'information_schema.CONSTRAINT_COLUMN_USAGE.CONSTRAINT_NAME')
+      .select([
+        'information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA as schema',
+        'information_schema.TABLE_CONSTRAINTS.TABLE_NAME as table',
+        'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME as name',
+        'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE as type',
+        'information_schema.KEY_COLUMN_USAGE.COLUMN_NAME as column',
+        'information_schema.CONSTRAINT_COLUMN_USAGE.TABLE_SCHEMA as foreign_schema',
+        'information_schema.CONSTRAINT_COLUMN_USAGE.TABLE_NAME as foreign_table',
+        'information_schema.CONSTRAINT_COLUMN_USAGE.COLUMN_NAME as foreign_column',
+      ])
+      .where('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
+      .where('information_schema.CONSTRAINT_COLUMN_USAGE.TABLE_SCHEMA', 'not like', 'pg_%')
+      .execute(),
     clickhouse: async () => {
       // ClickHouse doesn't support foreign keys and constraints
       return []

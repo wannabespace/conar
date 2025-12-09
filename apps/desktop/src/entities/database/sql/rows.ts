@@ -1,6 +1,7 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { BINARY_OPERATORS, ExpressionBuilder } from 'kysely'
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { createQuery } from '../query'
 
 // eslint-disable-next-line ts/no-explicit-any
@@ -72,6 +73,28 @@ export const rowsQuery = createQuery({
         .$if(select !== undefined, qb => qb.select(select!))
         .$if(select === undefined, qb => qb.selectAll())
         .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
+        .limit(limit)
+        .offset(offset)
+
+      if (order.length > 0) {
+        order.forEach(([column, order]) => {
+          query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
+        })
+      }
+
+      return query.execute()
+    },
+    mssql: (db) => {
+      const order = Object.entries(orderBy ?? {})
+
+      let query = db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .$if(select !== undefined, qb => qb.select(select!))
+        .$if(select === undefined, qb => qb.selectAll())
+        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
+        .$if(order.length === 0, qb => qb.orderBy(sql<string>`(select null)`))
         .limit(limit)
         .offset(offset)
 
