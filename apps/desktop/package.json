@@ -28,6 +28,7 @@
     "@clickhouse/client": "catalog:",
     "electron-store": "catalog:",
     "electron-updater": "catalog:",
+    "mssql": "catalog:",
     "mysql2": "catalog:",
     "pg": "catalog:"
   },
@@ -65,6 +66,7 @@
     "@tiptap/react": "catalog:",
     "@tiptap/starter-kit": "catalog:",
     "@toon-format/toon": "catalog:",
+    "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

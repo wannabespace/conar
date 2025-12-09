@@ -124,6 +124,37 @@ export const columnsQuery = createQuery({
         isArray: column.type === 'set',
       } satisfies typeof columnType.inferIn))
     },
+    mssql: async (db) => {
+      const query = await db
+        .selectFrom('information_schema.COLUMNS')
+        .select(eb => [
+          'TABLE_SCHEMA as schema',
+          'TABLE_NAME as table',
+          'COLUMN_NAME as name',
+          'COLUMN_DEFAULT as default',
+          'DATA_TYPE as type',
+          eb
+            .case('IS_NULLABLE')
+            .when('YES')
+            .then(1)
+            .else(0)
+            .end()
+            .$castTo<1 | 0>()
+            .as('nullable'),
+        ])
+        .where(({ and, eb }) => and([
+          eb('TABLE_SCHEMA', '=', schema),
+          eb('TABLE_NAME', '=', table),
+        ]))
+        .execute()
+
+      return query.map(({ name, ...column }) => ({
+        ...column,
+        id: name,
+        enum: column.type === 'set' || column.type === 'enum' ? name : undefined,
+        isArray: column.type === 'set',
+      } satisfies typeof columnType.inferIn))
+    },
     clickhouse: async (db) => {
       const query = await db
         .selectFrom('information_schema.columns')

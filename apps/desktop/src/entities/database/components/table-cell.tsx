@@ -126,7 +126,11 @@ function CellPopoverContent({
                 ref={monacoRef}
                 data-mask
                 value={value}
-                language={column?.type?.includes('json') ? 'json' : undefined}
+                language={column?.type?.includes('json')
+                  ? 'json'
+                  : column?.type?.includes('xml')
+                    ? 'xml'
+                    : undefined}
                 className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(45vh,40rem)]')}
                 onChange={setValue}
                 options={monacoOptions}
@@ -239,9 +243,12 @@ function ReferenceButton({ children, className, ...props }: ComponentProps<'butt
 }
 
 function getTimestamp(value: unknown, column: Column) {
-  const date = column?.type?.includes('timestamp')
-    && value
-    && (typeof value === 'string' || typeof value === 'number')
+  const date = (
+    column?.type?.includes('timestamp')
+    || column?.type?.includes('datetime')
+  )
+  && value
+  && (typeof value === 'string' || typeof value === 'number')
     ? dayjs(value)
     : null
 

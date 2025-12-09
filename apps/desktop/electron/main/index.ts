@@ -110,6 +110,10 @@ app.on('activate', () => {
   }
 })
 
+export function sendToast({ message, type }: { message: string, type: 'success' | 'error' | 'info' }) {
+  mainWindow?.webContents.send('toast', { message, type })
+}
+
 function sendUpdatesStatus(status: UpdatesStatus, message?: string) {
   mainWindow?.webContents.send('updates-status', { status, message })
 }

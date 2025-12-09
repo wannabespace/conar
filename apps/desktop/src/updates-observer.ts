@@ -25,6 +25,10 @@ export const updatesStore = new Store<{
   message: undefined,
 })
 
+window.electron?.app.onUpdatesStatus(({ status, message }) => {
+  updatesStore.setState(state => ({ ...state, status, message } satisfies typeof state))
+})
+
 export function useUpdatesObserver() {
   const { data: version } = useQuery<string>({
     queryKey: ['version'],
@@ -36,13 +40,6 @@ export function useUpdatesObserver() {
     },
   }, queryClient)
   const status = useStore(updatesStore, state => state.status)
-
-  useEffect(() => {
-    const cleanup = window.electron?.app.onUpdatesStatus(({ status, message }) => {
-      updatesStore.setState(state => ({ ...state, status, message } satisfies typeof state))
-    })
-    return cleanup
-  }, [])
 
   useEffect(() => {
     if (version) {
