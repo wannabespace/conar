@@ -1,0 +1,29 @@
+{
+  "$schema": "https://unpkg.com/@todesktop/cli@1.18.0/schemas/schema.json",
+  "id": "25112796k32u7",
+  "appId": "com.wannabespace.conar",
+  "icon": "./resources/desktop-app-512x512.png",
+  "appPath": ".",
+  "schemaVersion": 1,
+  "nodeVersion": "22.11.0",
+  "packageManager": "pnpm",
+  "pnpmVersion": "10.23.0",
+  "asar": true,
+  "copyright": "Copyright © 2024 Wannabe Space, LLC",
+  "appFiles": ["out/**", "index.html"],
+  "uploadSizeLimit": 80,
+  "bundleWorkspacePackages": {
+    "enabled": true
+  },
+  "appProtocolScheme": "conar",
+  "mac": {
+    "category": "public.app-category.developer-tools"
+  },
+  "windows": {
+    "icon": "./resources/desktop-app-512x512.png",
+    "publisherName": ["Wannabe Space, LLC"]
+  },
+  "linux": {
+    "category": "Development"
+  }
+}
