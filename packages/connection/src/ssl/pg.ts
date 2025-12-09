@@ -53,4 +53,6 @@ export function parseSSLConfig(searchParams: URLSearchParams): PoolOptions['ssl'
   if (ssl === '0' || ssl?.toLowerCase() === 'false') {
     return false
   }
+
+  return { rejectUnauthorized: false }
 }
