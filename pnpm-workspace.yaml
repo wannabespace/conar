@@ -6,21 +6,21 @@ packages:
   - packages/*
   - apps/*
 catalog:
-  '@ai-sdk/anthropic': ^2.0.53
-  '@ai-sdk/google': ^2.0.44
-  '@ai-sdk/openai': ^2.0.77
+  '@ai-sdk/anthropic': ^2.0.54
+  '@ai-sdk/google': ^2.0.45
+  '@ai-sdk/openai': ^2.0.80
   '@ai-sdk/provider': ^2.0.0
-  '@ai-sdk/react': ^2.0.107
+  '@ai-sdk/react': ^2.0.109
   '@ai-sdk/xai': ^2.0.39
-  '@antfu/eslint-config': ^6.4.2
+  '@antfu/eslint-config': ^6.5.1
   '@base-ui-components/react': ^1.0.0-rc.0
   '@clickhouse/client': ^1.14.0
   '@commitlint/cli': ^20.2.0
   '@commitlint/config-conventional': ^20.2.0
   '@dagrejs/dagre': 1.1.8
-  '@databuddy/sdk': ^2.3.0
+  '@databuddy/sdk': ^2.3.1
   '@electric-sql/pglite': ^0.3.14
-  '@eslint-react/eslint-plugin': ^2.3.12
+  '@eslint-react/eslint-plugin': ^2.3.13
   '@exalabs/ai-sdk': ^1.0.5
   '@faker-js/faker': ^10.1.0
   '@fluentui/react-context-selector': ^9.2.12
@@ -58,29 +58,29 @@ catalog:
   '@tailwindcss/typography': ^0.5.19
   '@tailwindcss/vite': ^4.1.17
   '@tanstack/react-db': ^0.1.55
-  '@tanstack/react-devtools': ^0.8.2
+  '@tanstack/react-devtools': ^0.8.4
   '@tanstack/react-form': ^1.27.1
   '@tanstack/react-query': ^5.90.12
   '@tanstack/react-query-devtools': ^5.91.1
-  '@tanstack/react-router': ^1.139.14
-  '@tanstack/react-router-devtools': ^1.139.14
-  '@tanstack/react-start': ^1.139.14
+  '@tanstack/react-router': ^1.140.1
+  '@tanstack/react-router-devtools': ^1.140.1
+  '@tanstack/react-start': ^1.140.1
   '@tanstack/react-store': ^0.8.0
-  '@tanstack/react-virtual': ^3.13.12
-  '@tanstack/router-plugin': ^1.139.14
-  '@tiptap/extension-placeholder': ^3.12.1
-  '@tiptap/react': ^3.12.1
-  '@tiptap/starter-kit': ^3.12.1
+  '@tanstack/react-virtual': ^3.13.13
+  '@tanstack/router-plugin': ^1.140.1
+  '@tiptap/extension-placeholder': ^3.13.0
+  '@tiptap/react': ^3.13.0
+  '@tiptap/starter-kit': ^3.13.0
   '@toon-format/toon': ^2.1.0
-  '@types/bun': ^1.3.3
+  '@types/bun': ^1.3.4
   '@types/ioredis-mock': ^8.2.6
   '@types/mssql': ^9.1.8
   '@types/pg': ^8.15.6
   '@types/react': ^19.2.7
   '@types/react-dom': ^19.2.3
-  '@vitejs/plugin-react': ^5.1.1
+  '@vitejs/plugin-react': ^5.1.2
   '@xyflow/react': ^12.10.0
-  ai: ^5.0.107
+  ai: ^5.0.108
   ai-retry: ^0.11.0
   arkregex: ^0.0.4
   arktype: ^2.1.28
@@ -97,15 +97,15 @@ catalog:
   drizzle-arktype: ^0.1.3
   drizzle-kit: ^0.31.8
   drizzle-orm: ^0.45.0
-  electron: ^39.2.5
+  electron: ^39.2.6
   electron-builder: ^26.0.12
   electron-store: ^11.0.2
   electron-updater: ^6.6.2
-  electron-vite: ^4.0.1
+  electron-vite: ^5.0.0
   eslint: ^9.39.1
   eslint-plugin-react-hooks: ^7.0.1
   eslint-plugin-react-refresh: ^0.4.24
-  hono: ^4.10.7
+  hono: ^4.10.8
   hookable: ^5.5.3
   husky: ^9.1.7
   input-otp: ^1.4.2
@@ -114,7 +114,7 @@ catalog:
   js-base64: ^3.7.8
   kysely: ^0.28.8
   loops: ^6.0.1
-  lucide-react: ^0.555.0
+  lucide-react: ^0.556.0
   marked: ^17.0.1
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
@@ -128,7 +128,7 @@ catalog:
   pg: ^8.16.3
   playwright: ^1.57.0
   postgres: ^3.4.7
-  posthog-js: ^1.302.0
+  posthog-js: ^1.302.2
   posthog-node: ^5.17.2
   react: ^19.2.1
   react-dom: ^19.2.1
@@ -137,7 +137,7 @@ catalog:
   react-scan: ^0.4.3
   redis: ^5.10.0
   remark-gfm: ^4.0.1
-  resend: ^6.5.2
+  resend: ^6.6.0
   resumable-stream: ^2.2.8
   sonner: ^2.0.7
   sql-formatter: ^15.6.10
@@ -154,7 +154,7 @@ catalog:
   typescript: ^5.9.3
   use-stick-to-bottom: ^1.1.1
   uuid: ^13.0.0
-  vite: ^7.2.6
+  vite: ^7.2.7
   vite-tsconfig-paths: ^5.1.4
   zod: ^4.1.13
 onlyBuiltDependencies:
