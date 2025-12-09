@@ -8,7 +8,7 @@ import { getPool as getMssqlPool } from '../databases/mssql'
 import { getPool as getMysqlPool } from '../databases/mysql'
 import { getPool as getPgPool } from '../databases/pg'
 
-const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
+const { autoUpdater } = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
 
 function isConnectionError(error: unknown) {
   if (error instanceof Error) {
@@ -128,10 +128,10 @@ const encryption = {
 
 const _app = {
   checkForUpdates: () => {
-    return autoUpdater.checkForUpdates()
+    return autoUpdater?.checkForUpdates()
   },
   quitAndInstall: () => {
-    autoUpdater.quitAndInstall()
+    autoUpdater?.restartAndInstall()
   },
 }
 
