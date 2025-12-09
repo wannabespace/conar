@@ -30,7 +30,6 @@
     "@clickhouse/client": "catalog:",
     "@todesktop/runtime": "catalog:",
     "electron-store": "catalog:",
-    "electron-updater": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
     "pg": "catalog:"

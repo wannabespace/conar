@@ -294,9 +294,6 @@ catalogs:
     electron-store:
       specifier: ^11.0.2
       version: 11.0.2
-    electron-updater:
-      specifier: ^6.6.2
-      version: 6.6.2
     electron-vite:
       specifier: ^5.0.0
       version: 5.0.0
@@ -669,9 +666,6 @@ importers:
       electron-store:
         specifier: 'catalog:'
         version: 11.0.2
-      electron-updater:
-        specifier: 'catalog:'
-        version: 6.6.2
       mssql:
         specifier: 'catalog:'
         version: 12.2.0
