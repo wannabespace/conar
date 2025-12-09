@@ -6,7 +6,7 @@ import type { ColumnRenderer } from '.'
 import { useScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 interface TableContextType {
   scrollRef: RefObject<HTMLDivElement | null>
@@ -73,28 +73,19 @@ export function TableProvider({
     }
   }, [scrollRef, virtualColumns, virtualRows, tableWidth, tableHeight])
 
-  const context = useMemo(() => ({
-    scrollRef,
-    scrollDirection,
-    rows,
-    columns,
-    virtualRows,
-    virtualColumns,
-    tableHeight,
-    tableWidth,
-  }), [
-    scrollRef,
-    scrollDirection,
-    rows,
-    columns,
-    virtualRows,
-    virtualColumns,
-    tableHeight,
-    tableWidth,
-  ])
-
   return (
-    <TableContext.Provider value={context}>
+    <TableContext.Provider
+      value={{
+        scrollRef,
+        scrollDirection,
+        rows,
+        columns,
+        virtualRows,
+        virtualColumns,
+        tableHeight,
+        tableWidth,
+      }}
+    >
       {children}
     </TableContext.Provider>
   )

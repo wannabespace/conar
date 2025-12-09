@@ -8,6 +8,6 @@ export enum DatabaseType {
 export const databaseLabels: Record<DatabaseType, string> = {
   [DatabaseType.Postgres]: 'PostgreSQL',
   [DatabaseType.MySQL]: 'MySQL',
-  [DatabaseType.MSSQL]: 'Microsoft SQL Server (beta)',
+  [DatabaseType.MSSQL]: 'Microsoft SQL Server',
   [DatabaseType.ClickHouse]: 'ClickHouse (beta)',
 }

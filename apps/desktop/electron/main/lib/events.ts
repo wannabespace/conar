@@ -23,6 +23,7 @@ function isConnectionError(error: unknown) {
 }
 
 const MAX_RECONNECTION_ATTEMPTS = 5
+const RECONNECTION_DELAY = 3000
 
 async function retryIfConnectionError<T>(func: () => Promise<T>, attempt: number = 0): Promise<T> {
   try {
@@ -38,11 +39,7 @@ async function retryIfConnectionError<T>(func: () => Promise<T>, attempt: number
 
       sendToast({ message: `Could not connect to the database. ${attemptLabel}.`, type: 'info' })
 
-      if (import.meta.env.DEV) {
-        console.warn(`Could not connect to the database. ${attemptLabel}.`)
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      await new Promise(resolve => setTimeout(resolve, RECONNECTION_DELAY))
       return retryIfConnectionError(func, attempt + 1)
     }
     if (attempt >= MAX_RECONNECTION_ATTEMPTS) {
