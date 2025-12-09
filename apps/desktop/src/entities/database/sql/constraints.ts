@@ -35,68 +35,68 @@ export const constraintsQuery = createQuery({
   type: constraintsType.array(),
   query: () => ({
     postgres: db => db
-      .selectFrom('information_schema.table_constraints')
-      .leftJoin('information_schema.key_column_usage', 'information_schema.table_constraints.constraint_name', 'information_schema.key_column_usage.constraint_name')
-      .leftJoin('information_schema.constraint_column_usage', 'information_schema.table_constraints.constraint_name', 'information_schema.constraint_column_usage.constraint_name')
+      .selectFrom('information_schema.table_constraints as tc')
+      .leftJoin('information_schema.key_column_usage as kcu', 'tc.constraint_name', 'kcu.constraint_name')
+      .leftJoin('information_schema.constraint_column_usage as ccu', 'tc.constraint_name', 'ccu.constraint_name')
       .select([
-        'information_schema.table_constraints.table_schema as schema',
-        'information_schema.table_constraints.table_name as table',
-        'information_schema.table_constraints.constraint_name as name',
-        'information_schema.table_constraints.constraint_type as type',
-        'information_schema.key_column_usage.column_name as column',
-        'information_schema.constraint_column_usage.table_schema as foreign_schema',
-        'information_schema.constraint_column_usage.table_name as foreign_table',
-        'information_schema.constraint_column_usage.column_name as foreign_column',
+        'tc.table_schema as schema',
+        'tc.table_name as table',
+        'tc.constraint_name as name',
+        'tc.constraint_type as type',
+        'kcu.column_name as column',
+        'ccu.table_schema as foreign_schema',
+        'ccu.table_name as foreign_table',
+        'ccu.column_name as foreign_column',
       ])
-      .where('information_schema.table_constraints.constraint_type', 'in', neededConstraintTypes)
-      .where('information_schema.constraint_column_usage.table_schema', 'not like', 'pg_%')
+      .where('tc.constraint_type', 'in', neededConstraintTypes)
+      .where('ccu.table_schema', 'not like', 'pg_%')
       .execute(),
     mysql: db => db
-      .selectFrom('information_schema.TABLE_CONSTRAINTS')
-      .leftJoin('information_schema.KEY_COLUMN_USAGE', join => join
-        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'information_schema.KEY_COLUMN_USAGE.CONSTRAINT_NAME')
-        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_SCHEMA', '=', 'information_schema.KEY_COLUMN_USAGE.CONSTRAINT_SCHEMA')
-        .onRef('information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA', '=', 'information_schema.KEY_COLUMN_USAGE.TABLE_SCHEMA')
-        .onRef('information_schema.TABLE_CONSTRAINTS.TABLE_NAME', '=', 'information_schema.KEY_COLUMN_USAGE.TABLE_NAME'))
+      .selectFrom('information_schema.TABLE_CONSTRAINTS as tc')
+      .leftJoin('information_schema.KEY_COLUMN_USAGE as kcu', join => join
+        .onRef('tc.CONSTRAINT_NAME', '=', 'kcu.CONSTRAINT_NAME')
+        .onRef('tc.CONSTRAINT_SCHEMA', '=', 'kcu.CONSTRAINT_SCHEMA')
+        .onRef('tc.TABLE_SCHEMA', '=', 'kcu.TABLE_SCHEMA')
+        .onRef('tc.TABLE_NAME', '=', 'kcu.TABLE_NAME'))
       .select([
-        'information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA as schema',
-        'information_schema.TABLE_CONSTRAINTS.TABLE_NAME as table',
-        'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME as name',
-        'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE as type',
-        'information_schema.KEY_COLUMN_USAGE.COLUMN_NAME as column',
-        'information_schema.KEY_COLUMN_USAGE.REFERENCED_TABLE_SCHEMA as foreign_schema',
-        'information_schema.KEY_COLUMN_USAGE.REFERENCED_TABLE_NAME as foreign_table',
-        'information_schema.KEY_COLUMN_USAGE.REFERENCED_COLUMN_NAME as foreign_column',
+        'tc.TABLE_SCHEMA as schema',
+        'tc.TABLE_NAME as table',
+        'tc.CONSTRAINT_NAME as name',
+        'tc.CONSTRAINT_TYPE as type',
+        'kcu.COLUMN_NAME as column',
+        'kcu.REFERENCED_TABLE_SCHEMA as foreign_schema',
+        'kcu.REFERENCED_TABLE_NAME as foreign_table',
+        'kcu.REFERENCED_COLUMN_NAME as foreign_column',
       ])
-      .where('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
-      .where('information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
+      .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
+      .where('tc.TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
       .execute(),
     mssql: db => db
-      .selectFrom('information_schema.TABLE_CONSTRAINTS')
-      .leftJoin('information_schema.KEY_COLUMN_USAGE', join => join
-        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'information_schema.KEY_COLUMN_USAGE.CONSTRAINT_NAME')
-        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_SCHEMA', '=', 'information_schema.KEY_COLUMN_USAGE.CONSTRAINT_SCHEMA')
-        .onRef('information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA', '=', 'information_schema.KEY_COLUMN_USAGE.TABLE_SCHEMA')
-        .onRef('information_schema.TABLE_CONSTRAINTS.TABLE_NAME', '=', 'information_schema.KEY_COLUMN_USAGE.TABLE_NAME'))
-      .leftJoin('information_schema.REFERENTIAL_CONSTRAINTS', join => join
-        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'information_schema.REFERENTIAL_CONSTRAINTS.CONSTRAINT_NAME')
-        .onRef('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_SCHEMA', '=', 'information_schema.REFERENTIAL_CONSTRAINTS.CONSTRAINT_SCHEMA'))
+      .selectFrom('information_schema.TABLE_CONSTRAINTS as tc')
+      .leftJoin('information_schema.KEY_COLUMN_USAGE as kcu', join => join
+        .onRef('tc.CONSTRAINT_NAME', '=', 'kcu.CONSTRAINT_NAME')
+        .onRef('tc.CONSTRAINT_SCHEMA', '=', 'kcu.CONSTRAINT_SCHEMA')
+        .onRef('tc.TABLE_SCHEMA', '=', 'kcu.TABLE_SCHEMA')
+        .onRef('tc.TABLE_NAME', '=', 'kcu.TABLE_NAME'))
+      .leftJoin('information_schema.REFERENTIAL_CONSTRAINTS as rc', join => join
+        .onRef('tc.CONSTRAINT_NAME', '=', 'rc.CONSTRAINT_NAME')
+        .onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA'))
       .leftJoin('information_schema.KEY_COLUMN_USAGE as referenced_kcu', join => join
-        .onRef('information_schema.REFERENTIAL_CONSTRAINTS.UNIQUE_CONSTRAINT_NAME', '=', 'referenced_kcu.CONSTRAINT_NAME')
-        .onRef('information_schema.REFERENTIAL_CONSTRAINTS.UNIQUE_CONSTRAINT_SCHEMA', '=', 'referenced_kcu.CONSTRAINT_SCHEMA')
-        .onRef('information_schema.KEY_COLUMN_USAGE.ORDINAL_POSITION', '=', 'referenced_kcu.ORDINAL_POSITION'))
+        .onRef('rc.UNIQUE_CONSTRAINT_NAME', '=', 'referenced_kcu.CONSTRAINT_NAME')
+        .onRef('rc.UNIQUE_CONSTRAINT_SCHEMA', '=', 'referenced_kcu.CONSTRAINT_SCHEMA')
+        .onRef('kcu.ORDINAL_POSITION', '=', 'referenced_kcu.ORDINAL_POSITION'))
       .select([
-        'information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA as schema',
-        'information_schema.TABLE_CONSTRAINTS.TABLE_NAME as table',
-        'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_NAME as name',
-        'information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE as type',
-        'information_schema.KEY_COLUMN_USAGE.COLUMN_NAME as column',
+        'tc.TABLE_SCHEMA as schema',
+        'tc.TABLE_NAME as table',
+        'tc.CONSTRAINT_NAME as name',
+        'tc.CONSTRAINT_TYPE as type',
+        'kcu.COLUMN_NAME as column',
         'referenced_kcu.TABLE_SCHEMA as foreign_schema',
         'referenced_kcu.TABLE_NAME as foreign_table',
         'referenced_kcu.COLUMN_NAME as foreign_column',
       ])
-      .where('information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
-      .where('information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'sys'])
+      .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
+      .where('tc.TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'sys'])
       .execute(),
     clickhouse: async () => {
       // ClickHouse doesn't support constraints
