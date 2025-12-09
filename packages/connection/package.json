@@ -16,7 +16,9 @@
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
+    "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
+    "mssql": "catalog:",
     "mysql2": "catalog:",
     "typescript": "catalog:"
   }
