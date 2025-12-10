@@ -100,7 +100,6 @@ catalog:
   drizzle-kit: ^0.31.8
   drizzle-orm: ^0.45.0
   electron: ^39.2.6
-  electron-builder: ^26.0.12
   electron-store: ^11.0.2
   electron-vite: ^5.0.0
   eslint: ^9.39.1

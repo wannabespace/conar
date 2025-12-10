@@ -5,19 +5,12 @@ on:
 
 jobs:
   build:
-    name: Build Vite
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
 
-      - name: Get version from package.json
-        id: package-version
-        shell: bash
-        run: |
-          VERSION=$(node -p "require('./apps/desktop/package.json').version")
-          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
-
       - name: Install Bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -26,75 +19,10 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 10.15.0
+          version: 10.25.0
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build Vite
-        env:
-          VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
-          VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
-          VITE_PUBLIC_AUTH_SECRET: ${{ secrets.VITE_PUBLIC_AUTH_SECRET }}
-          VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
-        run: pnpm run build:desktop:vite
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: desktop-dist
-          path: ./apps/desktop/out/
-          retention-days: 1
-
-  build-electron:
-    needs: build
-    name: Build Electron
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest]
-        # os: [macos-latest, ubuntu-latest, windows-latest]
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v3
-
-      - name: Get version from package.json
-        id: package-version
-        shell: bash
-        run: |
-          VERSION=$(node -p "require('./apps/desktop/package.json').version")
-          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
-
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10.15.0
-
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: desktop-dist
-          path: ./apps/desktop/out/
-
-      - name: Build Electron App
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          VERSION: ${{ steps.package-version.outputs.version }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          # AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          # AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          # AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        run: cd apps/desktop && pnpm run build:electron
+      - name: Build ToDesktop
+        run: pnpm run build:todesktop
