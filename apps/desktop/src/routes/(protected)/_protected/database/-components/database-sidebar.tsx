@@ -37,7 +37,7 @@ const os = getOS(navigator.userAgent)
 
 function baseClasses(isActive = false) {
   return cn(
-    'cursor-pointer text-foreground h-9 w-9 group-hover/sidebar:w-full rounded-md flex items-center justify-center group-hover/sidebar:justify-start group-hover/sidebar:px-3 border border-transparent transition-all duration-300',
+    'cursor-pointer text-foreground h-9 w-9 group-hover/sidebar:w-full rounded-md flex items-center justify-center group-hover/sidebar:justify-start group-hover/sidebar:px-3 border border-transparent transition-all duration-300 gap-2',
     isActive && 'bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary',
   )
 }
@@ -69,9 +69,9 @@ function SupportButton() {
         <Tooltip>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
-              <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3">
+              <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2" aria-label="Support">
                 <RiMessageLine className="size-4 shrink-0" />
-                <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Support</span>
+                <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Support</span>
               </Button>
             </DialogTrigger>
           </TooltipTrigger>
@@ -124,9 +124,9 @@ function SettingsButton() {
       <Tooltip>
         <TooltipTrigger asChild>
           <Link to="/database/$id/settings" params={{ id: database.id }}>
-            <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3">
+            <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2">
               <RiSettings3Line className="size-4 shrink-0" />
-              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Settings</span>
+              <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Settings</span>
             </Button>
           </Link>
         </TooltipTrigger>
@@ -183,7 +183,7 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
                   .slice(0, 2)
                   .toUpperCase()}
               </span>
-              <span className="font-medium text-sm hidden group-hover/sidebar:flex items-center gap-2 ml-1 whitespace-nowrap overflow-hidden text-ellipsis">
+              <span className="font-medium text-sm hidden group-hover/sidebar:flex items-center gap-2 whitespace-nowrap overflow-hidden text-ellipsis">
                 <DatabaseIcon type={database.type} className="size-4 shrink-0" />
                 {database.name}
               </span>
@@ -221,7 +221,7 @@ function CurrentDatabase() {
               {...params}
             >
               <DatabaseIcon type={database.type} className="size-4 shrink-0" />
-              <div className="hidden group-hover/sidebar:flex flex-col ml-3 overflow-hidden">
+              <div className="hidden group-hover/sidebar:flex flex-col overflow-hidden">
                 <span className="font-bold text-sm truncate leading-tight">{database.name}</span>
                 <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Current Database</span>
               </div>
@@ -311,7 +311,7 @@ function MainLinks() {
               className={baseClasses(isActiveSql)}
             >
               <RiPlayLargeLine className="size-4 shrink-0" />
-              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">SQL Runner</span>
+              <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">SQL Runner</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">SQL Runner</TooltipContent>
@@ -328,7 +328,7 @@ function MainLinks() {
               }}
             >
               <RiTableLine className="size-4 shrink-0" />
-              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Tables</span>
+              <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Tables</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">Tables</TooltipContent>
@@ -343,7 +343,7 @@ function MainLinks() {
               className={baseClasses(isActiveEnums)}
             >
               <RiListUnordered className="size-4 shrink-0" />
-              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Enums</span>
+              <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Enums</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">
@@ -357,7 +357,7 @@ function MainLinks() {
           <TooltipTrigger asChild>
             <Link to="/database/$id/visualizer" params={{ id: database.id }} className={baseClasses(isActiveVisualizer)}>
               <RiNodeTree className="size-4 shrink-0" />
-              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Visualizer</span>
+              <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Visualizer</span>
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">Visualizer</TooltipContent>
@@ -377,9 +377,9 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
       <div className={className} />
       <div
         className={cn(
-          'absolute left-0 top-0 bottom-0 h-full z-50 flex flex-col items-center border-r bg-background transition-all duration-300 ease-in-out group/sidebar overflow-hidden shadow-xl',
+          'absolute left-0 top-0 bottom-0 h-full z-50 flex flex-col items-center border-r bg-background transition-all duration-300 ease-in-out group/sidebar overflow-hidden group-hover/sidebar:shadow-xl',
           className,
-          'hover:w-64 hover:items-stretch',
+          'hover:w-64 hover:items-stretch focus-within:w-64 focus-within:items-stretch group-hover/sidebar:w-64 group-hover/sidebar:items-stretch group-focus-within/sidebar:w-64 group-focus-within/sidebar:items-stretch',
         )}
         {...props}
       >
@@ -431,7 +431,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
                   className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3"
                 >
                   <RiFileListLine className="size-4 shrink-0" />
-                  <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Query Logger</span>
+                  <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Query Logger</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">Query Logger</TooltipContent>
@@ -449,7 +449,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
                   className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3"
                 >
                   <RiCommandLine className="size-4 shrink-0" />
-                  <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Command Palette</span>
+                  <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Command Palette</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
@@ -459,14 +459,14 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
             </Tooltip>
           </TooltipProvider>
           <ThemeToggle>
-            <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3">
+            <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2" aria-label="Theme">
               <RiSunLine className="size-4 dark:hidden shrink-0" />
               <RiMoonLine className="size-4 hidden dark:block shrink-0" />
-              <span className="ml-2 hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Theme</span>
+              <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Theme</span>
             </Button>
           </ThemeToggle>
           {false && <SettingsButton />}
-          <div className="mt-2 flex justify-center group-hover/sidebar:justify-start">
+          <div className="flex justify-center group-hover/sidebar:justify-start">
             <UserButton />
           </div>
         </div>
