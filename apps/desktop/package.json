@@ -2,6 +2,7 @@
   "name": "@conar/desktop",
   "type": "module",
   "version": "0.25.0",
+  "productName": "Conar",
   "private": true,
   "description": "AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.",
   "author": {
