@@ -286,7 +286,7 @@ catalogs:
       specifier: ^0.45.1
       version: 0.45.1
     electron:
-      specifier: ^39.2.6
+      specifier: 39.2.6
       version: 39.2.6
     electron-store:
       specifier: ^11.0.2
