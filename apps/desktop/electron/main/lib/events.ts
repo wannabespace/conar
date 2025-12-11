@@ -56,7 +56,7 @@ interface QueryResult {
 
 const queryMap = {
   postgres: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
-    const pool = getPgPool(connectionString)
+    const pool = await getPgPool(connectionString)
     let start = 0
     const result = await retryIfConnectionError(() => {
       start = performance.now()
@@ -66,7 +66,7 @@ const queryMap = {
     return { result: result.rows as unknown, duration: performance.now() - start }
   },
   mysql: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
-    const pool = getMysqlPool(connectionString)
+    const pool = await getMysqlPool(connectionString)
     let start = 0
     const [result] = await retryIfConnectionError(() => {
       start = performance.now()
