@@ -56,9 +56,9 @@ interface QueryResult {
 
 const queryMap = {
   postgres: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
-    const pool = await getPgPool(connectionString)
     let start = 0
-    const result = await retryIfConnectionError(() => {
+    const result = await retryIfConnectionError(async () => {
+      const pool = await getPgPool(connectionString)
       start = performance.now()
       return pool.query(sql, values)
     })
@@ -66,9 +66,9 @@ const queryMap = {
     return { result: result.rows as unknown, duration: performance.now() - start }
   },
   mysql: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
-    const pool = await getMysqlPool(connectionString)
     let start = 0
-    const [result] = await retryIfConnectionError(() => {
+    const [result] = await retryIfConnectionError(async () => {
+      const pool = await getMysqlPool(connectionString)
       start = performance.now()
       return pool.query(sql, values)
     })
@@ -103,15 +103,16 @@ const queryMap = {
     return { result: [], duration: performance.now() - start }
   },
   mssql: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
-    const pool = await retryIfConnectionError(() => getMssqlPool(connectionString))
     let start = 0
-    let request = pool.request()
 
-    for (let i = 0; i < values.length; i++) {
-      request = request.input(`${i + 1}`, values[i])
-    }
+    const result = await retryIfConnectionError(async () => {
+      const pool = await getMssqlPool(connectionString)
+      let request = pool.request()
 
-    const result = await retryIfConnectionError(() => {
+      for (let i = 0; i < values.length; i++) {
+        request = request.input(`${i + 1}`, values[i])
+      }
+
       start = performance.now()
       return request.query(sql)
     })

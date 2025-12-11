@@ -1,7 +1,7 @@
 import type { PoolOptions } from 'pg'
 
 export const defaultSSLConfig: PoolOptions['ssl'] = {
-  rejectUnauthorized: true,
+  rejectUnauthorized: false,
 }
 
 export function parseSSLConfig(searchParams: URLSearchParams): PoolOptions['ssl'] {

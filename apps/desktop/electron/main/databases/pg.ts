@@ -3,6 +3,7 @@ import { parseConnectionString } from '@conar/connection'
 import { readSSLFiles } from '@conar/connection/server'
 import { defaultSSLConfig, parseSSLConfig } from '@conar/connection/ssl/pg'
 import { memoize } from '@conar/shared/utils/helpers'
+import { tries } from '@conar/shared/utils/tries'
 
 const pg = createRequire(import.meta.url)('pg') as typeof import('pg')
 
@@ -23,22 +24,20 @@ export const getPool = memoize(async (connectionString: string) => {
     ...(typeof ssl === 'boolean' ? { ssl } : {}),
   }
   const hasSsl = conf.ssl !== undefined && conf.ssl !== false
-  let pool = new pg.Pool(conf)
 
-  // If user didn't provide SSL config, we will try to connect
-  if (!hasSsl) {
-    try {
+  return tries(
+    async () => {
+      const pool = new pg.Pool(conf)
       await pool.query('SELECT 1')
-    }
-    catch {
-      pool = new pg.Pool({
+      return pool
+    },
+    !hasSsl && (async () => {
+      const pool = new pg.Pool({
         ...conf,
         ssl: defaultSSLConfig,
       })
-
       await pool.query('SELECT 1')
-    }
-  }
-
-  return pool
+      return pool
+    }),
+  )
 })
