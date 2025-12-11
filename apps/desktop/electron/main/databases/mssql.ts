@@ -9,12 +9,12 @@ export const getPool = memoize((connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const options = parseSSLConfig(searchParams)
 
-  return new mssql.ConnectionPool({
+  return mssql.connect({
     server: config.host,
     port: config.port,
     database: config.database,
     user: config.user,
     password: config.password,
     options,
-  }).connect()
+  })
 })
