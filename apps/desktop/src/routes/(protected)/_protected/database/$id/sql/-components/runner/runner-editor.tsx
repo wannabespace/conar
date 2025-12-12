@@ -21,6 +21,7 @@ import { useRunnerEditorQueryZones } from './runner-editor-query-zones'
 const dialectsMap = {
   postgres: LanguageIdEnum.PG,
   mysql: LanguageIdEnum.MYSQL,
+  mssql: LanguageIdEnum.PG,
   clickhouse: LanguageIdEnum.MYSQL,
 } satisfies Record<DatabaseType, LanguageIdEnum>
 

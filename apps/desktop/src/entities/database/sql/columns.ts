@@ -8,6 +8,8 @@ export const columnType = type({
   'id': 'string',
   'default': 'string | null',
   'type': 'string',
+  'enum?': 'string',
+  'isArray?': 'boolean',
   'editable?': 'boolean',
   'nullable': 'boolean | 1 | 0',
 })
@@ -29,72 +31,130 @@ function getClickhouseColumnType(type: string): string {
   return type
 }
 
+function getPgColumnType(type: string, udtName: string) {
+  if (type === 'ARRAY') {
+    return udtName.slice(1)
+  }
+  else if (type === 'USER-DEFINED') {
+    return udtName
+  }
+  else if (type === 'character varying') {
+    return 'varchar'
+  }
+  else if (type === 'character') {
+    return 'char'
+  }
+  else if (type === 'bit varying') {
+    return 'varbit'
+  }
+  else if (type.startsWith('time')) {
+    return udtName || type
+  }
+
+  return type
+}
+
 export const columnsQuery = createQuery({
   type: columnType.array(),
   query: ({ schema, table }: { schema: string, table: string }) => ({
-    postgres: db => db
-      .selectFrom('information_schema.columns')
-      .select(eb => [
-        'table_schema as schema',
-        'table_name as table',
-        'column_name as id',
-        'column_default as default',
-        eb.case()
-          .when('data_type', '=', 'ARRAY')
-          .then(sql<string>`REPLACE(${eb.ref('udt_name')}, '_', '') || '[]'`)
-          .when('data_type', '=', 'USER-DEFINED')
-          .then(eb.ref('udt_name'))
-          .when('data_type', '=', 'character varying')
-          .then('varchar')
-          .when('data_type', '=', 'character')
-          .then('char')
-          .when('data_type', '=', 'bit varying')
-          .then('varbit')
-          .when('data_type', 'like', 'time%')
-          .then(eb.ref('udt_name'))
-          .else(eb.fn.coalesce('data_type', 'udt_name'))
-          .end()
-          .as('type'),
-        eb.case('is_nullable')
-          .when('YES')
-          .then(true)
-          .else(false)
-          .end()
-          .as('nullable'),
-        eb.case('is_updatable')
-          .when('YES')
-          .then(true)
-          .else(false)
-          .end()
-          .as('editable'),
-      ])
-      .where(({ and, eb }) => and([
-        eb('table_schema', '=', schema),
-        eb('table_name', '=', table),
-      ]))
-      .execute(),
-    mysql: db => db
-      .selectFrom('information_schema.COLUMNS')
-      .select(eb => [
-        'TABLE_SCHEMA as schema',
-        'TABLE_NAME as table',
-        'COLUMN_NAME as id',
-        'COLUMN_DEFAULT as default',
-        eb.fn.coalesce('DATA_TYPE', 'COLUMN_TYPE').as('type'),
-        eb
-          .case('IS_NULLABLE')
-          .when('YES')
-          .then(1)
-          .else(0)
-          .end()
-          .$castTo<1 | 0>()
-          .as('nullable'),
-      ])
-      .where(({ and, eb }) => and([
-        eb('TABLE_SCHEMA', '=', schema),
-        eb('TABLE_NAME', '=', table),
-      ]))
-      .execute(),
+    postgres: async (db) => {
+      const query = await db
+        .selectFrom('information_schema.columns')
+        .select(eb => [
+          'table_schema as schema',
+          'table_name as table',
+          'column_name as id',
+          'column_default as default',
+          'data_type',
+          'udt_name',
+          eb.case('is_nullable')
+            .when('YES')
+            .then(true)
+            .else(false)
+            .end()
+            .as('nullable'),
+          eb.case('is_updatable')
+            .when('YES')
+            .then(true)
+            .else(false)
+            .end()
+            .as('editable'),
+        ])
+        .where(({ and, eb }) => and([
+          eb('table_schema', '=', schema),
+          eb('table_name', '=', table),
+        ]))
+        .execute()
+
+      return query.map(({ data_type, udt_name, ...row }) => ({
+        ...row,
+        type: data_type === 'ARRAY' ? `${getPgColumnType(data_type, udt_name)}[]` : getPgColumnType(data_type, udt_name),
+        // TODO: handle enum name if data_type is ARRAY
+        enum: data_type === 'USER-DEFINED' ? udt_name : undefined,
+        isArray: data_type === 'ARRAY',
+      } satisfies typeof columnType.inferIn))
+    },
+    mysql: async (db) => {
+      const query = await db
+        .selectFrom('information_schema.COLUMNS')
+        .select(eb => [
+          'TABLE_SCHEMA as schema',
+          'TABLE_NAME as table',
+          'COLUMN_NAME as id',
+          'COLUMN_DEFAULT as default',
+          eb.fn.coalesce('DATA_TYPE', 'COLUMN_TYPE').as('type'),
+          eb
+            .case('IS_NULLABLE')
+            .when('YES')
+            .then(1)
+            .else(0)
+            .end()
+            .$castTo<1 | 0>()
+            .as('nullable'),
+        ])
+        .where(({ and, eb }) => and([
+          eb('TABLE_SCHEMA', '=', schema),
+          eb('TABLE_NAME', '=', table),
+        ]))
+        .execute()
+
+      return query.map(column => ({
+        ...column,
+        enum: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
+        isArray: column.type === 'set',
+      } satisfies typeof columnType.inferIn))
+    },
+    mssql: async (db) => {
+      const query = await db
+        .selectFrom('information_schema.COLUMNS')
+        .select(eb => [
+          'TABLE_SCHEMA as schema',
+          'TABLE_NAME as table',
+          'COLUMN_NAME as name',
+          'COLUMN_DEFAULT as default',
+          'DATA_TYPE as type',
+          eb
+            .case('IS_NULLABLE')
+            .when('YES')
+            .then(1)
+            .else(0)
+            .end()
+            .$castTo<1 | 0>()
+            .as('nullable'),
+        ])
+        .where(({ and, eb }) => and([
+          eb('TABLE_SCHEMA', '=', schema),
+          eb('TABLE_NAME', '=', table),
+        ]))
+        .execute()
+
+      return query.map(({ name, ...column }) => ({
+        ...column,
+        id: name,
+        enum: column.type === 'set' || column.type === 'enum' ? name : undefined,
+        isArray: column.type === 'set',
+      } satisfies typeof columnType.inferIn))
+    },
     clickhouse: async (db) => {
       const query = await db
         .selectFrom('information_schema.columns')
@@ -120,6 +180,7 @@ export const columnsQuery = createQuery({
 
       return query.map(row => ({
         ...row,
+        enum: row.type.includes('Enum') ? row.id : undefined,
         type: getClickhouseColumnType(row.type),
       }))
     },

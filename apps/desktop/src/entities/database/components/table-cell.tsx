@@ -7,6 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '@conar/ui/components/button'
 import { CtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -36,7 +37,7 @@ function CellPopoverContent({
   onClose: () => void
   hasUpdateFn: boolean
 }) {
-  const { value, initialValue, column, displayValue, setValue, update } = useCellContext()
+  const { value, initialValue, column, displayValue, setValue, update, values } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   const save = (value: string) => {
@@ -72,6 +73,7 @@ function CellPopoverContent({
   const shouldHideToggleSize = column.type === 'boolean'
     || column.type?.includes('time')
     || column.type?.includes('numeric')
+    || (!!values && values.length > 0)
 
   const monacoOptions = {
     lineNumbers: isBig ? 'on' as const : 'off' as const,
@@ -95,17 +97,45 @@ function CellPopoverContent({
               onSave={save}
             />
           )
-        : (
-            <Monaco
-              ref={monacoRef}
-              data-mask
-              value={value}
-              language={column?.type?.includes('json') ? 'json' : undefined}
-              className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(45vh,40rem)]')}
-              onChange={setValue}
-              options={monacoOptions}
-            />
-          )}
+        // TODO: refactor this to support array values like in PG enum array columns or MySQL SET columns
+        : values && !column.isArray
+          ? (
+              <div className="p-2">
+                <Select
+                  value={value === 'null' ? undefined : value}
+                  disabled={!canEdit}
+                  onValueChange={(value) => {
+                    setValue(value)
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select value" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {values.map(val => (
+                      <SelectItem key={val} value={val}>
+                        {val}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )
+          : (
+              <Monaco
+                ref={monacoRef}
+                data-mask
+                value={value}
+                language={column?.type?.includes('json')
+                  ? 'json'
+                  : column?.type?.includes('xml')
+                    ? 'xml'
+                    : undefined}
+                className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(45vh,40rem)]')}
+                onChange={setValue}
+                options={monacoOptions}
+              />
+            )}
       <div className="flex justify-between items-center gap-2 p-2 border-t">
         <div className="flex items-center gap-2">
           {!shouldHideToggleSize && (
@@ -196,7 +226,7 @@ function ForeignButton(props: ComponentProps<'button'>) {
   )
 }
 
-function ReferenceButton({ count, className, ...props }: ComponentProps<'button'> & { count: number }) {
+function ReferenceButton({ children, className, ...props }: ComponentProps<'button'>) {
   return (
     <Button
       variant="outline"
@@ -206,16 +236,19 @@ function ReferenceButton({ count, className, ...props }: ComponentProps<'button'
     >
       <RiArrowLeftDownLine className="size-3 text-muted-foreground" />
       <span className="text-xs text-muted-foreground">
-        {count}
+        {children}
       </span>
     </Button>
   )
 }
 
 function getTimestamp(value: unknown, column: Column) {
-  const date = column?.type?.includes('timestamp')
-    && value
-    && (typeof value === 'string' || typeof value === 'number')
+  const date = (
+    column?.type?.includes('timestamp')
+    || column?.type?.includes('datetime')
+  )
+  && value
+  && (typeof value === 'string' || typeof value === 'number')
     ? dayjs(value)
     : null
 
@@ -231,10 +264,12 @@ export function TableCell({
   position,
   size,
   onSaveValue,
+  values,
 }: {
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
   className?: string
+  values?: string[]
 } & TableCellProps) {
   const displayValue = getDisplayValue(value, size)
 
@@ -285,7 +320,7 @@ export function TableCell({
       >
         <span className="truncate">{displayValue}</span>
         {!!value && column.foreign && <ForeignButton />}
-        {!!value && column.references && column.references.length > 0 && <ReferenceButton count={column.references.length} />}
+        {!!value && column.references && column.references.length > 0 && <ReferenceButton>{column.references.length}</ReferenceButton>}
       </TableCellContent>
     )
   }
@@ -314,6 +349,7 @@ export function TableCell({
       onSavePending={() => setStatus('pending')}
       onSaveSuccess={() => setStatus('success')}
       onSaveError={onSaveError}
+      values={values}
     >
       <Popover
         open={isPopoverOpen}
@@ -391,7 +427,6 @@ export function TableCell({
                           <TooltipTrigger asChild>
                             <PopoverTrigger asChild>
                               <ReferenceButton
-                                count={column.references.length}
                                 onDoubleClick={e => e.stopPropagation()}
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -400,7 +435,9 @@ export function TableCell({
                                   setIsPopoverOpen(false)
                                   setIsForeignOpen(false)
                                 }}
-                              />
+                              >
+                                {column.references.length}
+                              </ReferenceButton>
                             </PopoverTrigger>
                           </TooltipTrigger>
                           <TooltipContent className="text-sm">

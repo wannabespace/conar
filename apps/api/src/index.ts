@@ -1,3 +1,5 @@
+/* eslint-disable perfectionist/sort-imports */
+import '@conar/shared/arktype-config'
 import process from 'node:process'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'

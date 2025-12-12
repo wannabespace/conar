@@ -5,8 +5,9 @@ import { createCache } from '~/utils/cache'
 
 const releaseKey = 'OCTOKIT_RELEASE'
 
+const octokit = new Octokit()
+
 async function fetchRelease() {
-  const octokit = new Octokit()
   const { data } = await octokit.repos.getLatestRelease({
     owner: 'wannabespace',
     repo: 'conar',

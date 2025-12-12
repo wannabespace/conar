@@ -4,8 +4,9 @@ import { createCache } from '~/utils/cache'
 
 const repoKey = 'OCTOKIT_REPO'
 
+const octokit = new Octokit()
+
 async function fetchRepo() {
-  const octokit = new Octokit()
   const { data } = await octokit.repos.get({
     owner: 'wannabespace',
     repo: 'conar',

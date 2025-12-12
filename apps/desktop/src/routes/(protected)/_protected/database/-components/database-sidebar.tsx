@@ -1,5 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router'
 import type { databases } from '~/drizzle'
+import { DatabaseType } from '@conar/shared/enums/database-type'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -297,7 +298,10 @@ function MainLinks() {
               <RiListUnordered className="size-4" />
             </Link>
           </TooltipTrigger>
-          <TooltipContent side="right">Enums</TooltipContent>
+          <TooltipContent side="right">
+            Enums
+            {database.type === DatabaseType.MySQL && ' & Sets'}
+          </TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <TooltipProvider>

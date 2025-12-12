@@ -1,13 +1,15 @@
 {
   "name": "@conar/desktop",
   "type": "module",
-  "version": "0.24.0",
+  "version": "0.25.0",
+  "productName": "Conar",
   "private": true,
   "description": "AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.",
   "author": {
     "name": "Wannabe Space, LLC",
     "email": "wannabespace.llc@gmail.com"
   },
+  "homepage": "https://conar.app",
   "repository": {
     "type": "git",
     "url": "https://github.com/wannabespace/conar.git"
@@ -16,7 +18,7 @@
   "scripts": {
     "dev": "electron-vite -c vite.electron.config.ts dev",
     "build:vite": "electron-vite -c vite.electron.config.ts build",
-    "build:electron": "electron-builder -p always",
+    "build:todesktop": "todesktop build",
     "check-types": "tsc",
     "test:start": "vite -c vite.test.config.ts build --mode test && vite -c vite.test.config.ts preview --mode test",
     "test:unit": "bun test ./src",
@@ -26,9 +28,11 @@
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
+    "@todesktop/runtime": "catalog:",
     "electron-store": "catalog:",
     "electron-updater": "catalog:",
     "monacopilot": "catalog:",
+    "mssql": "catalog:",
     "mysql2": "catalog:",
     "pg": "catalog:"
   },
@@ -65,7 +69,9 @@
     "@tiptap/extension-placeholder": "catalog:",
     "@tiptap/react": "catalog:",
     "@tiptap/starter-kit": "catalog:",
+    "@todesktop/cli": "catalog:",
     "@toon-format/toon": "catalog:",
+    "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -80,7 +86,6 @@
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
     "electron": "catalog:",
-    "electron-builder": "catalog:",
     "electron-vite": "catalog:",
     "hookable": "catalog:",
     "js-base64": "catalog:",

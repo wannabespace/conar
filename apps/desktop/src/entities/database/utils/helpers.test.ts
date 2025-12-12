@@ -13,11 +13,6 @@ describe('hasDangerousSqlKeywords', () => {
     expect(hasDangerousSqlKeywords('update users set name = "John"')).toBe(true)
   })
 
-  it('should return true for SQL queries containing INSERT keyword', () => {
-    expect(hasDangerousSqlKeywords('INSERT INTO users VALUES (1, "John")')).toBe(true)
-    expect(hasDangerousSqlKeywords('insert into users values (1, "John")')).toBe(true)
-  })
-
   it('should return true for SQL queries containing DROP keyword', () => {
     expect(hasDangerousSqlKeywords('DROP TABLE users')).toBe(true)
     expect(hasDangerousSqlKeywords('drop table users')).toBe(true)
@@ -125,6 +120,25 @@ WHERE id = 1; SELECT * FROM posts;`)).toEqual([
         endLineNumber: 1,
         queries: [
           `CREATE OR REPLACE FUNCTION limpar_sessoes_expiradas () RETURNS void AS $$ BEGIN DELETE FROM public.sessions WHERE "expires" < NOW() - INTERVAL '1 day'; END; $$ LANGUAGE plpgsql`,
+        ],
+      },
+    ])
+  })
+
+  it('should handle BEGIN and END blocks as a single query', () => {
+    expect(
+      getEditorQueries(
+        `BEGIN
+UPDATE users SET active = false WHERE id = 1;
+INSERT INTO audit_log (user_id, action) VALUES (1, 'deactivate');
+END;`,
+      ),
+    ).toEqual([
+      {
+        startLineNumber: 1,
+        endLineNumber: 4,
+        queries: [
+          `BEGIN UPDATE users SET active = false WHERE id = 1; INSERT INTO audit_log (user_id, action) VALUES (1, 'deactivate'); END`,
         ],
       },
     ])

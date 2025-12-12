@@ -25,9 +25,6 @@ export function createCache<T>({
   }
 }) {
   const get = () => {
-    if (typeof window === 'undefined')
-      return
-
     const stored = storage.getItem(key)
     if (!stored)
       return
@@ -44,9 +41,6 @@ export function createCache<T>({
   }
 
   const set = (data: T) => {
-    if (typeof window === 'undefined')
-      return
-
     const persisted: Persisted<T> = {
       data,
       timestamp: Date.now(),
