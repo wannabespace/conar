@@ -10,7 +10,7 @@ export const codeCompletion = orpc
     suffix: z.string().optional(),
     instruction: z.string().optional(),
     fileContent: z.string(),
-    databaseType: z.enum(['postgres', 'mysql', 'clickhouse']),
+    databaseType: z.enum(['postgres', 'mysql', 'clickhouse', 'mssql']),
     schemaContext: z.string().optional(),
   }))
   .output(z.object({
