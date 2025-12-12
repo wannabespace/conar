@@ -259,7 +259,7 @@ export const insertRecordQuery = createQuery({
     columns: string[]
     values: unknown[]
   }) => ({
-    postgres: ({ db }) => {
+    postgres: (db) => {
       const payload = Object.fromEntries(
         columns.map((col, idx) => [col, values[idx]]),
       )
@@ -271,7 +271,31 @@ export const insertRecordQuery = createQuery({
         .values(payload)
         .execute()
     },
-    mysql: ({ db }) => {
+    mysql: (db) => {
+      const payload = Object.fromEntries(
+        columns.map((col, idx) => [col, values[idx]]),
+      )
+
+      return db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .insertInto(table)
+        .values(payload)
+        .execute()
+    },
+    mssql: (db) => {
+      const payload = Object.fromEntries(
+        columns.map((col, idx) => [col, values[idx]]),
+      )
+
+      return db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .insertInto(table)
+        .values(payload)
+        .execute()
+    },
+    clickhouse: (db) => {
       const payload = Object.fromEntries(
         columns.map((col, idx) => [col, values[idx]]),
       )

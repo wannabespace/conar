@@ -1,3 +1,4 @@
+import type { sendToast } from '../main'
 import type { electron } from '../main/lib/events'
 import type { UpdatesStatus } from '~/updates-observer'
 import { contextBridge, ipcRenderer } from 'electron'
@@ -7,6 +8,7 @@ export type ElectronPreload = typeof electron & {
     onDeepLink: (callback: (url: string) => void) => () => void
     onUpdatesStatus: (callback: (params: { status: UpdatesStatus, message?: string }) => void) => () => void
     onNavigate: (callback: (path: string) => void) => () => void
+    onSendToast: (callback: (params: Parameters<typeof sendToast>[0]) => void) => () => void
   }
   versions: {
     node: () => string
@@ -37,9 +39,11 @@ async function handleError(func: () => Promise<any>) {
 }
 
 contextBridge.exposeInMainWorld('electron', {
-  sql: {
-    postgres: arg => handleError(() => ipcRenderer.invoke('sql.postgres', arg)),
-    mysql: arg => handleError(() => ipcRenderer.invoke('sql.mysql', arg)),
+  query: {
+    postgres: arg => handleError(() => ipcRenderer.invoke('query.postgres', arg)),
+    mysql: arg => handleError(() => ipcRenderer.invoke('query.mysql', arg)),
+    clickhouse: arg => handleError(() => ipcRenderer.invoke('query.clickhouse', arg)),
+    mssql: arg => handleError(() => ipcRenderer.invoke('query.mssql', arg)),
   },
   encryption: {
     encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg)),
@@ -60,6 +64,11 @@ contextBridge.exposeInMainWorld('electron', {
       const listener = (_event: Electron.IpcRendererEvent, path: string) => callback(path)
       ipcRenderer.on('app.navigate', listener)
       return () => ipcRenderer.off('app.navigate', listener)
+    },
+    onSendToast: (callback) => {
+      const listener = (_event: Electron.IpcRendererEvent, params: Parameters<typeof sendToast>[0]) => callback(params)
+      ipcRenderer.on('toast', listener)
+      return () => ipcRenderer.off('toast', listener)
     },
     checkForUpdates: () => handleError(() => ipcRenderer.invoke('app.checkForUpdates')),
     quitAndInstall: () => handleError(() => ipcRenderer.invoke('app.quitAndInstall')),

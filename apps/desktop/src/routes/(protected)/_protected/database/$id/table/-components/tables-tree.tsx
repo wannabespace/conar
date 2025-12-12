@@ -21,12 +21,12 @@ import { RenameTableDialog } from './rename-table-dialog'
 const MotionSeparator = motion.create(Separator)
 
 const treeVariants = {
-  show: { opacity: 1, height: 'auto' },
-  hide: { opacity: 0, height: 0 },
+  visible: { opacity: 1, height: 'auto' },
+  hidden: { opacity: 0, height: 0 },
 }
 
 const treeTransition = {
-  layout: { duration: 0.2, ease: 'easeInOut' as const },
+  layout: { duration: 0.15, ease: 'easeInOut' as const },
   opacity: { duration: 0.1 },
   height: { duration: 0.1 },
 }
@@ -40,8 +40,6 @@ function Skeleton() {
           <div className="h-full w-5 shrink-0 rounded-md bg-muted animate-pulse" />
           <div
             className="h-full rounded-md bg-muted animate-pulse"
-            // React Compiler handles it
-            // eslint-disable-next-line react-hooks/purity
             style={{ width: `${Math.random() * 40 + 60 - 30}%` }}
           />
         </div>
@@ -50,17 +48,15 @@ function Skeleton() {
   )
 }
 
-interface TableItemProps {
+function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: {
   schema: string
   table: string
-  isPinned?: boolean
+  pinned?: boolean
   search?: string
   onRename: () => void
   onDrop: () => void
-}
-
-function TableItem({ schema, table, isPinned = false, search, onRename, onDrop }: TableItemProps) {
-  const { table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
+}) {
+  const { table: tableParam, schema: schemaParam } = Route.useSearch()
   const { database } = Route.useRouteContext()
 
   return (
@@ -75,7 +71,7 @@ function TableItem({ schema, table, isPinned = false, search, onRename, onDrop }
       onDoubleClick={() => addTab(database.id, schema, table)}
       className={cn(
         'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/30',
-        tableParam === table && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
+        tableParam === table && schemaParam === schema && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
       )}
     >
       <RiTableLine
@@ -100,7 +96,7 @@ function TableItem({ schema, table, isPinned = false, search, onRename, onDrop }
           togglePinTable(database.id, schema, table)
         }}
       >
-        {isPinned ? <RiPushpinFill className="size-3 text-primary" /> : <RiPushpinLine className="size-3" />}
+        {pinned ? <RiPushpinFill className="size-3 text-primary" /> : <RiPushpinLine className="size-3" />}
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -288,15 +284,15 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                 key={`${schema.name}:${table}`}
                                 layout
                                 variants={treeVariants}
-                                initial={search ? treeVariants.hide : false}
-                                animate="show"
-                                exit="hide"
+                                initial={search ? treeVariants.hidden : false}
+                                animate="visible"
+                                exit="hidden"
                                 transition={treeTransition}
                               >
                                 <TableItem
                                   schema={schema.name}
                                   table={table}
-                                  isPinned
+                                  pinned
                                   search={search}
                                   onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
                                   onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
@@ -308,9 +304,9 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                 className="h-px! my-2"
                                 layout
                                 variants={treeVariants}
-                                initial={search ? treeVariants.hide : false}
-                                animate="show"
-                                exit="hide"
+                                initial={search ? treeVariants.hidden : false}
+                                animate="visible"
+                                exit="hidden"
                                 transition={treeTransition}
                               />
                             )}
@@ -319,9 +315,9 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                 key={`${schema.name}:${table}`}
                                 layout
                                 variants={treeVariants}
-                                initial={search ? treeVariants.hide : false}
-                                animate="show"
-                                exit="hide"
+                                initial={search ? treeVariants.hidden : false}
+                                animate="visible"
+                                exit="hidden"
                                 transition={treeTransition}
                               >
                                 <TableItem

@@ -80,13 +80,13 @@ export function RunnerResults() {
             // eslint-disable-next-line react/no-array-index-key
             key={index}
             value={`table-${index}`}
-            className={results.length > 1 ? 'h-[calc(100%-(--spacing(8)))]' : 'h-full'}
+            className="h-[calc(100%-(--spacing(8)))]"
           >
             {error
               ? (
                   <div className="h-full flex flex-col gap-2 items-center justify-center max-w-2/3 mx-auto">
                     Error executing query
-                    <div className="bg-red-50 text-red-700 py-1 px-2 mb-2 rounded text-xs font-mono text-balance max-w-full dark:bg-red-950 dark:text-red-300">
+                    <div className="bg-red-50 text-red-700 py-1 px-2 mb-2 rounded text-xs font-mono text-balance max-w-full dark:bg-red-950 dark:text-red-300 overflow-auto max-h-1/2">
                       {error}
                     </div>
                     <Button

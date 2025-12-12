@@ -1,8 +1,7 @@
-import type { AppUIMessage } from '@conar/shared/ai-tools'
 import type { LanguageModel } from 'ai'
+import type { AppUIMessage } from '~/ai-tools'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
-import { convertToAppUIMessage, tools } from '@conar/shared/ai-tools'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
@@ -11,6 +10,7 @@ import { type } from 'arktype'
 import { consola } from 'consola'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
+import { convertToAppUIMessage, tools } from '~/ai-tools'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
@@ -81,6 +81,7 @@ function generateStream({
           `You are an SQL tool that generates valid SQL code for ${type} database.`,
           'You can use several tools to improve response.',
           'You can generate select queries using the tools to get data directly from the database.',
+          'You can also search the web for information when the user asks about external resources, provides URLs, or needs current information beyond the database schema.',
           '',
           'Requirements:',
           `- Ensure the SQL is 100% valid and optimized for ${type} database`,
@@ -213,6 +214,7 @@ export const ask = orpc
       const stream = result.toUIMessageStream({
         originalMessages: messages,
         generateMessageId: () => v7(),
+        sendSources: true,
         messageMetadata: ({ part }) => {
           if (part.type === 'finish') {
             return {

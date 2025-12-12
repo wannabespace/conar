@@ -11,14 +11,28 @@ export const selectQuery = createQuery({
     select: string[]
     filters: ActiveFilter[]
   }) => ({
-    postgres: ({ db }) => db
+    postgres: db => db
       .withSchema(schema)
       .withTables<{ [table]: Record<string, unknown> }>()
       .selectFrom(table)
       .select(select)
       .where(eb => buildWhere(eb, filters))
       .execute(),
-    mysql: ({ db }) => db
+    mysql: db => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .selectFrom(table)
+      .select(select)
+      .where(eb => buildWhere(eb, filters))
+      .execute(),
+    mssql: db => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .selectFrom(table)
+      .select(select)
+      .where(eb => buildWhere(eb, filters))
+      .execute(),
+    clickhouse: db => db
       .withSchema(schema)
       .withTables<{ [table]: Record<string, unknown> }>()
       .selectFrom(table)

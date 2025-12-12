@@ -1,4 +1,5 @@
 import type { databases, databases as databasesTable } from '~/drizzle'
+import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { RiAddLine, RiDashboardLine, RiTableLine } from '@remixicon/react'
@@ -7,7 +8,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { Store, useStore } from '@tanstack/react-store'
 import { DatabaseIcon, databasesCollection, databaseTablesAndSchemasQuery, prefetchDatabaseCore, useDatabaseLinkParams } from '~/entities/database'
-import { trackEvent } from '~/lib/events'
 
 export const actionsCenterStore = new Store({
   isOpen: false,
@@ -88,12 +88,11 @@ export function ActionsCenter() {
   const router = useRouter()
   const { id } = useParams({ strict: false })
 
-  useKeyboardEvent(e => e.key === 'p' && (e.metaKey || e.ctrlKey), () => {
+  useKeyboardEvent(e => isCtrlAndKey(e, 'p'), () => {
     if (!databases || databases.length === 0)
       return
 
     setIsOpen(!isOpen)
-    trackEvent('actions_center_open_shortcut')
   })
 
   const currentConnection = databases?.find(database => database.id === id)

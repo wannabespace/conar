@@ -19,7 +19,7 @@ export const PORTS = {
   },
 } as const
 
-export const LABEL_OPTIONS = ['Dev', 'Prod', 'Staging']
+export const LABEL_OPTIONS = ['Local', 'Test', 'Dev', 'Staging', 'Prod']
 
 export const COLOR_OPTIONS = [
   '#ef4444',
