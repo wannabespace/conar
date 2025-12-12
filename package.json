@@ -16,7 +16,7 @@
     "start:api": "cd apps/api && pnpm run start",
     "build:web": "turbo run @conar/web#build",
     "start:web": "cd apps/web && pnpm run start",
-    "build:todesktop": "turbo run @conar/desktop#build:todesktop",
+    "build:todesktop": "turbo run conar#build:todesktop",
     "drizzle:generate": "turbo run drizzle:generate",
     "drizzle:migrate": "turbo run drizzle:migrate",
     "check-types": "turbo run check-types",
