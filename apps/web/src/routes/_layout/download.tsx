@@ -6,16 +6,20 @@ import { Badge } from '@conar/ui/components/badge'
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { MountedSuspense } from '@conar/ui/components/custom/mounted-suspense'
 import { Linux } from '@conar/ui/components/icons/linux'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
-import { RiAppleFill } from '@remixicon/react'
+import { RiAppleFill, RiCheckLine, RiFileCopyLine, RiTerminalLine } from '@remixicon/react'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import { useState } from 'react'
 import { DownloadButton } from '~/components/download-button'
 import { getLatestReleaseOptions } from '~/queries'
+import { getOSIsomorphic } from '~/utils/os'
 import { seo } from '~/utils/seo'
 
 export const Route = createFileRoute('/_layout/download')({
@@ -45,6 +49,65 @@ function Version() {
         ))}
       </NumberFlowGroup>
     </p>
+  )
+}
+
+const brewCommand = 'brew install --cask conar'
+
+function HomebrewInstall() {
+  const [copied, setCopied] = useState(false)
+  const [isMacOS] = useState(() => {
+    if (typeof window === 'undefined')
+      return false
+    const os = getOSIsomorphic()
+    return os?.type === 'macos'
+  })
+
+  const handleCopy = () => {
+    copy(brewCommand, 'Command copied to clipboard')
+    setCopied(true)
+  }
+
+  if (!isMacOS) {
+    return null
+  }
+
+  return (
+    <div className="w-full max-w-xl px-4 mb-8 sm:mb-12">
+      <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4">Install via Homebrew</h2>
+      <Card className="flex items-center justify-between p-3 sm:p-2 gap-4 sm:gap-8 w-full">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+          <div className="flex items-center justify-center size-8 bg-muted rounded-lg shrink-0">
+            <RiTerminalLine className="text-muted-foreground size-4" />
+          </div>
+          <code className="text-sm sm:text-base font-normal overflow-x-auto">
+            {brewCommand}
+          </code>
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={handleCopy}
+          className="shrink-0"
+        >
+          <ContentSwitch
+            active={copied}
+            onSwitchEnd={() => setCopied(false)}
+            activeContent={(
+              <span className="flex items-center gap-1.5">
+                <RiCheckLine className="size-4" />
+                <span className="hidden sm:inline">Copied</span>
+              </span>
+            )}
+          >
+            <span className="flex items-center gap-1.5">
+              <RiFileCopyLine className="size-4" />
+              <span className="hidden sm:inline">Copy</span>
+            </span>
+          </ContentSwitch>
+        </Button>
+      </Card>
+    </div>
   )
 }
 
@@ -99,7 +162,7 @@ function DownloadOption({ Icon, type, arch, asset }: {
   return (
     <Card className="flex items-center justify-between p-3 sm:p-2 gap-4 sm:gap-8 w-full">
       <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-        <div className="flex items-center justify-center size-8 bg-muted rounded-lg flex-shrink-0">
+        <div className="flex items-center justify-center size-8 bg-muted rounded-lg shrink-0">
           <Icon className="text-muted-foreground size-4" />
         </div>
         <div className="flex flex-col items-start">
@@ -157,6 +220,7 @@ function RouteComponent() {
           <DownloadButton />
           <Version />
         </div>
+        <HomebrewInstall />
         <div className="w-full max-w-xl px-4">
           <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4">All platforms</h2>
           <div className="space-y-2 w-full">
