@@ -1,16 +1,19 @@
+import type { ComponentRef } from 'react'
 import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
+import { RiAddLine, RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
+import { useRef } from 'react'
 import { ExportData } from '~/components/export-data'
 import { databaseConstraintsQuery, databaseRowsQuery, databaseTableColumnsQuery, rowsQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { usePageStoreContext } from '../-store'
+import { AddRecordDialog } from './add-record-dialog'
 import { HeaderActionsColumns } from './header-actions-columns'
 import { HeaderActionsDelete } from './header-actions-delete'
 import { HeaderActionsFilters } from './header-actions-filters'
@@ -28,6 +31,8 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
     queryClient.invalidateQueries(databaseTableColumnsQuery({ database, table, schema }))
     queryClient.invalidateQueries(databaseConstraintsQuery({ database }))
   }
+
+  const addRecordDialogRef = useRef<ComponentRef<typeof AddRecordDialog>>(null)
 
   const getAllData = async () => {
     const data: Record<string, unknown>[] = []
@@ -71,6 +76,25 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
 
   return (
     <div className="flex items-center gap-2">
+
+      <AddRecordDialog ref={addRecordDialogRef} />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => addRecordDialogRef.current?.open(database, schema, table)}
+            >
+              <RiAddLine />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            Add new record
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       <HeaderActionsDelete
         table={table}
         schema={schema}
