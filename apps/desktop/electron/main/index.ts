@@ -11,13 +11,13 @@ import { buildMenu } from './lib/menu'
 
 const todesktop = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
 
+todesktop.init()
+
 initElectronEvents()
 
 export const store = new Store<{
   bounds?: Rectangle
 }>()
-
-todesktop.init()
 
 export const { autoUpdater } = todesktop
 
