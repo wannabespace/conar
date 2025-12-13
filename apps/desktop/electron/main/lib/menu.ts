@@ -1,10 +1,7 @@
 import type { MenuItemConstructorOptions } from 'electron'
-import { createRequire } from 'node:module'
 import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { app, BrowserWindow, Menu, shell } from 'electron'
-import { createWindow } from '../'
-
-const { autoUpdater } = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
+import { autoUpdater, createWindow } from '../'
 
 function getFocusedWindow() {
   return BrowserWindow.getAllWindows().find(window => window.isFocused())

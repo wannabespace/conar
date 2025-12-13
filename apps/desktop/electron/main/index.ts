@@ -9,16 +9,17 @@ import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
 
+const todesktop = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
+
 initElectronEvents()
 
 export const store = new Store<{
   bounds?: Rectangle
 }>()
 
-const todesktop = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
-const { autoUpdater } = todesktop
-
 todesktop.init()
+
+export const { autoUpdater } = todesktop
 
 let mainWindow: BrowserWindow | null = null
 

@@ -1,14 +1,11 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
-import { createRequire } from 'node:module'
 import { decrypt, encrypt } from '@conar/shared/encryption'
 import { app, ipcMain } from 'electron'
-import { sendToast } from '..'
+import { autoUpdater, sendToast } from '..'
 import { getClient as getClickhouseClient } from '../databases/clickhouse'
 import { getPool as getMssqlPool } from '../databases/mssql'
 import { getPool as getMysqlPool } from '../databases/mysql'
 import { getPool as getPgPool } from '../databases/pg'
-
-const { autoUpdater } = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
 
 function isConnectionError(error: unknown) {
   if (error instanceof Error) {
