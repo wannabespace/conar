@@ -1,8 +1,8 @@
 {
-  "$schema": "https://unpkg.com/@todesktop/cli@1.18.0/schemas/schema.json",
+  "$schema": "https://unpkg.com/@todesktop/cli@1.18.3/schemas/schema.json",
   "id": "25112796k32u7",
   "appId": "com.wannabespace.conar",
-  "icon": "./resources/desktop-app-512x512.png",
+  "icon": "./resources/icon-1024x1024.png",
   "appPath": ".",
   "schemaVersion": 1,
   "nodeVersion": "22.11.0",
@@ -20,7 +20,6 @@
     "category": "public.app-category.developer-tools"
   },
   "windows": {
-    "icon": "./resources/desktop-app-512x512.png",
     "publisherName": ["Wannabe Space, LLC"]
   },
   "linux": {
