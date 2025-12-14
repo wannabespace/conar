@@ -5,7 +5,7 @@
   "icon": "./resources/icon-1024x1024.png",
   "appPath": ".",
   "schemaVersion": 1,
-  "nodeVersion": "22.11.0",
+  "nodeVersion": "24.6.0",
   "packageManager": "pnpm",
   "pnpmVersion": "10.25.0",
   "asar": true,
