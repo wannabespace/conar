@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "com.wannabespace.conar",
+  "productName": "Conar",
+  "asar": true,
+  "directories": {
+    "output": "release/${version}"
+  },
+  "publish": {
+    "provider": "github",
+    "private": false,
+    "owner": "wannabespace",
+    "repo": "conar",
+    "publisherName": ["Wannabe Space, LLC"]
+  },
+  "protocols": [
+    {
+      "name": "Conar",
+      "schemes": ["conar"]
+    }
+  ],
+  "files": ["out"],
+  "mac": {
+    "category": "public.app-category.developer-tools",
+    "target": [
+      {
+        "target": "default",
+        "arch": ["arm64", "x64"]
+      }
+    ],
+    "artifactName": "${productName}-Mac-${arch}-${version}-Installer.${ext}"
+  },
+  "win": {
+    "icon": "resources/desktop-app-512x512.png",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64", "ia32"]
+      },
+      {
+        "target": "msi",
+        "arch": ["x64", "ia32"]
+      }
+    ],
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
+    "azureSignOptions": {
+      "publisherName": "Wannabe Space, LLC",
+      "endpoint": "https://eus.codesigning.azure.net/",
+      "codeSigningAccountName": "Conar",
+      "certificateProfileName": "Conar"
+    }
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false
+  },
+  "linux": {
+    "target": ["AppImage", "deb", "rpm"],
+    "category": "Development",
+    "mimeTypes": ["x-scheme-handler/conar"],
+    "executableName": "Conar",
+    "artifactName": "${productName}-Linux-${version}.${ext}"
+  }
+}
