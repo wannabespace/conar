@@ -30,6 +30,7 @@
   "dependencies": {
     "@clickhouse/client": "catalog:",
     "@todesktop/runtime": "catalog:",
+    "ecdsa-sig-formatter": "catalog:",
     "electron-store": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",

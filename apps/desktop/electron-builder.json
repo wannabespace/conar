@@ -7,8 +7,10 @@
     "output": "release/${version}"
   },
   "publish": {
-    "provider": "generic",
-    "url": "https://download.todesktop.com/25112796k32u7"
+    "private": false,
+    "provider": "github",
+    "owner": "wannabespace",
+    "repo": "conar"
   },
   "protocols": [
     {
