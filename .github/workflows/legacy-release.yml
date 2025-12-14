@@ -1,4 +1,4 @@
-name: Build and release
+name: Build and release legacy
 
 on:
   workflow_dispatch:
