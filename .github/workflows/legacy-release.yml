@@ -11,13 +11,6 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v3
 
-      - name: Get version from package.json
-        id: package-version
-        shell: bash
-        run: |
-          VERSION=$(node -p "require('./apps/desktop/package.json').version")
-          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
-
       - name: Install Bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -58,13 +51,6 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v3
 
-      - name: Get version from package.json
-        id: package-version
-        shell: bash
-        run: |
-          VERSION=$(node -p "require('./apps/desktop/package.json').version")
-          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
-
       - name: Install Bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -86,8 +72,8 @@ jobs:
 
       - name: Build Electron App
         env:
+          VERSION: 0.25.0
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          VERSION: ${{ steps.package-version.outputs.version }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}

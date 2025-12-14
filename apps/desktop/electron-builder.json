@@ -31,7 +31,7 @@
     "artifactName": "${productName}-Mac-${arch}-${version}-Installer.${ext}"
   },
   "win": {
-    "icon": "resources/desktop-app-512x512.png",
+    "icon": "resources/icon-1024x1024.png",
     "target": [
       {
         "target": "nsis",
@@ -42,13 +42,7 @@
         "arch": ["x64", "ia32"]
       }
     ],
-    "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
-    "azureSignOptions": {
-      "publisherName": "Wannabe Space, LLC",
-      "endpoint": "https://eus.codesigning.azure.net/",
-      "codeSigningAccountName": "Conar",
-      "certificateProfileName": "Conar"
-    }
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
   },
   "nsis": {
     "oneClick": false,
