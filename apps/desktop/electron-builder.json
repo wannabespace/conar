@@ -7,11 +7,8 @@
     "output": "release/${version}"
   },
   "publish": {
-    "provider": "github",
-    "private": false,
-    "owner": "wannabespace",
-    "repo": "conar",
-    "publisherName": ["Wannabe Space, LLC"]
+    "provider": "generic",
+    "url": "https://download.todesktop.com/25112796k32u7"
   },
   "protocols": [
     {
