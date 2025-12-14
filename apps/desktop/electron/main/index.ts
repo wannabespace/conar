@@ -1,13 +1,15 @@
 import type { Rectangle } from 'electron'
 import type { UpdatesStatus } from '~/updates-observer'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import todesktop from '@todesktop/runtime'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
 import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
+
+const todesktop = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
 
 todesktop.init()
 

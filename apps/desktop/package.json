@@ -4,7 +4,7 @@
   "version": "0.25.0",
   "productName": "Conar",
   "private": true,
-  "description": "AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.",
+  "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
   "author": {
     "name": "Wannabe Space, LLC",
     "email": "wannabespace.llc@gmail.com"
@@ -18,7 +18,7 @@
   "scripts": {
     "dev": "electron-vite -c vite.electron.config.ts dev",
     "build:vite": "electron-vite -c vite.electron.config.ts build",
-    "build:electron": "electron-builder -p always",
+    "build:electron": "electron-builder",
     "build:todesktop": "todesktop build",
     "check-types": "tsc",
     "test:start": "vite -c vite.test.config.ts build --mode test && vite -c vite.test.config.ts preview --mode test",
@@ -30,10 +30,14 @@
   "dependencies": {
     "@clickhouse/client": "catalog:",
     "@todesktop/runtime": "catalog:",
+    "ecdsa-sig-formatter": "catalog:",
     "electron-store": "catalog:",
+    "fill-range": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
-    "pg": "catalog:"
+    "pg": "catalog:",
+    "reusify": "catalog:",
+    "run-parallel": "catalog:"
   },
   "devDependencies": {
     "@ai-sdk/react": "catalog:",
