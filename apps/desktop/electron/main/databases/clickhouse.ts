@@ -1,7 +1,5 @@
-import { createRequire } from 'node:module'
+import clickhouse from '@clickhouse/client'
 import { memoize } from '@conar/shared/utils/helpers'
-
-const clickhouse = createRequire(import.meta.url)('@clickhouse/client') as typeof import('@clickhouse/client')
 
 export const getClient = memoize((connectionString: string) => clickhouse.createClient({
   url: connectionString,

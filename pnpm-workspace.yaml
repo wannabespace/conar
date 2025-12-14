@@ -6,13 +6,13 @@ packages:
   - packages/*
   - apps/*
 catalog:
-  '@ai-sdk/anthropic': ^2.0.54
-  '@ai-sdk/google': ^2.0.45
-  '@ai-sdk/openai': ^2.0.80
+  '@ai-sdk/anthropic': ^2.0.56
+  '@ai-sdk/google': ^2.0.46
+  '@ai-sdk/openai': ^2.0.86
   '@ai-sdk/provider': ^2.0.0
-  '@ai-sdk/react': ^2.0.109
-  '@ai-sdk/xai': ^2.0.39
-  '@antfu/eslint-config': ^6.6.1
+  '@ai-sdk/react': ^2.0.115
+  '@ai-sdk/xai': ^2.0.40
+  '@antfu/eslint-config': ^6.7.1
   '@base-ui-components/react': ^1.0.0-rc.0
   '@clickhouse/client': ^1.14.0
   '@commitlint/cli': ^20.2.0
@@ -28,10 +28,10 @@ catalog:
   '@monaco-editor/loader': ^1.7.0
   '@number-flow/react': ^0.5.10
   '@octokit/rest': ^22.0.1
-  '@orpc/client': ^1.12.2
-  '@orpc/contract': ^1.12.2
-  '@orpc/server': ^1.12.2
-  '@orpc/tanstack-query': ^1.12.2
+  '@orpc/client': ^1.12.3
+  '@orpc/contract': ^1.12.3
+  '@orpc/server': ^1.12.3
+  '@orpc/tanstack-query': ^1.12.3
   '@playwright/test': ^1.57.0
   '@posthog/ai': ^7.2.1
   '@radix-ui/react-accordion': ^1.2.12
@@ -56,18 +56,18 @@ catalog:
   '@react-email/components': ^1.0.1
   '@remixicon/react': ^4.7.0
   '@tailwindcss/typography': ^0.5.19
-  '@tailwindcss/vite': ^4.1.17
-  '@tanstack/react-db': ^0.1.55
+  '@tailwindcss/vite': ^4.1.18
+  '@tanstack/react-db': ^0.1.56
   '@tanstack/react-devtools': ^0.8.4
-  '@tanstack/react-form': ^1.27.2
+  '@tanstack/react-form': ^1.27.3
   '@tanstack/react-query': ^5.90.12
   '@tanstack/react-query-devtools': ^5.91.1
-  '@tanstack/react-router': ^1.140.1
-  '@tanstack/react-router-devtools': ^1.140.1
-  '@tanstack/react-start': ^1.140.3
+  '@tanstack/react-router': ^1.141.2
+  '@tanstack/react-router-devtools': ^1.141.2
+  '@tanstack/react-start': ^1.141.3
   '@tanstack/react-store': ^0.8.0
   '@tanstack/react-virtual': ^3.13.13
-  '@tanstack/router-plugin': ^1.140.1
+  '@tanstack/router-plugin': ^1.141.2
   '@tiptap/extension-placeholder': ^3.13.0
   '@tiptap/react': ^3.13.0
   '@tiptap/starter-kit': ^3.13.0
@@ -77,15 +77,15 @@ catalog:
   '@types/bun': ^1.3.4
   '@types/ioredis-mock': ^8.2.6
   '@types/mssql': ^9.1.8
-  '@types/pg': ^8.15.6
+  '@types/pg': ^8.16.0
   '@types/react': ^19.2.7
   '@types/react-dom': ^19.2.3
   '@vitejs/plugin-react': ^5.1.2
   '@xyflow/react': ^12.10.0
-  ai: ^5.0.108
+  ai: ^5.0.113
   ai-retry: ^0.12.0
-  arkregex: ^0.0.4
-  arktype: ^2.1.28
+  arkregex: ^0.0.5
+  arktype: ^2.1.29
   babel-plugin-react-compiler: ^1.0.0
   better-auth: ^1.4.5
   better-auth-harmony: ^1.2.5
@@ -99,24 +99,23 @@ catalog:
   drizzle-arktype: ^0.1.3
   drizzle-kit: ^0.31.8
   drizzle-orm: ^0.45.1
-  ecdsa-sig-formatter: ^1.0.11
   electron: 39.2.6
   electron-builder: ^26.0.12
   electron-store: ^11.0.2
   electron-vite: ^5.0.0
-  eslint: ^9.39.1
+  eslint: ^9.39.2
   eslint-plugin-react-hooks: ^7.0.1
   eslint-plugin-react-refresh: ^0.4.24
-  hono: ^4.10.8
+  hono: ^4.11.0
   hookable: ^5.5.3
   husky: ^9.1.7
   input-otp: ^1.4.2
   ioredis: ^5.8.2
   ioredis-mock: ^8.13.1
   js-base64: ^3.7.8
-  kysely: ^0.28.8
+  kysely: ^0.28.9
   loops: ^6.0.1
-  lucide-react: ^0.559.0
+  lucide-react: ^0.561.0
   marked: ^17.0.1
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
@@ -130,10 +129,10 @@ catalog:
   pg: ^8.16.3
   playwright: ^1.57.0
   postgres: ^3.4.7
-  posthog-js: ^1.304.0
+  posthog-js: ^1.306.1
   posthog-node: ^5.17.2
-  react: ^19.2.1
-  react-dom: ^19.2.1
+  react: ^19.2.3
+  react-dom: ^19.2.3
   react-markdown: ^10.1.0
   react-resizable-panels: ^3.0.6
   react-scan: ^0.4.3
@@ -147,7 +146,7 @@ catalog:
   superjson: ^2.2.6
   tailwind-merge: ^3.4.0
   tailwind-scrollbar: ^4.0.2
-  tailwindcss: ^4.1.17
+  tailwindcss: ^4.1.18
   tanstack-db-pglite: ^1.0.5
   taze: ^19.9.2
   tsx: ^4.21.0

@@ -3,14 +3,13 @@
   "appId": "com.wannabespace.conar",
   "productName": "Conar",
   "asar": true,
+  "icon": "resources/icon-1024x1024.png",
   "directories": {
     "output": "release/${version}"
   },
   "publish": {
-    "private": false,
-    "provider": "github",
-    "owner": "wannabespace",
-    "repo": "conar"
+    "provider": "generic",
+    "url": "https://download.todesktop.com/25112796k32u7"
   },
   "protocols": [
     {
@@ -20,6 +19,7 @@
   ],
   "files": ["out"],
   "mac": {
+    "icon": "resources/icon.icns",
     "category": "public.app-category.developer-tools",
     "target": [
       {
@@ -30,7 +30,7 @@
     "artifactName": "${productName}-Mac-${arch}-${version}-Installer.${ext}"
   },
   "win": {
-    "icon": "resources/icon-1024x1024.png",
+    "icon": "resources/icon.ico",
     "target": [
       {
         "target": "nsis",

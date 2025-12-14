@@ -1,11 +1,9 @@
-import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
 import { readSSLFiles } from '@conar/connection/server'
 import { defaultSSLConfig, parseSSLConfig } from '@conar/connection/ssl/mysql'
 import { memoize } from '@conar/shared/utils/helpers'
 import { tries } from '@conar/shared/utils/tries'
-
-const mysql2 = createRequire(import.meta.url)('mysql2/promise') as typeof import('mysql2/promise')
+import mysql2 from 'mysql2/promise'
 
 export const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
