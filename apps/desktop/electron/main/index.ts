@@ -11,13 +11,13 @@ import { buildMenu } from './lib/menu'
 
 todesktop.init()
 
+export const { autoUpdater } = todesktop
+
 initElectronEvents()
 
 export const store = new Store<{
   bounds?: Rectangle
 }>()
-
-export const { autoUpdater } = todesktop
 
 let mainWindow: BrowserWindow | null = null
 
