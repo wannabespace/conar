@@ -8,8 +8,11 @@
     "output": "release/${version}"
   },
   "publish": {
-    "provider": "generic",
-    "url": "https://download.todesktop.com/25112796k32u7"
+    "provider": "github",
+    "private": false,
+    "owner": "wannabespace",
+    "repo": "conar",
+    "publisherName": ["Wannabe Space, LLC"]
   },
   "protocols": [
     {
@@ -18,6 +21,16 @@
     }
   ],
   "files": ["out"],
+  "extraResources": [
+    {
+      "from": "resources/todesktop-runtime-config.json",
+      "to": "todesktop-runtime-config.json"
+    },
+    {
+      "from": "resources/app-update.yml",
+      "to": "app-update.yml"
+    }
+  ],
   "mac": {
     "icon": "resources/icon.icns",
     "category": "public.app-category.developer-tools",
