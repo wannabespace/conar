@@ -37,7 +37,7 @@ jobs:
           VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
           VITE_PUBLIC_AUTH_SECRET: ${{ secrets.VITE_PUBLIC_AUTH_SECRET }}
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
-        run: pnpm run build:desktop:vite
+        run: cd ./apps/desktop && pnpm run build:vite
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
