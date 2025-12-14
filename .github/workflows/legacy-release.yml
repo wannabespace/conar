@@ -84,6 +84,6 @@ jobs:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: desktop-electron-release
+          name: desktop-electron-release-${{ matrix.os }}
           path: ./apps/desktop/release/0.25.0/
           retention-days: 1
