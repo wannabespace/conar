@@ -1,5 +1,6 @@
 import type { RefObject } from 'react'
 import { noop } from '@conar/shared/utils/helpers'
+import { formatXml } from '@conar/shared/utils/xml'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { useTheme } from '@conar/ui/theme-observer'
 import * as monaco from 'monaco-editor'
@@ -51,6 +52,15 @@ export function Monaco({
       if (language?.includes('json')) {
         try {
           return JSON.stringify(JSON.parse(value), null, 2)
+        }
+        catch {
+          return value
+        }
+      }
+
+      if (language?.includes('xml')) {
+        try {
+          return formatXml(value)
         }
         catch {
           return value

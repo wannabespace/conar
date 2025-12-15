@@ -1,5 +1,9 @@
 import type { SslOptions } from 'mysql2'
 
+export const defaultSSLConfig: SslOptions = {
+  rejectUnauthorized: false,
+}
+
 export function parseSSLConfig(searchParams: URLSearchParams): SslOptions | undefined {
   const ssl = searchParams.get('ssl')
   const sslCa = searchParams.get('sslca')
@@ -67,6 +71,4 @@ export function parseSSLConfig(searchParams: URLSearchParams): SslOptions | unde
 
     return sslConfig
   }
-
-  return undefined
 }

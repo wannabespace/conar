@@ -21,11 +21,8 @@
       "dependsOn": ["check-types", "^check-types"],
       "cache": false
     },
-    "build:electron": {
+    "conar#build:todesktop": {
       "dependsOn": ["build:vite"]
-    },
-    "@conar/desktop#build": {
-      "dependsOn": ["^check-types", "build:vite", "build:electron"]
     },
     "drizzle:migrate": {
       "cache": false
