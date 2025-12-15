@@ -1,5 +1,6 @@
 import type { OS } from '@conar/shared/utils/os'
 import type { RemixiconComponentType } from '@remixicon/react'
+import { BREW_INSTALL_COMMAND } from '@conar/shared/constants'
 import { formatBytes } from '@conar/shared/utils/files'
 import { osMap } from '@conar/shared/utils/os'
 import { Badge } from '@conar/ui/components/badge'
@@ -52,19 +53,15 @@ function Version() {
   )
 }
 
-const brewCommand = 'brew install --cask conar'
-
 function HomebrewInstall() {
   const [copied, setCopied] = useState(false)
   const [isMacOS] = useState(() => {
-    if (typeof window === 'undefined')
-      return false
     const os = getOSIsomorphic()
     return os?.type === 'macos'
   })
 
   const handleCopy = () => {
-    copy(brewCommand, 'Command copied to clipboard')
+    copy(BREW_INSTALL_COMMAND, 'Command copied to clipboard')
     setCopied(true)
   }
 
@@ -80,9 +77,12 @@ function HomebrewInstall() {
           <div className="flex items-center justify-center size-8 bg-muted rounded-lg shrink-0">
             <RiTerminalLine className="text-muted-foreground size-4" />
           </div>
-          <code className="text-sm sm:text-base font-normal overflow-x-auto">
-            {brewCommand}
-          </code>
+          <input
+            type="text"
+            className="text-sm sm:text-base font-mono bg-transparent border-none p-0 pr-10 m-0 outline-none flex-1 block"
+            value={BREW_INSTALL_COMMAND}
+            readOnly
+          />
         </div>
         <Button
           size="sm"
@@ -90,21 +90,16 @@ function HomebrewInstall() {
           onClick={handleCopy}
           className="shrink-0"
         >
-          <ContentSwitch
-            active={copied}
-            onSwitchEnd={() => setCopied(false)}
-            activeContent={(
-              <span className="flex items-center gap-1.5">
-                <RiCheckLine className="size-4" />
-                <span className="hidden sm:inline">Copied</span>
-              </span>
-            )}
-          >
-            <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5">
+            <ContentSwitch
+              active={copied}
+              onSwitchEnd={() => setCopied(false)}
+              activeContent={<RiCheckLine className="size-4 text-success" />}
+            >
               <RiFileCopyLine className="size-4" />
-              <span className="hidden sm:inline">Copy</span>
-            </span>
-          </ContentSwitch>
+            </ContentSwitch>
+            <span className="hidden sm:inline">Copy</span>
+          </span>
         </Button>
       </Card>
     </div>
