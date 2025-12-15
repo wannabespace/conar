@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google'
-import { SQL_FILTERS_GROUPED, SQL_OPERATORS } from '@conar/shared/filters/sql'
+import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { generateObject } from 'ai'
 import { type } from 'arktype'
 import { consola } from 'consola'
@@ -65,7 +65,7 @@ export const filters = orpc
           .object({
             column: z.string().describe('The column name to filter by'),
             operator: z
-              .enum(SQL_OPERATORS)
+              .enum(SQL_FILTERS_LIST.map(filter => filter.operator))
               .describe('The operator to use for the filter, must be one of the available SQL operators'),
             values: z
               .array(z.string().describe('A value to filter by for the specified column and operator'))
