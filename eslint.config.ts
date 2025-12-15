@@ -27,7 +27,6 @@ export default antfu(
       '**/test-results/**/*',
       '**/.types/**/*',
       '**/migrations/meta/*.json',
-      '**/todesktop-runtime-config.json',
       '**/migrations.json',
     ],
   },
