@@ -20,7 +20,7 @@ export function Filters() {
       <div className="flex gap-2 flex-wrap">
         {filters.map(filter => (
           <FilterItem
-            key={`${filter.column}-${filter.ref.operator}-${filter.values?.join(',')}`}
+            key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}`}
             filter={filter}
             onRemove={() => store.setState(state => ({
               ...state,
