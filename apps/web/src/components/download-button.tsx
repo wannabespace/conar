@@ -2,7 +2,7 @@ import type { OS } from '@conar/shared/utils/os'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Linux } from '@conar/ui/components/icons/linux'
-import { RiAppleFill } from '@remixicon/react'
+import { RiAppleFill, RiWindowsFill } from '@remixicon/react'
 import { DOWNLOAD_LINKS } from '~/constants'
 import { getOSIsomorphic } from '~/utils/os'
 
@@ -11,6 +11,7 @@ const os = getOSIsomorphic()
 const iconsMap: Partial<Record<OS, (props: { className?: string }) => React.ReactNode>> = {
   macos: ({ className }) => <RiAppleFill className={className} />,
   linux: ({ className }) => <Linux className={className} />,
+  windows: ({ className }) => <RiWindowsFill className={className} />,
 }
 
 export function DownloadButton() {
