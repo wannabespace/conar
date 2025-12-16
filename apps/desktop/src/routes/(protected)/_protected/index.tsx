@@ -58,7 +58,7 @@ function DashboardPage() {
           </div>
         </div>
         <DatabasesList />
-        <div className="mt-auto pt-6">
+        <div className="mt-auto py-6">
           <Separator />
           <div className="mt-3 flex gap-2 items-center">
             <a
