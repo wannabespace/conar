@@ -114,10 +114,10 @@ export function Empty() {
   return (
     <div className="text-center bg-card border-2 border-dashed border-border/50 rounded-xl p-14 w-full m-auto group">
       <h2 className="text-foreground font-medium mt-6">
-        No connections match this filter
+        No connections found
       </h2>
       <p className="text-sm text-muted-foreground mt-1 mb-4 whitespace-pre-line">
-        Create a new connection to get started
+        Create a new connection to get started.
       </p>
       <Button asChild>
         <Link to="/create">
