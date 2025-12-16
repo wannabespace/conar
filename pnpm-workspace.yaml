@@ -99,7 +99,6 @@ catalog:
   drizzle-arktype: ^0.1.3
   drizzle-kit: ^0.31.8
   drizzle-orm: ^0.45.1
-  ecdsa-sig-formatter: ^1.0.11
   electron: 39.2.6
   electron-builder: ^26.0.12
   electron-store: ^11.0.2
@@ -107,7 +106,6 @@ catalog:
   eslint: ^9.39.2
   eslint-plugin-react-hooks: ^7.0.1
   eslint-plugin-react-refresh: ^0.4.24
-  fill-range: ^7.1.1
   hono: ^4.11.0
   hookable: ^5.5.3
   husky: ^9.1.7
@@ -142,8 +140,6 @@ catalog:
   remark-gfm: ^4.0.1
   resend: ^6.6.0
   resumable-stream: ^2.2.9
-  reusify: ^1.1.0
-  run-parallel: ^1.2.0
   sonner: ^2.0.7
   sql-formatter: ^15.6.11
   stripe: ^20.0.0

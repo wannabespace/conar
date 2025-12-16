@@ -1,25 +1,20 @@
 import type { OS } from '@conar/shared/utils/os'
 import type { RemixiconComponentType } from '@remixicon/react'
 import { BREW_INSTALL_COMMAND } from '@conar/shared/constants'
-import { formatBytes } from '@conar/shared/utils/files'
 import { osMap } from '@conar/shared/utils/os'
 import { Badge } from '@conar/ui/components/badge'
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { MountedSuspense } from '@conar/ui/components/custom/mounted-suspense'
 import { Linux } from '@conar/ui/components/icons/linux'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
-import { cn } from '@conar/ui/lib/utils'
-import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
-import { RiAppleFill, RiCheckLine, RiFileCopyLine, RiTerminalLine } from '@remixicon/react'
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { RiAppleFill, RiCheckLine, RiFileCopyLine, RiTerminalLine, RiWindowsFill } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { DownloadButton } from '~/components/download-button'
-import { getLatestReleaseOptions } from '~/queries'
+import { DOWNLOAD_LINKS } from '~/constants'
 import { getOSIsomorphic } from '~/utils/os'
 import { seo } from '~/utils/seo'
 
@@ -31,27 +26,6 @@ export const Route = createFileRoute('/_layout/download')({
     }),
   }),
 })
-
-function Version() {
-  const { data, isPending } = useQuery(getLatestReleaseOptions)
-  const versionNumbers = data ? data.version.slice(1).split('.').map(Number) : [0, 0, 0]
-
-  return (
-    <p className={cn('text-sm text-muted-foreground', isPending && 'animate-pulse')}>
-      <NumberFlowGroup>
-        {versionNumbers.map((number, index) => (
-          <NumberFlow
-            // eslint-disable-next-line react/no-array-index-key
-            key={index}
-            value={number}
-            prefix={index === 0 ? 'Current version ' : ''}
-            suffix={index === versionNumbers.length - 1 ? '' : '.'}
-          />
-        ))}
-      </NumberFlowGroup>
-    </p>
-  )
-}
 
 function HomebrewInstall() {
   const [copied, setCopied] = useState(false)
@@ -107,52 +81,53 @@ function HomebrewInstall() {
 }
 
 function AllPlatforms() {
-  const { data: { mac, linux } } = useSuspenseQuery(getLatestReleaseOptions)
-
   return (
     <>
       <DownloadOption
         Icon={RiAppleFill}
         type="macos"
         arch="Apple Silicon"
-        asset={mac.arm64}
+        link={DOWNLOAD_LINKS.macos.arm64}
       />
       <DownloadOption
         Icon={RiAppleFill}
         type="macos"
         arch="Intel"
-        asset={mac.intel}
+        link={DOWNLOAD_LINKS.macos.intel}
+      />
+      <DownloadOption
+        Icon={RiWindowsFill}
+        type="windows"
+        arch="exe"
+        link={DOWNLOAD_LINKS.windows.exe}
       />
       <DownloadOption
         Icon={Linux}
         type="linux"
         arch="deb"
-        asset={linux.deb}
+        link={DOWNLOAD_LINKS.linux.deb}
       />
       <DownloadOption
         Icon={Linux}
         type="linux"
         arch="AppImage"
-        asset={linux.appImage}
+        link={DOWNLOAD_LINKS.linux.appImage}
       />
       <DownloadOption
         Icon={Linux}
         type="linux"
         arch="rpm"
-        asset={linux.rpm}
+        link={DOWNLOAD_LINKS.linux.rpm}
       />
     </>
   )
 }
 
-function DownloadOption({ Icon, type, arch, asset }: {
+function DownloadOption({ Icon, type, arch, link }: {
   Icon: RemixiconComponentType
   type: OS
   arch?: string
-  asset?: {
-    url: string
-    size: number
-  }
+  link: string
 }) {
   return (
     <Card className="flex items-center justify-between p-3 sm:p-2 gap-4 sm:gap-8 w-full">
@@ -177,22 +152,17 @@ function DownloadOption({ Icon, type, arch, asset }: {
           <Button
             asChild
             size="sm"
-            disabled={!asset}
+            disabled={!link}
             variant="secondary"
           >
             <a
-              href={asset ? asset.url : '#'}
+              href={link}
               download
             >
               Download
             </a>
           </Button>
         </TooltipTrigger>
-        {asset && (
-          <TooltipContent side="right">
-            {formatBytes(asset.size)}
-          </TooltipContent>
-        )}
       </Tooltip>
     </Card>
   )
@@ -209,48 +179,16 @@ function RouteComponent() {
           <strong>Conar</strong>
         </h1>
         <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-10 px-2">
-          Available for macOS and Linux
+          Available for macOS, Windows and Linux
         </p>
         <div className="mb-8 sm:mb-12 text-center space-y-2 px-4">
           <DownloadButton />
-          <Version />
         </div>
         <HomebrewInstall />
         <div className="w-full max-w-xl px-4">
           <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4">All platforms</h2>
           <div className="space-y-2 w-full">
-            <MountedSuspense fallback={(
-              <>
-                <DownloadOption
-                  Icon={RiAppleFill}
-                  type="macos"
-                  arch="Apple Silicon"
-                />
-                <DownloadOption
-                  Icon={RiAppleFill}
-                  type="macos"
-                  arch="Intel"
-                />
-                <DownloadOption
-                  Icon={Linux}
-                  type="linux"
-                  arch="deb"
-                />
-                <DownloadOption
-                  Icon={Linux}
-                  type="linux"
-                  arch="AppImage"
-                />
-                <DownloadOption
-                  Icon={Linux}
-                  type="linux"
-                  arch="rpm"
-                />
-              </>
-            )}
-            >
-              <AllPlatforms />
-            </MountedSuspense>
+            <AllPlatforms />
           </div>
         </div>
       </div>

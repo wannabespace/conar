@@ -285,9 +285,6 @@ catalogs:
     drizzle-orm:
       specifier: ^0.45.1
       version: 0.45.1
-    ecdsa-sig-formatter:
-      specifier: ^1.0.11
-      version: 1.0.11
     electron:
       specifier: 39.2.6
       version: 39.2.6
@@ -309,9 +306,6 @@ catalogs:
     eslint-plugin-react-refresh:
       specifier: ^0.4.24
       version: 0.4.25
-    fill-range:
-      specifier: ^7.1.1
-      version: 7.1.1
     hono:
       specifier: ^4.11.0
       version: 4.11.0
@@ -414,12 +408,6 @@ catalogs:
     resumable-stream:
       specifier: ^2.2.9
       version: 2.2.9
-    reusify:
-      specifier: ^1.1.0
-      version: 1.1.0
-    run-parallel:
-      specifier: ^1.2.0
-      version: 1.2.0
     sonner:
       specifier: ^2.0.7
       version: 2.0.7
@@ -675,15 +663,9 @@ importers:
       '@todesktop/runtime':
         specifier: 'catalog:'
         version: 2.1.3
-      ecdsa-sig-formatter:
-        specifier: 'catalog:'
-        version: 1.0.11
       electron-store:
         specifier: 'catalog:'
         version: 11.0.2
-      fill-range:
-        specifier: 'catalog:'
-        version: 7.1.1
       mssql:
         specifier: 'catalog:'
         version: 12.2.0
@@ -693,12 +675,6 @@ importers:
       pg:
         specifier: 'catalog:'
         version: 8.16.3
-      reusify:
-        specifier: 'catalog:'
-        version: 1.1.0
-      run-parallel:
-        specifier: 'catalog:'
-        version: 1.2.0
     devDependencies:
       '@ai-sdk/react':
         specifier: 'catalog:'
@@ -14405,10 +14381,10 @@ snapshots:
       firebase: 11.10.0
       git-rev-sync: 3.0.2
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)
-      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
-      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
-      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
-      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
+      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
+      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
+      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
+      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
       is-ci: 3.0.1
       is-installed-globally: 0.3.2
       js-yaml: 4.1.1
@@ -17346,7 +17322,7 @@ snapshots:
 
   ini@4.1.1: {}
 
-  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
+  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
     dependencies:
       gradient-string: 1.2.0
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)
@@ -17354,14 +17330,14 @@ snapshots:
       react: 17.0.2
       strip-ansi: 6.0.1
 
-  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
+  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
     dependencies:
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)
       prop-types: 15.8.1
       react: 17.0.2
       terminal-link: 2.1.1
 
-  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
+  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
     dependencies:
       arr-rotate: 1.0.0
       figures: 3.2.0
@@ -17369,7 +17345,7 @@ snapshots:
       lodash.isequal: 4.5.0
       react: 17.0.2
 
-  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
+  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
     dependencies:
       chalk: 4.1.2
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)
