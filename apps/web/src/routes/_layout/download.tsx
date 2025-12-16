@@ -18,6 +18,8 @@ import { DOWNLOAD_LINKS } from '~/constants'
 import { getOSIsomorphic } from '~/utils/os'
 import { seo } from '~/utils/seo'
 
+const os = getOSIsomorphic()
+
 export const Route = createFileRoute('/_layout/download')({
   component: RouteComponent,
   head: () => ({
@@ -29,17 +31,13 @@ export const Route = createFileRoute('/_layout/download')({
 
 function HomebrewInstall() {
   const [copied, setCopied] = useState(false)
-  const [isMacOS] = useState(() => {
-    const os = getOSIsomorphic()
-    return os?.type === 'macos'
-  })
 
   const handleCopy = () => {
     copy(BREW_INSTALL_COMMAND, 'Command copied to clipboard')
     setCopied(true)
   }
 
-  if (!isMacOS) {
+  if (os?.type !== 'macos') {
     return null
   }
 
