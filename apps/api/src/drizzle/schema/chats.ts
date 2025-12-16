@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '@conar/shared/ai-tools'
+import type { AppUIMessage } from '~/ai-tools'
 import { createSelectSchema } from 'drizzle-arktype'
 import { relations } from 'drizzle-orm'
 import { index, pgTable, text, uuid } from 'drizzle-orm/pg-core'

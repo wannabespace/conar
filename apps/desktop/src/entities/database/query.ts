@@ -17,9 +17,15 @@ export function createQuery<P = undefined, T extends Type = Type<unknown>>(optio
       // eslint-disable-next-line ts/no-explicit-any
       const result = await options.query(params)[database.type](dialects[database.type](database) as any)
 
-      return options.type
-        ? options.type.assert(result) as T extends Type ? T['inferOut'] : unknown
-        : result
+      try {
+        return options.type
+          ? options.type.assert(result) as T extends Type ? T['inferOut'] : unknown
+          : result
+      }
+      catch (error) {
+        console.warn(result)
+        throw error
+      }
     },
   }
 }

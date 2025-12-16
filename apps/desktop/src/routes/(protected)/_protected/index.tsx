@@ -26,8 +26,8 @@ function DashboardPage() {
   const [version, versionStatus] = useStore(updatesStore, state => [state.version, state.status])
 
   return (
-    <ScrollArea className="flex flex-col overflow-auto">
-      <div className="mx-auto max-w-2xl w-full px-6 py-10">
+    <ScrollArea className="overflow-auto">
+      <div className="flex flex-col mx-auto max-w-2xl w-full px-6 py-10 h-full">
         <h1 className="scroll-m-20 mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
           Dashboard
         </h1>
@@ -58,7 +58,7 @@ function DashboardPage() {
           </div>
         </div>
         <DatabasesList />
-        <div className="mt-auto pt-6">
+        <div className="mt-auto py-6">
           <Separator />
           <div className="mt-3 flex gap-2 items-center">
             <a
