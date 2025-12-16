@@ -2,7 +2,7 @@
 
 ![image](https://conar.app/github-demo.png)
 
-Conar is an AI-powered open-source project that simplifies database interactions. Built for PostgreSQL, with support for other databases coming in the near future. Store your connections securely in our cloud and ask AI to help you write and optimize SQL queries.
+Conar is an AI-powered open-source project that simplifies database interactions. Built for PostgreSQL, MySQL, MSSQL, Clickhouse with support for other databases coming in the near future. Store your connections securely in our cloud and ask AI to help you write and optimize SQL queries.
 
 <div align="center">
   <a href="https://conar.app/download">
