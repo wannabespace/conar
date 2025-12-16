@@ -21,7 +21,7 @@
       "dependsOn": ["check-types", "^check-types"],
       "cache": false
     },
-    "@conar/desktop#build:todesktop": {
+    "conar#build:todesktop": {
       "dependsOn": ["build:vite"]
     },
     "drizzle:migrate": {

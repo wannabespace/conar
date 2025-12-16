@@ -1,6 +1,6 @@
 import type { ActiveFilter, Filter, FilterGroup } from '@conar/shared/filters'
 import type { RefObject } from 'react'
-import { FILTER_GROUPS_LABELS } from '@conar/shared/filters'
+import { FILTER_GROUPS } from '@conar/shared/filters'
 import { Button } from '@conar/ui/components/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
@@ -74,7 +74,7 @@ function FilterSelector({
       <CommandList className="h-fit max-h-[70vh]">
         <CommandEmpty>No operators found.</CommandEmpty>
         {filtersGrouped.map(({ group, filters }) => (
-          <CommandGroup key={group} heading={FILTER_GROUPS_LABELS[group]}>
+          <CommandGroup key={group} heading={FILTER_GROUPS[group]}>
             {filters.map((filter) => {
               return (
                 <CommandItem
@@ -101,6 +101,7 @@ function FilterValueSelector({
   column,
   operator,
   values,
+  isArray,
   onChange,
   onApply,
   onBackspace,
@@ -108,6 +109,7 @@ function FilterValueSelector({
   ref?: RefObject<HTMLInputElement | null>
   column: string
   operator: string
+  isArray: boolean
   values: unknown[]
   onChange: (value: string[]) => void
   onApply: () => void
@@ -118,8 +120,8 @@ function FilterValueSelector({
       <div>
         <CommandInput
           ref={ref}
-          value={values[0] as string} // TODO: due to the current implementation where available only 1 value
-          onValueChange={value => onChange([value])}
+          value={isArray ? values.join(',') : values[0] as string}
+          onValueChange={value => onChange(isArray ? value.split(',') : [value])}
           placeholder={`Enter value for ${column}...`}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -226,9 +228,9 @@ export function FilterItem({
           />
         </PopoverContent>
       </Popover>
-      {!filter.ref.constValue && (
+      <Separator orientation="vertical" />
+      {filter.ref.hasValue !== false && (
         <>
-          <Separator orientation="vertical" />
           <Popover>
             <PopoverTrigger className="text-xs px-2 h-full hover:bg-accent/50 transition-colors">
               <div data-mask className="font-mono truncate max-w-60">
@@ -240,15 +242,16 @@ export function FilterItem({
               <FilterValueSelector
                 column={filter.column}
                 operator={filter.ref.operator}
+                isArray={filter.ref.isArray ?? false}
                 values={values}
                 onChange={setValues}
                 onApply={() => onEdit({ column: filter.column, ref: filter.ref, values })}
               />
             </PopoverContent>
           </Popover>
+          <Separator orientation="vertical" className="h-6" />
         </>
       )}
-      <Separator orientation="vertical" className="h-6" />
       <button
         type="button"
         className="flex items-center justify-center hover:bg-destructive/10 hover:text-destructive transition-colors h-full w-6"
@@ -286,7 +289,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
   const column = columns.find(column => column.id === selectedColumn)
 
   useEffect(() => {
-    if (column && selectedFilter && !!selectedFilter.constValue) {
+    if (column && selectedFilter) {
       onAdd({ column: column.id, ref: selectedFilter, values })
     }
   }, [column, selectedFilter, values, onAdd])
@@ -312,6 +315,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
           ref={valueRef}
           column={column.id}
           operator={selectedFilter.operator}
+          isArray={selectedFilter.isArray ?? false}
           values={values}
           onChange={setValues}
           onApply={() => onAdd({ column: column.id, ref: selectedFilter, values })}
