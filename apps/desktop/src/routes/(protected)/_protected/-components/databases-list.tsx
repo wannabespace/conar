@@ -145,20 +145,20 @@ export function DatabasesList() {
       {availableLabels.length > 0 && (
         <ButtonGroup>
           <Button
-            variant={selectedLabel === null ? 'default' : 'outline'}
+            variant="outline"
+            className={selectedLabel === null ? 'bg-primary!' : ''}
             size="xs"
             onClick={() => setSelectedLabel(null)}
-            className="border!"
           >
             All
           </Button>
           {availableLabels.map(label => (
             <Button
               key={label}
-              variant={selectedLabel === label ? 'default' : 'outline'}
+              variant="outline"
+              className={selectedLabel === label ? 'bg-primary!' : ''}
               size="xs"
               onClick={() => setSelectedLabel(label)}
-              className="border!"
             >
               {label}
             </Button>
