@@ -9,13 +9,17 @@ import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
 
+const todesktop = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
+
+todesktop.init()
+
+export const { autoUpdater } = todesktop
+
 initElectronEvents()
 
 export const store = new Store<{
   bounds?: Rectangle
 }>()
-
-const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
 
 let mainWindow: BrowserWindow | null = null
 
@@ -90,7 +94,7 @@ app.on('ready', () => {
 
   setupProtocolHandler(win)
 
-  setInterval(() => autoUpdater.checkForUpdates(), 1000 * 60 * 10)
+  setInterval(() => autoUpdater?.checkForUpdates(), 1000 * 60 * 10)
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -110,26 +114,29 @@ app.on('activate', () => {
   }
 })
 
+export function sendToast({ message, type }: { message: string, type: 'success' | 'error' | 'info' }) {
+  mainWindow?.webContents.send('toast', { message, type })
+}
+
 function sendUpdatesStatus(status: UpdatesStatus, message?: string) {
   mainWindow?.webContents.send('updates-status', { status, message })
 }
 
-autoUpdater.on('checking-for-update', () => {
+autoUpdater?.on('checking-for-update', () => {
   sendUpdatesStatus('checking')
 })
-autoUpdater.on('update-available', () => {
-  autoUpdater.downloadUpdate()
+autoUpdater?.on('update-available', () => {
   sendUpdatesStatus('downloading')
 })
-autoUpdater.on('update-not-available', () => {
+autoUpdater?.on('update-not-available', () => {
   sendUpdatesStatus('no-updates')
 })
-autoUpdater.on('error', (e) => {
+autoUpdater?.on('error', (e) => {
   sendUpdatesStatus('error', e.message.split('\n')[0])
 })
-autoUpdater.on('download-progress', () => {
+autoUpdater?.on('download-progress', () => {
   sendUpdatesStatus('downloading')
 })
-autoUpdater.on('update-downloaded', (event) => {
-  sendUpdatesStatus('ready', typeof event.releaseNotes === 'string' ? event.releaseNotes : undefined)
+autoUpdater?.on('update-downloaded', () => {
+  sendUpdatesStatus('ready')
 })

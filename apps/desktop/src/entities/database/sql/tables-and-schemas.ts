@@ -33,6 +33,14 @@ export const tablesAndSchemasQuery = createQuery({
         eb('TABLE_TYPE', '=', 'BASE TABLE'),
       ]))
       .execute(),
+    mssql: db => db
+      .selectFrom('information_schema.TABLES')
+      .select([
+        'TABLE_SCHEMA as schema',
+        'TABLE_NAME as table',
+      ])
+      .where('TABLE_TYPE', '=', 'BASE TABLE')
+      .execute(),
     clickhouse: db => db
       .selectFrom('information_schema.tables')
       .select([

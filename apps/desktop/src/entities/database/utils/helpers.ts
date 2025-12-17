@@ -5,10 +5,16 @@ export const DEFAULT_COLUMN_WIDTH = 240
 
 export const DANGEROUS_SQL_KEYWORDS = ['DELETE', 'UPDATE', 'DROP', 'RENAME', 'TRUNCATE', 'ALTER'] as const
 
-export function hasDangerousSqlKeywords(query: string) {
-  const uncommentedLines = query.split('\n').filter(line => !line.trim().startsWith('--')).join('\n')
+export function hasDangerousSqlKeywords(sql: string) {
+  const uncommentedLines = sql.split('\n').filter(line => !line.trim().startsWith('--')).join('\n')
   const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
   return new RegExp(dangerousKeywordsPattern, 'gi').test(uncommentedLines)
+}
+
+function isWord(word: string, line: string, idx: number) {
+  return (idx === 0 || /\W/.test(line[idx - 1]!))
+    && line.substring(idx, idx + word.length).toUpperCase() === word
+    && (idx + word.length === line.length || /\W/.test(line[idx + word.length]!))
 }
 
 export function getEditorQueries(sql: string) {
@@ -22,12 +28,15 @@ export function getEditorQueries(sql: string) {
   let queryStartLine = 1
   let inMultilineComment = false
   let dollarQuoteTag: string | null = null
+  let beginEndBlockDepth = 0
+  let beginEndStartLine: number | null = null
 
-  function splitQueryBySemicolons(query: string): string[] {
+  const splitQueryBySemicolons = (query: string): string[] => {
     const parts: string[] = []
     let currentPart = ''
     let currentTag: string | null = null
     let i = 0
+    let localBeginEndBlockDepth = 0
 
     while (i < query.length) {
       if (currentTag === null) {
@@ -38,7 +47,23 @@ export function getEditorQueries(sql: string) {
           i += currentTag.length
           continue
         }
-        if (query[i] === ';') {
+
+        const beginMatch = query.substring(i).match(/^(BEGIN)\b/i)
+        const endMatch = query.substring(i).match(/^(END)\b/i)
+        if (beginMatch && localBeginEndBlockDepth === 0) {
+          localBeginEndBlockDepth++
+          currentPart += beginMatch[0]
+          i += beginMatch[0].length
+          continue
+        }
+        if (endMatch && localBeginEndBlockDepth > 0) {
+          localBeginEndBlockDepth--
+          currentPart += endMatch[0]
+          i += endMatch[0].length
+          continue
+        }
+
+        if (query[i] === ';' && localBeginEndBlockDepth === 0) {
           const trimmed = currentPart.trim()
           if (trimmed) {
             parts.push(trimmed)
@@ -70,7 +95,7 @@ export function getEditorQueries(sql: string) {
     return parts.filter(p => p.length > 0)
   }
 
-  function processDollarQuotes(line: string): { newTag: string | null } {
+  const processDollarQuotes = (line: string): { newTag: string | null } => {
     let currentTag = dollarQuoteTag
     let i = 0
 
@@ -126,13 +151,36 @@ export function getEditorQueries(sql: string) {
     if (!line)
       continue
 
+    if (!isInDollarQuote) {
+      for (let idx = 0; idx < line.length;) {
+        if (isWord('BEGIN', line.toUpperCase(), idx)) {
+          beginEndBlockDepth++
+          if (beginEndBlockDepth === 1 && !currentQuery) {
+            beginEndStartLine = lineNum
+          }
+          idx += 5
+        }
+        else if (isWord('END', line.toUpperCase(), idx)) {
+          if (beginEndBlockDepth > 0)
+            beginEndBlockDepth--
+          idx += 3
+        }
+        else {
+          idx++
+        }
+      }
+    }
+
     if (!currentQuery) {
       queryStartLine = lineNum
+      if (beginEndBlockDepth > 0 && beginEndStartLine !== null) {
+        queryStartLine = beginEndStartLine
+      }
     }
 
     currentQuery += (currentQuery ? ' ' : '') + line
 
-    if (line.endsWith(';') && !isInDollarQuote) {
+    if (beginEndBlockDepth === 0 && !isInDollarQuote && line.endsWith(';')) {
       const query = currentQuery.slice(0, -1).trim()
       if (query) {
         const queryParts = splitQueryBySemicolons(query)
@@ -144,6 +192,7 @@ export function getEditorQueries(sql: string) {
       }
       currentQuery = ''
       dollarQuoteTag = null
+      beginEndStartLine = null
     }
   }
 
@@ -151,7 +200,7 @@ export function getEditorQueries(sql: string) {
     const trimmedQuery = currentQuery.trim()
     const queryParts = splitQueryBySemicolons(trimmedQuery)
     queries.push({
-      startLineNumber: queryStartLine,
+      startLineNumber: beginEndStartLine ?? queryStartLine,
       endLineNumber: lines.length,
       queries: queryParts,
     })

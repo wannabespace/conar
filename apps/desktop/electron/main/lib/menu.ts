@@ -1,10 +1,7 @@
 import type { MenuItemConstructorOptions } from 'electron'
-import { createRequire } from 'node:module'
 import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { app, BrowserWindow, Menu, shell } from 'electron'
-import { createWindow } from '../'
-
-const { autoUpdater } = createRequire(import.meta.url)('electron-updater') as typeof import('electron-updater')
+import { autoUpdater, createWindow } from '../'
 
 function getFocusedWindow() {
   return BrowserWindow.getAllWindows().find(window => window.isFocused())
@@ -48,7 +45,7 @@ function buildTemplate(): MenuItemConstructorOptions[] {
         {
           label: 'Check for Updates...',
           click: () => {
-            autoUpdater.checkForUpdates()
+            autoUpdater?.checkForUpdates()
           },
         },
         { type: 'separator' },

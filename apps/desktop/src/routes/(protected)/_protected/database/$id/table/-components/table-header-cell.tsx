@@ -183,7 +183,7 @@ export function TableHeaderCell({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="text-muted-foreground truncate font-mono underline decoration-dotted cursor-pointer">
+                        <span className="text-muted-foreground truncate font-mono underline decoration-dotted">
                           {column.type}
                         </span>
                       </TooltipTrigger>
