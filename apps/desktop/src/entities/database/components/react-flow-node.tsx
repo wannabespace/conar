@@ -19,11 +19,11 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
   return (
     <div
       className={cn(
-        'rounded-xl bg-card shadow-[0_1px_1px_rgba(0,0,0,0.02),_0_2px_2px_rgba(0,0,0,0.02),_0_4px_4px_rgba(0,0,0,0.02),_0_8px_8px_rgba(0,0,0,0.02),_0_16px_16px_rgba(0,0,0,0.02),_0_32px_32px_rgba(0,0,0,0.02)] w-66 font-mono',
+        'rounded-xl bg-card shadow-[0_1px_1px_rgba(0,0,0,0.02),0_2px_2px_rgba(0,0,0,0.02),0_4px_4px_rgba(0,0,0,0.02),0_8px_8px_rgba(0,0,0,0.02),0_16px_16px_rgba(0,0,0,0.02),0_32px_32px_rgba(0,0,0,0.02)] w-66 font-mono',
         data.selected ? 'ring-2 ring-primary ring-offset-2' : '',
       )}
     >
-      <div className="flex gap-2 items-center justify-between px-4 py-3 border-b border-border/80 bg-gradient-to-t from-background/70 dark:from-background/30">
+      <div className="flex gap-2 items-center justify-between px-4 py-3 border-b border-border/80 bg-linear-to-t from-background/70 dark:from-background/30">
         <div data-mask className="flex items-center gap-2 text-sm min-w-0">
           <RiTableLine className="size-5 text-muted-foreground/80 shrink-0" />
           <span className="truncate block">{data.table}</span>
@@ -64,7 +64,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                 )}
                 <span data-mask className="truncate font-medium">{column.id}</span>
               </div>
-              <span className="text-muted-foreground/60">{column.type}</span>
+              <span className="text-muted-foreground/60 truncate max-w-1/2">{column.type}</span>
               {column.foreign && (
                 <Handle
                   type="source"

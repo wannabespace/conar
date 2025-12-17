@@ -1,5 +1,5 @@
 import type { InferUITools, UIDataTypes, UIMessage } from 'ai'
-import { SQL_OPERATORS } from '@conar/shared/filters/sql'
+import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { webSearch } from '@exalabs/ai-sdk'
 import { tool } from 'ai'
 import * as z from 'zod'
@@ -46,7 +46,7 @@ export const tools = {
       whereConcatOperator: z.enum(['AND', 'OR']).describe('The operator to use to concatenate the where clauses'),
       whereFilters: z.array(z.object({
         column: z.string(),
-        operator: z.enum(SQL_OPERATORS).describe('The operator to use in the where clause'),
+        operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator)).describe('The operator to use in the where clause'),
         values: z.array(z.string()).describe('The value to use in the where clause. If the operator does not require a value, this should be empty array.'),
       })).describe('The columns to use in the where clause'),
       select: z.array(z.string()).optional().describe('The columns to select. If not provided, all columns will be selected'),

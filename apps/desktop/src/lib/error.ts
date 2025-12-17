@@ -12,7 +12,9 @@ export async function handleError(error: unknown) {
   if (!error)
     return
 
-  toast.error(getErrorMessage(error))
+  if (error instanceof Error ? error.name !== 'AbortError' : true) {
+    toast.error(getErrorMessage(error))
+  }
 
   if (
     (

@@ -1,14 +1,15 @@
 import type { KeyboardEvent } from 'react'
 import type { ColumnRenderer } from '~/components/table'
+import type { Column } from '~/entities/database'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import posthog from 'posthog-js'
 import { useCallback, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableProvider } from '~/components/table'
 import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, selectQuery, setQuery } from '~/entities/database'
 import { TableCell } from '~/entities/database/components/table-cell'
+import { useDatabaseEnums } from '~/entities/database/queries/enums'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { getColumnSize, selectSymbol } from '../-lib'
@@ -22,11 +23,13 @@ import { TableInfiniteLoader } from './table-infinite-loader'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
 import { TableBodySkeleton } from './table-skeleton'
 
-function prepareValue(value: unknown, type?: string): unknown {
-  if (!type)
+function prepareValue(value: unknown, column?: Column): unknown {
+  if (!column)
     return value
 
-  return typeof value === 'string' && type.endsWith('[]') ? JSON.parse(value) : value
+  return typeof value === 'string' && column.isArray
+    ? JSON.parse(value)
+    : value
 }
 
 export function TableError({ error }: { error: Error }) {
@@ -46,6 +49,7 @@ export function TableError({ error }: { error: Error }) {
 
 function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { database } = Route.useLoaderData()
+  const { data: enums } = useDatabaseEnums({ database })
   const columns = useTableColumns({ database, table, schema })
   const store = usePageStoreContext()
   const selectionStateRef = useSelectionStateRef()
@@ -118,7 +122,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     const rows = data.pages.flatMap(page => page.rows)
     const initialValue = rows[rowIndex]![columnId]
 
-    setValue(rowIndex, columnId, newValue)
+    const preparedValue = prepareValue(newValue, columns?.find(c => c.id === columnId))
+
+    setValue(rowIndex, columnId, preparedValue)
 
     const sqlFilters = primaryColumns.map(column => ({
       column,
@@ -126,7 +132,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       values: [rows[rowIndex]![column]],
     }))
 
-    const setValues = { [columnId]: prepareValue(newValue, columns?.find(c => c.id === columnId)?.type) }
+    const setValues = { [columnId]: preparedValue }
 
     try {
       await setQuery.run(database, {
@@ -169,15 +175,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         setValue(rowIndex, columnId, realValue ?? undefined)
     }
     catch (e) {
-      posthog.captureException(e, {
-        setValues,
-        sqlFilters,
-        updatedFilters,
-        columnId,
-        rowIndex,
-        newValue,
-      })
-
       toast.error('New value was saved, but the updated value was not selected', {
         description: e instanceof Error ? e.message : String(e),
       })
@@ -197,15 +194,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           // 25 it's a ~size of the button, 6 it's a ~size of the number
           + (column.references?.length ? 25 + 6 : 0)
           + (column.foreign ? 25 : 0),
-        cell: (props) => {
-          return (
-            <TableCell
-              column={column}
-              onSaveValue={primaryColumns.length > 0 ? saveValue : undefined}
-              {...props}
-            />
-          )
-        },
         header: props => (
           <TableHeaderCell
             column={column}
@@ -213,6 +201,21 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
             {...props}
           />
         ),
+        cell: (props) => {
+          const values = enums?.find(e => e.name === column.enum
+            && (e.metadata?.column ? e.metadata.column === column.id : true)
+            && (e.metadata?.table ? e.metadata.table === table : true),
+          )?.values
+
+          return (
+            <TableCell
+              column={column}
+              onSaveValue={primaryColumns.length > 0 ? saveValue : undefined}
+              values={values}
+              {...props}
+            />
+          )
+        },
       }) satisfies ColumnRenderer)
 
     if (primaryColumns.length > 0 && hiddenColumns.length !== columns.length) {
@@ -225,7 +228,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     }
 
     return sortedColumns
-  }, [columns, hiddenColumns, primaryColumns, saveValue, onOrder])
+  }, [table, columns, hiddenColumns, primaryColumns, saveValue, onOrder, enums])
 
   const handleKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
     if (!event.shiftKey || !rows || rows.length === 0 || primaryColumns.length === 0)

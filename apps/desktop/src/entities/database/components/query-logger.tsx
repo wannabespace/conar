@@ -9,10 +9,10 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
-import { useVirtual } from '@conar/ui/hooks/use-virtual'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiCheckboxCircleLine, RiCheckLine, RiCloseCircleLine, RiCloseLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
@@ -210,12 +210,15 @@ export function QueryLogger({ database, className }: {
     setStatusGroup(prev => prev === status ? undefined : status)
   }
 
-  const { virtualItems, totalSize } = useVirtual({
+  const { getVirtualItems, getTotalSize } = useVirtualizer({
     count: filteredQueries.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => 29,
     overscan: 5,
   })
+
+  const virtualItems = getVirtualItems()
+  const totalSize = getTotalSize()
 
   useEffect(() => {
     if (scrollRef.current) {

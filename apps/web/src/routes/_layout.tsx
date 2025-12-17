@@ -16,7 +16,7 @@ export const NAVBAR_HEIGHT_SCROLLED = 60
 function MainLayout() {
   const { scrollY } = useScroll()
   const navbarHeight = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED])
-  const navbarHeightPx = useTransform(() => `${navbarHeight.get()}px`)
+  const navbarHeightPx = useTransform(() => `${Math.ceil(navbarHeight.get())}px`)
   const blurTranslateY = useTransform(() => `${Math.min((NAVBAR_HEIGHT_BASE - scrollY.get()) * -1, 0)}px`)
 
   return (

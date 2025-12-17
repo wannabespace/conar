@@ -56,7 +56,7 @@ function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick
   )
 }
 
-function ChatMessageCodeActions({ content }: { content: string }) {
+function ChatMessageCodeActions({ content, lang }: { content: string, lang: string }) {
   const { database } = Route.useRouteContext()
   const store = databaseStore(database.id)
   const editorQueries = useStore(store, state => state.editorQueries)
@@ -114,94 +114,98 @@ function ChatMessageCodeActions({ content }: { content: string }) {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="icon-xs"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation()
-                runnerHooks.callHook('appendToBottomAndFocus', content)
-                setIsAppending(true)
-              }}
-            >
-              <ContentSwitch
-                active={isAppending}
-                activeContent={<RiCheckLine className="text-success" />}
-                onSwitchEnd={() => setIsAppending(false)}
-              >
-                <RiPlayListAddLine className="size-3.5" />
-              </ContentSwitch>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            Append to bottom of runner
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      <DropdownMenu>
-        <TooltipProvider>
-          <Tooltip>
-            <DropdownMenuTrigger asChild>
+      {lang === 'sql' && (
+        <>
+          <TooltipProvider>
+            <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   size="icon-xs"
                   variant="ghost"
-                  onClick={e => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    runnerHooks.callHook('appendToBottomAndFocus', content)
+                    setIsAppending(true)
+                  }}
                 >
                   <ContentSwitch
-                    active={isReplacing}
+                    active={isAppending}
                     activeContent={<RiCheckLine className="text-success" />}
-                    onSwitchEnd={() => setIsReplacing(false)}
+                    onSwitchEnd={() => setIsAppending(false)}
                   >
-                    <RiLoopLeftLine className="size-3.5" />
+                    <RiPlayListAddLine className="size-3.5" />
                   </ContentSwitch>
                 </Button>
               </TooltipTrigger>
-            </DropdownMenuTrigger>
-            <TooltipContent>
-              Replace a query in the runner
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <DropdownMenuContent
-          align="end"
-          className="min-w-[220px] max-h-64 overflow-auto"
-          onCloseAutoFocus={e => e.preventDefault()}
-          onClick={e => e.stopPropagation()}
-        >
-          <div className="px-2 py-2 text-xs font-medium text-muted-foreground">
-            Replace existing query
-          </div>
-          {editorQueries.length === 0 && (
-            <div className="px-3 py-2 text-xs text-muted-foreground select-none">
-              No queries found
-            </div>
-          )}
-          {editorQueries.map((q, index) => (
-            <DropdownMenuItem
-              key={`${q.startLineNumber}-${q.endLineNumber}`}
-              className="flex items-center justify-between w-full gap-2"
-              onClick={(e) => {
-                e.stopPropagation()
-                replaceQuery(q)
-              }}
+              <TooltipContent>
+                Append to bottom of runner
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <DropdownMenu>
+            <TooltipProvider>
+              <Tooltip>
+                <DropdownMenuTrigger asChild>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon-xs"
+                      variant="ghost"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <ContentSwitch
+                        active={isReplacing}
+                        activeContent={<RiCheckLine className="text-success" />}
+                        onSwitchEnd={() => setIsReplacing(false)}
+                      >
+                        <RiLoopLeftLine className="size-3.5" />
+                      </ContentSwitch>
+                    </Button>
+                  </TooltipTrigger>
+                </DropdownMenuTrigger>
+                <TooltipContent>
+                  Replace a query in the runner
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <DropdownMenuContent
+              align="end"
+              className="min-w-[220px] max-h-64 overflow-auto"
+              onCloseAutoFocus={e => e.preventDefault()}
+              onClick={e => e.stopPropagation()}
             >
-              <span className="text-xs font-medium">
-                Query
-                {' '}
-                {getQueryNumber(index)}
-              </span>
-              <span className="text-[10px] text-muted-foreground/70 font-mono">
-                {q.startLineNumber === q.endLineNumber
-                  ? `Line ${q.startLineNumber}`
-                  : `Lines ${q.startLineNumber} - ${q.endLineNumber}`}
-              </span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+              <div className="px-2 py-2 text-xs font-medium text-muted-foreground">
+                Replace existing query
+              </div>
+              {editorQueries.length === 0 && (
+                <div className="px-3 py-2 text-xs text-muted-foreground select-none">
+                  No queries found
+                </div>
+              )}
+              {editorQueries.map((q, index) => (
+                <DropdownMenuItem
+                  key={`${q.startLineNumber}-${q.endLineNumber}`}
+                  className="flex items-center justify-between w-full gap-2"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    replaceQuery(q)
+                  }}
+                >
+                  <span className="text-xs font-medium">
+                    Query
+                    {' '}
+                    {getQueryNumber(index)}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground/70 font-mono">
+                    {q.startLineNumber === q.endLineNumber
+                      ? `Line ${q.startLineNumber}`
+                      : `Lines ${q.startLineNumber} - ${q.endLineNumber}`}
+                  </span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      )}
     </div>
   )
 }
@@ -265,8 +269,8 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
       <div>
         <div
           className={cn(
-            'relative inline-flex bg-primary text-primary-foreground rounded-lg px-2 py-1 overflow-hidden',
-            !isVisible && 'max-h-[100px]',
+            'relative inline-flex bg-primary text-primary-foreground rounded-lg px-2 py-1',
+            canHide && !isVisible && 'overflow-hidden max-h-[100px]',
           )}
         >
           <div className="h-fit [&_a]:text-white" ref={partsRef}>

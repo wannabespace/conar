@@ -1,6 +1,8 @@
 export interface Column {
   id: string
   type?: string
+  enum?: string
+  isArray?: boolean
   isEditable?: boolean
   isNullable?: boolean
   unique?: string

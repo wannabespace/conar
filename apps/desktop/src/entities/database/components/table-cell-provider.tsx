@@ -12,6 +12,7 @@ const CellContext = createContext<{
   initialValue: unknown
   displayValue: string
   update: UseMutateFunction<void, Error, { value: string | null, rowIndex: number }>
+  values?: string[]
 }>(null!)
 
 export function useCellContext() {
@@ -27,6 +28,7 @@ export function TableCellProvider({
   onSavePending,
   onSaveSuccess,
   onSaveError,
+  values,
 }: {
   children: React.ReactNode
   column: Column
@@ -36,6 +38,7 @@ export function TableCellProvider({
   onSavePending: () => void
   onSaveSuccess: () => void
   onSaveError?: (error: Error) => void
+  values?: string[]
 }) {
   const [value, setValue] = useState<string>(() => getEditableValue(initialValue, false))
 
@@ -63,6 +66,7 @@ export function TableCellProvider({
     initialValue,
     displayValue,
     update,
+    values,
   }), [
     value,
     setValue,
@@ -70,6 +74,7 @@ export function TableCellProvider({
     initialValue,
     displayValue,
     update,
+    values,
   ])
 
   return <CellContext value={context}>{children}</CellContext>
