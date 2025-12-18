@@ -124,7 +124,12 @@ function SettingsButton() {
       <Tooltip>
         <TooltipTrigger asChild>
           <Link to="/database/$id/settings" params={{ id: database.id }}>
-            <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2"
+              aria-label="Settings"
+            >
               <RiSettings3Line className="size-4 shrink-0" />
               <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Settings</span>
             </Button>
@@ -155,7 +160,7 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
             {!isActive && (
               <span
                 className={cn(
-                  'absolute z-10 top-0 right-0 -translate-y-1/2 translate-x-1/2',
+                  'z-10 top-0 right-0 -translate-y-1/2 translate-x-1/2',
                   'flex items-center justify-center',
                   'size-4 bg-background rounded-full text-foreground opacity-0 group-hover:opacity-100',
                 )}
@@ -379,7 +384,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         className={cn(
           'absolute left-0 top-0 bottom-0 h-full z-50 flex flex-col items-center border-r bg-background transition-all duration-300 ease-in-out group/sidebar overflow-hidden group-hover/sidebar:shadow-xl',
           className,
-          'hover:w-48 hover:items-stretch focus-within:w-48 focus-within:items-stretch group-hover/sidebar:w-48 group-hover/sidebar:items-stretch group-focus-within/sidebar:w-48 group-focus-within/sidebar:items-stretch',
+          'hover:w-60 hover:items-stretch focus-within:w-60 focus-within:items-stretch group-hover/sidebar:w-60 group-hover/sidebar:items-stretch group-focus-within/sidebar:w-60 group-focus-within/sidebar:items-stretch',
         )}
         {...props}
       >
@@ -428,7 +433,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
                   size="icon"
                   variant="ghost"
                   onClick={() => store.setState(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
-                  className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3"
+                  className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2"
                 >
                   <RiFileListLine className="size-4 shrink-0" />
                   <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Query Logger</span>
@@ -446,7 +451,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
                   size="icon"
                   variant="ghost"
                   onClick={() => actionsCenterStore.setState(state => ({ ...state, isOpen: true }))}
-                  className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3"
+                  className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2"
                 >
                   <RiCommandLine className="size-4 shrink-0" />
                   <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Command Palette</span>
