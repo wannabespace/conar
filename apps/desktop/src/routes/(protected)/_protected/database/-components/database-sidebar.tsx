@@ -379,7 +379,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         className={cn(
           'absolute left-0 top-0 bottom-0 h-full z-50 flex flex-col items-center border-r bg-background transition-all duration-300 ease-in-out group/sidebar overflow-hidden group-hover/sidebar:shadow-xl',
           className,
-          'hover:w-64 hover:items-stretch focus-within:w-64 focus-within:items-stretch group-hover/sidebar:w-64 group-hover/sidebar:items-stretch group-focus-within/sidebar:w-64 group-focus-within/sidebar:items-stretch',
+          'hover:w-48 hover:items-stretch focus-within:w-48 focus-within:items-stretch group-hover/sidebar:w-48 group-hover/sidebar:items-stretch group-focus-within/sidebar:w-48 group-focus-within/sidebar:items-stretch',
         )}
         {...props}
       >
