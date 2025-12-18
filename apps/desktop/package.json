@@ -30,15 +30,11 @@
   "dependencies": {
     "@clickhouse/client": "catalog:",
     "@todesktop/runtime": "catalog:",
-    "ecdsa-sig-formatter": "catalog:",
     "electron-store": "catalog:",
-    "fill-range": "catalog:",
     "monacopilot": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
-    "pg": "catalog:",
-    "reusify": "catalog:",
-    "run-parallel": "catalog:"
+    "pg": "catalog:"
   },
   "devDependencies": {
     "@ai-sdk/react": "catalog:",
