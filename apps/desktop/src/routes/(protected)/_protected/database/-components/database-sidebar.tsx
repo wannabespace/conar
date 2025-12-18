@@ -378,104 +378,101 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
   const store = databaseStore(database.id)
 
   return (
-    <>
-      <div className={className} />
-      <div
-        className={cn(
-          'absolute left-0 top-0 bottom-0 h-full z-50 flex flex-col items-center border-r bg-background transition-all duration-300 ease-in-out group/sidebar overflow-hidden group-hover/sidebar:shadow-xl',
-          className,
-          'hover:w-60 hover:items-stretch focus-within:w-60 focus-within:items-stretch group-hover/sidebar:w-60 group-hover/sidebar:items-stretch group-focus-within/sidebar:w-60 group-focus-within/sidebar:items-stretch',
-        )}
-        {...props}
-      >
-        <div className="flex flex-col p-4 pb-0 items-center group-hover/sidebar:items-start group-hover/sidebar:px-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  to="/"
-                  className="p-2 flex items-center group-hover/sidebar:w-full group-hover/sidebar:px-3 rounded-md hover:bg-muted"
-                >
-                  <AppLogo className="size-6 text-primary shrink-0" />
-                  <div className="ml-2 hidden group-hover/sidebar:flex flex-col overflow-hidden">
-                    <span className="font-bold text-lg leading-none">Conar</span>
-                    <span className="text-xs text-muted-foreground truncate" title={database.name}>{database.name}</span>
-                  </div>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right">Dashboard</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    <div
+      className={cn(
+        'absolute left-0 top-0 bottom-0 h-full z-50 flex flex-col items-center border-r bg-background transition-all duration-300 ease-in-out group/sidebar overflow-hidden group-hover/sidebar:shadow-xl',
+        className,
+        'hover:w-60 hover:items-stretch focus-within:w-60 focus-within:items-stretch group-hover/sidebar:w-60 group-hover/sidebar:items-stretch group-focus-within/sidebar:w-60 group-focus-within/sidebar:items-stretch',
+      )}
+      {...props}
+    >
+      <div className="flex flex-col p-4 pb-0 items-center group-hover/sidebar:items-start group-hover/sidebar:px-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                to="/"
+                className="p-2 flex items-center group-hover/sidebar:w-full group-hover/sidebar:px-3 rounded-md hover:bg-muted"
+              >
+                <AppLogo className="size-6 text-primary shrink-0" />
+                <div className="ml-2 hidden group-hover/sidebar:flex flex-col overflow-hidden">
+                  <span className="font-bold text-lg leading-none">Conar</span>
+                  <span className="text-xs text-muted-foreground truncate" title={database.name}>{database.name}</span>
+                </div>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="right">Dashboard</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      <ScrollArea className="relative p-4 flex flex-col items-center flex-1 gap-2 group-hover/sidebar:items-stretch">
+        <div className="w-full">
+          <div className="flex w-full flex-col">
+            <MainLinks />
+            <Separator className="my-4" />
+            <CurrentDatabase />
+            {lastOpenedDatabases.length > 1 && (
+              <>
+                <Separator className="my-4" />
+                <div className="hidden group-hover/sidebar:block px-2 pb-2 text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
+                  Recent Databases
+                </div>
+                <RecentDatabases />
+              </>
+            )}
+          </div>
         </div>
-        <ScrollArea className="relative p-4 flex flex-col items-center flex-1 gap-2 group-hover/sidebar:items-stretch">
-          <div className="w-full">
-            <div className="flex w-full flex-col">
-              <MainLinks />
-              <Separator className="my-4" />
-              <CurrentDatabase />
-              {lastOpenedDatabases.length > 1 && (
-                <>
-                  <Separator className="my-4" />
-                  <div className="hidden group-hover/sidebar:block px-2 pb-2 text-[10px] uppercase text-muted-foreground font-medium tracking-wider">
-                    Recent Databases
-                  </div>
-                  <RecentDatabases />
-                </>
-              )}
-            </div>
-          </div>
-        </ScrollArea>
-        <div className="p-4 pt-0 flex flex-col items-center group-hover/sidebar:items-stretch">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => store.setState(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
-                  className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2"
-                >
-                  <RiFileListLine className="size-4 shrink-0" />
-                  <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Query Logger</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">Query Logger</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <Separator className="my-4" />
-          <SupportButton />
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => actionsCenterStore.setState(state => ({ ...state, isOpen: true }))}
-                  className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2"
-                >
-                  <RiCommandLine className="size-4 shrink-0" />
-                  <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Command Palette</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                {os?.type === 'macos' ? '⌘' : 'Ctrl'}
-                P
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <ThemeToggle>
-            <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2" aria-label="Theme">
-              <RiSunLine className="size-4 dark:hidden shrink-0" />
-              <RiMoonLine className="size-4 hidden dark:block shrink-0" />
-              <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Theme</span>
-            </Button>
-          </ThemeToggle>
-          {false && <SettingsButton />}
-          <div className="flex justify-center group-hover/sidebar:justify-start">
-            <UserButton />
-          </div>
+      </ScrollArea>
+      <div className="p-4 pt-0 flex flex-col items-center group-hover/sidebar:items-stretch">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => store.setState(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
+                className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2"
+              >
+                <RiFileListLine className="size-4 shrink-0" />
+                <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Query Logger</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Query Logger</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <Separator className="my-4" />
+        <SupportButton />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => actionsCenterStore.setState(state => ({ ...state, isOpen: true }))}
+                className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2"
+              >
+                <RiCommandLine className="size-4 shrink-0" />
+                <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Command Palette</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {os?.type === 'macos' ? '⌘' : 'Ctrl'}
+              P
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <ThemeToggle>
+          <Button size="icon" variant="ghost" className="h-9 w-9 group-hover/sidebar:w-full group-hover/sidebar:justify-start group-hover/sidebar:px-3 gap-2" aria-label="Theme">
+            <RiSunLine className="size-4 dark:hidden shrink-0" />
+            <RiMoonLine className="size-4 hidden dark:block shrink-0" />
+            <span className="hidden group-hover/sidebar:block whitespace-nowrap overflow-hidden text-ellipsis">Theme</span>
+          </Button>
+        </ThemeToggle>
+        {false && <SettingsButton />}
+        <div className="flex justify-center group-hover/sidebar:justify-start">
+          <UserButton />
         </div>
       </div>
-    </>
+    </div>
   )
 }
