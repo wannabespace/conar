@@ -57,7 +57,7 @@ Generate ONLY the completion text that should be inserted at the cursor position
 - If no completion is needed, return an empty string.`
 
       const result = await generateText({
-        model: google('gemini-2.0-flash'),
+        model: google('gemma-3-27b-it'),
         prompt: enhancedPrompt,
       })
 
