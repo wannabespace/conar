@@ -1,0 +1,55 @@
+# Lefthook configuration
+# https://github.com/evilmartians/lefthook
+
+colors: true
+
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: '*.{js,jsx,ts,tsx}'
+      run: |
+        echo "🔍 Linting code..."
+        pnpm run lint
+      skip: [merge, rebase]
+
+    typecheck:
+      glob: '*.{ts,tsx}'
+      run: |
+        echo "🔎 Type checking..."
+        pnpm run check-types
+      skip: [merge, rebase]
+
+    test:
+      glob: '*.{ts,tsx}'
+      run: |
+        echo "🧪 Running unit tests..."
+        pnpm run test:unit
+      skip: [merge, rebase]
+
+commit-msg:
+  commands:
+    commitlint:
+      run: |
+        echo "📝 Validating commit message..."
+        pnpm exec commitlint --edit "$1"
+
+post-merge:
+  commands:
+    update-deps:
+      run: |
+        echo "📦 Checking dependencies..."
+        if git diff --name-only ORIG_HEAD HEAD 2>/dev/null | grep -E 'pnpm-lock\.yaml|package\.json'; then
+          echo "📦 Updating dependencies..."
+          pnpm install
+        fi
+
+post-checkout:
+  commands:
+    setup:
+      run: |
+        echo "🧹 Preparing workspace..."
+        if [ "$3" = "1" ] && git diff --name-only $1 $2 2>/dev/null | grep -E 'pnpm-lock\.yaml|package\.json'; then
+          echo "📦 Updating dependencies for new branch..."
+          pnpm install
+        fi

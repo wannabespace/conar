@@ -95,3 +95,4 @@ Conar is an AI-powered open-source project that simplifies database interactions
 <div align="center">
   <sub>Built with ❤️</sub>
 </div>
+# Lefthook Migration Test
