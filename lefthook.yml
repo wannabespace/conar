@@ -1,6 +1,3 @@
-# Lefthook configuration
-# https://github.com/evilmartians/lefthook
-
 colors: true
 
 pre-commit:
@@ -32,7 +29,7 @@ commit-msg:
     commitlint:
       run: |
         echo "📝 Validating commit message..."
-        pnpm exec commitlint --edit "$1"
+        bunx commitlint --edit "$1"
 
 post-merge:
   commands:
