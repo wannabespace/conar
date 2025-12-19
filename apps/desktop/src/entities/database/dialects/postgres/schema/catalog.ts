@@ -4,6 +4,16 @@
  */
 export interface PgCatalog {
   pg_namespace: PgNamespace
+  pg_database: PgDatabase
+}
+
+/**
+ * @name pg_database
+ * @type table
+ */
+interface PgDatabase {
+  datname: string
+  datistemplate: boolean
 }
 
 /**
