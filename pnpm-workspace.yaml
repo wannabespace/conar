@@ -22,7 +22,6 @@ catalog:
   '@databuddy/sdk': ^2.3.1
   '@electric-sql/pglite': ^0.3.14
   '@eslint-react/eslint-plugin': ^2.3.13
-  '@evilmartians/lefthook': ^2.0.12
   '@exalabs/ai-sdk': ^1.0.5
   '@faker-js/faker': ^10.1.0
   '@fluentui/react-context-selector': ^9.2.13
@@ -115,6 +114,7 @@ catalog:
   ioredis-mock: ^8.13.1
   js-base64: ^3.7.8
   kysely: ^0.28.9
+  lefthook: ^2.0.12
   loops: ^6.0.1
   lucide-react: ^0.562.0
   marked: ^17.0.1
@@ -160,5 +160,5 @@ catalog:
   vite-tsconfig-paths: ^6.0.3
   zod: ^4.2.1
 onlyBuiltDependencies:
-  - '@evilmartians/lefthook'
+  - lefthook
   - electron
