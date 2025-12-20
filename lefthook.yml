@@ -29,7 +29,7 @@ commit-msg:
     commitlint:
       run: |
         echo "📝 Validating commit message..."
-        bunx commitlint --edit "$1"
+        bunx commitlint --edit {1}
 
 post-merge:
   commands:
@@ -46,7 +46,7 @@ post-checkout:
     setup:
       run: |
         echo "🧹 Preparing workspace..."
-        if [ "$3" = "1" ] && git diff --name-only $1 $2 2>/dev/null | grep -E 'pnpm-lock\.yaml|package\.json'; then
+        if [ "{3}" = "1" ] && git diff --name-only {1} {2} 2>/dev/null | grep -E 'pnpm-lock\.yaml|package\.json'; then
           echo "📦 Updating dependencies for new branch..."
           pnpm install
         fi
