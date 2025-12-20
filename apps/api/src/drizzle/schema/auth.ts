@@ -142,7 +142,7 @@ export const subscriptions = pgTable('subscriptions', {
   ...baseTable,
   plan: text('plan').notNull(),
   referenceId: text('reference_id').notNull(),
-  stripeCustomerId: text('stripe_customer_id').references(() => users.stripeCustomerId, { onDelete: 'cascade' }),
+  stripeCustomerId: text('stripe_customer_id'),
   stripeSubscriptionId: text('stripe_subscription_id'),
   status: text('status').default('incomplete'),
   periodStart: timestamp('period_start'),

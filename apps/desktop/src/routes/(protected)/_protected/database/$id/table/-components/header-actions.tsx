@@ -8,7 +8,7 @@ import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { ExportData } from '~/components/export-data'
-import { databaseConstraintsQuery, databaseRowsQuery, databaseTableColumnsQuery, rowsQuery } from '~/entities/database'
+import { databaseConstraintsQuery, databaseRowsQuery, databaseTableColumnsQuery, databaseTableTotalQuery, rowsQuery } from '~/entities/database'
 import { queryClient } from '~/main'
 import { usePageStoreContext } from '../-store'
 import { HeaderActionsColumns } from './header-actions-columns'
@@ -26,6 +26,7 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
   async function handleRefresh() {
     refetch()
     queryClient.invalidateQueries(databaseTableColumnsQuery({ database, table, schema }))
+    queryClient.invalidateQueries(databaseTableTotalQuery({ database, table, schema, query: { filters } }))
     queryClient.invalidateQueries(databaseConstraintsQuery({ database }))
   }
 

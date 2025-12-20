@@ -106,14 +106,16 @@ export const auth = betterAuth({
         enabled: true,
         plans: [
           {
-            id: 'pro',
             name: 'Pro',
-            price: 1000,
-            currency: 'usd',
+            priceId: env.STRIPE_MONTH_PRICE_ID!,
+            annualDiscountPriceId: env.STRIPE_ANNUAL_PRICE_ID!,
+            freeTrial: {
+              days: 7,
+            },
           },
         ],
       },
-      stripeWebhookSecret: '11',
+      stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
       createCustomerOnSignUp: true,
     }),
   ],

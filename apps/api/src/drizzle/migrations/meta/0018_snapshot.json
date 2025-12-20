@@ -1,5 +1,5 @@
 {
-  "id": "f2534586-922d-4d32-9d9f-961b11ce1d1c",
+  "id": "4f7b328d-dac7-488a-ad2b-87c3113cf1c4",
   "prevId": "92bfad51-54eb-4ed0-aa29-28874711bee5",
   "version": "7",
   "dialect": "postgresql",
@@ -566,21 +566,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "subscriptions_stripe_customer_id_users_stripe_customer_id_fk": {
-          "name": "subscriptions_stripe_customer_id_users_stripe_customer_id_fk",
-          "tableFrom": "subscriptions",
-          "tableTo": "users",
-          "columnsFrom": [
-            "stripe_customer_id"
-          ],
-          "columnsTo": [
-            "stripe_customer_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
