@@ -4,21 +4,22 @@ pre-commit:
   parallel: true
   commands:
     lint:
-      glob: '*.{js,jsx,ts,tsx}'
       run: |
-        echo "🔍 Linting code..."
-        pnpm run lint
+        echo "🔍 Linting and fixing code..."
+        pnpm run lint:fix
+        if ! git diff --quiet; then
+          echo " Lint fixes were applied. Please review, stage (git add .), and re-commit."
+          exit 1
+        fi
       skip: [merge, rebase]
 
     typecheck:
-      glob: '*.{ts,tsx}'
       run: |
         echo "🔎 Type checking..."
         pnpm run check-types
       skip: [merge, rebase]
 
     test:
-      glob: '*.{ts,tsx}'
       run: |
         echo "🧪 Running unit tests..."
         pnpm run test:unit
