@@ -1,60 +1,38 @@
 import type { databases } from '~/drizzle'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
+import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { listDatabasesQuery } from '../sql/list-databases'
 
+const databaseSystemNames = {
+  [DatabaseType.Postgres]: 'postgres',
+  [DatabaseType.MySQL]: 'mysql',
+  [DatabaseType.MSSQL]: 'master',
+  [DatabaseType.ClickHouse]: 'default',
+} satisfies Record<DatabaseType, string>
+
 export function useServerDatabases(database: typeof databases.$inferSelect) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [databasesList, setDatabasesList] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-
-  const toggleExpand = async () => {
-    if (isExpanded) {
-      setIsExpanded(false)
-      return
-    }
-
-    setIsExpanded(true)
-
-    if (databasesList.length === 0) {
-      setIsLoading(true)
+  const { data: databasesList = [], isLoading } = useQuery({
+    queryKey: ['server-databases', database.id],
+    enabled: isExpanded,
+    queryFn: async () => {
       const url = new SafeURL(database.connectionString)
-
-      switch (database.type) {
-        case DatabaseType.Postgres:
-          url.pathname = 'postgres'
-          break
-        case DatabaseType.MySQL:
-          url.pathname = 'mysql'
-          break
-        case DatabaseType.MSSQL:
-          url.pathname = 'master'
-          break
-        case DatabaseType.ClickHouse:
-          url.pathname = 'default'
-          break
-      }
+      url.pathname = databaseSystemNames[database.type]
 
       const systemDatabase = {
         ...database,
         connectionString: url.toString(),
       }
 
-      try {
-        const dbNames = await listDatabasesQuery.run(systemDatabase)
-        const currentDbName = new SafeURL(database.connectionString).pathname.replace(/^\//, '')
-        const otherDbs = dbNames.filter(name => name !== currentDbName)
-        setDatabasesList(otherDbs)
-      }
-      catch (err) {
-        console.error('Failed to list databases', err)
-      }
-      finally {
-        setIsLoading(false)
-      }
-    }
-  }
+      const dbNames = await listDatabasesQuery.run(systemDatabase)
+      const currentDbName = new SafeURL(database.connectionString).pathname.replace(/^\//, '')
+      return dbNames.filter(name => name !== currentDbName)
+    },
+  })
+
+  const toggleExpand = () => setIsExpanded(prev => !prev)
 
   return {
     isExpanded,
