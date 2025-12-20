@@ -29,11 +29,11 @@ catalog:
   '@monaco-editor/loader': ^1.7.0
   '@number-flow/react': ^0.5.10
   '@octokit/rest': ^22.0.1
-  '@paralleldrive/cuid2': ^3.0.4
   '@orpc/client': ^1.13.0
   '@orpc/contract': ^1.13.0
   '@orpc/server': ^1.13.0
   '@orpc/tanstack-query': ^1.13.0
+  '@paralleldrive/cuid2': ^3.0.4
   '@playwright/test': ^1.57.0
   '@posthog/ai': ^7.2.2
   '@radix-ui/react-accordion': ^1.2.12
