@@ -127,6 +127,13 @@
       "when": 1765228276020,
       "tag": "0017_daffy_whizzer",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1766228230812,
+      "tag": "0018_perpetual_sheva_callister",
+      "breakpoints": true
     }
   ]
 }
