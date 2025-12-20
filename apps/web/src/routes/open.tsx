@@ -83,7 +83,7 @@ function OpenPage() {
                           onClick={handleCopyUrl}
                           className="w-full"
                         >
-                          Copy connection URL
+                          Copy auth URL
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">

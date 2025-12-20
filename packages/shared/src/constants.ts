@@ -6,6 +6,8 @@ export const SOCIAL_LINKS = {
 
 export const SUPPORT_EMAIL = 'valerii.strilets@gmail.com'
 
+export const BREW_INSTALL_COMMAND = 'brew install --cask conar'
+
 export const PORTS = {
   DEV: {
     API: 3000,

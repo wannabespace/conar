@@ -32,17 +32,14 @@
 
     "@paralleldrive/cuid2": "catalog:",
     "@todesktop/runtime": "catalog:",
-    "ecdsa-sig-formatter": "catalog:",
     "electron-store": "catalog:",
-    "fill-range": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
-    "pg": "catalog:",
-    "reusify": "catalog:",
-    "run-parallel": "catalog:"
+    "pg": "catalog:"
   },
   "devDependencies": {
     "@ai-sdk/react": "catalog:",
+    "@better-auth/stripe": "catalog:",
     "@conar/api": "workspace:*",
     "@conar/configs": "workspace:*",
     "@conar/connection": "workspace:*",

@@ -14,7 +14,7 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@base-ui-components/react": "catalog:",
+    "@base-ui/react": "catalog:",
     "@conar/configs": "workspace:*",
     "@conar/shared": "workspace:*",
     "@radix-ui/react-accordion": "catalog:",
