@@ -51,7 +51,6 @@ export function ThemeObserver({
   storageKey = 'conar.theme',
 }: ThemeObserverProps) {
   if (!themeStore) {
-    // eslint-disable-next-line react-hooks/globals
     themeStore = new Store<ThemeStoreState>({
       theme: (isBrowser && (localStorage.getItem(storageKey) as Theme)) || defaultTheme,
       resolvedTheme: 'light',
