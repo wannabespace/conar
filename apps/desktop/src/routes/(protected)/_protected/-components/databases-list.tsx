@@ -129,7 +129,7 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="rounded-lg border bg-muted/30 p-2 ml-4 flex flex-col gap-1">
+            <div className="rounded-lg border bg-muted/30 p-2 ml-4 flex flex-col gap-1 max-h-60 overflow-y-auto">
               {isLoading
                 ? (
                     <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
