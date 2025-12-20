@@ -8,7 +8,7 @@ pre-commit:
         echo "🔍 Linting and fixing code..."
         pnpm run lint:fix
         if ! git diff --quiet; then
-          echo " Lint fixes were applied. Please review, stage (git add .), and re-commit."
+          echo " Lint fixes were applied. Please review, stage the lint fixes (for example, git add <files>), and re-commit."
           exit 1
         fi
       skip: [merge, rebase]
