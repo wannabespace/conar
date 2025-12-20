@@ -13,6 +13,11 @@ pre-commit:
         fi
       skip: [merge, rebase]
 
+    format:
+      run: |
+        echo "✨ Formatting code..."
+        pnpm run fmt
+
     typecheck:
       run: |
         echo "🔎 Type checking..."

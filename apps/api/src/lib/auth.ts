@@ -7,7 +7,6 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import {
   anonymous,
   bearer,
-
   createAuthMiddleware,
   lastLoginMethod,
   organization,

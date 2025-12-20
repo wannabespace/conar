@@ -10,5 +10,6 @@
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },
+  "typescript.tsserver.enableNativeTypeScript": true,
   "typescript.tsdk": "node_modules/typescript/lib"
 }

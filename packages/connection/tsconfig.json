@@ -1,7 +1,9 @@
 {
   "extends": "@conar/configs/ts/base.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    "paths": {
+      "*": ["./*"]
+    },
     "noEmit": true
   },
   "include": ["."],

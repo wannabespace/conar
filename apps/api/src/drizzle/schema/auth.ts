@@ -37,7 +37,7 @@ export const sessions = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     activeWorkspaceId: text('active_workspace_id'),
   },
-  table => [index('sessions_userId_idx').on(table.userId)],
+  (table) => [index('sessions_userId_idx').on(table.userId)]
 )
 
 export const accounts = pgTable(
@@ -57,7 +57,7 @@ export const accounts = pgTable(
     scope: text('scope'),
     password: text('password'),
   },
-  table => [index('accounts_userId_idx').on(table.userId)],
+  (table) => [index('accounts_userId_idx').on(table.userId)]
 )
 
 export const verifications = pgTable(
@@ -68,7 +68,7 @@ export const verifications = pgTable(
     value: text('value').notNull(),
     expiresAt: timestamp('expires_at').notNull(),
   },
-  table => [index('verifications_identifier_idx').on(table.identifier)],
+  (table) => [index('verifications_identifier_idx').on(table.identifier)]
 )
 
 export const twoFactors = pgTable(
@@ -81,10 +81,10 @@ export const twoFactors = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
   },
-  table => [
+  (table) => [
     index('twoFactors_secret_idx').on(table.secret),
     index('twoFactors_userId_idx').on(table.userId),
-  ],
+  ]
 )
 
 export const workspaces = pgTable(
@@ -96,7 +96,7 @@ export const workspaces = pgTable(
     logo: text('logo'),
     metadata: text('metadata'),
   },
-  table => [uniqueIndex('workspaces_slug_uidx').on(table.slug)],
+  (table) => [uniqueIndex('workspaces_slug_uidx').on(table.slug)]
 )
 
 export const members = pgTable(
@@ -111,10 +111,10 @@ export const members = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     role: text('role').default('member').notNull(),
   },
-  table => [
+  (table) => [
     index('members_workspaceId_idx').on(table.workspaceId),
     index('members_userId_idx').on(table.userId),
-  ],
+  ]
 )
 
 export const invitations = pgTable(
@@ -132,10 +132,10 @@ export const invitations = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
   },
-  table => [
+  (table) => [
     index('invitations_workspaceId_idx').on(table.workspaceId),
     index('invitations_email_idx').on(table.email),
-  ],
+  ]
 )
 
 export const subscriptions = pgTable('subscriptions', {

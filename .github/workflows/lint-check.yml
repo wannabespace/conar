@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  eslint:
+  lint:
     runs-on: ubuntu-latest
 
     steps:

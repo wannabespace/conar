@@ -11,7 +11,7 @@
     "./theme-observer": "./src/theme-observer.tsx"
   },
   "scripts": {
-    "check-types": "tsc"
+    "check-types": "tsgo"
   },
   "dependencies": {
     "@base-ui/react": "catalog:",

@@ -12,7 +12,7 @@
     "./arktype-config": "./src/arktype-config.ts"
   },
   "scripts": {
-    "check-types": "tsc"
+    "check-types": "tsgo"
   },
   "dependencies": {
     "@conar/configs": "workspace:*",

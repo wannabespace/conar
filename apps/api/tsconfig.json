@@ -3,9 +3,9 @@
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "*": ["./*"]
     },
     "declaration": true,
     "emitDeclarationOnly": true,

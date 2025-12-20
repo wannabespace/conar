@@ -67,7 +67,7 @@ export async function logSql(
       ({
         ...state,
         [database.id]: {
-          ...(state[database.id] ?? {}),
+          ...state[database.id],
           [id]: {
             id,
             createdAt: new Date(),
