@@ -1,4 +1,9 @@
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine } from '@remixicon/react'
 
@@ -7,7 +12,7 @@ export function ChatImages({
   imageClassName,
   onRemove,
 }: {
-  images: { name: string, url: string }[]
+  images: { name: string; url: string }[]
   imageClassName?: string
   onRemove?: (index: number) => void
 }) {
@@ -21,7 +26,10 @@ export function ChatImages({
               <img
                 src={image.url}
                 alt={image.name}
-                className={cn('size-10 object-cover border rounded-md shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all', imageClassName)}
+                className={cn(
+                  'size-10 object-cover border rounded-md shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all',
+                  imageClassName
+                )}
               />
               {onRemove && (
                 <span

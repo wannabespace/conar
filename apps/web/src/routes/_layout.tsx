@@ -15,9 +15,15 @@ export const NAVBAR_HEIGHT_SCROLLED = 60
 
 function MainLayout() {
   const { scrollY } = useScroll()
-  const navbarHeight = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED])
+  const navbarHeight = useTransform(
+    scrollY,
+    [0, NAVBAR_HEIGHT_BASE],
+    [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED]
+  )
   const navbarHeightPx = useTransform(() => `${Math.ceil(navbarHeight.get())}px`)
-  const blurTranslateY = useTransform(() => `${Math.min((NAVBAR_HEIGHT_BASE - scrollY.get()) * -1, 0)}px`)
+  const blurTranslateY = useTransform(
+    () => `${Math.min((NAVBAR_HEIGHT_BASE - scrollY.get()) * -1, 0)}px`
+  )
 
   return (
     <motion.div style={{ '--navbar-height': navbarHeightPx }}>
@@ -31,16 +37,12 @@ function MainLayout() {
       </div>
       <div className="container mx-auto bg-background rounded-3xl">
         <motion.div
-          className={cn(
-            'sticky inset-x-0 z-30 top-(--navbar-height) w-full',
-          )}
+          className={cn('sticky inset-x-0 z-30 top-(--navbar-height) w-full')}
           style={{
             translateY: blurTranslateY,
           }}
         >
-          <BlurGradient
-            className="absolute inset-x-0 transition-all delay-300 duration-400 h-48"
-          />
+          <BlurGradient className="absolute inset-x-0 transition-all delay-300 duration-400 h-48" />
         </motion.div>
         <Outlet />
         <div className="sticky inset-x-0 z-30 bottom-0 w-full">

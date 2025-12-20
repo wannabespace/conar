@@ -22,7 +22,9 @@ function getPageStoreKey(id: string, schema: string, table: string) {
 }
 
 export function getPageStoreState(id: string, schema: string, table: string) {
-  const parsed = storeState(JSON.parse(sessionStorage.getItem(getPageStoreKey(id, schema, table)) ?? 'null'))
+  const parsed = storeState(
+    JSON.parse(sessionStorage.getItem(getPageStoreKey(id, schema, table)) ?? 'null')
+  )
 
   if (parsed instanceof type.errors) {
     return null
@@ -33,21 +35,30 @@ export function getPageStoreState(id: string, schema: string, table: string) {
 
 const storesMap = new Map<string, Store<typeof storeState.infer>>()
 
-export function createPageStore({ id, schema, table }: { id: string, schema: string, table: string }) {
+export function createPageStore({
+  id,
+  schema,
+  table,
+}: {
+  id: string
+  schema: string
+  table: string
+}) {
   const key = `${id}.${schema}.${table}`
 
   if (storesMap.has(key)) {
     return storesMap.get(key)!
   }
 
-  const store = new Store<typeof storeState.infer>(getPageStoreState(id, schema, table)
-    ?? {
+  const store = new Store<typeof storeState.infer>(
+    getPageStoreState(id, schema, table) ?? {
       selected: [],
       filters: [],
       prompt: '',
       hiddenColumns: [],
       orderBy: {},
-    })
+    }
+  )
 
   store.subscribe((state) => {
     sessionStorage.setItem(getPageStoreKey(id, schema, table), JSON.stringify(state.currentVal))

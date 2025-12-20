@@ -5,15 +5,18 @@ import { authMiddleware, orpc } from '~/orpc'
 
 export const create = orpc
   .use(authMiddleware)
-  .input(type.or(
-    queriesInsertSchema.omit('userId'),
-    queriesInsertSchema.omit('userId').array(),
-  ).pipe(data => Array.isArray(data) ? data : [data]))
+  .input(
+    type
+      .or(queriesInsertSchema.omit('userId'), queriesInsertSchema.omit('userId').array())
+      .pipe((data) => (Array.isArray(data) ? data : [data]))
+  )
   .handler(async ({ context, input }) => {
-    await Promise.all(input.map(item => db
-      .insert(queries)
-      .values({
-        ...item,
-        userId: context.session.userId,
-      })))
+    await Promise.all(
+      input.map((item) =>
+        db.insert(queries).values({
+          ...item,
+          userId: context.session.userId,
+        })
+      )
+    )
   })

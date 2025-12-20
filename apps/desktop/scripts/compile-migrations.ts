@@ -13,7 +13,7 @@ async function compileMigrations() {
   await writeFile(
     join(__dirname, '../src/drizzle/migrations.json'),
     JSON.stringify(migrations),
-    'utf8',
+    'utf8'
   )
 
   // eslint-disable-next-line no-console

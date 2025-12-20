@@ -22,8 +22,7 @@ let themeStore: Store<ThemeStoreState>
 const mediaQuery = isBrowser ? window.matchMedia('(prefers-color-scheme: dark)') : null
 
 function updateTheme() {
-  if (!mediaQuery)
-    return
+  if (!mediaQuery) return
 
   const { theme } = themeStore.state
 
@@ -33,12 +32,16 @@ function updateTheme() {
 
   if (theme === 'system') {
     const systemTheme = mediaQuery.matches ? 'dark' : 'light'
-    themeStore.setState(state => ({ ...state, resolvedTheme: systemTheme } satisfies typeof state))
+    themeStore.setState(
+      (state) => ({ ...state, resolvedTheme: systemTheme }) satisfies typeof state
+    )
     root.classList.add(systemTheme)
     return
   }
 
-  themeStore.setState(state => ({ ...state, resolvedTheme: theme as ResolvedTheme } satisfies typeof state))
+  themeStore.setState(
+    (state) => ({ ...state, resolvedTheme: theme as ResolvedTheme }) satisfies typeof state
+  )
   root.classList.add(theme)
 }
 
@@ -73,11 +76,9 @@ export function ThemeObserver({
         const theme: string | null = localStorage.getItem(storageKey)
 
         if (
-          theme === 'dark'
-          || (
-            (theme === null || theme === 'system')
-            && window.matchMedia('(prefers-color-scheme: dark)').matches
-          )
+          theme === 'dark' ||
+          ((theme === null || theme === 'system') &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches)
         ) {
           document.documentElement.classList.add('dark')
         }
@@ -88,7 +89,7 @@ export function ThemeObserver({
 
 function setTheme(newTheme: Theme) {
   localStorage.setItem(themeStore.state.storageKey, newTheme)
-  themeStore.setState(state => ({ ...state, theme: newTheme } satisfies typeof state))
+  themeStore.setState((state) => ({ ...state, theme: newTheme }) satisfies typeof state)
 }
 
 export function useTheme() {

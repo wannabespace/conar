@@ -3,7 +3,7 @@ import { customType } from 'drizzle-orm/pg-core'
 import { env } from '~/env'
 
 export function encryptedJson<TData>(name?: string) {
-  return customType<{ data: TData, driverData: string }>({
+  return customType<{ data: TData; driverData: string }>({
     dataType() {
       return 'text'
     },
@@ -17,7 +17,7 @@ export function encryptedJson<TData>(name?: string) {
 }
 
 export function encryptedText(name?: string) {
-  return customType<{ data: string, driverData: string }>({
+  return customType<{ data: string; driverData: string }>({
     dataType() {
       return 'text'
     },

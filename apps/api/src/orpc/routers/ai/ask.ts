@@ -17,24 +17,21 @@ import { authMiddleware, orpc } from '~/orpc'
 import { streamContext } from './resume-stream'
 
 const chatInputType = type({
-  'id': 'string.uuid.v7',
-  'type': type.valueOf(DatabaseType),
+  id: 'string.uuid.v7',
+  type: type.valueOf(DatabaseType),
   'context?': 'string',
   'createdAt?': 'Date',
   'updatedAt?': 'Date',
-  'prompt': 'object' as type.cast<AppUIMessage>,
-  'databaseId': 'string.uuid.v7',
+  prompt: 'object' as type.cast<AppUIMessage>,
+  databaseId: 'string.uuid.v7',
   'fallback?': 'boolean',
-  'trigger': '"submit-message" | "regenerate-message"',
+  trigger: '"submit-message" | "regenerate-message"',
   'messageId?': 'string.uuid.v7',
 })
 
 const mainModel = createRetryable({
   model: anthropic('claude-sonnet-4-5'),
-  retries: [
-    anthropic('claude-opus-4-1'),
-    google('gemini-2.5-pro'),
-  ],
+  retries: [anthropic('claude-opus-4-1'), google('gemini-2.5-pro')],
 })
 
 const fallbackModel = anthropic('claude-opus-4-1')
@@ -43,7 +40,10 @@ function handleError(error: unknown) {
   if (typeof error === 'object' && (error as { type?: string }).type === 'overloaded_error') {
     return 'Sorry, I was unable to generate a response due to high load. Please try again later.'
   }
-  if (typeof error === 'object' && (error as { message?: string }).message?.includes('prompt is too long')) {
+  if (
+    typeof error === 'object' &&
+    (error as { message?: string }).message?.includes('prompt is too long')
+  ) {
     return 'Sorry, I was unable to generate a response. Currently I cannot handle larger chats like yours. Please create a new chat.'
   }
   return 'Sorry, I was unable to generate a response due to an error. Please try again.'
@@ -59,19 +59,26 @@ function generateStream({
   userId,
 }: {
   messages: AppUIMessage[]
-  type: typeof chatInputType.infer['type']
-  context: typeof chatInputType.infer['context']
+  type: (typeof chatInputType.infer)['type']
+  context: (typeof chatInputType.infer)['context']
   model: Exclude<LanguageModel, string>
   signal?: AbortSignal
   chatId: string
   userId: string
 }) {
-  consola.info('messages', JSON.stringify(messages.map(message => ({
-    id: message.id,
-    chatId,
-    role: message.role,
-    partsCount: message.parts.length,
-  })), null, 2))
+  consola.info(
+    'messages',
+    JSON.stringify(
+      messages.map((message) => ({
+        id: message.id,
+        chatId,
+        role: message.role,
+        partsCount: message.parts.length,
+      })),
+      null,
+      2
+    )
+  )
 
   return streamText({
     messages: [
@@ -91,7 +98,7 @@ function generateStream({
           '- The SQL code will be executed directly in a production database editor',
           '- Generate SQL query only for the provided schemas, tables, columns and enums',
           '- Answer in markdown and paste the SQL code in a code block, each query in a separate code block, do not use headings',
-          '- Answer in the same language as the user\'s message',
+          "- Answer in the same language as the user's message",
           '- Use quotes for table and column names to prevent SQL errors with case sensitivity',
           '- If a user asks to change specific lines generate SQL only for the lines, not for whole SQL',
           '',
@@ -99,7 +106,9 @@ function generateStream({
           `- Current date and time: ${new Date().toISOString()}`,
           '',
           'You can use the following tools to help you generate the SQL code:',
-          `- ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}`,
+          `- ${Object.entries(tools)
+            .map(([tool, { description }]) => `${tool}: ${description}`)
+            .join('\n')}`,
           '',
           'User provided context:',
           context,
@@ -124,7 +133,7 @@ export function getMessages(chatId: string): Promise<AppUIMessage[]> {
     .from(chatsMessages)
     .where(eq(chatsMessages.chatId, chatId))
     .orderBy(asc(chatsMessages.createdAt))
-    .then(rows => rows.map(convertToAppUIMessage))
+    .then((rows) => rows.map(convertToAppUIMessage))
 }
 
 async function ensureChat({
@@ -146,13 +155,16 @@ async function ensureChat({
     return existingChat
   }
 
-  const [newChat] = await db.insert(chats).values({
-    id: chatId,
-    userId,
-    databaseId,
-    createdAt,
-    updatedAt,
-  }).returning()
+  const [newChat] = await db
+    .insert(chats)
+    .values({
+      id: chatId,
+      userId,
+      databaseId,
+      createdAt,
+      updatedAt,
+    })
+    .returning()
 
   return newChat
 }
@@ -176,23 +188,30 @@ export const ask = orpc
     })
 
     if (input.trigger === 'submit-message') {
-      await db.insert(chatsMessages).values({
-        chatId: input.id,
-        ...input.prompt,
-      }).onConflictDoUpdate({
-        target: chatsMessages.id,
-        set: input.prompt,
-      }).catch((error) => {
-        consola.error('error on submit-message', error)
-        throw error
-      })
+      await db
+        .insert(chatsMessages)
+        .values({
+          chatId: input.id,
+          ...input.prompt,
+        })
+        .onConflictDoUpdate({
+          target: chatsMessages.id,
+          set: input.prompt,
+        })
+        .catch((error) => {
+          consola.error('error on submit-message', error)
+          throw error
+        })
     }
 
     if (input.trigger === 'regenerate-message' && input.messageId) {
-      await db.delete(chatsMessages).where(eq(chatsMessages.id, input.messageId)).catch((error) => {
-        consola.error('error on regenerate-message', error)
-        throw error
-      })
+      await db
+        .delete(chatsMessages)
+        .where(eq(chatsMessages.id, input.messageId))
+        .catch((error) => {
+          consola.error('error on regenerate-message', error)
+          throw error
+        })
     }
 
     const messages = await getMessages(input.id).catch((error) => {
@@ -223,27 +242,36 @@ export const ask = orpc
           }
         },
         onFinish: async (result) => {
-          consola.info('stream finished', JSON.stringify({
-            ...result.responseMessage,
-            parts: result.responseMessage.parts.map(part => part.type),
-          }, null, 2))
+          consola.info(
+            'stream finished',
+            JSON.stringify(
+              {
+                ...result.responseMessage,
+                parts: result.responseMessage.parts.map((part) => part.type),
+              },
+              null,
+              2
+            )
+          )
 
           try {
-            await db.insert(chatsMessages).values({
-              ...result.responseMessage,
-              updatedAt: result.responseMessage.metadata?.updatedAt,
-              chatId: input.id,
-            }).onConflictDoUpdate({
-              target: chatsMessages.id,
-              set: {
+            await db
+              .insert(chatsMessages)
+              .values({
                 ...result.responseMessage,
                 updatedAt: result.responseMessage.metadata?.updatedAt,
-              },
-            })
+                chatId: input.id,
+              })
+              .onConflictDoUpdate({
+                target: chatsMessages.id,
+                set: {
+                  ...result.responseMessage,
+                  updatedAt: result.responseMessage.metadata?.updatedAt,
+                },
+              })
 
             await db.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
-          }
-          catch (error) {
+          } catch (error) {
             consola.error('error onFinish transaction', error)
             throw error
           }
@@ -259,17 +287,18 @@ export const ask = orpc
         const streamId = v7()
         await streamContext.createNewResumableStream(streamId, () => result.textStream)
         await db.update(chats).set({ activeStreamId: streamId }).where(eq(chats.id, input.id))
-      }
-      catch (error) {
+      } catch (error) {
         consola.error('error on createNewResumableStream', error)
       }
 
       return streamToEventIterator(stream)
-    }
-    catch (error) {
+    } catch (error) {
       consola.error('error on ask', error)
       throw new ORPCError('INTERNAL_SERVER_ERROR', {
-        message: error instanceof Error ? error.message : 'Sorry, I was unable to generate a response due to an error. Please try again.',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Sorry, I was unable to generate a response due to an error. Please try again.',
       })
     }
   })

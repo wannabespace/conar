@@ -2,10 +2,7 @@ import type { SqlLanguage } from 'sql-formatter'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { format } from 'sql-formatter'
 
-export function formatSql(
-  sql: string,
-  type: DatabaseType,
-) {
+export function formatSql(sql: string, type: DatabaseType) {
   const langMap: Record<DatabaseType, SqlLanguage> = {
     [DatabaseType.Postgres]: 'postgresql',
     [DatabaseType.MySQL]: 'mysql',
@@ -18,8 +15,7 @@ export function formatSql(
       language: langMap[type],
       keywordCase: 'upper',
     })
-  }
-  catch {
+  } catch {
     return sql
   }
 }

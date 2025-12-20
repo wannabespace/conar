@@ -23,6 +23,5 @@ const config = {
   casing: 'snake_case',
 } satisfies Parameters<typeof drizzle>[1]
 
-export const db = nodeEnv === 'test'
-  ? drizzlePglite(env.DATABASE_URL, config)
-  : drizzle(env.DATABASE_URL, config)
+export const db =
+  nodeEnv === 'test' ? drizzlePglite(env.DATABASE_URL, config) : drizzle(env.DATABASE_URL, config)

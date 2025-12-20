@@ -21,7 +21,6 @@ export const SQL_FILTERS_GROUPED = [
     ],
   },
   {
-
     group: 'list',
     filters: [
       { label: 'In', operator: 'IN', isArray: true },
@@ -40,7 +39,7 @@ export const SQL_FILTERS_GROUPED = [
   filters: Filter[]
 }[]
 
-export const SQL_FILTERS_LIST = SQL_FILTERS_GROUPED.map(group => group.filters).flat()
+export const SQL_FILTERS_LIST = SQL_FILTERS_GROUPED.map((group) => group.filters).flat()
 
 export interface QueryParams {
   connectionString: string

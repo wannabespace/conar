@@ -13,56 +13,62 @@ export function waitForChatsSync() {
   return promise
 }
 
-export const chatsCollection = createCollection(drizzleCollectionOptions({
-  db,
-  table: chats,
-  primaryColumn: chats.id,
-  startSync: false,
-  prepare: waitForMigrations,
-  sync: async ({ collection, write }) => {
-    if (!bearerToken.get() || !navigator.onLine) {
-      return
-    }
-
-    await waitForDatabasesSync()
-    const sync = await orpc.chats.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
-
-    sync.forEach((item) => {
-      if (item.type === 'delete') {
-        write({ type: 'delete', value: collection.get(item.value)! })
+export const chatsCollection = createCollection(
+  drizzleCollectionOptions({
+    db,
+    table: chats,
+    primaryColumn: chats.id,
+    startSync: false,
+    prepare: waitForMigrations,
+    sync: async ({ collection, write }) => {
+      if (!bearerToken.get() || !navigator.onLine) {
+        return
       }
-      else {
-        write(item)
-      }
-    })
-    resolve()
-  },
-}))
 
-export const chatsMessagesCollection = createCollection(drizzleCollectionOptions({
-  db,
-  table: chatsMessages,
-  primaryColumn: chatsMessages.id,
-  startSync: false,
-  prepare: waitForMigrations,
-  sync: async ({ collection, write }) => {
-    if (!bearerToken.get() || !navigator.onLine) {
-      return
-    }
+      await waitForDatabasesSync()
+      const sync = await orpc.chats.sync(
+        collection.toArray.map((c) => ({ id: c.id, updatedAt: c.updatedAt }))
+      )
 
-    await waitForChatsSync()
-    const sync = await orpc.chatsMessages.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+      sync.forEach((item) => {
+        if (item.type === 'delete') {
+          write({ type: 'delete', value: collection.get(item.value)! })
+        } else {
+          write(item)
+        }
+      })
+      resolve()
+    },
+  })
+)
 
-    sync.forEach((item) => {
-      if (item.type === 'delete') {
-        write({ type: 'delete', value: collection.get(item.value)! })
+export const chatsMessagesCollection = createCollection(
+  drizzleCollectionOptions({
+    db,
+    table: chatsMessages,
+    primaryColumn: chatsMessages.id,
+    startSync: false,
+    prepare: waitForMigrations,
+    sync: async ({ collection, write }) => {
+      if (!bearerToken.get() || !navigator.onLine) {
+        return
       }
-      else {
-        write(item)
-      }
-    })
-  },
-}))
+
+      await waitForChatsSync()
+      const sync = await orpc.chatsMessages.sync(
+        collection.toArray.map((c) => ({ id: c.id, updatedAt: c.updatedAt }))
+      )
+
+      sync.forEach((item) => {
+        if (item.type === 'delete') {
+          write({ type: 'delete', value: collection.get(item.value)! })
+        } else {
+          write(item)
+        }
+      })
+    },
+  })
+)
 
 const syncChatsMutationOptions = {
   mutationKey: ['sync-chats'],

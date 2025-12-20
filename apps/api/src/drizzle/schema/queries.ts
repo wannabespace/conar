@@ -8,8 +8,12 @@ import { databases } from './databases'
 
 export const queries = pgTable('queries', ({ uuid, text }) => ({
   ...baseTable,
-  userId: uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }).notNull(),
+  userId: uuid()
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  databaseId: uuid()
+    .references(() => databases.id, { onDelete: 'cascade' })
+    .notNull(),
   name: text().notNull(),
   query: encryptedText().notNull(),
 })).enableRLS()

@@ -6,7 +6,13 @@ import { ThemeObserver } from '@conar/ui/theme-observer'
 import { Databuddy } from '@databuddy/sdk/react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { createRootRouteWithContext, HeadContent, Outlet, Scripts, useRouterState } from '@tanstack/react-router'
+import {
+  createRootRouteWithContext,
+  HeadContent,
+  Outlet,
+  Scripts,
+  useRouterState,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { ErrorPage } from '~/error-page'
 import { getRepoOptions } from '~/queries'
@@ -37,7 +43,8 @@ export const Route = createRootRouteWithContext<{
       },
       ...seo({
         title: 'Conar.app - AI-powered modern alternative to DBeaver and pgAdmin',
-        description: 'AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.',
+        description:
+          'AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.',
         image: '/og-image.png',
       }),
       { name: 'apple-mobile-web-app-title', content: 'Conar' },
@@ -59,12 +66,12 @@ export const Route = createRootRouteWithContext<{
     ],
   }),
   component: RootComponent,
-  errorComponent: props => <ErrorPage {...props} />,
+  errorComponent: (props) => <ErrorPage {...props} />,
 })
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext()
-  const pathname = useRouterState({ select: state => state.location.pathname })
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
 
   useMountedEffect(() => {
     window.scrollTo({
@@ -84,11 +91,7 @@ function RootComponent() {
           <ReactQueryDevtools buttonPosition="bottom-left" />
         </QueryClientProvider>
         <Toaster />
-        <Databuddy
-          clientId="4cWwAbS06aDNledzhodgS"
-          enableBatching
-          disabled={import.meta.env.DEV}
-        />
+        <Databuddy clientId="4cWwAbS06aDNledzhodgS" enableBatching disabled={import.meta.env.DEV} />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>

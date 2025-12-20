@@ -54,22 +54,19 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            Save Query
-          </DialogTitle>
+          <DialogTitle>Save Query</DialogTitle>
           <div className="text-sm text-muted-foreground mb-4">
-            Saved queries are stored for this database and can be quickly accessed and run from the "Saved queries" panel.
+            Saved queries are stored for this database and can be quickly accessed and run from the
+            "Saved queries" panel.
           </div>
-          <Label htmlFor="name">
-            Query name
-          </Label>
+          <Label htmlFor="name">Query name</Label>
           <Input
             id="name"
             value={name}
             placeholder="Enter query name"
             spellCheck={false}
             autoComplete="off"
-            onChange={e => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && canConfirm) {
                 createQuery()
@@ -79,9 +76,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
         </DialogHeader>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">
-              Cancel
-            </Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button
             disabled={!canConfirm}

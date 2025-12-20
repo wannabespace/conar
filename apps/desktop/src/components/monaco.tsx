@@ -47,39 +47,39 @@ export function Monaco({
   useMonacoTheme()
 
   const onChangeEvent = useEffectEvent(onChange)
-  const getOptionsEvent = useEffectEvent(() => ({
-    value: (() => {
-      if (language?.includes('json')) {
-        try {
-          return JSON.stringify(JSON.parse(value), null, 2)
-        }
-        catch {
-          return value
-        }
-      }
+  const getOptionsEvent = useEffectEvent(
+    () =>
+      ({
+        value: (() => {
+          if (language?.includes('json')) {
+            try {
+              return JSON.stringify(JSON.parse(value), null, 2)
+            } catch {
+              return value
+            }
+          }
 
-      if (language?.includes('xml')) {
-        try {
-          return formatXml(value)
-        }
-        catch {
-          return value
-        }
-      }
+          if (language?.includes('xml')) {
+            try {
+              return formatXml(value)
+            } catch {
+              return value
+            }
+          }
 
-      return value
-    })(),
-    language,
-    automaticLayout: true,
-    minimap: { enabled: false },
-    fontFamily: '"Geist Mono", monospace',
-    tabSize: 2,
-    ...options,
-  } satisfies monaco.editor.IStandaloneEditorConstructionOptions))
+          return value
+        })(),
+        language,
+        automaticLayout: true,
+        minimap: { enabled: false },
+        fontFamily: '"Geist Mono", monospace',
+        tabSize: 2,
+        ...options,
+      }) satisfies monaco.editor.IStandaloneEditorConstructionOptions
+  )
 
   useEffect(() => {
-    if (!elementRef.current)
-      return
+    if (!elementRef.current) return
 
     monacoInstance.current = monaco.editor.create(elementRef.current, getOptionsEvent())
 
@@ -103,22 +103,19 @@ export function Monaco({
   }, [elementRef, language, ref])
 
   useMountedEffect(() => {
-    if (!monacoInstance.current || !options)
-      return
+    if (!monacoInstance.current || !options) return
 
     monacoInstance.current.updateOptions(options)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(options)])
 
   useMountedEffect(() => {
-    if (!monacoInstance.current)
-      return
+    if (!monacoInstance.current) return
 
     const editor = monacoInstance.current
     const model = editor.getModel()
 
-    if (!model)
-      return
+    if (!model) return
 
     const currentValue = editor.getValue()
 
@@ -128,8 +125,7 @@ export function Monaco({
 
     if (options?.readOnly) {
       editor.setValue(value)
-    }
-    else {
+    } else {
       preventTriggerChangeEvent.current = true
       editor.executeEdits('', [
         {
@@ -167,13 +163,16 @@ export function MonacoDiff({
 
   useMonacoTheme()
 
-  const getOptionsEvent = useEffectEvent(() => ({
-    automaticLayout: true,
-    minimap: { enabled: false },
-    fontFamily: '"Geist Mono", monospace',
-    readOnly: true,
-    ...options,
-  } satisfies monaco.editor.IStandaloneDiffEditorConstructionOptions))
+  const getOptionsEvent = useEffectEvent(
+    () =>
+      ({
+        automaticLayout: true,
+        minimap: { enabled: false },
+        fontFamily: '"Geist Mono", monospace',
+        readOnly: true,
+        ...options,
+      }) satisfies monaco.editor.IStandaloneDiffEditorConstructionOptions
+  )
 
   const getValuesEvent = useEffectEvent(() => ({
     originalValue,
@@ -181,12 +180,11 @@ export function MonacoDiff({
   }))
 
   useEffect(() => {
-    if (!elementRef.current)
-      return
+    if (!elementRef.current) return
 
     diffEditorInstance.current = monaco.editor.createDiffEditor(
       elementRef.current,
-      getOptionsEvent(),
+      getOptionsEvent()
     )
 
     const { originalValue, modifiedValue } = getValuesEvent()
@@ -205,15 +203,13 @@ export function MonacoDiff({
   }, [elementRef, language, ref])
 
   useMountedEffect(() => {
-    if (!diffEditorInstance.current || !options)
-      return
+    if (!diffEditorInstance.current || !options) return
 
     diffEditorInstance.current.updateOptions(options)
   }, [options])
 
   useMountedEffect(() => {
-    if (!diffEditorInstance.current)
-      return
+    if (!diffEditorInstance.current) return
 
     const editor = diffEditorInstance.current
     const originalModel = editor.getModel()?.original

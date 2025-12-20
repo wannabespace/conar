@@ -13,7 +13,7 @@ const templates = {
 
 export async function sendEmail<
   T extends keyof typeof templates,
-  P extends ComponentProps<typeof templates[T]>,
+  P extends ComponentProps<(typeof templates)[T]>,
 >({
   to,
   subject,
@@ -23,9 +23,7 @@ export async function sendEmail<
   to: string
   subject: string
   template: T
-} & (keyof P extends never
-  ? { props?: never }
-  : { props: P })) {
+} & (keyof P extends never ? { props?: never } : { props: P })) {
   if (!resend) {
     consola.error('Resend email service is not configured.', {
       to,
@@ -47,8 +45,7 @@ export async function sendEmail<
     if (error) {
       throw error
     }
-  }
-  catch (error) {
+  } catch (error) {
     consola.error(error instanceof Error ? error.message : 'Unknown error', error)
 
     throw new Error('Unknown error occurred while sending email')

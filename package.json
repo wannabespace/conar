@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "private": true,
   "packageManager": "pnpm@10.26.1",
   "engines": {
@@ -7,8 +6,11 @@
   },
   "scripts": {
     "prepare": "(test -d .git && lefthook install || echo 'Skipping lefthook install') && bun scripts/setup-dev.ts",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt --check .",
+    "lint": "oxlint .",
+    "lint:aware": "oxlint --type-aware",
+    "lint:fix": "oxlint --fix . && bun run fmt",
     "test:unit": "turbo run test:unit",
     "test:e2e": "turbo run test:e2e",
     "test:start": "turbo run test:start",
@@ -25,10 +27,10 @@
     "docker:stop": "docker-compose -f docker-compose.dev.yml down"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "catalog:",
     "@commitlint/cli": "catalog:",
     "@commitlint/config-conventional": "catalog:",
     "@eslint-react/eslint-plugin": "catalog:",
+    "@evilmartians/lefthook": "catalog:",
     "@types/bun": "catalog:",
     "cross-env": "catalog:",
     "eslint": "catalog:",
@@ -36,6 +38,8 @@
     "eslint-plugin-react-refresh": "catalog:",
     "lefthook": "catalog:",
     "npm-run-all2": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "playwright": "catalog:",
     "taze": "catalog:",
     "tsx": "catalog:",

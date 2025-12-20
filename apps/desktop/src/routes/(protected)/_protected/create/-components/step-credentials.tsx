@@ -1,12 +1,24 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
 import type { RefObject } from 'react'
 import { placeholderMap } from '@conar/shared/utils/connections'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@conar/ui/components/card'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useId } from 'react'
 
-export function StepCredentials({ ref, type, connectionString, setConnectionString, onEnter }: {
+export function StepCredentials({
+  ref,
+  type,
+  connectionString,
+  setConnectionString,
+  onEnter,
+}: {
   ref: RefObject<HTMLInputElement | null>
   type: DatabaseType
   connectionString: string
@@ -31,7 +43,7 @@ export function StepCredentials({ ref, type, connectionString, setConnectionStri
           ref={ref}
           autoFocus
           value={connectionString}
-          onChange={e => setConnectionString(e.target.value)}
+          onChange={(e) => setConnectionString(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault()

@@ -2,8 +2,7 @@ import posthog from 'posthog-js'
 import { PostHogProvider } from 'posthog-js/react'
 
 export function initEvents() {
-  if (import.meta.env.DEV)
-    return null
+  if (import.meta.env.DEV) return null
 }
 
 interface IdentifyUserProps {
@@ -16,15 +15,13 @@ export function identifyUser(userId: null, properties?: IdentifyUserProps): void
 export async function identifyUser(userId: string | null, properties?: IdentifyUserProps) {
   if (userId) {
     posthog.identify(userId, { ...properties, appVersion: await window.electron?.versions.app() })
-  }
-  else {
+  } else {
     posthog.reset()
   }
 }
 
 export function EventsProvider({ children }: { children: React.ReactNode }) {
-  if (import.meta.env.DEV)
-    return children
+  if (import.meta.env.DEV) return children
 
   return (
     <PostHogProvider

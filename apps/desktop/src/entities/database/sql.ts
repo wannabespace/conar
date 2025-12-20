@@ -19,11 +19,18 @@ export function executeSql({
   return window.electron.query[type]({ connectionString, sql, values: [] })
 }
 
-export function executeAndLogSql({ database, sql }: {
+export function executeAndLogSql({
+  database,
+  sql,
+}: {
   database: typeof databases.$inferSelect
   sql: string
 }) {
-  const promise = executeSql({ type: database.type, connectionString: database.connectionString, sql })
+  const promise = executeSql({
+    type: database.type,
+    connectionString: database.connectionString,
+    sql,
+  })
 
   logSql(database, promise, { sql })
 
@@ -44,61 +51,69 @@ export const sqlLogsStore = new Store<Record<string, Record<string, SqlLog>>>({}
 
 export async function logSql(
   database: typeof databases.$inferSelect,
-  promise: Promise<{ result: unknown, duration: number }>,
+  promise: Promise<{ result: unknown; duration: number }>,
   {
     sql,
     values = [],
   }: {
     sql: string
     values?: unknown[]
-  },
+  }
 ) {
   const id = crypto.randomUUID()
 
-  sqlLogsStore.setState(state => ({
-    ...state,
-    [database.id]: {
-      ...(state[database.id] || {}),
-      [id]: {
-        id,
-        createdAt: new Date(),
-        sql: formatSql(sql, database.type)
-          .split('\n')
-          .filter(str => !str.startsWith('--'))
-          .join(' '),
-        values,
-        result: null,
-        duration: null,
-        error: null,
-      },
-    },
-  } satisfies typeof state))
+  sqlLogsStore.setState(
+    (state) =>
+      ({
+        ...state,
+        [database.id]: {
+          ...(state[database.id] ?? {}),
+          [id]: {
+            id,
+            createdAt: new Date(),
+            sql: formatSql(sql, database.type)
+              .split('\n')
+              .filter((str) => !str.startsWith('--'))
+              .join(' '),
+            values,
+            result: null,
+            duration: null,
+            error: null,
+          },
+        },
+      }) satisfies typeof state
+  )
 
   try {
     const { result, duration } = await promise
 
-    sqlLogsStore.setState(state => ({
-      ...state,
-      [database.id]: {
-        ...state[database.id],
-        [id]: {
-          ...state[database.id]![id]!,
-          result,
-          duration,
-        },
-      },
-    } satisfies typeof state))
-  }
-  catch (error) {
-    sqlLogsStore.setState(state => ({
-      ...state,
-      [database.id]: {
-        ...state[database.id],
-        [id]: {
-          ...state[database.id]![id]!,
-          error: error instanceof Error ? error.message : String(error),
-        },
-      },
-    } satisfies typeof state))
+    sqlLogsStore.setState(
+      (state) =>
+        ({
+          ...state,
+          [database.id]: {
+            ...state[database.id],
+            [id]: {
+              ...state[database.id]![id]!,
+              result,
+              duration,
+            },
+          },
+        }) satisfies typeof state
+    )
+  } catch (error) {
+    sqlLogsStore.setState(
+      (state) =>
+        ({
+          ...state,
+          [database.id]: {
+            ...state[database.id],
+            [id]: {
+              ...state[database.id]![id]!,
+              error: error instanceof Error ? error.message : String(error),
+            },
+          },
+        }) satisfies typeof state
+    )
   }
 }

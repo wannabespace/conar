@@ -6,7 +6,9 @@ import { contextBridge, ipcRenderer } from 'electron'
 export type ElectronPreload = typeof electron & {
   app: {
     onDeepLink: (callback: (url: string) => void) => () => void
-    onUpdatesStatus: (callback: (params: { status: UpdatesStatus, message?: string }) => void) => () => void
+    onUpdatesStatus: (
+      callback: (params: { status: UpdatesStatus; message?: string }) => void
+    ) => () => void
     onNavigate: (callback: (path: string) => void) => () => void
     onSendToast: (callback: (params: Parameters<typeof sendToast>[0]) => void) => () => void
   }
@@ -23,8 +25,7 @@ async function handleError(func: () => Promise<any>) {
     const result = await func()
 
     return result
-  }
-  catch (error) {
+  } catch (error) {
     if (import.meta.env.DEV) {
       console.error(error)
     }
@@ -32,7 +33,9 @@ async function handleError(func: () => Promise<any>) {
       const message = error.message.replace(/^Error invoking remote method '[^']+': /, '')
       const errorMessage = message.toLowerCase().startsWith('error: ') ? message.slice(7) : message
 
-      throw new Error(errorMessage.charAt(0).toUpperCase() + errorMessage.slice(1), { cause: error })
+      throw new Error(errorMessage.charAt(0).toUpperCase() + errorMessage.slice(1), {
+        cause: error,
+      })
     }
     throw error
   }
@@ -40,14 +43,14 @@ async function handleError(func: () => Promise<any>) {
 
 contextBridge.exposeInMainWorld('electron', {
   query: {
-    postgres: arg => handleError(() => ipcRenderer.invoke('query.postgres', arg)),
-    mysql: arg => handleError(() => ipcRenderer.invoke('query.mysql', arg)),
-    clickhouse: arg => handleError(() => ipcRenderer.invoke('query.clickhouse', arg)),
-    mssql: arg => handleError(() => ipcRenderer.invoke('query.mssql', arg)),
+    postgres: (arg) => handleError(() => ipcRenderer.invoke('query.postgres', arg)),
+    mysql: (arg) => handleError(() => ipcRenderer.invoke('query.mysql', arg)),
+    clickhouse: (arg) => handleError(() => ipcRenderer.invoke('query.clickhouse', arg)),
+    mssql: (arg) => handleError(() => ipcRenderer.invoke('query.mssql', arg)),
   },
   encryption: {
-    encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg)),
-    decrypt: arg => handleError(() => ipcRenderer.invoke('encryption.decrypt', arg)),
+    encrypt: (arg) => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg)),
+    decrypt: (arg) => handleError(() => ipcRenderer.invoke('encryption.decrypt', arg)),
   },
   app: {
     onDeepLink: (callback) => {
@@ -56,7 +59,10 @@ contextBridge.exposeInMainWorld('electron', {
       return () => ipcRenderer.off('deep-link', listener)
     },
     onUpdatesStatus: (callback) => {
-      const listener = (_event: Electron.IpcRendererEvent, { status, message }: { status: UpdatesStatus, message?: string }) => callback({ status, message })
+      const listener = (
+        _event: Electron.IpcRendererEvent,
+        { status, message }: { status: UpdatesStatus; message?: string }
+      ) => callback({ status, message })
       ipcRenderer.on('updates-status', listener)
       return () => ipcRenderer.off('updates-status', listener)
     },
@@ -66,7 +72,10 @@ contextBridge.exposeInMainWorld('electron', {
       return () => ipcRenderer.off('app.navigate', listener)
     },
     onSendToast: (callback) => {
-      const listener = (_event: Electron.IpcRendererEvent, params: Parameters<typeof sendToast>[0]) => callback(params)
+      const listener = (
+        _event: Electron.IpcRendererEvent,
+        params: Parameters<typeof sendToast>[0]
+      ) => callback(params)
       ipcRenderer.on('toast', listener)
       return () => ipcRenderer.off('toast', listener)
     },

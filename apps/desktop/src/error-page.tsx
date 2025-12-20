@@ -1,6 +1,13 @@
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Toaster } from '@conar/ui/components/sonner'
 import { ThemeObserver } from '@conar/ui/theme-observer'
@@ -33,7 +40,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
   }, [])
 
   useEffect(() => {
-    if (CONNECTION_ERRORS.some(e => error.message.includes(e))) {
+    if (CONNECTION_ERRORS.some((e) => error.message.includes(e))) {
       return
     }
 
@@ -53,7 +60,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
               </div>
               <CardTitle className="text-xl">Something went wrong</CardTitle>
               <CardDescription>
-                {CONNECTION_ERRORS.some(e => error.message.includes(e))
+                {CONNECTION_ERRORS.some((e) => error.message.includes(e))
                   ? 'Check your database connection settings and network.'
                   : 'An error occurred while rendering this page'}
               </CardDescription>
@@ -63,9 +70,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                 <ScrollArea className="rounded-md bg-muted p-4 text-sm h-[300px] font-mono">
                   {error.message}
                   {!!error.cause && !String(error.cause).includes(error.message) && (
-                    <span className="text-muted-foreground text-xs">
-                      {String(error.cause)}
-                    </span>
+                    <span className="text-muted-foreground text-xs">{String(error.cause)}</span>
                   )}
                   {error.stack && (
                     <div className="mt-4">
@@ -83,26 +88,15 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                   {error.arkErrors.map((err, index) => (
                     // eslint-disable-next-line react/no-array-index-key
                     <div key={index} className="mb-4 last:mb-0">
-                      <div className="font-semibold text-destructive">
-                        Error
-                        {' '}
-                        {index + 1}
-                        :
-                      </div>
-                      <div className="ml-2 mt-1">
-                        {err.message}
-                      </div>
+                      <div className="font-semibold text-destructive">Error {index + 1}:</div>
+                      <div className="ml-2 mt-1">{err.message}</div>
                     </div>
                   ))}
                 </ScrollArea>
               )}
             </CardContent>
             <CardFooter className="flex justify-between gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => router.history.back()}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => router.history.back()}>
                 <RiArrowGoBackLine className="mr-1" />
                 Go back
               </Button>
@@ -114,10 +108,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                 <RiHomeLine className="mr-1" />
                 Home
               </Button>
-              <Button
-                className="flex-1"
-                onClick={() => window.location.reload()}
-              >
+              <Button className="flex-1" onClick={() => window.location.reload()}>
                 <RiLoopLeftLine className="mr-1" />
                 Refresh
               </Button>

@@ -1,6 +1,12 @@
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@conar/ui/components/dialog'
 import { FieldGroup } from '@conar/ui/components/field'
 import { Input } from '@conar/ui/components/input'
 import { Separator } from '@conar/ui/components/separator'
@@ -41,7 +47,10 @@ function useSocialMutation(provider: 'google' | 'github', onSuccess: () => void)
       codeChallenge.set(codeChallengeId)
 
       // TODO: move to backend
-      const encryptedCodeChallenge = await encrypt(codeChallengeId, import.meta.env.VITE_PUBLIC_AUTH_SECRET)
+      const encryptedCodeChallenge = await encrypt(
+        codeChallengeId,
+        import.meta.env.VITE_PUBLIC_AUTH_SECRET
+      )
 
       const { data, error } = await authClient.signIn.social({
         provider,
@@ -99,10 +108,18 @@ function SocialAuthForm({ type }: { type: Type }) {
     }
   }, [manualAuthUrl])
 
-  const { mutate: googleSignIn, isPending: isGoogleSignInPending, data: googleUrl } = useSocialMutation('google', () => {
+  const {
+    mutate: googleSignIn,
+    isPending: isGoogleSignInPending,
+    data: googleUrl,
+  } = useSocialMutation('google', () => {
     setIsDialogOpen(true)
   })
-  const { mutate: githubSignIn, isPending: isGithubSignInPending, data: githubUrl } = useSocialMutation('github', () => {
+  const {
+    mutate: githubSignIn,
+    isPending: isGithubSignInPending,
+    data: githubUrl,
+  } = useSocialMutation('github', () => {
     setIsDialogOpen(true)
   })
 
@@ -117,9 +134,7 @@ function SocialAuthForm({ type }: { type: Type }) {
         >
           <LoadingContent loading={isGoogleSignInPending}>
             <RiGoogleFill className="size-4" />
-            {type === 'sign-up' ? 'Sign up' : 'Sign in'}
-            {' '}
-            with Google
+            {type === 'sign-up' ? 'Sign up' : 'Sign in'} with Google
           </LoadingContent>
         </Button>
         <Button
@@ -130,9 +145,7 @@ function SocialAuthForm({ type }: { type: Type }) {
         >
           <LoadingContent loading={isGithubSignInPending}>
             <RiGithubFill className="size-4" />
-            {type === 'sign-up' ? 'Sign up' : 'Sign in'}
-            {' '}
-            with GitHub
+            {type === 'sign-up' ? 'Sign up' : 'Sign in'} with GitHub
           </LoadingContent>
         </Button>
       </div>
@@ -142,18 +155,14 @@ function SocialAuthForm({ type }: { type: Type }) {
           <DialogHeader>
             <DialogTitle>Sign in on your browser</DialogTitle>
             <DialogDescription>
-              We've opened a browser window for you to sign in.
-              {' '}
-              If no window appeared,
-              {' '}
+              We've opened a browser window for you to sign in. If no window appeared,{' '}
               <button
                 type="button"
                 className="text-primary cursor-pointer hover:underline"
                 onClick={() => copy(googleUrl || githubUrl!, 'URL copied to clipboard')}
               >
                 copy the URL
-              </button>
-              {' '}
+              </button>{' '}
               and open the page manually.
             </DialogDescription>
           </DialogHeader>
@@ -168,7 +177,7 @@ function SocialAuthForm({ type }: { type: Type }) {
             <Input
               autoFocus
               value={manualAuthUrl}
-              onChange={e => setManualAuthUrl(e.target.value)}
+              onChange={(e) => setManualAuthUrl(e.target.value)}
               placeholder="Paste authentication URL here"
               className="w-full"
             />
@@ -184,23 +193,23 @@ export function AuthForm({ type }: { type: Type }) {
   const navigate = useNavigate()
 
   const form = useAppForm({
-    defaultValues: type === 'sign-up'
-      ? { email: '', password: '', name: '' }
-      : { email: '', password: '' },
+    defaultValues:
+      type === 'sign-up' ? { email: '', password: '', name: '' } : { email: '', password: '' },
     validators: {
       onSubmit: type === 'sign-up' ? signUpSchema : signInSchema,
     },
     onSubmit: async ({ value }) => {
-      const { error, data } = type === 'sign-up'
-        ? await authClient.signUp.email({
-            email: value.email,
-            password: value.password,
-            name: (value as typeof signUpSchema.infer).name,
-          })
-        : await authClient.signIn.email({
-            email: value.email,
-            password: value.password,
-          })
+      const { error, data } =
+        type === 'sign-up'
+          ? await authClient.signUp.email({
+              email: value.email,
+              password: value.password,
+              name: (value as typeof signUpSchema.infer).name,
+            })
+          : await authClient.signIn.email({
+              email: value.email,
+              password: value.password,
+            })
 
       if (error || !(data && data.token)) {
         if (data && !data.token) {
@@ -208,7 +217,11 @@ export function AuthForm({ type }: { type: Type }) {
           return
         }
 
-        if (type === 'sign-up' && (error!.code === 'USER_ALREADY_EXISTS' || error!.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL')) {
+        if (
+          type === 'sign-up' &&
+          (error!.code === 'USER_ALREADY_EXISTS' ||
+            error!.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL')
+        ) {
           toast.error('User already exists. Please sign in or use a different email address.', {
             action: {
               label: 'Sign in',
@@ -217,8 +230,7 @@ export function AuthForm({ type }: { type: Type }) {
               },
             },
           })
-        }
-        else {
+        } else {
           handleError(error)
         }
         return
@@ -229,7 +241,7 @@ export function AuthForm({ type }: { type: Type }) {
     },
   })
 
-  const isSubmitting = useStore(form.store, state => state.isSubmitting)
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
   return (
     <>
@@ -249,7 +261,7 @@ export function AuthForm({ type }: { type: Type }) {
       >
         <FieldGroup className="gap-4">
           <form.AppField name="email">
-            {field => (
+            {(field) => (
               <field.Input
                 label="Email"
                 placeholder="example@gmail.com"
@@ -265,7 +277,7 @@ export function AuthForm({ type }: { type: Type }) {
 
           {type === 'sign-up' && (
             <form.AppField name="name">
-              {field => (
+              {(field) => (
                 <field.Input
                   label="Name"
                   placeholder="John Doe"
@@ -277,46 +289,38 @@ export function AuthForm({ type }: { type: Type }) {
             </form.AppField>
           )}
 
-          {type === 'sign-in'
-            ? (
-                <form.AppField name="password">
-                  {field => (
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Password</span>
-                        <Button variant="link" size="xs" className="text-muted-foreground" asChild>
-                          <Link to="/forgot-password">
-                            Forgot password?
-                          </Link>
-                        </Button>
-                      </div>
-                      <field.Password
-                        showPassword={showPassword}
-                        onToggle={() => setShowPassword(!showPassword)}
-                        autoComplete="password"
-                      />
-                    </div>
-                  )}
-                </form.AppField>
-              )
-            : (
-                <form.AppField name="password">
-                  {field => (
-                    <field.Password
-                      label="Password"
-                      showPassword={showPassword}
-                      onToggle={() => setShowPassword(!showPassword)}
-                      autoComplete="password"
-                    />
-                  )}
-                </form.AppField>
+          {type === 'sign-in' ? (
+            <form.AppField name="password">
+              {(field) => (
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Password</span>
+                    <Button variant="link" size="xs" className="text-muted-foreground" asChild>
+                      <Link to="/forgot-password">Forgot password?</Link>
+                    </Button>
+                  </div>
+                  <field.Password
+                    showPassword={showPassword}
+                    onToggle={() => setShowPassword(!showPassword)}
+                    autoComplete="password"
+                  />
+                </div>
               )}
+            </form.AppField>
+          ) : (
+            <form.AppField name="password">
+              {(field) => (
+                <field.Password
+                  label="Password"
+                  showPassword={showPassword}
+                  onToggle={() => setShowPassword(!showPassword)}
+                  autoComplete="password"
+                />
+              )}
+            </form.AppField>
+          )}
 
-          <Button
-            className="w-full"
-            type="submit"
-            disabled={isSubmitting}
-          >
+          <Button className="w-full" type="submit" disabled={isSubmitting}>
             <LoadingContent loading={isSubmitting}>
               {type === 'sign-up' ? 'Get started' : 'Sign in'}
             </LoadingContent>

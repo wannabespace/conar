@@ -2,17 +2,40 @@ import type { DatabaseType } from '@conar/shared/enums/database-type'
 import { COLOR_OPTIONS, LABEL_OPTIONS } from '@conar/shared/constants'
 import { Button } from '@conar/ui/components/button'
 import { ButtonGroup } from '@conar/ui/components/button-group'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@conar/ui/components/card'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiLoopLeftLine } from '@remixicon/react'
 import { useId } from 'react'
 import { ConnectionDetails } from '~/components/connection-details'
 
-export function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel, color, setColor }: {
+export function StepSave({
+  type,
+  name,
+  connectionString,
+  setName,
+  onRandomName,
+  saveInCloud,
+  setSaveInCloud,
+  label,
+  setLabel,
+  color,
+  setColor,
+}: {
   type: DatabaseType
   name: string
   connectionString: string
@@ -48,23 +71,16 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
                 placeholder="My connection"
                 autoFocus
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value)}
               />
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={onRandomName}
-                    >
+                    <Button type="button" variant="outline" size="icon" onClick={onRandomName}>
                       <RiLoopLeftLine />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent sideOffset={8}>
-                    Generate a random connection name
-                  </TooltipContent>
+                  <TooltipContent sideOffset={8}>Generate a random connection name</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
@@ -72,19 +88,17 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
 
           <div>
             <Label htmlFor={labelId} className="mb-2">
-              Label
-              {' '}
-              <span className="text-xs text-muted-foreground/50">(optional)</span>
+              Label <span className="text-xs text-muted-foreground/50">(optional)</span>
             </Label>
             <div className="flex flex-col gap-2">
               <Input
                 id={labelId}
                 placeholder="Development, Production, Staging, etc."
                 value={label ?? ''}
-                onChange={e => setLabel(e.target.value)}
+                onChange={(e) => setLabel(e.target.value)}
               />
               <ButtonGroup>
-                {LABEL_OPTIONS.map(option => (
+                {LABEL_OPTIONS.map((option) => (
                   <Button
                     key={option}
                     variant={label === option ? 'default' : 'outline'}
@@ -101,19 +115,18 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
 
           <div>
             <Label className="mb-2">
-              Color
-              {' '}
-              <span className="text-xs text-muted-foreground/50">(optional)</span>
+              Color <span className="text-xs text-muted-foreground/50">(optional)</span>
             </Label>
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap gap-2 mt-1">
-                {COLOR_OPTIONS.map(colorOption => (
+                {COLOR_OPTIONS.map((colorOption) => (
                   <button
                     key={colorOption}
                     type="button"
                     className={cn(
                       'size-6 rounded-full transition-all bg-(--color) cursor-pointer',
-                      color === colorOption && 'ring-2 ring-offset-2 ring-offset-background ring-(--color)',
+                      color === colorOption &&
+                        'ring-2 ring-offset-2 ring-offset-background ring-(--color)'
                     )}
                     style={{
                       '--color': colorOption,
@@ -133,7 +146,8 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
               Do you want to sync the password in our cloud?
             </label>
             <div className="text-xs text-muted-foreground/50 text-balance">
-              Syncing passwords in our cloud allows access from any device without re-entering the password.
+              Syncing passwords in our cloud allows access from any device without re-entering the
+              password.
               <br />
               If not synced, we will store the connection string without the password.
             </div>

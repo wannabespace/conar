@@ -4,7 +4,15 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useState } from 'react'
 
-export function ConnectionDetails({ className, connectionString, type }: { className?: string, connectionString: string, type: DatabaseType }) {
+export function ConnectionDetails({
+  className,
+  connectionString,
+  type,
+}: {
+  className?: string
+  connectionString: string
+  type: DatabaseType
+}) {
   const url = new SafeURL(connectionString)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -30,7 +38,11 @@ export function ConnectionDetails({ className, connectionString, type }: { class
               >
                 {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
               </button>
-              {showPassword ? url.password : Array.from({ length: url.password.length }).map(() => '*').join('')}
+              {showPassword
+                ? url.password
+                : Array.from({ length: url.password.length })
+                    .map(() => '*')
+                    .join('')}
             </td>
           </tr>
         )}

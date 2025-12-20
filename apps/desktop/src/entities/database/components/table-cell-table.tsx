@@ -23,51 +23,60 @@ import { TableCellContent } from './table-cell-content'
 
 const { useLoaderData } = getRouteApi('/(protected)/_protected/database/$id')
 
-export function TableCellTable({ schema, table, column, value }: { schema: string, table: string, column: string, value: unknown }) {
+export function TableCellTable({
+  schema,
+  table,
+  column,
+  value,
+}: {
+  schema: string
+  table: string
+  column: string
+  value: unknown
+}) {
   const { database } = useLoaderData()
-  const filters = [{
-    column,
-    ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
-    values: [value],
-  } satisfies ActiveFilter]
+  const filters = [
+    {
+      column,
+      ref: SQL_FILTERS_LIST.find((filter) => filter.operator === '=')!,
+      values: [value],
+    } satisfies ActiveFilter,
+  ]
   const orderBy = {}
-  const { data: rows, isPending: isRowsPending, error } = useInfiniteQuery(databaseRowsQuery({
-    database,
-    table,
-    schema,
-    query: {
-      filters,
-      orderBy,
-    },
-  }))
+  const {
+    data: rows,
+    isPending: isRowsPending,
+    error,
+  } = useInfiniteQuery(
+    databaseRowsQuery({
+      database,
+      table,
+      schema,
+      query: {
+        filters,
+        orderBy,
+      },
+    })
+  )
   const columns = useTableColumns({ database, table, schema })
   const tableColumns = useMemo(() => {
-    if (!columns)
-      return []
+    if (!columns) return []
 
     const sortedColumns: ColumnRenderer[] = columns
-      .toSorted((a, b) => a.primaryKey ? -1 : b.primaryKey ? 1 : 0)
-      .map(column => ({
-        id: column.id,
-        size: getColumnSize(column.type),
-        cell: props => (
-          <TableCellContent
-            value={props.value}
-            position={props.position}
-            style={props.style}
-          >
-            <span className="truncate">
-              {getDisplayValue(props.value, props.size)}
-            </span>
-          </TableCellContent>
-        ),
-        header: props => (
-          <TableHeaderCell
-            column={column}
-            {...props}
-          />
-        ),
-      }) satisfies ColumnRenderer)
+      .toSorted((a, b) => (a.primaryKey ? -1 : b.primaryKey ? 1 : 0))
+      .map(
+        (column) =>
+          ({
+            id: column.id,
+            size: getColumnSize(column.type),
+            cell: (props) => (
+              <TableCellContent value={props.value} position={props.position} style={props.style}>
+                <span className="truncate">{getDisplayValue(props.value, props.size)}</span>
+              </TableCellContent>
+            ),
+            header: (props) => <TableHeaderCell column={column} {...props} />,
+          }) satisfies ColumnRenderer
+      )
 
     return sortedColumns
   }, [columns])
@@ -82,26 +91,21 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
       <div className="size-full relative">
         <div className="px-4 flex items-center justify-between h-8 text-xs text-muted-foreground bg-background">
           <div>
-            Showing records from
-            {' '}
+            Showing records from{' '}
             <Badge data-mask variant="secondary">
               {schema === 'public' ? '' : `${schema}.`}
               {table}
+            </Badge>{' '}
+            where{' '}
+            <Badge data-mask variant="secondary">
+              {column}
+            </Badge>{' '}
+            ={' '}
+            <Badge data-mask variant="secondary">
+              {String(value)}
             </Badge>
-            {' '}
-            where
-            {' '}
-            <Badge data-mask variant="secondary">{column}</Badge>
-            {' '}
-            =
-            {' '}
-            <Badge data-mask variant="secondary">{String(value)}</Badge>
           </div>
-          <Button
-            variant="outline"
-            size="xs"
-            asChild
-          >
+          <Button variant="outline" size="xs" asChild>
             <Link
               to="/database/$id/table"
               params={{ id: database.id }}
@@ -114,26 +118,34 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
         </div>
         <Table className="bg-background h-[calc(100%-(--spacing(8)))] rounded-b-lg">
           <TableHeader />
-          {isRowsPending
-            ? <TableBodySkeleton />
-            : error
-              ? <TableError error={error} />
-              : rows?.length === 0
-                ? <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
-                : tableColumns.length === 0
-                  ? <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />
-                  : (
-                      <>
-                        <TableBody data-mask className="bg-background" />
-                        <TableInfiniteLoader
-                          table={table}
-                          schema={schema}
-                          database={database}
-                          filters={filters}
-                          orderBy={orderBy}
-                        />
-                      </>
-                    )}
+          {isRowsPending ? (
+            <TableBodySkeleton />
+          ) : error ? (
+            <TableError error={error} />
+          ) : rows?.length === 0 ? (
+            <TableEmpty
+              className="bottom-0 h-[calc(100%-5rem)]"
+              title="Table is empty"
+              description="There are no records to show"
+            />
+          ) : tableColumns.length === 0 ? (
+            <TableEmpty
+              className="h-[calc(100%-5rem)]"
+              title="No columns to show"
+              description="Please show at least one column"
+            />
+          ) : (
+            <>
+              <TableBody data-mask className="bg-background" />
+              <TableInfiniteLoader
+                table={table}
+                schema={schema}
+                database={database}
+                filters={filters}
+                orderBy={orderBy}
+              />
+            </>
+          )}
         </Table>
       </div>
     </TableProvider>

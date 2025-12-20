@@ -43,18 +43,14 @@ function ForgotPasswordPage() {
     return (
       <div className="flex flex-col justify-center gap-4">
         <div className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            Email sent successfully
-          </h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Email sent successfully</h2>
           <p className="text-sm text-muted-foreground max-w-sm">
-            We've sent you an email with a link to reset your password.
-            Click the link and create a new password.
+            We've sent you an email with a link to reset your password. Click the link and create a
+            new password.
           </p>
         </div>
         <Button asChild>
-          <Link to="/sign-in">
-            Back to sign In
-          </Link>
+          <Link to="/sign-in">Back to sign In</Link>
         </Button>
       </div>
     )
@@ -79,7 +75,7 @@ function ForgotPasswordPage() {
       >
         <FieldGroup>
           <form.AppField name="email">
-            {field => (
+            {(field) => (
               <field.Input
                 label="Email"
                 placeholder="example@gmail.com"
@@ -92,24 +88,12 @@ function ForgotPasswordPage() {
             )}
           </form.AppField>
 
-          <Button
-            className="w-full"
-            type="submit"
-            disabled={status === 'pending'}
-          >
-            <LoadingContent loading={status === 'pending'}>
-              Send reset link
-            </LoadingContent>
+          <Button className="w-full" type="submit" disabled={status === 'pending'}>
+            <LoadingContent loading={status === 'pending'}>Send reset link</LoadingContent>
           </Button>
 
-          <Button
-            variant="link"
-            className="w-full text-center text-muted-foreground"
-            asChild
-          >
-            <Link to="/sign-in">
-              Back to sign in
-            </Link>
+          <Button variant="link" className="w-full text-center text-muted-foreground" asChild>
+            <Link to="/sign-in">Back to sign in</Link>
           </Button>
         </FieldGroup>
       </form>

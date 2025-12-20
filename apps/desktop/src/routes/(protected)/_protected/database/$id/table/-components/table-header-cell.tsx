@@ -2,9 +2,23 @@ import type { TableHeaderCellProps } from '~/components/table'
 import type { Column } from '~/entities/database'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine } from '@remixicon/react'
+import {
+  RiArrowDownLine,
+  RiArrowUpDownLine,
+  RiArrowUpLine,
+  RiBookOpenLine,
+  RiEraserLine,
+  RiFingerprintLine,
+  RiKey2Line,
+  RiLinksLine,
+} from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { databaseEnumsQuery } from '~/entities/database'
@@ -13,7 +27,7 @@ import { usePageStoreContext } from '../-store'
 
 const CANNOT_SORT_TYPES = ['json']
 
-function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null, onClick: () => void }) {
+function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null; onClick: () => void }) {
   return (
     <TooltipProvider>
       <Tooltip>
@@ -24,17 +38,13 @@ function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null, onClick:
             onClick={onClick}
             className={cn(order !== null && 'text-primary')}
           >
-            {order === 'ASC'
-              ? (
-                  <RiArrowUpLine className="size-3" />
-                )
-              : order === 'DESC'
-                ? (
-                    <RiArrowDownLine className="size-3" />
-                  )
-                : (
-                    <RiArrowUpDownLine className="size-3 opacity-30" />
-                  )}
+            {order === 'ASC' ? (
+              <RiArrowUpLine className="size-3" />
+            ) : order === 'DESC' ? (
+              <RiArrowDownLine className="size-3" />
+            ) : (
+              <RiArrowUpDownLine className="size-3 opacity-30" />
+            )}
           </Button>
         </TooltipTrigger>
         <TooltipContent>
@@ -59,10 +69,10 @@ export function TableHeaderCell({
 } & TableHeaderCellProps) {
   const { database } = Route.useLoaderData()
   const store = usePageStoreContext()
-  const order = useStore(store, state => state.orderBy?.[column.id] ?? null)
+  const order = useStore(store, (state) => state.orderBy?.[column.id] ?? null)
   const { data: enumData } = useQuery({
     ...databaseEnumsQuery({ database }),
-    select: data => data?.find(e => e.name === column.enum),
+    select: (data) => data?.find((e) => e.name === column.enum),
   })
 
   return (
@@ -71,7 +81,7 @@ export function TableHeaderCell({
         'flex w-full items-center justify-between shrink-0 p-2',
         position === 'first' && 'pl-4',
         position === 'last' && 'pr-4',
-        className,
+        className
       )}
       style={style}
       data-position={position}
@@ -79,11 +89,7 @@ export function TableHeaderCell({
       data-column-id={column.id}
     >
       <div className="text-xs overflow-hidden">
-        <div
-          data-mask
-          className="truncate font-medium flex items-center gap-1"
-          title={column.id}
-        >
+        <div data-mask className="truncate font-medium flex items-center gap-1" title={column.id}>
           {column.id}
         </div>
         {column?.type && (
@@ -99,9 +105,7 @@ export function TableHeaderCell({
                       <RiKey2Line className="size-3 text-primary" />
                       <span>Primary key</span>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {column.primaryKey}
-                    </div>
+                    <div className="text-xs text-muted-foreground">{column.primaryKey}</div>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -132,9 +136,7 @@ export function TableHeaderCell({
                       <RiFingerprintLine className="size-3 text-muted-foreground/70" />
                       <span>Unique</span>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {column.unique}
-                    </div>
+                    <div className="text-xs text-muted-foreground">{column.unique}</div>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -166,51 +168,35 @@ export function TableHeaderCell({
                       <span>Foreign key</span>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {column.foreign.name}
-                      {' '}
-                      (
-                      {column.foreign.table}
-                      .
-                      {column.foreign.column}
-                      )
+                      {column.foreign.name} ({column.foreign.table}.{column.foreign.column})
                     </div>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
-            {enumData
-              ? (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-muted-foreground truncate font-mono underline decoration-dotted">
-                          {column.type}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="text-xs text-muted-foreground">
-                          Available values:
-                        </div>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {enumData.values.map((val: string) => (
-                            <Badge
-                              key={val}
-                              variant="secondary"
-                              className="font-mono text-xs"
-                            >
-                              {val}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )
-              : (
-                  <span className="text-muted-foreground truncate font-mono">
-                    {column.type}
-                  </span>
-                )}
+            {enumData ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-muted-foreground truncate font-mono underline decoration-dotted">
+                      {column.type}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-xs text-muted-foreground">Available values:</div>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {enumData.values.map((val: string) => (
+                        <Badge key={val} variant="secondary" className="font-mono text-xs">
+                          {val}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <span className="text-muted-foreground truncate font-mono">{column.type}</span>
+            )}
           </div>
         )}
       </div>

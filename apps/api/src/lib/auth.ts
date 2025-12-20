@@ -4,7 +4,15 @@ import { PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import {
+  anonymous,
+  bearer,
+
+  createAuthMiddleware,
+  lastLoginMethod,
+  organization,
+  twoFactor,
+} from 'better-auth/plugins'
 import { consola } from 'consola'
 import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
@@ -28,8 +36,7 @@ async function loopsUpdateUser(user: User) {
         },
       })
     }
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof Error) {
       consola.error('Failed to update loops contact', error.message)
     }
@@ -47,15 +54,14 @@ function noSetCookiePlugin() {
     hooks: {
       after: [
         {
-          matcher: ctx => !!ctx.request?.headers.get('x-desktop'),
+          matcher: (ctx) => !!ctx.request?.headers.get('x-desktop'),
           handler: createAuthMiddleware(async (ctx) => {
             const headers = ctx.context.responseHeaders
 
             if (headers) {
               const setCookies = headers.get('set-cookie')
 
-              if (!setCookies)
-                return
+              if (!setCookies) return
 
               headers.delete('set-cookie')
             }

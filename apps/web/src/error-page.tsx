@@ -1,6 +1,13 @@
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Toaster } from '@conar/ui/components/sonner'
 import { ThemeObserver } from '@conar/ui/theme-observer'
@@ -23,9 +30,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                 <RiAlertLine className="size-8 text-destructive" />
               </div>
               <CardTitle className="text-xl">Something went wrong</CardTitle>
-              <CardDescription>
-                An error occurred while rendering this page
-              </CardDescription>
+              <CardDescription>An error occurred while rendering this page</CardDescription>
             </CardHeader>
             <CardContent>
               {!(error instanceof TraversalError) && !error.stack && (
@@ -43,16 +48,9 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                   {error.arkErrors.map((err, index) => (
                     // eslint-disable-next-line react/no-array-index-key
                     <div key={index} className="mb-4 last:mb-0">
-                      <div className="font-semibold text-destructive">
-                        Error
-                        {' '}
-                        {index + 1}
-                        :
-                      </div>
+                      <div className="font-semibold text-destructive">Error {index + 1}:</div>
                       <div className="ml-2 mt-1">
-                        <div>
-                          {err.message}
-                        </div>
+                        <div>{err.message}</div>
                       </div>
                     </div>
                   ))}
@@ -68,18 +66,11 @@ export function ErrorPage({ error }: ErrorComponentProps) {
               )}
             </CardContent>
             <CardFooter className="flex justify-between gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => router.history.back()}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => router.history.back()}>
                 <RiArrowGoBackLine className="mr-1" />
                 Go back
               </Button>
-              <Button
-                className="flex-1"
-                onClick={() => window.location.reload()}
-              >
+              <Button className="flex-1" onClick={() => window.location.reload()}>
                 <RiLoopLeftLine className="mr-1" />
                 Refresh
               </Button>

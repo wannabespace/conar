@@ -1,6 +1,5 @@
 export function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0)
-    return '0 Bytes'
+  if (bytes === 0) return '0 Bytes'
 
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals
@@ -25,15 +24,13 @@ export function downloadFile(content: string, fileName: string, mimeType: string
     link.click()
     document.body.removeChild(link)
     link.remove()
-  }
-  finally {
+  } finally {
     URL.revokeObjectURL(url)
   }
 }
 
 export function escapeCSVValue(value: unknown) {
-  if (value === null || value === undefined)
-    return ''
+  if (value === null || value === undefined) return ''
 
   const stringValue = String(value)
 

@@ -24,23 +24,20 @@ export function AuthObserver() {
         email: data.user.email,
         name: data.user.name,
       })
-    }
-    else {
+    } else {
       identifyUser(null)
     }
   }, [data?.user])
 
   useEffect(() => {
-    if (isPending)
-      return
+    if (isPending) return
 
     /**
      * An error can be only on the server side
      * To not block the app, we navigate to the home page to continue working
      */
     if (isSignedInButServerError) {
-      if (authRoutes.includes(location.pathname))
-        router.navigate({ to: '/' })
+      if (authRoutes.includes(location.pathname)) router.navigate({ to: '/' })
 
       return
     }
@@ -56,7 +53,9 @@ export function AuthObserver() {
 
   useEffect(() => {
     if (isSignedInButServerError && online)
-      toast.error('Something went wrong with our server. You can continue working, but some features may not work as expected.')
+      toast.error(
+        'Something went wrong with our server. You can continue working, but some features may not work as expected.'
+      )
   }, [isSignedInButServerError, online])
 
   async function handle(url: string) {
@@ -64,8 +63,7 @@ export function AuthObserver() {
 
     if (type === 'session') {
       refetch()
-    }
-    else if (type === 'reset-password') {
+    } else if (type === 'reset-password') {
       router.navigate({ to: '/reset-password' })
     }
   }

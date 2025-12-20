@@ -9,7 +9,9 @@ import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
 
-const todesktop = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
+const todesktop = createRequire(import.meta.url)(
+  '@todesktop/runtime'
+) as typeof import('@todesktop/runtime')
 
 todesktop.init()
 
@@ -44,8 +46,7 @@ export function createWindow() {
 
   const bounds = store.get('bounds')
 
-  if (bounds)
-    mainWindow.setBounds(bounds)
+  if (bounds) mainWindow.setBounds(bounds)
 
   const isFullscreen = store.get('fullscreen', false) as boolean
   if (isFullscreen) {
@@ -53,8 +54,7 @@ export function createWindow() {
   }
 
   mainWindow.on('close', () => {
-    if (!mainWindow)
-      return
+    if (!mainWindow) return
 
     store.set('bounds', mainWindow.getBounds())
     store.set('fullscreen', mainWindow.isFullScreen())
@@ -72,9 +72,10 @@ export function createWindow() {
   if (process.env.ELECTRON_RENDERER_URL) {
     mainWindow.webContents.openDevTools()
     mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
-  }
-  else {
-    mainWindow.loadFile(path.join(path.dirname(fileURLToPath(import.meta.url)), '../renderer/index.html'))
+  } else {
+    mainWindow.loadFile(
+      path.join(path.dirname(fileURLToPath(import.meta.url)), '../renderer/index.html')
+    )
   }
 
   return mainWindow
@@ -114,7 +115,13 @@ app.on('activate', () => {
   }
 })
 
-export function sendToast({ message, type }: { message: string, type: 'success' | 'error' | 'info' }) {
+export function sendToast({
+  message,
+  type,
+}: {
+  message: string
+  type: 'success' | 'error' | 'info'
+}) {
   mainWindow?.webContents.send('toast', { message, type })
 }
 

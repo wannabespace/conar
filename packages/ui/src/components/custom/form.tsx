@@ -1,12 +1,7 @@
 import type { ReactNode } from 'react'
 import type React from 'react'
 import { Button } from '@conar/ui/components/button'
-import {
-  Field,
-  FieldContent,
-  FieldError,
-  FieldLabel,
-} from '@conar/ui/components/field'
+import { Field, FieldContent, FieldError, FieldLabel } from '@conar/ui/components/field'
 import { Input } from '@conar/ui/components/input'
 import { useFieldContext } from '@conar/ui/hooks/use-app-form'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
@@ -31,9 +26,7 @@ function FieldBase({
       orientation={horizontal ? 'horizontal' : undefined}
       className={className}
     >
-      <FieldContent>
-        {label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}
-      </FieldContent>
+      <FieldContent>{label && <FieldLabel htmlFor={field.name}>{label}</FieldLabel>}</FieldContent>
       {children({ invalid })}
       {invalid && <FieldError errors={field.state.meta.errors} />}
     </Field>
@@ -50,18 +43,17 @@ export function FieldInput({
 
   return (
     <FieldBase label={label} className="gap-2">
-      {({ invalid }) =>
-        (
-          <Input
-            id={field.name}
-            name={field.name}
-            value={field.state.value}
-            onBlur={field.handleBlur}
-            onChange={e => field.handleChange(e.target.value)}
-            aria-invalid={invalid}
-            {...props}
-          />
-        )}
+      {({ invalid }) => (
+        <Input
+          id={field.name}
+          name={field.name}
+          value={field.state.value}
+          onBlur={field.handleBlur}
+          onChange={(e) => field.handleChange(e.target.value)}
+          aria-invalid={invalid}
+          {...props}
+        />
+      )}
     </FieldBase>
   )
 }
@@ -89,7 +81,7 @@ export function FieldPassword({
             placeholder={placeholder}
             value={field.state.value}
             onBlur={field.handleBlur}
-            onChange={e => field.handleChange(e.target.value)}
+            onChange={(e) => field.handleChange(e.target.value)}
             aria-invalid={invalid}
             {...props}
           />
@@ -100,12 +92,12 @@ export function FieldPassword({
             className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
             onClick={onToggle}
           >
-            {showPassword
-              ? <RiEyeOffLine className="size-4" aria-hidden="true" />
-              : <RiEyeLine className="size-4" aria-hidden="true" />}
-            <span className="sr-only">
-              {showPassword ? 'Hide password' : 'Show password'}
-            </span>
+            {showPassword ? (
+              <RiEyeOffLine className="size-4" aria-hidden="true" />
+            ) : (
+              <RiEyeLine className="size-4" aria-hidden="true" />
+            )}
+            <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
           </Button>
         </div>
       )}

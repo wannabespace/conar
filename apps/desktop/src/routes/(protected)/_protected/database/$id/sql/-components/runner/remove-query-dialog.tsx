@@ -1,5 +1,14 @@
 import type { queries } from '~/drizzle'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@conar/ui/components/alert-dialog'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { queriesCollection } from '~/entities/query'
@@ -14,16 +23,19 @@ export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState<typeof queries.$inferSelect | null>(null)
 
-  useImperativeHandle(ref, () => ({
-    remove: (q: typeof queries.$inferSelect) => {
-      setQuery(q)
-      setOpen(true)
-    },
-  }), [])
+  useImperativeHandle(
+    ref,
+    () => ({
+      remove: (q: typeof queries.$inferSelect) => {
+        setQuery(q)
+        setOpen(true)
+      },
+    }),
+    []
+  )
 
   function removeQuery() {
-    if (!query)
-      return
+    if (!query) return
 
     queriesCollection.delete(query.id)
     toast.success('Query removed successfully')

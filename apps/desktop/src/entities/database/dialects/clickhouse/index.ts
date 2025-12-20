@@ -19,10 +19,7 @@ function prepareQuery(compiledQuery: CompiledQuery) {
     return `'${param.replace(/'/g, `\\'`).replace(/\\"/g, '\\\\"')}'`
   })
 
-  return compiledSql.replace(
-    /^update ((`\w+`\.)*`\w+`) set/i,
-    'alter table $1 update',
-  )
+  return compiledSql.replace(/^update ((`\w+`\.)*`\w+`) set/i, 'alter table $1 update')
 }
 
 function execute(database: typeof databases.$inferSelect, compiledQuery: CompiledQuery) {

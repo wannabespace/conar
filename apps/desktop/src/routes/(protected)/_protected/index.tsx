@@ -6,7 +6,17 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
+import {
+  RiAddLine,
+  RiCheckLine,
+  RiDiscordLine,
+  RiDownloadLine,
+  RiGithubLine,
+  RiGlobalLine,
+  RiLoader4Line,
+  RiLoopLeftLine,
+  RiTwitterXLine,
+} from '@remixicon/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useDatabasesSync } from '~/entities/database'
@@ -23,7 +33,7 @@ export const Route = createFileRoute('/(protected)/_protected/')({
 
 function DashboardPage() {
   const { sync, isSyncing } = useDatabasesSync()
-  const [version, versionStatus] = useStore(updatesStore, state => [state.version, state.status])
+  const [version, versionStatus] = useStore(updatesStore, (state) => [state.version, state.status])
 
   return (
     <ScrollArea className="overflow-auto">
@@ -33,18 +43,14 @@ function DashboardPage() {
         </h1>
         <Profile className="mb-8" />
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl lg:text-4xl font-bold">
-            Connections
-          </h2>
+          <h2 className="text-3xl lg:text-4xl font-bold">Connections</h2>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={isSyncing}
-              onClick={() => sync()}
-            >
+            <Button variant="outline" size="icon" disabled={isSyncing} onClick={() => sync()}>
               <LoadingContent loading={isSyncing}>
-                <ContentSwitch active={isSyncing} activeContent={<RiCheckLine className="text-success" />}>
+                <ContentSwitch
+                  active={isSyncing}
+                  activeContent={<RiCheckLine className="text-success" />}
+                >
                   <RiLoopLeftLine />
                 </ContentSwitch>
               </LoadingContent>
@@ -99,21 +105,17 @@ function DashboardPage() {
               onClick={() => checkForUpdates()}
               className="cursor-pointer text-xs text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors"
             >
-              Current version
-              {' '}
-              v
-              {version}
-            </button>
-            {' '}
-            {versionStatus === 'checking' && <RiLoader4Line className="size-3 animate-spin text-muted-foreground/50" />}
+              Current version v{version}
+            </button>{' '}
+            {versionStatus === 'checking' && (
+              <RiLoader4Line className="size-3 animate-spin text-muted-foreground/50" />
+            )}
             {versionStatus === 'downloading' && (
               <Tooltip>
                 <TooltipTrigger>
                   <RiDownloadLine className="size-3 animate-bounce text-muted-foreground/50" />
                 </TooltipTrigger>
-                <TooltipContent>
-                  Downloading update...
-                </TooltipContent>
+                <TooltipContent>Downloading update...</TooltipContent>
               </Tooltip>
             )}
           </div>

@@ -17,8 +17,7 @@ export function useScrollInfo(ref: React.RefObject<HTMLElement | null>) {
 
   const updateScrollInfo = React.useCallback(() => {
     const el = ref.current
-    if (!el)
-      return
+    if (!el) return
 
     const { scrollLeft, scrollTop, scrollWidth, scrollHeight, clientWidth, clientHeight } = el
 
@@ -33,8 +32,7 @@ export function useScrollInfo(ref: React.RefObject<HTMLElement | null>) {
 
   React.useEffect(() => {
     const el = ref.current
-    if (!el)
-      return
+    if (!el) return
 
     updateScrollInfo()
 

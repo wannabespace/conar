@@ -13,19 +13,25 @@ export function Enter() {
   return <RiCornerDownLeftLine className="size-3" />
 }
 
-export function CtrlEnter({ userAgent, className, ...props }: ComponentProps<'kbd'> & { userAgent: string }) {
+export function CtrlEnter({
+  userAgent,
+  className,
+  ...props
+}: ComponentProps<'kbd'> & { userAgent: string }) {
   return (
-    <kbd
-      className={cn('flex items-center text-xs', className)}
-      {...props}
-    >
+    <kbd className={cn('flex items-center text-xs', className)} {...props}>
       <Ctrl userAgent={userAgent} />
       <Enter />
     </kbd>
   )
 }
 
-export function CtrlLetter({ userAgent, letter, className, ...props }: ComponentProps<'kbd'> & { userAgent: string, letter: string }) {
+export function CtrlLetter({
+  userAgent,
+  letter,
+  className,
+  ...props
+}: ComponentProps<'kbd'> & { userAgent: string; letter: string }) {
   return (
     <kbd className={cn('flex items-center text-xs', className)} {...props}>
       <Ctrl userAgent={userAgent} />
@@ -34,7 +40,11 @@ export function CtrlLetter({ userAgent, letter, className, ...props }: Component
   )
 }
 
-export function ShiftCtrlEnter({ userAgent, className, ...props }: ComponentProps<'kbd'> & { userAgent: string }) {
+export function ShiftCtrlEnter({
+  userAgent,
+  className,
+  ...props
+}: ComponentProps<'kbd'> & { userAgent: string }) {
   return (
     <kbd className={cn('flex items-center text-xs', className)} {...props}>
       <Ctrl userAgent={userAgent} />

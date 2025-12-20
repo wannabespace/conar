@@ -14,7 +14,7 @@ function Toaster() {
       toastOptions={{
         style: {
           '--z-index': '100',
-          'zIndex': 'calc(var(--z-index) - var(--index))',
+          zIndex: 'calc(var(--z-index) - var(--index))',
         },
       }}
       style={{

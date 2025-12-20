@@ -2,7 +2,14 @@ import type { databases } from '~/drizzle'
 import type { DatabaseMutationMetadata } from '~/entities/database'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
 import { RiArrowLeftSLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
@@ -30,27 +37,33 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
         connectionString: newConnectionString,
         sql: 'SELECT 1',
       })
-      databasesCollection.update(database.id, {
-        metadata: {
-          sync: false,
-        } satisfies DatabaseMutationMetadata,
-      }, (draft) => {
-        const url = new SafeURL(draft.connectionString)
+      databasesCollection.update(
+        database.id,
+        {
+          metadata: {
+            sync: false,
+          } satisfies DatabaseMutationMetadata,
+        },
+        (draft) => {
+          const url = new SafeURL(draft.connectionString)
 
-        url.password = password
+          url.password = password
 
-        draft.connectionString = url.toString()
-        draft.isPasswordPopulated = true
-      })
+          draft.connectionString = url.toString()
+          draft.isPasswordPopulated = true
+        }
+      )
     },
     onSuccess: () => {
       toast.success('Password successfully saved!')
       setPassword('')
     },
     onError: (error) => {
-      toast.error('We couldn\'t connect to the database', {
+      toast.error("We couldn't connect to the database", {
         // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
-        description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
+        description: (
+          <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />
+        ),
       })
     },
   })
@@ -90,7 +103,7 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
                     placeholder="••••••••"
                     value={password}
                     disabled={status === 'pending'}
-                    onChange={e => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                     type={showPassword ? 'text' : 'password'}
                     autoCapitalize="none"
                     autoFocus
@@ -107,19 +120,17 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >
-                    {showPassword
-                      ? <RiEyeOffLine className="size-4" />
-                      : <RiEyeLine className="size-4" />}
+                    {showPassword ? (
+                      <RiEyeOffLine className="size-4" />
+                    ) : (
+                      <RiEyeLine className="size-4" />
+                    )}
                   </Button>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={status === 'pending'}
-              >
+              <Button type="submit" className="w-full" disabled={status === 'pending'}>
                 <LoadingContent loading={status === 'pending'}>
                   {status === 'error' ? 'Retry Saving Password' : 'Save Password'}
                 </LoadingContent>

@@ -1,10 +1,22 @@
 import { databaseLabels, DatabaseType } from '@conar/shared/enums/database-type'
 import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@conar/ui/components/card'
 import { DatabaseIcon } from '~/entities/database'
 import { MongoIcon } from '~/icons/mongo'
 
-export function StepType({ type, setType }: { type: DatabaseType | null, setType: (type: DatabaseType) => void }) {
+export function StepType({
+  type,
+  setType,
+}: {
+  type: DatabaseType | null
+  setType: (type: DatabaseType) => void
+}) {
   return (
     <Card className="w-full">
       <CardHeader>
@@ -13,7 +25,7 @@ export function StepType({ type, setType }: { type: DatabaseType | null, setType
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-2">
-          {Object.values(DatabaseType).map(dbType => (
+          {Object.values(DatabaseType).map((dbType) => (
             <Button
               key={dbType}
               variant={type === dbType ? 'default' : 'outline'}
@@ -24,7 +36,11 @@ export function StepType({ type, setType }: { type: DatabaseType | null, setType
               {databaseLabels[dbType]}
             </Button>
           ))}
-          <Button variant="outline" disabled className="flex items-center gap-2 px-4 py-2 opacity-60">
+          <Button
+            variant="outline"
+            disabled
+            className="flex items-center gap-2 px-4 py-2 opacity-60"
+          >
             <MongoIcon />
             MongoDB (soon)
           </Button>

@@ -14,7 +14,9 @@ async function getUserSecret(userId: string) {
   })
 
   if (!user) {
-    throw new ORPCError('UNAUTHORIZED', { message: `We could not find the user with id ${userId}. Please sign in again.` })
+    throw new ORPCError('UNAUTHORIZED', {
+      message: `We could not find the user with id ${userId}. Please sign in again.`,
+    })
   }
 
   return user.secret
@@ -26,7 +28,9 @@ export const authMiddleware = orpc.middleware(async ({ context, next }) => {
   })
 
   if (!session) {
-    throw new ORPCError('UNAUTHORIZED', { message: 'We could not find your session. Please sign in again.' })
+    throw new ORPCError('UNAUTHORIZED', {
+      message: 'We could not find your session. Please sign in again.',
+    })
   }
 
   return next({

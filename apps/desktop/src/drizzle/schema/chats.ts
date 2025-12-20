@@ -12,7 +12,9 @@ export const chats = pgTable('chats', {
 
 export const chatsMessages = pgTable('chats_messages', {
   ...baseTable,
-  chatId: uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
+  chatId: uuid()
+    .references(() => chats.id, { onDelete: 'cascade' })
+    .notNull(),
   parts: jsonb().array().$type<AppUIMessage['parts']>().notNull(),
   role: text().$type<AppUIMessage['role']>().notNull(),
   metadata: jsonb().$type<NonNullable<AppUIMessage['metadata']>>(),

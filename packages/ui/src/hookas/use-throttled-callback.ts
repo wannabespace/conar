@@ -4,7 +4,7 @@ import * as React from 'react'
 export function useThrottledCallback<T extends (...args: any[]) => any>(
   fn: T,
   deps: React.DependencyList,
-  delay: number,
+  delay: number
 ): (...args: Parameters<T>) => void {
   const lastExecutedRef = React.useRef(0)
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -24,8 +24,7 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
         }
         lastExecutedRef.current = now
         fn(...args)
-      }
-      else if (!timerRef.current) {
+      } else if (!timerRef.current) {
         timerRef.current = setTimeout(() => {
           lastExecutedRef.current = Date.now()
           timerRef.current = null
@@ -36,14 +35,17 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [fn, delay, ...deps],
+    [fn, delay, ...deps]
   )
 
-  React.useEffect(() => () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current)
-    }
-  }, [])
+  React.useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+      }
+    },
+    []
+  )
 
   return throttledFn
 }

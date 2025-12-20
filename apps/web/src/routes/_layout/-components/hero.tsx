@@ -20,7 +20,10 @@ export function Hero({ className }: { className?: string }) {
   return (
     <motion.section
       style={{ opacity }}
-      className={cn('py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 sm:gap-8 lg:gap-12', className)}
+      className={cn(
+        'py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 sm:gap-8 lg:gap-12',
+        className
+      )}
     >
       <div className="w-full lg:w-auto lg:flex-1">
         <h1 className="text-[clamp(2.5rem,min(8vh,8vw),5rem)] leading-[0.9] font-medium text-balance">
@@ -36,10 +39,7 @@ export function Hero({ className }: { className?: string }) {
             animate={{ opacity: 1, filter: 'blur(0px)' }}
             transition={{ duration: 0.5, delay: 0.05 }}
           >
-            <FlipWords
-              words={Object.values(words)}
-              duration={2000}
-            />
+            <FlipWords words={Object.values(words)} duration={2000} />
           </motion.span>
           <br />
           <motion.span
@@ -48,8 +48,7 @@ export function Hero({ className }: { className?: string }) {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             quickly
-          </motion.span>
-          {' '}
+          </motion.span>{' '}
           <motion.span
             initial={{ opacity: 0, filter: 'blur(10px)' }}
             animate={{ opacity: 1, filter: 'blur(0px)' }}
@@ -74,7 +73,8 @@ export function Hero({ className }: { className?: string }) {
           transition={{ duration: 0.5, delay: 0.25 }}
           className="text-muted-foreground text-balance text-base sm:text-lg lg:text-xl text-left lg:text-right"
         >
-          Conar is an AI-powered data management tool that lets you focus on working with your data while it handles the complexity
+          Conar is an AI-powered data management tool that lets you focus on working with your data
+          while it handles the complexity
         </motion.h2>
         <motion.div
           initial={{ opacity: 0, filter: 'blur(10px)', y: 20 }}
@@ -83,15 +83,8 @@ export function Hero({ className }: { className?: string }) {
           className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full lg:w-auto"
         >
           <DownloadButton />
-          <Button
-            variant="secondary"
-            asChild
-            size="lg"
-            className="w-full sm:w-auto"
-          >
-            <Link to="/download">
-              All platforms
-            </Link>
+          <Button variant="secondary" asChild size="lg" className="w-full sm:w-auto">
+            <Link to="/download">All platforms</Link>
           </Button>
         </motion.div>
       </div>

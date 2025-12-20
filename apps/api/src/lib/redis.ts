@@ -17,6 +17,4 @@ export function createRedisPubSub() {
   }
 }
 
-export const redis: Redis = env.REDIS_URL
-  ? new Redis(`${env.REDIS_URL}?family=0`)
-  : new RedisMock()
+export const redis: Redis = env.REDIS_URL ? new Redis(`${env.REDIS_URL}?family=0`) : new RedisMock()

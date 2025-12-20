@@ -25,8 +25,7 @@ function findEnvExampleFiles(dir: string, r: string[] = []) {
 
     if (stats.isDirectory()) {
       findEnvExampleFiles(fullPath, r)
-    }
-    else if (item === '.env.example') {
+    } else if (item === '.env.example') {
       r.push(fullPath)
     }
   }
@@ -50,7 +49,7 @@ function createEnvFile(envExamplePath: string) {
     return true
   }
   catch (error) {
-    console.error(`Failed to create .env file: ${envPath}`, error instanceof Error ? error.message : error)
+    console.error(`Failed to create .env file: ${envPath}`, error.message)
     return false
   }
 }

@@ -3,7 +3,20 @@ import { Button } from '@conar/ui/components/button'
 import { Input } from '@conar/ui/components/input'
 import { Separator } from '@conar/ui/components/separator'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAddLine, RiBardLine, RiChatAiLine, RiCloseLine, RiCloudLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiEyeLine, RiFilterLine, RiSendPlaneLine, RiUserLine } from '@remixicon/react'
+import {
+  RiAddLine,
+  RiBardLine,
+  RiChatAiLine,
+  RiCloseLine,
+  RiCloudLine,
+  RiDatabase2Line,
+  RiDeleteBinLine,
+  RiEditLine,
+  RiEyeLine,
+  RiFilterLine,
+  RiSendPlaneLine,
+  RiUserLine,
+} from '@remixicon/react'
 
 interface FeatureCardProps extends ComponentProps<'article'> {
   featureId: string
@@ -55,9 +68,7 @@ function FilterItem({ name, operator, value, onRemove }: FilterItemProps) {
         {name}
       </div>
       <Separator orientation="vertical" />
-      <div className="text-xs px-2 py-0.5 h-full text-muted-foreground font-mono">
-        {operator}
-      </div>
+      <div className="text-xs px-2 py-0.5 h-full text-muted-foreground font-mono">{operator}</div>
       <Separator orientation="vertical" />
       <div className="text-xs px-2 font-mono truncate max-w-20 sm:max-w-40 lg:max-w-60 text-foreground">
         {value}
@@ -86,7 +97,10 @@ function FilterWithAI() {
       />
       <div className="space-y-3 sm:space-y-4">
         <div className="relative w-full">
-          <RiBardLine className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" aria-hidden="true" />
+          <RiBardLine
+            className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+            aria-hidden="true"
+          />
           <Input
             className="pl-10 pr-12 w-full focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary text-sm"
             value="price between 500 and 1000"
@@ -115,7 +129,11 @@ function FilterWithAI() {
           </Button>
         </div>
         <div className="border rounded-lg overflow-hidden overflow-x-auto">
-          <table className="w-full text-xs min-w-[400px]" role="table" aria-label="Filtered data results">
+          <table
+            className="w-full text-xs min-w-[400px]"
+            role="table"
+            aria-label="Filtered data results"
+          >
             <thead className="bg-muted/50">
               <tr>
                 <th className="text-left p-2 sm:p-3 font-medium text-foreground">ID</th>
@@ -146,7 +164,7 @@ function FilterWithAI() {
 }
 
 interface MessageProps {
-  'children': React.ReactNode
+  children: React.ReactNode
   'aria-label'?: string
 }
 
@@ -217,7 +235,9 @@ function CloudSync() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-foreground">Local Database</div>
-            <div className="text-xs text-muted-foreground font-mono truncate">postgresql://localhost:5432</div>
+            <div className="text-xs text-muted-foreground font-mono truncate">
+              postgresql://localhost:5432
+            </div>
           </div>
           <div className="text-xs flex flex-col items-end gap-1 shrink-0">
             <span className="text-green-600 dark:text-green-400 font-medium">Synced</span>
@@ -230,7 +250,9 @@ function CloudSync() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-foreground">Production Database</div>
-            <div className="text-xs text-muted-foreground font-mono truncate">postgresql://prod.example.com:5432</div>
+            <div className="text-xs text-muted-foreground font-mono truncate">
+              postgresql://prod.example.com:5432
+            </div>
           </div>
           <div className="text-xs flex items-center gap-1 shrink-0">
             <span className="text-green-600 dark:text-green-400 font-medium">Synced</span>
@@ -250,9 +272,11 @@ interface DataActionCardProps {
 
 function DataActionCard({ icon, title, description, color }: DataActionCardProps) {
   const colorClasses = {
-    green: 'from-green-500/10 to-green-600/10 border-green-500/20 hover:border-green-500/40 text-green-700 dark:text-green-400',
+    green:
+      'from-green-500/10 to-green-600/10 border-green-500/20 hover:border-green-500/40 text-green-700 dark:text-green-400',
     blue: 'from-blue-500/10 to-blue-600/10 border-blue-500/20 hover:border-blue-500/40 text-blue-700 dark:text-blue-400',
-    yellow: 'from-yellow-500/10 to-yellow-600/10 border-yellow-500/20 hover:border-yellow-500/40 text-yellow-700 dark:text-yellow-400',
+    yellow:
+      'from-yellow-500/10 to-yellow-600/10 border-yellow-500/20 hover:border-yellow-500/40 text-yellow-700 dark:text-yellow-400',
     red: 'from-red-500/10 to-red-600/10 border-red-500/20 hover:border-red-500/40 text-red-700 dark:text-red-400',
   }
 
@@ -271,16 +295,18 @@ function DataActionCard({ icon, title, description, color }: DataActionCardProps
   }
 
   return (
-    <div className={cn(
-      'p-3 sm:p-4 bg-gradient-to-br rounded-lg border hover:shadow-md transition-all duration-300 cursor-pointer',
-      colorClasses[color],
-    )}
+    <div
+      className={cn(
+        'p-3 sm:p-4 bg-gradient-to-br rounded-lg border hover:shadow-md transition-all duration-300 cursor-pointer',
+        colorClasses[color]
+      )}
     >
       <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-        <div className={cn(
-          'size-6 sm:size-7 rounded-md flex items-center justify-center flex-shrink-0',
-          bgColorClasses[color],
-        )}
+        <div
+          className={cn(
+            'size-6 sm:size-7 rounded-md flex items-center justify-center flex-shrink-0',
+            bgColorClasses[color]
+          )}
         >
           <div className={cn(iconColorClasses[color])} aria-hidden="true">
             {icon}
@@ -341,7 +367,10 @@ export function Features() {
   return (
     <section aria-labelledby="features-heading" className="py-8 sm:py-12 lg:py-16">
       <div className="mb-12 sm:mb-16 text-center">
-        <h2 id="features-heading" className="text-center mb-3 text-muted-foreground text-sm uppercase tracking-wide font-medium">
+        <h2
+          id="features-heading"
+          className="text-center mb-3 text-muted-foreground text-sm uppercase tracking-wide font-medium"
+        >
           Features
         </h2>
         <p className="text-center text-balance text-3xl sm:text-4xl md:text-5xl font-bold max-w-3xl mx-auto leading-tight">

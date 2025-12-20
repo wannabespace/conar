@@ -5,23 +5,35 @@ import { sql } from 'kysely'
 import { createQuery } from '../query'
 
 // eslint-disable-next-line ts/no-explicit-any
-export function buildWhere<E extends ExpressionBuilder<any, any>>(eb: E, filters: ActiveFilter[], concatOperator: 'AND' | 'OR' = 'AND') {
+export function buildWhere<E extends ExpressionBuilder<any, any>>(
+  eb: E,
+  filters: ActiveFilter[],
+  concatOperator: 'AND' | 'OR' = 'AND'
+) {
   const concat = concatOperator === 'AND' ? eb.and : eb.or
 
   return concat(
-    filters.map(filter => sql.join([
-      sql.ref(filter.column),
-      sql.raw(filter.ref.operator.toLowerCase()),
-      filter.ref.hasValue === false
-        ? undefined
-        : filter.ref.isArray
-          ? sql.join([
-              sql.raw('('),
-              sql.join(filter.values.map(value => sql.val(String(value).trim()))),
-              sql.raw(')'),
-            ], sql.raw(''))
-          : sql.val(filter.values[0]),
-    ].filter(Boolean), sql.raw(' '))),
+    filters.map((filter) =>
+      sql.join(
+        [
+          sql.ref(filter.column),
+          sql.raw(filter.ref.operator.toLowerCase()),
+          filter.ref.hasValue === false
+            ? undefined
+            : filter.ref.isArray
+              ? sql.join(
+                  [
+                    sql.raw('('),
+                    sql.join(filter.values.map((value) => sql.val(String(value).trim()))),
+                    sql.raw(')'),
+                  ],
+                  sql.raw('')
+                )
+              : sql.val(filter.values[0]),
+        ].filter(Boolean),
+        sql.raw(' ')
+      )
+    )
   )
 }
 
@@ -53,9 +65,11 @@ export const rowsQuery = createQuery({
         .withSchema(schema)
         .withTables<{ [table]: Record<string, unknown> }>()
         .selectFrom(table)
-        .$if(select !== undefined, qb => qb.select(select!))
-        .$if(select === undefined, qb => qb.selectAll())
-        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
+        .$if(select !== undefined, (qb) => qb.select(select!))
+        .$if(select === undefined, (qb) => qb.selectAll())
+        .$if(filters !== undefined, (qb) =>
+          qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator))
+        )
         .limit(limit)
         .offset(offset)
 
@@ -74,9 +88,11 @@ export const rowsQuery = createQuery({
         .withSchema(schema)
         .withTables<{ [table]: Record<string, unknown> }>()
         .selectFrom(table)
-        .$if(select !== undefined, qb => qb.select(select!))
-        .$if(select === undefined, qb => qb.selectAll())
-        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
+        .$if(select !== undefined, (qb) => qb.select(select!))
+        .$if(select === undefined, (qb) => qb.selectAll())
+        .$if(filters !== undefined, (qb) =>
+          qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator))
+        )
         .limit(limit)
         .offset(offset)
 
@@ -95,10 +111,12 @@ export const rowsQuery = createQuery({
         .withSchema(schema)
         .withTables<{ [table]: Record<string, unknown> }>()
         .selectFrom(table)
-        .$if(select !== undefined, qb => qb.select(select!))
-        .$if(select === undefined, qb => qb.selectAll())
-        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
-        .$if(order.length === 0, qb => qb.orderBy(sql<string>`(select null)`))
+        .$if(select !== undefined, (qb) => qb.select(select!))
+        .$if(select === undefined, (qb) => qb.selectAll())
+        .$if(filters !== undefined, (qb) =>
+          qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator))
+        )
+        .$if(order.length === 0, (qb) => qb.orderBy(sql<string>`(select null)`))
         .limit(limit)
         .offset(offset)
 
@@ -117,9 +135,11 @@ export const rowsQuery = createQuery({
         .withSchema(schema)
         .withTables<{ [table]: Record<string, unknown> }>()
         .selectFrom(table)
-        .$if(select !== undefined, qb => qb.select(select!))
-        .$if(select === undefined, qb => qb.selectAll())
-        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
+        .$if(select !== undefined, (qb) => qb.select(select!))
+        .$if(select === undefined, (qb) => qb.selectAll())
+        .$if(filters !== undefined, (qb) =>
+          qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator))
+        )
         .limit(limit)
         .offset(offset)
 

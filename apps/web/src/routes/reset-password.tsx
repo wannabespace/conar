@@ -28,24 +28,15 @@ function RouteComponent() {
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <Card className="max-w-md w-full">
         <CardHeader>
-          <CardTitle>
-            Reset your password
-          </CardTitle>
+          <CardTitle>Reset your password</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
-          <p>
-            Click the button below to open the Conar desktop app and reset your password.
-          </p>
+          <p>Click the button below to open the Conar desktop app and reset your password.</p>
           <div className="flex flex-col gap-4">
             <p className="text-sm text-muted-foreground">
               If the app didn't open automatically, click the button below.
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={openApp}
-              className="w-full"
-            >
+            <Button variant="outline" size="sm" onClick={openApp} className="w-full">
               Open Conar
             </Button>
           </div>

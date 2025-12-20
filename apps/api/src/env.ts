@@ -53,16 +53,20 @@ const devOptionalEnvs = [
   'GITHUB_TOKEN',
 ] satisfies (keyof typeof envType.infer)[]
 
-export const env = nodeEnv === 'production' || nodeEnv === 'test'
-  ? envType.assert(process.env)
-  : envType
-      .merge(
-        devOptionalEnvs.reduce((acc, env) => {
-          acc[env] = 'string?'
-          if (!process.env[env]) {
-            consola.warn(`"${env}" is not set in env file`)
-          }
-          return acc
-        }, {} as { [K in typeof devOptionalEnvs[number]]: 'string?' }),
-      )
-      .assert(process.env)
+export const env =
+  nodeEnv === 'production' || nodeEnv === 'test'
+    ? envType.assert(process.env)
+    : envType
+        .merge(
+          devOptionalEnvs.reduce(
+            (acc, env) => {
+              acc[env] = 'string?'
+              if (!process.env[env]) {
+                consola.warn(`"${env}" is not set in env file`)
+              }
+              return acc
+            },
+            {} as { [K in (typeof devOptionalEnvs)[number]]: 'string?' }
+          )
+        )
+        .assert(process.env)

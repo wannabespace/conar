@@ -13,29 +13,22 @@ export function Profile({ className }: { className?: string }) {
       <div className="flex flex-row items-center gap-4">
         <UserAvatar className="size-16" fallbackClassName="text-2xl" />
         <div>
-          {data?.user
-            ? (
-                <>
-                  <h3 className="text-2xl font-semibold">{data.user.name || 'User'}</h3>
-                  <p className="text-sm text-muted-foreground">{data.user.email}</p>
-                </>
-              )
-            : (
-                <>
-                  <div className="space-y-2">
-                    <Skeleton className="h-6 w-50 bg-accent/70" />
-                    <Skeleton className="h-4 w-32 bg-accent/70" />
-                  </div>
-                </>
-              )}
+          {data?.user ? (
+            <>
+              <h3 className="text-2xl font-semibold">{data.user.name || 'User'}</h3>
+              <p className="text-sm text-muted-foreground">{data.user.email}</p>
+            </>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-50 bg-accent/70" />
+                <Skeleton className="h-4 w-32 bg-accent/70" />
+              </div>
+            </>
+          )}
         </div>
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => signOut()}
-        disabled={isSigningOut}
-      >
+      <Button variant="outline" size="sm" onClick={() => signOut()} disabled={isSigningOut}>
         <LoadingContent loading={isSigningOut}>
           <RiLogoutBoxLine />
           Sign out

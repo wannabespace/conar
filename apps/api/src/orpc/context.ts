@@ -7,14 +7,11 @@ export function createContext(c: HonoContext) {
 
   const h = new Headers()
 
-  if (cookie)
-    h.set('Cookie', cookie)
+  if (cookie) h.set('Cookie', cookie)
 
-  if (authorization)
-    h.set('Authorization', authorization)
+  if (authorization) h.set('Authorization', authorization)
 
-  if (desktopVersion)
-    h.set('x-desktop-version', desktopVersion)
+  if (desktopVersion) h.set('x-desktop-version', desktopVersion)
 
   return {
     headers: h,

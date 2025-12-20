@@ -15,41 +15,57 @@ import { Route } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
 
-export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
+export function HeaderSearch({ table, schema }: { table: string; schema: string }) {
   const { database } = Route.useLoaderData()
   const store = usePageStoreContext()
-  const prompt = useStore(store, state => state.prompt)
-  const { mutate: generateFilter, isPending } = useMutation(orpcQuery.ai.filters.mutationOptions({
-    onSuccess: (data) => {
-      store.setState(state => ({
-        ...state,
-        // ...(data.orderBy && Object.keys(data.orderBy).length > 0 ? { orderBy: data.orderBy } : {}),
-        filters: data.filters.map(filter => ({
-          column: filter.column,
-          ref: SQL_FILTERS_LIST.find(f => f.operator === filter.operator)!,
-          values: filter.values,
-        } satisfies ActiveFilter)),
-      } satisfies typeof state))
+  const prompt = useStore(store, (state) => state.prompt)
+  const { mutate: generateFilter, isPending } = useMutation(
+    orpcQuery.ai.filters.mutationOptions({
+      onSuccess: (data) => {
+        store.setState(
+          (state) =>
+            ({
+              ...state,
+              // ...(data.orderBy && Object.keys(data.orderBy).length > 0 ? { orderBy: data.orderBy } : {}),
+              filters: data.filters.map(
+                (filter) =>
+                  ({
+                    column: filter.column,
+                    ref: SQL_FILTERS_LIST.find((f) => f.operator === filter.operator)!,
+                    values: filter.values,
+                  }) satisfies ActiveFilter
+              ),
+            }) satisfies typeof state
+        )
 
-      if (data.filters.length === 0) {
-        toast.info('No filters were generated, please try again with a different prompt')
-      }
-    },
-  }))
+        if (data.filters.length === 0) {
+          toast.info('No filters were generated, please try again with a different prompt')
+        }
+      },
+    })
+  )
   const columns = useTableColumns({ database, table, schema })
   const { data: enums } = useDatabaseEnums({ database })
-  const context = useMemo(() => `
+  const context = useMemo(
+    () =>
+      `
     Filters working with AND operator.
     Table name: ${table}
     Schema name: ${schema}
-    Columns: ${JSON.stringify(columns?.map(col => ({
-      id: col.id,
-      type: col.type,
-      default: col.default,
-      isNullable: col.isNullable,
-    })), null, 2)}
+    Columns: ${JSON.stringify(
+      columns?.map((col) => ({
+        id: col.id,
+        type: col.type,
+        default: col.default,
+        isNullable: col.isNullable,
+      })),
+      null,
+      2
+    )}
     Enums: ${JSON.stringify(enums, null, 2)}
-  `.trim(), [columns, enums, schema, table])
+  `.trim(),
+    [columns, enums, schema, table]
+  )
 
   return (
     <form
@@ -65,7 +81,9 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         placeholder="Ask AI to filter data..."
         disabled={isPending}
         value={prompt}
-        onChange={e => store.setState(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
+        onChange={(e) =>
+          store.setState((state) => ({ ...state, prompt: e.target.value }) satisfies typeof state)
+        }
       />
       <Button
         type="submit"

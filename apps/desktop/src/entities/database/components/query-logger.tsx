@@ -10,7 +10,16 @@ import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiCheckboxCircleLine, RiCheckLine, RiCloseCircleLine, RiCloseLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
+import {
+  RiArrowDownLine,
+  RiCheckboxCircleLine,
+  RiCheckLine,
+  RiCloseCircleLine,
+  RiCloseLine,
+  RiDeleteBinLine,
+  RiFileListLine,
+  RiTimeLine,
+} from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useState } from 'react'
@@ -25,8 +34,7 @@ type QueryStatus = 'error' | 'success' | 'pending'
 function getStatusIcon(status: QueryStatus) {
   if (status === 'success') {
     return <RiCheckboxCircleLine className="size-4 text-success" />
-  }
-  else if (status === 'error') {
+  } else if (status === 'error') {
     return <RiCloseCircleLine className="size-4 text-destructive" />
   }
 
@@ -34,24 +42,23 @@ function getStatusIcon(status: QueryStatus) {
 }
 
 function getQueryStatus(query: SqlLog) {
-  if (query.error)
-    return 'error'
-  if (query.result !== null)
-    return 'success'
+  if (query.error) return 'error'
+  if (query.result !== null) return 'success'
   return 'pending'
 }
 
 function LogTrigger({ query, className, ...props }: { query: SqlLog } & ComponentProps<'button'>) {
   const status = getQueryStatus(query)
   const truncatedQuery = query.sql.replaceAll('\n', ' ')
-  const shortQuery = truncatedQuery.length > 500 ? `${truncatedQuery.substring(0, 500)}...` : truncatedQuery
+  const shortQuery =
+    truncatedQuery.length > 500 ? `${truncatedQuery.substring(0, 500)}...` : truncatedQuery
 
   return (
     <button
       type="button"
       className={cn(
         'cursor-pointer w-full flex items-center gap-2 justify-between border-t py-1.5 px-4 hover:bg-muted/50',
-        className,
+        className
       )}
       {...props}
     >
@@ -69,9 +76,7 @@ function LogTrigger({ query, className, ...props }: { query: SqlLog } & Componen
       <span className="text-xs text-muted-foreground text-left tabular-nums w-12">
         {query.duration ? `${query.duration.toFixed()}ms` : ''}
       </span>
-      <code className="text-xs font-mono flex-1 truncate text-left">
-        {shortQuery}
-      </code>
+      <code className="text-xs font-mono flex-1 truncate text-left">{shortQuery}</code>
     </button>
   )
 }
@@ -84,23 +89,26 @@ const monacoOptions = {
   folding: false,
 }
 
-function Log({ query, className, database }: { query: SqlLog, className?: string, database: typeof databases.$inferSelect }) {
+function Log({
+  query,
+  className,
+  database,
+}: {
+  query: SqlLog
+  className?: string
+  database: typeof databases.$inferSelect
+}) {
   const [isOpen, setIsOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
 
   const formatValues = (values?: unknown[]) => {
-    if (!values || values.length === 0)
-      return ''
-    return `[${values.map(v => typeof v === 'string' ? `"${v}"` : String(v)).join(', ')}]`
+    if (!values || values.length === 0) return ''
+    return `[${values.map((v) => (typeof v === 'string' ? `"${v}"` : String(v))).join(', ')}]`
   }
 
   if (!canInteract) {
     return (
-      <LogTrigger
-        query={query}
-        className={className}
-        onMouseEnter={() => setCanInteract(true)}
-      />
+      <LogTrigger query={query} className={className} onMouseEnter={() => setCanInteract(true)} />
     )
   }
 
@@ -119,10 +127,7 @@ function Log({ query, className, database }: { query: SqlLog, className?: string
           onMouseLeave={closePopover}
         />
       </PopoverTrigger>
-      <PopoverContent
-        className="flex gap-4 w-[95vw]"
-        onAnimationEnd={closePopover}
-      >
+      <PopoverContent className="flex gap-4 w-[95vw]" onAnimationEnd={closePopover}>
         <div className="flex-1 min-w-0 space-y-2">
           <div className="space-y-2">
             <Label>Query</Label>
@@ -168,46 +173,59 @@ function Log({ query, className, database }: { query: SqlLog, className?: string
   )
 }
 
-export function QueryLogger({ database, className }: {
+export function QueryLogger({
+  database,
+  className,
+}: {
   database: typeof databases.$inferSelect
   className?: string
 }) {
-  const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
-  const queries = useStore(sqlLogsStore, state => Object.values(state[database.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()))
+  const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({
+    initial: 'instant',
+  })
+  const queries = useStore(sqlLogsStore, (state) =>
+    Object.values(state[database.id] || {}).toSorted(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    )
+  )
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
   const [isClearing, setIsClearing] = useState(false)
   const store = databaseStore(database.id)
 
   const filteredQueries = useMemo(() => {
     if (statusGroup) {
-      return queries.filter(query => getQueryStatus(query) === statusGroup)
+      return queries.filter((query) => getQueryStatus(query) === statusGroup)
     }
     return queries
   }, [queries, statusGroup])
 
-  const statusCounts = queries.reduce((counts, query) => {
-    if (query.error) {
-      counts.error++
-    }
-    else if (query.result) {
-      counts.success++
-    }
-    else {
-      counts.pending++
-    }
-    return counts
-  }, { success: 0, error: 0, pending: 0 })
+  const statusCounts = queries.reduce(
+    (counts, query) => {
+      if (query.error) {
+        counts.error++
+      } else if (query.result) {
+        counts.success++
+      } else {
+        counts.pending++
+      }
+      return counts
+    },
+    { success: 0, error: 0, pending: 0 }
+  )
 
   const clearQueries = () => {
     setIsClearing(true)
-    sqlLogsStore.setState(state => ({
-      ...state,
-      [database.id]: {},
-    } satisfies typeof state))
+    sqlLogsStore.setState(
+      (state) =>
+        ({
+          ...state,
+          [database.id]: {},
+        }) satisfies typeof state
+    )
   }
 
   const toggleGroup = (status: QueryStatus) => {
-    setStatusGroup(prev => prev === status ? undefined : status)
+    setStatusGroup((prev) => (prev === status ? undefined : status))
   }
 
   const { getVirtualItems, getTotalSize } = useVirtualizer({
@@ -223,7 +241,10 @@ export function QueryLogger({ database, className }: {
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.style.setProperty('--scroll-top-offset', `${virtualItems[0]?.start ?? 0}px`)
-      scrollRef.current.style.setProperty('--scroll-bottom-offset', `${totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0)}px`)
+      scrollRef.current.style.setProperty(
+        '--scroll-bottom-offset',
+        `${totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0)}px`
+      )
     }
   }, [scrollRef, virtualItems, totalSize])
 
@@ -231,9 +252,7 @@ export function QueryLogger({ database, className }: {
     <div className={cn('flex flex-col justify-between h-full', className)}>
       <div className="flex items-center justify-between py-2 px-4">
         <div className="flex items-center gap-2">
-          <CardTitle>
-            Query Logger
-          </CardTitle>
+          <CardTitle>Query Logger</CardTitle>
           <ButtonGroup>
             <Button
               size="xs"
@@ -265,11 +284,7 @@ export function QueryLogger({ database, className }: {
           </ButtonGroup>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={clearQueries}
-          >
+          <Button variant="outline" size="icon-sm" onClick={clearQueries}>
             <ContentSwitch
               activeContent={<RiCheckLine className="size-4 text-success" />}
               active={isClearing}
@@ -281,7 +296,9 @@ export function QueryLogger({ database, className }: {
           <Button
             variant="outline"
             size="icon-sm"
-            onClick={() => store.setState(state => ({ ...state, loggerOpened: false } satisfies typeof state))}
+            onClick={() =>
+              store.setState((state) => ({ ...state, loggerOpened: false }) satisfies typeof state)
+            }
           >
             <RiCloseLine className="size-4" />
           </Button>
@@ -291,7 +308,7 @@ export function QueryLogger({ database, className }: {
         ref={scrollRef}
         className={cn(
           'min-h-0 relative',
-          filteredQueries.length === 0 && 'flex flex-col items-center justify-center py-12',
+          filteredQueries.length === 0 && 'flex flex-col items-center justify-center py-12'
         )}
       >
         {filteredQueries.length === 0 && (
@@ -304,7 +321,7 @@ export function QueryLogger({ database, className }: {
         )}
         <div ref={contentRef} style={{ height: `${totalSize}px` }}>
           <div className="h-(--scroll-top-offset)" />
-          {virtualItems.map(virtualItem => (
+          {virtualItems.map((virtualItem) => (
             <Log
               key={virtualItem.key}
               query={filteredQueries[virtualItem.index]!}
@@ -315,7 +332,10 @@ export function QueryLogger({ database, className }: {
         </div>
         <div className="sticky bottom-0 h-0">
           <Button
-            className={cn('absolute bottom-2 left-1/2 -translate-x-1/2', isNearBottom ? 'opacity-0 pointer-events-none' : '')}
+            className={cn(
+              'absolute bottom-2 left-1/2 -translate-x-1/2',
+              isNearBottom ? 'opacity-0 pointer-events-none' : ''
+            )}
             variant="secondary"
             size="icon-sm"
             onClick={() => scrollToBottom()}

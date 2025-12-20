@@ -17,15 +17,26 @@ function getFallback(name: string | undefined, email: string | undefined) {
   return email?.slice(0, 2)
 }
 
-export function UserAvatar({ className, fallbackClassName }: { className?: string, fallbackClassName?: string }) {
+export function UserAvatar({
+  className,
+  fallbackClassName,
+}: {
+  className?: string
+  fallbackClassName?: string
+}) {
   const { data } = authClient.useSession()
 
-  const fallback = useMemo(() => getFallback(data?.user.name, data?.user.email), [data?.user.name, data?.user.email])
+  const fallback = useMemo(
+    () => getFallback(data?.user.name, data?.user.email),
+    [data?.user.name, data?.user.email]
+  )
 
   return (
     <Avatar className={cn('size-6', className)}>
       {data?.user.image && <AvatarImage src={data?.user.image} />}
-      <AvatarFallback className={cn('uppercase text-xs', fallbackClassName)}>{fallback}</AvatarFallback>
+      <AvatarFallback className={cn('uppercase text-xs', fallbackClassName)}>
+        {fallback}
+      </AvatarFallback>
     </Avatar>
   )
 }

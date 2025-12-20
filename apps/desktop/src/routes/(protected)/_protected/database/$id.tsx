@@ -1,5 +1,9 @@
 import { title } from '@conar/shared/utils/title'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@conar/ui/components/resizable'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
@@ -38,24 +42,29 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
 function DatabasePage() {
   const { database } = Route.useLoaderData()
   const currentPageId = useMatches({
-    select: matches => getDatabasePageId(matches.map(match => match.routeId)),
+    select: (matches) => getDatabasePageId(matches.map((match) => match.routeId)),
   })
   const store = databaseStore(database.id)
-  const loggerOpened = useStore(store, state => state.loggerOpened)
+  const loggerOpened = useStore(store, (state) => state.loggerOpened)
 
   useEffect(() => {
     if (currentPageId) {
-      store.setState(state => ({
-        ...state,
-        lastOpenedPage: currentPageId,
-      } satisfies typeof state))
+      store.setState(
+        (state) =>
+          ({
+            ...state,
+            lastOpenedPage: currentPageId,
+          }) satisfies typeof state
+      )
     }
   }, [currentPageId, store])
 
   useEffect(() => {
     const last = lastOpenedDatabases.get()
     if (!last.includes(database.id))
-      lastOpenedDatabases.set([database.id, ...last.filter(dbId => dbId !== database.id)].slice(0, 3))
+      lastOpenedDatabases.set(
+        [database.id, ...last.filter((dbId) => dbId !== database.id)].slice(0, 3)
+      )
   }, [database.id])
 
   if (database.isPasswordExists && !database.isPasswordPopulated) {
@@ -77,7 +86,12 @@ function DatabasePage() {
           {loggerOpened && (
             <>
               <ResizableHandle className="h-1! bg-body" />
-              <ResizablePanel defaultSize={30} minSize={10} maxSize={50} className="border overflow-auto rounded-lg bg-background">
+              <ResizablePanel
+                defaultSize={30}
+                minSize={10}
+                maxSize={50}
+                className="border overflow-auto rounded-lg bg-background"
+              >
                 <QueryLogger database={database} />
               </ResizablePanel>
             </>

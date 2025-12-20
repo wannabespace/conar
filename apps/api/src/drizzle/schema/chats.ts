@@ -7,29 +7,37 @@ import { encryptedJson } from '../utils'
 import { users } from './auth'
 import { databases } from './databases'
 
-export const chats = pgTable('chats', {
-  ...baseTable,
-  userId: uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }).notNull(),
-  title: text(),
-  activeStreamId: uuid(),
-}, t => [
-  index().on(t.userId),
-  index().on(t.databaseId),
-]).enableRLS()
+export const chats = pgTable(
+  'chats',
+  {
+    ...baseTable,
+    userId: uuid()
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    databaseId: uuid()
+      .references(() => databases.id, { onDelete: 'cascade' })
+      .notNull(),
+    title: text(),
+    activeStreamId: uuid(),
+  },
+  (t) => [index().on(t.userId), index().on(t.databaseId)]
+).enableRLS()
 
 export const chatsSelectSchema = createSelectSchema(chats)
 
-export const chatsMessages = pgTable('chats_messages', {
-  ...baseTable,
-  chatId: uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
-  parts: encryptedJson().array().$type<AppUIMessage['parts']>().notNull(),
-  role: text().$type<AppUIMessage['role']>().notNull(),
-  metadata: encryptedJson().$type<NonNullable<AppUIMessage['metadata']>>(),
-}, t => [
-  index().on(t.chatId),
-  index().on(t.role),
-]).enableRLS()
+export const chatsMessages = pgTable(
+  'chats_messages',
+  {
+    ...baseTable,
+    chatId: uuid()
+      .references(() => chats.id, { onDelete: 'cascade' })
+      .notNull(),
+    parts: encryptedJson().array().$type<AppUIMessage['parts']>().notNull(),
+    role: text().$type<AppUIMessage['role']>().notNull(),
+    metadata: encryptedJson().$type<NonNullable<AppUIMessage['metadata']>>(),
+  },
+  (t) => [index().on(t.chatId), index().on(t.role)]
+).enableRLS()
 
 export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
 

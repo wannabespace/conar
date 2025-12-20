@@ -8,11 +8,11 @@ import { usePageStoreContext } from '../-store'
 import { HeaderActions } from './header-actions'
 import { HeaderSearch } from './header-search'
 
-export function Header({ table, schema }: { table: string, schema: string }) {
+export function Header({ table, schema }: { table: string; schema: string }) {
   const { database } = Route.useLoaderData()
   const columns = useTableColumns({ database, table, schema })
   const store = usePageStoreContext()
-  const filters = useStore(store, state => state.filters)
+  const filters = useStore(store, (state) => state.filters)
   const { data: total } = useDatabaseTableTotal({ database, table, schema, query: { filters } })
 
   const columnsCount = columns?.length ?? 0
@@ -22,34 +22,23 @@ export function Header({ table, schema }: { table: string, schema: string }) {
       <div className="flex flex-1 gap-4 items-center">
         <div className="shrink-0">
           <h2 className="font-medium text-sm mb-0.5 space-x-1">
-            <span className="text-muted-foreground">
-              {schema}
-            </span>
-            {' '}
-            <span className="text-muted-foreground/20">/</span>
-            {' '}
-            <span data-mask>{table}</span>
+            <span className="text-muted-foreground">{schema}</span>{' '}
+            <span className="text-muted-foreground/20">/</span> <span data-mask>{table}</span>
           </h2>
           <p className="text-muted-foreground text-xs">
-            <span className="tabular-nums">{columnsCount}</span>
-            {' '}
-            column
-            {columnsCount === 1 ? '' : 's'}
-            {' '}
-            •
-            {' '}
-            {total !== undefined
-              ? (
-                  <NumberFlow
-                    className="tabular-nums"
-                    value={total}
-                    style={{
-                      '--number-flow-mask-height': '0px',
-                    }}
-                  />
-                )
-              : <span className="animate-pulse">...</span>}
-            {' '}
+            <span className="tabular-nums">{columnsCount}</span> column
+            {columnsCount === 1 ? '' : 's'} •{' '}
+            {total !== undefined ? (
+              <NumberFlow
+                className="tabular-nums"
+                value={total}
+                style={{
+                  '--number-flow-mask-height': '0px',
+                }}
+              />
+            ) : (
+              <span className="animate-pulse">...</span>
+            )}{' '}
             row
             {total !== undefined && total !== 1 && 's'}
           </p>
@@ -57,11 +46,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
         <Separator orientation="vertical" className="h-6!" />
         <HeaderSearch table={table} schema={schema} />
       </div>
-      <HeaderActions
-        table={table}
-        schema={schema}
-        database={database}
-      />
+      <HeaderActions table={table} schema={schema} database={database} />
     </div>
   )
 }

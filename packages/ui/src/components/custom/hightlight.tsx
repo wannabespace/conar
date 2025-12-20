@@ -15,16 +15,15 @@ export function HighlightText({
 }: {
   text: string
   match?: string
-  render?: ({ html, matched }: { html: string, matched: boolean }) => ReactNode
+  render?: ({ html, matched }: { html: string; matched: boolean }) => ReactNode
 }) {
-  if (!match)
-    return render({ html: text, matched: false })
+  if (!match) return render({ html: text, matched: false })
 
   const regex = new RegExp(escapeSpecialCharacters(match), 'gi')
 
   const html = text.replace(
     regex,
-    match => `<mark class="text-white bg-primary/50">${match}</mark>`,
+    (match) => `<mark class="text-white bg-primary/50">${match}</mark>`
   )
 
   return render({ html, matched: regex.test(text) })

@@ -13,9 +13,7 @@ function SignInPage() {
           Sign in to Conar
         </h1>
         <p className="text-sm text-muted-foreground">
-          Don't have an account?
-          {' '}
-          <Link to="/sign-up">Sign up</Link>
+          Don't have an account? <Link to="/sign-up">Sign up</Link>
         </p>
       </div>
       <AuthForm type="sign-in" />

@@ -10,8 +10,8 @@ import { getPool as getPgPool } from '../databases/pg'
 function isConnectionError(error: unknown) {
   if (error instanceof Error) {
     if (
-      error.message.includes('ECONNRESET')
-      || error.message.toLowerCase().includes('connection lost')
+      error.message.includes('ECONNRESET') ||
+      error.message.toLowerCase().includes('connection lost')
     ) {
       return true
     }
@@ -26,23 +26,26 @@ async function retryIfConnectionError<T>(func: () => Promise<T>, attempt: number
   try {
     const result = await func()
     if (attempt > 0) {
-      sendToast({ message: `Database connection successful after reconnection ${attempt} attempt${attempt > 1 ? 's' : ''}.`, type: 'success' })
+      sendToast({
+        message: `Database connection successful after reconnection ${attempt} attempt${attempt > 1 ? 's' : ''}.`,
+        type: 'success',
+      })
     }
     return result
-  }
-  catch (error) {
+  } catch (error) {
     if (isConnectionError(error) && attempt < MAX_RECONNECTION_ATTEMPTS) {
       sendToast({
         message: `Could not connect to the database. Reconnection attempt ${attempt + 1}/${MAX_RECONNECTION_ATTEMPTS}.`,
         type: 'info',
       })
 
-      await new Promise(resolve => setTimeout(resolve, RECONNECTION_DELAY))
+      await new Promise((resolve) => setTimeout(resolve, RECONNECTION_DELAY))
       return retryIfConnectionError(func, attempt + 1)
     }
     if (attempt >= MAX_RECONNECTION_ATTEMPTS) {
       sendToast({
-        message: 'Could not connect to the database. Please check your network or database server and try again.',
+        message:
+          'Could not connect to the database. Please check your network or database server and try again.',
         type: 'error',
       })
     }
@@ -56,7 +59,15 @@ interface QueryResult {
 }
 
 const queryMap = {
-  postgres: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
+  postgres: async ({
+    connectionString,
+    sql,
+    values,
+  }: {
+    sql: string
+    values: unknown[]
+    connectionString: string
+  }) => {
     let start = 0
     const result = await retryIfConnectionError(async () => {
       const pool = await getPgPool(connectionString)
@@ -66,7 +77,15 @@ const queryMap = {
 
     return { result: result.rows as unknown, duration: performance.now() - start }
   },
-  mysql: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
+  mysql: async ({
+    connectionString,
+    sql,
+    values,
+  }: {
+    sql: string
+    values: unknown[]
+    connectionString: string
+  }) => {
     let start = 0
     const [result] = await retryIfConnectionError(async () => {
       const pool = await getMysqlPool(connectionString)
@@ -76,22 +95,24 @@ const queryMap = {
 
     return { result: result as unknown, duration: performance.now() - start! }
   },
-  clickhouse: async ({ connectionString, sql }: { sql: string, connectionString: string, insertValues?: unknown[] }) => {
+  clickhouse: async ({
+    connectionString,
+    sql,
+  }: {
+    sql: string
+    connectionString: string
+    insertValues?: unknown[]
+  }) => {
     const client = getClickhouseClient(connectionString)
-    const isSelect = [
-      'SELECT',
-      'SHOW',
-      'DESCRIBE',
-      'EXPLAIN',
-      'WITH',
-      'CHECK',
-    ].some(keyword => sql.trim().toUpperCase().startsWith(keyword))
+    const isSelect = ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN', 'WITH', 'CHECK'].some((keyword) =>
+      sql.trim().toUpperCase().startsWith(keyword)
+    )
     let start = 0
 
     if (isSelect) {
       const result = await retryIfConnectionError(() => {
         start = performance.now()
-        return client.query({ query: sql, format: 'JSONEachRow' }).then(result => result.json())
+        return client.query({ query: sql, format: 'JSONEachRow' }).then((result) => result.json())
       })
       return { result, duration: performance.now() - start }
     }
@@ -103,7 +124,15 @@ const queryMap = {
 
     return { result: [], duration: performance.now() - start }
   },
-  mssql: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
+  mssql: async ({
+    connectionString,
+    sql,
+    values,
+  }: {
+    sql: string
+    values: unknown[]
+    connectionString: string
+  }) => {
     let start = 0
 
     const result = await retryIfConnectionError(async () => {
@@ -120,7 +149,7 @@ const queryMap = {
 
     return { result: result.recordset as unknown, duration: performance.now() - start! }
   },
-// eslint-disable-next-line ts/no-explicit-any
+  // eslint-disable-next-line ts/no-explicit-any
 } satisfies Record<DatabaseType, (...args: any[]) => Promise<QueryResult>>
 
 const encryption = {

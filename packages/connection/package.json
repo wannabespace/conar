@@ -1,7 +1,7 @@
 {
   "name": "@conar/connection",
-  "type": "module",
   "private": true,
+  "type": "module",
   "exports": {
     ".": "./src/index.ts",
     "./ssl/pg": "./src/ssl/pg.ts",

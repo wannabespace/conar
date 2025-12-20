@@ -1,12 +1,23 @@
 import { isCtrlAndKey } from '@conar/shared/utils/os'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@conar/ui/components/alert-dialog'
 import { ShiftCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { RiAlertLine } from '@remixicon/react'
 import { useImperativeHandle, useRef, useState } from 'react'
 import { DANGEROUS_SQL_KEYWORDS } from '~/entities/database'
 
-const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
+const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map((keyword) => `\\b${keyword}\\b`).join(
+  '|'
+)
 
 export function RunnerAlertDialog({
   ref,
@@ -15,8 +26,10 @@ export function RunnerAlertDialog({
 }) {
   const [open, setOpen] = useState(false)
   const [queries, setQueries] = useState<string[]>([])
-  const dangerousKeywords = queries.flatMap(query => query.match(new RegExp(dangerousKeywordsPattern, 'gi')) || [])
-  const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map(k => k.toUpperCase()))]
+  const dangerousKeywords = queries.flatMap(
+    (query) => query.match(new RegExp(dangerousKeywordsPattern, 'gi')) || []
+  )
+  const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map((k) => k.toUpperCase()))]
   const callback = useRef<() => void>(null)
 
   useImperativeHandle(ref, () => ({
@@ -32,7 +45,7 @@ export function RunnerAlertDialog({
     setOpen(false)
   }
 
-  useKeyboardEvent(e => isCtrlAndKey(e, 'Enter') && e.shiftKey, onConfirm)
+  useKeyboardEvent((e) => isCtrlAndKey(e, 'Enter') && e.shiftKey, onConfirm)
 
   return (
     <AlertDialog
@@ -59,7 +72,8 @@ export function RunnerAlertDialog({
               </span>
             </span>
             <span className="mt-2">
-              These operations could modify or delete data in your database. Proceed if you understand the impact of these changes.
+              These operations could modify or delete data in your database. Proceed if you
+              understand the impact of these changes.
             </span>
           </AlertDialogDescription>
         </AlertDialogHeader>

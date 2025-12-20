@@ -70,7 +70,8 @@ describe('parseConnectionString', () => {
   })
 
   it('should handle special characters in password', () => {
-    const connectionString = 'postgres://user:password@localhost:5432/database?options=-c search_path=auth'
+    const connectionString =
+      'postgres://user:password@localhost:5432/database?options=-c search_path=auth'
     const config = parseConnectionString(connectionString)
 
     expect(config).toEqual({

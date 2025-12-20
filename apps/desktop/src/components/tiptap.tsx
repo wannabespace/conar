@@ -25,47 +25,54 @@ export function TipTap({
     editor: Editor
   } | null>
 } & Omit<ComponentProps<typeof EditorContent>, 'editor' | 'ref'>) {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder,
-      }),
-      Extension.create({
-        addKeyboardShortcuts() {
-          return {
-            'Enter': () => {
-              onEnter?.(this.editor.getText())
-              return true
-            },
-            'Cmd-Enter': () => {
-              onEnter?.(this.editor.getText())
-              return true
-            },
-            'Ctrl-Enter': () => {
-              onEnter?.(this.editor.getText())
-              return true
-            },
-          }
+  const editor = useEditor(
+    {
+      extensions: [
+        StarterKit,
+        Placeholder.configure({
+          placeholder,
+        }),
+        Extension.create({
+          addKeyboardShortcuts() {
+            return {
+              Enter: () => {
+                onEnter?.(this.editor.getText())
+                return true
+              },
+              'Cmd-Enter': () => {
+                onEnter?.(this.editor.getText())
+                return true
+              },
+              'Ctrl-Enter': () => {
+                onEnter?.(this.editor.getText())
+                return true
+              },
+            }
+          },
+        }),
+      ],
+      editorProps: {
+        attributes: {
+          class: className ?? '',
         },
-      }),
-    ],
-    editorProps: {
-      attributes: {
-        class: className ?? '',
       },
+      parseOptions: {
+        preserveWhitespace: 'full',
+      },
+      immediatelyRender: true,
+      content: value,
+      onUpdate: ({ editor }) => setValue(editor.getText()),
     },
-    parseOptions: {
-      preserveWhitespace: 'full',
-    },
-    immediatelyRender: true,
-    content: value,
-    onUpdate: ({ editor }) => setValue(editor.getText()),
-  }, [className, onEnter, placeholder, setValue])
+    [className, onEnter, placeholder, setValue]
+  )
 
-  useImperativeHandle(ref, () => ({
-    editor,
-  }), [editor])
+  useImperativeHandle(
+    ref,
+    () => ({
+      editor,
+    }),
+    [editor]
+  )
 
   useEffect(() => {
     if (editor && value !== editor.getText()) {
@@ -73,9 +80,11 @@ export function TipTap({
     }
   }, [value, editor])
 
-  const addImage = (e: React.ClipboardEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement>, data: DataTransfer) => {
-    if (!onImageAdd)
-      return
+  const addImage = (
+    e: React.ClipboardEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement>,
+    data: DataTransfer
+  ) => {
+    if (!onImageAdd) return
 
     const { files } = data
 

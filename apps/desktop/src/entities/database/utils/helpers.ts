@@ -3,18 +3,32 @@ export const DEFAULT_PAGE_LIMIT = 100
 export const DEFAULT_ROW_HEIGHT = 32
 export const DEFAULT_COLUMN_WIDTH = 240
 
-export const DANGEROUS_SQL_KEYWORDS = ['DELETE', 'UPDATE', 'DROP', 'RENAME', 'TRUNCATE', 'ALTER'] as const
+export const DANGEROUS_SQL_KEYWORDS = [
+  'DELETE',
+  'UPDATE',
+  'DROP',
+  'RENAME',
+  'TRUNCATE',
+  'ALTER',
+] as const
 
 export function hasDangerousSqlKeywords(sql: string) {
-  const uncommentedLines = sql.split('\n').filter(line => !line.trim().startsWith('--')).join('\n')
-  const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
+  const uncommentedLines = sql
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('--'))
+    .join('\n')
+  const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map((keyword) => `\\b${keyword}\\b`).join(
+    '|'
+  )
   return new RegExp(dangerousKeywordsPattern, 'gi').test(uncommentedLines)
 }
 
 function isWord(word: string, line: string, idx: number) {
-  return (idx === 0 || /\W/.test(line[idx - 1]!))
-    && line.substring(idx, idx + word.length).toUpperCase() === word
-    && (idx + word.length === line.length || /\W/.test(line[idx + word.length]!))
+  return (
+    (idx === 0 || /\W/.test(line[idx - 1]!)) &&
+    line.substring(idx, idx + word.length).toUpperCase() === word &&
+    (idx + word.length === line.length || /\W/.test(line[idx + word.length]!))
+  )
 }
 
 export function getEditorQueries(sql: string) {
@@ -72,8 +86,7 @@ export function getEditorQueries(sql: string) {
           i++
           continue
         }
-      }
-      else {
+      } else {
         const tagIndex = query.indexOf(currentTag, i)
         if (tagIndex !== -1) {
           const tagLength = currentTag.length
@@ -92,7 +105,7 @@ export function getEditorQueries(sql: string) {
       parts.push(trimmed)
     }
 
-    return parts.filter(p => p.length > 0)
+    return parts.filter((p) => p.length > 0)
   }
 
   const processDollarQuotes = (line: string): { newTag: string | null } => {
@@ -107,8 +120,7 @@ export function getEditorQueries(sql: string) {
           i += currentTag.length
           continue
         }
-      }
-      else {
+      } else {
         const tagIndex = line.indexOf(currentTag, i)
         if (tagIndex !== -1) {
           const tagLength = currentTag.length
@@ -148,24 +160,20 @@ export function getEditorQueries(sql: string) {
     }
 
     line = line.trim()
-    if (!line)
-      continue
+    if (!line) continue
 
     if (!isInDollarQuote) {
-      for (let idx = 0; idx < line.length;) {
+      for (let idx = 0; idx < line.length; ) {
         if (isWord('BEGIN', line.toUpperCase(), idx)) {
           beginEndBlockDepth++
           if (beginEndBlockDepth === 1 && !currentQuery) {
             beginEndStartLine = lineNum
           }
           idx += 5
-        }
-        else if (isWord('END', line.toUpperCase(), idx)) {
-          if (beginEndBlockDepth > 0)
-            beginEndBlockDepth--
+        } else if (isWord('END', line.toUpperCase(), idx)) {
+          if (beginEndBlockDepth > 0) beginEndBlockDepth--
           idx += 3
-        }
-        else {
+        } else {
           idx++
         }
       }

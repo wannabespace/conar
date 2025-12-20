@@ -5,11 +5,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/c
 import { HighlightText } from '@conar/ui/components/custom/hightlight'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Input } from '@conar/ui/components/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@conar/ui/components/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiListIndefinite, RiListUnordered, RiStackLine, RiTable2 } from '@remixicon/react'
+import {
+  RiCloseLine,
+  RiDatabase2Line,
+  RiInformationLine,
+  RiListIndefinite,
+  RiListUnordered,
+  RiStackLine,
+  RiTable2,
+} from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
@@ -36,20 +55,25 @@ function DatabaseEnumsPage() {
   if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
     setSelectedSchema(schemas[0])
 
-  const filteredEnums = enums
-    ?.filter(enumItem =>
-      enumItem.schema === selectedSchema
-      && (!search
-        || enumItem.name.toLowerCase().includes(search.toLowerCase())
-        || enumItem.values.some(value => value.toLowerCase().includes(search.toLowerCase()))
-        || (!!enumItem.metadata?.table && enumItem.metadata.table.toLowerCase().includes(search.toLowerCase()))
-        || (!!enumItem.metadata?.column && enumItem.metadata.column.toLowerCase().includes(search.toLowerCase()))
-      ),
-    )
-    .map(enumItem => ({
-      ...enumItem,
-      values: enumItem.values.filter(value => value.toLowerCase().includes(search.toLowerCase())),
-    })) ?? []
+  const filteredEnums =
+    enums
+      ?.filter(
+        (enumItem) =>
+          enumItem.schema === selectedSchema &&
+          (!search ||
+            enumItem.name.toLowerCase().includes(search.toLowerCase()) ||
+            enumItem.values.some((value) => value.toLowerCase().includes(search.toLowerCase())) ||
+            (!!enumItem.metadata?.table &&
+              enumItem.metadata.table.toLowerCase().includes(search.toLowerCase())) ||
+            (!!enumItem.metadata?.column &&
+              enumItem.metadata.column.toLowerCase().includes(search.toLowerCase())))
+      )
+      .map((enumItem) => ({
+        ...enumItem,
+        values: enumItem.values.filter((value) =>
+          value.toLowerCase().includes(search.toLowerCase())
+        ),
+      })) ?? []
 
   return (
     <ScrollArea className="bg-background rounded-lg border h-full">
@@ -66,7 +90,7 @@ function DatabaseEnumsPage() {
                 className="pr-8 w-[180px]"
                 value={search}
                 autoFocus
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
               />
               {search && (
                 <button
@@ -82,14 +106,12 @@ function DatabaseEnumsPage() {
               <Select value={selectedSchema} onValueChange={setSelectedSchema}>
                 <SelectTrigger className="w-[180px]">
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">
-                      schema
-                    </span>
+                    <span className="text-muted-foreground">schema</span>
                     <SelectValue placeholder="Select schema" />
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  {schemas.map(schema => (
+                  {schemas.map((schema) => (
                     <SelectItem key={schema} value={schema}>
                       {schema}
                     </SelectItem>
@@ -119,7 +141,7 @@ function DatabaseEnumsPage() {
                 </CardContent>
               </MotionCard>
             )}
-            {filteredEnums.map(enumItem => (
+            {filteredEnums.map((enumItem) => (
               <MotionCard
                 key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
                 className="overflow-hidden border border-border/60 hover:border-border/90 transition-colors"
@@ -137,9 +159,11 @@ function DatabaseEnumsPage() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="text-base font-medium flex items-center gap-2">
-                                {enumItem.metadata?.isSet
-                                  ? <RiListIndefinite className="text-primary size-4" />
-                                  : <RiListUnordered className="text-primary size-4" />}
+                                {enumItem.metadata?.isSet ? (
+                                  <RiListIndefinite className="text-primary size-4" />
+                                ) : (
+                                  <RiListUnordered className="text-primary size-4" />
+                                )}
                                 <HighlightText text={enumItem.name} match={search} />
                               </span>
                             </TooltipTrigger>
@@ -151,12 +175,10 @@ function DatabaseEnumsPage() {
                                   <Badge variant="outline" className="font-mono px-1 py-0.5 mr-1">
                                     {enumItem.metadata.table}
                                   </Badge>
-                                  table
-                                  and
+                                  table and
                                   <Badge variant="outline" className="px-1 py-0.5 ml-1">
                                     {enumItem.metadata.column}
-                                  </Badge>
-                                  {' '}
+                                  </Badge>{' '}
                                   column
                                 </div>
                               )}
@@ -172,9 +194,7 @@ function DatabaseEnumsPage() {
                               {enumItem.schema}
                             </Badge>
                           </TooltipTrigger>
-                          <TooltipContent>
-                            Schema name
-                          </TooltipContent>
+                          <TooltipContent>Schema name</TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                       {enumItem.metadata?.table && (
@@ -186,9 +206,7 @@ function DatabaseEnumsPage() {
                                 {enumItem.metadata.table}
                               </Badge>
                             </TooltipTrigger>
-                            <TooltipContent>
-                              Table name
-                            </TooltipContent>
+                            <TooltipContent>Table name</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       )}
@@ -201,9 +219,7 @@ function DatabaseEnumsPage() {
                                 {enumItem.metadata.column}
                               </Badge>
                             </TooltipTrigger>
-                            <TooltipContent>
-                              Column name
-                            </TooltipContent>
+                            <TooltipContent>Column name</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       )}
@@ -227,12 +243,10 @@ function DatabaseEnumsPage() {
                         exit={{ opacity: 0, scale: 0.75 }}
                         transition={{ duration: 0.15 }}
                       >
-                        <Badge variant="outline">
-                          No values found
-                        </Badge>
+                        <Badge variant="outline">No values found</Badge>
                       </motion.div>
                     )}
-                    {enumItem.values.map(value => (
+                    {enumItem.values.map((value) => (
                       <HighlightText
                         key={value}
                         text={value}

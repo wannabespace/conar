@@ -10,14 +10,15 @@ const input = type({
 
 export const remove = orpc
   .use(authMiddleware)
-  .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
+  .input(type.or(input, input.array()).pipe((data) => (Array.isArray(data) ? data : [data])))
   .handler(async ({ context, input }) => {
-    await db
-      .delete(queries)
-      .where(
-        and(
-          eq(queries.userId, context.session.userId),
-          inArray(queries.id, input.map(item => item.id)),
-        ),
+    await db.delete(queries).where(
+      and(
+        eq(queries.userId, context.session.userId),
+        inArray(
+          queries.id,
+          input.map((item) => item.id)
+        )
       )
+    )
   })

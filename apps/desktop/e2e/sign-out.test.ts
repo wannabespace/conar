@@ -5,7 +5,7 @@ testWithSignUp('sign out', async ({ page }) => {
   const signOutButton = page.getByRole('button', { name: 'Sign out' })
   await expect(signOutButton).toBeVisible()
 
-  const requestPromise = page.waitForRequest(r => r.url().includes('/auth/sign-out'))
+  const requestPromise = page.waitForRequest((r) => r.url().includes('/auth/sign-out'))
   await signOutButton.click()
   await requestPromise
 

@@ -3,7 +3,13 @@ import type { ORPCOutputs } from '~/lib/orpc'
 import { Button } from '@conar/ui/components/button'
 import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAlertLine, RiCheckboxCircleLine, RiCloseLine, RiErrorWarningLine, RiInformationLine } from '@remixicon/react'
+import {
+  RiAlertLine,
+  RiCheckboxCircleLine,
+  RiCloseLine,
+  RiErrorWarningLine,
+  RiInformationLine,
+} from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import { orpcQuery } from '~/lib/orpc'
@@ -27,21 +33,23 @@ const typeConfig = {
     icon: <RiCheckboxCircleLine className="shrink-0 size-4" />,
     className: 'bg-green-500/10 border-green-500/20 text-green-400',
   },
-} satisfies Record<BannerItem['type'], { icon: ReactNode, className: string }>
+} satisfies Record<BannerItem['type'], { icon: ReactNode; className: string }>
 
 export function GlobalBanner() {
   const [dismissed, setDismissed] = useSessionStorage<string[]>('banner-dismissed', [])
 
-  const { data } = useQuery(orpcQuery.banner.queryOptions({
-    staleTime: 1000 * 60 * 5,
-    refetchInterval: 1000 * 60 * 5,
-    throwOnError: false,
-    select: data => data?.filter(item => !dismissed.includes(item.text)),
-  }))
+  const { data } = useQuery(
+    orpcQuery.banner.queryOptions({
+      staleTime: 1000 * 60 * 5,
+      refetchInterval: 1000 * 60 * 5,
+      throwOnError: false,
+      select: (data) => data?.filter((item) => !dismissed.includes(item.text)),
+    })
+  )
 
   return (
     <AnimatePresence initial={false}>
-      {data?.map(item => (
+      {data?.map((item) => (
         <motion.div
           key={item.text}
           initial={{ opacity: 0, height: 0 }}
@@ -56,7 +64,7 @@ export function GlobalBanner() {
               variant="ghost"
               size="icon-xs"
               aria-label="Dismiss banner"
-              onClick={() => setDismissed(prev => [...prev, item.text])}
+              onClick={() => setDismissed((prev) => [...prev, item.text])}
             >
               <RiCloseLine className="size-3.5" />
             </Button>

@@ -12,8 +12,20 @@ import { mysqlDialect } from './mysql'
 import { postgresDialect } from './postgres'
 
 export const dialects = {
-  postgres: memoize((database: typeof databases.$inferSelect) => new Kysely<PostgresDatabase>({ dialect: postgresDialect(database) })),
-  mysql: memoize((database: typeof databases.$inferSelect) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(database) })),
-  clickhouse: memoize((database: typeof databases.$inferSelect) => new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(database) })),
-  mssql: memoize((database: typeof databases.$inferSelect) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(database) })),
+  postgres: memoize(
+    (database: typeof databases.$inferSelect) =>
+      new Kysely<PostgresDatabase>({ dialect: postgresDialect(database) })
+  ),
+  mysql: memoize(
+    (database: typeof databases.$inferSelect) =>
+      new Kysely<MysqlDatabase>({ dialect: mysqlDialect(database) })
+  ),
+  clickhouse: memoize(
+    (database: typeof databases.$inferSelect) =>
+      new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(database) })
+  ),
+  mssql: memoize(
+    (database: typeof databases.$inferSelect) =>
+      new Kysely<MssqlDatabase>({ dialect: mssqlDialect(database) })
+  ),
 } satisfies Record<DatabaseType, (database: typeof databases.$inferSelect) => unknown>

@@ -25,20 +25,24 @@ describe('encryption', () => {
   it('should fail decryption with wrong password', () => {
     const encrypted = encrypt({ text: 'Hello, World!', secret })
 
-    expect(() => decrypt({
-      encryptedText: encrypted,
-      secret: 'wrongPassword',
-    })).toThrow()
+    expect(() =>
+      decrypt({
+        encryptedText: encrypted,
+        secret: 'wrongPassword',
+      })
+    ).toThrow()
   })
 
   it('should fail decryption with corrupted encrypted text', () => {
     const encrypted = encrypt({ text: 'Hello, World!', secret })
     const corruptedText = encrypted.slice(10)
 
-    expect(() => decrypt({
-      encryptedText: corruptedText,
-      secret,
-    })).toThrow()
+    expect(() =>
+      decrypt({
+        encryptedText: corruptedText,
+        secret,
+      })
+    ).toThrow()
   })
 
   it('should encrypt nanoid', () => {

@@ -7,11 +7,13 @@ import { authMiddleware, orpc } from '~/orpc'
 
 export const fixSQL = orpc
   .use(authMiddleware)
-  .input(type({
-    sql: 'string',
-    error: 'string',
-    type: type.valueOf(DatabaseType),
-  }))
+  .input(
+    type({
+      sql: 'string',
+      error: 'string',
+      type: type.valueOf(DatabaseType),
+    })
+  )
   .handler(async ({ input, signal, context }) => {
     const { text } = await generateText({
       model: withPosthog(anthropic('claude-sonnet-4-5'), {
@@ -32,11 +34,9 @@ export const fixSQL = orpc
         },
         {
           role: 'user',
-          content: [
-            '=======SQL QUERY=======',
-            input.sql,
-            '=======END OF SQL QUERY=======',
-          ].join('\n'),
+          content: ['=======SQL QUERY=======', input.sql, '=======END OF SQL QUERY======='].join(
+            '\n'
+          ),
         },
       ],
     })

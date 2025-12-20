@@ -28,18 +28,21 @@ export default defineConfig({
       },
     },
   },
-  renderer: mergeConfig(viteBaseConfig, defineViteConfig({
-    server: {
-      port: PORTS.DEV.DESKTOP,
-    },
-    root: '.',
-    build: {
-      // sourcemap: true,
-      rollupOptions: {
-        input: {
-          index: resolve(__dirname, 'index.html'),
+  renderer: mergeConfig(
+    viteBaseConfig,
+    defineViteConfig({
+      server: {
+        port: PORTS.DEV.DESKTOP,
+      },
+      root: '.',
+      build: {
+        // sourcemap: true,
+        rollupOptions: {
+          input: {
+            index: resolve(__dirname, 'index.html'),
+          },
         },
       },
-    },
-  })),
+    })
+  ),
 })

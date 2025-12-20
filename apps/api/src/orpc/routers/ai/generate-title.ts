@@ -10,15 +10,21 @@ import { authMiddleware, orpc } from '~/orpc'
 
 export const generateTitle = orpc
   .use(authMiddleware)
-  .input(type({
-    chatId: 'string.uuid.v7',
-    messages: 'Array' as type.cast<AppUIMessage[]>,
-  }))
+  .input(
+    type({
+      chatId: 'string.uuid.v7',
+      messages: 'Array' as type.cast<AppUIMessage[]>,
+    })
+  )
   .handler(async ({ input, signal, context }) => {
-    const prompt = input.messages.map(message => message.parts.filter(part => part.type === 'text')
-      .map(part => JSON.stringify(part, null, 2))
-      .join('\n'),
-    ).join('\n')
+    const prompt = input.messages
+      .map((message) =>
+        message.parts
+          .filter((part) => part.type === 'text')
+          .map((part) => JSON.stringify(part, null, 2))
+          .join('\n')
+      )
+      .join('\n')
 
     const { text } = await generateText({
       model: withPosthog(google('gemini-2.0-flash'), {
@@ -30,8 +36,8 @@ export const generateTitle = orpc
           role: 'system',
           content: [
             'You are a title generator that generates a title for a chat.',
-            'The title should be in the same language as the user\'s message.',
-            'Try to generate a title that is as close as possible to the user\'s message.',
+            "The title should be in the same language as the user's message.",
+            "Try to generate a title that is as close as possible to the user's message.",
             'Title should not be more than 30 characters.',
             'Title should be properly formatted, example: "Update Component in React".',
             'Each word should be capitalized.',

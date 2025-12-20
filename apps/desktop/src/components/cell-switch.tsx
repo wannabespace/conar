@@ -14,7 +14,10 @@ export function CellSwitch({
   onSave: (value: string) => void
   className?: string
 }) {
-  useKeyboardEvent(e => isCtrlAndKey(e, 'Enter'), () => onSave(checked ? 'true' : 'false'))
+  useKeyboardEvent(
+    (e) => isCtrlAndKey(e, 'Enter'),
+    () => onSave(checked ? 'true' : 'false')
+  )
 
   return (
     <label className={cn('flex gap-2 items-center text-sm', className)}>

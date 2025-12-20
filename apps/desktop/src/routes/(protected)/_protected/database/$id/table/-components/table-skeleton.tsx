@@ -6,8 +6,16 @@ import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
 
 const ROWS_COUNT = 20
 
-export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: { className?: string, selectable?: boolean, columnsCount?: number }) {
-  const columns = useTableContext(state => state.columns)
+export function TableBodySkeleton({
+  className,
+  selectable,
+  columnsCount = 5,
+}: {
+  className?: string
+  selectable?: boolean
+  columnsCount?: number
+}) {
+  const columns = useTableContext((state) => state.columns)
 
   const cols = useMemo(() => {
     if (columns.length === 0) {
@@ -17,7 +25,7 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: {
       }))
     }
 
-    return columns.map(column => ({
+    return columns.map((column) => ({
       id: column.id,
       size: column.size ?? DEFAULT_COLUMN_WIDTH,
     }))
@@ -31,7 +39,7 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: {
           className="flex w-fit border-b min-w-full last:border-b-0"
           style={{
             height: `${DEFAULT_ROW_HEIGHT}px`,
-            opacity: 1 - (rowIndex * (1 / ROWS_COUNT)),
+            opacity: 1 - rowIndex * (1 / ROWS_COUNT),
           }}
         >
           {selectable && (

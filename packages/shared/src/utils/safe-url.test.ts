@@ -119,7 +119,8 @@ describe('new SafeURL', () => {
   })
 
   it('parses a connection string with multiple query parameters', () => {
-    const conn = 'postgresql://user:pass@localhost:5432/mydb?ssl=true&connect_timeout=10&search_path=myschema'
+    const conn =
+      'postgresql://user:pass@localhost:5432/mydb?ssl=true&connect_timeout=10&search_path=myschema'
     const parsed = new SafeURL(conn)
 
     expect(parsed).toMatchObject({
@@ -147,8 +148,7 @@ describe('new SafeURL', () => {
       try {
         // eslint-disable-next-line no-new
         new SafeURL('not-a-valid-connection-string')
-      }
-      catch (e) {
+      } catch (e) {
         return (e as Error).message
       }
     }
@@ -290,7 +290,9 @@ describe('new SafeURL', () => {
       expect(parsed.hash).toBe('#top')
       expect(parsed.username).toBe('alice')
       expect(parsed.password).toBe('wonderland')
-      expect(parsed.href).toBe('mysql://alice:wonderland@db.example.com:3306/testdb?foo=bar&baz=qux#top')
+      expect(parsed.href).toBe(
+        'mysql://alice:wonderland@db.example.com:3306/testdb?foo=bar&baz=qux#top'
+      )
     })
   })
 

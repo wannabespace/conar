@@ -34,7 +34,8 @@ function PaginationItem({ ...props }: React.ComponentProps<'li'>) {
 type PaginationButtonProps = {
   isActive?: boolean
   isDisabled?: boolean
-} & Pick<React.ComponentProps<typeof Button>, 'size'> & React.ComponentProps<'button'>
+} & Pick<React.ComponentProps<typeof Button>, 'size'> &
+  React.ComponentProps<'button'>
 
 function PaginationButton({ className, isActive, size = 'icon', ...props }: PaginationButtonProps) {
   return (
@@ -49,14 +50,17 @@ function PaginationButton({ className, isActive, size = 'icon', ...props }: Pagi
           variant: isActive ? 'outline' : 'ghost',
           size,
         }),
-        className,
+        className
       )}
       {...props}
     />
   )
 }
 
-function PaginationPrevious({ className, ...props }: React.ComponentProps<typeof PaginationButton>) {
+function PaginationPrevious({
+  className,
+  ...props
+}: React.ComponentProps<typeof PaginationButton>) {
   return (
     <PaginationButton
       aria-label="Go to previous page"

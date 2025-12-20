@@ -1,6 +1,8 @@
 import { faker } from '@faker-js/faker'
 
-export const getApiUrl = () => localStorage.getItem('__API_URL_FOR_PRODUCTION_TEST_CASES__') ?? import.meta.env.VITE_PUBLIC_API_URL
+export const getApiUrl = () =>
+  localStorage.getItem('__API_URL_FOR_PRODUCTION_TEST_CASES__') ??
+  import.meta.env.VITE_PUBLIC_API_URL
 
 export function generateRandomName() {
   const color = faker.color.human()
@@ -18,7 +20,7 @@ export function generateRandomName() {
   const main = faker.helpers.arrayElement(categories)()
 
   return [color, main]
-    .map(str => (str.charAt(0).toUpperCase() + str.slice(1)))
+    .map((str) => str.charAt(0).toUpperCase() + str.slice(1))
     .filter(Boolean)
     .join(' ')
 }

@@ -31,13 +31,14 @@ export const getPool = memoize(async (connectionString: string) => {
       await pool.query('SELECT 1')
       return pool
     },
-    !hasSsl && (async () => {
-      const pool = new pg.Pool({
-        ...conf,
-        ssl: defaultSSLConfig,
+    !hasSsl &&
+      (async () => {
+        const pool = new pg.Pool({
+          ...conf,
+          ssl: defaultSSLConfig,
+        })
+        await pool.query('SELECT 1')
+        return pool
       })
-      await pool.query('SELECT 1')
-      return pool
-    }),
   )
 })

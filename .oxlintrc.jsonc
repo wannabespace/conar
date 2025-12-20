@@ -1,0 +1,106 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "unicorn", "import", "node", "jsdoc", "vitest"],
+  "env": {
+    "builtin": true,
+    "es2026": true,
+    "browser": true,
+    "node": true,
+  },
+  "ignorePatterns": [
+    "**/node_modules",
+    "**/.turbo",
+    "**/dist",
+    "**/out",
+    "**/release",
+    "**/.tanstack",
+    "**/.nitro",
+    "**/.output",
+    "**/playwright-report",
+    "**/test-results",
+    "**/.types",
+    "**/migrations/meta/*.json",
+    "**/migrations.json",
+    "**/routeTree.gen.ts",
+  ],
+  "rules": {
+    // Correctness
+    "constructor-super": "error",
+    "no-const-assign": "error",
+    "no-dupe-class-members": "error",
+    "no-dupe-keys": "error",
+    "no-func-assign": "error",
+    "no-import-assign": "error",
+    "no-obj-calls": "error",
+    "no-redeclare": "error",
+    "no-this-before-super": "error",
+    "no-unsafe-negation": "error",
+    "no-unused-vars": [
+      "error",
+      {
+        "args": "none",
+        "caughtErrors": "none",
+        "ignoreRestSiblings": true,
+        "vars": "all",
+      },
+    ],
+    "use-isnan": "error",
+    "valid-typeof": "error",
+
+    // Best Practices
+    "eqeqeq": ["error", "smart"],
+    "no-console": "warn",
+    "no-debugger": "error",
+    "no-eval": "error",
+    "no-var": "error",
+    "prefer-template": "error",
+
+    // React
+    "react-hooks/rules-of-hooks": [
+      "error",
+      {
+        "additionalHooks": "(useMountedEffect|useAsyncEffect)",
+      },
+    ],
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        "additionalHooks": "(useMountedEffect|useAsyncEffect)",
+      },
+    ],
+
+    // TypeScript
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/consistent-type-imports": [
+      "error",
+      {
+        "prefer": "type-imports",
+        "fixStyle": "separate-type-imports",
+      },
+    ],
+
+    // Import
+    "import/no-duplicates": "error",
+    "import/first": "error",
+  },
+  "overrides": [
+    {
+      "files": ["apps/desktop/**/*"],
+      "rules": {
+        // Node specific overrides if needed
+      },
+    },
+    {
+      "files": ["**/e2e/**/*"],
+      "rules": {
+        "react-hooks/rules-of-hooks": "off",
+      },
+    },
+    {
+      "files": ["**/scripts/**/*", "**/cli/**/*", "**/*.config.*"],
+      "rules": {
+        "no-console": "off",
+      },
+    },
+  ],
+}

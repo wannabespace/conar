@@ -5,7 +5,11 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { CtrlEnter, CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Kbd } from '@conar/ui/components/kbd'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@conar/ui/components/resizable'
 import NumberFlow from '@number-flow/react'
 import { RiBrush2Line, RiCheckLine, RiPlayFill, RiStarLine } from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
@@ -27,20 +31,25 @@ import { RunnerSaveDialog } from './runner-save-dialog'
 function useTrackSelectedLinesChange() {
   const { database } = Route.useRouteContext()
   const store = databaseStore(database.id)
-  const currentLineNumbers = useStore(store, state => state.editorQueries.map(q => q.startLineNumber))
+  const currentLineNumbers = useStore(store, (state) =>
+    state.editorQueries.map((q) => q.startLineNumber)
+  )
 
   useEffect(() => {
     const selectedLines = store.state.selectedLines
-    const newSelectedLines = selectedLines.filter(line => currentLineNumbers.includes(line))
+    const newSelectedLines = selectedLines.filter((line) => currentLineNumbers.includes(line))
 
     if (
-      newSelectedLines.length !== selectedLines.length
-      || newSelectedLines.some((line, i) => line !== selectedLines[i])
+      newSelectedLines.length !== selectedLines.length ||
+      newSelectedLines.some((line, i) => line !== selectedLines[i])
     ) {
-      store.setState(state => ({
-        ...state,
-        selectedLines: newSelectedLines.toSorted((a, b) => a - b),
-      } satisfies typeof state))
+      store.setState(
+        (state) =>
+          ({
+            ...state,
+            selectedLines: newSelectedLines.toSorted((a, b) => a - b),
+          }) satisfies typeof state
+      )
     }
   }, [store, currentLineNumbers])
 }
@@ -50,14 +59,15 @@ export function Runner() {
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
   const store = databaseStore(database.id)
-  const selectedLines = useStore(store, state => state.selectedLines)
-  const editorQueries = useStore(store, state => state.editorQueries)
-  const sql = useStore(store, state => state.sql)
-  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
-    .from({ queries: queriesCollection })
-    .where(({ queries }) => eq(queries.databaseId, database.id))
-    .select(({ queries }) => ({ queriesCount: count(queries.id) }))
-    .findOne(),
+  const selectedLines = useStore(store, (state) => state.selectedLines)
+  const editorQueries = useStore(store, (state) => state.editorQueries)
+  const sql = useStore(store, (state) => state.sql)
+  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery((q) =>
+    q
+      .from({ queries: queriesCollection })
+      .where(({ queries }) => eq(queries.databaseId, database.id))
+      .select(({ queries }) => ({ queriesCount: count(queries.id) }))
+      .findOne()
   )
   const [isFormatting, setIsFormatting] = useState(false)
 
@@ -66,31 +76,40 @@ export function Runner() {
   function format() {
     const formatted = formatSql(sql, database.type)
 
-    store.setState(state => ({
-      ...state,
-      sql: formatted,
-    } satisfies typeof state))
+    store.setState(
+      (state) =>
+        ({
+          ...state,
+          sql: formatted,
+        }) satisfies typeof state
+    )
   }
 
   const queriesToRun = useMemo(() => {
-    const queries = selectedLines.length > 0
-      ? editorQueries.filter(query => selectedLines.includes(query.startLineNumber))
-      : editorQueries
+    const queries =
+      selectedLines.length > 0
+        ? editorQueries.filter((query) => selectedLines.includes(query.startLineNumber))
+        : editorQueries
 
-    return queries.flatMap(({ startLineNumber, endLineNumber, queries }) => queries.map(query => ({
-      startLineNumber,
-      endLineNumber,
-      query,
-    })))
+    return queries.flatMap(({ startLineNumber, endLineNumber, queries }) =>
+      queries.map((query) => ({
+        startLineNumber,
+        endLineNumber,
+        query,
+      }))
+    )
   }, [selectedLines, editorQueries])
 
   const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions({ database }))
 
   const runQueries = (queries: typeof queriesToRun) => {
-    store.setState(state => ({
-      ...state,
-      queriesToRun: queries,
-    } satisfies typeof state))
+    store.setState(
+      (state) =>
+        ({
+          ...state,
+          queriesToRun: queries,
+        }) satisfies typeof state
+    )
     refetchRunner()
   }
 
@@ -100,10 +119,9 @@ export function Runner() {
     if (hasDangerousKeywords) {
       alertDialogRef.current?.confirm(
         editorQueries.map(({ query }) => query),
-        () => runQueries(editorQueries),
+        () => runQueries(editorQueries)
       )
-    }
-    else {
+    } else {
       runQueries(editorQueries)
     }
   }
@@ -112,7 +130,7 @@ export function Runner() {
     <RunnerContext.Provider
       value={{
         run: runQueriesWithAlert,
-        save: q => saveQueryDialogRef.current?.open(q),
+        save: (q) => saveQueryDialogRef.current?.open(q),
       }}
     >
       <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
@@ -125,11 +143,7 @@ export function Runner() {
                   <div className="flex gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button
-                          className="relative"
-                          variant="secondary"
-                          size="sm"
-                        >
+                        <Button className="relative" variant="secondary" size="sm">
                           <RiStarLine />
                           Saved
                           <span className="bg-accent rounded-full text-xs px-1.5 h-5 flex items-center justify-center">
@@ -139,7 +153,7 @@ export function Runner() {
                       </PopoverTrigger>
                       <PopoverContent
                         className="min-w-md p-0"
-                        onOpenAutoFocus={e => e.preventDefault()}
+                        onOpenAutoFocus={(e) => e.preventDefault()}
                       >
                         <RunnerQueries />
                       </PopoverContent>
@@ -167,9 +181,7 @@ export function Runner() {
                       onClick={() => runQueriesWithAlert(queriesToRun)}
                     >
                       <RiPlayFill />
-                      Run
-                      {' '}
-                      {selectedLines.length > 0 ? 'selected' : 'all'}
+                      Run {selectedLines.length > 0 ? 'selected' : 'all'}
                       {selectedLines.length > 0 && (
                         <NumberFlow
                           value={queriesToRun.length}
@@ -189,15 +201,13 @@ export function Runner() {
                   <span className="flex items-center gap-1">
                     <Kbd asChild>
                       <CtrlLetter letter="K" userAgent={navigator.userAgent} />
-                    </Kbd>
-                    {' '}
+                    </Kbd>{' '}
                     to call the AI
                   </span>
                   <span className="flex items-center gap-1">
                     <Kbd asChild>
                       <CtrlEnter userAgent={navigator.userAgent} />
-                    </Kbd>
-                    {' '}
+                    </Kbd>{' '}
                     to run the focused query
                   </span>
                 </span>

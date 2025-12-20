@@ -7,17 +7,15 @@ const bannerType = type({
   type: type.enumerated('info', 'warning', 'error', 'success'),
 }).array()
 
-export const banner = orpc
-  .output(bannerType)
-  .handler(() => {
-    const items: typeof bannerType.infer = []
+export const banner = orpc.output(bannerType).handler(() => {
+  const items: typeof bannerType.infer = []
 
-    if (env.BANNER_TEXT) {
-      items.push({
-        text: env.BANNER_TEXT,
-        type: 'info',
-      })
-    }
+  if (env.BANNER_TEXT) {
+    items.push({
+      text: env.BANNER_TEXT,
+      type: 'info',
+    })
+  }
 
-    return items
-  })
+  return items
+})

@@ -26,24 +26,26 @@ export const updatesStore = new Store<{
 })
 
 window.electron?.app.onUpdatesStatus(({ status, message }) => {
-  updatesStore.setState(state => ({ ...state, status, message } satisfies typeof state))
+  updatesStore.setState((state) => ({ ...state, status, message }) satisfies typeof state)
 })
 
 export function useUpdatesObserver() {
-  const { data: version } = useQuery<string>({
-    queryKey: ['version'],
-    queryFn: () => {
-      if (!window.electron)
-        return packageVersion
+  const { data: version } = useQuery<string>(
+    {
+      queryKey: ['version'],
+      queryFn: () => {
+        if (!window.electron) return packageVersion
 
-      return window.electron.versions.app()
+        return window.electron.versions.app()
+      },
     },
-  }, queryClient)
-  const status = useStore(updatesStore, state => state.status)
+    queryClient
+  )
+  const status = useStore(updatesStore, (state) => state.status)
 
   useEffect(() => {
     if (version) {
-      updatesStore.setState(state => ({ ...state, version } satisfies typeof state))
+      updatesStore.setState((state) => ({ ...state, version }) satisfies typeof state)
     }
   }, [version])
 

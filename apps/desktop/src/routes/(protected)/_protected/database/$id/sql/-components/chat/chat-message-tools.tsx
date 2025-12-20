@@ -1,8 +1,17 @@
 import type { tools } from '@conar/api/src/ai-tools'
 import type { InferUITools, ToolUIPart } from 'ai'
 import type { ReactNode } from 'react'
-import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import {
+  SingleAccordion,
+  SingleAccordionContent,
+  SingleAccordionTrigger,
+} from '@conar/ui/components/custom/single-accordion'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiEarthLine, RiErrorWarningLine, RiHammerLine, RiLoader4Line } from '@remixicon/react'
 import { AnimatePresence, motion } from 'motion/react'
@@ -13,7 +22,11 @@ import { FaviconWithFallback } from './favicon-with-fallback'
 function getToolLabel(tool: ToolUIPart<InferUITools<typeof tools>>) {
   if (tool.type === 'tool-columns') {
     if (tool.input) {
-      const schema = tool.input.tableAndSchema?.schemaName ? tool.input.tableAndSchema.schemaName === 'public' ? '' : tool.input.tableAndSchema.schemaName : ''
+      const schema = tool.input.tableAndSchema?.schemaName
+        ? tool.input.tableAndSchema.schemaName === 'public'
+          ? ''
+          : tool.input.tableAndSchema.schemaName
+        : ''
 
       return `Get columns from ${schema ? `"${schema}".` : ''}${tool.input.tableAndSchema?.tableName ? `"${tool.input.tableAndSchema.tableName}"` : '...'}`
     }
@@ -24,7 +37,11 @@ function getToolLabel(tool: ToolUIPart<InferUITools<typeof tools>>) {
   }
   if (tool.type === 'tool-select') {
     if (tool.input) {
-      const schema = tool.input.tableAndSchema?.schemaName ? tool.input.tableAndSchema.schemaName === 'public' ? '' : tool.input.tableAndSchema.schemaName : ''
+      const schema = tool.input.tableAndSchema?.schemaName
+        ? tool.input.tableAndSchema.schemaName === 'public'
+          ? ''
+          : tool.input.tableAndSchema.schemaName
+        : ''
 
       return `Select data from ${schema ? `"${schema}".` : ''}${tool.input.tableAndSchema?.tableName ? `"${tool.input.tableAndSchema.tableName}"` : '...'}`
     }
@@ -65,10 +82,10 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
   if (tool.type === 'tool-columns') {
     return (
       <>
-        <div className="text-xs text-muted-foreground mb-4">Agent called a tool to get table columns.</div>
-        {tool.state === 'output-available' && (
-          <MonacoOutput value={JSON.stringify(tool.output)} />
-        )}
+        <div className="text-xs text-muted-foreground mb-4">
+          Agent called a tool to get table columns.
+        </div>
+        {tool.state === 'output-available' && <MonacoOutput value={JSON.stringify(tool.output)} />}
       </>
     )
   }
@@ -76,10 +93,10 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
   if (tool.type === 'tool-enums') {
     return (
       <>
-        <div className="text-xs text-muted-foreground mb-4">Agent called a tool to get database enums.</div>
-        {tool.state === 'output-available' && (
-          <MonacoOutput value={JSON.stringify(tool.output)} />
-        )}
+        <div className="text-xs text-muted-foreground mb-4">
+          Agent called a tool to get database enums.
+        </div>
+        {tool.state === 'output-available' && <MonacoOutput value={JSON.stringify(tool.output)} />}
       </>
     )
   }
@@ -88,31 +105,49 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
     return (
       <>
         <div className="flex flex-col gap-2">
-          <div className="font-medium mb-1">
-            Agent called a tool to get data from the database.
-          </div>
+          <div className="font-medium mb-1">Agent called a tool to get data from the database.</div>
           {tool.input && (
             <InfoTable
               data={[
-                { name: 'Select', value: tool.input.select?.length
-                  ? tool.input.select.join(', ')
-                  : null },
-                { name: 'From', value: tool.input.tableAndSchema ? `${tool.input.tableAndSchema.schemaName}.${tool.input.tableAndSchema?.tableName}` : null },
-                { name: 'Where', value: (tool.state === 'input-available' || tool.state === 'output-available') && tool.input.whereFilters?.length
-                  ? tool.input.whereFilters.map(filter => `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map(value => `"${value}"`).join(', ') : ''}`).join(` ${tool.input.whereConcatOperator} `)
-                  : null },
-                { name: 'Order by', value: tool.input.orderBy && Object.keys(tool.input.orderBy).length
-                  ? Object.entries(tool.input.orderBy).map(([col, dir]) => `${col} ${dir}`).join(', ')
-                  : null },
+                {
+                  name: 'Select',
+                  value: tool.input.select?.length ? tool.input.select.join(', ') : null,
+                },
+                {
+                  name: 'From',
+                  value: tool.input.tableAndSchema
+                    ? `${tool.input.tableAndSchema.schemaName}.${tool.input.tableAndSchema?.tableName}`
+                    : null,
+                },
+                {
+                  name: 'Where',
+                  value:
+                    (tool.state === 'input-available' || tool.state === 'output-available') &&
+                    tool.input.whereFilters?.length
+                      ? tool.input.whereFilters
+                          .map(
+                            (filter) =>
+                              `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map((value) => `"${value}"`).join(', ') : ''}`
+                          )
+                          .join(` ${tool.input.whereConcatOperator} `)
+                      : null,
+                },
+                {
+                  name: 'Order by',
+                  value:
+                    tool.input.orderBy && Object.keys(tool.input.orderBy).length
+                      ? Object.entries(tool.input.orderBy)
+                          .map(([col, dir]) => `${col} ${dir}`)
+                          .join(', ')
+                      : null,
+                },
                 { name: 'Limit', value: tool.input.limit },
                 { name: 'Offset', value: tool.input.offset || null },
               ]}
             />
           )}
         </div>
-        {tool.state === 'output-available' && (
-          <MonacoOutput value={JSON.stringify(tool.output)} />
-        )}
+        {tool.state === 'output-available' && <MonacoOutput value={JSON.stringify(tool.output)} />}
       </>
     )
   }
@@ -120,38 +155,52 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
   if (tool.type === 'tool-webSearch') {
     return (
       <>
-        <div className="text-xs text-muted-foreground mb-2">Agent searched the web for information.</div>
+        <div className="text-xs text-muted-foreground mb-2">
+          Agent searched the web for information.
+        </div>
         {tool.state === 'output-available' && (
           <div className="space-y-2">
-            {!!tool.output && typeof tool.output === 'object' && 'results' in tool.output && Array.isArray(tool.output.results) && (
-              <div className="flex flex-wrap gap-2">
-                {tool.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }, index: number) => (
-                  <TooltipProvider key={`${tool.toolCallId}-${index}`}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <a
-                          href={result.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex flex-1 min-w-[200px] basis-1/3 max-w-full items-center gap-1 px-1.5 py-0.5 text-xs bg-accent/20 hover:bg-accent/40 rounded-md border transition-colors group"
-                        >
-                          <FaviconWithFallback url={result.url} className="size-3 shrink-0" />
-                          <span className="font-medium group-hover:text-primary overflow-hidden text-ellipsis whitespace-nowrap">
-                            {result.title}
-                          </span>
-                        </a>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="max-w-xs">
-                          <div className="font-medium">{result.title}</div>
-                          <div className="text-xs text-muted-foreground mt-1">{result.url}</div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                ))}
-              </div>
-            )}
+            {!!tool.output &&
+              typeof tool.output === 'object' &&
+              'results' in tool.output &&
+              Array.isArray(tool.output.results) && (
+                <div className="flex flex-wrap gap-2">
+                  {tool.output.results
+                    .slice(0, 5)
+                    .map(
+                      (
+                        result: { title: string; url: string; description?: string },
+                        index: number
+                      ) => (
+                        <TooltipProvider key={`${tool.toolCallId}-${index}`}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <a
+                                href={result.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex flex-1 min-w-[200px] basis-1/3 max-w-full items-center gap-1 px-1.5 py-0.5 text-xs bg-accent/20 hover:bg-accent/40 rounded-md border transition-colors group"
+                              >
+                                <FaviconWithFallback url={result.url} className="size-3 shrink-0" />
+                                <span className="font-medium group-hover:text-primary overflow-hidden text-ellipsis whitespace-nowrap">
+                                  {result.title}
+                                </span>
+                              </a>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <div className="max-w-xs">
+                                <div className="font-medium">{result.title}</div>
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {result.url}
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )
+                    )}
+                </div>
+              )}
           </div>
         )}
       </>
@@ -161,16 +210,25 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
   return null
 }
 
-const STATE_ICONS: Record<ToolUIPart['state'], (props: { className?: string, tool: ToolUIPart<InferUITools<typeof tools>> }) => React.ReactNode> = {
-  'input-streaming': ({ className }) => <RiLoader4Line className={cn('text-primary animate-spin', className)} />,
-  'input-available': ({ className }) => <RiLoader4Line className={cn('text-primary animate-spin', className)} />,
+const STATE_ICONS: Record<
+  ToolUIPart['state'],
+  (props: { className?: string; tool: ToolUIPart<InferUITools<typeof tools>> }) => React.ReactNode
+> = {
+  'input-streaming': ({ className }) => (
+    <RiLoader4Line className={cn('text-primary animate-spin', className)} />
+  ),
+  'input-available': ({ className }) => (
+    <RiLoader4Line className={cn('text-primary animate-spin', className)} />
+  ),
   'output-available': ({ className, tool }) => {
     if (tool.type === 'tool-webSearch') {
       return <RiEarthLine className={cn('text-muted-foreground', className)} />
     }
     return <RiHammerLine className={cn('text-muted-foreground', className)} />
   },
-  'output-error': ({ className }) => <RiErrorWarningLine className={cn('text-red-600', className)} />,
+  'output-error': ({ className }) => (
+    <RiErrorWarningLine className={cn('text-red-600', className)} />
+  ),
 }
 
 const STATE_LABELS: Record<ToolUIPart['state'], string> = {
@@ -180,7 +238,7 @@ const STATE_LABELS: Record<ToolUIPart['state'], string> = {
   'output-error': 'Tool call failed',
 }
 
-export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
+export function ChatMessageTool({ part, className }: { part: ToolUIPart; className?: string }) {
   const tool = part as ToolUIPart<InferUITools<typeof tools>>
   const label = getToolLabel(tool)
   const Icon = STATE_ICONS[tool.state]
@@ -203,9 +261,7 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
                   <TooltipTrigger asChild>
                     <Icon tool={tool} className="size-4 shrink-0" />
                   </TooltipTrigger>
-                  <TooltipContent>
-                    {STATE_LABELS[tool.state]}
-                  </TooltipContent>
+                  <TooltipContent>{STATE_LABELS[tool.state]}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </motion.span>
@@ -218,18 +274,14 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
                 {label}
               </span>
             </TooltipTrigger>
-            <TooltipContent>
-              {label}
-            </TooltipContent>
+            <TooltipContent>{label}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </SingleAccordionTrigger>
       <SingleAccordionContent>
         <ToolDescription tool={tool} />
         {tool.state === 'input-streaming' && (
-          <div className="text-xs text-muted-foreground italic">
-            Waiting for tool response...
-          </div>
+          <div className="text-xs text-muted-foreground italic">Waiting for tool response...</div>
         )}
         {tool.state === 'output-error' && (
           <div className="text-xs text-destructive">Tool call failed.</div>

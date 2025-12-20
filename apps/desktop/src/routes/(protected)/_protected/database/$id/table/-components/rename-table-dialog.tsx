@@ -69,21 +69,14 @@ export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            Rename Table
-          </DialogTitle>
+          <DialogTitle>Rename Table</DialogTitle>
           <div className="space-y-4">
             <Alert>
               <RiInformationLine className="size-5 text-blue-500" />
-              <AlertTitle>
-                Rename table "
-                {table}
-                "
-              </AlertTitle>
+              <AlertTitle>Rename table "{table}"</AlertTitle>
               <AlertDescription>
-                This will rename the table from "
-                {table}
-                " to the new name you specify. This action cannot be undone.
+                This will rename the table from "{table}" to the new name you specify. This action
+                cannot be undone.
               </AlertDescription>
             </Alert>
             <div className="space-y-2">
@@ -96,7 +89,7 @@ export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
                 placeholder="Enter new table name"
                 spellCheck={false}
                 autoComplete="off"
-                onChange={e => setNewTableName(e.target.value)}
+                onChange={(e) => setNewTableName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && canConfirm) {
                     renameTable()
@@ -108,9 +101,7 @@ export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
         </DialogHeader>
         <DialogFooter className="mt-4 flex gap-2">
           <DialogClose asChild>
-            <Button variant="outline">
-              Cancel
-            </Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button
             disabled={!canConfirm}
@@ -120,9 +111,7 @@ export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
               }
             }}
           >
-            <LoadingContent loading={isPending}>
-              Rename Table
-            </LoadingContent>
+            <LoadingContent loading={isPending}>Rename Table</LoadingContent>
           </Button>
         </DialogFooter>
       </DialogContent>

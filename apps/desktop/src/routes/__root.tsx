@@ -31,8 +31,7 @@ function RootDocument() {
   useUpdatesObserver()
 
   useEffect(() => {
-    if (isPending)
-      return
+    if (isPending) return
 
     enterAppAnimation()
   }, [isPending])
@@ -44,11 +43,12 @@ function RootDocument() {
         <ThemeObserver />
         <QueryClientProvider client={queryClient}>
           <AuthObserver />
-          <div className={cn(
-            'flex h-screen flex-col',
-            // For simple page layouts, we want outlet to be the full height of the screen
-            '*:last:min-h-[inherit] *:last:flex-1 *:last:h-full',
-          )}
+          <div
+            className={cn(
+              'flex h-screen flex-col',
+              // For simple page layouts, we want outlet to be the full height of the screen
+              '*:last:min-h-[inherit] *:last:flex-1 *:last:h-full'
+            )}
           >
             <GlobalBanner />
             <Outlet />

@@ -26,11 +26,7 @@ export function RunnerResults() {
       <div className="h-full flex flex-col gap-2 items-center justify-center">
         <RiLoader4Line className="size-6 text-primary animate-spin" />
         <p className="text-center text-foreground">Running...</p>
-        <Button
-          size="xs"
-          variant="secondary"
-          onClick={handleStop}
-        >
+        <Button size="xs" variant="secondary" onClick={handleStop}>
           <RiStopLine className="size-3" />
           Stop
         </Button>
@@ -51,10 +47,13 @@ export function RunnerResults() {
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className={cn('flex items-center justify-center gap-1 w-full', error && 'text-destructive')}>
-                    Result
-                    {' '}
-                    {results.length > 1 ? index + 1 : ''}
+                  <span
+                    className={cn(
+                      'flex items-center justify-center gap-1 w-full',
+                      error && 'text-destructive'
+                    )}
+                  >
+                    Result {results.length > 1 ? index + 1 : ''}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8} className="p-0 pl-2 w-lg">
@@ -82,47 +81,39 @@ export function RunnerResults() {
             value={`table-${index}`}
             className="h-[calc(100%-(--spacing(8)))]"
           >
-            {error
-              ? (
-                  <div className="h-full flex flex-col gap-2 items-center justify-center max-w-2/3 mx-auto">
-                    Error executing query
-                    <div className="bg-red-50 text-red-700 py-1 px-2 mb-2 rounded text-xs font-mono text-balance max-w-full dark:bg-red-950 dark:text-red-300 overflow-auto max-h-1/2">
-                      {error}
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      asChild
-                    >
-                      <Link
-                        to="/database/$id/sql"
-                        params={{ id: database.id }}
-                        search={{
-                          chatId,
-                          error: [
-                            `Fix the following SQL error by correcting the SQL query on the lines ${startLineNumber} - ${endLineNumber}:`,
-                            error,
-                          ].join('\n'),
-                        }}
-                      >
-                        <RiChatAiLine />
-                        Fix in chat
-                      </Link>
-                    </Button>
-                  </div>
-                )
-              : !data || !data[0] || data.length === 0
-                  ? (
-                      <div className="h-full flex flex-col gap-2 items-center justify-center">
-                        No data returned
-                      </div>
-                    )
-                  : (
-                      <RunnerResultsTable
-                        data={data}
-                        columns={Object.keys(data[0]!).map(key => ({ id: key }))}
-                      />
-                    )}
+            {error ? (
+              <div className="h-full flex flex-col gap-2 items-center justify-center max-w-2/3 mx-auto">
+                Error executing query
+                <div className="bg-red-50 text-red-700 py-1 px-2 mb-2 rounded text-xs font-mono text-balance max-w-full dark:bg-red-950 dark:text-red-300 overflow-auto max-h-1/2">
+                  {error}
+                </div>
+                <Button size="sm" variant="outline" asChild>
+                  <Link
+                    to="/database/$id/sql"
+                    params={{ id: database.id }}
+                    search={{
+                      chatId,
+                      error: [
+                        `Fix the following SQL error by correcting the SQL query on the lines ${startLineNumber} - ${endLineNumber}:`,
+                        error,
+                      ].join('\n'),
+                    }}
+                  >
+                    <RiChatAiLine />
+                    Fix in chat
+                  </Link>
+                </Button>
+              </div>
+            ) : !data || !data[0] || data.length === 0 ? (
+              <div className="h-full flex flex-col gap-2 items-center justify-center">
+                No data returned
+              </div>
+            ) : (
+              <RunnerResultsTable
+                data={data}
+                columns={Object.keys(data[0]!).map((key) => ({ id: key }))}
+              />
+            )}
           </TabsContent>
         ))}
       </Tabs>
@@ -133,11 +124,7 @@ export function RunnerResults() {
     <div className="h-full flex flex-col items-center justify-center">
       <p className="text-center">No results to display</p>
       <p className="text-xs text-muted-foreground mt-1 text-center">
-        Write and run a
-        {' '}
-        <span className="font-mono">SELECT</span>
-        {' '}
-        query above to see results here
+        Write and run a <span className="font-mono">SELECT</span> query above to see results here
       </p>
     </div>
   )

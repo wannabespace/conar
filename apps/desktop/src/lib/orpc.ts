@@ -22,9 +22,7 @@ const link = new RPCLink({
         : {}),
     }
   },
-  interceptors: [
-    onError(handleError),
-  ],
+  interceptors: [onError(handleError)],
 })
 
 export const orpc: ORPCRouter = createORPCClient(link)

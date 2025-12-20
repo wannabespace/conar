@@ -10,7 +10,13 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { Linux } from '@conar/ui/components/icons/linux'
 import { Tooltip, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
-import { RiAppleFill, RiCheckLine, RiFileCopyLine, RiTerminalLine, RiWindowsFill } from '@remixicon/react'
+import {
+  RiAppleFill,
+  RiCheckLine,
+  RiFileCopyLine,
+  RiTerminalLine,
+  RiWindowsFill,
+} from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { DownloadButton } from '~/components/download-button'
@@ -56,12 +62,7 @@ function HomebrewInstall() {
             readOnly
           />
         </div>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={handleCopy}
-          className="shrink-0"
-        >
+        <Button size="sm" variant="ghost" onClick={handleCopy} className="shrink-0">
           <span className="flex items-center gap-1.5">
             <ContentSwitch
               active={copied}
@@ -99,29 +100,24 @@ function AllPlatforms() {
         arch="exe"
         link={DOWNLOAD_LINKS.windows.exe}
       />
-      <DownloadOption
-        Icon={Linux}
-        type="linux"
-        arch="deb"
-        link={DOWNLOAD_LINKS.linux.deb}
-      />
+      <DownloadOption Icon={Linux} type="linux" arch="deb" link={DOWNLOAD_LINKS.linux.deb} />
       <DownloadOption
         Icon={Linux}
         type="linux"
         arch="AppImage"
         link={DOWNLOAD_LINKS.linux.appImage}
       />
-      <DownloadOption
-        Icon={Linux}
-        type="linux"
-        arch="rpm"
-        link={DOWNLOAD_LINKS.linux.rpm}
-      />
+      <DownloadOption Icon={Linux} type="linux" arch="rpm" link={DOWNLOAD_LINKS.linux.rpm} />
     </>
   )
 }
 
-function DownloadOption({ Icon, type, arch, link }: {
+function DownloadOption({
+  Icon,
+  type,
+  arch,
+  link,
+}: {
   Icon: RemixiconComponentType
   type: OS
   arch?: string
@@ -135,8 +131,7 @@ function DownloadOption({ Icon, type, arch, link }: {
         </div>
         <div className="flex flex-col items-start">
           <span className="font-medium text-sm sm:text-base truncate w-full">
-            {osMap[type].label}
-            {' '}
+            {osMap[type].label}{' '}
             {arch && (
               <Badge variant="outline" className="text-xs sm:text-sm">
                 {arch}
@@ -147,16 +142,8 @@ function DownloadOption({ Icon, type, arch, link }: {
       </div>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            asChild
-            size="sm"
-            disabled={!link}
-            variant="secondary"
-          >
-            <a
-              href={link}
-              download
-            >
+          <Button asChild size="sm" disabled={!link} variant="secondary">
+            <a href={link} download>
               Download
             </a>
           </Button>
@@ -172,9 +159,7 @@ function RouteComponent() {
       <div className="flex flex-col items-center max-w-2xl mx-auto text-center w-full">
         <AppLogoSquare className="size-24 sm:size-32 mb-4 sm:mb-6" />
         <h1 className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3 tracking-tight font-medium px-2">
-          Download
-          {' '}
-          <strong>Conar</strong>
+          Download <strong>Conar</strong>
         </h1>
         <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-10 px-2">
           Available for macOS, Windows and Linux

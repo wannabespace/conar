@@ -5,7 +5,9 @@ import { databases } from './databases'
 
 export const queries = pgTable('queries', ({ uuid, text }) => ({
   ...baseTable,
-  databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }).notNull(),
+  databaseId: uuid()
+    .references(() => databases.id, { onDelete: 'cascade' })
+    .notNull(),
   name: text().notNull(),
   query: text().notNull(),
 }))

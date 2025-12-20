@@ -8,8 +8,7 @@ export const animationHooks = createHooks<{
 }>()
 
 export function enterAppAnimation() {
-  if (isEntered)
-    return
+  if (isEntered) return
 
   isEntered = true
 

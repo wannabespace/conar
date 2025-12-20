@@ -1,7 +1,7 @@
 {
   "name": "@conar/web",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",

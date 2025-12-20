@@ -21,9 +21,7 @@ import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
 import { StepType } from './-components/step-type'
 
-export const Route = createFileRoute(
-  '/(protected)/_protected/create/',
-)({
+export const Route = createFileRoute('/(protected)/_protected/create/')({
   component: CreateConnectionPage,
   head: () => ({
     meta: [{ title: title('Create connection') }],
@@ -105,31 +103,38 @@ function CreateConnectionPage() {
     },
   })
 
-  const { mutate: test, reset, status } = useMutation({
-    mutationFn: ({ type, connectionString }: { type: DatabaseType, connectionString: string }) => executeSql({
-      type,
-      connectionString,
-      sql: 'SELECT 1',
-    }),
+  const {
+    mutate: test,
+    reset,
+    status,
+  } = useMutation({
+    mutationFn: ({ type, connectionString }: { type: DatabaseType; connectionString: string }) =>
+      executeSql({
+        type,
+        connectionString,
+        sql: 'SELECT 1',
+      }),
     onSuccess: () => {
       setStep('save')
       toast.success('Connection successful. You can save the database.')
     },
     onError: (error) => {
-      toast.error('We couldn\'t connect to the database', {
+      toast.error("We couldn't connect to the database", {
         // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
-        description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
+        description: (
+          <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />
+        ),
       })
     },
   })
 
-  const typeValue = useStore(form.store, state => state.values.type)
-  const connectionString = useStore(form.store, state => state.values.connectionString)
-  const name = useStore(form.store, state => state.values.name)
-  const saveInCloud = useStore(form.store, state => state.values.saveInCloud)
-  const label = useStore(form.store, state => state.values.label)
-  const color = useStore(form.store, state => state.values.color)
-  const isValid = useStore(form.store, state => state.isValid)
+  const typeValue = useStore(form.store, (state) => state.values.type)
+  const connectionString = useStore(form.store, (state) => state.values.connectionString)
+  const name = useStore(form.store, (state) => state.values.name)
+  const saveInCloud = useStore(form.store, (state) => state.values.saveInCloud)
+  const label = useStore(form.store, (state) => state.values.label)
+  const color = useStore(form.store, (state) => state.values.color)
+  const isValid = useStore(form.store, (state) => state.isValid)
 
   return (
     <ScrollArea className="py-[10vh]">
@@ -157,10 +162,7 @@ function CreateConnectionPage() {
         <p className="leading-7 not-first:mt-2 mb-10 text-muted-foreground">
           Connect to your database by providing the connection details.
         </p>
-        <Stepper
-          active={step}
-          onChange={setStep}
-        >
+        <Stepper active={step} onChange={setStep}>
           <StepperList>
             <StepperTrigger value="type" number={1}>
               Type
@@ -205,25 +207,20 @@ function CreateConnectionPage() {
                 >
                   Back
                 </Button>
-                {status === 'success'
-                  ? (
-                      <Button
-                        variant="default"
-                        onClick={() => setStep('save')}
-                      >
-                        Continue
-                      </Button>
-                    )
-                  : (
-                      <Button
-                        disabled={status === 'pending' || !connectionString}
-                        onClick={() => test({ type: typeValue!, connectionString })}
-                      >
-                        <LoadingContent loading={status === 'pending'}>
-                          {status === 'error' ? 'Try again' : 'Test connection'}
-                        </LoadingContent>
-                      </Button>
-                    )}
+                {status === 'success' ? (
+                  <Button variant="default" onClick={() => setStep('save')}>
+                    Continue
+                  </Button>
+                ) : (
+                  <Button
+                    disabled={status === 'pending' || !connectionString}
+                    onClick={() => test({ type: typeValue!, connectionString })}
+                  >
+                    <LoadingContent loading={status === 'pending'}>
+                      {status === 'error' ? 'Try again' : 'Test connection'}
+                    </LoadingContent>
+                  </Button>
+                )}
               </div>
             </div>
           </StepperContent>
@@ -232,23 +229,20 @@ function CreateConnectionPage() {
               type={typeValue!}
               name={name}
               connectionString={connectionString}
-              setName={name => form.setFieldValue('name', name)}
+              setName={(name) => form.setFieldValue('name', name)}
               onRandomName={() => form.setFieldValue('name', generateRandomName())}
               saveInCloud={saveInCloud}
-              setSaveInCloud={saveInCloud => form.setFieldValue('saveInCloud', saveInCloud)}
+              setSaveInCloud={(saveInCloud) => form.setFieldValue('saveInCloud', saveInCloud)}
               label={label}
-              setLabel={label => form.setFieldValue('label', label)}
+              setLabel={(label) => form.setFieldValue('label', label)}
               color={color}
-              setColor={color => form.setFieldValue('color', color)}
+              setColor={(color) => form.setFieldValue('color', color)}
             />
             <div className="flex gap-2 justify-end mt-auto pt-4">
               <Button variant="outline" onClick={() => setStep('credentials')}>
                 Back
               </Button>
-              <Button
-                type="submit"
-                disabled={status === 'pending' || !isValid}
-              >
+              <Button type="submit" disabled={status === 'pending' || !isValid}>
                 <LoadingContent loading={status === 'pending'}>
                   <AppLogo className="w-4" />
                   Save connection

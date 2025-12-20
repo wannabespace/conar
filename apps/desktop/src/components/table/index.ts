@@ -1,11 +1,7 @@
 import type { ComponentType, CSSProperties } from 'react'
 
 export * from './body'
-export {
-  FilterForm,
-  FilterItem,
-  FiltersProvider,
-} from './filters'
+export { FilterForm, FilterItem, FiltersProvider } from './filters'
 export * from './header'
 export * from './provider'
 export * from './table'

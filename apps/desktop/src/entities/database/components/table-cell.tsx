@@ -3,15 +3,42 @@ import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '../utils/table'
 import type { TableCellProps } from '~/components/table'
 import { sleep } from '@conar/shared/utils/helpers'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { CtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@conar/ui/components/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowLeftDownLine, RiArrowRightUpLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import {
+  RiArrowLeftDownLine,
+  RiArrowRightUpLine,
+  RiCollapseDiagonal2Line,
+  RiExpandDiagonal2Line,
+  RiFileCopyLine,
+} from '@remixicon/react'
 import dayjs from 'dayjs'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
@@ -48,8 +75,7 @@ function CellPopoverContent({
   const saveEvent = useEffectEvent(save)
 
   useEffect(() => {
-    if (!monacoRef.current)
-      return
+    if (!monacoRef.current) return
 
     monacoRef.current.addAction({
       id: 'conar.execute-on-enter',
@@ -70,13 +96,14 @@ function CellPopoverContent({
     onClose()
   }
 
-  const shouldHideToggleSize = column.type === 'boolean'
-    || column.type?.includes('time')
-    || column.type?.includes('numeric')
-    || (!!values && values.length > 0)
+  const shouldHideToggleSize =
+    column.type === 'boolean' ||
+    column.type?.includes('time') ||
+    column.type?.includes('numeric') ||
+    (!!values && values.length > 0)
 
   const monacoOptions = {
-    lineNumbers: isBig ? 'on' as const : 'off' as const,
+    lineNumbers: isBig ? ('on' as const) : ('off' as const),
     readOnly: !canEdit,
     scrollBeyondLastLine: false,
     folding: isBig,
@@ -88,54 +115,55 @@ function CellPopoverContent({
 
   return (
     <>
-      {column?.type === 'boolean'
-        ? (
-            <CellSwitch
-              className="py-6 w-full justify-center"
-              checked={value === 'true'}
-              onChange={checked => setValue(checked.toString())}
-              onSave={save}
-            />
-          )
-        // TODO: refactor this to support array values like in PG enum array columns or MySQL SET columns
-        : values && !column.isArray
-          ? (
-              <div className="p-2">
-                <Select
-                  value={value === 'null' ? undefined : value}
-                  disabled={!canEdit}
-                  onValueChange={(value) => {
-                    setValue(value)
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select value" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {values.map(val => (
-                      <SelectItem key={val} value={val}>
-                        {val}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )
-          : (
-              <Monaco
-                ref={monacoRef}
-                data-mask
-                value={value}
-                language={column?.type?.includes('json')
-                  ? 'json'
-                  : column?.type?.includes('xml')
-                    ? 'xml'
-                    : undefined}
-                className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(45vh,40rem)]')}
-                onChange={setValue}
-                options={monacoOptions}
-              />
-            )}
+      {column?.type === 'boolean' ? (
+        <CellSwitch
+          className="py-6 w-full justify-center"
+          checked={value === 'true'}
+          onChange={(checked) => setValue(checked.toString())}
+          onSave={save}
+        />
+      ) : // TODO: refactor this to support array values like in PG enum array columns or MySQL SET columns
+      values && !column.isArray ? (
+        <div className="p-2">
+          <Select
+            value={value === 'null' ? undefined : value}
+            disabled={!canEdit}
+            onValueChange={(value) => {
+              setValue(value)
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select value" />
+            </SelectTrigger>
+            <SelectContent>
+              {values.map((val) => (
+                <SelectItem key={val} value={val}>
+                  {val}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : (
+        <Monaco
+          ref={monacoRef}
+          data-mask
+          value={value}
+          language={
+            column?.type?.includes('json')
+              ? 'json'
+              : column?.type?.includes('xml')
+                ? 'xml'
+                : undefined
+          }
+          className={cn(
+            'w-full h-40 transition-[height] duration-300',
+            isBig && 'h-[min(45vh,40rem)]'
+          )}
+          onChange={setValue}
+          options={monacoOptions}
+        />
+      )}
       <div className="flex justify-between items-center gap-2 p-2 border-t">
         <div className="flex items-center gap-2">
           {!shouldHideToggleSize && (
@@ -145,9 +173,13 @@ function CellPopoverContent({
                   <Button
                     variant="outline"
                     size="icon-xs"
-                    onClick={() => setIsBig(prev => !prev)}
+                    onClick={() => setIsBig((prev) => !prev)}
                   >
-                    {isBig ? <RiCollapseDiagonal2Line className="size-3" /> : <RiExpandDiagonal2Line className="size-3" />}
+                    {isBig ? (
+                      <RiCollapseDiagonal2Line className="size-3" />
+                    ) : (
+                      <RiExpandDiagonal2Line className="size-3" />
+                    )}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">Toggle size</TooltipContent>
@@ -157,7 +189,11 @@ function CellPopoverContent({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon-xs" variant="outline" onClick={() => copy(value, 'Value copied to clipboard')}>
+                <Button
+                  size="icon-xs"
+                  variant="outline"
+                  onClick={() => copy(value, 'Value copied to clipboard')}
+                >
                   <RiFileCopyLine className="size-3" />
                 </Button>
               </TooltipTrigger>
@@ -171,23 +207,15 @@ function CellPopoverContent({
               {canSetNull && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button
-                      size="xs"
-                      variant="secondary"
-                    >
-                      Set
-                      {' '}
-                      <span className="font-mono">null</span>
+                    <Button size="xs" variant="secondary">
+                      Set <span className="font-mono">null</span>
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Set value to null?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will set the cell value to
-                        {' '}
-                        <code className="font-mono">null</code>
-                        .
+                        This will set the cell value to <code className="font-mono">null</code>.
                         This action can be undone by editing the cell again.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -198,11 +226,7 @@ function CellPopoverContent({
                   </AlertDialogContent>
                 </AlertDialog>
               )}
-              <Button
-                size="xs"
-                disabled={!canSave}
-                onClick={() => save(value)}
-              >
+              <Button size="xs" disabled={!canSave} onClick={() => save(value)}>
                 Save
                 <CtrlEnter userAgent={navigator.userAgent} />
               </Button>
@@ -216,11 +240,7 @@ function CellPopoverContent({
 
 function ForeignButton(props: ComponentProps<'button'>) {
   return (
-    <Button
-      variant="outline"
-      size="icon-xs"
-      {...props}
-    >
+    <Button variant="outline" size="icon-xs" {...props}>
       <RiArrowRightUpLine className="size-3 text-muted-foreground" />
     </Button>
   )
@@ -228,29 +248,20 @@ function ForeignButton(props: ComponentProps<'button'>) {
 
 function ReferenceButton({ children, className, ...props }: ComponentProps<'button'>) {
   return (
-    <Button
-      variant="outline"
-      size="xs"
-      className={cn('px-1.5!', className)}
-      {...props}
-    >
+    <Button variant="outline" size="xs" className={cn('px-1.5!', className)} {...props}>
       <RiArrowLeftDownLine className="size-3 text-muted-foreground" />
-      <span className="text-xs text-muted-foreground">
-        {children}
-      </span>
+      <span className="text-xs text-muted-foreground">{children}</span>
     </Button>
   )
 }
 
 function getTimestamp(value: unknown, column: Column) {
-  const date = (
-    column?.type?.includes('timestamp')
-    || column?.type?.includes('datetime')
-  )
-  && value
-  && (typeof value === 'string' || typeof value === 'number')
-    ? dayjs(value)
-    : null
+  const date =
+    (column?.type?.includes('timestamp') || column?.type?.includes('datetime')) &&
+    value &&
+    (typeof value === 'string' || typeof value === 'number')
+      ? dayjs(value)
+      : null
 
   return date?.isValid() ? date : null
 }
@@ -282,10 +293,7 @@ export function TableCell({
 
   useEffect(() => {
     if (status === 'success' || status === 'error') {
-      const timeout = setTimeout(
-        () => setStatus('idle'),
-        status === 'error' ? 3000 : 1000,
-      )
+      const timeout = setTimeout(() => setStatus('idle'), status === 'error' ? 3000 : 1000)
 
       return () => clearTimeout(timeout)
     }
@@ -299,7 +307,7 @@ export function TableCell({
     status === 'success' && 'ring-success/50 bg-success/10',
     status === 'pending' && 'animate-pulse bg-primary/10',
     (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1!',
-    className,
+    className
   )
 
   function disableInteractIfPossible() {
@@ -320,7 +328,9 @@ export function TableCell({
       >
         <span className="truncate">{displayValue}</span>
         {!!value && column.foreign && <ForeignButton />}
-        {!!value && column.references && column.references.length > 0 && <ReferenceButton>{column.references.length}</ReferenceButton>}
+        {!!value && column.references && column.references.length > 0 && (
+          <ReferenceButton>{column.references.length}</ReferenceButton>
+        )}
       </TableCellContent>
     )
   }
@@ -366,7 +376,7 @@ export function TableCell({
             <TooltipTrigger asChild>
               <PopoverTrigger
                 asChild
-                onClick={e => e.preventDefault()}
+                onClick={(e) => e.preventDefault()}
                 onDoubleClick={() => setIsPopoverOpen(true)}
                 onMouseLeave={disableInteractIfPossible}
               >
@@ -378,16 +388,13 @@ export function TableCell({
                 >
                   <span className="truncate">{displayValue}</span>
                   {!!value && column.foreign && (
-                    <Popover
-                      open={isForeignOpen}
-                      onOpenChange={setIsForeignOpen}
-                    >
+                    <Popover open={isForeignOpen} onOpenChange={setIsForeignOpen}>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <PopoverTrigger asChild>
                               <ForeignButton
-                                onDoubleClick={e => e.stopPropagation()}
+                                onDoubleClick={(e) => e.stopPropagation()}
                                 onClick={(e) => {
                                   e.stopPropagation()
 
@@ -398,15 +405,13 @@ export function TableCell({
                               />
                             </PopoverTrigger>
                           </TooltipTrigger>
-                          <TooltipContent className="text-sm">
-                            See foreign record
-                          </TooltipContent>
+                          <TooltipContent className="text-sm">See foreign record</TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                       <PopoverContent
                         className="w-[80vw] h-[45vh] p-0 overflow-hidden"
-                        onDoubleClick={e => e.stopPropagation()}
-                        onClick={e => e.stopPropagation()}
+                        onDoubleClick={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <TableCellTable
                           schema={column.foreign.schema}
@@ -418,16 +423,13 @@ export function TableCell({
                     </Popover>
                   )}
                   {!!value && column.references && column.references.length > 0 && (
-                    <Popover
-                      open={isReferencesOpen}
-                      onOpenChange={setIsReferencesOpen}
-                    >
+                    <Popover open={isReferencesOpen} onOpenChange={setIsReferencesOpen}>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <PopoverTrigger asChild>
                               <ReferenceButton
-                                onDoubleClick={e => e.stopPropagation()}
+                                onDoubleClick={(e) => e.stopPropagation()}
                                 onClick={(e) => {
                                   e.stopPropagation()
 
@@ -441,39 +443,31 @@ export function TableCell({
                             </PopoverTrigger>
                           </TooltipTrigger>
                           <TooltipContent className="text-sm">
-                            See referenced records from
-                            {' '}
-                            {column.references.length}
-                            {' '}
-                            table
+                            See referenced records from {column.references.length} table
                             {column.references.length === 1 ? '' : 's'}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                       <PopoverContent
                         className="w-[80vw] h-[45vh] p-0 overflow-hidden"
-                        onDoubleClick={e => e.stopPropagation()}
-                        onClick={e => e.stopPropagation()}
+                        onDoubleClick={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <TableCellReferences
-                          references={column.references}
-                          value={value}
-                        />
+                        <TableCellReferences references={column.references} value={value} />
                       </PopoverContent>
                     </Popover>
                   )}
                 </TableCellContent>
               </PopoverTrigger>
             </TooltipTrigger>
-            {date && (
-              <TooltipContent>
-                {date.format('DD MMMM YYYY, HH:mm:ss (Z)')}
-              </TooltipContent>
-            )}
+            {date && <TooltipContent>{date.format('DD MMMM YYYY, HH:mm:ss (Z)')}</TooltipContent>}
           </Tooltip>
         </TooltipProvider>
         <PopoverContent
-          className={cn('p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
+          className={cn(
+            'p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]',
+            isBig && 'w-[min(50vw,60rem)]'
+          )}
           onAnimationEnd={disableInteractIfPossible}
         >
           <CellPopoverContent

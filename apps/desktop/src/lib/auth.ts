@@ -39,11 +39,11 @@ export const codeChallenge = {
 export function successAuthToast(newUser: boolean) {
   toast.success(
     newUser
-      ? 'Welcome to Conar! We\'re excited to help you manage your connections with ease. Get started by creating your first connection.'
+      ? "Welcome to Conar! We're excited to help you manage your connections with ease. Get started by creating your first connection."
       : 'Welcome back! Your connections are ready for you.',
     {
       duration: 10000,
-    },
+    }
   )
 }
 

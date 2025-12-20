@@ -5,7 +5,11 @@ import { databaseStore } from '~/entities/database'
 
 export function useDatabaseLinkParams(id: string) {
   const store = databaseStore(id)
-  const [lastOpenedTable, lastOpenedPage, lastChatId] = useStore(store, state => [state.lastOpenedTable, state.lastOpenedPage, state.lastOpenedChatId])
+  const [lastOpenedTable, lastOpenedPage, lastChatId] = useStore(store, (state) => [
+    state.lastOpenedTable,
+    state.lastOpenedPage,
+    state.lastOpenedChatId,
+  ])
 
   return useMemo((): LinkProps => {
     if (lastOpenedPage) {
@@ -14,15 +18,13 @@ export function useDatabaseLinkParams(id: string) {
           to: '/database/$id/enums',
           params: { id },
         }
-      }
-      else if (lastOpenedPage === '/(protected)/_protected/database/$id/sql/') {
+      } else if (lastOpenedPage === '/(protected)/_protected/database/$id/sql/') {
         return {
           to: '/database/$id/sql',
           params: { id },
           search: lastChatId ? { chatId: lastChatId } : undefined,
         }
-      }
-      else if (lastOpenedPage === '/(protected)/_protected/database/$id/visualizer/') {
+      } else if (lastOpenedPage === '/(protected)/_protected/database/$id/visualizer/') {
         return {
           to: '/database/$id/visualizer',
           params: { id },
@@ -33,7 +35,9 @@ export function useDatabaseLinkParams(id: string) {
     return {
       to: '/database/$id/table',
       params: { id },
-      search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
+      search: lastOpenedTable
+        ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table }
+        : undefined,
     }
   }, [id, lastOpenedPage, lastOpenedTable, lastChatId])
 }

@@ -1,5 +1,14 @@
 import type { databases } from '~/drizzle'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import NumberFlow from '@number-flow/react'
@@ -13,23 +22,50 @@ import { databaseRowsQuery, databaseTableTotalQuery, deleteRowsQuery } from '~/e
 import { queryClient } from '~/main'
 import { usePageStoreContext } from '../-store'
 
-export function HeaderActionsDelete({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
+export function HeaderActionsDelete({
+  table,
+  schema,
+  database,
+}: {
+  table: string
+  schema: string
+  database: typeof databases.$inferSelect
+}) {
   const [isOpened, setIsOpened] = useState(false)
   const store = usePageStoreContext()
-  const selected = useStore(store, state => state.selected)
+  const selected = useStore(store, (state) => state.selected)
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
       await deleteRowsQuery.run(database, { table, schema, primaryKeys: selected })
     },
     onSuccess: () => {
-      toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
-      queryClient.invalidateQueries(databaseRowsQuery({ database, table, schema, query: { filters: store.state.filters, orderBy: store.state.orderBy } }))
-      queryClient.invalidateQueries(databaseTableTotalQuery({ database, table, schema, query: { filters: store.state.filters } }))
-      store.setState(state => ({
-        ...state,
-        selected: [],
-      } satisfies typeof state))
+      toast.success(
+        `${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`
+      )
+      queryClient.invalidateQueries(
+        databaseRowsQuery({
+          database,
+          table,
+          schema,
+          query: { filters: store.state.filters, orderBy: store.state.orderBy },
+        })
+      )
+      queryClient.invalidateQueries(
+        databaseTableTotalQuery({
+          database,
+          table,
+          schema,
+          query: { filters: store.state.filters },
+        })
+      )
+      store.setState(
+        (state) =>
+          ({
+            ...state,
+            selected: [],
+          }) satisfies typeof state
+      )
     },
     onError: (error) => {
       toast.error('Failed to delete rows', {
@@ -45,29 +81,18 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
           <AlertDialogHeader>
             <AlertDialogTitle>
               Confirm row
-              {selected.length === 1 ? '' : 's'}
-              {' '}
-              deletion
+              {selected.length === 1 ? '' : 's'} deletion
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the selected
-              {' '}
-              {selected.length}
-              {' '}
-              {selected.length === 1 ? 'row' : 'rows'}
-              {' '}
-              from the database.
+              This action cannot be undone. This will permanently delete the selected{' '}
+              {selected.length} {selected.length === 1 ? 'row' : 'rows'} from the database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction variant="destructive" onClick={() => deleteRows()}>
               <LoadingContent loading={isDeleting}>
-                Delete
-                {' '}
-                {selected.length}
-                {' '}
-                selected row
+                Delete {selected.length} selected row
                 {selected.length === 1 ? '' : 's'}
               </LoadingContent>
             </AlertDialogAction>
@@ -85,8 +110,7 @@ export function HeaderActionsDelete({ table, schema, database }: { table: string
             <Button variant="destructive" onClick={() => setIsOpened(true)}>
               <RiDeleteBin7Line />
               <span>
-                Delete
-                (
+                Delete (
                 <NumberFlow
                   spinTiming={{ duration: 200 }}
                   value={selected.length}

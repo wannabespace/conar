@@ -11,7 +11,7 @@ const CellContext = createContext<{
   column: Column
   initialValue: unknown
   displayValue: string
-  update: UseMutateFunction<void, Error, { value: string | null, rowIndex: number }>
+  update: UseMutateFunction<void, Error, { value: string | null; rowIndex: number }>
   values?: string[]
 }>(null!)
 
@@ -43,39 +43,29 @@ export function TableCellProvider({
   const [value, setValue] = useState<string>(() => getEditableValue(initialValue, false))
 
   const { mutate: update } = useMutation({
-    mutationFn: async ({ rowIndex, value }: { value: string | null, rowIndex: number }) => {
-      if (!onSaveValue)
-        return
+    mutationFn: async ({ rowIndex, value }: { value: string | null; rowIndex: number }) => {
+      if (!onSaveValue) return
 
       onSavePending()
 
-      await onSaveValue(
-        rowIndex,
-        column.id,
-        value,
-      )
+      await onSaveValue(rowIndex, column.id, value)
     },
     onError: onSaveError,
     onSuccess: onSaveSuccess,
   })
 
-  const context = useMemo(() => ({
-    value,
-    setValue,
-    column,
-    initialValue,
-    displayValue,
-    update,
-    values,
-  }), [
-    value,
-    setValue,
-    column,
-    initialValue,
-    displayValue,
-    update,
-    values,
-  ])
+  const context = useMemo(
+    () => ({
+      value,
+      setValue,
+      column,
+      initialValue,
+      displayValue,
+      update,
+      values,
+    }),
+    [value, setValue, column, initialValue, displayValue, update, values]
+  )
 
   return <CellContext value={context}>{children}</CellContext>
 }

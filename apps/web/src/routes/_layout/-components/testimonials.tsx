@@ -42,19 +42,23 @@ function Testimonial({ name, login, avatar, link, children, className }: Testimo
         <Avatar className="size-10 sm:size-12 rounded-full flex-shrink-0">
           <AvatarImage src={avatar} alt={name} />
           <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-            {name.split(' ').map(n => n[0]).join('').toUpperCase()}
+            {name
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-foreground truncate text-sm sm:text-base">{name}</h3>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            @
-            {login}
-          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground">@{login}</p>
         </div>
       </header>
       <div className="relative">
-        <RiDoubleQuotesL className="size-5 sm:size-6 text-primary/20 absolute -top-1 sm:-top-2 -left-1 sm:-left-2" aria-hidden="true" />
+        <RiDoubleQuotesL
+          className="size-5 sm:size-6 text-primary/20 absolute -top-1 sm:-top-2 -left-1 sm:-left-2"
+          aria-hidden="true"
+        />
         <blockquote className="text-foreground leading-relaxed pl-3 sm:pl-4 text-sm sm:text-base">
           {children}
         </blockquote>
@@ -70,13 +74,11 @@ function JoinTestimonials() {
         <div className="size-10 sm:size-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
           <RiTwitterXLine className="size-5 sm:size-6 text-primary" aria-hidden="true" />
         </div>
-        <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">Want to be featured here?</h3>
+        <h3 className="font-semibold text-foreground mb-2 text-sm sm:text-base">
+          Want to be featured here?
+        </h3>
         <Button asChild variant="link">
-          <a
-            href={SOCIAL_LINKS.TWITTER}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={SOCIAL_LINKS.TWITTER} target="_blank" rel="noopener noreferrer">
             Tag @conar_app on
             <RiTwitterXLine className="size-3 sm:size-4" aria-hidden="true" />
           </a>
@@ -105,14 +107,15 @@ const testimonials: {
     login: 'mazeincoding',
     avatar: '/avatars/mazeincoding.jpg',
     link: 'https://x.com/mazeincoding/status/1929612879600181555',
-    children: () => 'finally, a database viewer that doesn\'t suck',
+    children: () => "finally, a database viewer that doesn't suck",
   },
   {
     name: 'Noah',
     login: 'itsnoahd',
     avatar: '/avatars/itsnoahd.jpg',
     link: 'https://x.com/itsnoahd/status/1936938123570925802',
-    children: () => 'HOLY CRAP WHAT??? @conar_app where have you been? This is so much easier then pgadmin. IT ALSO has some really nice micro animations and interactions wow.',
+    children: () =>
+      'HOLY CRAP WHAT??? @conar_app where have you been? This is so much easier then pgadmin. IT ALSO has some really nice micro animations and interactions wow.',
   },
   {
     name: 'Ansh Rathod',
@@ -140,7 +143,8 @@ const testimonials: {
     login: 'DominikDoesDev',
     avatar: '/avatars/dominikdoesdev.jpg',
     link: 'https://x.com/DominikDoesDev/status/1942986868758372850',
-    children: () => 'Not gonna lie I was looking for something like @conar_app a while ago but couldn\'t find it until now. I think I am in love with this 😍',
+    children: () =>
+      "Not gonna lie I was looking for something like @conar_app a while ago but couldn't find it until now. I think I am in love with this 😍",
   },
   {
     name: 'Sorin Curescu',
@@ -154,7 +158,8 @@ const testimonials: {
     login: 'chef_berke',
     avatar: '/avatars/chef_berke.jpg',
     link: 'https://x.com/chef_berke/status/1949880848246853733',
-    children: () => 'found my new favorite db tool if you work with postgresql, definitely check this out @conar_app',
+    children: () =>
+      'found my new favorite db tool if you work with postgresql, definitely check this out @conar_app',
   },
   {
     name: 'Alex Holovach',
@@ -176,7 +181,10 @@ export function Testimonials() {
   return (
     <section aria-labelledby="testimonials-heading" className="py-8 sm:py-12 lg:py-16">
       <div className="mb-12 sm:mb-16 text-center px-4">
-        <h2 id="testimonials-heading" className="text-center mb-3 text-muted-foreground text-sm uppercase tracking-wide font-medium">
+        <h2
+          id="testimonials-heading"
+          className="text-center mb-3 text-muted-foreground text-sm uppercase tracking-wide font-medium"
+        >
           Testimonials
         </h2>
         <p className="text-center text-balance text-3xl sm:text-4xl md:text-5xl font-bold max-w-3xl mx-auto leading-tight">
@@ -184,7 +192,7 @@ export function Testimonials() {
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-7xl mx-auto px-4">
-        {testimonials.map(testimonial => (
+        {testimonials.map((testimonial) => (
           <TestimonialCard key={testimonial.login} testimonialId={testimonial.login}>
             <Testimonial
               name={testimonial.name}

@@ -2,7 +2,13 @@ import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
-import { RiArrowRightLine, RiCheckLine, RiCircleLine, RiMoneyDollarCircleLine, RiStarLine } from '@remixicon/react'
+import {
+  RiArrowRightLine,
+  RiCheckLine,
+  RiCircleLine,
+  RiMoneyDollarCircleLine,
+  RiStarLine,
+} from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
@@ -111,11 +117,14 @@ export function Pricing({ className }: PricingSectionProps) {
         'relative bg-background text-foreground',
         'py-8 sm:py-12 lg:py-16',
         'overflow-hidden',
-        className,
+        className
       )}
     >
       <div className="mb-12 sm:mb-16 text-center px-4">
-        <h2 id="pricing-heading" className="text-center mb-3 text-muted-foreground text-sm uppercase tracking-wide font-medium">
+        <h2
+          id="pricing-heading"
+          className="text-center mb-3 text-muted-foreground text-sm uppercase tracking-wide font-medium"
+        >
           Pricing
         </h2>
         <p className="text-center text-balance text-3xl sm:text-4xl md:text-5xl font-bold max-w-3xl mx-auto leading-tight">
@@ -124,7 +133,7 @@ export function Pricing({ className }: PricingSectionProps) {
       </div>
       <div className="flex flex-col items-center gap-6 mb-6 sm:mb-10">
         <div className="inline-flex items-center p-1.5 bg-card border rounded-full shadow-sm">
-          {['Monthly', 'Yearly'].map(period => (
+          {['Monthly', 'Yearly'].map((period) => (
             <button
               type="button"
               key={period}
@@ -133,7 +142,7 @@ export function Pricing({ className }: PricingSectionProps) {
                 'px-6 sm:px-8 py-2.5 text-sm font-medium rounded-full transition-all duration-300',
                 (period === 'Yearly') === isYearly
                   ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {period}
@@ -144,21 +153,19 @@ export function Pricing({ className }: PricingSectionProps) {
           {isYearly && tiers[1]!.price.yearly > 0 && tiers[1]!.price.monthly > 0 && (
             <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 font-medium">
               <RiStarLine className="size-4" />
-              Save
-              {' '}
-              {Math.round((1 - (tiers[1]!.price.yearly / (tiers[1]!.price.monthly * 12))) * 100)}
+              Save {Math.round((1 - tiers[1]!.price.yearly / (tiers[1]!.price.monthly * 12)) * 100)}
               % with yearly billing
             </div>
           )}
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto px-4">
-        {tiers.map(tier => (
+        {tiers.map((tier) => (
           <Card
             key={tier.name}
             className={cn(
               'relative transition-all duration-300 hover:shadow-lg flex flex-col',
-              tier.highlight && 'ring-2 ring-primary/20 shadow-lg',
+              tier.highlight && 'ring-2 ring-primary/20 shadow-lg'
             )}
           >
             {tier.badge && (
@@ -173,16 +180,12 @@ export function Pricing({ className }: PricingSectionProps) {
                 <div
                   className={cn(
                     'p-3 rounded-xl',
-                    tier.highlight
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted text-muted-foreground',
+                    tier.highlight ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                   )}
                 >
                   {tier.icon}
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold text-foreground">
-                  {tier.name}
-                </h3>
+                <h3 className="text-xl sm:text-2xl font-semibold text-foreground">{tier.name}</h3>
               </div>
 
               <div className="mb-6 sm:mb-8">
@@ -206,14 +209,14 @@ export function Pricing({ className }: PricingSectionProps) {
               </div>
 
               <div className="space-y-4 sm:space-y-5">
-                {tier.features.map(feature => (
+                {tier.features.map((feature) => (
                   <div key={feature.name} className="flex gap-3 sm:gap-4">
                     <div
                       className={cn(
                         'mt-1 p-0.5 rounded-full transition-colors duration-200 flex-shrink-0',
                         feature.included
                           ? 'text-green-600 dark:text-green-400'
-                          : 'text-muted-foreground/50',
+                          : 'text-muted-foreground/50'
                       )}
                     >
                       <RiCheckLine className="w-4 h-4" />
@@ -240,19 +243,17 @@ export function Pricing({ className }: PricingSectionProps) {
                 onClick={tier.onClick}
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  {tier.highlight
-                    ? (
-                        <>
-                          Get Pro Plan
-                          <RiArrowRightLine className="w-4 h-4" />
-                        </>
-                      )
-                    : (
-                        <>
-                          Get Started Free
-                          <RiArrowRightLine className="w-4 h-4" />
-                        </>
-                      )}
+                  {tier.highlight ? (
+                    <>
+                      Get Pro Plan
+                      <RiArrowRightLine className="w-4 h-4" />
+                    </>
+                  ) : (
+                    <>
+                      Get Started Free
+                      <RiArrowRightLine className="w-4 h-4" />
+                    </>
+                  )}
                 </span>
               </Button>
               {tier.price.monthly === 0 && (

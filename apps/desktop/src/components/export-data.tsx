@@ -27,9 +27,7 @@ function contentGenerators(data: Record<string, unknown>[]) {
       const headers = Object.keys(data[0])
       const csvRows = [
         headers.join(','),
-        ...data.map(row =>
-          headers.map(header => escapeCSVValue(row[header])).join(','),
-        ),
+        ...data.map((row) => headers.map((header) => escapeCSVValue(row[header])).join(',')),
       ]
       return csvRows.join('\n')
     },
@@ -79,9 +77,7 @@ export function ExportData({
       <Tooltip>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <TooltipTrigger asChild>
-              {trigger({ isExporting })}
-            </TooltipTrigger>
+            <TooltipTrigger asChild>{trigger({ isExporting })}</TooltipTrigger>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuSub>
@@ -90,7 +86,7 @@ export function ExportData({
                 Export as CSV
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
-                {EXPORT_LIMITS.map(limitOption => (
+                {EXPORT_LIMITS.map((limitOption) => (
                   <DropdownMenuItem
                     key={limitOption}
                     onClick={() => exportData({ format: 'csv', limit: limitOption })}
@@ -113,7 +109,7 @@ export function ExportData({
                 Export as JSON
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
-                {EXPORT_LIMITS.map(limitOption => (
+                {EXPORT_LIMITS.map((limitOption) => (
                   <DropdownMenuItem
                     key={limitOption}
                     onClick={() => exportData({ format: 'json', limit: limitOption })}
@@ -132,9 +128,7 @@ export function ExportData({
             </DropdownMenuSub>
           </DropdownMenuContent>
         </DropdownMenu>
-        <TooltipContent>
-          Export data
-        </TooltipContent>
+        <TooltipContent>Export data</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   )

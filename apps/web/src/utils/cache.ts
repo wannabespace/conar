@@ -26,8 +26,7 @@ export function createCache<T>({
 }) {
   const get = () => {
     const stored = storage.getItem(key)
-    if (!stored)
-      return
+    if (!stored) return
 
     const persisted = JSON.parse(stored) as Persisted<T>
     const hoursAgo = subHours(new Date(), hours).getTime()

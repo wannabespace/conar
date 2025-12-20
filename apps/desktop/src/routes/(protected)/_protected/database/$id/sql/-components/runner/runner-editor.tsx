@@ -42,10 +42,13 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
       ...lines.slice(endLineNumber),
     ]
 
-    store.setState(state => ({
-      ...state,
-      sql: updatedLines.join('\n'),
-    } satisfies typeof state))
+    store.setState(
+      (state) =>
+        ({
+          ...state,
+          sql: updatedLines.join('\n'),
+        }) satisfies typeof state
+    )
   }
 
   const replaceEvent = useEffectEvent(replace)
@@ -53,13 +56,15 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
   useEffect(() => {
     const appendToBottomHook = runnerHooks.hook('appendToBottom', (query) => {
       const editor = monacoRef.current
-      if (!editor)
-        return
+      if (!editor) return
 
-      store.setState(state => ({
-        ...state,
-        sql: `${state.sql}\n\n${query}`,
-      } satisfies typeof state))
+      store.setState(
+        (state) =>
+          ({
+            ...state,
+            sql: `${state.sql}\n\n${query}`,
+          }) satisfies typeof state
+      )
     })
     const appendToBottomAndFocusHook = runnerHooks.hook('appendToBottomAndFocus', (query) => {
       runnerHooks.callHook('appendToBottom', query)
@@ -70,8 +75,7 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
     })
     const focusRunnerHook = runnerHooks.hook('focus', (lineNumber) => {
       const editor = monacoRef.current
-      if (!editor)
-        return
+      if (!editor) return
 
       if (lineNumber) {
         editor.setPosition({
@@ -84,15 +88,13 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
     })
     const scrollToLineHook = runnerHooks.hook('scrollToLine', (lineNumber) => {
       const editor = monacoRef.current
-      if (!editor)
-        return
+      if (!editor) return
 
       editor.revealLineInCenter(lineNumber)
     })
     const scrollToBottomHook = runnerHooks.hook('scrollToBottom', () => {
       const editor = monacoRef.current
-      if (!editor)
-        return
+      if (!editor) return
 
       const lineCount = editor.getModel()?.getLineCount()
 
@@ -100,9 +102,12 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
         editor.revealLineInCenter(lineCount)
       }
     })
-    const replaceQueryHook = runnerHooks.hook('replaceQuery', ({ query, startLineNumber, endLineNumber }) => {
-      replaceEvent({ query, startLineNumber, endLineNumber })
-    })
+    const replaceQueryHook = runnerHooks.hook(
+      'replaceQuery',
+      ({ query, startLineNumber, endLineNumber }) => {
+        replaceEvent({ query, startLineNumber, endLineNumber })
+      }
+    )
 
     return () => {
       appendToBottomHook()
@@ -118,8 +123,8 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
 export function RunnerEditor() {
   const { database } = Route.useRouteContext()
   const store = databaseStore(database.id)
-  const sql = useStore(store, state => state.sql)
-  const editorQueries = useStore(store, state => state.editorQueries)
+  const sql = useStore(store, (state) => state.sql)
+  const editorQueries = useStore(store, (state) => state.editorQueries)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const run = useRunnerContext(({ run }) => run)
 
@@ -140,15 +145,16 @@ export function RunnerEditor() {
   }, [database])
 
   const getEditorQueriesEvent = useEffectEvent((position: Position) => {
-    return editorQueries.find(query =>
-      position.lineNumber >= query.startLineNumber
-      && position.lineNumber <= query.endLineNumber,
-    ) ?? null
+    return (
+      editorQueries.find(
+        (query) =>
+          position.lineNumber >= query.startLineNumber && position.lineNumber <= query.endLineNumber
+      ) ?? null
+    )
   })
 
   useEffect(() => {
-    if (!monacoRef.current)
-      return
+    if (!monacoRef.current) return
 
     const enterAction = monacoRef.current?.addAction({
       id: 'conar.execute-on-enter',
@@ -157,24 +163,23 @@ export function RunnerEditor() {
       run: (e) => {
         const position = e.getPosition()
 
-        if (!position)
-          return
+        if (!position) return
 
         const editorQuery = getEditorQueriesEvent(position)
 
-        if (!editorQuery)
-          return
+        if (!editorQuery) return
 
         const query = editorQuery.queries.at(-1)
 
-        if (!query)
-          return
+        if (!query) return
 
-        runEvent([{
-          startLineNumber: editorQuery.startLineNumber,
-          endLineNumber: editorQuery.endLineNumber,
-          query,
-        }])
+        runEvent([
+          {
+            startLineNumber: editorQuery.startLineNumber,
+            endLineNumber: editorQuery.endLineNumber,
+            query,
+          },
+        ])
       },
     })
 
@@ -187,10 +192,15 @@ export function RunnerEditor() {
       ref={monacoRef}
       language={dialectsMap[database.type]}
       value={sql}
-      onChange={q => store.setState(state => ({
-        ...state,
-        sql: q,
-      } satisfies typeof state))}
+      onChange={(q) =>
+        store.setState(
+          (state) =>
+            ({
+              ...state,
+              sql: q,
+            }) satisfies typeof state
+        )
+      }
       className="size-full"
       options={{
         wordWrap: 'on',

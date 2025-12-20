@@ -6,13 +6,38 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@conar/ui/components/dialog'
 import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSettings3Line, RiSunLine, RiTableLine } from '@remixicon/react'
+import {
+  RiCloseLine,
+  RiCommandLine,
+  RiFileListLine,
+  RiListUnordered,
+  RiMessageLine,
+  RiMoonLine,
+  RiNodeTree,
+  RiPlayLargeLine,
+  RiSettings3Line,
+  RiSunLine,
+  RiTableLine,
+} from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
@@ -38,7 +63,7 @@ const os = getOS(navigator.userAgent)
 function baseClasses(isActive = false) {
   return cn(
     'cursor-pointer text-foreground size-9 rounded-md flex items-center justify-center border border-transparent',
-    isActive && 'bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary',
+    isActive && 'bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary'
   )
 }
 
@@ -46,17 +71,21 @@ function SupportButton() {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
 
-  const { mutate: sendSupport, isPending: loading } = useMutation(orpcQuery.contact.mutationOptions({
-    onSuccess: () => {
-      toast.success('Support message sent successfully! We will get back to you as soon as possible.')
-      setOpen(false)
-      setMessage('')
-    },
-    onError: (err) => {
-      console.error(err)
-      toast.error('Failed to send message. Please try again later.')
-    },
-  }))
+  const { mutate: sendSupport, isPending: loading } = useMutation(
+    orpcQuery.contact.mutationOptions({
+      onSuccess: () => {
+        toast.success(
+          'Support message sent successfully! We will get back to you as soon as possible.'
+        )
+        setOpen(false)
+        setMessage('')
+      },
+      onError: (err) => {
+        console.error(err)
+        toast.error('Failed to send message. Please try again later.')
+      },
+    })
+  )
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -82,8 +111,7 @@ function SupportButton() {
           <DialogTitle>Contact Support</DialogTitle>
         </DialogHeader>
         <div className="text-muted-foreground mb-2">
-          Have a question, suggestion, or need assistance?
-          We're here to listen!
+          Have a question, suggestion, or need assistance? We're here to listen!
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -91,7 +119,7 @@ function SupportButton() {
             <Textarea
               id="support-message"
               value={message}
-              onChange={e => setMessage(e.target.value)}
+              onChange={(e) => setMessage(e.target.value)}
               required
               placeholder="Type any message you'd like to send us"
               className="min-h-48"
@@ -104,9 +132,7 @@ function SupportButton() {
               </Button>
             </DialogClose>
             <Button type="submit" disabled={loading || !message}>
-              <LoadingContent loading={loading}>
-                Send
-              </LoadingContent>
+              <LoadingContent loading={loading}>Send</LoadingContent>
             </Button>
           </DialogFooter>
         </form>
@@ -140,7 +166,7 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
   const params = useDatabaseLinkParams(database.id)
 
   async function onCloseClick() {
-    const newDatabases = lastOpenedDatabases.get().filter(dbId => dbId !== database.id)
+    const newDatabases = lastOpenedDatabases.get().filter((dbId) => dbId !== database.id)
 
     lastOpenedDatabases.set(newDatabases)
   }
@@ -155,7 +181,7 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
                 className={cn(
                   'absolute z-10 top-0 right-0 -translate-y-1/2 translate-x-1/2',
                   'flex items-center justify-center',
-                  'size-4 bg-background rounded-full text-foreground opacity-0 group-hover:opacity-100',
+                  'size-4 bg-background rounded-full text-foreground opacity-0 group-hover:opacity-100'
                 )}
                 onClick={onCloseClick}
               >
@@ -167,7 +193,7 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
                 baseClasses(isActive),
                 database.color && isActive
                   ? 'text-(--color) bg-(--color)/10 hover:bg-(--color)/20 border-(--color)/20'
-                  : '',
+                  : ''
               )}
               style={database.color ? { '--color': database.color } : {}}
               {...params}
@@ -176,7 +202,7 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
                 {database.name
                   .replace(/[^a-z0-9\s]/gi, '')
                   .split(/\s+/)
-                  .map(word => word[0])
+                  .map((word) => word[0])
                   .join('')
                   .slice(0, 2)
                   .toUpperCase()}
@@ -196,31 +222,44 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
 }
 
 function LastOpenedDatabases() {
-  const { data: databases } = useLiveQuery(q => q
-    .from({ databases: databasesCollection })
-    .orderBy(({ databases }) => databases.createdAt, 'desc'))
+  const { data: databases } = useLiveQuery((q) =>
+    q
+      .from({ databases: databasesCollection })
+      .orderBy(({ databases }) => databases.createdAt, 'desc')
+  )
   const [lastOpenedDatabases] = useLastOpenedDatabases()
-  const filteredDatabases = (databases?.filter(database => lastOpenedDatabases.includes(database.id)) ?? [])
-    .toSorted((a, b) => lastOpenedDatabases.indexOf(a.id) - lastOpenedDatabases.indexOf(b.id))
+  const filteredDatabases = (
+    databases?.filter((database) => lastOpenedDatabases.includes(database.id)) ?? []
+  ).toSorted((a, b) => lastOpenedDatabases.indexOf(a.id) - lastOpenedDatabases.indexOf(b.id))
 
-  return filteredDatabases.map(database => <LastOpenedDatabase key={database.id} database={database} />)
+  return filteredDatabases.map((database) => (
+    <LastOpenedDatabase key={database.id} database={database} />
+  ))
 }
 
 function MainLinks() {
   const { database } = Route.useLoaderData()
   const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
   const matches = useMatches({
-    select: matches => matches.map(match => match.routeId),
+    select: (matches) => matches.map((match) => match.routeId),
   })
   const store = databaseStore(database.id)
-  const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
+  const lastOpenedTable = useStore(store, (state) => state.lastOpenedTable)
 
   useEffect(() => {
-    if (tableParam && schemaParam && tableParam !== lastOpenedTable?.table && schemaParam !== lastOpenedTable?.schema) {
-      store.setState(state => ({
-        ...state,
-        lastOpenedTable: { schema: schemaParam, table: tableParam },
-      } satisfies typeof state))
+    if (
+      tableParam &&
+      schemaParam &&
+      tableParam !== lastOpenedTable?.table &&
+      schemaParam !== lastOpenedTable?.schema
+    ) {
+      store.setState(
+        (state) =>
+          ({
+            ...state,
+            lastOpenedTable: { schema: schemaParam, table: tableParam },
+          }) satisfies typeof state
+      )
     }
   }, [store, lastOpenedTable, tableParam, schemaParam])
 
@@ -229,7 +268,8 @@ function MainLinks() {
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
   const isActiveVisualizer = matches.includes('/(protected)/_protected/database/$id/visualizer/')
 
-  const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
+  const isCurrentTableAsLastOpened =
+    lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
 
   const route = useMemo(() => {
     if (!isCurrentTableAsLastOpened && lastOpenedTable) {
@@ -245,14 +285,17 @@ function MainLinks() {
 
   function onTablesClick() {
     if (isCurrentTableAsLastOpened && lastOpenedTable) {
-      store.setState(state => ({
-        ...state,
-        lastOpenedTable: null,
-      } satisfies typeof state))
+      store.setState(
+        (state) =>
+          ({
+            ...state,
+            lastOpenedTable: null,
+          }) satisfies typeof state
+      )
     }
   }
 
-  const lastOpenedChatId = useStore(store, state => state.lastOpenedChatId)
+  const lastOpenedChatId = useStore(store, (state) => state.lastOpenedChatId)
 
   return (
     <>
@@ -307,7 +350,11 @@ function MainLinks() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Link to="/database/$id/visualizer" params={{ id: database.id }} className={baseClasses(isActiveVisualizer)}>
+            <Link
+              to="/database/$id/visualizer"
+              params={{ id: database.id }}
+              className={baseClasses(isActiveVisualizer)}
+            >
               <RiNodeTree className="size-4" />
             </Link>
           </TooltipTrigger>
@@ -329,10 +376,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Link
-                to="/"
-                className="p-2"
-              >
+              <Link to="/" className="p-2">
                 <AppLogo className="size-6 text-primary" />
               </Link>
             </TooltipTrigger>
@@ -360,7 +404,12 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => store.setState(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
+                onClick={() =>
+                  store.setState(
+                    (state) =>
+                      ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state
+                  )
+                }
               >
                 <RiFileListLine className="size-4" />
               </Button>
@@ -376,15 +425,12 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => actionsCenterStore.setState(state => ({ ...state, isOpen: true }))}
+                onClick={() => actionsCenterStore.setState((state) => ({ ...state, isOpen: true }))}
               >
                 <RiCommandLine className="size-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="right">
-              {os?.type === 'macos' ? '⌘' : 'Ctrl'}
-              P
-            </TooltipContent>
+            <TooltipContent side="right">{os?.type === 'macos' ? '⌘' : 'Ctrl'}P</TooltipContent>
           </Tooltip>
         </TooltipProvider>
         <ThemeToggle>

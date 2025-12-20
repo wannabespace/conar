@@ -1,7 +1,11 @@
 import { cn } from '@conar/ui/lib/utils'
 import { Slot } from '@radix-ui/react-slot'
 
-function Kbd({ className, asChild, ...props }: React.ComponentProps<'kbd'> & { asChild?: boolean }) {
+function Kbd({
+  className,
+  asChild,
+  ...props
+}: React.ComponentProps<'kbd'> & { asChild?: boolean }) {
   const Comp = asChild ? Slot : 'kbd'
 
   return (
@@ -9,9 +13,9 @@ function Kbd({ className, asChild, ...props }: React.ComponentProps<'kbd'> & { a
       data-slot="kbd"
       className={cn(
         'bg-muted text-muted-foreground pointer-events-none inline-flex h-5 w-fit min-w-5 items-center justify-center gap-1 rounded-sm px-1 font-sans text-xs font-medium select-none',
-        '[&_svg:not([class*=\'size-\'])]:size-3',
+        "[&_svg:not([class*='size-'])]:size-3",
         '[[data-slot=tooltip-content]_&]:bg-background/20 [[data-slot=tooltip-content]_&]:text-background dark:[[data-slot=tooltip-content]_&]:bg-background/10',
-        className,
+        className
       )}
       {...props}
     />

@@ -1,7 +1,7 @@
 {
   "name": "@conar/shared",
-  "type": "module",
   "private": true,
+  "type": "module",
   "exports": {
     "./constants": "./src/constants.ts",
     "./encryption": "./src/encryption.ts",

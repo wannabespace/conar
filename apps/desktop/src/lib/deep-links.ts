@@ -3,10 +3,7 @@ import { bearerToken, codeChallenge, resetToken, successAuthToast } from '~/lib/
 import { decrypt } from './encryption'
 
 export async function handleDeepLink(url: string): Promise<{
-  type:
-    | 'session'
-    | 'reset-password'
-    | 'unknown'
+  type: 'session' | 'reset-password' | 'unknown'
 }> {
   const { pathname, searchParams } = new URL(url.replace('conar://', 'https://conar.app/'))
 
@@ -43,14 +40,14 @@ export async function handleSession(searchParams: URLSearchParams) {
   const newUser = searchParams.get('new-user')
 
   if (!code || !token) {
-    toast.error('We couldn\'t find your sign in token. Please try signing in again.')
+    toast.error("We couldn't find your sign in token. Please try signing in again.")
     return
   }
 
   const decryptedCodeChallenge = await decrypt(code, import.meta.env.VITE_PUBLIC_AUTH_SECRET)
 
   if (!decryptedCodeChallenge) {
-    toast.error('We couldn\'t decrypt your code challenge. Please try signing in again.')
+    toast.error("We couldn't decrypt your code challenge. Please try signing in again.")
     return
   }
 

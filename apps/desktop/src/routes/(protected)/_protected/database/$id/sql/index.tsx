@@ -1,5 +1,9 @@
 import { title } from '@conar/shared/utils/title'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
@@ -7,9 +11,7 @@ import { databaseStore } from '~/entities/database'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
-export const Route = createFileRoute(
-  '/(protected)/_protected/database/$id/sql/',
-)({
+export const Route = createFileRoute('/(protected)/_protected/database/$id/sql/')({
   component: DatabaseSqlPage,
   validateSearch: type({
     'chatId?': 'string.uuid.v7 | undefined',
@@ -36,10 +38,13 @@ function DatabaseSqlPage() {
   const store = databaseStore(database.id)
 
   useEffect(() => {
-    store.setState(state => ({
-      ...state,
-      lastOpenedChatId: chatId ?? null,
-    } satisfies typeof state))
+    store.setState(
+      (state) =>
+        ({
+          ...state,
+          lastOpenedChatId: chatId ?? null,
+        }) satisfies typeof state
+    )
   }, [chatId, store])
 
   return (

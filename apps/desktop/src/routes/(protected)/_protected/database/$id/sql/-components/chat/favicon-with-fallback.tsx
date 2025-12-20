@@ -3,7 +3,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiEarthLine } from '@remixicon/react'
 import { useState } from 'react'
 
-export function FaviconWithFallback({ url, className }: { url: string, className?: string }) {
+export function FaviconWithFallback({ url, className }: { url: string; className?: string }) {
   const [isError, setIsError] = useState(false)
 
   const { data: hostname } = tryCatch(() => new URL(url).hostname)

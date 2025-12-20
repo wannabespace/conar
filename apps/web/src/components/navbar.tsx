@@ -22,7 +22,10 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   return (
     <header className={cn('flex items-center justify-between px-4 sm:px-0', className)} {...props}>
       <div className="flex-1 flex items-center gap-2">
-        <Link to="/" className="text-foreground font-medium text-base sm:text-lg lg:text-xl tracking-tighter">
+        <Link
+          to="/"
+          className="text-foreground font-medium text-base sm:text-lg lg:text-xl tracking-tighter"
+        >
           Conar
         </Link>
         <Badge variant="default" className="bg-warning/20 text-warning">
@@ -31,64 +34,33 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
       </div>
       <div className="flex-1 flex justify-center">
         <Link to="/" className="text-primary">
-          <AppLogoMotion
-            className="size-5 sm:size-6 lg:size-8"
-            style={{ scale }}
-          />
+          <AppLogoMotion className="size-5 sm:size-6 lg:size-8" style={{ scale }} />
         </Link>
       </div>
       <div className="flex-1 flex items-center justify-end gap-1 sm:gap-2">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="gap-1 sm:gap-2 hidden sm:flex"
-          asChild
-        >
-          <a
-            href={SOCIAL_LINKS.TWITTER}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+        <Button variant="ghost" size="icon-sm" className="gap-1 sm:gap-2 hidden sm:flex" asChild>
+          <a href={SOCIAL_LINKS.TWITTER} target="_blank" rel="noopener noreferrer">
             <RiTwitterXLine className="h-3 w-3 sm:h-4 sm:w-4" />
           </a>
         </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="gap-1 sm:gap-2 hidden sm:flex"
-          asChild
-        >
-          <a
-            href={SOCIAL_LINKS.DISCORD}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+        <Button variant="ghost" size="icon-sm" className="gap-1 sm:gap-2 hidden sm:flex" asChild>
+          <a href={SOCIAL_LINKS.DISCORD} target="_blank" rel="noopener noreferrer">
             <RiDiscordLine className="size-3 sm:size-4" />
           </a>
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-1 sm:gap-2 hidden sm:flex"
-          asChild
-        >
-          <a
-            href={SOCIAL_LINKS.GITHUB}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+        <Button variant="ghost" size="sm" className="gap-1 sm:gap-2 hidden sm:flex" asChild>
+          <a href={SOCIAL_LINKS.GITHUB} target="_blank" rel="noopener noreferrer">
             <RiGithubFill className="size-3 sm:size-4" />
             <NumberFlow
               value={data?.stargazers_count || 0}
-              className={cn('tabular-nums duration-200 text-xs sm:text-sm', !data && 'animate-pulse text-muted-foreground')}
+              className={cn(
+                'tabular-nums duration-200 text-xs sm:text-sm',
+                !data && 'animate-pulse text-muted-foreground'
+              )}
             />
           </a>
         </Button>
-        <Button
-          size="sm"
-          className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
-          asChild
-        >
+        <Button size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3" asChild>
           <Link to="/download">
             <span className="hidden sm:inline">Get Started</span>
             <span className="sm:hidden">Download</span>

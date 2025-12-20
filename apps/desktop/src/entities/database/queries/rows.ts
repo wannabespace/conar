@@ -27,7 +27,9 @@ export function databaseRowsQuery({
   return infiniteQueryOptions({
     initialPageParam: 0,
     getNextPageParam: (lastPage: PageResult, _allPages: PageResult[], lastPageParam: number) => {
-      return lastPage.rows.length === 0 || lastPage.rows.length < DEFAULT_PAGE_LIMIT ? null : lastPageParam + DEFAULT_PAGE_LIMIT
+      return lastPage.rows.length === 0 || lastPage.rows.length < DEFAULT_PAGE_LIMIT
+        ? null
+        : lastPageParam + DEFAULT_PAGE_LIMIT
     },
     queryKey: [
       'database',
@@ -56,7 +58,7 @@ export function databaseRowsQuery({
         rows: result,
       } satisfies PageResult
     },
-    select: data => data.pages.flatMap(page => page.rows),
+    select: (data) => data.pages.flatMap((page) => page.rows),
     throwOnError: false,
   })
 }

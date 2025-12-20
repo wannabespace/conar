@@ -8,15 +8,14 @@ export function useIsScrolled(
     threshold = 10,
     initial = false,
     direction = 'both',
-  }: { threshold?: number, initial?: boolean, direction?: ScrollDirection } = {},
+  }: { threshold?: number; initial?: boolean; direction?: ScrollDirection } = {}
 ) {
   const [isScrolled, setIsScrolled] = React.useState(initial)
 
   const handleScrollEvent = React.useEffectEvent(() => {
     const element = ref.current
 
-    if (!element)
-      return
+    if (!element) return
 
     const scrollTop = element.scrollTop
     const scrollLeft = element.scrollLeft
@@ -24,11 +23,9 @@ export function useIsScrolled(
     let scrolled = false
     if (direction === 'vertical') {
       scrolled = scrollTop > threshold
-    }
-    else if (direction === 'horizontal') {
+    } else if (direction === 'horizontal') {
       scrolled = scrollLeft > threshold
-    }
-    else {
+    } else {
       scrolled = scrollTop > threshold || scrollLeft > threshold
     }
 
@@ -38,12 +35,14 @@ export function useIsScrolled(
   React.useEffect(() => {
     const element = ref.current
 
-    if (!element)
-      return
+    if (!element) return
 
     const abortController = new AbortController()
 
-    element.addEventListener('scroll', handleScrollEvent, { passive: true, signal: abortController.signal })
+    element.addEventListener('scroll', handleScrollEvent, {
+      passive: true,
+      signal: abortController.signal,
+    })
 
     return () => {
       abortController.abort()

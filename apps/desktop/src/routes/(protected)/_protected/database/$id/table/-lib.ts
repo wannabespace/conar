@@ -20,5 +20,9 @@ const columnsSizeMap: Record<string, number> = {
 }
 
 export function getColumnSize(type: string): number {
-  return Object.entries(columnsSizeMap).find(([key]) => type.toLowerCase().includes(key.toLowerCase()))?.[1] ?? DEFAULT_COLUMN_WIDTH
+  return (
+    Object.entries(columnsSizeMap).find(([key]) =>
+      type.toLowerCase().includes(key.toLowerCase())
+    )?.[1] ?? DEFAULT_COLUMN_WIDTH
+  )
 }

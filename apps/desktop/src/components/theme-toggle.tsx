@@ -1,4 +1,9 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@conar/ui/components/dropdown-menu'
 import { useTheme } from '@conar/ui/theme-observer'
 import { RiComputerLine, RiMoonLine, RiSunLine } from '@remixicon/react'
 
@@ -7,9 +12,7 @@ export function ThemeToggle({ children }: { children: React.ReactNode }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {children}
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent side="right" className="min-w-32">
         <DropdownMenuItem onClick={() => setTheme('light')}>
           <RiSunLine aria-hidden="true" />

@@ -19,7 +19,12 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseStore, databaseTablesAndSchemasQuery, dropTableQuery, removeTab } from '~/entities/database'
+import {
+  databaseStore,
+  databaseTablesAndSchemasQuery,
+  dropTableQuery,
+  removeTab,
+} from '~/entities/database'
 import { queryClient } from '~/main'
 import { Route } from '..'
 
@@ -51,10 +56,13 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
       const lastOpenedTable = store.state.lastOpenedTable
 
       if (lastOpenedTable?.schema === schema && lastOpenedTable?.table === table) {
-        store.setState(state => ({
-          ...state,
-          lastOpenedTable: null,
-        } satisfies typeof state))
+        store.setState(
+          (state) =>
+            ({
+              ...state,
+              lastOpenedTable: null,
+            }) satisfies typeof state
+        )
       }
     },
   }))
@@ -87,9 +95,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            Drop Table
-          </DialogTitle>
+          <DialogTitle>Drop Table</DialogTitle>
           <div className="space-y-4">
             <Alert variant="destructive">
               <RiAlertLine className="size-5 text-destructive" />
@@ -101,19 +107,13 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
             <div className="space-y-2">
               <Label htmlFor="confirmation" className="font-normal">
                 <span>
-                  Type
-                  {' '}
-                  <span className="font-semibold">
-                    {table}
-                  </span>
-                  {' '}
-                  to confirm
+                  Type <span className="font-semibold">{table}</span> to confirm
                 </span>
               </Label>
               <Input
                 id="confirmation"
                 value={confirmationText}
-                onChange={e => setConfirmationText(e.target.value)}
+                onChange={(e) => setConfirmationText(e.target.value)}
                 placeholder={table}
                 spellCheck={false}
                 autoComplete="off"
@@ -150,9 +150,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
             onClick={() => dropTable()}
             disabled={!canConfirm || isPending}
           >
-            <LoadingContent loading={isPending}>
-              Drop Table
-            </LoadingContent>
+            <LoadingContent loading={isPending}>Drop Table</LoadingContent>
           </Button>
         </DialogFooter>
       </DialogContent>

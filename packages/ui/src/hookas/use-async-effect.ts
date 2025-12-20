@@ -2,7 +2,7 @@ import * as React from 'react'
 
 export function useAsyncEffect(
   effect: () => Promise<void | (() => Promise<void> | void)>,
-  deps: React.DependencyList = [],
+  deps: React.DependencyList = []
 ) {
   const destroyRef = React.useRef<void | (() => Promise<void> | void) | undefined>(undefined)
 
@@ -18,9 +18,8 @@ export function useAsyncEffect(
     execute()
 
     return () => {
-      if (typeof destroyRef.current === 'function')
-        destroyRef.current()
+      if (typeof destroyRef.current === 'function') destroyRef.current()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
 }

@@ -1,10 +1,10 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "@xyflow/react/dist/style.css";
-@import "./fonts.css";
-@import "./monaco.css";
-@import "./typography.css";
-@import "./animations.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@xyflow/react/dist/style.css';
+@import './fonts.css';
+@import './monaco.css';
+@import './typography.css';
+@import './animations.css';
 
 @plugin 'tailwind-scrollbar';
 @plugin '@tailwindcss/typography';
@@ -35,7 +35,7 @@
   --destructive-foreground: oklch(0.985 0 0);
   --success: oklch(0.577 0.645 156.225);
   --success-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.75 0.220 85.0);
+  --warning: oklch(0.75 0.22 85);
   --warning-foreground: oklch(0.985 0 0);
   --border: oklch(0 0 0 / 6%);
   --input: oklch(93% 0.003 255.508);
@@ -56,11 +56,11 @@
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.371 0 0);
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.220 22.216);
+  --destructive: oklch(0.704 0.22 22.216);
   --destructive-foreground: oklch(0.985 0 0);
-  --success: oklch(0.704 0.220 142.216);
+  --success: oklch(0.704 0.22 142.216);
   --success-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.85 0.220 85.0);
+  --warning: oklch(0.85 0.22 85);
   --warning-foreground: oklch(0.985 0 0);
   --border: oklch(1 0 0 / 6%);
   --input: oklch(1 0 0 / 10%);
@@ -68,8 +68,8 @@
 }
 
 @theme inline {
-  --font-sans: "Geist", sans-serif;
-  --font-mono: "Geist Mono", monospace;
+  --font-sans: 'Geist', sans-serif;
+  --font-mono: 'Geist Mono', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

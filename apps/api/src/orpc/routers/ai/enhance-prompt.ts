@@ -8,10 +8,12 @@ import { getMessages } from './ask'
 
 export const enhancePrompt = orpc
   .use(authMiddleware)
-  .input(type({
-    prompt: 'string',
-    chatId: 'string.uuid.v7',
-  }))
+  .input(
+    type({
+      prompt: 'string',
+      chatId: 'string.uuid.v7',
+    })
+  )
   .handler(async ({ input, signal, context }) => {
     const messages = await getMessages(input.chatId)
 
@@ -25,7 +27,7 @@ export const enhancePrompt = orpc
         {
           role: 'system',
           content: [
-            'You are an expert at rewriting and clarifying user prompts. Your task is to rewrite the user\'s prompt to be as clear, specific, and unambiguous as possible.',
+            "You are an expert at rewriting and clarifying user prompts. Your task is to rewrite the user's prompt to be as clear, specific, and unambiguous as possible.",
             '- Fix typos and grammar mistakes if needed.',
             '- If the prompt is already clear and specific, return it as is.',
             '- Do not add any explanations, greetings, or extra text, return only the improved prompt.',
@@ -34,13 +36,15 @@ export const enhancePrompt = orpc
             '- Do not invent or assume any information that is not present in the original prompt or chat messages.',
             '- Do not add details, context, or requirements that are not explicitly stated by the user.',
             '- If the prompt is already clear and specific, make minimal changes',
-            '- Maintain the user\'s original tone and intent',
+            "- Maintain the user's original tone and intent",
             '',
             'Context from current chat conversation:',
-            encode(messages.map(m => ({
-              role: m.role,
-              parts: m.parts.filter(p => p.type === 'text'),
-            }))),
+            encode(
+              messages.map((m) => ({
+                role: m.role,
+                parts: m.parts.filter((p) => p.type === 'text'),
+              }))
+            ),
             '',
             'Please rewrite the following user prompt to be more effective:',
           ].join('\n'),

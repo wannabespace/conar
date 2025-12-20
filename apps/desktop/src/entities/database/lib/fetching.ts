@@ -20,7 +20,12 @@ export async function prefetchDatabaseCore(database: typeof databases.$inferSele
   ])
 }
 
-export async function prefetchDatabaseTableCore({ database, schema, table, query }: {
+export async function prefetchDatabaseTableCore({
+  database,
+  schema,
+  table,
+  query,
+}: {
   database: typeof databases.$inferSelect
   schema: string
   table: string

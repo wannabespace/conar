@@ -17,7 +17,9 @@ export function parseSSLConfig(searchParams: URLSearchParams): PoolOptions['ssl'
 
   if (sslMode || hasMainSSLParams) {
     if (sslMode === 'disable' && hasMainSSLParams) {
-      throw new Error('sslmode=disable cannot be used with SSL certificate parameters (sslcert, sslkey, sslrootcert, sslpassword, sslservername)')
+      throw new Error(
+        'sslmode=disable cannot be used with SSL certificate parameters (sslcert, sslkey, sslrootcert, sslpassword, sslservername)'
+      )
     }
 
     if (sslMode && !hasMainSSLParams) {
@@ -33,10 +35,9 @@ export function parseSSLConfig(searchParams: URLSearchParams): PoolOptions['ssl'
     }
 
     const sslConfig: NonNullable<PoolOptions['ssl']> = {
-      ...(sslMode && (
-        ['prefer', 'no-verify'].includes(sslMode)
-        || (sslMode === 'require' && !sslRootCert && !hasMainSSLParams)
-      )
+      ...(sslMode &&
+      (['prefer', 'no-verify'].includes(sslMode) ||
+        (sslMode === 'require' && !sslRootCert && !hasMainSSLParams))
         ? {
             rejectUnauthorized: false,
           }

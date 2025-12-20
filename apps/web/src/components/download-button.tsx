@@ -1,6 +1,11 @@
 import type { OS } from '@conar/shared/utils/os'
 import { Button } from '@conar/ui/components/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@conar/ui/components/dropdown-menu'
 import { Linux } from '@conar/ui/components/icons/linux'
 import { RiAppleFill, RiWindowsFill } from '@remixicon/react'
 import { DOWNLOAD_LINKS } from '~/constants'
@@ -37,9 +42,7 @@ export function DownloadButton() {
       <Button size="lg" className="flex items-center justify-center gap-2">
         <a href={assets[0]!.link} download>
           {Icon && <Icon className="size-4" />}
-          Download for
-          {' '}
-          {os.label}
+          Download for {os.label}
         </a>
       </Button>
     )
@@ -50,14 +53,12 @@ export function DownloadButton() {
       <DropdownMenuTrigger asChild>
         <Button size="lg" className="flex items-center justify-center gap-2">
           {Icon && <Icon className="size-4" />}
-          Download for
-          {' '}
-          {os.label}
+          Download for {os.label}
         </Button>
       </DropdownMenuTrigger>
       {assets.length > 1 && (
         <DropdownMenuContent>
-          {assets.map(asset => (
+          {assets.map((asset) => (
             <DropdownMenuItem key={asset.link} asChild>
               <a href={asset.link} download className="text-foreground flex gap-2">
                 {asset.arch}

@@ -14,7 +14,11 @@ export function Chat({ className, ...props }: Omit<ComponentProps<'div'>, 'ref'>
   const elementRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (chat.messages.at(-1)?.role === 'user' && chat.status !== 'streaming' && chat.status !== 'submitted') {
+    if (
+      chat.messages.at(-1)?.role === 'user' &&
+      chat.status !== 'streaming' &&
+      chat.status !== 'submitted'
+    ) {
       chat.regenerate()
     }
   }, [chat])
@@ -27,9 +31,7 @@ export function Chat({ className, ...props }: Omit<ComponentProps<'div'>, 'ref'>
       {...props}
     >
       <ChatHeader chatId={chat.id} />
-      {messages.length === 0 && !error && (
-        <ChatPlaceholder />
-      )}
+      {messages.length === 0 && !error && <ChatPlaceholder />}
       <ChatMessages className="flex-1" />
       <ChatForm />
     </div>

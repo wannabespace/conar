@@ -12,7 +12,7 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   virtualColumn: VirtualItem
   column: ColumnRenderer
 }) {
-  const columns = useTableContext(context => context.columns)
+  const columns = useTableContext((context) => context.columns)
 
   if (!column.header) {
     return (
@@ -33,11 +33,13 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
       key={virtualColumn.key}
       id={column.id}
       columnIndex={virtualColumn.index}
-      position={virtualColumn.index === 0
-        ? 'first'
-        : virtualColumn.index === columns.length - 1
-          ? 'last'
-          : 'middle'}
+      position={
+        virtualColumn.index === 0
+          ? 'first'
+          : virtualColumn.index === columns.length - 1
+            ? 'last'
+            : 'middle'
+      }
       size={virtualColumn.size}
       style={{
         width: `${virtualColumn.size}px`,
@@ -58,16 +60,19 @@ export function TableHeader({
   before?: ReactNode
   after?: ReactNode
 }) {
-  const virtualColumns = useTableContext(context => context.virtualColumns)
-  const tableWidth = useTableContext(context => context.tableWidth)
-  const columns = useTableContext(context => context.columns)
+  const virtualColumns = useTableContext((context) => context.virtualColumns)
+  const tableWidth = useTableContext((context) => context.tableWidth)
+  const columns = useTableContext((context) => context.columns)
   const spacerStyle: CSSProperties = {
     contain: 'layout style size',
   }
 
   return (
     <div
-      className={cn('sticky top-0 z-10 border-y bg-background h-8 has-[[data-footer]]:h-12 w-fit min-w-full', className)}
+      className={cn(
+        'sticky top-0 z-10 border-y bg-background h-8 has-[[data-footer]]:h-12 w-fit min-w-full',
+        className
+      )}
       style={{ width: `${tableWidth}px`, ...style }}
       {...props}
     >
@@ -78,7 +83,7 @@ export function TableHeader({
           className="shrink-0 w-(--table-scroll-left-offset) will-change-[height]"
           style={spacerStyle}
         />
-        {virtualColumns.map(virtualColumn => (
+        {virtualColumns.map((virtualColumn) => (
           <VirtualHeaderColumn
             key={virtualColumn.key}
             virtualColumn={virtualColumn}

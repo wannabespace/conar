@@ -38,17 +38,14 @@ export function ContentSwitch({
   return (
     <span className={cn('relative flex items-center gap-1', className)}>
       <span
-        className={cn(
-          'transition-all',
-          isActive ? 'scale-0 opacity-0' : 'scale-100 opacity-100',
-        )}
+        className={cn('transition-all', isActive ? 'scale-0 opacity-0' : 'scale-100 opacity-100')}
       >
         {children}
       </span>
       <span
         className={cn(
           'absolute inset-0 transition-all flex items-center justify-center',
-          isActive ? 'scale-100 opacity-100' : 'scale-0 opacity-0',
+          isActive ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
         )}
       >
         {activeContent}

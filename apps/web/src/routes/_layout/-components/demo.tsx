@@ -36,57 +36,44 @@ const imagesLight = [
   '/demo-light-4.png',
 ]
 
-const imagesDark = [
-  '/demo-dark-1.png',
-  '/demo-dark-2.png',
-  '/demo-dark-3.png',
-  '/demo-dark-4.png',
-]
+const imagesDark = ['/demo-dark-1.png', '/demo-dark-2.png', '/demo-dark-3.png', '/demo-dark-4.png']
 
-function Image({ className, image, index, type }: { className?: string, image: string, index: number, type: 'light' | 'dark' }) {
+function Image({
+  className,
+  image,
+  index,
+  type,
+}: {
+  className?: string
+  image: string
+  index: number
+  type: 'light' | 'dark'
+}) {
   const props = {
     src: image,
     className: cn(
       type === 'dark' ? 'dark:block hidden' : 'dark:hidden',
       index === 0 ? 'mx-auto' : 'absolute top-0 left-0 rounded-xl',
-      className,
+      className
     ),
     ...imageProps(index),
   }
 
   if (index === 0) {
-    return (
-      <img key={image} {...props} />
-    )
+    return <img key={image} {...props} />
   }
 
-  return (
-    <motion.img
-      key={image}
-      {...props}
-      {...transitionProps(index)}
-    />
-  )
+  return <motion.img key={image} {...props} {...transitionProps(index)} />
 }
 
 function Images() {
   return (
     <div className="relative w-fit mx-auto rounded-xl">
       {imagesLight.map((image, index) => (
-        <Image
-          key={image}
-          image={image}
-          index={index}
-          type="light"
-        />
+        <Image key={image} image={image} index={index} type="light" />
       ))}
       {imagesDark.map((image, index) => (
-        <Image
-          key={image}
-          image={image}
-          index={index}
-          type="dark"
-        />
+        <Image key={image} image={image} index={index} type="dark" />
       ))}
       <div className="absolute z-10 inset-x-0 bottom-0 h-full bg-gradient-to-t from-background to-transparent" />
     </div>

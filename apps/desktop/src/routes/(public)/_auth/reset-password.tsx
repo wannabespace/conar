@@ -74,20 +74,18 @@ function ResetPasswordPage() {
 
         if (data?.status) {
           handleResetSuccess()
-        }
-        else {
+        } else {
           toast.error('Password reset failed', {
             description: 'Please try again or request a new reset link.',
           })
         }
-      }
-      catch (error) {
+      } catch (error) {
         handleError(error)
       }
     },
   })
 
-  const isSubmitting = useStore(form.store, state => state.isSubmitting)
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
   return (
     <>
@@ -95,9 +93,7 @@ function ResetPasswordPage() {
         <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           Reset your password
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Enter your new password below.
-        </p>
+        <p className="text-sm text-muted-foreground">Enter your new password below.</p>
       </div>
       <form
         className="space-y-4"
@@ -108,7 +104,7 @@ function ResetPasswordPage() {
       >
         <FieldGroup className="gap-4">
           <form.AppField name="password">
-            {field => (
+            {(field) => (
               <field.Password
                 label="New Password"
                 showPassword={showPassword}
@@ -127,7 +123,7 @@ function ResetPasswordPage() {
                   : undefined,
             }}
           >
-            {field => (
+            {(field) => (
               <field.Password
                 label="Confirm Password"
                 showPassword={showConfirmPassword}
@@ -136,23 +132,11 @@ function ResetPasswordPage() {
             )}
           </form.AppField>
 
-          <Button
-            className="w-full"
-            type="submit"
-            disabled={isSubmitting}
-          >
-            <LoadingContent loading={isSubmitting}>
-              Reset password
-            </LoadingContent>
+          <Button className="w-full" type="submit" disabled={isSubmitting}>
+            <LoadingContent loading={isSubmitting}>Reset password</LoadingContent>
           </Button>
-          <Button
-            variant="link"
-            className="w-full text-center text-muted-foreground"
-            asChild
-          >
-            <Link to="/sign-in">
-              Back to sign in
-            </Link>
+          <Button variant="link" className="w-full text-center text-muted-foreground" asChild>
+            <Link to="/sign-in">Back to sign in</Link>
           </Button>
         </FieldGroup>
       </form>

@@ -36,8 +36,7 @@ export function TextHoverEffect({
     <svg
       ref={(e) => {
         svgRef.current = e
-        if (ref)
-          ref.current = e
+        if (ref) ref.current = e
       }}
       width="100%"
       height="100%"
@@ -45,17 +44,11 @@ export function TextHoverEffect({
       xmlns="http://www.w3.org/2000/svg"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onMouseMove={e => setCursor({ x: e.clientX, y: e.clientY })}
+      onMouseMove={(e) => setCursor({ x: e.clientX, y: e.clientY })}
       className={cn('select-none', className)}
     >
       <defs>
-        <linearGradient
-          id="textGradient"
-          gradientUnits="userSpaceOnUse"
-          cx="50%"
-          cy="50%"
-          r="25%"
-        >
+        <linearGradient id="textGradient" gradientUnits="userSpaceOnUse" cx="50%" cy="50%" r="25%">
           {hovered && (
             <>
               <stop offset="0%" stopColor="#eab308" />
@@ -79,13 +72,7 @@ export function TextHoverEffect({
           <stop offset="100%" stopColor="black" />
         </motion.radialGradient>
         <mask id="textMask">
-          <rect
-            x="0"
-            y="0"
-            width="100%"
-            height="100%"
-            fill="url(#revealMask)"
-          />
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#revealMask)" />
         </mask>
       </defs>
       <text

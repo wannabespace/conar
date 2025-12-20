@@ -4,10 +4,16 @@ import type { columnType } from '~/entities/database/sql/columns'
 import dagre from '@dagrejs/dagre'
 import { Position } from '@xyflow/react'
 
-export function getEdges({ constraints }: { constraints: typeof constraintsType.infer[] }): Edge[] {
+export function getEdges({
+  constraints,
+}: {
+  constraints: (typeof constraintsType.infer)[]
+}): Edge[] {
   return constraints
-    .filter(c => c.type === 'foreignKey' && c.foreignTable && c.foreignColumn && c.table && c.column)
-    .map(c => ({
+    .filter(
+      (c) => c.type === 'foreignKey' && c.foreignTable && c.foreignColumn && c.table && c.column
+    )
+    .map((c) => ({
       id: `${c.table}_${c.column}_${c.foreignTable}_${c.foreignColumn}`,
       type: 'custom',
       source: c.table,
@@ -28,14 +34,16 @@ export function getNodes({
   databaseId: string
   schema: string
   tables: string[]
-  columns: typeof columnType.infer[]
+  columns: (typeof columnType.infer)[]
   edges: Edge[]
-  constraints: typeof constraintsType.infer[]
+  constraints: (typeof constraintsType.infer)[]
 }): NodeType[] {
   return tables.map((table) => {
-    const tableColumns = columns.filter(c => c.table === table && c.schema === schema)
-    const tableConstraints = constraints.filter(c => c.table === table && c.schema === schema)
-    const tableForeignKeys = tableConstraints.filter(c => c.type === 'foreignKey' && c.table === table && c.schema === schema)
+    const tableColumns = columns.filter((c) => c.table === table && c.schema === schema)
+    const tableConstraints = constraints.filter((c) => c.table === table && c.schema === schema)
+    const tableForeignKeys = tableConstraints.filter(
+      (c) => c.type === 'foreignKey' && c.table === table && c.schema === schema
+    )
 
     return {
       id: table,
@@ -47,24 +55,33 @@ export function getNodes({
         databaseId,
         edges,
         columns: tableColumns.map((c) => {
-          const columnConstraints = tableConstraints.filter(constraint => constraint.column === c.id)
-          const foreign = tableForeignKeys.find(foreignKey => foreignKey.column === c.id && foreignKey.schema === schema && foreignKey.table === table)
+          const columnConstraints = tableConstraints.filter(
+            (constraint) => constraint.column === c.id
+          )
+          const foreign = tableForeignKeys.find(
+            (foreignKey) =>
+              foreignKey.column === c.id &&
+              foreignKey.schema === schema &&
+              foreignKey.table === table
+          )
 
           return {
             id: c.id,
             type: c.type,
             isEditable: c.isEditable,
             isNullable: c.isNullable,
-            foreign: foreign && foreign.foreignSchema && foreign.foreignTable && foreign.foreignColumn
-              ? {
-                  name: foreign.name,
-                  schema: foreign.foreignSchema,
-                  table: foreign.foreignTable,
-                  column: foreign.foreignColumn,
-                }
-              : undefined,
-            primaryKey: columnConstraints.find(constraint => constraint.type === 'primaryKey')?.name,
-            unique: columnConstraints.find(constraint => constraint.type === 'unique')?.name,
+            foreign:
+              foreign && foreign.foreignSchema && foreign.foreignTable && foreign.foreignColumn
+                ? {
+                    name: foreign.name,
+                    schema: foreign.foreignSchema,
+                    table: foreign.foreignTable,
+                    column: foreign.foreignColumn,
+                  }
+                : undefined,
+            primaryKey: columnConstraints.find((constraint) => constraint.type === 'primaryKey')
+              ?.name,
+            unique: columnConstraints.find((constraint) => constraint.type === 'unique')?.name,
           } satisfies Column
         }),
       },
@@ -79,7 +96,7 @@ const nodeWidth = 264
 function getNodeSize(columns: NodeType['data']['columns']) {
   return {
     width: nodeWidth,
-    height: (columns.length * 33) + (8 * 2) + 45, // 8 is padding, 45 is header height
+    height: columns.length * 33 + 8 * 2 + 45, // 8 is padding, 45 is header height
   }
 }
 

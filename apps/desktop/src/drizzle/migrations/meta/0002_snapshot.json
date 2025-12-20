@@ -47,12 +47,8 @@
           "name": "chats_database_id_databases_id_fk",
           "tableFrom": "chats",
           "tableTo": "databases",
-          "columnsFrom": [
-            "database_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["database_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -118,12 +114,8 @@
           "name": "chats_messages_chat_id_chats_id_fk",
           "tableFrom": "chats_messages",
           "tableTo": "chats",
-          "columnsFrom": [
-            "chat_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["chat_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -247,12 +239,8 @@
           "name": "queries_database_id_databases_id_fk",
           "tableFrom": "queries",
           "tableTo": "databases",
-          "columnsFrom": [
-            "database_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["database_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -268,9 +256,7 @@
     "public.database_type": {
       "name": "database_type",
       "schema": "public",
-      "values": [
-        "postgres"
-      ]
+      "values": ["postgres"]
     }
   },
   "schemas": {},

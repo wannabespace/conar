@@ -39,7 +39,16 @@ export interface NetworkState {
   /**
    * The connection type (experimental)
    */
-  type: 'bluetooth' | 'cellular' | 'ethernet' | 'none' | 'wifi' | 'wimax' | 'other' | 'unknown' | undefined
+  type:
+    | 'bluetooth'
+    | 'cellular'
+    | 'ethernet'
+    | 'none'
+    | 'wifi'
+    | 'wimax'
+    | 'other'
+    | 'unknown'
+    | undefined
   /**
    * Whether the Network Information API is supported
    */

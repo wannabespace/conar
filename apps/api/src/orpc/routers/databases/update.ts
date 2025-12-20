@@ -9,10 +9,12 @@ import { authMiddleware, orpc } from '~/orpc'
 
 export const update = orpc
   .use(authMiddleware)
-  .input(type.and(
-    databasesUpdateSchema.omit('userId', 'id'),
-    databasesUpdateSchema.pick('id').required(),
-  ))
+  .input(
+    type.and(
+      databasesUpdateSchema.omit('userId', 'id'),
+      databasesUpdateSchema.pick('id').required()
+    )
+  )
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
     const [database] = await db.select().from(databases).where(eq(databases.id, id)).limit(1)
@@ -28,8 +30,7 @@ export const update = orpc
     const secret = await context.getUserSecret()
 
     const newConnectionString = new SafeURL(
-      changes.connectionString
-      ?? decrypt({ encryptedText: database.connectionString, secret }),
+      changes.connectionString ?? decrypt({ encryptedText: database.connectionString, secret })
     )
 
     if ((changes.syncType ?? database.syncType) !== SyncType.Cloud) {

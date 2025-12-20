@@ -22,20 +22,22 @@ import { router } from './orpc/routers'
 const app = new Hono()
 
 app.use(logger())
-app.use(cors({
-  origin: [
-    env.WEB_URL,
-    ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
-    ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
-  ],
-  credentials: true,
-}))
+app.use(
+  cors({
+    origin: [
+      env.WEB_URL,
+      ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
+      ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
+    ],
+    credentials: true,
+  })
+)
 
 app.get('/', (c) => {
   return c.redirect(env.WEB_URL)
 })
 
-app.on(['GET', 'POST'], '/auth/*', c => auth.handler(c.req.raw))
+app.on(['GET', 'POST'], '/auth/*', (c) => auth.handler(c.req.raw))
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -73,10 +75,13 @@ function createAnswer(type: 'error' | 'ok', service: string, message: string) {
 app.get('/health', async (c) => {
   const hostname = c.req.header('host')
   if (hostname !== 'healthcheck.railway.app') {
-    return c.json({
-      status: 'error',
-      message: 'Invalid healthcheck host',
-    }, 400)
+    return c.json(
+      {
+        status: 'error',
+        message: 'Invalid healthcheck host',
+      },
+      400
+    )
   }
 
   const promises = await Promise.all([
@@ -92,7 +97,13 @@ app.get('/health', async (c) => {
         return user
       })
       .then(() => createAnswer('ok', 'database', 'Database connection ok'))
-      .catch(e => createAnswer('error', 'database', e instanceof Error ? e.message : 'Database connection failed')),
+      .catch((e) =>
+        createAnswer(
+          'error',
+          'database',
+          e instanceof Error ? e.message : 'Database connection failed'
+        )
+      ),
     generateText({
       model: openai('gpt-4.1-nano'),
       prompt: 'Hello, how are you?',
@@ -104,7 +115,9 @@ app.get('/health', async (c) => {
 
         return createAnswer('ok', 'openai', result.text)
       })
-      .catch(e => createAnswer('error', 'openai', e instanceof Error ? e.message : 'OpenAI connection failed')),
+      .catch((e) =>
+        createAnswer('error', 'openai', e instanceof Error ? e.message : 'OpenAI connection failed')
+      ),
     generateText({
       model: google('gemini-2.0-flash'),
       prompt: 'Hello, how are you?',
@@ -116,7 +129,9 @@ app.get('/health', async (c) => {
 
         return createAnswer('ok', 'google', result.text)
       })
-      .catch(e => createAnswer('error', 'google', e instanceof Error ? e.message : 'Google connection failed')),
+      .catch((e) =>
+        createAnswer('error', 'google', e instanceof Error ? e.message : 'Google connection failed')
+      ),
     generateText({
       model: anthropic('claude-3-5-haiku-latest'),
       prompt: 'Hello, how are you?',
@@ -128,7 +143,13 @@ app.get('/health', async (c) => {
 
         return createAnswer('ok', 'anthropic', result.text)
       })
-      .catch(e => createAnswer('error', 'anthropic', e instanceof Error ? e.message : 'Anthropic connection failed')),
+      .catch((e) =>
+        createAnswer(
+          'error',
+          'anthropic',
+          e instanceof Error ? e.message : 'Anthropic connection failed'
+        )
+      ),
     generateText({
       model: xai('grok-3-mini'),
       prompt: 'Hello, how are you?',
@@ -140,10 +161,12 @@ app.get('/health', async (c) => {
 
         return createAnswer('ok', 'xai', result.text)
       })
-      .catch(e => createAnswer('error', 'xai', e instanceof Error ? e.message : 'XAI connection failed')),
+      .catch((e) =>
+        createAnswer('error', 'xai', e instanceof Error ? e.message : 'XAI connection failed')
+      ),
   ])
 
-  const error = promises.find(promise => promise.status === 'error')
+  const error = promises.find((promise) => promise.status === 'error')
 
   if (error) {
     return c.json(error, 500)
@@ -158,5 +181,7 @@ export default {
   fetch: app.fetch,
   port: process.env.PORT
     ? Number(process.env.PORT)
-    : nodeEnv === 'test' ? PORTS.TEST.API : PORTS.DEV.API,
+    : nodeEnv === 'test'
+      ? PORTS.TEST.API
+      : PORTS.DEV.API,
 }

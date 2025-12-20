@@ -1,7 +1,12 @@
 /* eslint-disable perfectionist/sort-imports */
 import '@conar/shared/arktype-config'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
-import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
+import {
+  createBrowserHistory,
+  createHashHistory,
+  createRouter,
+  RouterProvider,
+} from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
@@ -75,10 +80,7 @@ declare module '@tanstack/react-router' {
 const root = createRoot(document.getElementById('root')!)
 
 runMigrations().then(async () => {
-  await Promise.all([
-    databasesCollection.stateWhenReady(),
-    chatsCollection.stateWhenReady(),
-  ])
+  await Promise.all([databasesCollection.stateWhenReady(), chatsCollection.stateWhenReady()])
   root.render(<RouterProvider router={router} />)
 })
 

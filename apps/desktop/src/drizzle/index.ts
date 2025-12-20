@@ -16,10 +16,11 @@ if (import.meta.env.DEV) {
   // @ts-expect-error - window.db is not typed
   window.db = pg
   // @ts-expect-error - window.db is not typed
-  window.dbQuery = q => pg.query(q).then((r) => {
-    console.table(r.rows)
-    return r.rows
-  })
+  window.dbQuery = (q) =>
+    pg.query(q).then((r) => {
+      console.table(r.rows)
+      return r.rows
+    })
 }
 
 export const db = drizzle({
@@ -48,8 +49,10 @@ async function ensureMigrationsTable() {
 }
 
 async function getMigratedHashes() {
-  const result = await db.execute(`SELECT hash FROM drizzle.__drizzle_migrations ORDER BY created_at ASC`)
-  return result.rows.map(row => row.hash as string)
+  const result = await db.execute(
+    `SELECT hash FROM drizzle.__drizzle_migrations ORDER BY created_at ASC`
+  )
+  return result.rows.map((row) => row.hash as string)
 }
 
 async function recordMigration(hash: string) {
@@ -73,7 +76,9 @@ export async function runMigrations() {
     await ensureMigrationsTable()
 
     const executedHashes = await getMigratedHashes()
-    const pendingMigrations = migrations.filter(migration => !executedHashes.includes(migration.hash))
+    const pendingMigrations = migrations.filter(
+      (migration) => !executedHashes.includes(migration.hash)
+    )
 
     if (pendingMigrations.length === 0) {
       console.info('✨ No pending migrations found.')
@@ -92,16 +97,14 @@ export async function runMigrations() {
 
         await recordMigration(migration.hash)
         console.info(`✅ Successfully completed migration: ${migration.hash}`)
-      }
-      catch (error) {
+      } catch (error) {
         console.error(`❌ Failed to execute migration ${migration.hash}:`, error)
         throw error
       }
     }
 
     console.info('🎉 All migrations completed successfully')
-  }
-  finally {
+  } finally {
     resolve()
   }
 }
