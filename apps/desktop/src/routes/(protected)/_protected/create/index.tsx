@@ -1,3 +1,4 @@
+import type { databases } from '~/drizzle'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
@@ -56,27 +57,33 @@ function CreateConnectionPage() {
 
     const password = new SafeURL(data.connectionString.trim()).password
 
-    databasesCollection.insert({
-      id,
-      name: data.name,
-      type: data.type,
-      connectionString: data.connectionString,
-      label: data.label || null,
-      color: data.color || null,
-      isPasswordExists: !!password,
-      isPasswordPopulated: !!password,
-      syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
+    try {
+      databasesCollection.insert({
+        id,
+        name: data.name,
+        type: data.type,
+        connectionString: data.connectionString,
+        label: data.label || null,
+        color: data.color || null,
+        isPasswordExists: !!password,
+        isPasswordPopulated: !!password,
+        syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
 
-    toast.success('Connection created successfully 🎉')
+      toast.success('Connection created successfully 🎉')
 
-    const database = databasesCollection.get(id)!
+      const database = databasesCollection.get(id) as typeof databases.$inferSelect
 
-    prefetchDatabaseCore(database)
+      prefetchDatabaseCore(database)
 
-    router.navigate({ to: '/database/$id/table', params: { id } })
+      router.navigate({ to: '/database/$id/table', params: { id } })
+    }
+    catch (error) {
+      console.error('Failed to create connection:', error)
+      toast.error('Failed to create connection')
+    }
   }
 
   const defaultValues: typeof createConnectionType.infer = {
@@ -90,18 +97,21 @@ function CreateConnectionPage() {
 
   const form = useForm({
     defaultValues,
-    validators: {
-      onChange: createConnectionType,
-    },
-    onSubmit(e) {
-      const { type, connectionString, name, saveInCloud, label, color } = e.value
 
-      if (!type) {
+    onSubmit(e) {
+      const result = createConnectionType(e.value)
+      if (result instanceof type.errors) {
+        toast.error(result.summary)
+        return
+      }
+      const { type: dbType, connectionString, name, saveInCloud, label, color } = e.value
+
+      if (!dbType) {
         toast.error('Select a database type')
         return
       }
 
-      createConnection({ type, connectionString, name, saveInCloud, label, color })
+      createConnection({ type: dbType, connectionString, name, saveInCloud, label, color })
     },
   })
 
@@ -129,7 +139,8 @@ function CreateConnectionPage() {
   const saveInCloud = useStore(form.store, state => state.values.saveInCloud)
   const label = useStore(form.store, state => state.values.label)
   const color = useStore(form.store, state => state.values.color)
-  const isValid = useStore(form.store, state => state.isValid)
+  const values = useStore(form.store, state => state.values)
+  const isValid = !(createConnectionType(values) instanceof type.errors)
 
   return (
     <ScrollArea className="py-[10vh]">
