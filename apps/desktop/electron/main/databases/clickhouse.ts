@@ -4,7 +4,6 @@ import { memoize } from '@conar/shared/utils/helpers'
 const clickhouse = createRequire(import.meta.url)('@clickhouse/client') as typeof import('@clickhouse/client')
 
 export const getClient = memoize((connectionString: string) => {
-  console.log('[ClickHouse] Initializing client with:', connectionString)
   let urlStr = connectionString.trim()
 
   if (/^clickhouse:\/\//i.test(urlStr)) {

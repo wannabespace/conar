@@ -82,7 +82,14 @@ function CreateConnectionPage() {
     }
     catch (error) {
       console.error('Failed to create connection:', error)
-      toast.error('Failed to create connection')
+      toast.error('Failed to create connection', {
+        description:
+          error instanceof Error
+            ? error.message
+            : typeof error === 'string'
+              ? error
+              : 'An unexpected error occurred while saving the connection.',
+      })
     }
   }
 
