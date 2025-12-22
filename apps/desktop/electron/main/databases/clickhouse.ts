@@ -14,11 +14,8 @@ export const getClient = memoize((connectionString: string) => {
   }
 
   const url = new URL(urlStr)
-  const database = url.pathname.slice(1)
-  url.pathname = ''
 
   return clickhouse.createClient({
     url: url.toString(),
-    database: database || undefined,
   })
 })
