@@ -1,16 +1,17 @@
 import type { BetterAuthPlugin, User } from 'better-auth'
+import { stripe } from '@better-auth/stripe'
 import { PORTS } from '@conar/shared/constants'
-import { type } from 'arktype'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { anonymous, bearer, createAuthEndpoint, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { consola } from 'consola'
 import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
 import { sendEmail } from '~/lib/email'
 import { loops } from '~/lib/loops'
+import { stripe as stripeClient } from './stripe'
 
 async function loopsUpdateUser(user: User) {
   try {
@@ -50,7 +51,7 @@ function noSetCookiePlugin() {
           handler: createAuthMiddleware(async (ctx) => {
             const headers = ctx.context.responseHeaders
 
-            if (headers instanceof Headers) {
+            if (headers) {
               const setCookies = headers.get('set-cookie')
 
               if (!setCookies)
@@ -71,7 +72,6 @@ export const auth = betterAuth({
   baseURL: env.API_URL,
   basePath: '/auth',
   plugins: [
-    oldChangeEmail(),
     bearer(),
     twoFactor(),
     organization({
@@ -100,6 +100,24 @@ export const auth = betterAuth({
     emailHarmony(),
     noSetCookiePlugin(),
     anonymous(),
+    stripe({
+      stripeClient,
+      subscription: {
+        enabled: true,
+        plans: [
+          {
+            name: 'Pro',
+            priceId: env.STRIPE_MONTH_PRICE_ID!,
+            annualDiscountPriceId: env.STRIPE_ANNUAL_PRICE_ID!,
+            freeTrial: {
+              days: 7,
+            },
+          },
+        ],
+      },
+      stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
+      createCustomerOnSignUp: true,
+    }),
   ],
   user: {
     additionalFields: {
@@ -170,6 +188,7 @@ export const auth = betterAuth({
   socialProviders: {
     google: {
       enabled: !!env.GOOGLE_CLIENT_ID && !!env.GOOGLE_CLIENT_SECRET,
+      prompt: 'select_account',
       clientId: env.GOOGLE_CLIENT_ID!,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
@@ -180,26 +199,3 @@ export const auth = betterAuth({
     },
   },
 })
-
-// Legacy endpoint for changing email
-function oldChangeEmail(): BetterAuthPlugin {
-  return {
-    id: 'old-change-email',
-    endpoints: {
-      forgetPassword: createAuthEndpoint(
-        'forget-password',
-        {
-          method: 'POST',
-          operationId: 'forgetPassword',
-          body: type({
-            email: 'string.email',
-            redirectTo: 'string?',
-          }),
-        },
-        (ctx) => {
-          return auth.api.requestPasswordReset(ctx)
-        },
-      ),
-    },
-  }
-};

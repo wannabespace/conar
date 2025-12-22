@@ -3,7 +3,6 @@ import type { Column } from '~/entities/database'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import posthog from 'posthog-js'
 import { useCallback, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableProvider } from '~/components/table'
@@ -121,7 +120,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     const rows = data.pages.flatMap(page => page.rows)
     const initialValue = rows[rowIndex]![columnId]
 
-    setValue(rowIndex, columnId, newValue)
+    const preparedValue = prepareValue(newValue, columns?.find(c => c.id === columnId))
+
+    setValue(rowIndex, columnId, preparedValue)
 
     const sqlFilters = primaryColumns.map(column => ({
       column,
@@ -129,7 +130,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       values: [rows[rowIndex]![column]],
     }))
 
-    const setValues = { [columnId]: prepareValue(newValue, columns?.find(c => c.id === columnId)) }
+    const setValues = { [columnId]: preparedValue }
 
     try {
       await setQuery.run(database, {
@@ -172,15 +173,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         setValue(rowIndex, columnId, realValue ?? undefined)
     }
     catch (e) {
-      posthog.captureException(e, {
-        setValues,
-        sqlFilters,
-        updatedFilters,
-        columnId,
-        rowIndex,
-        newValue,
-      })
-
       toast.error('New value was saved, but the updated value was not selected', {
         description: e instanceof Error ? e.message : String(e),
       })

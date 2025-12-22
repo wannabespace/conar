@@ -1,13 +1,15 @@
 {
-  "name": "@conar/desktop",
+  "name": "conar",
   "type": "module",
-  "version": "0.24.0",
+  "version": "0.25.4",
+  "productName": "Conar",
   "private": true,
-  "description": "AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.",
+  "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
   "author": {
     "name": "Wannabe Space, LLC",
     "email": "wannabespace.llc@gmail.com"
   },
+  "homepage": "https://conar.app",
   "repository": {
     "type": "git",
     "url": "https://github.com/wannabespace/conar.git"
@@ -17,6 +19,7 @@
     "dev": "electron-vite -c vite.electron.config.ts dev",
     "build:vite": "electron-vite -c vite.electron.config.ts build",
     "build:electron": "electron-builder -p always",
+    "build:todesktop": "todesktop build",
     "check-types": "tsc",
     "test:start": "vite -c vite.test.config.ts build --mode test && vite -c vite.test.config.ts preview --mode test",
     "test:unit": "bun test ./src",
@@ -26,13 +29,15 @@
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
+    "@todesktop/runtime": "catalog:",
     "electron-store": "catalog:",
-    "electron-updater": "catalog:",
+    "mssql": "catalog:",
     "mysql2": "catalog:",
     "pg": "catalog:"
   },
   "devDependencies": {
     "@ai-sdk/react": "catalog:",
+    "@better-auth/stripe": "catalog:",
     "@conar/api": "workspace:*",
     "@conar/configs": "workspace:*",
     "@conar/connection": "workspace:*",
@@ -64,7 +69,9 @@
     "@tiptap/extension-placeholder": "catalog:",
     "@tiptap/react": "catalog:",
     "@tiptap/starter-kit": "catalog:",
+    "@todesktop/cli": "catalog:",
     "@toon-format/toon": "catalog:",
+    "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

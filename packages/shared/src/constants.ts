@@ -6,6 +6,8 @@ export const SOCIAL_LINKS = {
 
 export const SUPPORT_EMAIL = 'valerii.strilets@gmail.com'
 
+export const BREW_INSTALL_COMMAND = 'brew install --cask conar'
+
 export const PORTS = {
   DEV: {
     API: 3000,
@@ -19,7 +21,7 @@ export const PORTS = {
   },
 } as const
 
-export const LABEL_OPTIONS = ['Local', 'Dev', 'Prod', 'Staging']
+export const LABEL_OPTIONS = ['Local', 'Test', 'Dev', 'Staging', 'Prod']
 
 export const COLOR_OPTIONS = [
   '#ef4444',

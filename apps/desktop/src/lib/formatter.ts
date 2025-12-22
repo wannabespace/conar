@@ -9,6 +9,7 @@ export function formatSql(
   const langMap: Record<DatabaseType, SqlLanguage> = {
     [DatabaseType.Postgres]: 'postgresql',
     [DatabaseType.MySQL]: 'mysql',
+    [DatabaseType.MSSQL]: 'tsql',
     [DatabaseType.ClickHouse]: 'mysql',
     [DatabaseType.SQLite]: 'sqlite',
   }

@@ -11,6 +11,9 @@ const envType = type({
   ENCRYPTION_SECRET: 'string',
   BETTER_AUTH_SECRET: 'string',
   STRIPE_SECRET_KEY: 'string',
+  STRIPE_WEBHOOK_SECRET: 'string',
+  STRIPE_MONTH_PRICE_ID: 'string',
+  STRIPE_ANNUAL_PRICE_ID: 'string',
   REDIS_URL: 'string',
   POSTHOG_API_KEY: 'string',
   RESEND_API_KEY: 'string',
@@ -26,10 +29,14 @@ const envType = type({
   GITHUB_CLIENT_SECRET: 'string',
   BANNER_TEXT: 'string?',
   EXA_API_KEY: 'string',
+  GITHUB_TOKEN: 'string',
 })
 
 const devOptionalEnvs = [
   'STRIPE_SECRET_KEY',
+  'STRIPE_WEBHOOK_SECRET',
+  'STRIPE_MONTH_PRICE_ID',
+  'STRIPE_ANNUAL_PRICE_ID',
   'REDIS_URL',
   'POSTHOG_API_KEY',
   'RESEND_API_KEY',
@@ -43,6 +50,7 @@ const devOptionalEnvs = [
   'GITHUB_CLIENT_ID',
   'GITHUB_CLIENT_SECRET',
   'EXA_API_KEY',
+  'GITHUB_TOKEN',
 ] satisfies (keyof typeof envType.infer)[]
 
 export const env = nodeEnv === 'production' || nodeEnv === 'test'

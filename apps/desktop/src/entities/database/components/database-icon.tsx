@@ -2,6 +2,7 @@ import type { ComponentProps, JSX } from 'react'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { createElement } from 'react'
 import { ClickHouseIcon } from '~/icons/clickhouse'
+import { MSSQLIcon } from '~/icons/mssql'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
 import { SQLiteIcon } from '~/icons/sqlite'
@@ -11,6 +12,7 @@ const iconMap: Record<DatabaseType, (props: ComponentProps<'svg'>) => JSX.Elemen
   [DatabaseType.MySQL]: MySQLIcon,
   [DatabaseType.ClickHouse]: ClickHouseIcon,
   [DatabaseType.SQLite]: SQLiteIcon,
+  [DatabaseType.MSSQL]: MSSQLIcon,
 }
 
 export function DatabaseIcon({ type, ...props }: { type: DatabaseType } & ComponentProps<'svg'>) {

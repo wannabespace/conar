@@ -2,9 +2,11 @@ import { relations } from 'drizzle-orm'
 import {
   boolean,
   index,
+  integer,
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
@@ -18,6 +20,7 @@ export const users = pgTable('users', {
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   normalizedEmail: text('normalized_email').unique(),
   isAnonymous: boolean('is_anonymous').default(false),
+  stripeCustomerId: text('stripe_customer_id'),
   secret: text('secret').notNull(),
 })
 
@@ -84,13 +87,17 @@ export const twoFactors = pgTable(
   ],
 )
 
-export const workspaces = pgTable('workspaces', {
-  ...baseTable,
-  name: text('name').notNull(),
-  slug: text('slug').notNull().unique(),
-  logo: text('logo'),
-  metadata: text('metadata'),
-})
+export const workspaces = pgTable(
+  'workspaces',
+  {
+    ...baseTable,
+    name: text('name').notNull(),
+    slug: text('slug').notNull().unique(),
+    logo: text('logo'),
+    metadata: text('metadata'),
+  },
+  table => [uniqueIndex('workspaces_slug_uidx').on(table.slug)],
+)
 
 export const members = pgTable(
   'members',
@@ -131,7 +138,22 @@ export const invitations = pgTable(
   ],
 )
 
-export const userRelations = relations(users, ({ many }) => ({
+export const subscriptions = pgTable('subscriptions', {
+  ...baseTable,
+  plan: text('plan').notNull(),
+  referenceId: text('reference_id').notNull(),
+  stripeCustomerId: text('stripe_customer_id'),
+  stripeSubscriptionId: text('stripe_subscription_id'),
+  status: text('status').default('incomplete'),
+  periodStart: timestamp('period_start'),
+  periodEnd: timestamp('period_end'),
+  trialStart: timestamp('trial_start'),
+  trialEnd: timestamp('trial_end'),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false),
+  seats: integer('seats'),
+})
+
+export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
   twoFactors: many(twoFactors),
@@ -139,33 +161,33 @@ export const userRelations = relations(users, ({ many }) => ({
   invitations: many(invitations),
 }))
 
-export const sessionRelations = relations(sessions, ({ one }) => ({
+export const sessionsRelations = relations(sessions, ({ one }) => ({
   users: one(users, {
     fields: [sessions.userId],
     references: [users.id],
   }),
 }))
 
-export const accountRelations = relations(accounts, ({ one }) => ({
+export const accountsRelations = relations(accounts, ({ one }) => ({
   users: one(users, {
     fields: [accounts.userId],
     references: [users.id],
   }),
 }))
 
-export const twoFactorRelations = relations(twoFactors, ({ one }) => ({
+export const twoFactorsRelations = relations(twoFactors, ({ one }) => ({
   users: one(users, {
     fields: [twoFactors.userId],
     references: [users.id],
   }),
 }))
 
-export const workspaceRelations = relations(workspaces, ({ many }) => ({
+export const workspacesRelations = relations(workspaces, ({ many }) => ({
   members: many(members),
   invitations: many(invitations),
 }))
 
-export const memberRelations = relations(members, ({ one }) => ({
+export const membersRelations = relations(members, ({ one }) => ({
   workspaces: one(workspaces, {
     fields: [members.workspaceId],
     references: [workspaces.id],
@@ -176,7 +198,7 @@ export const memberRelations = relations(members, ({ one }) => ({
   }),
 }))
 
-export const invitationRelations = relations(invitations, ({ one }) => ({
+export const invitationsRelations = relations(invitations, ({ one }) => ({
   workspaces: one(workspaces, {
     fields: [invitations.workspaceId],
     references: [workspaces.id],

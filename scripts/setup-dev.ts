@@ -50,7 +50,7 @@ function createEnvFile(envExamplePath: string) {
     return true
   }
   catch (error) {
-    console.error(`Failed to create .env file: ${envPath}`, error.message)
+    console.error(`Failed to create .env file: ${envPath}`, error instanceof Error ? error.message : error)
     return false
   }
 }

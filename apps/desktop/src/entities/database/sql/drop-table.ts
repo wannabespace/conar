@@ -28,6 +28,19 @@ export const dropTableQuery = createQuery({
 
       return query.execute()
     },
+    mssql: (db) => {
+      let query = db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .schema
+        .dropTable(table)
+
+      if (cascade) {
+        query = query.cascade()
+      }
+
+      return query.execute()
+    },
     clickhouse: db => db
       .withSchema(schema)
       .withTables<{ [table]: Record<string, unknown> }>()

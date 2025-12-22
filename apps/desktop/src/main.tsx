@@ -18,6 +18,7 @@ import { routeTree } from './routeTree.gen'
 import './monaco-worker'
 import './assets/styles.css'
 import '@conar/ui/globals.css'
+import { toast } from 'sonner'
 
 dayjs.extend(isToday)
 dayjs.extend(isYesterday)
@@ -33,6 +34,13 @@ if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
 
 window.electron?.app.onDeepLink(async (url) => {
   window.initialDeepLink = url
+})
+
+window.electron?.app.onSendToast(({ message, type }) => {
+  toast[type](message, {
+    id: `${type}-${message}`,
+    position: 'bottom-center',
+  })
 })
 
 initEvents()
