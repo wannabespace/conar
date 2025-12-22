@@ -3,19 +3,8 @@ import { memoize } from '@conar/shared/utils/helpers'
 
 const clickhouse = createRequire(import.meta.url)('@clickhouse/client') as typeof import('@clickhouse/client')
 
-export const getClient = memoize((connectionString: string) => {
-  let urlStr = connectionString.trim()
-
-  if (/^clickhouse:\/\//i.test(urlStr)) {
-    urlStr = urlStr.replace(/^clickhouse:\/\//i, 'http://')
-  }
-  else if (/^clickhouses:\/\//i.test(urlStr)) {
-    urlStr = urlStr.replace(/^clickhouses:\/\//i, 'https://')
-  }
-
-  const url = new URL(urlStr)
-
-  return clickhouse.createClient({
-    url: url.toString(),
-  })
-})
+export const getClient = memoize((connectionString: string) => clickhouse.createClient({
+  url: connectionString.startsWith('clickhouse')
+    ? connectionString.replace(/^clickhouse/, 'http')
+    : connectionString,
+}))
