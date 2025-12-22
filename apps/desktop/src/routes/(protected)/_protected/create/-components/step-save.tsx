@@ -9,8 +9,10 @@ import { Label } from '@conar/ui/components/label'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiLoopLeftLine } from '@remixicon/react'
+import { useLiveQuery } from '@tanstack/react-db'
 import { useId } from 'react'
 import { ConnectionDetails } from '~/components/connection-details'
+import { databasesCollection } from '~/entities/database'
 
 export function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel, color, setColor }: {
   type: DatabaseType
@@ -25,6 +27,9 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
   color: string | null
   setColor: (color: string | null) => void
 }) {
+  const { data: databases } = useLiveQuery(q => q.from({ databases: databasesCollection }).orderBy(({ databases }) => databases.createdAt, 'desc'))
+  const existingLabels = databases.map(db => db.label).filter((label): label is string => label !== null)
+  const labels = Array.from(new Set(LABEL_OPTIONS.concat(existingLabels))).toSorted()
   const nameId = useId()
   const labelId = useId()
 
@@ -84,7 +89,7 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
                 onChange={e => setLabel(e.target.value)}
               />
               <ButtonGroup>
-                {LABEL_OPTIONS.map(option => (
+                {labels.map(option => (
                   <Button
                     key={option}
                     variant={label === option ? 'default' : 'outline'}

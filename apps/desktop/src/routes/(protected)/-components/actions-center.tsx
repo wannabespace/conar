@@ -6,15 +6,12 @@ import { RiAddLine, RiDashboardLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
-import { Store, useStore } from '@tanstack/react-store'
+import { useStore } from '@tanstack/react-store'
 import { DatabaseIcon, databasesCollection, databaseTablesAndSchemasQuery, prefetchDatabaseCore, useDatabaseLinkParams } from '~/entities/database'
-
-export const actionsCenterStore = new Store({
-  isOpen: false,
-})
+import { appStore } from '~/store'
 
 function setIsOpen(isOpen: boolean) {
-  actionsCenterStore.setState(state => ({ ...state, isOpen }))
+  appStore.setState(state => ({ ...state, actionsCenterIsOpen: isOpen } satisfies typeof state))
 }
 
 function ActionsDatabaseTables({ database }: { database: typeof databases.$inferSelect }) {
@@ -84,7 +81,7 @@ export function ActionsCenter() {
   const { data: databases } = useLiveQuery(q => q
     .from({ databases: databasesCollection })
     .orderBy(({ databases }) => databases.createdAt, 'desc'))
-  const isOpen = useStore(actionsCenterStore, state => state.isOpen)
+  const isOpen = useStore(appStore, state => state.actionsCenterIsOpen)
   const router = useRouter()
   const { id } = useParams({ strict: false })
 

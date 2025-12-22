@@ -30,7 +30,7 @@ import {
 } from '~/entities/database'
 import { UserButton } from '~/entities/user'
 import { orpcQuery } from '~/lib/orpc'
-import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'
+import { appStore } from '~/store'
 import { Route } from '../$id'
 
 const os = getOS(navigator.userAgent)
@@ -376,7 +376,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => actionsCenterStore.setState(state => ({ ...state, isOpen: true }))}
+                onClick={() => appStore.setState(state => ({ ...state, actionsCenterIsOpen: true } satisfies typeof state))}
               >
                 <RiCommandLine className="size-4" />
               </Button>

@@ -4,6 +4,7 @@ export function createContext(c: HonoContext) {
   const cookie = c.req.header('Cookie')
   const authorization = c.req.header('Authorization')
   const desktopVersion = c.req.header('x-desktop-version') || null
+  const userAgent = c.req.header('User-Agent')
 
   const h = new Headers()
 
@@ -16,12 +17,20 @@ export function createContext(c: HonoContext) {
   if (desktopVersion)
     h.set('x-desktop-version', desktopVersion)
 
+  if (userAgent)
+    h.set('User-Agent', userAgent)
+
+  const minorVersion = Number(desktopVersion?.split('.')[1]) || null
+  const majorVersion = Number(desktopVersion?.split('.')[0]) || null
+
   return {
     headers: h,
     setHeader: (key: string, value: string) => {
       c.res.headers.set(key, value)
     },
     desktopVersion,
+    minorVersion,
+    majorVersion,
   }
 }
 

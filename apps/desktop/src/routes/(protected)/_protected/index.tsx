@@ -27,7 +27,7 @@ function DashboardPage() {
 
   return (
     <ScrollArea className="overflow-auto">
-      <div className="flex flex-col mx-auto max-w-2xl w-full px-6 py-10 h-full">
+      <div className="flex flex-col mx-auto max-w-3xl w-full px-6 py-10 h-full">
         <h1 className="scroll-m-20 mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
           Dashboard
         </h1>

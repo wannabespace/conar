@@ -3,8 +3,8 @@ import type { databases } from '~/drizzle'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
-import { ButtonGroup } from '@conar/ui/components/button-group'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
@@ -143,27 +143,21 @@ export function DatabasesList() {
       <RemoveConnectionDialog ref={removeDialogRef} />
       <RenameConnectionDialog ref={renameDialogRef} />
       {availableLabels.length > 0 && (
-        <ButtonGroup>
-          <Button
-            variant="outline"
-            className={selectedLabel === null ? 'bg-primary!' : ''}
-            size="xs"
-            onClick={() => setSelectedLabel(null)}
-          >
-            All
-          </Button>
-          {availableLabels.map(label => (
-            <Button
-              key={label}
-              variant="outline"
-              className={selectedLabel === label ? 'bg-primary!' : ''}
-              size="xs"
-              onClick={() => setSelectedLabel(label)}
-            >
-              {label}
-            </Button>
-          ))}
-        </ButtonGroup>
+        <Tabs
+          value={selectedLabel === null ? 'all' : selectedLabel}
+          onValueChange={value => setSelectedLabel(value === 'all' ? null : value)}
+        >
+          <TabsList>
+            <TabsTrigger value="all">
+              All
+            </TabsTrigger>
+            {availableLabels.map(label => (
+              <TabsTrigger key={label} value={label}>
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       )}
       <div className="flex flex-col gap-2">
         {filteredDatabases.length > 0

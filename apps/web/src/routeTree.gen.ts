@@ -13,6 +13,8 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as OpenRouteImport } from './routes/open'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as SubscriptionSuccessRouteImport } from './routes/subscription/success'
+import { Route as SubscriptionCancelRouteImport } from './routes/subscription/cancel'
 import { Route as LayoutTermsOfServiceRouteImport } from './routes/_layout/terms-of-service'
 import { Route as LayoutPrivacyPolicyRouteImport } from './routes/_layout/privacy-policy'
 import { Route as LayoutDownloadRouteImport } from './routes/_layout/download'
@@ -36,6 +38,16 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
+const SubscriptionSuccessRoute = SubscriptionSuccessRouteImport.update({
+  id: '/subscription/success',
+  path: '/subscription/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubscriptionCancelRoute = SubscriptionCancelRouteImport.update({
+  id: '/subscription/cancel',
+  path: '/subscription/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LayoutTermsOfServiceRoute = LayoutTermsOfServiceRouteImport.update({
   id: '/terms-of-service',
   path: '/terms-of-service',
@@ -58,6 +70,8 @@ export interface FileRoutesByFullPath {
   '/download': typeof LayoutDownloadRoute
   '/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/subscription/cancel': typeof SubscriptionCancelRoute
+  '/subscription/success': typeof SubscriptionSuccessRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesByTo {
@@ -66,6 +80,8 @@ export interface FileRoutesByTo {
   '/download': typeof LayoutDownloadRoute
   '/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/subscription/cancel': typeof SubscriptionCancelRoute
+  '/subscription/success': typeof SubscriptionSuccessRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesById {
@@ -76,6 +92,8 @@ export interface FileRoutesById {
   '/_layout/download': typeof LayoutDownloadRoute
   '/_layout/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/subscription/cancel': typeof SubscriptionCancelRoute
+  '/subscription/success': typeof SubscriptionSuccessRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
@@ -86,6 +104,8 @@ export interface FileRouteTypes {
     | '/download'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/subscription/cancel'
+    | '/subscription/success'
     | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -94,6 +114,8 @@ export interface FileRouteTypes {
     | '/download'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/subscription/cancel'
+    | '/subscription/success'
     | '/'
   id:
     | '__root__'
@@ -103,6 +125,8 @@ export interface FileRouteTypes {
     | '/_layout/download'
     | '/_layout/privacy-policy'
     | '/_layout/terms-of-service'
+    | '/subscription/cancel'
+    | '/subscription/success'
     | '/_layout/'
   fileRoutesById: FileRoutesById
 }
@@ -110,6 +134,8 @@ export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
   OpenRoute: typeof OpenRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SubscriptionCancelRoute: typeof SubscriptionCancelRoute
+  SubscriptionSuccessRoute: typeof SubscriptionSuccessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -141,6 +167,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
+    }
+    '/subscription/success': {
+      id: '/subscription/success'
+      path: '/subscription/success'
+      fullPath: '/subscription/success'
+      preLoaderRoute: typeof SubscriptionSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subscription/cancel': {
+      id: '/subscription/cancel'
+      path: '/subscription/cancel'
+      fullPath: '/subscription/cancel'
+      preLoaderRoute: typeof SubscriptionCancelRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_layout/terms-of-service': {
       id: '/_layout/terms-of-service'
@@ -187,6 +227,8 @@ const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
   OpenRoute: OpenRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SubscriptionCancelRoute: SubscriptionCancelRoute,
+  SubscriptionSuccessRoute: SubscriptionSuccessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

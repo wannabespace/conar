@@ -116,7 +116,6 @@ export const auth = betterAuth({
         ],
       },
       stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
-      createCustomerOnSignUp: true,
     }),
   ],
   user: {

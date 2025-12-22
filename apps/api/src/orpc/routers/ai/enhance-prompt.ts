@@ -3,11 +3,11 @@ import { encode } from '@toon-format/toon'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { withPosthog } from '~/lib/posthog'
-import { authMiddleware, orpc } from '~/orpc'
+import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 import { getMessages } from './ask'
 
 export const enhancePrompt = orpc
-  .use(authMiddleware)
+  .use(requireSubscriptionMiddleware)
   .input(type({
     prompt: 'string',
     chatId: 'string.uuid.v7',

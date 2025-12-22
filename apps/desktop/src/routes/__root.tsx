@@ -5,7 +5,7 @@ import { ThemeObserver } from '@conar/ui/theme-observer'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
-import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router'
+import { createRootRoute, HeadContent, Outlet, useRouter } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { AuthObserver } from '~/auth-observer'
@@ -14,7 +14,7 @@ import { enterAppAnimation } from '~/enter'
 import { ErrorPage } from '~/error-page'
 import { authClient } from '~/lib/auth'
 import { EventsProvider } from '~/lib/events'
-import { queryClient, router } from '~/main'
+import { queryClient } from '~/main'
 import { useUpdatesObserver } from '~/updates-observer'
 
 export const Route = createRootRoute({
@@ -27,6 +27,7 @@ export const Route = createRootRoute({
 
 function RootDocument() {
   const { isPending } = authClient.useSession()
+  const router = useRouter()
 
   useUpdatesObserver()
 
@@ -36,6 +37,12 @@ function RootDocument() {
 
     enterAppAnimation()
   }, [isPending])
+
+  useEffect(() => {
+    return window.electron?.app.onNavigate((path) => {
+      router.navigate({ to: path })
+    })
+  }, [router])
 
   return (
     <>

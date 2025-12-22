@@ -1,4 +1,5 @@
 import type { Context } from './context'
+import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
 import { db } from '~/drizzle'
 import { auth } from '~/lib/auth'
@@ -36,3 +37,29 @@ export const authMiddleware = orpc.middleware(async ({ context, next }) => {
     },
   })
 })
+
+async function getSubscription(context: Context) {
+  const subscriptions = await auth.api.listActiveSubscriptions({
+    headers: context.headers,
+  })
+  return subscriptions.find(s => s.status === 'active' || s.status === 'trialing') ?? null
+}
+
+export const subscriptionMiddleware = authMiddleware.concat(orpc.middleware(async ({ context, next }) => {
+  return next({ context: { subscription: await getSubscription(context) } })
+}))
+
+export const requireSubscriptionMiddleware = authMiddleware.concat(orpc.middleware(async ({ context, next }) => {
+  const minorVersion = context.minorVersion ?? 0
+  const subscription = await getSubscription(context)
+
+  if (!subscription) {
+    throw new ORPCError('FORBIDDEN', {
+      message: minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
+        ? 'You have no active subscription. Please subscribe to a plan to continue.'
+        : 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a plan to continue.',
+    })
+  }
+
+  return next({ context: { subscription } })
+}))

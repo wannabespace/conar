@@ -134,6 +134,13 @@
       "when": 1766228230812,
       "tag": "0018_perpetual_sheva_callister",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1766350696042,
+      "tag": "0019_nasty_captain_universe",
+      "breakpoints": true
     }
   ]
 }

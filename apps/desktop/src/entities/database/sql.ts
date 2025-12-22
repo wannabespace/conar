@@ -7,25 +7,28 @@ export function executeSql({
   type,
   connectionString,
   sql,
+  values = [],
 }: {
   type: DatabaseType
   connectionString: string
   sql: string
+  values?: unknown[]
 }) {
   if (!window.electron) {
     throw new Error('Electron is not available')
   }
 
-  return window.electron.query[type]({ connectionString, sql, values: [] })
+  return window.electron.query[type]({ connectionString, sql, values })
 }
 
-export function executeAndLogSql({ database, sql }: {
+export function executeAndLogSql({ database, sql, values = [] }: {
   database: typeof databases.$inferSelect
   sql: string
+  values?: unknown[]
 }) {
-  const promise = executeSql({ type: database.type, connectionString: database.connectionString, sql })
+  const promise = executeSql({ type: database.type, connectionString: database.connectionString, sql, values })
 
-  logSql(database, promise, { sql })
+  logSql(database, promise, { sql, values })
 
   return promise
 }

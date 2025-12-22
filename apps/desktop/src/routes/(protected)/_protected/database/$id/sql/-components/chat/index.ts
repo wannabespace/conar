@@ -90,7 +90,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           }
         }
 
-        if (options.trigger === 'regenerate-message' && options.messageId) {
+        if (options.trigger === 'regenerate-message' && options.messageId && chatsMessagesCollection.has(options.messageId)) {
           chatsMessagesCollection.delete(options.messageId)
         }
 

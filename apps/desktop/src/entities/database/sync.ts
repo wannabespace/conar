@@ -9,10 +9,10 @@ import { bearerToken } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 import { router } from '~/main'
 
-const { promise, resolve } = Promise.withResolvers()
+let resolvers = Promise.withResolvers()
 
 export function waitForDatabasesSync() {
-  return promise
+  return resolvers.promise
 }
 
 function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
@@ -37,6 +37,8 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
     if (!bearerToken.get() || !navigator.onLine) {
       return
     }
+
+    resolvers = Promise.withResolvers()
 
     const sync = await orpc.databases.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
@@ -88,7 +90,7 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
         })
       }
     }
-    resolve()
+    resolvers.resolve()
   },
   onInsert: async ({ transaction }) => {
     await Promise.all(transaction.mutations.map(m => orpc.databases.create({
@@ -116,7 +118,6 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
 const syncDatabasesMutationOptions = {
   mutationKey: ['sync-databases'],
   mutationFn: databasesCollection.utils.runSync,
-  onError: () => {},
 } satisfies MutationOptions
 
 export function useDatabasesSync() {
