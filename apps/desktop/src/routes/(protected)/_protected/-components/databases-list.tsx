@@ -70,18 +70,20 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
           <div data-mask className="text-xs text-muted-foreground font-mono truncate">{connectionString.replaceAll('*', '•')}</div>
         </div>
         <div className="flex items-center gap-1 z-10">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              toggleExpand()
-            }}
-          >
-            {isExpanded ? <RiArrowUpSLine className="size-4" /> : <RiArrowDownSLine className="size-4" />}
-          </Button>
+          {databasesList.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                toggleExpand()
+              }}
+            >
+              {isExpanded ? <RiArrowUpSLine className="size-4" /> : <RiArrowDownSLine className="size-4" />}
+            </Button>
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger className="rounded-md p-2 hover:bg-accent-foreground/5">

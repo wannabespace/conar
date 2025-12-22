@@ -16,7 +16,8 @@ export function useServerDatabases(database: typeof databases.$inferSelect) {
   const [isExpanded, setIsExpanded] = useState(false)
   const { data: databasesList = [], isLoading } = useQuery({
     queryKey: ['server-databases', database.id],
-    enabled: isExpanded,
+    throwOnError: false,
+    retry: 5,
     queryFn: async () => {
       const url = new SafeURL(database.connectionString)
       url.pathname = databaseSystemNames[database.type]
