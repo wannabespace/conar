@@ -33,11 +33,13 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
       key={virtualColumn.key}
       id={column.id}
       columnIndex={virtualColumn.index}
-      position={virtualColumn.index === 0
-        ? 'first'
-        : virtualColumn.index === columns.length - 1
-          ? 'last'
-          : 'middle'}
+      position={
+        virtualColumn.index === 0
+          ? 'first'
+          : virtualColumn.index === columns.length - 1
+            ? 'last'
+            : 'middle'
+      }
       size={virtualColumn.size}
       style={{
         width: `${virtualColumn.size}px`,
@@ -67,7 +69,10 @@ export function TableHeader({
 
   return (
     <div
-      className={cn('sticky top-0 z-10 border-y bg-background h-8 has-[[data-footer]]:h-12 w-fit min-w-full', className)}
+      className={cn(
+        'sticky top-0 z-10 border-y bg-background h-8 has-[[data-footer]]:h-12 w-fit min-w-full',
+        className,
+      )}
       style={{ width: `${tableWidth}px`, ...style }}
       {...props}
     >
