@@ -108,21 +108,16 @@ const queryMap = {
     const db = getSqliteDatabase(connectionString)
     const start = performance.now()
 
-    // Check if it's a SELECT query
     const isSelect = sql.trim().toUpperCase().startsWith('SELECT')
       || sql.trim().toUpperCase().startsWith('PRAGMA')
 
     if (isSelect) {
-      // Note: Prepared statements are created on each call for simplicity
-      // Future optimization: implement statement caching for frequently executed queries
       const stmt = db.prepare(sql)
-      // Node's SQLite expects specific parameter types
       // eslint-disable-next-line ts/no-explicit-any
       const result = values && values.length > 0 ? stmt.all(...(values as any[])) : stmt.all()
       return { result: result as unknown, duration: performance.now() - start }
     }
 
-    // For INSERT, UPDATE, DELETE, etc.
     const stmt = db.prepare(sql)
     // eslint-disable-next-line ts/no-explicit-any
     const info = values && values.length > 0 ? stmt.run(...(values as any[])) : stmt.run()

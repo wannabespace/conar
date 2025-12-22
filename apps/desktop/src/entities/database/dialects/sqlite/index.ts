@@ -1,5 +1,6 @@
 import type { CompiledQuery, Dialect, Driver, QueryResult } from 'kysely'
 import type { databases } from '~/drizzle'
+import { SqliteAdapter, SqliteQueryCompiler } from 'kysely'
 import { logSql } from '../../sql'
 
 function execute(database: typeof databases.$inferSelect, compiledQuery: CompiledQuery) {
@@ -46,32 +47,11 @@ function createDriver(database: typeof databases.$inferSelect) {
   } satisfies Driver
 }
 
-// SQLite uses similar SQL syntax to PostgreSQL for most queries
-// We'll create a minimal adapter and compiler for SQLite
-class SqliteAdapter {
-  get supportsTransactionalDdl() {
-    return true
-  }
-
-  get supportsReturning() {
-    // SQLite 3.35.0+ supports RETURNING for INSERT/UPDATE/DELETE
-    // For now, we'll indicate limited support is available
-    return false
-  }
-}
-
-class SqliteQueryCompiler {
-  // Most of SQLite query compilation can use generic SQL syntax
-  // This is a placeholder - Kysely will use its default compilation
-}
-
 export function sqliteDialect(database: typeof databases.$inferSelect) {
   return {
     createDriver: () => createDriver(database),
-    // eslint-disable-next-line ts/no-explicit-any
-    createQueryCompiler: () => new SqliteQueryCompiler() as any,
-    // eslint-disable-next-line ts/no-explicit-any
-    createAdapter: () => new SqliteAdapter() as any,
+    createQueryCompiler: () => new SqliteQueryCompiler(),
+    createAdapter: () => new SqliteAdapter(),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
