@@ -62,15 +62,18 @@ const queryMap = {
       // Note: Prepared statements are created on each call for simplicity
       // Future optimization: implement statement caching for frequently executed queries
       const stmt = db.prepare(sql)
-      const result = values && values.length > 0 ? stmt.all(...values) : stmt.all()
+      // Node's SQLite expects specific parameter types
+      // eslint-disable-next-line ts/no-explicit-any
+      const result = values && values.length > 0 ? stmt.all(...(values as any[])) : stmt.all()
       return { result: result as unknown, duration: performance.now() - start }
     }
 
     // For INSERT, UPDATE, DELETE, etc.
     const stmt = db.prepare(sql)
-    const info = values && values.length > 0 ? stmt.run(...values) : stmt.run()
+    // eslint-disable-next-line ts/no-explicit-any
+    const info = values && values.length > 0 ? stmt.run(...(values as any[])) : stmt.run()
 
-    return { result: [{ changes: info.changes, lastInsertRowid: info.lastInsertRowid }], duration: performance.now() - start }
+    return { result: [{ changes: info.changes, lastInsertRowid: Number(info.lastInsertRowid) }], duration: performance.now() - start }
   },
 // eslint-disable-next-line ts/no-explicit-any
 } satisfies Record<DatabaseType, (...args: any[]) => Promise<QueryResult>>

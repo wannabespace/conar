@@ -1,7 +1,5 @@
-import { createRequire } from 'node:module'
+import { DatabaseSync } from 'node:sqlite'
 import { memoize } from '@conar/shared/utils/helpers'
-
-const Database = createRequire(import.meta.url)('better-sqlite3') as typeof import('better-sqlite3')
 
 export const getDatabase = memoize((connectionString: string) => {
   // Extract the file path from the connection string
@@ -25,10 +23,10 @@ export const getDatabase = memoize((connectionString: string) => {
     filePath = connectionString
   }
 
-  const db = new Database(filePath)
+  const db = new DatabaseSync(filePath)
 
   // Enable WAL mode for better concurrent access
-  db.pragma('journal_mode = WAL')
+  db.exec('PRAGMA journal_mode = WAL')
 
   return db
 })
