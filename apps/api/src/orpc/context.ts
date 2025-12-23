@@ -1,10 +1,12 @@
 import type { Context as HonoContext } from 'hono'
+import { UAParser } from 'ua-parser-js'
 
 export function createContext(c: HonoContext) {
   const cookie = c.req.header('Cookie')
   const authorization = c.req.header('Authorization')
   const desktopVersion = c.req.header('x-desktop-version') || null
   const userAgent = c.req.header('User-Agent')
+  const ua = userAgent ? new UAParser(userAgent) : null
 
   const h = new Headers()
 
@@ -31,6 +33,7 @@ export function createContext(c: HonoContext) {
     desktopVersion,
     minorVersion,
     majorVersion,
+    ua,
   }
 }
 

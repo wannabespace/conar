@@ -49,6 +49,7 @@
     "resumable-stream": "catalog:",
     "stripe": "catalog:",
     "superjson": "catalog:",
+    "ua-parser-js": "catalog:",
     "uuid": "catalog:",
     "zod": "catalog:"
   },

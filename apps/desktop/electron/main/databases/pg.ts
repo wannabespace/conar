@@ -39,5 +39,11 @@ export const getPool = memoize(async (connectionString: string) => {
       await pool.query('SELECT 1')
       return pool
     }),
-  )
+  ).catch((error) => {
+    if (error instanceof AggregateError) {
+      throw error.errors[0]
+    }
+
+    throw error
+  })
 })

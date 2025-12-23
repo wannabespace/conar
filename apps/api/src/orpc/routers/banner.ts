@@ -27,5 +27,12 @@ export const banner = orpc
       })
     }
 
+    if (context.desktopVersion === '0.25.0' && context.ua?.getOS().name === 'Linux') {
+      items.push({
+        text: 'Linux updates broken in 0.25.0 due to provider change. Please download new version manually on conar.app/download',
+        type: 'warning',
+      })
+    }
+
     return items
   })
