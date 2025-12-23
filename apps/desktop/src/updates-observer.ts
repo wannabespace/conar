@@ -30,7 +30,7 @@ window.electron?.app.onUpdatesStatus(({ status, message }) => {
 })
 
 export function useUpdatesObserver() {
-  const { data: version } = useQuery<string>({
+  const { data: version } = useQuery({
     queryKey: ['version'],
     queryFn: () => {
       if (!window.electron)
