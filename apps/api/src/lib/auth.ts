@@ -8,7 +8,7 @@ import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization,
 import { consola } from 'consola'
 import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
-import { env, nodeEnv } from '~/env'
+import { env } from '~/env'
 import { sendEmail } from '~/lib/email'
 import { loops } from '~/lib/loops'
 import { stripe as stripeClient } from './stripe'
@@ -100,24 +100,26 @@ export const auth = betterAuth({
     emailHarmony(),
     noSetCookiePlugin(),
     anonymous(),
-    stripe({
-      stripeClient,
-      subscription: {
-        enabled: true,
-        plans: [
-          {
-            name: 'Pro',
-            priceId: env.STRIPE_MONTH_PRICE_ID!,
-            annualDiscountPriceId: env.STRIPE_ANNUAL_PRICE_ID!,
-            freeTrial: {
-              days: 7,
-            },
+    ...(stripeClient
+      ? [stripe({
+          stripeClient,
+          subscription: {
+            enabled: true,
+            plans: [
+              {
+                name: 'Pro',
+                priceId: env.STRIPE_MONTH_PRICE_ID!,
+                annualDiscountPriceId: env.STRIPE_ANNUAL_PRICE_ID!,
+                freeTrial: {
+                  days: 7,
+                },
+              },
+            ],
           },
-        ],
-      },
-      stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
-      createCustomerOnSignUp: true,
-    }),
+          stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
+          createCustomerOnSignUp: true,
+        })]
+      : []),
   ],
   user: {
     additionalFields: {
@@ -144,8 +146,9 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     env.WEB_URL,
-    ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
-    ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
+    // Always allow local development origins for desktop testing
+    `http://localhost:${PORTS.DEV.DESKTOP}`,
+    `http://localhost:${PORTS.TEST.DESKTOP}`,
   ],
   advanced: {
     cookiePrefix: 'conar',
