@@ -30,6 +30,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => {
     scan()
   })
+  import('react-grab')
 }
 
 window.electron?.app.onDeepLink(async (url) => {

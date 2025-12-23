@@ -134,6 +134,7 @@ catalog:
   posthog-node: ^5.17.4
   react: ^19.2.3
   react-dom: ^19.2.3
+  react-grab: ^0.0.91
   react-markdown: ^10.1.0
   react-resizable-panels: ^3.0.6
   react-scan: ^0.4.3
