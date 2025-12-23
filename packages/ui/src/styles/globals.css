@@ -109,6 +109,8 @@
 * {
   -electron-corner-smoothing: system-ui;
   overscroll-behavior: none;
+	-webkit-user-drag: none;
+	-webkit-app-region: no-drag;
 }
 
 html {
