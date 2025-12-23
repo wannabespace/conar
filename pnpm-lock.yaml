@@ -390,6 +390,9 @@ catalogs:
     react-dom:
       specifier: ^19.2.3
       version: 19.2.3
+    react-grab:
+      specifier: ^0.0.91
+      version: 0.0.91
     react-markdown:
       specifier: ^10.1.0
       version: 10.1.0
@@ -874,6 +877,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.3(react@19.2.3)
+      react-grab:
+        specifier: 'catalog:'
+        version: 0.0.91(@types/react@19.2.7)(react@19.2.3)
       react-markdown:
         specifier: 'catalog:'
         version: 10.1.0(@types/react@19.2.7)(react@19.2.3)
@@ -5537,6 +5543,11 @@ packages:
     peerDependencies:
       react: '>=17.0.1'
 
+  bippy@0.5.26:
+    resolution: {integrity: sha512-pOy5vxOX2gXo0L7lIwo5H9mqvrgAE5mCZgrPOli5SaxxXx8VnPHi1vxDr5nancX5F6rYqmigMpAalPrM2I3nCA==}
+    peerDependencies:
+      react: '>=17.0.1'
+
   birecord@0.1.1:
     resolution: {integrity: sha512-VUpsf/qykW0heRlC8LooCq28Kxn3mAqKohhDG/49rrsQ1dT1CXyj/pgXS+5BSRzFTR/3DyIBOqQOrGyZOh71Aw==}
 
@@ -9099,6 +9110,10 @@ packages:
     peerDependencies:
       final-form: ^4.20.4
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
+
+  react-grab@0.0.91:
+    resolution: {integrity: sha512-X1FFkbstgYTegSjsi4xQUX9JI7m1Ou/ljApgSf3vSEN4uXv8lGsewMiF48Y5o2RPnoPUYmiz89PFLU8TkL9ivQ==}
+    hasBin: true
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -15266,6 +15281,13 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
+  bippy@0.5.26(@types/react@19.2.7)(react@19.2.3):
+    dependencies:
+      '@types/react-reconciler': 0.28.9(@types/react@19.2.7)
+      react: 19.2.3
+    transitivePeerDependencies:
+      - '@types/react'
+
   birecord@0.1.1: {}
 
   bl@4.1.0:
@@ -19325,6 +19347,14 @@ snapshots:
       '@babel/runtime': 7.28.4
       final-form: 4.20.10
       react: 17.0.2
+
+  react-grab@0.0.91(@types/react@19.2.7)(react@19.2.3):
+    dependencies:
+      bippy: 0.5.26(@types/react@19.2.7)(react@19.2.3)
+      solid-js: 1.9.10
+    transitivePeerDependencies:
+      - '@types/react'
+      - react
 
   react-is@16.13.1: {}
 

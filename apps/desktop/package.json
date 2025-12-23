@@ -100,6 +100,7 @@
     "posthog-js": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-grab": "catalog:",
     "react-markdown": "catalog:",
     "react-scan": "catalog:",
     "remark-gfm": "catalog:",
