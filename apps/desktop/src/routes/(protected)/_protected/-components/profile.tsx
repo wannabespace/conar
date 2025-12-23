@@ -49,7 +49,7 @@ export function Profile({ className }: { className?: string }) {
           onClick={() => appStore.setState(state => ({ ...state, subscriptionModalIsOpen: true } satisfies typeof state))}
         >
           <RiVipCrownLine className="size-4" />
-          Subscription
+          {subscription ? 'Manage' : 'Upgrade'}
         </Button>
         <TooltipProvider>
           <Tooltip>
