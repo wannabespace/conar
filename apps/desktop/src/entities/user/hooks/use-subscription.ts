@@ -1,8 +1,9 @@
 import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import { authClient, bearerToken } from '~/lib/auth'
+import { queryClient } from '~/main'
 import { subscriptionModalIsOpen } from '~/store'
 
-export const subscriptionsOptions = queryOptions({
+const subscriptionsOptions = queryOptions({
   queryKey: ['subscription', 'list'],
   queryFn: async () => {
     if (!bearerToken.get()) {
@@ -19,14 +20,20 @@ export const subscriptionsOptions = queryOptions({
   },
 })
 
+export function invalidateSubscriptionsQuery() {
+  queryClient.invalidateQueries(subscriptionsOptions)
+}
+
 export function useSubscriptionsQuery() {
   return useQuery(subscriptionsOptions)
 }
 
 export function useSubscription() {
-  const { data: list } = useSubscriptionsQuery()
+  const { data: list, isPending } = useSubscriptionsQuery()
 
-  return list?.find(s => s.status === 'active' || s.status === 'trialing') ?? null
+  const subscription = list?.find(s => s.status === 'active' || s.status === 'trialing') ?? null
+
+  return { subscription, isPending }
 }
 
 export function useUpgradeSubscription() {
@@ -42,6 +49,7 @@ export function useUpgradeSubscription() {
       })
 
       if (error) {
+        invalidateSubscriptionsQuery()
         throw error
       }
 
@@ -64,9 +72,11 @@ export function useCancelSubscription() {
     mutationFn: async () => {
       const { data, error } = await authClient.subscription.cancel({
         returnUrl: `${import.meta.env.VITE_PUBLIC_WEB_URL}/open`,
+        // disableRedirect: true,
       })
 
       if (error) {
+        invalidateSubscriptionsQuery()
         throw error
       }
 
@@ -74,12 +84,39 @@ export function useCancelSubscription() {
     },
     onSuccess(url) {
       window.open(url, '_blank')
+      // Temp fix to prevent redirect to the billing portal
+      subscriptionModalIsOpen.set(true)
+      location.reload()
     },
   })
 
   return {
     cancel,
     isCancelling,
+  }
+}
+
+export function useRestoreSubscription() {
+  const { mutate: restore, isPending: isRestoring } = useMutation({
+    mutationKey: ['subscription', 'restore'],
+    mutationFn: async () => {
+      const { data, error } = await authClient.subscription.restore()
+
+      if (error) {
+        invalidateSubscriptionsQuery()
+        throw error
+      }
+
+      return data
+    },
+    onSuccess() {
+      invalidateSubscriptionsQuery()
+    },
+  })
+
+  return {
+    restore,
+    isRestoring,
   }
 }
 
@@ -93,6 +130,7 @@ export function useBillingPortal() {
       })
 
       if (error) {
+        invalidateSubscriptionsQuery()
         throw error
       }
 

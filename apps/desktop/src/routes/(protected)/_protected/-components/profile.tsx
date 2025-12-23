@@ -8,11 +8,10 @@ import { RiLogoutCircleRLine, RiVipCrownLine } from '@remixicon/react'
 import { UserAvatar, useSignOut } from '~/entities/user'
 import { useSubscription } from '~/entities/user/hooks/use-subscription'
 import { appStore } from '~/store'
-import { SubscriptionModal } from './subscription-modal'
 
 export function Profile({ className }: { className?: string }) {
   const { data, signOut, isSigningOut } = useSignOut()
-  const current = useSubscription()
+  const { subscription } = useSubscription()
 
   return (
     <div className={cn('flex flex-row items-center justify-between', className)}>
@@ -26,10 +25,8 @@ export function Profile({ className }: { className?: string }) {
                     <h3 className="text-2xl font-semibold">{data.user.name || 'User'}</h3>
                     <Badge
                       variant="secondary"
-                      className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                      onClick={() => appStore.setState(state => ({ ...state, subscriptionModalIsOpen: true } satisfies typeof state))}
                     >
-                      {current?.plan || 'Hobby'}
+                      {subscription?.plan ? subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1) : 'Hobby'}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">{data.user.email}</p>
@@ -47,7 +44,7 @@ export function Profile({ className }: { className?: string }) {
       </div>
       <div className="flex items-center gap-2">
         <Button
-          variant={current ? 'outline' : 'secondary'}
+          variant={subscription ? 'outline' : 'secondary'}
           size="sm"
           onClick={() => appStore.setState(state => ({ ...state, subscriptionModalIsOpen: true } satisfies typeof state))}
         >
@@ -74,7 +71,6 @@ export function Profile({ className }: { className?: string }) {
           </Tooltip>
         </TooltipProvider>
       </div>
-      <SubscriptionModal />
     </div>
   )
 }

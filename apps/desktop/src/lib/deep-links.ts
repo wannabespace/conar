@@ -1,7 +1,6 @@
 import { toast } from 'sonner'
-import { subscriptionsOptions } from '~/entities/user/hooks/use-subscription'
+import { invalidateSubscriptionsQuery } from '~/entities/user/hooks/use-subscription'
 import { bearerToken, codeChallenge, resetToken, successAuthToast } from '~/lib/auth'
-import { queryClient } from '~/main'
 import { decrypt } from './encryption'
 
 export async function handleDeepLink(url: string): Promise<{
@@ -98,14 +97,14 @@ export async function handleResetPassword(searchParams: URLSearchParams) {
 }
 
 export async function handleSubscriptionSuccess() {
-  queryClient.invalidateQueries(subscriptionsOptions)
+  invalidateSubscriptionsQuery()
   toast.success('Subscription successful', {
     description: 'You\'re now a Conar Pro subscriber. Enjoy all your new features.',
   })
 }
 
 export async function handleSubscriptionCancel() {
-  queryClient.invalidateQueries(subscriptionsOptions)
+  invalidateSubscriptionsQuery()
   toast.info('Subscription cancelled', {
     description: 'Your subscription has been cancelled. You can continue using Conar without a subscription.',
   })
