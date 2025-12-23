@@ -102,5 +102,11 @@ export const constraintsQuery = createQuery({
       // ClickHouse doesn't support constraints
       return []
     },
+    sqlite: async () => {
+      // SQLite constraint information requires parsing table schemas
+      // For a minimal implementation, return empty array
+      // Full implementation would parse PRAGMA statements
+      return []
+    },
   }),
 })

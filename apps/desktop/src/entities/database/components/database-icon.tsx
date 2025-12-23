@@ -5,11 +5,13 @@ import { ClickHouseIcon } from '~/icons/clickhouse'
 import { MSSQLIcon } from '~/icons/mssql'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
+import { SQLiteIcon } from '~/icons/sqlite'
 
 const iconMap: Record<DatabaseType, (props: ComponentProps<'svg'>) => JSX.Element> = {
   [DatabaseType.Postgres]: PostgresIcon,
   [DatabaseType.MySQL]: MySQLIcon,
   [DatabaseType.ClickHouse]: ClickHouseIcon,
+  [DatabaseType.SQLite]: SQLiteIcon,
   [DatabaseType.MSSQL]: MSSQLIcon,
 }
 

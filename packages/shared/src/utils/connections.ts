@@ -5,4 +5,5 @@ export const placeholderMap: Record<DatabaseType, string> = {
   [DatabaseType.MySQL]: 'mysql://user:password@host:port/database?options',
   [DatabaseType.MSSQL]: 'sqlserver://user:password@host:port/database?options',
   [DatabaseType.ClickHouse]: 'https://user:password@host:port',
+  [DatabaseType.SQLite]: 'file:/path/to/database.db',
 }
