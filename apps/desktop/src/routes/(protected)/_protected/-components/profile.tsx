@@ -1,3 +1,4 @@
+import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -26,7 +27,7 @@ export function Profile({ className }: { className?: string }) {
                     <Badge
                       variant="secondary"
                     >
-                      {subscription?.plan ? subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1) : 'Hobby'}
+                      {subscription?.plan ? uppercaseFirst(subscription.plan) : 'Hobby'}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">{data.user.email}</p>

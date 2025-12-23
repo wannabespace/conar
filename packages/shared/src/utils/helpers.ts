@@ -53,6 +53,10 @@ export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<{ data: T,
   }
 }
 
+export function uppercaseFirst(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1)
+}
+
 export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F) {
   const cache = new Map<string, ReturnType<F>>()
 

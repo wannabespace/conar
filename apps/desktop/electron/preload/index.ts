@@ -1,6 +1,7 @@
 import type { sendToast } from '../main'
 import type { electron } from '../main/lib/events'
 import type { UpdatesStatus } from '~/updates-observer'
+import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { contextBridge, ipcRenderer } from 'electron'
 
 export type ElectronPreload = typeof electron & {
@@ -32,7 +33,7 @@ async function handleError(func: () => Promise<any>) {
       const message = error.message.replace(/^Error invoking remote method '[^']+': /, '')
       const errorMessage = message.toLowerCase().startsWith('error: ') ? message.slice(7) : message
 
-      throw new Error(errorMessage.charAt(0).toUpperCase() + errorMessage.slice(1), { cause: error })
+      throw new Error(uppercaseFirst(errorMessage), { cause: error })
     }
     throw error
   }

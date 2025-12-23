@@ -1,3 +1,4 @@
+import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { Alert, AlertDescription } from '@conar/ui/components/alert'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
@@ -18,18 +19,8 @@ import dayjs from 'dayjs'
 import { useBillingPortal, useCancelSubscription, useRestoreSubscription, useSubscription, useSubscriptionsQuery, useUpgradeSubscription } from '~/entities/user/hooks/use-subscription'
 import { appStore } from '~/store'
 
-function formatDate(date: Date | string | null | undefined): string {
-  if (!date)
-    return 'N/A'
-  return dayjs(date).format('MMMM D, YYYY')
-}
-
-function formatStatus(status: string) {
-  return status.charAt(0).toUpperCase() + status.slice(1)
-}
-
-function setIsOpen(isOpen: boolean) {
-  appStore.setState(state => ({ ...state, subscriptionModalIsOpen: isOpen } satisfies typeof state))
+function formatDate(date: Date | null | undefined) {
+  return date ? dayjs(date).format('MMMM D, YYYY') : 'N/A'
 }
 
 function LoadingSkeleton() {
@@ -54,7 +45,7 @@ function SubscriptionDetails({ subscription }: {
           </p>
         </div>
         <Badge variant={subscription.status === 'active' ? 'default' : 'secondary'}>
-          {formatStatus(subscription.status)}
+          {uppercaseFirst(subscription.status)}
         </Badge>
       </div>
       <Separator />
@@ -64,7 +55,7 @@ function SubscriptionDetails({ subscription }: {
             Status
           </p>
           <p className="text-base font-semibold">
-            {formatStatus(subscription.status)}
+            {uppercaseFirst(subscription.status)}
           </p>
         </div>
         {subscription.cancelAtPeriodEnd && (
@@ -232,6 +223,10 @@ function NoSubscriptionCard({
       </Button>
     </div>
   )
+}
+
+function setIsOpen(isOpen: boolean) {
+  appStore.setState(state => ({ ...state, subscriptionModalIsOpen: isOpen } satisfies typeof state))
 }
 
 export function SubscriptionModal() {
