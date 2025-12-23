@@ -106,20 +106,19 @@
   }
 }
 
-* {
-  -electron-corner-smoothing: system-ui;
-  overscroll-behavior: none;
-	-webkit-user-drag: none;
-	-webkit-app-region: no-drag;
-}
-
-html {
-  color-scheme: light dark;
-}
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+
+    -electron-corner-smoothing: system-ui;
+    overscroll-behavior: none;
+    -webkit-user-drag: none;
+    -webkit-app-region: no-drag;
+  }
+
+  html {
+    color-scheme: light dark;
   }
 
   a {
