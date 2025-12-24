@@ -13,12 +13,8 @@ export function Header({ table, schema }: { table: string, schema: string }) {
   const columns = useTableColumns({ database, table, schema })
   const store = usePageStoreContext()
   const filters = useStore(store, state => state.filters)
-  const { data: totalData, isLoading } = useDatabaseTableTotal({
-    database,
-    table,
-    schema,
-    query: { filters },
-  })
+  const { data: _total } = useDatabaseTableTotal({ database, table, schema, query: { filters } })
+
   const columnsCount = columns?.length ?? 0
 
   return (
@@ -26,27 +22,24 @@ export function Header({ table, schema }: { table: string, schema: string }) {
       <div className="flex flex-1 gap-4 items-center">
         <div className="shrink-0">
           <h2 className="font-medium text-sm mb-0.5 space-x-1">
-            <span className="text-muted-foreground">{schema}</span>
+            <span className="text-muted-foreground">
+              {schema}
+            </span>
             {' '}
             <span className="text-muted-foreground/20">/</span>
             {' '}
             <span data-mask>{table}</span>
           </h2>
-
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-            <span className="tabular-nums font-semibold text-zinc-300">{columnsCount}</span>
-            <span>columns</span>
-            <span className="text-muted-foreground opacity-30">•</span>
-
-            {/* PASS THE DATA DOWN HERE */}
-            <TableRowCounter
-              schema={schema}
-              table={table}
-              total={totalData?.count}
-              isEstimated={totalData?.isEstimated}
-              isLoading={isLoading}
-            />
-          </div>
+          <p className="text-muted-foreground text-xs">
+            <span className="tabular-nums">{columnsCount}</span>
+            {' '}
+            column
+            {columnsCount === 1 ? '' : 's'}
+            {' '}
+            •
+            {' '}
+            <TableRowCounter schema={schema} table={table} />
+          </p>
         </div>
         <Separator orientation="vertical" className="h-6!" />
         <HeaderSearch table={table} schema={schema} />
