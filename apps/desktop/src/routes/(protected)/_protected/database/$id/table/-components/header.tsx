@@ -1,10 +1,10 @@
 import { Separator } from '@conar/ui/components/separator'
-import NumberFlow from '@number-flow/react'
 import { useStore } from '@tanstack/react-store'
 import { useDatabaseTableTotal } from '~/entities/database'
 import { Route } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
+import { TableRowCounter } from './estimate-row'
 import { HeaderActions } from './header-actions'
 import { HeaderSearch } from './header-search'
 
@@ -13,7 +13,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
   const columns = useTableColumns({ database, table, schema })
   const store = usePageStoreContext()
   const filters = useStore(store, state => state.filters)
-  const { data: total } = useDatabaseTableTotal({ database, table, schema, query: { filters } })
+  const { data: _total } = useDatabaseTableTotal({ database, table, schema, query: { filters } })
 
   const columnsCount = columns?.length ?? 0
 
@@ -38,20 +38,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
             {' '}
             •
             {' '}
-            {total !== undefined
-              ? (
-                  <NumberFlow
-                    className="tabular-nums"
-                    value={total}
-                    style={{
-                      '--number-flow-mask-height': '0px',
-                    }}
-                  />
-                )
-              : <span className="animate-pulse">...</span>}
-            {' '}
-            row
-            {total !== undefined && total !== 1 && 's'}
+            <TableRowCounter schema={schema} table={table} />
           </p>
         </div>
         <Separator orientation="vertical" className="h-6!" />
