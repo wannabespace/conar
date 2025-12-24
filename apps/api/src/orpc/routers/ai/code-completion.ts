@@ -1,4 +1,5 @@
 import { google } from '@ai-sdk/google'
+import { DatabaseType } from '@conar/shared/enums/database-type'
 import { generateText } from 'ai'
 import { z } from 'zod'
 import { authMiddleware, orpc } from '~/orpc'
@@ -10,7 +11,7 @@ export const codeCompletion = orpc
     suffix: z.string().optional(),
     instruction: z.string().optional(),
     fileContent: z.string(),
-    databaseType: z.enum(['postgres', 'mysql', 'clickhouse', 'mssql']),
+    databaseType: z.enum(DatabaseType),
     schemaContext: z.string().optional(),
   }))
   .output(z.object({
@@ -18,7 +19,7 @@ export const codeCompletion = orpc
   }))
   .handler(async ({ input }) => {
     try {
-      const databaseType = input.databaseType || 'postgres'
+      const databaseType = input.databaseType || DatabaseType.Postgres
       const schemaContext = input.schemaContext || ''
 
       const enhancedPrompt = `You are an expert SQL code completion assistant.
