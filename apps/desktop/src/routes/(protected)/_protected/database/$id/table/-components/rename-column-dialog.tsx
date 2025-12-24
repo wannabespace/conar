@@ -16,6 +16,7 @@ import { RiInformationLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
+import { databaseRowsQuery } from '~/entities/database'
 import { databaseTableColumnsQuery } from '~/entities/database/queries/columns'
 import { renameColumnQuery } from '~/entities/database/sql/rename-columns'
 import { queryClient } from '~/main'
@@ -59,7 +60,7 @@ export function RenameColumnDialog({ ref, database }: RenameColumnDialogProps) {
 
       await queryClient.invalidateQueries(databaseTableColumnsQuery({ database, table, schema }))
       await queryClient.invalidateQueries({
-        queryKey: ['database', database.id, 'schema', schema, 'table', table, 'rows'],
+        queryKey: databaseRowsQuery({ database, table, schema, query: { filters: [], orderBy: {} } }).queryKey.slice(0, -1),
       })
     },
     onError: (error) => {
