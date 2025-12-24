@@ -4,7 +4,7 @@ import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine } from '@remixicon/react'
+import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiPencilLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { databaseEnumsQuery } from '~/entities/database'
@@ -47,6 +47,7 @@ function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null, onClick:
 
 export function TableHeaderCell({
   onSort,
+  onRename,
   column,
   position,
   columnIndex,
@@ -55,6 +56,7 @@ export function TableHeaderCell({
 }: {
   column: Column
   onSort?: () => void
+  onRename?: () => void
   className?: string
 } & TableHeaderCellProps) {
   const { database } = Route.useLoaderData()
@@ -68,7 +70,7 @@ export function TableHeaderCell({
   return (
     <div
       className={cn(
-        'flex w-full items-center justify-between shrink-0 p-2',
+        'flex w-full shrink-0 items-center justify-between p-2',
         position === 'first' && 'pl-4',
         position === 'last' && 'pr-4',
         className,
@@ -78,13 +80,25 @@ export function TableHeaderCell({
       data-index={columnIndex}
       data-column-id={column.id}
     >
-      <div className="text-xs overflow-hidden">
+      <div className="overflow-hidden text-xs">
         <div
           data-mask
-          className="truncate font-medium flex items-center gap-1"
+          className={`
+            group/header-cell flex items-center gap-1 truncate font-medium
+          `}
           title={column.id}
         >
           {column.id}
+          {onRename && (
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={onRename}
+              className="size-5 transition-opacity"
+            >
+              <RiPencilLine className="size-3 text-muted-foreground" />
+            </Button>
+          )}
         </div>
         {column?.type && (
           <div data-footer={!!column.type} className="flex items-center gap-1">
@@ -95,7 +109,7 @@ export function TableHeaderCell({
                     <RiKey2Line className="size-3 text-primary" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <div className="flex items-center gap-1 mb-1">
+                    <div className="mb-1 flex items-center gap-1">
                       <RiKey2Line className="size-3 text-primary" />
                       <span>Primary key</span>
                     </div>
@@ -125,11 +139,17 @@ export function TableHeaderCell({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <RiFingerprintLine className="size-3 text-muted-foreground/70" />
+                    <RiFingerprintLine className={`
+                      size-3 text-muted-foreground/70
+                    `}
+                    />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <div className="flex items-center gap-1 mb-1">
-                      <RiFingerprintLine className="size-3 text-muted-foreground/70" />
+                    <div className="mb-1 flex items-center gap-1">
+                      <RiFingerprintLine className={`
+                        size-3 text-muted-foreground/70
+                      `}
+                      />
                       <span>Unique</span>
                     </div>
                     <div className="text-xs text-muted-foreground">
@@ -147,7 +167,10 @@ export function TableHeaderCell({
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className="flex items-center gap-1">
-                      <RiBookOpenLine className="size-3 text-muted-foreground/70" />
+                      <RiBookOpenLine className={`
+                        size-3 text-muted-foreground/70
+                      `}
+                      />
                       <span>Read only</span>
                     </div>
                   </TooltipContent>
@@ -183,7 +206,11 @@ export function TableHeaderCell({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="text-muted-foreground truncate font-mono underline decoration-dotted">
+                        <span className={`
+                          truncate font-mono text-muted-foreground underline
+                          decoration-dotted
+                        `}
+                        >
                           {column.type}
                         </span>
                       </TooltipTrigger>
@@ -207,7 +234,7 @@ export function TableHeaderCell({
                   </TooltipProvider>
                 )
               : (
-                  <span className="text-muted-foreground truncate font-mono">
+                  <span className="truncate font-mono text-muted-foreground">
                     {column.type}
                   </span>
                 )}
