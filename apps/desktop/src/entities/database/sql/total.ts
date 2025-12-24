@@ -32,7 +32,6 @@ export const totalQuery = createQuery<TotalQueryParams>({
               AND c.relname = ${table}
           `.execute(db)
 
-          // Clamp negative or invalid estimates to 0
           estimatedRows = Math.max(0, Number(estimate.rows[0]?.row_estimate ?? 0))
         }
         catch {
@@ -45,7 +44,6 @@ export const totalQuery = createQuery<TotalQueryParams>({
         }
       }
 
-      // Only do exact count if forced or has filters
       const result = await db
         .selectFrom(sql`${sql.ref(schema)}.${sql.ref(table)}`.as('t'))
         .select(db.fn.countAll().as('total'))
