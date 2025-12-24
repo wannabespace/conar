@@ -70,7 +70,10 @@ export function TableHeaderCell({
   return (
     <div
       className={cn(
-        'flex w-full shrink-0 items-center justify-between p-2',
+        `
+          group/header-cell flex w-full shrink-0 items-center justify-between
+          p-2
+        `,
         position === 'first' && 'pl-4',
         position === 'last' && 'pr-4',
         className,
@@ -83,9 +86,7 @@ export function TableHeaderCell({
       <div className="overflow-hidden text-xs">
         <div
           data-mask
-          className={`
-            group/header-cell flex items-center gap-1 truncate font-medium
-          `}
+          className="flex items-center gap-1 truncate font-medium"
           title={column.id}
         >
           {column.id}
@@ -94,7 +95,10 @@ export function TableHeaderCell({
               variant="ghost"
               size="icon-xs"
               onClick={onRename}
-              className="size-5 transition-opacity"
+              className={`
+                size-5 opacity-0 transition-opacity
+                group-hover/header-cell:opacity-100
+              `}
             >
               <RiPencilLine className="size-3 text-muted-foreground" />
             </Button>
