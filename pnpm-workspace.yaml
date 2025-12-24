@@ -172,4 +172,3 @@ onlyBuiltDependencies:
   - lefthook
   - electron
   - electron-winstaller
-  - lefthook
