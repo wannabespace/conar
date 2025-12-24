@@ -24,10 +24,8 @@ export function StepCredentials({ ref, type, connectionString, setConnectionStri
   const [activeTab, setActiveTab] = useState<CredentialsTab>('string')
   const [parseError, setParseError] = useState<string | null>(null)
 
-  // Track which side made the last change to prevent infinite loops
   const lastChangeSource = useRef<'string' | 'form' | null>(null)
 
-  // Parse connection string to form fields
   const formFields = useMemo((): ConnectionFields => {
     if (!connectionString.trim()) {
       return { host: '', port: undefined, user: undefined, password: undefined, database: undefined, options: undefined }
@@ -46,7 +44,6 @@ export function StepCredentials({ ref, type, connectionString, setConnectionStri
       }
     }
     catch (error) {
-      // Keep previous fields on parse error
       if (lastChangeSource.current !== 'form')
         setParseError(error instanceof Error ? error.message : 'Invalid connection string')
 
@@ -54,7 +51,6 @@ export function StepCredentials({ ref, type, connectionString, setConnectionStri
     }
   }, [connectionString])
 
-  // Handle form field changes - build connection string
   const handleFieldChange = useCallback((field: keyof ConnectionFields, value: string) => {
     lastChangeSource.current = 'form'
     setParseError(null)
@@ -64,7 +60,6 @@ export function StepCredentials({ ref, type, connectionString, setConnectionStri
       [field]: value || undefined,
     }
 
-    // Handle port conversion
     if (field === 'port') {
       updatedFields.port = value ? Number.parseInt(value, 10) : undefined
     }
@@ -73,12 +68,10 @@ export function StepCredentials({ ref, type, connectionString, setConnectionStri
     setConnectionString(newConnectionString)
   }, [formFields, type, setConnectionString])
 
-  // Handle connection string input change
   const handleStringChange = useCallback((value: string) => {
     lastChangeSource.current = 'string'
     setConnectionString(value)
 
-    // Try to parse for validation feedback
     if (value.trim()) {
       try {
         parseConnectionString(value)

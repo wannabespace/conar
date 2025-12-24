@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 import { testWithSignUp } from './auth'
 
-testWithSignUp('see create connection link', async ({ page }) => {
-  await expect(page.getByRole('link', { name: 'Create a new connection' })).toBeVisible()
+testWithSignUp('see create connection button', async ({ page }) => {
+  await expect(page.getByRole('button', { name: 'Create a new connection' })).toBeVisible()
 })
