@@ -8,7 +8,7 @@ import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization,
 import { consola } from 'consola'
 import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
-import { env } from '~/env'
+import { env, nodeEnv } from '~/env'
 import { sendEmail } from '~/lib/email'
 import { loops } from '~/lib/loops'
 import { stripe as stripeClient } from './stripe'
@@ -146,9 +146,8 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     env.WEB_URL,
-    // Always allow local development origins for desktop testing
-    `http://localhost:${PORTS.DEV.DESKTOP}`,
-    `http://localhost:${PORTS.TEST.DESKTOP}`,
+    ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
+    ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
   ],
   advanced: {
     cookiePrefix: 'conar',
