@@ -17,7 +17,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { databaseTableColumnsQuery } from '~/entities/database/queries/columns'
-import { renameColumnQuery } from '~/entities/database/sql/columns'
+import { renameColumnQuery } from '~/entities/database/sql/rename-columns'
 import { queryClient } from '~/main'
 
 interface RenameColumnDialogProps {
