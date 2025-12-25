@@ -5,7 +5,7 @@ import type { RefObject } from 'react'
 import * as monaco from 'monaco-editor'
 import { LanguageIdEnum } from 'monaco-sql-languages'
 import { registerCompletion } from 'monacopilot'
-import { useEffect, useRef, useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { databaseAICompletionContext } from '~/entities/database/utils/monaco'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
@@ -136,7 +136,7 @@ export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStan
       const offset = model.getOffsetAt(position)
       const textBefore = model.getValue().substring(0, offset)
       if (!textBefore.startsWith(completionCacheRef.current.prefix)) {
-         completionCacheRef.current = null
+        completionCacheRef.current = null
       }
     }
 
@@ -183,7 +183,8 @@ export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStan
 
           if (pendingResolveRef.current === resolve) {
             resolve({ completion: result.completion })
-          } else {
+          }
+          else {
             resolve({ completion: '' })
           }
         }
@@ -219,7 +220,7 @@ export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStan
         completionRef.current.deregister()
       }
 
-           // Monkey patch to fix 'disposeInlineCompletions is not a function' error from monacopilot
+      // Monkey patch to fix 'disposeInlineCompletions is not a function' error from monacopilot
       const originalRegister = monaco.languages.registerInlineCompletionsProvider
       // @ts-expect-error - patching internal api
       if (!originalRegister.__patched) {
