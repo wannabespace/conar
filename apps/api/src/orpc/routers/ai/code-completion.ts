@@ -52,8 +52,7 @@ Specific Instructions:
 - Look at "Current Code AFTER Cursor". Do NOT generate code that is already present there (like closing parenthesis or semicolons). Make your completion join smoothly with the suffix.
 - Intelligent Spacing: If the code before the cursor is a keyword or identifier (e.g., 'SELECT', 'FROM', 'tableName') and your completion starts with a keyword/identifier, ensure there is a space at the beginning of your completion.
 
-Generate ONLY the completion text that should be inserted at the cursor position.
-- Do NOT repeat the code that is already present before the cursor.
+Generate ONLY the completion text that should be inserted (or used to replace the last word).
 - Do NOT wrap in markdown code blocks.
 - If no completion is needed, return an empty string.`
 

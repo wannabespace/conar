@@ -5,7 +5,7 @@ import type { RefObject } from 'react'
 import * as monaco from 'monaco-editor'
 import { LanguageIdEnum } from 'monaco-sql-languages'
 import { registerCompletion } from 'monacopilot'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { databaseAICompletionContext } from '~/entities/database/utils/monaco'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
@@ -22,8 +22,77 @@ interface Cache {
   completion: string
 }
 
-export function useRunnerEditorAiTabCompletion(monacoRef:
-RefObject<editor.IStandaloneCodeEditor | null>) {
+interface FetchCompletionProps {
+  model: editor.ITextModel
+  position: monaco.Position
+  aiConfig: Awaited<ReturnType<typeof databaseAICompletionContext>>
+  signal: AbortSignal
+}
+
+interface CheckCacheProps {
+  model: editor.ITextModel
+  position: monaco.Position
+  cache: Cache | null
+}
+
+function checkCache({
+  model,
+  position,
+  cache,
+}: CheckCacheProps): { completion: string } | null {
+  if (!cache)
+    return null
+
+  const offset = model.getOffsetAt(position)
+  const textFull = model.getValue()
+  const textBefore = textFull.substring(0, offset)
+
+  if (textBefore.startsWith(cache.prefix)) {
+    const addedText = textBefore.slice(cache.prefix.length)
+
+    if (cache.completion.startsWith(addedText)) {
+      const remainingCompletion = cache.completion.slice(addedText.length)
+      if (remainingCompletion.length > 0) {
+        return { completion: remainingCompletion }
+      }
+      return { completion: '' }
+    }
+  }
+  return null
+}
+
+async function fetchCompletion({
+  model,
+  position,
+  aiConfig,
+  signal,
+}: FetchCompletionProps) {
+  const fileContent = model.getValue()
+  const offset = model.getOffsetAt(position)
+  const context = fileContent.substring(0, offset)
+  const suffix = fileContent.substring(offset)
+
+  if (context.trim().length < 2) {
+    return null
+  }
+
+  const schemaContext = await aiConfig.buildSchemaContext()
+
+  const transformedBody = {
+    context,
+    suffix,
+    instruction: 'Complete the SQL query with secure and safe optimised version',
+    fileContent,
+    databaseType: aiConfig.databaseType,
+    schemaContext,
+  }
+
+  const result = await orpc.ai.codeCompletion(transformedBody, { signal })
+
+  return { result, context }
+}
+
+export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { database } = Route.useRouteContext()
 
   const completionRef = useRef<CompletionRegistration | null>(null)
@@ -31,17 +100,22 @@ RefObject<editor.IStandaloneCodeEditor | null>) {
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingResolveRef = useRef<((value: { completion: string }) => void) | null>(null)
   const aiConfigRef = useRef<Awaited<ReturnType<typeof databaseAICompletionContext>> | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
-  const clearPending = () => {
+  const clearPending = useCallback(() => {
     if (debounceTimerRef.current)
       clearTimeout(debounceTimerRef.current)
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
     if (pendingResolveRef.current) {
       pendingResolveRef.current({ completion: '' })
       pendingResolveRef.current = null
     }
-  }
+  }, [])
 
-  const requestHandler = async () => {
+  const requestHandler = useCallback(async () => {
     const model = monacoRef.current?.getModel()
     const position = monacoRef.current?.getPosition()
     const aiConfig = aiConfigRef.current
@@ -49,24 +123,20 @@ RefObject<editor.IStandaloneCodeEditor | null>) {
     if (!model || !position || !aiConfig)
       return { completion: '' }
 
-    if (completionCacheRef.current) {
+    const cachedResult = checkCache({
+      model,
+      position,
+      cache: completionCacheRef.current,
+    })
+    if (cachedResult) {
+      return cachedResult
+    }
+
+    if (completionCacheRef.current && !cachedResult) {
       const offset = model.getOffsetAt(position)
-      const textFull = model.getValue()
-      const textBefore = textFull.substring(0, offset)
-      const cached = completionCacheRef.current
-
-      if (textBefore.startsWith(cached.prefix)) {
-        const addedText = textBefore.slice(cached.prefix.length)
-
-        if (cached.completion.startsWith(addedText)) {
-          const remainingCompletion = cached.completion.slice(addedText.length)
-
-          if (remainingCompletion.length > 0) {
-            return { completion: remainingCompletion }
-          }
-
-          return { completion: '' }
-        }
+      const textBefore = model.getValue().substring(0, offset)
+      if (!textBefore.startsWith(completionCacheRef.current.prefix)) {
+         completionCacheRef.current = null
       }
     }
 
@@ -80,6 +150,9 @@ RefObject<editor.IStandaloneCodeEditor | null>) {
           return
         }
 
+        const controller = new AbortController()
+        abortControllerRef.current = controller
+
         try {
           const model = monacoRef.current?.getModel()
           const position = monacoRef.current?.getPosition()
@@ -89,42 +162,36 @@ RefObject<editor.IStandaloneCodeEditor | null>) {
             return
           }
 
-          const fileContent = model.getValue()
-          const offset = model.getOffsetAt(position)
-          const context = fileContent.substring(0, offset)
-          const suffix = fileContent.substring(offset)
+          const fetchResult = await fetchCompletion({
+            model,
+            position,
+            aiConfig,
+            signal: controller.signal,
+          })
 
-          if (context.trim().length < 2) {
+          if (!fetchResult) {
             resolve({ completion: '' })
             return
           }
 
-          const schemaContext = await aiConfig.buildSchemaContext()
+          const { result, context } = fetchResult
 
-          const transformedBody = {
-            context,
-            suffix,
-            instruction: 'Complete the SQL query with secure and safe optimised version',
-            fileContent,
-            databaseType: aiConfig.databaseType,
-            schemaContext,
+          completionCacheRef.current = {
+            prefix: context,
+            completion: result.completion,
           }
-
-          const result = await orpc.ai.codeCompletion(transformedBody)
 
           if (pendingResolveRef.current === resolve) {
-            completionCacheRef.current = {
-              prefix: context,
-              completion: result.completion,
-            }
-
-            resolve(result)
-          }
-          else {
+            resolve({ completion: result.completion })
+          } else {
             resolve({ completion: '' })
           }
         }
         catch (error) {
+          if (error instanceof Error && error.name === 'AbortError') {
+            resolve({ completion: '' })
+            return
+          }
           console.error(error)
           resolve({ completion: '' })
         }
@@ -132,9 +199,9 @@ RefObject<editor.IStandaloneCodeEditor | null>) {
           if (pendingResolveRef.current === resolve)
             pendingResolveRef.current = null
         }
-      }, 1000)
+      }, 600)
     })
-  }
+  }, [clearPending, monacoRef])
 
   useEffect(() => {
     let isMounted = true
@@ -150,6 +217,22 @@ RefObject<editor.IStandaloneCodeEditor | null>) {
 
       if (completionRef.current) {
         completionRef.current.deregister()
+      }
+
+           // Monkey patch to fix 'disposeInlineCompletions is not a function' error from monacopilot
+      const originalRegister = monaco.languages.registerInlineCompletionsProvider
+      // @ts-expect-error - patching internal api
+      if (!originalRegister.__patched) {
+        monaco.languages.registerInlineCompletionsProvider = (languageSelector, provider) => {
+          if (!provider.disposeInlineCompletions) {
+            // eslint-disable-next-line ts/ban-ts-comment
+            // @ts-ignore
+            provider.disposeInlineCompletions = () => {}
+          }
+          return originalRegister.call(monaco.languages, languageSelector, provider)
+        }
+        // @ts-expect-error - patching internal api
+        monaco.languages.registerInlineCompletionsProvider.__patched = true
       }
 
       completionRef.current = registerCompletion(
@@ -173,5 +256,5 @@ RefObject<editor.IStandaloneCodeEditor | null>) {
         completionRef.current = null
       }
     }
-  }, [database])
+  }, [database.id, database.type])
 }
