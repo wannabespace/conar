@@ -98,9 +98,28 @@ export const constraintsQuery = createQuery({
       .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
       .where('tc.TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'sys'])
       .execute(),
-    clickhouse: async () => {
-      // ClickHouse doesn't support constraints
-      return []
+    clickhouse: async (db) => {
+      // clickhouse generally doesnt support traditional constraints like foreign key but we can fetch primary keys
+      const query = await db
+        .withTables<{ 'system.columns': { database: string, table: string, name: string, is_in_primary_key: number } }>()
+        .selectFrom('system.columns')
+        .select([
+          'database as schema',
+          'table',
+          'name as column',
+        ])
+        .where('is_in_primary_key', '=', 1)
+        .where('database', 'not in', ['system', 'information_schema'])
+        .execute()
+
+      return query.map(row => ({
+        ...row,
+        name: 'primary_key',
+        type: 'PRIMARY KEY',
+        foreign_schema: null,
+        foreign_table: null,
+        foreign_column: null,
+      }))
     },
   }),
 })

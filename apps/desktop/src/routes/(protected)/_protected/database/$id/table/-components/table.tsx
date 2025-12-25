@@ -205,7 +205,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           <TableHeaderCell
             column={column}
             onSort={() => onOrder(column.id)}
-            onRename={() => renameColumnRef.current?.rename(schema, table, column.id)}
+            onRename={database.type === 'clickhouse' && column.primaryKey
+              ? undefined
+              : () => renameColumnRef.current?.rename(schema, table, column.id)}
             {...props}
           />
         ),
