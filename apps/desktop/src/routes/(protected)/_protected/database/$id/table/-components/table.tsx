@@ -205,7 +205,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           <TableHeaderCell
             column={column}
             onSort={() => onOrder(column.id)}
-            onRename={database.type === 'clickhouse' && column.primaryKey
+            onRename={database.type === 'clickhouse' && column.primaryKey // Clickhouse doesn't support renaming primary keys
               ? undefined
               : () => renameColumnRef.current?.rename(schema, table, column.id)}
             {...props}

@@ -2,7 +2,7 @@
  * @name system
  * @type schema
  */
-export interface SystemSchema {
+export interface System {
   columns: Columns
 }
 
