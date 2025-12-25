@@ -9,13 +9,20 @@ const bannerType = type({
 
 export const banner = orpc
   .output(bannerType)
-  .handler(() => {
+  .handler(({ context }) => {
     const items: typeof bannerType.infer = []
 
     if (env.BANNER_TEXT) {
       items.push({
         text: env.BANNER_TEXT,
         type: 'info',
+      })
+    }
+
+    if (context.desktopVersion === '0.25.0' && context.ua?.getOS().name === 'Linux') {
+      items.push({
+        text: 'Linux updates broken in 0.25.0 due to provider change. Please download new version manually on conar.app/download',
+        type: 'warning',
       })
     }
 
