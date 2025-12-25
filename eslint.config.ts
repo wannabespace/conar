@@ -1,4 +1,5 @@
 import antfu from '@antfu/eslint-config'
+import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss'
 
 export default antfu(
   {
@@ -40,6 +41,23 @@ export default antfu(
     files: ['**/e2e/**/*'],
     rules: {
       'react-hooks/rules-of-hooks': 'off',
+    },
+  },
+  {
+    plugins: {
+      'better-tailwindcss': eslintPluginBetterTailwindcss,
+    },
+    rules: {
+      ...eslintPluginBetterTailwindcss.configs['recommended-warn'].rules,
+      ...eslintPluginBetterTailwindcss.configs['recommended-error'].rules,
+      'better-tailwindcss/enforce-consistent-line-wrapping': 'warn',
+      'better-tailwindcss/enforce-consistent-class-order': 'warn',
+      'better-tailwindcss/no-unregistered-classes': 'warn',
+    },
+    settings: {
+      'better-tailwindcss': {
+        entryPoint: './packages/ui/src/styles/globals.css',
+      },
     },
   },
 )
