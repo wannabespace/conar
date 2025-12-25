@@ -1,3 +1,4 @@
+import type { ActiveFilter, Filter } from '@conar/shared/filters'
 import NumberFlow from '@number-flow/react'
 import { useQuery } from '@tanstack/react-query'
 import { totalQuery } from '~/entities/database'
@@ -6,24 +7,30 @@ import { Route } from '../index'
 interface TableRowCounterProps {
   schema: string
   table: string
+  filters?: ActiveFilter<Filter>[]
 }
 
-export function TableRowCounter({ schema, table }: TableRowCounterProps) {
+export function TableRowCounter({ schema, table, filters = [] }: TableRowCounterProps) {
   const { database } = Route.useLoaderData()
 
-  const { data, isLoading } = useQuery<{
-    count: number
-    isEstimated: boolean
-  }>({
-    queryKey: ['totalCount', database?.id, schema, table],
-
+  const { data, isLoading } = useQuery<{ count: number, isEstimated: boolean }>({
+    queryKey: [
+      'database',
+      database.id,
+      'schema',
+      schema,
+      'table',
+      table,
+      'total',
+      { filters, enforceExactCount: false },
+    ],
     queryFn: () =>
       totalQuery.run(database, {
         schema,
         table,
+        filters,
         enforceExactCount: false,
       }) as Promise<{ count: number, isEstimated: boolean }>,
-
     enabled: Boolean(database?.id && table),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
@@ -34,12 +41,10 @@ export function TableRowCounter({ schema, table }: TableRowCounterProps) {
     return <span className="animate-pulse opacity-50 text-[11px]">...</span>
   }
 
-  const count = Number.isNaN(data.count) ? 0 : data.count
-
   return (
     <span className="inline-flex items-center gap-1 text-[11px] font-medium">
       <NumberFlow
-        value={count}
+        value={data.count}
         format={{
           notation: 'compact',
           compactDisplay: 'short',
