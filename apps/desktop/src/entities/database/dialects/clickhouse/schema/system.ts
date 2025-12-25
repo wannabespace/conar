@@ -17,4 +17,16 @@ interface Databases {
   metadata_path: string
   uuid: string
   comment: string
+  columns: Columns
+}
+
+/**
+ * @name columns
+ * @type table
+ */
+interface Columns {
+  database: string
+  table: string
+  name: string
+  is_in_primary_key: number
 }
