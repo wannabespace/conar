@@ -17,6 +17,7 @@
     "@ai-sdk/openai": "catalog:",
     "@ai-sdk/provider": "catalog:",
     "@ai-sdk/xai": "catalog:",
+    "@better-auth/stripe": "catalog:",
     "@conar/connection": "workspace:*",
     "@conar/shared": "workspace:*",
     "@exalabs/ai-sdk": "catalog:",
@@ -49,6 +50,7 @@
     "resumable-stream": "catalog:",
     "stripe": "catalog:",
     "superjson": "catalog:",
+    "ua-parser-js": "catalog:",
     "uuid": "catalog:",
     "zod": "catalog:"
   },

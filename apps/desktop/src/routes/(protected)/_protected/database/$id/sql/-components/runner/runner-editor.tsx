@@ -1,29 +1,18 @@
-import type { DatabaseType } from '@conar/shared/enums/database-type'
 import type { editor, Position } from 'monaco-editor'
-import type { CompletionRegistration } from 'monacopilot'
 import type { RefObject } from 'react'
 import { useStore } from '@tanstack/react-store'
-import * as monaco from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
-import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
-import { registerCompletion } from 'monacopilot'
+import { setupLanguageFeatures } from 'monaco-sql-languages'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { Monaco } from '~/components/monaco'
 import { databaseStore } from '~/entities/database'
-import { databaseAICompletionContext, databaseCompletionService } from '~/entities/database/utils/monaco'
-import { orpc } from '~/lib/orpc'
+import { databaseCompletionService } from '~/entities/database/utils/monaco'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
+import { dialectsMap, useRunnerEditorAiTabCompletion } from './ai-tab-completion'
 import { useRunnerContext } from './runner-context'
 import { useRunnerEditorAIZones } from './runner-editor-ai-zones'
 import { useRunnerEditorQueryZones } from './runner-editor-query-zones'
-
-const dialectsMap = {
-  postgres: LanguageIdEnum.PG,
-  mysql: LanguageIdEnum.MYSQL,
-  mssql: LanguageIdEnum.PG,
-  clickhouse: LanguageIdEnum.MYSQL,
-} satisfies Record<DatabaseType, LanguageIdEnum>
 
 function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { database } = Route.useRouteContext()
@@ -125,11 +114,6 @@ export function RunnerEditor() {
   const sql = useStore(store, state => state.sql)
   const editorQueries = useStore(store, state => state.editorQueries)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
-  const completionRef = useRef<CompletionRegistration | null>(null)
-  const completionCacheRef = useRef<{
-    prefix: string
-    completion: string
-  } | null>(null)
 
   const run = useRunnerContext(({ run }) => run)
 
@@ -140,6 +124,8 @@ export function RunnerEditor() {
   useRunnerEditorQueryZones(monacoRef)
   useRunnerEditorAIZones(monacoRef)
 
+  useRunnerEditorAiTabCompletion(monacoRef)
+
   useEffect(() => {
     setupLanguageFeatures(dialectsMap[database.type], {
       completionItems: {
@@ -147,152 +133,6 @@ export function RunnerEditor() {
         completionService: databaseCompletionService(database),
       },
     })
-  }, [database])
-
-  useEffect(() => {
-    if (!monacoRef.current)
-      return
-
-    let debounceTimer: ReturnType<typeof setTimeout> | null = null
-    let pendingResolve: ((value: { completion: string }) => void) | null = null
-
-    let isMounted = true
-
-    const setupCompletion = async () => {
-      if (!isMounted)
-        return
-
-      const aiConfig = await databaseAICompletionContext(database)
-      if (!isMounted)
-        return
-
-      const schemaContext = await aiConfig.buildSchemaContext()
-
-      if (!isMounted)
-        return
-
-      if (completionRef.current) {
-        completionRef.current.deregister()
-      }
-
-      if (!monacoRef.current)
-        return
-
-      completionRef.current = registerCompletion(
-        monaco,
-        monacoRef.current,
-        {
-          trigger: 'onTyping',
-          language: dialectsMap[database.type],
-          requestHandler: async () => {
-            const model = monacoRef.current?.getModel()
-            const position = monacoRef.current?.getPosition()
-
-            if (model && position && completionCacheRef.current) {
-              const offset = model.getOffsetAt(position)
-              const textFull = model.getValue()
-              const textBefore = textFull.substring(0, offset)
-              const cached = completionCacheRef.current
-
-              if (textBefore.startsWith(cached.prefix)) {
-                const addedText = textBefore.slice(cached.prefix.length)
-
-                if (cached.completion.startsWith(addedText)) {
-                  const remainingCompletion = cached.completion.slice(addedText.length)
-
-                  if (remainingCompletion.length > 0) {
-                    return { completion: remainingCompletion }
-                  }
-
-                  return { completion: '' }
-                }
-              }
-            }
-
-            if (debounceTimer) {
-              clearTimeout(debounceTimer)
-            }
-            if (pendingResolve) {
-              pendingResolve({ completion: '' })
-              pendingResolve = null
-            }
-
-            return new Promise((resolve) => {
-              pendingResolve = resolve
-              debounceTimer = setTimeout(async () => {
-                if (!isMounted)
-                  return
-
-                try {
-                  const model = monacoRef.current?.getModel()
-                  const position = monacoRef.current?.getPosition()
-
-                  if (!model || !position) {
-                    resolve({ completion: '' })
-                    return
-                  }
-
-                  const fileContent = model.getValue()
-                  const offset = model.getOffsetAt(position)
-                  const context = fileContent.substring(0, offset)
-                  const suffix = fileContent.substring(offset)
-
-                  if (context.trim().length < 2) {
-                    resolve({ completion: '' })
-                    return
-                  }
-
-                  const transformedBody = {
-                    context,
-                    suffix,
-                    instruction: 'Complete the SQL query with secure and safe optimised version',
-                    fileContent,
-                    databaseType: aiConfig.databaseType,
-                    schemaContext,
-                  }
-
-                  const result = await orpc.ai.codeCompletion(transformedBody)
-
-                  if (pendingResolve === resolve) {
-                    completionCacheRef.current = {
-                      prefix: context,
-                      completion: result.completion,
-                    }
-
-                    resolve(result)
-                  }
-                  else {
-                    resolve({ completion: '' })
-                  }
-                }
-                catch (error) {
-                  console.error(error)
-                  resolve({ completion: '' })
-                }
-                finally {
-                  if (pendingResolve === resolve)
-                    pendingResolve = null
-                }
-              }, 500)
-            })
-          },
-        },
-      )
-    }
-
-    setupCompletion()
-
-    return () => {
-      isMounted = false
-      if (debounceTimer)
-        clearTimeout(debounceTimer)
-      if (pendingResolve)
-        pendingResolve({ completion: '' })
-      if (completionRef.current) {
-        completionRef.current.deregister()
-        completionRef.current = null
-      }
-    }
   }, [database])
 
   const getEditorQueriesEvent = useEffectEvent((position: Position) => {

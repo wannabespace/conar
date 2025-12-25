@@ -44,14 +44,10 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
             : 'hover:border-primary/60',
         )}
         style={database.color ? { '--color': database.color } : {}}
+        preload={false}
         {...params}
       >
-        <div
-          className={cn(
-            'size-12 shrink-0 rounded-lg p-3',
-            'bg-muted/70',
-          )}
-        >
+        <div className="size-12 shrink-0 rounded-lg p-3 bg-muted/70">
           <DatabaseIcon
             type={database.type}
             className="size-full"
@@ -149,20 +145,20 @@ export function DatabasesList() {
       {availableLabels.length > 0 && (
         <ButtonGroup>
           <Button
-            variant={selectedLabel === null ? 'default' : 'outline'}
+            variant="outline"
+            className={selectedLabel === null ? 'bg-primary!' : ''}
             size="xs"
             onClick={() => setSelectedLabel(null)}
-            className="border!"
           >
             All
           </Button>
           {availableLabels.map(label => (
             <Button
               key={label}
-              variant={selectedLabel === label ? 'default' : 'outline'}
+              variant="outline"
+              className={selectedLabel === label ? 'bg-primary!' : ''}
               size="xs"
               onClick={() => setSelectedLabel(label)}
-              className="border!"
             >
               {label}
             </Button>
