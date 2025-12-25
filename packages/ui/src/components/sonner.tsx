@@ -1,10 +1,14 @@
+import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
 import { useTheme } from '../theme-observer'
 
 function Toaster() {
   const { resolvedTheme } = useTheme()
 
-  return (
+  if (typeof document === 'undefined')
+    return null
+
+  return createPortal(
     <Sonner
       theme={resolvedTheme}
       className="toaster group"
@@ -22,7 +26,8 @@ function Toaster() {
         '--normal-text': 'var(--popover-foreground)',
         '--normal-border': 'var(--border)',
       }}
-    />
+    />,
+    document.body,
   )
 }
 
