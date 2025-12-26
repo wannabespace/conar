@@ -44,8 +44,17 @@ export function Pricing({ className }: PricingSectionProps) {
       description: 'Perfect for individuals and small projects',
       icon: (
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-500/30 to-gray-500/30 blur-2xl rounded-full" />
-          <RiCircleLine className="w-7 h-7 relative z-10 text-gray-500 dark:text-gray-400 animate-[float_3s_ease-in-out_infinite]" />
+          <div className={`
+            absolute inset-0 rounded-full bg-gradient-to-r from-gray-500/30
+            to-gray-500/30 blur-2xl
+          `}
+          />
+          <RiCircleLine className={`
+            relative z-10 h-7 w-7 animate-[float_3s_ease-in-out_infinite]
+            text-gray-500
+            dark:text-gray-400
+          `}
+          />
         </div>
       ),
       onClick: () => {
@@ -86,7 +95,7 @@ export function Pricing({ className }: PricingSectionProps) {
       badge: 'Most Popular',
       icon: (
         <div className="relative">
-          <RiMoneyDollarCircleLine className="size-7 relative z-10" />
+          <RiMoneyDollarCircleLine className="relative z-10 size-7" />
         </div>
       ),
       features: [
@@ -109,40 +118,78 @@ export function Pricing({ className }: PricingSectionProps) {
       aria-labelledby="pricing-heading"
       className={cn(
         'relative bg-background text-foreground',
-        'py-8 sm:py-12 lg:py-16',
+        `
+          py-8
+          sm:py-12
+          lg:py-16
+        `,
         'overflow-hidden',
         className,
       )}
     >
-      <div className="mb-12 sm:mb-16 text-center px-4">
-        <h2 id="pricing-heading" className="text-center mb-3 text-muted-foreground text-sm uppercase tracking-wide font-medium">
+      <div className={`
+        mb-12 px-4 text-center
+        sm:mb-16
+      `}
+      >
+        <h2
+          id="pricing-heading"
+          className={`
+            mb-3 text-center text-sm font-medium tracking-wide
+            text-muted-foreground uppercase
+          `}
+        >
           Pricing
         </h2>
-        <p className="text-center text-balance text-3xl sm:text-4xl md:text-5xl font-bold max-w-3xl mx-auto leading-tight">
+        <p className={`
+          mx-auto max-w-3xl text-center text-3xl leading-tight font-bold
+          text-balance
+          sm:text-4xl
+          md:text-5xl
+        `}
+        >
           Choose the plan that fits your needs
         </p>
       </div>
-      <div className="flex flex-col items-center gap-6 mb-6 sm:mb-10">
-        <div className="inline-flex items-center p-1.5 bg-card border rounded-full shadow-sm">
+      <div className={`
+        mb-6 flex flex-col items-center gap-6
+        sm:mb-10
+      `}
+      >
+        <div className={`
+          inline-flex items-center rounded-full border bg-card p-1.5 shadow-sm
+        `}
+        >
           {['Monthly', 'Yearly'].map(period => (
             <button
               type="button"
               key={period}
               onClick={() => setIsYearly(period === 'Yearly')}
               className={cn(
-                'px-6 sm:px-8 py-2.5 text-sm font-medium rounded-full transition-all duration-300',
+                `
+                  rounded-full px-6 py-2.5 text-sm font-medium transition-all
+                  duration-300
+                  sm:px-8
+                `,
                 (period === 'Yearly') === isYearly
                   ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
+                  : `
+                    text-muted-foreground
+                    hover:text-foreground
+                  `,
               )}
             >
               {period}
             </button>
           ))}
         </div>
-        <div className="h-6 flex items-center">
+        <div className="flex h-6 items-center">
           {isYearly && tiers[1]!.price.yearly > 0 && tiers[1]!.price.monthly > 0 && (
-            <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 font-medium">
+            <div className={`
+              flex items-center gap-2 text-sm font-medium text-green-600
+              dark:text-green-400
+            `}
+            >
               <RiStarLine className="size-4" />
               Save
               {' '}
@@ -152,27 +199,47 @@ export function Pricing({ className }: PricingSectionProps) {
           )}
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto px-4">
+      <div className={`
+        mx-auto grid max-w-5xl grid-cols-1 gap-4 px-4
+        sm:gap-6
+        lg:grid-cols-2
+      `}
+      >
         {tiers.map(tier => (
           <Card
             key={tier.name}
             className={cn(
-              'relative transition-all duration-300 hover:shadow-lg flex flex-col',
-              tier.highlight && 'ring-2 ring-primary/20 shadow-lg',
+              `
+                relative flex flex-col transition-all duration-300
+                hover:shadow-lg
+              `,
+              tier.highlight && 'shadow-lg ring-2 ring-primary/20',
             )}
           >
             {tier.badge && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium shadow-lg">
+                <div className={`
+                  rounded-full bg-primary px-3 py-1 text-xs font-medium
+                  text-primary-foreground shadow-lg
+                `}
+                >
                   {tier.badge}
                 </div>
               </div>
             )}
-            <div className="p-6 sm:p-8 flex-1">
-              <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <div className={`
+              flex-1 p-6
+              sm:p-8
+            `}
+            >
+              <div className={`
+                mb-6 flex items-center justify-between
+                sm:mb-8
+              `}
+              >
                 <div
                   className={cn(
-                    'p-3 rounded-xl',
+                    'rounded-xl p-3',
                     tier.highlight
                       ? 'bg-primary/10 text-primary'
                       : 'bg-muted text-muted-foreground',
@@ -180,17 +247,30 @@ export function Pricing({ className }: PricingSectionProps) {
                 >
                   {tier.icon}
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold text-foreground">
+                <h3 className={`
+                  text-xl font-semibold text-foreground
+                  sm:text-2xl
+                `}
+                >
                   {tier.name}
                 </h3>
               </div>
 
-              <div className="mb-6 sm:mb-8">
+              <div className={`
+                mb-6
+                sm:mb-8
+              `}
+              >
                 <div className="flex items-baseline gap-2">
                   <NumberFlowGroup>
                     <NumberFlow
                       value={isYearly ? tier.price.yearly : tier.price.monthly}
-                      className="text-4xl sm:text-5xl font-bold text-foreground [&::part(right)]:text-muted-foreground [&::part(right)]:text-sm [&::part(right)]:font-normal"
+                      className={`
+                        text-4xl font-bold text-foreground
+                        sm:text-5xl
+                        [&::part(right)]:text-sm [&::part(right)]:font-normal
+                        [&::part(right)]:text-muted-foreground
+                      `}
                       format={{
                         style: 'currency',
                         currency: 'USD',
@@ -200,29 +280,56 @@ export function Pricing({ className }: PricingSectionProps) {
                     />
                   </NumberFlowGroup>
                 </div>
-                <p className="mt-2 text-sm sm:text-base text-muted-foreground">
+                <p className={`
+                  mt-2 text-sm text-muted-foreground
+                  sm:text-base
+                `}
+                >
                   {tier.description}
                 </p>
               </div>
 
-              <div className="space-y-4 sm:space-y-5">
+              <div className={`
+                space-y-4
+                sm:space-y-5
+              `}
+              >
                 {tier.features.map(feature => (
-                  <div key={feature.name} className="flex gap-3 sm:gap-4">
+                  <div
+                    key={feature.name}
+                    className={`
+                      flex gap-3
+                      sm:gap-4
+                    `}
+                  >
                     <div
                       className={cn(
-                        'mt-1 p-0.5 rounded-full transition-colors duration-200 flex-shrink-0',
+                        `
+                          mt-1 flex-shrink-0 rounded-full p-0.5
+                          transition-colors duration-200
+                        `,
                         feature.included
-                          ? 'text-green-600 dark:text-green-400'
+                          ? `
+                            text-green-600
+                            dark:text-green-400
+                          `
                           : 'text-muted-foreground/50',
                       )}
                     >
-                      <RiCheckLine className="w-4 h-4" />
+                      <RiCheckLine className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm sm:text-base font-medium text-foreground">
+                      <div className={`
+                        text-sm font-medium text-foreground
+                        sm:text-base
+                      `}
+                      >
                         {feature.name}
                       </div>
-                      <div className="text-sm text-muted-foreground leading-relaxed">
+                      <div className={`
+                        text-sm leading-relaxed text-muted-foreground
+                      `}
+                      >
                         {feature.description}
                       </div>
                     </div>
@@ -231,32 +338,43 @@ export function Pricing({ className }: PricingSectionProps) {
               </div>
             </div>
 
-            <div className="p-6 sm:p-8 pt-0 mt-auto mb-5">
+            <div className={`
+              mt-auto mb-5 p-6 pt-0
+              sm:p-8
+            `}
+            >
               <Button
-                className="w-full relative"
+                className="relative w-full"
                 variant={tier.highlight ? 'default' : 'outline'}
                 size="lg"
                 disabled={tier.highlight}
                 onClick={tier.onClick}
               >
-                <span className="relative z-10 flex items-center justify-center gap-2">
+                <span className={`
+                  relative z-10 flex items-center justify-center gap-2
+                `}
+                >
                   {tier.highlight
                     ? (
                         <>
                           Get Pro Plan
-                          <RiArrowRightLine className="w-4 h-4" />
+                          <RiArrowRightLine className="h-4 w-4" />
                         </>
                       )
                     : (
                         <>
                           Get Started Free
-                          <RiArrowRightLine className="w-4 h-4" />
+                          <RiArrowRightLine className="h-4 w-4" />
                         </>
                       )}
                 </span>
               </Button>
               {tier.price.monthly === 0 && (
-                <p className="absolute bottom-5 left-0 right-0 text-xs text-muted-foreground text-center mt-3">
+                <p className={`
+                  absolute right-0 bottom-5 left-0 mt-3 text-center text-xs
+                  text-muted-foreground
+                `}
+                >
                   No credit card required
                 </p>
               )}

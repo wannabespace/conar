@@ -21,8 +21,8 @@
     "drizzle:migrate": "turbo run drizzle:migrate",
     "check-types": "turbo run check-types",
     "update": "taze -r -I major",
-    "docker:start": "docker-compose -f docker-compose.dev.yml up -d",
-    "docker:stop": "docker-compose -f docker-compose.dev.yml down"
+    "docker:start": "docker compose -f docker-compose.dev.yml up -d",
+    "docker:stop": "docker compose -f docker-compose.dev.yml down"
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",

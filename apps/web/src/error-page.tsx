@@ -15,11 +15,15 @@ export function ErrorPage({ error }: ErrorComponentProps) {
     <>
       <ThemeObserver />
       <Toaster />
-      <div className="flex items-center justify-center min-h-screen p-4">
+      <div className="flex min-h-screen items-center justify-center p-4">
         <div className="relative z-20 w-full max-w-lg">
           <Card>
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-destructive/10">
+              <div className={`
+                mx-auto mb-4 flex size-16 items-center justify-center
+                rounded-full bg-destructive/10
+              `}
+              >
                 <RiAlertLine className="size-8 text-destructive" />
               </div>
               <CardTitle className="text-xl">Something went wrong</CardTitle>
@@ -29,27 +33,45 @@ export function ErrorPage({ error }: ErrorComponentProps) {
             </CardHeader>
             <CardContent>
               {!(error instanceof TraversalError) && !error.stack && (
-                <ScrollArea className="rounded-md bg-muted p-4 text-sm text-muted-foreground h-[200px]">
+                <ScrollArea className={`
+                  h-[200px] rounded-md bg-muted p-4 text-sm
+                  text-muted-foreground
+                `}
+                >
                   {error.message}
                 </ScrollArea>
               )}
               {!(error instanceof TraversalError) && error.stack && (
-                <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[300px] font-mono">
+                <ScrollArea className={`
+                  h-[300px] rounded-md bg-muted p-4 font-mono text-xs
+                  text-muted-foreground
+                `}
+                >
                   {error.stack}
                 </ScrollArea>
               )}
               {error instanceof TraversalError && (
-                <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[300px] font-mono">
+                <ScrollArea className={`
+                  h-[300px] rounded-md bg-muted p-4 font-mono text-xs
+                  text-muted-foreground
+                `}
+                >
                   {error.arkErrors.map((err, index) => (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <div key={index} className="mb-4 last:mb-0">
+
+                    <div
+                      key={index}
+                      className={`
+                        mb-4
+                        last:mb-0
+                      `}
+                    >
                       <div className="font-semibold text-destructive">
                         Error
                         {' '}
                         {index + 1}
                         :
                       </div>
-                      <div className="ml-2 mt-1">
+                      <div className="mt-1 ml-2">
                         <div>
                           {err.message}
                         </div>
@@ -58,8 +80,12 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                   ))}
                   {error.stack && (
                     <div className="mt-4">
-                      <h3 className="text-sm font-medium mb-2">Stack</h3>
-                      <div className="rounded-md bg-muted text-xs text-muted-foreground font-mono">
+                      <h3 className="mb-2 text-sm font-medium">Stack</h3>
+                      <div className={`
+                        rounded-md bg-muted font-mono text-xs
+                        text-muted-foreground
+                      `}
+                      >
                         {error.stack}
                       </div>
                     </div>
