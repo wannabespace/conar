@@ -57,6 +57,15 @@ export function uppercaseFirst(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1)
 }
 
+export function tryParseJson<T>(json: string): T | null {
+  try {
+    return JSON.parse(json) as T
+  }
+  catch {
+    return null
+  }
+}
+
 export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F) {
   const cache = new Map<string, ReturnType<F>>()
 
