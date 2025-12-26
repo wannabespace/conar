@@ -199,7 +199,6 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                                   e.preventDefault()
                                   e.stopPropagation()
                                   chatsCollection.delete(chat.id)
-                                  orpc.chats.remove({ id: chat.id })
                                   toast.success('Chat deleted')
                                   if (chat.id === chatId) {
                                     store.setState(state => ({
