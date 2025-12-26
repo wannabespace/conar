@@ -29,6 +29,8 @@
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
+
+    "@paralleldrive/cuid2": "catalog:",
     "@todesktop/runtime": "catalog:",
     "electron-store": "catalog:",
     "mssql": "catalog:",
