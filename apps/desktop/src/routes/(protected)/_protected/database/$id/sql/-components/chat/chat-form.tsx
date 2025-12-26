@@ -16,7 +16,9 @@ import { useEffect, useEffectEvent, useRef } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { databaseStore } from '~/entities/database'
+import { useSubscription } from '~/entities/user/hooks/use-subscription'
 import { orpcQuery } from '~/lib/orpc'
+import { appStore } from '~/store'
 import { Route } from '../..'
 import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
@@ -57,6 +59,7 @@ export function ChatForm() {
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const store = databaseStore(database.id)
   const input = useStore(store, state => state.chatInput)
+  const { subscription } = useSubscription()
 
   useEffect(() => {
     if (ref.current) {
@@ -200,7 +203,31 @@ export function ChatForm() {
       className="flex flex-col gap-1"
     >
       <Images databaseId={database.id} />
-      <div className="flex flex-col gap-2 relative dark:bg-input/30 rounded-md border">
+      <div className={`
+        relative flex flex-col gap-2 rounded-md border
+        dark:bg-input/30
+      `}
+      >
+        {!subscription && (
+          <span
+            className={`
+              absolute top-0 right-0 left-0 z-10 p-2 text-sm
+              text-muted-foreground
+            `}
+          >
+            Please
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => {
+                appStore.setState(state => ({ ...state, subscriptionModalIsOpen: true } satisfies typeof state))
+              }}
+            >
+              upgrade
+            </Button>
+            your subscription to generate SQL queries.
+          </span>
+        )}
         <TipTap
           ref={ref}
           data-mask
@@ -211,8 +238,11 @@ export function ChatForm() {
               chatInput: value,
             } satisfies typeof state))
           }}
-          placeholder="Generate SQL query using natural language"
-          className="min-h-[50px] max-h-[250px] p-2 text-sm outline-none overflow-y-auto"
+          placeholder="Generate SQL queries using natural language"
+          className={`
+            max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm outline-none
+          `}
+          disabled={!subscription}
           onEnter={handleSend}
           onImageAdd={(file) => {
             store.setState(state => ({
@@ -221,7 +251,10 @@ export function ChatForm() {
             } satisfies typeof state))
           }}
         />
-        <div className="px-2 pb-2 flex justify-between items-end pointer-events-none">
+        <div className={`
+          pointer-events-none flex items-end justify-between px-2 pb-2
+        `}
+        >
           <div className="pointer-events-auto">
             <Button
               type="button"
@@ -244,13 +277,13 @@ export function ChatForm() {
               </label>
             </Button>
           </div>
-          <div className="flex gap-2 pointer-events-auto">
+          <div className="pointer-events-auto flex gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   size="icon-xs"
                   variant="outline"
-                  className={input.length < 10 ? 'opacity-50 cursor-default' : ''}
+                  className={input.length < 10 ? 'cursor-default opacity-50' : ''}
                   disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt}
                   onClick={() => enhancePrompt({
                     prompt: input,
@@ -263,7 +296,9 @@ export function ChatForm() {
                   >
                     <ContentSwitch
                       active={isEnhancingPrompt}
-                      activeContent={<RiCheckLine className="size-3 text-success" />}
+                      activeContent={(
+                        <RiCheckLine className="size-3 text-success" />
+                      )}
                     >
                       <RiMagicLine className="size-3" />
                     </ContentSwitch>

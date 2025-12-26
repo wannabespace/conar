@@ -1,5 +1,6 @@
 import type { Editor } from '@tiptap/react'
 import type { ComponentProps, RefObject } from 'react'
+import { cn } from '@conar/ui/lib/utils'
 import Placeholder from '@tiptap/extension-placeholder'
 import { EditorContent, Extension, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -14,6 +15,7 @@ export function TipTap({
   onImageAdd,
   className,
   ref,
+  disabled,
   ...props
 }: {
   value: string
@@ -50,18 +52,26 @@ export function TipTap({
         },
       }),
     ],
-    editorProps: {
-      attributes: {
-        class: className ?? '',
-      },
-    },
     parseOptions: {
       preserveWhitespace: 'full',
     },
     immediatelyRender: true,
     content: value,
     onUpdate: ({ editor }) => setValue(editor.getText()),
-  }, [className, onEnter, placeholder, setValue])
+  }, [onEnter, placeholder, setValue])
+
+  useEffect(() => {
+    if (editor) {
+      editor.setOptions({
+        editable: !disabled,
+        editorProps: {
+          attributes: {
+            class: cn(className) || '',
+          },
+        },
+      })
+    }
+  }, [editor, disabled, className])
 
   useImperativeHandle(ref, () => ({
     editor,

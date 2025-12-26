@@ -6,8 +6,10 @@ import { CtrlEnter, CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Kbd } from '@conar/ui/components/kbd'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
+import { Separator } from '@conar/ui/components/separator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import NumberFlow from '@number-flow/react'
-import { RiBrush2Line, RiCheckLine, RiPlayFill, RiStarLine } from '@remixicon/react'
+import { RiBrush2Line, RiChatAiLine, RiCheckLine, RiPlayFill, RiStarLine } from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
@@ -45,7 +47,7 @@ function useTrackSelectedLinesChange() {
   }, [store, currentLineNumbers])
 }
 
-export function Runner() {
+export function Runner({ isChatCollapsed, onChatClick }: { isChatCollapsed: boolean, onChatClick: () => void }) {
   const { database } = Route.useRouteContext()
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
@@ -119,10 +121,10 @@ export function Runner() {
         <ResizablePanel minSize={20}>
           <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal">
             <ResizablePanel minSize={50}>
-              <CardHeader className="bg-card py-3 h-14">
-                <CardTitle className="flex items-center gap-2 justify-between">
+              <CardHeader className="h-14 bg-card py-3">
+                <CardTitle className="flex items-center justify-between gap-2">
                   SQL Queries Runner
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -132,7 +134,11 @@ export function Runner() {
                         >
                           <RiStarLine />
                           Saved
-                          <span className="bg-accent rounded-full text-xs px-1.5 h-5 flex items-center justify-center">
+                          <span className={`
+                            flex h-5 items-center justify-center rounded-full
+                            bg-accent px-1.5 text-xs
+                          `}
+                          >
                             {queriesCount}
                           </span>
                         </Button>
@@ -180,12 +186,37 @@ export function Runner() {
                         />
                       )}
                     </Button>
+                    {isChatCollapsed && (
+                      <>
+                        <Separator orientation="vertical" className="mx-1 h-4!" />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={onChatClick}
+                              className="gap-1"
+                            >
+                              <RiChatAiLine />
+                              Chat
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent align="center" side="bottom">
+                            Chat is available only with a subscription
+                          </TooltipContent>
+                        </Tooltip>
+                      </>
+                    )}
                   </div>
                 </CardTitle>
               </CardHeader>
               <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
                 <RunnerEditor />
-                <span className="pointer-events-none text-xs text-muted-foreground flex flex-col items-end absolute bottom-2 right-6">
+                <span className={`
+                  pointer-events-none absolute right-6 bottom-2 flex flex-col
+                  items-end text-xs text-muted-foreground
+                `}
+                >
                   <span className="flex items-center gap-1">
                     <Kbd asChild>
                       <CtrlLetter letter="K" userAgent={navigator.userAgent} />
