@@ -106,7 +106,7 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
   )
 }
 
-export function Empty() {
+export function Empty({ onCreateConnection }: { onCreateConnection?: () => void }) {
   return (
     <div className="text-center bg-card border-2 border-dashed border-border/50 rounded-xl p-14 w-full m-auto group">
       <h2 className="text-foreground font-medium mt-6">
@@ -115,16 +115,14 @@ export function Empty() {
       <p className="text-sm text-muted-foreground mt-1 mb-4 whitespace-pre-line">
         Create a new connection to get started.
       </p>
-      <Button asChild>
-        <Link to="/create">
-          Create a new connection
-        </Link>
+      <Button onClick={onCreateConnection}>
+        Create a new connection
       </Button>
     </div>
   )
 }
 
-export function DatabasesList() {
+export function DatabasesList({ onCreateConnection }: { onCreateConnection?: () => void }) {
   const { data: databases } = useLiveQuery(q => q
     .from({ databases: databasesCollection })
     .orderBy(({ databases }) => databases.createdAt, 'desc'))
@@ -183,7 +181,7 @@ export function DatabasesList() {
                 ))}
               </AnimatePresence>
             )
-          : <Empty />}
+          : <Empty onCreateConnection={onCreateConnection} />}
       </div>
     </div>
   )
