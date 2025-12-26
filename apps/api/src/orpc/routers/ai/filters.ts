@@ -5,10 +5,10 @@ import { type } from 'arktype'
 import { consola } from 'consola'
 import { z } from 'zod'
 import { withPosthog } from '~/lib/posthog'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { authMiddleware, orpc } from '~/orpc'
 
 export const filters = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(authMiddleware)
   .input(type({
     prompt: 'string',
     context: 'string',
