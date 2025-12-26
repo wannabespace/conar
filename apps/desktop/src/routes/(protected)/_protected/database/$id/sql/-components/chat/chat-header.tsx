@@ -12,11 +12,12 @@ import {
   DropdownMenuTrigger,
 } from '@conar/ui/components/dropdown-menu'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAddLine, RiHistoryLine } from '@remixicon/react'
+import { RiAddLine, RiDeleteBin7Line, RiHistoryLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import { useEffect, useEffectEvent } from 'react'
+import { toast } from 'sonner'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { databaseStore } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
@@ -73,6 +74,7 @@ function groupChats(data: typeof chats.$inferSelect[]) {
 
 export function ChatHeader({ chatId }: { chatId: string }) {
   const { id } = Route.useParams()
+  const navigate = useNavigate()
   const store = databaseStore(id)
   const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'))
   const chat = allChats.find(chat => chat.id === chatId)
@@ -107,11 +109,20 @@ export function ChatHeader({ chatId }: { chatId: string }) {
   const grouped = groupChats(allChats)
 
   return (
-    <div className="flex justify-between items-center h-8 gap-2">
-      <CardTitle className="flex items-center gap-2 flex-1 min-w-0">
-        <span data-mask className="truncate block min-w-0">
+    <div className="flex h-8 items-center justify-between gap-2">
+      <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
+        <span data-mask className="block min-w-0 truncate">
           {chat
-            ? <>{chat.title || <span className="block animate-pulse bg-muted rounded-md w-30 h-4" />}</>
+            ? (
+                <>
+                  {chat.title || (
+                    <span className={`
+                      block h-4 w-30 animate-pulse rounded-md bg-muted
+                    `}
+                    />
+                  )}
+                </>
+              )
             : 'New Chat'}
         </span>
       </CardTitle>
@@ -152,19 +163,58 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                 : (
                     Object.entries(grouped).map(([group, chats], idx) => (
                       <div key={group}>
-                        <DropdownMenuLabel className="opacity-70 text-xs">{groupLabelMap[group as Group]}</DropdownMenuLabel>
+                        <DropdownMenuLabel className="text-xs opacity-70">{groupLabelMap[group as Group]}</DropdownMenuLabel>
                         {chats.map(chat => (
                           <DropdownMenuItem
                             key={chat.id}
                             asChild
+                            className="group"
                           >
                             <Link
                               to="/database/$id/sql"
                               params={{ id }}
                               search={{ chatId: chat.id }}
-                              className={cn('text-foreground', chat.id === chatId && 'bg-accent')}
+                              className={cn(`
+                                flex items-center justify-between gap-2
+                                text-foreground
+                              `, chat.id === chatId && `bg-accent`)}
                             >
-                              {chat.title || <span className="animate-pulse bg-muted rounded-md w-30 h-4" />}
+                              <span className="truncate">
+                                {chat.title || (
+                                  <span className={`
+                                    h-4 w-30 animate-pulse rounded-md bg-muted
+                                  `}
+                                  />
+                                )}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon-xs"
+                                className={`
+                                  -mr-1 opacity-0 transition-opacity
+                                  group-hover:opacity-100
+                                  hover:text-destructive
+                                `}
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  chatsCollection.delete(chat.id)
+                                  orpc.chats.remove({ id: chat.id })
+                                  toast.success('Chat deleted')
+                                  if (chat.id === chatId) {
+                                    store.setState(state => ({
+                                      ...state,
+                                      lastOpenedChatId: null,
+                                    }))
+                                    navigate({
+                                      to: '/database/$id/sql',
+                                      params: { id },
+                                    })
+                                  }
+                                }}
+                              >
+                                <RiDeleteBin7Line className="size-4" />
+                              </Button>
                             </Link>
                           </DropdownMenuItem>
                         ))}
