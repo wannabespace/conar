@@ -39,6 +39,7 @@
     "ioredis": "catalog:",
     "ioredis-mock": "catalog:",
     "loops": "catalog:",
+    "monacopilot": "catalog:",
     "nanoid": "catalog:",
     "pg": "catalog:",
     "postgres": "catalog:",
