@@ -66,5 +66,3 @@ export const env = nodeEnv === 'production' || nodeEnv === 'test'
         }, {} as { [K in typeof devOptionalEnvs[number]]: 'string?' }),
       )
       .assert(process.env)
-
-export const stripeEnabled = !!env.STRIPE_SECRET_KEY && !!env.STRIPE_WEBHOOK_SECRET && !!env.STRIPE_MONTH_PRICE_ID && !!env.STRIPE_ANNUAL_PRICE_ID
