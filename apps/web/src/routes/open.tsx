@@ -45,8 +45,11 @@ function OpenPage() {
 
   if (codeChallenge) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <Card className="max-w-md w-full">
+      <div className={`
+        flex min-h-screen flex-col items-center justify-center p-4
+      `}
+      >
+        <Card className="w-full max-w-md">
           {isPending
             ? (
                 <>
@@ -56,7 +59,7 @@ function OpenPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground animate-pulse">Loading authentication data...</p>
+                    <p className="animate-pulse text-muted-foreground">Loading authentication data...</p>
                   </CardContent>
                 </>
               )
@@ -73,7 +76,7 @@ function OpenPage() {
                         You have successfully signed in. You can now close this tab and return to the Conar desktop app.
                       </p>
                       <div className="flex flex-col gap-4">
-                        <p className="text-muted-foreground text-sm">
+                        <p className="text-sm text-muted-foreground">
                           If the app didn't open automatically, use the button below to copy the connection URL.
                         </p>
                         <div className="flex">
@@ -111,8 +114,8 @@ function OpenPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <Card className="max-w-md w-full">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+      <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>
             Opening the app
