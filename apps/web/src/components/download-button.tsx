@@ -59,7 +59,11 @@ export function DownloadButton() {
         <DropdownMenuContent>
           {assets.map(asset => (
             <DropdownMenuItem key={asset.link} asChild>
-              <a href={asset.link} download className="text-foreground flex gap-2">
+              <a
+                href={asset.link}
+                download
+                className="flex gap-2 text-foreground"
+              >
                 {asset.arch}
               </a>
             </DropdownMenuItem>

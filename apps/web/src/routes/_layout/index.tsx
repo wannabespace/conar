@@ -12,7 +12,12 @@ export const Route = createFileRoute('/_layout/')({
 function HomePage() {
   return (
     <>
-      <main className="px-4 sm:px-6 lg:px-10">
+      <main className={`
+        px-4
+        sm:px-6
+        lg:px-10
+      `}
+      >
         <div>
           <Hero className="sticky top-(--navbar-height)" />
           <Demo />
