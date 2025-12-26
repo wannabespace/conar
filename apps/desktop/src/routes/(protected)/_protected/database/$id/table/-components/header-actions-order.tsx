@@ -1,5 +1,4 @@
 import type { databases } from '~/drizzle'
-import { omit } from '@conar/shared/utils/helpers'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
@@ -13,47 +12,9 @@ import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
+import { useHeaderActionsOrder } from './use-header-actions-order'
 
-export function useHeaderActionsOrder() {
-  const store = usePageStoreContext()
-
-  const setOrder = (columnId: string, order: 'ASC' | 'DESC') => {
-    store.setState(state => ({
-      ...state,
-      orderBy: {
-        ...state.orderBy,
-        [columnId]: order,
-      },
-    } satisfies typeof state))
-  }
-
-  const removeOrder = (columnId: string) => {
-    store.setState(state => ({
-      ...state,
-      orderBy: omit(state.orderBy, [columnId]),
-    } satisfies typeof state))
-  }
-
-  const onOrder = (columnId: string) => {
-    const currentOrder = store.state.orderBy?.[columnId]
-
-    if (currentOrder === 'ASC') {
-      setOrder(columnId, 'DESC')
-    }
-    else if (currentOrder === 'DESC') {
-      removeOrder(columnId)
-    }
-    else {
-      setOrder(columnId, 'ASC')
-    }
-  }
-
-  return {
-    setOrder,
-    removeOrder,
-    onOrder,
-  }
-}
+export { useHeaderActionsOrder } from './use-header-actions-order'
 
 export function HeaderActionsOrder({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
   const store = usePageStoreContext()

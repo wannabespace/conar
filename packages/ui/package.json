@@ -8,7 +8,8 @@
     "./components/*": "./src/components/*.tsx",
     "./hooks/*": "./src/hooks/*.ts",
     "./hookas/*": "./src/hookas/*.ts",
-    "./theme-observer": "./src/theme-observer.tsx"
+    "./theme-observer": "./src/theme-observer.tsx",
+    "./use-theme": "./src/use-theme.ts"
   },
   "scripts": {
     "check-types": "tsc"

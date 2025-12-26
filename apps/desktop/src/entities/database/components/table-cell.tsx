@@ -20,9 +20,10 @@ import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
 import { getDisplayValue } from '../lib/render'
 import { TableCellContent } from './table-cell-content'
-import { TableCellProvider, useCellContext } from './table-cell-provider'
+import { TableCellProvider } from './table-cell-provider'
 import { TableCellReferences } from './table-cell-references'
 import { TableCellTable } from './table-cell-table'
+import { useCellContext } from './use-cell-context'
 
 function CellPopoverContent({
   rowIndex,

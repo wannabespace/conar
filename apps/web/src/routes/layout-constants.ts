@@ -1,0 +1,2 @@
+export const NAVBAR_HEIGHT_BASE = 150
+export const NAVBAR_HEIGHT_SCROLLED = 60
