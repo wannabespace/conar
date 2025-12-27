@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiKey2Line, RiLinksLine, RiShieldCheckLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDatabaseConstraints, useDatabaseTablesAndSchemas } from '~/entities/database'
 
 const MotionCard = motion.create(Card)
@@ -29,11 +29,13 @@ function DatabaseConstraintsPage() {
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
 
-  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
-    setSelectedSchema(schemas[0])
+  useEffect(() => {
+    if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
+      setSelectedSchema(schemas[0])
+  }, [schemas, selectedSchema])
 
-  const filteredConstraints = constraints
-    ?.filter(item =>
+  const filteredConstraints = useMemo(() => {
+    return constraints?.filter(item =>
       item.schema === selectedSchema
       && (!search
         || item.name.toLowerCase().includes(search.toLowerCase())
@@ -42,6 +44,7 @@ function DatabaseConstraintsPage() {
         || (item.type && item.type.toLowerCase().includes(search.toLowerCase()))
       ),
     ) ?? []
+  }, [constraints, selectedSchema, search])
 
   const getIcon = (type: string) => {
     switch (type) {
