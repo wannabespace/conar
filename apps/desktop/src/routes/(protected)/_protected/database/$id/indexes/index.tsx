@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RiCloseLine, RiFileList3Line, RiInformationLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDatabaseIndexes, useDatabaseTablesAndSchemas } from '~/entities/database'
 
 const MotionCard = motion.create(Card)
@@ -42,37 +42,41 @@ function DatabaseIndexesPage() {
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
 
-  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
-    setSelectedSchema(schemas[0])
+  useEffect(() => {
+    if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
+      setSelectedSchema(schemas[0])
+  }, [schemas, selectedSchema])
 
-  const groupedIndexes = indexes?.reduce<Record<string, GroupedIndex>>((acc, item) => {
-    const indexItem = item as IndexItem
+  const groupedIndexes = useMemo(() => {
+    return indexes?.reduce<Record<string, GroupedIndex>>((acc, item) => {
+      const indexItem = item as IndexItem
 
-    if (indexItem.schema !== selectedSchema)
-      return acc
+      if (indexItem.schema !== selectedSchema)
+        return acc
 
-    const matchesSearch = !search
-      || indexItem.name.toLowerCase().includes(search.toLowerCase())
-      || indexItem.table.toLowerCase().includes(search.toLowerCase())
-      || indexItem.column.toLowerCase().includes(search.toLowerCase())
+      const matchesSearch = !search
+        || indexItem.name.toLowerCase().includes(search.toLowerCase())
+        || indexItem.table.toLowerCase().includes(search.toLowerCase())
+        || indexItem.column.toLowerCase().includes(search.toLowerCase())
 
-    if (!matchesSearch)
-      return acc
+      if (!matchesSearch)
+        return acc
 
-    const key = `${indexItem.schema}-${indexItem.table}-${indexItem.name}`
-    if (!acc[key]) {
-      acc[key] = {
-        ...indexItem,
-        columns: [indexItem.column],
+      const key = `${indexItem.schema}-${indexItem.table}-${indexItem.name}`
+      if (!acc[key]) {
+        acc[key] = {
+          ...indexItem,
+          columns: [indexItem.column],
+        }
       }
-    }
-    else {
-      if (!acc[key].columns.includes(indexItem.column)) {
-        acc[key].columns.push(indexItem.column)
+      else {
+        if (!acc[key].columns.includes(indexItem.column)) {
+          acc[key].columns.push(indexItem.column)
+        }
       }
-    }
-    return acc
-  }, {})
+      return acc
+    }, {})
+  }, [indexes, selectedSchema, search])
 
   const indexList = Object.values(groupedIndexes ?? {})
 
