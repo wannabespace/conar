@@ -10,7 +10,7 @@ export interface System {
  * @name columns
  * @type table
  */
-interface Columns {
+export interface Columns {
   database: string
   table: string
   name: string
