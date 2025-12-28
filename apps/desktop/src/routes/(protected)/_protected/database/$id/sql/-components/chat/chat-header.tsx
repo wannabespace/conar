@@ -195,7 +195,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                                   variant="ghost"
                                   size="icon-xs"
                                   className={`
-                                    -mr-1 opacity-0 transition-opacity
+                                    -mr-1 opacity-0 transition-none
                                     group-hover:opacity-100
                                     hover:text-destructive
                                   `}
@@ -216,7 +216,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                                     })
                                   }}
                                 >
-                                  <RiDeleteBin7Line className="size-4" />
+                                  <RiDeleteBin7Line className="size-3.5" />
                                 </Button>
                               </Link>
                             </DropdownMenuItem>

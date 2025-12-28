@@ -28,8 +28,13 @@ export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
       return
 
     e.preventDefault()
+    const chatTitle = chat.title?.trim()
     chatsCollection.delete(chat.id)
-    toast.success('Chat deleted')
+    toast.success(
+      chatTitle
+        ? `Chat "${chatTitle}" deleted`
+        : 'Chat deleted',
+    )
     onRemoveCallback?.()
     setOpen(false)
   }
@@ -40,7 +45,20 @@ export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Chat</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this chat
+            This action cannot be undone. This will permanently delete
+            {chat?.title
+              ? (
+                  <span className="font-semibold">
+                    {' '}
+                    "
+                    {chat.title}
+                    "
+                  </span>
+                )
+              : (
+                  ' this chat'
+                )}
+            {' '}
             and all its messages.
           </AlertDialogDescription>
         </AlertDialogHeader>
