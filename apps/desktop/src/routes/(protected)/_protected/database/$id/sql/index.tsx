@@ -3,7 +3,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 import { AppToolbar, useLayoutShortcuts } from '~/components/app-toolbar'
 import { databaseStore } from '~/entities/database'
 import { layoutStore, toggleChat } from '~/lib/layout-store'
@@ -51,7 +51,7 @@ function DatabaseSqlPage() {
     } satisfies typeof state))
   }, [chatId, store])
 
-  const handleNewChat = useCallback(() => {
+  const handleNewChat = () => {
     store.setState(state => ({
       ...state,
       lastOpenedChatId: null,
@@ -64,7 +64,7 @@ function DatabaseSqlPage() {
       to: '/database/$id/sql',
       params: { id: database.id },
     })
-  }, [store, navigate, database.id])
+  }
 
   useLayoutShortcuts({
     onNewChat: handleNewChat,

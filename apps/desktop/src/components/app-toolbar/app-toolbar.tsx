@@ -1,6 +1,6 @@
 import type { ComponentRef } from 'react'
-import { getOS } from '@conar/shared/utils/os'
 import { Button } from '@conar/ui/components/button'
+import { CtrlLetter, ShiftCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import {
@@ -14,9 +14,6 @@ import { useStore } from '@tanstack/react-store'
 import { useRef } from 'react'
 import { layoutStore, toggleChat, toggleResults, toggleSidebar } from '~/lib/layout-store'
 import { LayoutPopover } from './layout-popover'
-
-const os = getOS(navigator.userAgent)
-const modKey = os.type === 'macos' ? '⌘' : 'Ctrl'
 
 interface AppToolbarProps {
   className?: string
@@ -44,10 +41,7 @@ export function AppToolbar({ className, onNewChat }: AppToolbarProps) {
         <TooltipContent side="bottom">
           <span className="flex items-center gap-2">
             New Chat
-            <kbd className="text-[10px] opacity-60">
-              {modKey}
-              N
-            </kbd>
+            <CtrlLetter userAgent={navigator.userAgent} letter="N" className="text-[10px] opacity-60" />
           </span>
         </TooltipContent>
       </Tooltip>
@@ -67,10 +61,7 @@ export function AppToolbar({ className, onNewChat }: AppToolbarProps) {
         <TooltipContent side="bottom">
           <span className="flex items-center gap-2">
             Toggle Sidebar
-            <kbd className="text-[10px] opacity-60">
-              {modKey}
-              B
-            </kbd>
+            <CtrlLetter userAgent={navigator.userAgent} letter="B" className="text-[10px] opacity-60" />
           </span>
         </TooltipContent>
       </Tooltip>
@@ -90,10 +81,7 @@ export function AppToolbar({ className, onNewChat }: AppToolbarProps) {
         <TooltipContent side="bottom">
           <span className="flex items-center gap-2">
             Toggle Chat
-            <kbd className="text-[10px] opacity-60">
-              {modKey}
-              ⇧C
-            </kbd>
+            <ShiftCtrlLetter userAgent={navigator.userAgent} letter="C" className="text-[10px] opacity-60" />
           </span>
         </TooltipContent>
       </Tooltip>
@@ -113,10 +101,7 @@ export function AppToolbar({ className, onNewChat }: AppToolbarProps) {
         <TooltipContent side="bottom">
           <span className="flex items-center gap-2">
             Toggle Results
-            <kbd className="text-[10px] opacity-60">
-              {modKey}
-              ⇧R
-            </kbd>
+            <ShiftCtrlLetter userAgent={navigator.userAgent} letter="R" className="text-[10px] opacity-60" />
           </span>
         </TooltipContent>
       </Tooltip>

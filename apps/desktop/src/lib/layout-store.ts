@@ -142,7 +142,7 @@ export function toggleSidebar() {
     ...state,
     sidebarVisible: !state.sidebarVisible,
     activeLayoutId: null,
-  }))
+  } satisfies typeof state))
 }
 
 export function toggleChat() {
@@ -150,7 +150,7 @@ export function toggleChat() {
     ...state,
     chatVisible: !state.chatVisible,
     activeLayoutId: null,
-  }))
+  } satisfies typeof state))
 }
 
 export function toggleResults() {
@@ -158,7 +158,7 @@ export function toggleResults() {
     ...state,
     resultsVisible: !state.resultsVisible,
     activeLayoutId: null,
-  }))
+  } satisfies typeof state))
 }
 
 export function toggleEditor() {
@@ -166,7 +166,7 @@ export function toggleEditor() {
     ...state,
     editorVisible: !state.editorVisible,
     activeLayoutId: null,
-  }))
+  } satisfies typeof state))
 }
 
 export function setChatPosition(position: 'right' | 'bottom') {
@@ -174,7 +174,7 @@ export function setChatPosition(position: 'right' | 'bottom') {
     ...state,
     chatPosition: position,
     activeLayoutId: null,
-  }))
+  } satisfies typeof state))
 }
 
 export function setResultsPosition(position: 'bottom' | 'right') {
@@ -182,7 +182,7 @@ export function setResultsPosition(position: 'bottom' | 'right') {
     ...state,
     resultsPosition: position,
     activeLayoutId: null,
-  }))
+  } satisfies typeof state))
 }
 
 export function applyLayout(layoutId: string) {
@@ -198,7 +198,7 @@ export function applyLayout(layoutId: string) {
     chatPosition: layout.chatPosition,
     resultsPosition: layout.resultsPosition,
     activeLayoutId: layoutId,
-  }))
+  } satisfies typeof state))
 }
 
 export function createLayout(name: string): string {
@@ -220,7 +220,7 @@ export function createLayout(name: string): string {
     ...state,
     layouts: [...state.layouts, newLayout],
     activeLayoutId: id,
-  }))
+  } satisfies typeof state))
 
   return id
 }
@@ -233,7 +233,7 @@ export function renameLayout(layoutId: string, newName: string) {
         ? { ...l, name: newName }
         : l,
     ),
-  }))
+  } satisfies typeof state))
 }
 
 export function deleteLayout(layoutId: string) {
@@ -241,7 +241,7 @@ export function deleteLayout(layoutId: string) {
     ...state,
     layouts: state.layouts.filter(l => l.id !== layoutId || l.isBuiltIn),
     activeLayoutId: state.activeLayoutId === layoutId ? null : state.activeLayoutId,
-  }))
+  } satisfies typeof state))
 }
 
 export function updateLayoutFromCurrentState(layoutId: string) {
@@ -254,7 +254,7 @@ export function updateLayoutFromCurrentState(layoutId: string) {
         ? { ...l, sidebarVisible, chatVisible, resultsVisible, chatPosition, resultsPosition }
         : l,
     ),
-  }))
+  } satisfies typeof state))
 }
 
 export function nextLayout() {
