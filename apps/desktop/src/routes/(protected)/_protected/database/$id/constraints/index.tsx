@@ -1,11 +1,19 @@
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
+import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/hightlight'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@conar/ui/components/dropdown-menu'
 import { Input } from '@conar/ui/components/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiKey2Line, RiLinksLine, RiShieldCheckLine, RiTable2 } from '@remixicon/react'
+import { RiCloseLine, RiDatabase2Line, RiFilter3Line, RiInformationLine, RiKey2Line, RiLinksLine, RiRefreshLine, RiShieldCheckLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
@@ -23,11 +31,12 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id/const
 
 function DatabaseConstraintsPage() {
   const { database } = Route.useLoaderData()
-  const { data: constraints } = useDatabaseConstraints({ database })
+  const { data: constraints, refetch, isRefetching } = useDatabaseConstraints({ database })
   const { data } = useDatabaseTablesAndSchemas({ database })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
+  const [filterTypes, setFilterTypes] = useState<string[]>([])
 
   useEffect(() => {
     if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
@@ -37,6 +46,7 @@ function DatabaseConstraintsPage() {
   const filteredConstraints = useMemo(() => {
     return constraints?.filter(item =>
       item.schema === selectedSchema
+      && (filterTypes.length === 0 || filterTypes.includes(item.type))
       && (!search
         || item.name.toLowerCase().includes(search.toLowerCase())
         || item.table.toLowerCase().includes(search.toLowerCase())
@@ -44,7 +54,7 @@ function DatabaseConstraintsPage() {
         || (item.type && item.type.toLowerCase().includes(search.toLowerCase()))
       ),
     ) ?? []
-  }, [constraints, selectedSchema, search])
+  }, [constraints, selectedSchema, search, filterTypes])
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -65,6 +75,25 @@ function DatabaseConstraintsPage() {
       case 'primaryKey': return 'Primary Key'
       case 'foreignKey': return 'Foreign Key'
       default: return type.charAt(0).toUpperCase() + type.slice(1)
+    }
+  }
+
+  const dropDownItems = [
+    { label: 'Primary Key', value: 'primaryKey' },
+    { label: 'Foreign Key', value: 'foreignKey' },
+    { label: 'Unique', value: 'unique' },
+    { label: 'Check', value: 'check' },
+  ]
+
+  const handleCheckedChange = (checked: boolean, value: string) => {
+    if (checked) {
+      const newTypes = [...filterTypes, value]
+      if (newTypes.length === dropDownItems.length)
+        setFilterTypes([])
+      else setFilterTypes(newTypes)
+    }
+    else {
+      setFilterTypes(filterTypes.filter(t => t !== value))
     }
   }
 
@@ -93,6 +122,50 @@ function DatabaseConstraintsPage() {
                 </button>
               )}
             </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={`
+                    w-[180px] justify-start
+                    focus-visible:ring-0 focus-visible:ring-offset-0
+                  `}
+                >
+                  <RiFilter3Line className="mr-2 size-4 text-muted-foreground" />
+                  {filterTypes.length > 0
+                    ? (
+                        <span>
+                          {filterTypes.length}
+                          {' '}
+                          selected
+                        </span>
+                      )
+                    : <span className="text-muted-foreground">Filter Type</span>}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[180px]">
+                <DropdownMenuCheckboxItem
+                  checked={filterTypes.length === 0}
+                  onSelect={(e) => {
+                    e.preventDefault()
+                    setFilterTypes([])
+                  }}
+                >
+                  Select All
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuSeparator />
+                {dropDownItems.map(type => (
+                  <DropdownMenuCheckboxItem
+                    key={type.value}
+                    checked={filterTypes.includes(type.value)}
+                    onSelect={e => e.preventDefault()}
+                    onCheckedChange={checked => handleCheckedChange(checked, type.value)}
+                  >
+                    {type.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             {schemas.length > 1 && (
               <Select value={selectedSchema} onValueChange={setSelectedSchema}>
                 <SelectTrigger className="w-[180px]">
@@ -106,6 +179,18 @@ function DatabaseConstraintsPage() {
                 </SelectContent>
               </Select>
             )}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => refetch()}
+              disabled={isRefetching}
+            >
+              <RiRefreshLine className={`
+                size-4
+                ${isRefetching ? 'animate-spin' : ''}
+              `}
+              />
+            </Button>
           </div>
         </div>
 
