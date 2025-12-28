@@ -44,11 +44,15 @@ export function ErrorPage({ error }: ErrorComponentProps) {
     <EventsProvider>
       <ThemeObserver />
       <Toaster />
-      <div className="flex items-center justify-center min-h-screen p-4">
+      <div className="flex min-h-screen items-center justify-center p-4">
         <div className="relative z-20 w-full max-w-lg">
           <Card>
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-destructive/10">
+              <div className={`
+                mx-auto mb-4 flex size-16 items-center justify-center
+                rounded-full bg-destructive/10
+              `}
+              >
                 <RiAlertLine className="size-8 text-destructive" />
               </div>
               <CardTitle className="text-xl">Something went wrong</CardTitle>
@@ -60,16 +64,19 @@ export function ErrorPage({ error }: ErrorComponentProps) {
             </CardHeader>
             <CardContent>
               {!(error instanceof TraversalError) && (
-                <ScrollArea className="rounded-md bg-muted p-4 text-sm h-[300px] font-mono">
+                <ScrollArea className={`
+                  h-[300px] rounded-md bg-muted p-4 font-mono text-sm
+                `}
+                >
                   {error.message}
                   {!!error.cause && !String(error.cause).includes(error.message) && (
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-xs text-muted-foreground">
                       {String(error.cause)}
                     </span>
                   )}
                   {error.stack && (
                     <div className="mt-4">
-                      <div className="text-muted-foreground text-xs">
+                      <div className="text-xs text-muted-foreground">
                         {error.stack.startsWith(`Error: ${error.message}`)
                           ? error.stack.split('\n').slice(1).join('\n')
                           : error.stack}
@@ -79,17 +86,27 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                 </ScrollArea>
               )}
               {error instanceof TraversalError && (
-                <ScrollArea className="rounded-md bg-muted p-4 text-xs text-muted-foreground h-[300px] font-mono">
+                <ScrollArea className={`
+                  h-[300px] rounded-md bg-muted p-4 font-mono text-xs
+                  text-muted-foreground
+                `}
+                >
                   {error.arkErrors.map((err, index) => (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <div key={index} className="mb-4 last:mb-0">
+
+                    <div
+                      key={index}
+                      className={`
+                        mb-4
+                        last:mb-0
+                      `}
+                    >
                       <div className="font-semibold text-destructive">
                         Error
                         {' '}
                         {index + 1}
                         :
                       </div>
-                      <div className="ml-2 mt-1">
+                      <div className="mt-1 ml-2">
                         {err.message}
                       </div>
                     </div>

@@ -117,7 +117,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
           columns={columns ?? []}
           filtersGrouped={SQL_FILTERS_GROUPED}
         >
-          <div className="h-full flex flex-col justify-between">
+          <div className="flex h-full flex-col justify-between">
             <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
               <Header table={table} schema={schema} />
               <Filters />
@@ -160,17 +160,24 @@ function DatabaseTablesPage() {
   }, [schema, table, lastOpenedTable])
 
   return (
-    <ResizablePanelGroup autoSaveId={`database-layout-${database.id}`} direction="horizontal" className="flex">
+    <ResizablePanelGroup
+      autoSaveId={`database-layout-${database.id}`}
+      direction="horizontal"
+      className="flex"
+    >
       <ResizablePanel
         defaultSize={20}
         minSize={10}
         maxSize={50}
-        className="h-full border bg-background rounded-lg"
+        className="h-full rounded-lg border bg-background"
       >
         <Sidebar key={database.id} />
       </ResizablePanel>
       <ResizableHandle className="w-1 bg-transparent" />
-      <ResizablePanel defaultSize={80} className="flex-1 border bg-background rounded-lg">
+      <ResizablePanel
+        defaultSize={80}
+        className="flex-1 rounded-lg border bg-background"
+      >
         {schema && table && tableStore
           ? (
               <TableContent
@@ -180,12 +187,12 @@ function DatabaseTablesPage() {
               />
             )
           : (
-              <div className="p-4 flex items-center justify-center h-full">
-                <div className="text-center space-y-4">
+              <div className="flex h-full items-center justify-center p-4">
+                <div className="space-y-4 text-center">
                   <div className="text-lg font-medium">
                     No table selected
                   </div>
-                  <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                  <p className="mx-auto max-w-md text-sm text-muted-foreground">
                     Select a schema from the dropdown and choose a table from the sidebar to view and manage your data.
                   </p>
                 </div>

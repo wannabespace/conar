@@ -1,5 +1,6 @@
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
+import { cn } from '@conar/ui/lib/utils'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
@@ -11,6 +12,7 @@ import {
   prefetchDatabaseCore,
 } from '~/entities/database'
 import { QueryLogger } from '~/entities/database/components/query-logger'
+import { layoutStore } from '~/lib/layout-store'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
 
@@ -42,6 +44,7 @@ function DatabasePage() {
   })
   const store = databaseStore(database.id)
   const loggerOpened = useStore(store, state => state.loggerOpened)
+  const sidebarVisible = useStore(layoutStore, s => s.sidebarVisible)
 
   useEffect(() => {
     if (currentPageId) {
@@ -63,12 +66,31 @@ function DatabasePage() {
   }
 
   return (
-    <div className="flex bg-gray-100 dark:bg-neutral-950/60">
-      <DatabaseSidebar className="w-16" />
-      <div className="h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))] m-2 ml-0 flex flex-col">
+    <div className={`
+      flex bg-gray-100
+      dark:bg-neutral-950/60
+    `}
+    >
+      <DatabaseSidebar
+        className={cn(
+          'w-16 transition-all duration-200',
+          {
+            'w-0 overflow-hidden opacity-0': !sidebarVisible,
+          },
+        )}
+      />
+      <div
+        className={cn(
+          'm-2 flex flex-col transition-all duration-200',
+          {
+            'ml-0 h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))]': sidebarVisible,
+            'h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(4)))]': !sidebarVisible,
+          },
+        )}
+      >
         <ResizablePanelGroup
           direction="vertical"
-          className="flex-1 min-h-0"
+          className="min-h-0 flex-1"
           autoSaveId={`logger-layout-${database.id}`}
         >
           <ResizablePanel defaultSize={70} minSize={50}>
@@ -76,8 +98,13 @@ function DatabasePage() {
           </ResizablePanel>
           {loggerOpened && (
             <>
-              <ResizableHandle className="h-1! bg-body" />
-              <ResizablePanel defaultSize={30} minSize={10} maxSize={50} className="border overflow-auto rounded-lg bg-background">
+              <ResizableHandle className="bg-body h-1!" />
+              <ResizablePanel
+                defaultSize={30}
+                minSize={10}
+                maxSize={50}
+                className="overflow-auto rounded-lg border bg-background"
+              >
                 <QueryLogger database={database} />
               </ResizablePanel>
             </>

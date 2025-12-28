@@ -35,7 +35,7 @@ export function HeaderActionsColumns({ database, table, schema }: { database: ty
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <PopoverContent className="p-0 w-2xs" side="bottom" align="end">
+      <PopoverContent className="w-2xs p-0" side="bottom" align="end">
         <Command>
           <CommandInput placeholder="Search columns..." />
           <CommandList className="h-fit max-h-[70vh]">
@@ -49,7 +49,9 @@ export function HeaderActionsColumns({ database, table, schema }: { database: ty
                 } satisfies typeof state))}
               >
                 <span className="size-4">
-                  {hiddenColumns.length === 0 && <RiCheckLine className="size-4 opacity-50" />}
+                  {hiddenColumns.length === 0 && (
+                    <RiCheckLine className="size-4 opacity-50" />
+                  )}
                 </span>
                 <RiLayoutColumnLine className="size-4 opacity-50" />
                 <span>{hiddenColumns.length === 0 ? 'Hide all columns' : 'Show all columns'}</span>
@@ -70,9 +72,11 @@ export function HeaderActionsColumns({ database, table, schema }: { database: ty
                   } satisfies typeof state))}
                 >
                   <span className="size-4 shrink-0">
-                    {!hiddenColumns.includes(column.id) && <RiCheckLine className="size-4 opacity-50" />}
+                    {!hiddenColumns.includes(column.id) && (
+                      <RiCheckLine className="size-4 opacity-50" />
+                    )}
                   </span>
-                  <RiDatabase2Line className="size-4 opacity-50 shrink-0" />
+                  <RiDatabase2Line className="size-4 shrink-0 opacity-50" />
                   <span data-mask className="truncate">{column.id}</span>
                 </CommandItem>
               ))}

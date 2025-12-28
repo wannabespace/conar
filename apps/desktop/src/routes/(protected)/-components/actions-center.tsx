@@ -63,10 +63,14 @@ function ActionsDatabase({ database }: { database: typeof databases.$inferSelect
       onSelect={() => onDatabaseSelect(database)}
     >
       <DatabaseIcon type={database.type} className="size-4 shrink-0" />
-      <div className="flex gap-2 items-center">
+      <div className="flex items-center gap-2">
         {database.name}
         {database.label && (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-muted-foreground/10 text-muted-foreground whitespace-nowrap">
+          <span className={`
+            rounded-full bg-muted-foreground/10 px-2 py-0.5 text-xs
+            whitespace-nowrap text-muted-foreground
+          `}
+          >
             {database.label}
           </span>
         )}

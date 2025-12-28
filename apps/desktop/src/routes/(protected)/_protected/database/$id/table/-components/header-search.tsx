@@ -53,15 +53,25 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
 
   return (
     <form
-      className="relative max-w-full w-80 has-focus-visible:w-full transition-all duration-300 ease-in-out"
+      className={`
+        relative w-80 max-w-full transition-all duration-300 ease-in-out
+        has-focus-visible:w-full
+      `}
       onSubmit={(e) => {
         e.preventDefault()
         generateFilter({ prompt, context })
       }}
     >
-      <RiBardLine className="size-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+      <RiBardLine className={`
+        pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2
+        text-muted-foreground
+      `}
+      />
       <Input
-        className="pl-8 pr-10 w-full focus-visible:ring-0 focus-visible:border-border"
+        className={`
+          w-full pr-10 pl-8
+          focus-visible:border-border focus-visible:ring-0
+        `}
         placeholder="Ask AI to filter data..."
         disabled={isPending}
         value={prompt}
@@ -72,7 +82,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         variant="secondary"
         size="icon-xs"
         disabled={isPending}
-        className="absolute right-2 top-1/2 -translate-y-1/2"
+        className="absolute top-1/2 right-2 -translate-y-1/2"
       >
         <LoadingContent loading={isPending} loaderClassName="size-3">
           <ContentSwitch

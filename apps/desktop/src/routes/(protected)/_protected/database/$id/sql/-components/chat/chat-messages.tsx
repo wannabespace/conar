@@ -169,22 +169,28 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
             </TooltipProvider>
             <DropdownMenuContent
               align="end"
-              className="min-w-[220px] max-h-64 overflow-auto"
+              className="max-h-64 min-w-[220px] overflow-auto"
               onCloseAutoFocus={e => e.preventDefault()}
               onClick={e => e.stopPropagation()}
             >
-              <div className="px-2 py-2 text-xs font-medium text-muted-foreground">
+              <div className={`
+                px-2 py-2 text-xs font-medium text-muted-foreground
+              `}
+              >
                 Replace existing query
               </div>
               {editorQueries.length === 0 && (
-                <div className="px-3 py-2 text-xs text-muted-foreground select-none">
+                <div className={`
+                  px-3 py-2 text-xs text-muted-foreground select-none
+                `}
+                >
                   No queries found
                 </div>
               )}
               {editorQueries.map((q, index) => (
                 <DropdownMenuItem
                   key={`${q.startLineNumber}-${q.endLineNumber}`}
-                  className="flex items-center justify-between w-full gap-2"
+                  className="flex w-full items-center justify-between gap-2"
                   onClick={(e) => {
                     e.stopPropagation()
                     replaceQuery(q)
@@ -195,7 +201,10 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
                     {' '}
                     {getQueryNumber(index)}
                   </span>
-                  <span className="text-[10px] text-muted-foreground/70 font-mono">
+                  <span className={`
+                    font-mono text-[10px] text-muted-foreground/70
+                  `}
+                  >
                     {q.startLineNumber === q.endLineNumber
                       ? `Line ${q.startLineNumber}`
                       : `Lines ${q.startLineNumber} - ${q.endLineNumber}`}
@@ -229,7 +238,7 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loadi
         <div
           // eslint-disable-next-line react/no-array-index-key
           key={index}
-          className={cn(loading && 'animate-in fade-in duration-200')}
+          className={cn(loading && 'animate-in duration-200 fade-in')}
         >
           <p className="text-xs font-medium">Reasoning</p>
           <p className="text-xs">{part.text}</p>
@@ -242,7 +251,7 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loadi
         <ChatMessageTool
           // eslint-disable-next-line react/no-array-index-key
           key={index}
-          className={cn(loading && 'animate-in fade-in duration-200')}
+          className={cn(loading && 'animate-in duration-200 fade-in')}
           part={part}
         />
       )
@@ -269,11 +278,20 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
       <div>
         <div
           className={cn(
-            'relative inline-flex bg-primary text-primary-foreground rounded-lg px-2 py-1',
-            canHide && !isVisible && 'overflow-hidden max-h-[100px]',
+            `
+              relative inline-flex rounded-lg bg-primary px-2 py-1
+              text-primary-foreground
+            `,
+            canHide && !isVisible && 'max-h-[100px] overflow-hidden',
           )}
         >
-          <div className="h-fit [&_a]:text-white" ref={partsRef}>
+          <div
+            className={`
+              h-fit
+              [&_a]:text-white
+            `}
+            ref={partsRef}
+          >
             <ChatMessageParts parts={message.parts} />
           </div>
           {canHide && (
@@ -281,12 +299,24 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
               <Button
                 variant="ghost"
                 size="icon-sm"
-                className="shrink-0 text-primary-foreground! hover:bg-primary-foreground/10! -mr-1"
+                className={`
+                  -mr-1 shrink-0 text-primary-foreground!
+                  hover:bg-primary-foreground/10!
+                `}
                 onClick={() => setIsVisible(!isVisible)}
               >
-                <RiArrowDownSLine className={cn('duration-100', isVisible ? 'rotate-180' : 'rotate-0')} />
+                <RiArrowDownSLine className={cn('duration-100', isVisible
+                  ? `rotate-180`
+                  : `rotate-0`)}
+                />
               </Button>
-              {!isVisible && <div className="absolute z-10 bottom-0 left-0 right-0 h-16 bg-linear-to-t from-primary to-transparent pointer-events-none" />}
+              {!isVisible && (
+                <div className={`
+                  pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-16
+                  bg-linear-to-t from-primary to-transparent
+                `}
+                />
+              )}
             </>
           )}
         </div>
@@ -307,7 +337,9 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
 function AssistantMessageLoader({ children, className, ...props }: ComponentProps<'div'>) {
   return (
     <div
-      className={cn('flex items-center gap-2 text-muted-foreground animate-pulse', className)}
+      className={cn(`
+        flex animate-pulse items-center gap-2 text-muted-foreground
+      `, className)}
       {...props}
     >
       <AppLogo className="size-4" />
@@ -336,13 +368,24 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
           />
         </div>
       </div>
-      <div className="sticky bottom-0 z-30 flex items-center justify-between -mr-1 mt-2 first:mt-0 gap-1">
-        <div className={cn('duration-150', isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
+      <div className={`
+        sticky bottom-0 z-30 mt-2 -mr-1 flex items-center justify-between gap-1
+        first:mt-0
+      `}
+      >
+        <div className={cn('duration-150', isLoading
+          ? 'opacity-100'
+          : `pointer-events-none opacity-0`)}
+        >
           <AssistantMessageLoader>
             {status === 'submitted' ? 'Thinking...' : 'Writing...'}
           </AssistantMessageLoader>
         </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover/message:opacity-100 transition-opacity duration-150">
+        <div className={`
+          flex items-center gap-1 opacity-0 transition-opacity duration-150
+          group-hover/message:opacity-100
+        `}
+        >
           {isLast && (
             <ChatMessageFooterButton
               icon={<RiRestartLine className="size-4 text-muted-foreground" />}
@@ -378,7 +421,7 @@ function ErrorMessage({ error, className, ...props }: { error: Error } & Compone
         <AlertTitle>Error generating response</AlertTitle>
         <AlertDescription>
           <p>{error.message}</p>
-          <div className="flex gap-2 mt-2">
+          <div className="mt-2 flex gap-2">
             <Button
               size="sm"
               onClick={() => chat.regenerate()}
@@ -432,7 +475,7 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
     >
       <div
         ref={contentRef}
-        className="relative px-4 flex flex-col"
+        className="relative flex flex-col px-4"
         style={{ gap: `${MESSAGES_GAP}px` }}
       >
         {messages.map((message, index) => (
@@ -470,7 +513,10 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
         )}
         {error && <ErrorMessage error={error} />}
       </div>
-      <div className={cn('sticky bottom-4 z-40 transition-opacity duration-150', isNearBottom ? 'opacity-0 pointer-events-none' : '')}>
+      <div className={cn('sticky bottom-4 z-40 transition-opacity duration-150', isNearBottom
+        ? `pointer-events-none opacity-0`
+        : '')}
+      >
         <Button
           size="icon-sm"
           variant="secondary"

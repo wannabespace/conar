@@ -46,7 +46,7 @@ function ForgotPasswordPage() {
           <h2 className="text-2xl font-semibold tracking-tight">
             Email sent successfully
           </h2>
-          <p className="text-sm text-muted-foreground max-w-sm">
+          <p className="max-w-sm text-sm text-muted-foreground">
             We've sent you an email with a link to reset your password.
             Click the link and create a new password.
           </p>
@@ -63,7 +63,10 @@ function ForgotPasswordPage() {
   return (
     <>
       <div className="space-y-2">
-        <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+        <h1 className={`
+          flex items-center gap-2 text-2xl font-semibold tracking-tight
+        `}
+        >
           Forgot your password?
         </h1>
         <p className="text-sm text-muted-foreground">

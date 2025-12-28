@@ -38,7 +38,7 @@ export function RunnerResultsTable({
       header: ({ columnIndex, style }) => (
         <div
           className={cn(
-            'flex w-full items-center justify-between shrink-0 p-2',
+            'flex w-full shrink-0 items-center justify-between p-2',
             columnIndex === 0 && 'pl-4',
           )}
           style={style}
@@ -46,7 +46,7 @@ export function RunnerResultsTable({
           <div className="text-xs">
             <div
               data-mask
-              className="truncate font-medium flex items-center gap-1"
+              className="flex items-center gap-1 truncate font-medium"
               title={column.id}
             >
               {column.id}
@@ -65,7 +65,7 @@ export function RunnerResultsTable({
 
   return (
     <div className="h-full">
-      <div className="pl-4 pr-1 h-10 flex items-center justify-between gap-2">
+      <div className="flex h-10 items-center justify-between gap-2 pr-1 pl-4">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Results</span>
           <span className="text-xs text-muted-foreground">
@@ -76,19 +76,23 @@ export function RunnerResultsTable({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="relative flex-1 max-w-60">
+          <div className="relative max-w-60 flex-1">
             <Input
               placeholder="Search results..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-7 pr-8 h-8 text-sm"
+              className="h-8 w-full pr-8 pl-7 text-sm"
             />
-            <RiSearchLine className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground size-3.5" />
+            <RiSearchLine className={`
+              absolute top-1/2 left-2 size-3.5 -translate-y-1/2
+              text-muted-foreground
+            `}
+            />
             {search && (
               <Button
                 variant="ghost"
                 size="icon-xs"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2"
+                className="absolute top-1/2 right-1.5 -translate-y-1/2"
                 onClick={() => setSearch('')}
               >
                 <RiCloseLine className="size-4" />

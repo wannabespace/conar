@@ -51,7 +51,10 @@ export function RunnerAlertDialog({
             Potentially Dangerous SQL Query
           </AlertDialogTitle>
           <AlertDialogDescription>
-            <span className="block rounded-md bg-warning/10 p-3 mb-3 border border-warning/20">
+            <span className={`
+              mb-3 block rounded-md border border-warning/20 bg-warning/10 p-3
+            `}
+            >
               Your query contains potentially dangerous SQL keywords:
               <span className="font-semibold text-warning">
                 {' '}

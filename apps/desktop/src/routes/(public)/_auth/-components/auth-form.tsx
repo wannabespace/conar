@@ -148,7 +148,10 @@ function SocialAuthForm({ type }: { type: Type }) {
               {' '}
               <button
                 type="button"
-                className="text-primary cursor-pointer hover:underline"
+                className={`
+                  cursor-pointer text-primary
+                  hover:underline
+                `}
                 onClick={() => copy(googleUrl || githubUrl!, 'URL copied to clipboard')}
               >
                 copy the URL
@@ -159,7 +162,10 @@ function SocialAuthForm({ type }: { type: Type }) {
           </DialogHeader>
           <button
             type="button"
-            className="text-xs text-primary cursor-pointer hover:underline"
+            className={`
+              cursor-pointer text-xs text-primary
+              hover:underline
+            `}
             onClick={() => setIsManualAuthOpen(true)}
           >
             Click here to paste URL from browser
@@ -236,7 +242,11 @@ export function AuthForm({ type }: { type: Type }) {
       <SocialAuthForm type={type} />
       <div className="relative">
         <Separator />
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-6 text-xs text-muted-foreground">
+        <span className={`
+          absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+          bg-background px-6 text-xs text-muted-foreground
+        `}
+        >
           OR
         </span>
       </div>
@@ -284,7 +294,12 @@ export function AuthForm({ type }: { type: Type }) {
                     <div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">Password</span>
-                        <Button variant="link" size="xs" className="text-muted-foreground" asChild>
+                        <Button
+                          variant="link"
+                          size="xs"
+                          className="text-muted-foreground"
+                          asChild
+                        >
                           <Link to="/forgot-password">
                             Forgot password?
                           </Link>

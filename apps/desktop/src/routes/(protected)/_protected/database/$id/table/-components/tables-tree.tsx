@@ -33,13 +33,13 @@ const treeTransition = {
 
 function Skeleton() {
   return (
-    <div className="space-y-3 w-full">
+    <div className="w-full space-y-3">
       {Array.from({ length: 10 }).map((_, i) => (
         // eslint-disable-next-line react/no-array-index-key
-        <div key={i} className="flex items-center gap-2 h-5 px-2">
-          <div className="h-full w-5 shrink-0 rounded-md bg-muted animate-pulse" />
+        <div key={i} className="flex h-5 items-center gap-2 px-2">
+          <div className="h-full w-5 shrink-0 animate-pulse rounded-md bg-muted" />
           <div
-            className="h-full rounded-md bg-muted animate-pulse"
+            className="h-full animate-pulse rounded-md bg-muted"
             style={{ width: `${Math.random() * 40 + 60 - 30}%` }}
           />
         </div>
@@ -70,13 +70,20 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
       preloadDelay={200}
       onDoubleClick={() => addTab(database.id, schema, table)}
       className={cn(
-        'group w-full flex items-center gap-2 border border-transparent py-1 px-2 text-sm text-foreground rounded-md hover:bg-accent/30',
-        tableParam === table && schemaParam === schema && 'bg-primary/10 hover:bg-primary/20 border-primary/20',
+        `
+          group flex w-full items-center gap-2 rounded-md border
+          border-transparent px-2 py-1 text-sm text-foreground
+          hover:bg-accent/30
+        `,
+        tableParam === table && schemaParam === schema && `
+          border-primary/20 bg-primary/10
+          hover:bg-primary/20
+        `,
       )}
     >
       <RiTableLine
         className={cn(
-          'size-4 text-muted-foreground shrink-0 opacity-50',
+          'size-4 shrink-0 text-muted-foreground opacity-50',
           tableParam === table && 'text-primary opacity-100',
         )}
       />
@@ -87,7 +94,11 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
         variant="ghost"
         size="icon-xs"
         className={cn(
-          'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 ml-auto transition-opacity -mr-1',
+          `
+            -mr-1 ml-auto opacity-0 transition-opacity
+            group-hover:opacity-100
+            focus-visible:opacity-100
+          `,
           tableParam === table && 'hover:bg-primary/10',
         )}
         onClick={(e) => {
@@ -96,7 +107,11 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
           togglePinTable(database.id, schema, table)
         }}
       >
-        {pinned ? <RiPushpinFill className="size-3 text-primary" /> : <RiPushpinLine className="size-3" />}
+        {pinned
+          ? <RiPushpinFill className="size-3 text-primary" />
+          : (
+              <RiPushpinLine className="size-3" />
+            )}
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -104,7 +119,11 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
             variant="ghost"
             size="icon-xs"
             className={cn(
-              'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 transition-opacity',
+              `
+                opacity-0 transition-opacity
+                group-hover:opacity-100
+                focus-visible:opacity-100
+              `,
               tableParam === table && 'hover:bg-primary/10',
             )}
             onClick={e => e.stopPropagation()}
@@ -232,14 +251,22 @@ export function TablesTree({ className, search }: { className?: string, search?:
       >
         {isPending
           ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-center h-full">
+              <div className={`
+                flex h-full flex-1 flex-col items-center justify-center
+                text-center
+              `}
+              >
                 <Skeleton />
               </div>
             )
           : filteredTablesAndSchemas.length === 0
             ? (
-                <div className="flex-1 flex flex-col items-center justify-center py-8 text-center h-full">
-                  <RiTableLine className="h-10 w-10 text-muted-foreground mb-2" />
+                <div className={`
+                  flex h-full flex-1 flex-col items-center justify-center py-8
+                  text-center
+                `}
+                >
+                  <RiTableLine className="mb-2 h-10 w-10 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">No tables found</p>
                 </div>
               )
@@ -257,15 +284,24 @@ export function TablesTree({ className, search }: { className?: string, search?:
                         value={schema.name}
                         className="border-b-0"
                       >
-                        <AccordionTrigger className="truncate mb-1 py-1.5 px-2 cursor-pointer hover:no-underline hover:bg-accent/50">
+                        <AccordionTrigger className={`
+                          mb-1 cursor-pointer truncate px-2 py-1.5
+                          hover:bg-accent/50 hover:no-underline
+                        `}
+                        >
                           <span className="flex items-center gap-2">
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <RiStackLine
                                     className={cn(
-                                      'size-4 text-muted-foreground shrink-0 opacity-50',
-                                      schemaParam === schema.name && 'text-primary opacity-100',
+                                      `
+                                        size-4 shrink-0 text-muted-foreground
+                                        opacity-50
+                                      `,
+                                      schemaParam === schema.name && `
+                                        text-primary opacity-100
+                                      `,
                                     )}
                                   />
                                 </TooltipTrigger>
@@ -301,7 +337,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                             ))}
                             {schema.pinnedTables.length > 0 && schema.unpinnedTables.length > 0 && (
                               <MotionSeparator
-                                className="h-px! my-2"
+                                className="my-2 h-px!"
                                 layout
                                 variants={treeVariants}
                                 initial={search ? treeVariants.hidden : false}

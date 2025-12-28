@@ -41,7 +41,7 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
             <Label htmlFor={nameId} className="mb-2">
               Name
             </Label>
-            <div className="flex w-full gap-2 items-end">
+            <div className="flex w-full items-end gap-2">
               <Input
                 id={nameId}
                 className="field-sizing-content"
@@ -106,14 +106,20 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
               <span className="text-xs text-muted-foreground/50">(optional)</span>
             </Label>
             <div className="flex flex-col gap-2">
-              <div className="flex flex-wrap gap-2 mt-1">
+              <div className="mt-1 flex flex-wrap gap-2">
                 {COLOR_OPTIONS.map(colorOption => (
                   <button
                     key={colorOption}
                     type="button"
                     className={cn(
-                      'size-6 rounded-full transition-all bg-(--color) cursor-pointer',
-                      color === colorOption && 'ring-2 ring-offset-2 ring-offset-background ring-(--color)',
+                      `
+                        size-6 cursor-pointer rounded-full bg-(--color)
+                        transition-all
+                      `,
+                      color === colorOption && `
+                        ring-2 ring-(--color) ring-offset-2
+                        ring-offset-background
+                      `,
                     )}
                     style={{
                       '--color': colorOption,
@@ -125,14 +131,14 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm">
               <Checkbox
                 checked={saveInCloud}
                 onCheckedChange={() => setSaveInCloud(!saveInCloud)}
               />
               Do you want to sync the password in our cloud?
             </label>
-            <div className="text-xs text-muted-foreground/50 text-balance">
+            <div className="text-xs text-balance text-muted-foreground/50">
               Syncing passwords in our cloud allows access from any device without re-entering the password.
               <br />
               If not synced, we will store the connection string without the password.

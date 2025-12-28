@@ -16,8 +16,8 @@ export function Filters() {
   }
 
   return (
-    <div className="flex gap-2 justify-between">
-      <div className="flex gap-2 flex-wrap">
+    <div className="flex justify-between gap-2">
+      <div className="flex flex-wrap gap-2">
         {filters.map(filter => (
           <FilterItem
             key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}`}

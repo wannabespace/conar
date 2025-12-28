@@ -76,16 +76,27 @@ function Pre({ children }: { children?: ReactNode }) {
   const lines = content.split('\n').length
 
   return (
-    <div className={cn(generating && 'animate-in fade-in duration-200', 'typography-disabled relative my-4 first:mt-0 last:mb-0')}>
+    <div className={cn(generating && 'animate-in duration-200 fade-in', `
+      typography-disabled relative my-4
+      first:mt-0
+      last:mb-0
+    `)}
+    >
       <SingleAccordion
         open={opened}
         onOpenChange={setOpened}
       >
         <SingleAccordionTrigger className="py-1.5" asChild>
-          <div className="flex justify-between items-center w-full">
+          <div className="flex w-full items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2">
-                {lang === 'text' ? <RiText className="size-4 text-muted-foreground" /> : <RiCodeLine className="size-4 text-muted-foreground" />}
+                {lang === 'text'
+                  ? (
+                      <RiText className="size-4 text-muted-foreground" />
+                    )
+                  : (
+                      <RiCodeLine className="size-4 text-muted-foreground" />
+                    )}
                 <span className="font-medium">
                   {langsMap[lang] || lang}
                 </span>
@@ -117,7 +128,7 @@ function Pre({ children }: { children?: ReactNode }) {
 
 function MarkdownTable({ children, className, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('overflow-x-auto my-4', className)} {...props}>
+    <div className={cn('my-4 overflow-x-auto', className)} {...props}>
       <Table className="w-full text-sm">
         {children}
       </Table>
@@ -135,7 +146,7 @@ function P({ children, className }: { children?: ReactNode, className?: string }
           <span
             // eslint-disable-next-line react/no-array-index-key
             key={index}
-            className={cn(generating && 'animate-in fade-in duration-200')}
+            className={cn(generating && 'animate-in duration-200 fade-in')}
           >
             {char}
           </span>
@@ -190,7 +201,12 @@ export function Markdown({
 
   return (
     <MarkdownContext.Provider value={{ generating, codeActions }}>
-      <div className={cn('typography', generating && 'animate-in fade-in duration-200', className)} {...props}>
+      <div
+        className={cn('typography', generating && `
+          animate-in duration-200 fade-in
+        `, className)}
+        {...props}
+      >
         {blocks.map((block, index) => (
           <MarkdownBase
             key={id ? `${id}-block_${index}` : `block_${index}`}

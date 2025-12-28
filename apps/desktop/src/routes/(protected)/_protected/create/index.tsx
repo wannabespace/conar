@@ -138,9 +138,9 @@ function CreateConnectionPage() {
           e.preventDefault()
           form.handleSubmit()
         }}
-        className="flex py-10 flex-col w-full max-w-2xl px-6 mx-auto"
+        className="mx-auto flex w-full max-w-2xl flex-col px-6 py-10"
       >
-        <div className="flex items-center gap-2 w-full mb-6">
+        <div className="mb-6 flex w-full items-center gap-2">
           <Button
             type="button"
             variant="link"
@@ -151,10 +151,18 @@ function CreateConnectionPage() {
             Back
           </Button>
         </div>
-        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+        <h1 className={`
+          scroll-m-20 text-4xl font-extrabold tracking-tight
+          lg:text-5xl
+        `}
+        >
           Create a connection
         </h1>
-        <p className="leading-7 not-first:mt-2 mb-10 text-muted-foreground">
+        <p className={`
+          mb-10 leading-7 text-muted-foreground
+          not-first:mt-2
+        `}
+        >
           Connect to your database by providing the connection details.
         </p>
         <Stepper
@@ -194,7 +202,7 @@ function CreateConnectionPage() {
                 test({ type: typeValue!, connectionString })
               }}
             />
-            <div className="flex gap-2 justify-end mt-auto pt-4">
+            <div className="mt-auto flex justify-end gap-2 pt-4">
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -241,7 +249,7 @@ function CreateConnectionPage() {
               color={color}
               setColor={color => form.setFieldValue('color', color)}
             />
-            <div className="flex gap-2 justify-end mt-auto pt-4">
+            <div className="mt-auto flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep('credentials')}>
                 Back
               </Button>

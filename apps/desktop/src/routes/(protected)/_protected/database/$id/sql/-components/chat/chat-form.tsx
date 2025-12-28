@@ -200,7 +200,11 @@ export function ChatForm() {
       className="flex flex-col gap-1"
     >
       <Images databaseId={database.id} />
-      <div className="flex flex-col gap-2 relative dark:bg-input/30 rounded-md border">
+      <div className={`
+        relative flex flex-col gap-2 rounded-md border
+        dark:bg-input/30
+      `}
+      >
         <TipTap
           ref={ref}
           data-mask
@@ -212,7 +216,9 @@ export function ChatForm() {
             } satisfies typeof state))
           }}
           placeholder="Generate SQL query using natural language"
-          className="min-h-[50px] max-h-[250px] p-2 text-sm outline-none overflow-y-auto"
+          className={`
+            max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm outline-none
+          `}
           onEnter={handleSend}
           onImageAdd={(file) => {
             store.setState(state => ({
@@ -221,7 +227,10 @@ export function ChatForm() {
             } satisfies typeof state))
           }}
         />
-        <div className="px-2 pb-2 flex justify-between items-end pointer-events-none">
+        <div className={`
+          pointer-events-none flex items-end justify-between px-2 pb-2
+        `}
+        >
           <div className="pointer-events-auto">
             <Button
               type="button"
@@ -244,13 +253,13 @@ export function ChatForm() {
               </label>
             </Button>
           </div>
-          <div className="flex gap-2 pointer-events-auto">
+          <div className="pointer-events-auto flex gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   size="icon-xs"
                   variant="outline"
-                  className={input.length < 10 ? 'opacity-50 cursor-default' : ''}
+                  className={input.length < 10 ? 'cursor-default opacity-50' : ''}
                   disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt}
                   onClick={() => enhancePrompt({
                     prompt: input,
@@ -263,7 +272,9 @@ export function ChatForm() {
                   >
                     <ContentSwitch
                       active={isEnhancingPrompt}
-                      activeContent={<RiCheckLine className="size-3 text-success" />}
+                      activeContent={(
+                        <RiCheckLine className="size-3 text-success" />
+                      )}
                     >
                       <RiMagicLine className="size-3" />
                     </ContentSwitch>

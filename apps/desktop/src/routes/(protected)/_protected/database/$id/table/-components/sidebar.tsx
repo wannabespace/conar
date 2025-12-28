@@ -25,8 +25,8 @@ export function Sidebar() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex flex-col gap-2 p-4 pb-0 shrink-0">
+    <div className="flex h-full flex-col">
+      <div className="flex shrink-0 flex-col gap-2 p-4 pb-0">
         <div className="flex items-center justify-between gap-2">
           <CardTitle>Tables</CardTitle>
           <TooltipProvider>
@@ -69,7 +69,9 @@ export function Sidebar() {
             {search && (
               <button
                 type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer p-1"
+                className={`
+                  absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
+                `}
                 onClick={() => store.setState(state => ({ ...state, tablesSearch: '' } satisfies typeof state))}
               >
                 <RiCloseLine className="size-4 text-muted-foreground" />
@@ -78,7 +80,7 @@ export function Sidebar() {
           </div>
         )}
       </div>
-      <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
         <TablesTree className="flex-1" search={search} />
       </div>
     </div>

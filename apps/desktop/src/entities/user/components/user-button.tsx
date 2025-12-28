@@ -8,11 +8,11 @@ export function UserButton() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="cursor-pointer rounded-md size-8">
+      <DropdownMenuTrigger className="size-8 cursor-pointer rounded-md">
         <UserAvatar className="size-full" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-56" side="right" align="end">
-        <div className="flex items-center gap-2 h-10 px-2 mt-1 mb-2">
+        <div className="mt-1 mb-2 flex h-10 items-center gap-2 px-2">
           <UserAvatar className="size-8" />
           <div className="flex flex-col leading-0">
             <span className="text-sm font-medium">

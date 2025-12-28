@@ -9,7 +9,10 @@ function SignInPage() {
   return (
     <>
       <div className="space-y-2">
-        <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+        <h1 className={`
+          flex items-center gap-2 text-2xl font-semibold tracking-tight
+        `}
+        >
           Sign in to Conar
         </h1>
         <p className="text-sm text-muted-foreground">

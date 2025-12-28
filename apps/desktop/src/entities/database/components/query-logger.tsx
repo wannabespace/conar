@@ -50,12 +50,16 @@ function LogTrigger({ query, className, ...props }: { query: SqlLog } & Componen
     <button
       type="button"
       className={cn(
-        'cursor-pointer w-full flex items-center gap-2 justify-between border-t py-1.5 px-4 hover:bg-muted/50',
+        `
+          flex w-full cursor-pointer items-center justify-between gap-2 border-t
+          px-4 py-1.5
+          hover:bg-muted/50
+        `,
         className,
       )}
       {...props}
     >
-      <span className="text-xs text-muted-foreground text-left tabular-nums">
+      <span className="text-left text-xs text-muted-foreground tabular-nums">
         {query.createdAt.toLocaleString('en-US', {
           month: 'short',
           day: 'numeric',
@@ -66,10 +70,13 @@ function LogTrigger({ query, className, ...props }: { query: SqlLog } & Componen
         })}
       </span>
       {getStatusIcon(status)}
-      <span className="text-xs text-muted-foreground text-left tabular-nums w-12">
+      <span className={`
+        w-12 text-left text-xs text-muted-foreground tabular-nums
+      `}
+      >
         {query.duration ? `${query.duration.toFixed()}ms` : ''}
       </span>
-      <code className="text-xs font-mono flex-1 truncate text-left">
+      <code className="flex-1 truncate text-left font-mono text-xs">
         {shortQuery}
       </code>
     </button>
@@ -120,29 +127,32 @@ function Log({ query, className, database }: { query: SqlLog, className?: string
         />
       </PopoverTrigger>
       <PopoverContent
-        className="flex gap-4 w-[95vw]"
+        className="flex w-[95vw] gap-4"
         onAnimationEnd={closePopover}
       >
-        <div className="flex-1 min-w-0 space-y-2">
+        <div className="min-w-0 flex-1 space-y-2">
           <div className="space-y-2">
             <Label>Query</Label>
             <Monaco
               value={formatSql(query.sql, database.type)}
               language="sql"
               options={monacoOptions}
-              className="h-[50vh] border rounded-md overflow-hidden"
+              className="h-[50vh] overflow-hidden rounded-md border"
             />
           </div>
           {query.values && query.values.length > 0 && (
             <div className="space-y-2">
               <Label>Values</Label>
-              <pre className="bg-accent/50 p-2 rounded text-xs font-mono overflow-x-auto">
+              <pre className={`
+                overflow-x-auto rounded bg-accent/50 p-2 font-mono text-xs
+              `}
+              >
                 {formatValues(query.values)}
               </pre>
             </div>
           )}
         </div>
-        <div className="flex-1 min-w-0 space-y-2">
+        <div className="min-w-0 flex-1 space-y-2">
           {!!query.result && (
             <div className="space-y-2">
               <Label>Result</Label>
@@ -150,14 +160,19 @@ function Log({ query, className, database }: { query: SqlLog, className?: string
                 value={JSON.stringify(query.result)}
                 language="json"
                 options={monacoOptions}
-                className="h-[50vh] border rounded-md overflow-hidden"
+                className="h-[50vh] overflow-hidden rounded-md border"
               />
             </div>
           )}
           {query.error && (
             <div className="space-y-2">
               <Label className="text-destructive">Error</Label>
-              <pre className="bg-red-50 dark:bg-red-950 p-2 rounded text-xs font-mono overflow-x-auto text-red-700 dark:text-red-300">
+              <pre className={`
+                overflow-x-auto rounded bg-red-50 p-2 font-mono text-xs
+                text-red-700
+                dark:bg-red-950 dark:text-red-300
+              `}
+              >
                 {query.error}
               </pre>
             </div>
@@ -228,8 +243,8 @@ export function QueryLogger({ database, className }: {
   }, [scrollRef, virtualItems, totalSize])
 
   return (
-    <div className={cn('flex flex-col justify-between h-full', className)}>
-      <div className="flex items-center justify-between py-2 px-4">
+    <div className={cn('flex h-full flex-col justify-between', className)}>
+      <div className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2">
           <CardTitle>
             Query Logger
@@ -238,7 +253,9 @@ export function QueryLogger({ database, className }: {
             <Button
               size="xs"
               variant="outline"
-              className={cn('text-success!', statusGroup === 'success' && 'bg-accent!')}
+              className={cn('text-success!', statusGroup === 'success' && `
+                bg-accent!
+              `)}
               onClick={() => toggleGroup('success')}
             >
               <RiCheckboxCircleLine className="size-3" />
@@ -247,7 +264,9 @@ export function QueryLogger({ database, className }: {
             <Button
               size="xs"
               variant="outline"
-              className={cn('text-destructive!', statusGroup === 'error' && 'bg-accent!')}
+              className={cn('text-destructive!', statusGroup === 'error' && `
+                bg-accent!
+              `)}
               onClick={() => toggleGroup('error')}
             >
               <RiCloseCircleLine className="size-3" />
@@ -256,7 +275,9 @@ export function QueryLogger({ database, className }: {
             <Button
               size="xs"
               variant="outline"
-              className={cn('text-warning!', statusGroup === 'pending' && 'bg-accent!')}
+              className={cn('text-warning!', statusGroup === 'pending' && `
+                bg-accent!
+              `)}
               onClick={() => toggleGroup('pending')}
             >
               <RiTimeLine className="size-3" />
@@ -290,8 +311,10 @@ export function QueryLogger({ database, className }: {
       <ScrollArea
         ref={scrollRef}
         className={cn(
-          'min-h-0 relative',
-          filteredQueries.length === 0 && 'flex flex-col items-center justify-center py-12',
+          'relative min-h-0',
+          filteredQueries.length === 0 && `
+            flex flex-col items-center justify-center py-12
+          `,
         )}
       >
         {filteredQueries.length === 0 && (
@@ -299,7 +322,7 @@ export function QueryLogger({ database, className }: {
             <div className="mb-3">
               <RiFileListLine className="size-10 text-muted-foreground/30" />
             </div>
-            <p className="text-base font-medium text-muted-foreground mb-1">No queries yet</p>
+            <p className="mb-1 text-base font-medium text-muted-foreground">No queries yet</p>
           </>
         )}
         <div ref={contentRef} style={{ height: `${totalSize}px` }}>
@@ -315,7 +338,9 @@ export function QueryLogger({ database, className }: {
         </div>
         <div className="sticky bottom-0 h-0">
           <Button
-            className={cn('absolute bottom-2 left-1/2 -translate-x-1/2', isNearBottom ? 'opacity-0 pointer-events-none' : '')}
+            className={cn('absolute bottom-2 left-1/2 -translate-x-1/2', isNearBottom
+              ? `pointer-events-none opacity-0`
+              : '')}
             variant="secondary"
             size="icon-sm"
             onClick={() => scrollToBottom()}

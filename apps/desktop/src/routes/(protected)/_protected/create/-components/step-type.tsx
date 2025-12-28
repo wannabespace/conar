@@ -20,11 +20,18 @@ export function StepType({ type, setType }: { type: DatabaseType | null, setType
               onClick={() => setType(dbType)}
               className="flex items-center gap-2 px-4 py-2"
             >
-              <DatabaseIcon type={dbType} className="size-4 shrink-0 text-primary" />
+              <DatabaseIcon
+                type={dbType}
+                className="size-4 shrink-0 text-primary"
+              />
               {databaseLabels[dbType]}
             </Button>
           ))}
-          <Button variant="outline" disabled className="flex items-center gap-2 px-4 py-2 opacity-60">
+          <Button
+            variant="outline"
+            disabled
+            className="flex items-center gap-2 px-4 py-2 opacity-60"
+          >
             <MongoIcon />
             MongoDB (soon)
           </Button>

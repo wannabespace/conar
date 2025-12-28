@@ -17,7 +17,7 @@ export function CellSwitch({
   useKeyboardEvent(e => isCtrlAndKey(e, 'Enter'), () => onSave(checked ? 'true' : 'false'))
 
   return (
-    <label className={cn('flex gap-2 items-center text-sm', className)}>
+    <label className={cn('flex items-center gap-2 text-sm', className)}>
       <code className="font-mono">false</code>
       <Switch checked={checked} onCheckedChange={onChange} />
       <code className="font-mono">true</code>

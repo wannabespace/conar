@@ -23,8 +23,8 @@ export function RunnerResults() {
 
   if (queryStatus === 'fetching') {
     return (
-      <div className="h-full flex flex-col gap-2 items-center justify-center">
-        <RiLoader4Line className="size-6 text-primary animate-spin" />
+      <div className="flex h-full flex-col items-center justify-center gap-2">
+        <RiLoader4Line className="size-6 animate-spin text-primary" />
         <p className="text-center text-foreground">Running...</p>
         <Button
           size="xs"
@@ -41,7 +41,7 @@ export function RunnerResults() {
   if (results && results.length > 0) {
     return (
       <Tabs defaultValue="table-0" className="size-full gap-0">
-        <TabsList className="rounded-none w-full bg-muted/50">
+        <TabsList className="w-full rounded-none bg-muted/50">
           {results.map(({ query, error }, index) => (
             <TabsTrigger
               // eslint-disable-next-line react/no-array-index-key
@@ -51,13 +51,16 @@ export function RunnerResults() {
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className={cn('flex items-center justify-center gap-1 w-full', error && 'text-destructive')}>
+                  <span className={cn(`
+                    flex w-full items-center justify-center gap-1
+                  `, error && `text-destructive`)}
+                  >
                     Result
                     {' '}
                     {results.length > 1 ? index + 1 : ''}
                   </span>
                 </TooltipTrigger>
-                <TooltipContent sideOffset={8} className="p-0 pl-2 w-lg">
+                <TooltipContent sideOffset={8} className="w-lg p-0 pl-2">
                   <Monaco
                     value={formatSql(query, database.type)}
                     language="sql"
@@ -84,9 +87,18 @@ export function RunnerResults() {
           >
             {error
               ? (
-                  <div className="h-full flex flex-col gap-2 items-center justify-center max-w-2/3 mx-auto">
+                  <div className={`
+                    mx-auto flex h-full max-w-2/3 flex-col items-center
+                    justify-center gap-2
+                  `}
+                  >
                     Error executing query
-                    <div className="bg-red-50 text-red-700 py-1 px-2 mb-2 rounded text-xs font-mono text-balance max-w-full dark:bg-red-950 dark:text-red-300 overflow-auto max-h-1/2">
+                    <div className={`
+                      mb-2 max-h-1/2 max-w-full overflow-auto rounded bg-red-50
+                      px-2 py-1 font-mono text-xs text-balance text-red-700
+                      dark:bg-red-950 dark:text-red-300
+                    `}
+                    >
                       {error}
                     </div>
                     <Button
@@ -113,7 +125,10 @@ export function RunnerResults() {
                 )
               : !data || !data[0] || data.length === 0
                   ? (
-                      <div className="h-full flex flex-col gap-2 items-center justify-center">
+                      <div className={`
+                        flex h-full flex-col items-center justify-center gap-2
+                      `}
+                      >
                         No data returned
                       </div>
                     )
@@ -130,9 +145,9 @@ export function RunnerResults() {
   }
 
   return (
-    <div className="h-full flex flex-col items-center justify-center">
+    <div className="flex h-full flex-col items-center justify-center">
       <p className="text-center">No results to display</p>
-      <p className="text-xs text-muted-foreground mt-1 text-center">
+      <p className="mt-1 text-center text-xs text-muted-foreground">
         Write and run a
         {' '}
         <span className="font-mono">SELECT</span>

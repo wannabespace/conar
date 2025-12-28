@@ -22,7 +22,7 @@ const gradientLayers = generateGradientLayers()
 
 export function BlurGradient({ className, ...props }: ComponentProps<'div'>) {
   return (
-    <div className={cn('overflow-hidden pointer-events-none', className)} {...props}>
+    <div className={cn('pointer-events-none overflow-hidden', className)} {...props}>
       {gradientLayers.map((style, index) => (
         <div
           // eslint-disable-next-line react/no-array-index-key

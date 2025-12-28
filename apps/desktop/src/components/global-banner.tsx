@@ -12,19 +12,19 @@ type BannerItem = NonNullable<ORPCOutputs['banner']>[number]
 
 const typeConfig = {
   info: {
-    icon: <RiInformationLine className="shrink-0 size-4" />,
+    icon: <RiInformationLine className="size-4 shrink-0" />,
     className: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
   },
   warning: {
-    icon: <RiErrorWarningLine className="shrink-0 size-4" />,
+    icon: <RiErrorWarningLine className="size-4 shrink-0" />,
     className: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400',
   },
   error: {
-    icon: <RiAlertLine className="shrink-0 size-4" />,
+    icon: <RiAlertLine className="size-4 shrink-0" />,
     className: 'bg-red-500/10 border-red-500/20 text-red-400',
   },
   success: {
-    icon: <RiCheckboxCircleLine className="shrink-0 size-4" />,
+    icon: <RiCheckboxCircleLine className="size-4 shrink-0" />,
     className: 'bg-green-500/10 border-green-500/20 text-green-400',
   },
 } satisfies Record<BannerItem['type'], { icon: ReactNode, className: string }>
@@ -47,9 +47,12 @@ export function GlobalBanner() {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: '2rem' }}
           exit={{ opacity: 0, height: 0 }}
-          className={cn('relative border-b text-sm shrink-0', typeConfig[item.type].className)}
+          className={cn('relative shrink-0 border-b text-sm', typeConfig[item.type].className)}
         >
-          <div className="absolute inset-0 flex h-full items-center gap-2 px-4 py-1">
+          <div className={`
+            absolute inset-0 flex h-full items-center gap-2 px-4 py-1
+          `}
+          >
             {typeConfig[item.type].icon}
             <span className="flex-1 leading-none">{item.text}</span>
             <Button

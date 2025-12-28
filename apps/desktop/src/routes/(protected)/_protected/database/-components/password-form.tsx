@@ -56,9 +56,9 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
   })
 
   return (
-    <div className="min-h-[inherit] h-screen flex flex-col justify-center">
-      <div className="w-full flex flex-col gap-6 max-w-xl mx-auto py-10 px-6">
-        <div className="flex items-center gap-2 w-full">
+    <div className="flex h-screen min-h-[inherit] flex-col justify-center">
+      <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-6 py-10">
+        <div className="flex w-full items-center gap-2">
           <Button
             type="button"
             variant="link"
@@ -70,7 +70,7 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
           </Button>
         </div>
         <form
-          className="flex items-center w-full justify-center"
+          className="flex w-full items-center justify-center"
           onSubmit={(e) => {
             e.preventDefault()
             savePassword(password)
@@ -103,7 +103,7 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-2 top-1/2 size-7 -translate-y-1/2"
+                    className="absolute top-1/2 right-2 size-7 -translate-y-1/2"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >

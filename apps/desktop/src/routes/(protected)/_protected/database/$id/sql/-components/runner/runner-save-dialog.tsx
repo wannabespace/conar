@@ -57,7 +57,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
           <DialogTitle>
             Save Query
           </DialogTitle>
-          <div className="text-sm text-muted-foreground mb-4">
+          <div className="mb-4 text-sm text-muted-foreground">
             Saved queries are stored for this database and can be quickly accessed and run from the "Saved queries" panel.
           </div>
           <Label htmlFor="name">

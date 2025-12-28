@@ -15,7 +15,7 @@ export function TableCellReferences({
   return (
     <Tabs defaultValue={references?.[0]?.name} className="size-full gap-0">
       <ScrollArea className="bg-muted/50">
-        <TabsList className="w-full justify-start h-8 bg-transparent">
+        <TabsList className="h-8 w-full justify-start bg-transparent">
           {references.map(reference => (
             <TabsTrigger
               key={reference.name}
@@ -33,7 +33,7 @@ export function TableCellReferences({
         <TabsContent
           key={reference.name}
           value={reference.name}
-          className="w-full h-[calc(100%-(--spacing(8)))]"
+          className="h-[calc(100%-(--spacing(8)))] w-full"
         >
           <TableCellTable
             schema={reference.schema}

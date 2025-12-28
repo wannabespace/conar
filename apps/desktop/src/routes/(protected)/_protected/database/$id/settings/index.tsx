@@ -22,10 +22,14 @@ function SettingItem({ title, description, checked, onCheckedChange }: {
   onCheckedChange: (checked: boolean) => void
 }) {
   return (
-    <Card className="border-border/60 hover:border-border transition-colors">
+    <Card className={`
+      border-border/60 transition-colors
+      hover:border-border
+    `}
+    >
       <CardHeader className="p-4">
         <div className="flex items-center justify-between gap-4">
-          <div className="space-y-1 flex-1">
+          <div className="flex-1 space-y-1">
             <CardTitle className="text-base font-semibold">{title}</CardTitle>
             <CardDescription className="text-sm">
               {description}
@@ -55,11 +59,11 @@ function SettingSection({ title, children }: { title: string, children: ReactNod
 
 function DatabaseSettingsPage() {
   return (
-    <ScrollArea className="bg-background rounded-lg border h-full">
-      <div className="flex flex-col mx-auto max-w-3xl min-h-full p-5">
+    <ScrollArea className="h-full rounded-lg border bg-background">
+      <div className="mx-auto flex min-h-full max-w-3xl flex-col p-5">
         <div className="mb-5">
-          <h1 className="text-2xl font-bold mb-1">Application Settings</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 className="mb-1 text-2xl font-bold">Application Settings</h1>
+          <p className="text-sm text-muted-foreground">
             Manage your application preferences
           </p>
         </div>

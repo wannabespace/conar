@@ -77,10 +77,10 @@ export function RunnerEditorAIZone({
   }
 
   return (
-    <div className="h-full flex flex-col py-1 pr-6">
+    <div className="flex h-full flex-col py-1 pr-6">
       <Popover open={!!aiSuggestion}>
         <PopoverAnchor asChild>
-          <div className="h-full relative w-lg">
+          <div className="relative h-full w-lg">
             <Textarea
               ref={ref}
               value={prompt}
@@ -90,9 +90,13 @@ export function RunnerEditorAIZone({
                 setAiSuggestion(null)
               }}
               className={cn(
-                'h-full min-h-full field-sizing-content resize-none py-1.5 px-2',
+                'field-sizing-content h-full min-h-full resize-none px-2 py-1.5',
                 // Disable monaco default styles
-                'focus-visible:outline-none! focus-visible:border-border! focus:border-border! focus-visible:ring-0!',
+                `
+                  focus:border-border!
+                  focus-visible:border-border! focus-visible:ring-0!
+                  focus-visible:outline-none!
+                `,
               )}
               placeholder="Update selected SQL with AI"
               onKeyDown={(e) => {
@@ -109,7 +113,7 @@ export function RunnerEditorAIZone({
             />
             <Button
               size="xs"
-              className="absolute bottom-2 right-2"
+              className="absolute right-2 bottom-2"
               disabled={isPending || !prompt.trim()}
               onClick={handleSubmit}
             >
@@ -125,7 +129,7 @@ export function RunnerEditorAIZone({
             style={{
               '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
             }}
-            className="p-0 w-lg h-[min(30vh,var(--lines-height))]"
+            className="h-[min(30vh,var(--lines-height))] w-lg p-0"
             onOpenAutoFocus={(e) => {
               e.preventDefault()
               ref.current?.focus()

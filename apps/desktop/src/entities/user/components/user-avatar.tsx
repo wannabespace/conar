@@ -25,7 +25,7 @@ export function UserAvatar({ className, fallbackClassName }: { className?: strin
   return (
     <Avatar className={cn('size-6', className)}>
       {data?.user.image && <AvatarImage src={data?.user.image} />}
-      <AvatarFallback className={cn('uppercase text-xs', fallbackClassName)}>{fallback}</AvatarFallback>
+      <AvatarFallback className={cn('text-xs uppercase', fallbackClassName)}>{fallback}</AvatarFallback>
     </Avatar>
   )
 }

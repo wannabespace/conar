@@ -27,9 +27,9 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
   const removeQueryDialogRef = useRef<ComponentRef<typeof RemoveQueryDialog>>(null)
 
   return (
-    <div className={cn('flex flex-col h-full', className)} {...props}>
+    <div className={cn('flex h-full flex-col', className)} {...props}>
       <RemoveQueryDialog ref={removeQueryDialogRef} />
-      <CardTitle className="py-2 px-4">
+      <CardTitle className="px-4 py-2">
         Saved Queries
       </CardTitle>
       <Separator />
@@ -38,7 +38,10 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
           ? (
               <div className="space-y-1">
                 {data.map(query => (
-                  <div key={query.id} className="w-full flex items-center gap-2 px-4 py-1">
+                  <div
+                    key={query.id}
+                    className="flex w-full items-center gap-2 px-4 py-1"
+                  >
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -52,7 +55,9 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                           >
                             <ContentSwitch
                               active={movedId === query.id}
-                              activeContent={<RiCheckLine className="size-4 text-success" />}
+                              activeContent={(
+                                <RiCheckLine className="size-4 text-success" />
+                              )}
                               onSwitchEnd={() => {
                                 setMovedId(null)
                               }}
@@ -66,11 +71,13 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                    <div className="flex-1 min-w-0 flex flex-col">
-                      <div className="font-medium truncate text-sm">{query.name}</div>
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <div className="truncate text-sm font-medium">{query.name}</div>
                       <div
                         data-mask
-                        className="text-xs text-muted-foreground max-w-full truncate"
+                        className={`
+                          max-w-full truncate text-xs text-muted-foreground
+                        `}
                         title={query.query}
                       >
                         {query.query}
@@ -89,7 +96,9 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                           >
                             <ContentSwitch
                               active={copiedId === query.id}
-                              activeContent={<RiCheckLine className="size-4 text-success" />}
+                              activeContent={(
+                                <RiCheckLine className="size-4 text-success" />
+                              )}
                               onSwitchEnd={() => setCopiedId(null)}
                             >
                               <RiFileCopyLine className="size-4" />
@@ -119,12 +128,16 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
               </div>
             )
           : (
-              <div className="flex flex-col max-w-56 mx-auto items-center justify-center h-full py-12 px-6 text-center">
+              <div className={`
+                mx-auto flex h-full max-w-56 flex-col items-center
+                justify-center px-6 py-12 text-center
+              `}
+              >
                 <span className="mb-2">No saved queries found.</span>
                 <span className="text-xs text-muted-foreground">
                   You can add a new query by pressing the
                   {' '}
-                  <RiSaveLine className="size-4 inline-block" />
+                  <RiSaveLine className="inline-block size-4" />
                   {' '}
                   button.
                 </span>
