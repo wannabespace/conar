@@ -25,15 +25,18 @@ import {
 import { useStore } from '@tanstack/react-store'
 import { useImperativeHandle, useState } from 'react'
 import {
-  applyLayout,
-  deleteLayout,
-  layoutStore,
-  renameLayout,
+  databaseStore,
   setChatPosition,
   setResultsPosition,
   toggleChat,
   toggleResults,
   toggleSidebar,
+} from '~/entities/database'
+import {
+  applyLayout,
+  deleteLayout,
+  layoutStore,
+  renameLayout,
 } from '~/lib/layout-store'
 
 const os = getOS(navigator.userAgent)
@@ -45,6 +48,7 @@ export interface LayoutPopoverHandle {
 }
 
 interface LayoutPopoverProps {
+  databaseId: string
   children: ReactNode
 }
 
@@ -325,25 +329,27 @@ function PositionSelector({
   )
 }
 
-export function LayoutPopover({ ref, children }: LayoutPopoverProps & { ref?: React.RefObject<LayoutPopoverHandle | null> }) {
+export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps & { ref?: React.RefObject<LayoutPopoverHandle | null> }) {
   const [open, setOpen] = useState(false)
 
+  const store = databaseStore(databaseId)
   const {
-    layouts,
-    activeLayoutId,
     sidebarVisible,
     chatVisible,
     resultsVisible,
     chatPosition,
     resultsPosition,
-  } = useStore(layoutStore, s => ({
-    layouts: s.layouts,
-    activeLayoutId: s.activeLayoutId,
+  } = useStore(store, s => ({
     sidebarVisible: s.sidebarVisible,
     chatVisible: s.chatVisible,
     resultsVisible: s.resultsVisible,
     chatPosition: s.chatPosition,
     resultsPosition: s.resultsPosition,
+  }))
+
+  const { layouts, activeLayoutId } = useStore(layoutStore, s => ({
+    layouts: s.layouts,
+    activeLayoutId: s.activeLayoutId,
   }))
 
   useImperativeHandle(ref, () => ({
@@ -415,19 +421,19 @@ export function LayoutPopover({ ref, children }: LayoutPopoverProps & { ref?: Re
               label="Primary Sidebar"
               shortcut={`${modKey}B`}
               checked={sidebarVisible}
-              onCheckedChange={toggleSidebar}
+              onCheckedChange={() => toggleSidebar(databaseId)}
             />
             <ToggleRow
               label="Chat Panel"
-              shortcut={`${modKey}⇧C`}
+              shortcut={`${modKey}J`}
               checked={chatVisible}
-              onCheckedChange={toggleChat}
+              onCheckedChange={() => toggleChat(databaseId)}
             />
             <ToggleRow
               label="Results Panel"
               shortcut={`${modKey}⇧R`}
               checked={resultsVisible}
-              onCheckedChange={toggleResults}
+              onCheckedChange={() => toggleResults(databaseId)}
             />
           </div>
         </div>
@@ -450,7 +456,7 @@ export function LayoutPopover({ ref, children }: LayoutPopoverProps & { ref?: Re
                 { value: 'right', label: 'Right' },
                 { value: 'bottom', label: 'Bottom' },
               ]}
-              onChange={v => setChatPosition(v as 'right' | 'bottom')}
+              onChange={v => setChatPosition(databaseId, v as 'right' | 'bottom')}
             />
             <PositionSelector
               label="Results Position"
@@ -459,7 +465,7 @@ export function LayoutPopover({ ref, children }: LayoutPopoverProps & { ref?: Re
                 { value: 'bottom', label: 'Bottom' },
                 { value: 'right', label: 'Right' },
               ]}
-              onChange={v => setResultsPosition(v as 'bottom' | 'right')}
+              onChange={v => setResultsPosition(databaseId, v as 'bottom' | 'right')}
             />
           </div>
         </div>

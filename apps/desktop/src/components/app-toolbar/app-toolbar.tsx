@@ -12,16 +12,18 @@ import {
 } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useRef } from 'react'
-import { layoutStore, toggleChat, toggleResults, toggleSidebar } from '~/lib/layout-store'
+import { databaseStore, toggleChat, toggleResults, toggleSidebar } from '~/entities/database'
 import { LayoutPopover } from './layout-popover'
 
 interface AppToolbarProps {
+  databaseId: string
   className?: string
   onNewChat?: VoidFunction
 }
 
-export function AppToolbar({ className, onNewChat }: AppToolbarProps) {
-  const { sidebarVisible, chatVisible, resultsVisible } = useStore(layoutStore, ({ sidebarVisible, chatVisible, resultsVisible }) => ({ sidebarVisible, chatVisible, resultsVisible }))
+export function AppToolbar({ databaseId, className, onNewChat }: AppToolbarProps) {
+  const store = databaseStore(databaseId)
+  const { sidebarVisible, chatVisible, resultsVisible } = useStore(store, ({ sidebarVisible, chatVisible, resultsVisible }) => ({ sidebarVisible, chatVisible, resultsVisible }))
   const layoutPopoverRef = useRef<ComponentRef<typeof LayoutPopover>>(null)
 
   return (
@@ -52,7 +54,7 @@ export function AppToolbar({ className, onNewChat }: AppToolbarProps) {
             size="icon-sm"
             variant="ghost"
             className={cn('size-7', sidebarVisible && 'bg-accent')}
-            onClick={toggleSidebar}
+            onClick={() => toggleSidebar(databaseId)}
             aria-label="Toggle sidebar"
           >
             <RiLayoutLeftLine className="size-4" />
@@ -72,7 +74,7 @@ export function AppToolbar({ className, onNewChat }: AppToolbarProps) {
             size="icon-sm"
             variant="ghost"
             className={cn('size-7', chatVisible && 'bg-accent')}
-            onClick={toggleChat}
+            onClick={() => toggleChat(databaseId)}
             aria-label="Toggle chat panel"
           >
             <RiChat3Line className="size-4" />
@@ -81,7 +83,7 @@ export function AppToolbar({ className, onNewChat }: AppToolbarProps) {
         <TooltipContent side="bottom">
           <span className="flex items-center gap-2">
             Toggle Chat
-            <ShiftCtrlLetter userAgent={navigator.userAgent} letter="C" className="text-[10px] opacity-60" />
+            <CtrlLetter userAgent={navigator.userAgent} letter="J" className="text-[10px] opacity-60" />
           </span>
         </TooltipContent>
       </Tooltip>
@@ -92,7 +94,7 @@ export function AppToolbar({ className, onNewChat }: AppToolbarProps) {
             size="icon-sm"
             variant="ghost"
             className={cn('size-7', resultsVisible && 'bg-accent')}
-            onClick={toggleResults}
+            onClick={() => toggleResults(databaseId)}
             aria-label="Toggle results panel"
           >
             <RiTableLine className="size-4" />
@@ -106,7 +108,7 @@ export function AppToolbar({ className, onNewChat }: AppToolbarProps) {
         </TooltipContent>
       </Tooltip>
 
-      <LayoutPopover ref={layoutPopoverRef}>
+      <LayoutPopover ref={layoutPopoverRef} databaseId={databaseId}>
         <Button
           size="icon-sm"
           variant="ghost"

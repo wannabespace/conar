@@ -15,7 +15,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { databaseStore, hasDangerousSqlKeywords } from '~/entities/database'
 import { queriesCollection } from '~/entities/query'
 import { formatSql } from '~/lib/formatter'
-import { layoutStore } from '~/lib/layout-store'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
 import { RunnerAlertDialog } from './runner-alert-dialog'
@@ -58,12 +57,13 @@ export function Runner() {
   )
   const [isFormatting, setIsFormatting] = useState(false)
   const store = databaseStore(database.id)
-  const { selectedLines, editorQueries, sql } = useStore(store, ({ selectedLines, editorQueries, sql }) => ({
+  const { selectedLines, editorQueries, sql, resultsVisible, resultsPosition } = useStore(store, ({ selectedLines, editorQueries, sql, resultsVisible, resultsPosition }) => ({
     selectedLines,
     editorQueries,
     sql,
+    resultsVisible,
+    resultsPosition,
   }))
-  const { resultsVisible, resultsPosition } = useStore(layoutStore, ({ resultsVisible, resultsPosition }) => ({ resultsVisible, resultsPosition }))
 
   useTrackSelectedLinesChange()
 

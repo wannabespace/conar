@@ -12,7 +12,6 @@ import {
   prefetchDatabaseCore,
 } from '~/entities/database'
 import { QueryLogger } from '~/entities/database/components/query-logger'
-import { layoutStore } from '~/lib/layout-store'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
 
@@ -43,8 +42,10 @@ function DatabasePage() {
     select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
   const store = databaseStore(database.id)
-  const loggerOpened = useStore(store, state => state.loggerOpened)
-  const sidebarVisible = useStore(layoutStore, s => s.sidebarVisible)
+  const { loggerOpened, sidebarVisible } = useStore(store, state => ({
+    loggerOpened: state.loggerOpened,
+    sidebarVisible: state.sidebarVisible,
+  }))
 
   useEffect(() => {
     if (currentPageId) {

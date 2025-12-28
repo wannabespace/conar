@@ -41,6 +41,11 @@ const pageStoreType = type({
     schema: 'string',
     table: 'string',
   }).array(),
+  sidebarVisible: 'boolean',
+  chatVisible: 'boolean',
+  resultsVisible: 'boolean',
+  chatPosition: '"right" | "bottom"',
+  resultsPosition: '"bottom" | "right"',
 })
 
 const defaultState: typeof pageStoreType.infer = {
@@ -73,6 +78,11 @@ const defaultState: typeof pageStoreType.infer = {
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
   pinnedTables: [],
+  sidebarVisible: true,
+  chatVisible: true,
+  resultsVisible: true,
+  chatPosition: 'right',
+  resultsPosition: 'bottom',
 }
 
 const storesMap = new Map<string, Store<typeof pageStoreType.infer>>()
@@ -121,6 +131,11 @@ export function databaseStore(id: string) {
       tablesSearch: currentVal.tablesSearch,
       tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
       pinnedTables: currentVal.pinnedTables,
+      sidebarVisible: currentVal.sidebarVisible,
+      chatVisible: currentVal.chatVisible,
+      resultsVisible: currentVal.resultsVisible,
+      chatPosition: currentVal.chatPosition,
+      resultsPosition: currentVal.resultsPosition,
     } satisfies Omit<typeof currentVal, 'queriesToRun' | 'files' | 'editorQueries'>))
   })
 
@@ -247,4 +262,44 @@ export function cleanupPinnedTables(
 
     return state
   })
+}
+
+export function toggleSidebar(id: string) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    sidebarVisible: !state.sidebarVisible,
+  } satisfies typeof state))
+}
+
+export function toggleChat(id: string) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    chatVisible: !state.chatVisible,
+  } satisfies typeof state))
+}
+
+export function toggleResults(id: string) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    resultsVisible: !state.resultsVisible,
+  } satisfies typeof state))
+}
+
+export function setChatPosition(id: string, position: 'right' | 'bottom') {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    chatPosition: position,
+  } satisfies typeof state))
+}
+
+export function setResultsPosition(id: string, position: 'bottom' | 'right') {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    resultsPosition: position,
+  } satisfies typeof state))
 }

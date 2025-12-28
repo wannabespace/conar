@@ -1,5 +1,5 @@
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
-import { toggleChat, toggleResults, toggleSidebar } from '~/lib/layout-store'
+import { toggleChat, toggleResults, toggleSidebar } from '~/entities/database'
 
 function isCtrlAndKey(event: KeyboardEvent, key: string, shift = false) {
   const modifierMatch = event.metaKey || event.ctrlKey
@@ -7,7 +7,8 @@ function isCtrlAndKey(event: KeyboardEvent, key: string, shift = false) {
   return event.key.toLowerCase() === key.toLowerCase() && modifierMatch && shiftMatch
 }
 
-export function useLayoutShortcuts(options?: {
+export function useLayoutShortcuts(options: {
+  databaseId: string
   onNewChat?: () => void
   onOpenLayoutPopover?: () => void
 }) {
@@ -15,15 +16,15 @@ export function useLayoutShortcuts(options?: {
     e => isCtrlAndKey(e, 'b'),
     (e) => {
       e.preventDefault()
-      toggleSidebar()
+      toggleSidebar(options.databaseId)
     },
   )
 
   useKeyboardEvent(
-    e => isCtrlAndKey(e, 'c', true),
+    e => isCtrlAndKey(e, 'j'),
     (e) => {
       e.preventDefault()
-      toggleChat()
+      toggleChat(options.databaseId)
     },
   )
 
@@ -31,7 +32,7 @@ export function useLayoutShortcuts(options?: {
     e => isCtrlAndKey(e, 'r', true),
     (e) => {
       e.preventDefault()
-      toggleResults()
+      toggleResults(options.databaseId)
     },
   )
 

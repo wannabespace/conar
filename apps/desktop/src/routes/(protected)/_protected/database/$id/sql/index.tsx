@@ -5,8 +5,7 @@ import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect } from 'react'
 import { AppToolbar, useLayoutShortcuts } from '~/components/app-toolbar'
-import { databaseStore } from '~/entities/database'
-import { layoutStore, toggleChat } from '~/lib/layout-store'
+import { databaseStore, toggleChat } from '~/entities/database'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
@@ -39,7 +38,7 @@ function DatabaseSqlPage() {
   const store = databaseStore(database.id)
   const navigate = useNavigate()
 
-  const { chatVisible, chatPosition } = useStore(layoutStore, s => ({
+  const { chatVisible, chatPosition } = useStore(store, s => ({
     chatVisible: s.chatVisible,
     chatPosition: s.chatPosition,
   }))
@@ -57,8 +56,8 @@ function DatabaseSqlPage() {
       lastOpenedChatId: null,
     }))
 
-    if (!layoutStore.state.chatVisible) {
-      toggleChat()
+    if (!store.state.chatVisible) {
+      toggleChat(database.id)
     }
     navigate({
       to: '/database/$id/sql',
@@ -67,6 +66,7 @@ function DatabaseSqlPage() {
   }
 
   useLayoutShortcuts({
+    databaseId: database.id,
     onNewChat: handleNewChat,
   })
 
@@ -80,7 +80,7 @@ function DatabaseSqlPage() {
         backdrop-blur-sm
       `}
       >
-        <AppToolbar onNewChat={handleNewChat} />
+        <AppToolbar databaseId={database.id} onNewChat={handleNewChat} />
       </div>
 
       <div className="min-h-0 flex-1">
