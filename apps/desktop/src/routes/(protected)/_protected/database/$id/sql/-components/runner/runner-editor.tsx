@@ -1,25 +1,18 @@
-import type { DatabaseType } from '@conar/shared/enums/database-type'
 import type { editor, Position } from 'monaco-editor'
 import type { RefObject } from 'react'
 import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
-import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
+import { setupLanguageFeatures } from 'monaco-sql-languages'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { Monaco } from '~/components/monaco'
 import { databaseStore } from '~/entities/database'
 import { databaseCompletionService } from '~/entities/database/utils/monaco'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
+import { dialectsMap, useRunnerEditorAiTabCompletion } from './ai-tab-completion'
 import { useRunnerContext } from './runner-context'
 import { useRunnerEditorAIZones } from './runner-editor-ai-zones'
 import { useRunnerEditorQueryZones } from './runner-editor-query-zones'
-
-const dialectsMap = {
-  postgres: LanguageIdEnum.PG,
-  mysql: LanguageIdEnum.MYSQL,
-  mssql: LanguageIdEnum.PG,
-  clickhouse: LanguageIdEnum.MYSQL,
-} satisfies Record<DatabaseType, LanguageIdEnum>
 
 function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { database } = Route.useRouteContext()
@@ -121,6 +114,7 @@ export function RunnerEditor() {
   const sql = useStore(store, state => state.sql)
   const editorQueries = useStore(store, state => state.editorQueries)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
+
   const run = useRunnerContext(({ run }) => run)
 
   const runEvent = useEffectEvent(run)
@@ -129,6 +123,8 @@ export function RunnerEditor() {
 
   useRunnerEditorQueryZones(monacoRef)
   useRunnerEditorAIZones(monacoRef)
+
+  useRunnerEditorAiTabCompletion(monacoRef)
 
   useEffect(() => {
     setupLanguageFeatures(dialectsMap[database.type], {
