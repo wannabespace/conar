@@ -110,6 +110,21 @@ export function ChatHeader({ chatId }: { chatId: string }) {
 
   const grouped = groupChats(allChats)
 
+  const removeChat = (chat: typeof chats.$inferSelect) => {
+    removeDialogRef.current?.remove(chat, () => {
+      if (chat.id === chatId) {
+        store.setState(state => ({
+          ...state,
+          lastOpenedChatId: null,
+        }))
+        navigate({
+          to: '/database/$id/sql',
+          params: { id },
+        })
+      }
+    })
+  }
+
   return (
     <>
       <RemoveChatDialog ref={removeDialogRef} />
@@ -202,18 +217,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                                   onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
-                                    removeDialogRef.current?.remove(chat, () => {
-                                      if (chat.id === chatId) {
-                                        store.setState(state => ({
-                                          ...state,
-                                          lastOpenedChatId: null,
-                                        }))
-                                        navigate({
-                                          to: '/database/$id/sql',
-                                          params: { id },
-                                        })
-                                      }
-                                    })
+                                    removeChat(chat)
                                   }}
                                 >
                                   <RiDeleteBin7Line className="size-3.5" />
