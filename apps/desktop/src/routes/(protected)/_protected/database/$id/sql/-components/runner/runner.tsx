@@ -57,12 +57,12 @@ export function Runner() {
   )
   const [isFormatting, setIsFormatting] = useState(false)
   const store = databaseStore(database.id)
-  const { selectedLines, editorQueries, sql, resultsVisible, resultsPosition } = useStore(store, ({ selectedLines, editorQueries, sql, resultsVisible, resultsPosition }) => ({
-    selectedLines,
-    editorQueries,
-    sql,
-    resultsVisible,
-    resultsPosition,
+  const { selectedLines, editorQueries, sql, resultsVisible, resultsPosition } = useStore(store, (state) => ({
+    selectedLines: state.selectedLines,
+    editorQueries: state.editorQueries,
+    sql: state.sql,
+    resultsVisible: state.layout.resultsVisible,
+    resultsPosition: state.layout.resultsPosition,
   }))
 
   useTrackSelectedLinesChange()

@@ -44,7 +44,7 @@ function DatabasePage() {
   const store = databaseStore(database.id)
   const { loggerOpened, sidebarVisible } = useStore(store, state => ({
     loggerOpened: state.loggerOpened,
-    sidebarVisible: state.sidebarVisible,
+    sidebarVisible: state.layout.sidebarVisible,
   }))
 
   useEffect(() => {

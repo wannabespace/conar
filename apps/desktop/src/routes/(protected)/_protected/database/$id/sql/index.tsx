@@ -39,8 +39,8 @@ function DatabaseSqlPage() {
   const navigate = useNavigate()
 
   const { chatVisible, chatPosition } = useStore(store, s => ({
-    chatVisible: s.chatVisible,
-    chatPosition: s.chatPosition,
+    chatVisible: s.layout.chatVisible,
+    chatPosition: s.layout.chatPosition,
   }))
 
   useEffect(() => {
@@ -56,7 +56,7 @@ function DatabaseSqlPage() {
       lastOpenedChatId: null,
     }))
 
-    if (!store.state.chatVisible) {
+    if (!store.state.layout.chatVisible) {
       toggleChat(database.id)
     }
     navigate({

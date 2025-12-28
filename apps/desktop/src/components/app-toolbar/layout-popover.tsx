@@ -340,13 +340,13 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
     layouts,
     activeLayoutId,
   } = useStore(store, s => ({
-    sidebarVisible: s.sidebarVisible,
-    chatVisible: s.chatVisible,
-    resultsVisible: s.resultsVisible,
-    chatPosition: s.chatPosition,
-    resultsPosition: s.resultsPosition,
+    sidebarVisible: s.layout.sidebarVisible,
+    chatVisible: s.layout.chatVisible,
+    resultsVisible: s.layout.resultsVisible,
+    chatPosition: s.layout.chatPosition,
+    resultsPosition: s.layout.resultsPosition,
     layouts: s.layouts,
-    activeLayoutId: s.activeLayoutId,
+    activeLayoutId: s.layout.activeLayoutId,
   }))
 
   useImperativeHandle(ref, () => ({
