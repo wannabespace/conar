@@ -1,15 +1,11 @@
-import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
+import { useIsMounted } from '../hookas/use-is-mounted'
 import { useTheme } from '../theme-observer'
 
 function Toaster() {
   const { resolvedTheme } = useTheme()
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+  const isMounted = useIsMounted()
 
   if (!isMounted) {
     return null
