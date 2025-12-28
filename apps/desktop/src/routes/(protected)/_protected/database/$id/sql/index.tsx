@@ -1,9 +1,12 @@
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
+import { AppToolbar, useLayoutShortcuts } from '~/components/app-toolbar'
 import { databaseStore } from '~/entities/database'
+import { layoutStore, toggleChat } from '~/lib/layout-store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
@@ -34,6 +37,12 @@ function DatabaseSqlPage() {
   const { database } = Route.useLoaderData()
   const { chatId } = Route.useSearch()
   const store = databaseStore(database.id)
+  const navigate = useNavigate()
+
+  const { chatVisible, chatPosition } = useStore(layoutStore, s => ({
+    chatVisible: s.chatVisible,
+    chatPosition: s.chatPosition,
+  }))
 
   useEffect(() => {
     store.setState(state => ({
@@ -42,25 +51,70 @@ function DatabaseSqlPage() {
     } satisfies typeof state))
   }, [chatId, store])
 
+  const handleNewChat = useCallback(() => {
+    store.setState(state => ({
+      ...state,
+      lastOpenedChatId: null,
+    }))
+
+    if (!layoutStore.state.chatVisible) {
+      toggleChat()
+    }
+    navigate({
+      to: '/database/$id/sql',
+      params: { id: database.id },
+    })
+  }, [store, navigate, database.id])
+
+  useLayoutShortcuts({
+    onNewChat: handleNewChat,
+  })
+
+  const isChatRight = chatPosition === 'right'
+  const direction = isChatRight ? 'horizontal' : 'vertical'
+
   return (
-    <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal" className="flex">
-      <ResizablePanel
-        defaultSize={70}
-        minSize={30}
-        maxSize={80}
-        className="flex flex-col gap-4 border bg-background rounded-lg"
+    <div className="flex h-full flex-col">
+      <div className={`
+        flex h-9 shrink-0 items-center border-b bg-background/50 px-2
+        backdrop-blur-sm
+      `}
       >
-        <Runner />
-      </ResizablePanel>
-      <ResizableHandle className="w-1 bg-transparent" />
-      <ResizablePanel
-        defaultSize={30}
-        minSize={20}
-        maxSize={50}
-        className="border bg-background rounded-lg"
-      >
-        <Chat className="h-full" />
-      </ResizablePanel>
-    </ResizablePanelGroup>
+        <AppToolbar onNewChat={handleNewChat} />
+      </div>
+
+      <div className="min-h-0 flex-1">
+        <ResizablePanelGroup
+          autoSaveId={`sql-layout-main-${direction}`}
+          direction={direction}
+          className="h-full"
+        >
+          <ResizablePanel
+            defaultSize={chatVisible ? 70 : 100}
+            minSize={30}
+            className="m-1 mr-0 flex flex-col rounded-lg border bg-background"
+          >
+            <Runner />
+          </ResizablePanel>
+
+          {chatVisible && (
+            <>
+              <ResizableHandle className={isChatRight
+                ? 'w-1 bg-transparent'
+                : `h-1 bg-transparent`}
+              />
+              <ResizablePanel
+                defaultSize={30}
+                minSize={15}
+                maxSize={50}
+                className="m-1 rounded-lg border bg-background"
+              >
+                <Chat className="h-full" />
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
+      </div>
+    </div>
   )
 }
