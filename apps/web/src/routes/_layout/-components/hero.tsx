@@ -20,10 +20,24 @@ export function Hero({ className }: { className?: string }) {
   return (
     <motion.section
       style={{ opacity }}
-      className={cn('py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 sm:gap-8 lg:gap-12', className)}
+      className={cn(`
+        flex flex-col items-start justify-between gap-6 py-12
+        sm:gap-8 sm:py-16
+        md:py-20
+        lg:flex-row lg:items-center lg:gap-12 lg:py-24
+        xl:py-28
+      `, className)}
     >
-      <div className="w-full lg:w-auto lg:flex-1">
-        <h1 className="text-[clamp(2.5rem,min(8vh,8vw),5rem)] leading-[0.9] font-medium text-balance">
+      <div className={`
+        w-full
+        lg:w-auto lg:flex-1
+      `}
+      >
+        <h1 className={`
+          text-[clamp(2.5rem,min(8vh,8vw),5rem)] leading-[0.9] font-medium
+          text-balance
+        `}
+        >
           <motion.span
             initial={{ opacity: 0, filter: 'blur(10px)' }}
             animate={{ opacity: 1, filter: 'blur(0px)' }}
@@ -67,12 +81,21 @@ export function Hero({ className }: { className?: string }) {
           </motion.span>
         </h1>
       </div>
-      <div className="w-full max-w-md lg:flex-1 flex flex-col items-start lg:items-end gap-4 sm:gap-6">
+      <div className={`
+        flex w-full max-w-md flex-col items-start gap-4
+        sm:gap-6
+        lg:flex-1 lg:items-end
+      `}
+      >
         <motion.h2
           initial={{ opacity: 0, filter: 'blur(10px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
           transition={{ duration: 0.5, delay: 0.25 }}
-          className="text-muted-foreground text-balance text-base sm:text-lg lg:text-xl text-left lg:text-right"
+          className={`
+            text-left text-base text-balance text-muted-foreground
+            sm:text-lg
+            lg:text-right lg:text-xl
+          `}
         >
           Conar is an AI-powered data management tool that lets you focus on working with your data while it handles the complexity
         </motion.h2>
@@ -80,14 +103,21 @@ export function Hero({ className }: { className?: string }) {
           initial={{ opacity: 0, filter: 'blur(10px)', y: 20 }}
           animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full lg:w-auto"
+          className={`
+            flex w-full flex-col gap-3
+            sm:flex-row sm:gap-4
+            lg:w-auto
+          `}
         >
           <DownloadButton />
           <Button
             variant="secondary"
             asChild
             size="lg"
-            className="w-full sm:w-auto"
+            className={`
+              w-full
+              sm:w-auto
+            `}
           >
             <Link to="/download">
               All platforms

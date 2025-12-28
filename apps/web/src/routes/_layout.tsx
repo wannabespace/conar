@@ -21,33 +21,61 @@ function MainLayout() {
 
   return (
     <motion.div style={{ '--navbar-height': navbarHeightPx }}>
-      <div className="sticky top-0 w-full h-(--navbar-height) z-50 bg-gray-100 dark:bg-neutral-950">
-        <div className="relative h-full flex items-center w-full container mx-auto">
+      <div className={`
+        sticky top-0 z-50 h-(--navbar-height) w-full bg-gray-100
+        dark:bg-neutral-950
+      `}
+      >
+        <div className={`
+          relative container mx-auto flex h-full w-full items-center
+        `}
+        >
           <Navbar className="w-full" />
-          <div className="absolute left-0 right-0 top-full w-full h-10 overflow-hidden pointer-events-none">
-            <div className="w-full h-20 rounded-3xl ring-50 ring-gray-100 dark:ring-neutral-950" />
+          <div className={`
+            pointer-events-none absolute top-full right-0 left-0 h-10 w-full
+            overflow-hidden
+          `}
+          >
+            <div className={`
+              h-20 w-full rounded-3xl ring-50 ring-gray-100
+              dark:ring-neutral-950
+            `}
+            />
           </div>
         </div>
       </div>
-      <div className="container mx-auto bg-background rounded-3xl">
+      <div className="container mx-auto rounded-3xl bg-background">
         <motion.div
           className={cn(
-            'sticky inset-x-0 z-30 top-(--navbar-height) w-full',
+            'sticky inset-x-0 top-(--navbar-height) z-30 w-full',
           )}
           style={{
             translateY: blurTranslateY,
           }}
         >
           <BlurGradient
-            className="absolute inset-x-0 transition-all delay-300 duration-400 h-48"
+            className={`
+              absolute inset-x-0 h-48 transition-all delay-300 duration-400
+            `}
           />
         </motion.div>
         <Outlet />
-        <div className="sticky inset-x-0 z-30 bottom-0 w-full">
-          <div className="z-20 relative w-full h-10 overflow-hidden pointer-events-none">
-            <div className="absolute bottom-0 inset-x-0 h-20 rounded-3xl ring-50 ring-gray-100 dark:ring-neutral-950" />
+        <div className="sticky inset-x-0 bottom-0 z-30 w-full">
+          <div className={`
+            pointer-events-none relative z-20 h-10 w-full overflow-hidden
+          `}
+          >
+            <div className={`
+              absolute inset-x-0 bottom-0 h-20 rounded-3xl ring-50 ring-gray-100
+              dark:ring-neutral-950
+            `}
+            />
           </div>
-          <div className="relative z-20 bg-gray-100 dark:bg-neutral-950 h-4" />
+          <div className={`
+            relative z-20 h-4 bg-gray-100
+            dark:bg-neutral-950
+          `}
+          />
         </div>
       </div>
       <Footer />

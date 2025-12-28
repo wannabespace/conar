@@ -100,24 +100,26 @@ export const auth = betterAuth({
     emailHarmony(),
     noSetCookiePlugin(),
     anonymous(),
-    stripe({
-      stripeClient,
-      subscription: {
-        enabled: true,
-        plans: [
-          {
-            name: 'Pro',
-            priceId: env.STRIPE_MONTH_PRICE_ID!,
-            annualDiscountPriceId: env.STRIPE_ANNUAL_PRICE_ID!,
-            freeTrial: {
-              days: 7,
-            },
+    ...(stripeClient
+      ? [stripe({
+          stripeClient,
+          subscription: {
+            enabled: true,
+            plans: [
+              {
+                name: 'Pro',
+                priceId: env.STRIPE_MONTH_PRICE_ID!,
+                annualDiscountPriceId: env.STRIPE_ANNUAL_PRICE_ID!,
+                freeTrial: {
+                  days: 7,
+                },
+              },
+            ],
           },
-        ],
-      },
-      stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
-      createCustomerOnSignUp: true,
-    }),
+          stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
+          createCustomerOnSignUp: true,
+        })]
+      : []),
   ],
   user: {
     additionalFields: {
