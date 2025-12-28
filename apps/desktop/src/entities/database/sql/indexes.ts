@@ -12,10 +12,7 @@ export const indexesType = type({
   is_unique: 'boolean | 1 | 0',
   is_primary: 'boolean | 1 | 0',
 }).pipe(data => ({
-  schema: data.schema,
-  table: data.table,
-  name: data.name,
-  column: data.column,
+  ...data,
   isUnique: !!data.is_unique,
   isPrimary: !!data.is_primary,
 }))
