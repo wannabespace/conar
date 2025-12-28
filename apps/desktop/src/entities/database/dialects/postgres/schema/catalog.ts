@@ -4,6 +4,9 @@
  */
 export interface PgCatalog {
   pg_namespace: PgNamespace
+  pg_class: PgClass
+  pg_index: PgIndex
+  pg_attribute: PgAttribute
 }
 
 /**

@@ -2,12 +2,19 @@
  * @name sys
  * @type schema
  */
+export interface Sys {
+  indexes: Indexes
+  tables: Tables
+  schemas: Schemas
+  index_columns: IndexColumns
+  columns: Columns
+}
 
 /**
  * @name indexes
  * @type table
  */
-export interface SysIndexes {
+export interface Indexes {
   object_id: number
   index_id: number
   name: string
@@ -19,7 +26,7 @@ export interface SysIndexes {
  * @name tables
  * @type table
  */
-export interface SysTables {
+interface Tables {
   object_id: number
   schema_id: number
   name: string
@@ -29,7 +36,7 @@ export interface SysTables {
  * @name schemas
  * @type table
  */
-export interface SysSchemas {
+interface Schemas {
   schema_id: number
   name: string
 }
@@ -38,7 +45,7 @@ export interface SysSchemas {
  * @name index_columns
  * @type table
  */
-export interface SysIndexColumns {
+interface IndexColumns {
   object_id: number
   index_id: number
   column_id: number
@@ -48,7 +55,7 @@ export interface SysIndexColumns {
  * @name columns
  * @type table
  */
-export interface SysColumns {
+interface Columns {
   object_id: number
   column_id: number
   name: string

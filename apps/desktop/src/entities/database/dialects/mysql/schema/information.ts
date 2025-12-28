@@ -122,12 +122,10 @@ interface KeyColumnUsage {
  * @name STATISTICS
  * @type table
  */
-export interface Statistics {
+interface Statistics {
   TABLE_SCHEMA: string
   TABLE_NAME: string
   INDEX_NAME: string
   COLUMN_NAME: string
   NON_UNIQUE: number
 }
-
-export type MysqlStatistics = Statistics
