@@ -46,7 +46,7 @@ function SubscriptionDetails({ subscription }: {
                     'size-6',
                     isActive || isTrialing
                       ? 'text-primary'
-                      : `text-muted-foreground`,
+                      : 'text-muted-foreground',
                   )}
                 />
               </div>
@@ -68,6 +68,17 @@ function SubscriptionDetails({ subscription }: {
           </div>
         </CardHeader>
       </Card>
+      {subscription.status === 'trialing' && subscription.trialEnd && (
+        <Alert variant="success">
+          <RiInformationLine className="size-5 text-success" />
+          <AlertDescription className="text-sm">
+            You're currently on a free trial that ends on
+            {' '}
+            <strong className="font-semibold text-success">{formatDate(subscription.trialEnd)}</strong>
+            . Your subscription will automatically start after the trial period.
+          </AlertDescription>
+        </Alert>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Subscription Details</CardTitle>
@@ -131,17 +142,6 @@ function SubscriptionDetails({ subscription }: {
           </div>
         </CardContent>
       </Card>
-      {subscription.status === 'trialing' && subscription.trialEnd && (
-        <Alert variant="success">
-          <RiInformationLine className="size-5 text-success" />
-          <AlertDescription className="text-sm">
-            You're currently on a free trial that ends on
-            {' '}
-            <strong className="font-semibold text-success">{formatDate(subscription.trialEnd)}</strong>
-            . Your subscription will automatically start after the trial period.
-          </AlertDescription>
-        </Alert>
-      )}
       {subscription.cancelAtPeriodEnd && (
         <Alert variant="warning">
           <RiInformationLine className="size-5 text-warning" />
