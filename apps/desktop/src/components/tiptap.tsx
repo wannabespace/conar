@@ -51,9 +51,11 @@ export function TipTap({
       }),
     ],
     editorProps: {
-      attributes: {
-        class: className ?? '',
-      },
+      attributes: className
+        ? {
+            class: className.replace(/\s+/g, ' ').trim(),
+          }
+        : {},
     },
     parseOptions: {
       preserveWhitespace: 'full',

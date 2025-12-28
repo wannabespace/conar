@@ -83,10 +83,7 @@ function LayoutThumbnail({ layout, isActive }: LayoutThumbnailProps) {
           ? 'flex-row'
           : `flex-col`)}
         >
-          <div className={cn('flex flex-col gap-1', chatRight
-            ? 'flex-1'
-            : `flex-1`)}
-          >
+          <div className={cn('flex flex-col gap-1', 'flex-1')}>
             <div className={cn(
               'rounded-sm bg-primary/40',
               showResults ? 'flex-1' : 'h-full',
