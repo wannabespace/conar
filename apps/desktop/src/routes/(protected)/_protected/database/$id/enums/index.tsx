@@ -106,10 +106,9 @@ function DatabaseEnumsPage() {
               onClick={() => refetch()}
               disabled={isRefetching}
             >
-              <RiRefreshLine className={`
-                size-4
-                ${isRefetching ? 'animate-spin' : ''}
-              `}
+              <RiRefreshLine className={cn('size-4', isRefetching && `
+                animate-spin
+              `)}
               />
             </Button>
           </div>

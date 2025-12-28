@@ -1,3 +1,4 @@
+import type { constraintsType } from '~/entities/database/sql/constraints'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
@@ -13,7 +14,8 @@ import {
 } from '@conar/ui/components/dropdown-menu'
 import { Input } from '@conar/ui/components/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { RiCloseLine, RiDatabase2Line, RiFilter3Line, RiInformationLine, RiKey2Line, RiLinksLine, RiRefreshLine, RiShieldCheckLine, RiTable2 } from '@remixicon/react'
+import { cn } from '@conar/ui/lib/utils'
+import { RiCloseLine, RiDatabase2Line, RiFilter3Line, RiInformationLine, RiKey2Line, RiLinksLine, RiRefreshLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
@@ -29,6 +31,14 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id/const
   }),
 })
 
+type ConstraintItem = typeof constraintsType.infer
+
+const dropDownItems: { label: string, value: ConstraintItem['type'] }[] = [
+  { label: 'Primary Key', value: 'primaryKey' },
+  { label: 'Foreign Key', value: 'foreignKey' },
+  { label: 'Unique', value: 'unique' },
+]
+
 function DatabaseConstraintsPage() {
   const { database } = Route.useLoaderData()
   const { data: constraints, refetch, isRefetching } = useDatabaseConstraints({ database })
@@ -36,7 +46,7 @@ function DatabaseConstraintsPage() {
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
-  const [filterTypes, setFilterTypes] = useState<string[]>([])
+  const [filterTypes, setFilterTypes] = useState<ConstraintItem['type'][]>([])
 
   useEffect(() => {
     if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
@@ -56,21 +66,19 @@ function DatabaseConstraintsPage() {
     ) ?? []
   }, [constraints, selectedSchema, search, filterTypes])
 
-  const getIcon = (type: string) => {
+  const getIcon = (type: ConstraintItem['type']) => {
     switch (type) {
       case 'primaryKey':
       case 'unique':
         return <RiKey2Line className="size-4 text-primary" />
       case 'foreignKey':
         return <RiLinksLine className="size-4 text-primary" />
-      case 'check':
-        return <RiShieldCheckLine className="size-4 text-primary" />
       default:
         return <RiDatabase2Line className="size-4 text-primary" />
     }
   }
 
-  const formatType = (type: string) => {
+  const formatType = (type: ConstraintItem['type']) => {
     switch (type) {
       case 'primaryKey': return 'Primary Key'
       case 'foreignKey': return 'Foreign Key'
@@ -78,14 +86,7 @@ function DatabaseConstraintsPage() {
     }
   }
 
-  const dropDownItems = [
-    { label: 'Primary Key', value: 'primaryKey' },
-    { label: 'Foreign Key', value: 'foreignKey' },
-    { label: 'Unique', value: 'unique' },
-    { label: 'Check', value: 'check' },
-  ]
-
-  const handleCheckedChange = (checked: boolean, value: string) => {
+  const handleCheckedChange = (checked: boolean, value: ConstraintItem['type']) => {
     if (checked) {
       const newTypes = [...filterTypes, value]
       if (newTypes.length === dropDownItems.length)
@@ -185,10 +186,9 @@ function DatabaseConstraintsPage() {
               onClick={() => refetch()}
               disabled={isRefetching}
             >
-              <RiRefreshLine className={`
-                size-4
-                ${isRefetching ? 'animate-spin' : ''}
-              `}
+              <RiRefreshLine className={cn('size-4', isRefetching && `
+                animate-spin
+              `)}
               />
             </Button>
           </div>

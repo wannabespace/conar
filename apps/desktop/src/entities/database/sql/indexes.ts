@@ -1,5 +1,3 @@
-import type { Kysely } from 'kysely'
-import type { Columns as ClickHouseColumns } from '../dialects/clickhouse/schema/system'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 import { createQuery } from '../query'
@@ -78,11 +76,7 @@ export const indexesQuery = createQuery({
       It doesn't enforce constraints like traditional RDBMS (no foreign keys, unique constraints, etc.).
       We show ORDER BY columns as primary key indexes since that's how ClickHouse optimizes queries. */
 
-      const sysDb = db as unknown as Kysely<{
-        'system.columns': ClickHouseColumns
-      }>
-
-      const query = await sysDb
+      const query = await db
         .selectFrom('system.columns')
         .select([
           'database as schema',

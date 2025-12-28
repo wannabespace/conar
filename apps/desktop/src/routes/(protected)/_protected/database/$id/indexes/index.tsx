@@ -1,3 +1,4 @@
+import type { indexesType } from '~/entities/database/sql/indexes'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
@@ -13,6 +14,7 @@ import {
 } from '@conar/ui/components/dropdown-menu'
 import { Input } from '@conar/ui/components/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
+import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiFileList3Line, RiFilter3Line, RiInformationLine, RiRefreshLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
@@ -29,18 +31,19 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id/index
   }),
 })
 
-interface IndexItem {
-  schema: string
-  table: string
-  name: string
-  column: string
-  isUnique: boolean
-  isPrimary: boolean
-}
+type IndexItem = typeof indexesType.infer
 
 interface GroupedIndex extends IndexItem {
   columns: string[]
 }
+
+type IndexType = 'primary' | 'unique' | 'regular'
+
+const dropDownItems: { label: string, value: IndexType }[] = [
+  { label: 'Primary Key', value: 'primary' },
+  { label: 'Unique Index', value: 'unique' },
+  { label: 'Regular Index', value: 'regular' },
+]
 
 function DatabaseIndexesPage() {
   const { database } = Route.useLoaderData()
@@ -49,7 +52,7 @@ function DatabaseIndexesPage() {
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
-  const [filterTypes, setFilterTypes] = useState<string[]>([])
+  const [filterTypes, setFilterTypes] = useState<IndexType[]>([])
 
   useEffect(() => {
     if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
@@ -66,7 +69,7 @@ function DatabaseIndexesPage() {
       const isPrimary = indexItem.isPrimary
       const isUnique = indexItem.isUnique && !indexItem.isPrimary
 
-      let type = 'regular'
+      let type: IndexType = 'regular'
       if (isPrimary)
         type = 'primary'
       else if (isUnique)
@@ -103,13 +106,7 @@ function DatabaseIndexesPage() {
 
   const indexList = Object.values(groupedIndexes ?? {})
 
-  const dropDownItems = [
-    { label: 'Primary Key', value: 'primary' },
-    { label: 'Unique Index', value: 'unique' },
-    { label: 'Regular Index', value: 'regular' },
-  ]
-
-  const handleCheckedChange = (checked: boolean, value: string) => {
+  const handleCheckedChange = (checked: boolean, value: IndexType) => {
     if (checked) {
       const newTypes = [...filterTypes, value]
       if (newTypes.length === dropDownItems.length)
@@ -209,10 +206,9 @@ function DatabaseIndexesPage() {
               onClick={() => refetch()}
               disabled={isRefetching}
             >
-              <RiRefreshLine className={`
-                size-4
-                ${isRefetching ? 'animate-spin' : ''}
-              `}
+              <RiRefreshLine className={cn('size-4', isRefetching && `
+                animate-spin
+              `)}
               />
             </Button>
           </div>
