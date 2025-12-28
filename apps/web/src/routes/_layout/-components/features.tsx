@@ -609,10 +609,9 @@ export function Features() {
           Features
         </h2>
         <p className={`
-          mx-auto max-w-3xl text-center text-3xl leading-tight font-bold
+          mx-auto max-w-3xl text-center text-2xl leading-tight font-bold
           text-balance
-          sm:text-4xl
-          md:text-5xl
+          sm:text-3xl
         `}
         >
           All the basic features you expect, plus powerful capabilities that set us apart

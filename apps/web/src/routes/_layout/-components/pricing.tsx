@@ -21,7 +21,6 @@ interface PricingTier {
   description: string
   features: Feature[]
   highlight?: boolean
-  badge?: string
   icon: React.ReactNode
   onClick?: () => void
 }
@@ -45,7 +44,7 @@ export function Pricing({ className }: PricingSectionProps) {
       icon: (
         <div className="relative">
           <div className={`
-            absolute inset-0 rounded-full bg-gradient-to-r from-gray-500/30
+            absolute inset-0 rounded-full bg-linear-to-r from-gray-500/30
             to-gray-500/30 blur-2xl
           `}
           />
@@ -86,13 +85,10 @@ export function Pricing({ className }: PricingSectionProps) {
     {
       name: 'Pro',
       price: {
-        monthly: 0,
-        yearly: 0,
+        monthly: 10,
+        yearly: 100,
       },
-      description: 'All features free during beta',
-      // description: 'For developers who want more',
-      highlight: true,
-      badge: 'Most Popular',
+      description: 'For developers who want more',
       icon: (
         <div className="relative">
           <RiMoneyDollarCircleLine className="relative z-10 size-7" />
@@ -142,10 +138,9 @@ export function Pricing({ className }: PricingSectionProps) {
           Pricing
         </h2>
         <p className={`
-          mx-auto max-w-3xl text-center text-3xl leading-tight font-bold
+          mx-auto max-w-3xl text-center text-2xl leading-tight font-bold
           text-balance
-          sm:text-4xl
-          md:text-5xl
+          sm:text-3xl
         `}
         >
           Choose the plan that fits your needs
@@ -199,34 +194,20 @@ export function Pricing({ className }: PricingSectionProps) {
           )}
         </div>
       </div>
-      <div className={`
+      <div className={cn(`
         mx-auto grid max-w-5xl grid-cols-1 gap-4 px-4
         sm:gap-6
         lg:grid-cols-2
-      `}
+      `)}
       >
         {tiers.map(tier => (
           <Card
             key={tier.name}
-            className={cn(
-              `
-                relative flex flex-col transition-all duration-300
-                hover:shadow-lg
-              `,
-              tier.highlight && 'shadow-lg ring-2 ring-primary/20',
-            )}
+            className={cn(`
+              relative flex flex-col transition-all duration-300
+              hover:shadow-lg
+            `)}
           >
-            {tier.badge && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <div className={`
-                  rounded-full bg-primary px-3 py-1 text-xs font-medium
-                  text-primary-foreground shadow-lg
-                `}
-                >
-                  {tier.badge}
-                </div>
-              </div>
-            )}
             <div className={`
               flex-1 p-6
               sm:p-8
@@ -238,12 +219,7 @@ export function Pricing({ className }: PricingSectionProps) {
               `}
               >
                 <div
-                  className={cn(
-                    'rounded-xl p-3',
-                    tier.highlight
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted text-muted-foreground',
-                  )}
+                  className="rounded-xl bg-muted p-3 text-muted-foreground"
                 >
                   {tier.icon}
                 </div>
@@ -305,8 +281,8 @@ export function Pricing({ className }: PricingSectionProps) {
                     <div
                       className={cn(
                         `
-                          mt-1 flex-shrink-0 rounded-full p-0.5
-                          transition-colors duration-200
+                          mt-1 shrink-0 rounded-full p-0.5 transition-colors
+                          duration-200
                         `,
                         feature.included
                           ? `
@@ -369,15 +345,6 @@ export function Pricing({ className }: PricingSectionProps) {
                       )}
                 </span>
               </Button>
-              {tier.price.monthly === 0 && (
-                <p className={`
-                  absolute right-0 bottom-5 left-0 mt-3 text-center text-xs
-                  text-muted-foreground
-                `}
-                >
-                  No credit card required
-                </p>
-              )}
             </div>
           </Card>
         ))}
