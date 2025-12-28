@@ -125,8 +125,8 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
           <div className="space-y-2">
             {!!tool.output && typeof tool.output === 'object' && 'results' in tool.output && Array.isArray(tool.output.results) && (
               <div className="flex flex-wrap gap-2">
-                {tool.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }, index: number) => (
-                  <TooltipProvider key={`${tool.toolCallId}-${index}`}>
+                {tool.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }) => (
+                  <TooltipProvider key={`${tool.toolCallId}-${result.url}`}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <a

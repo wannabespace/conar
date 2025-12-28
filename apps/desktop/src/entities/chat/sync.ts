@@ -39,6 +39,9 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
     })
     resolvers.resolve()
   },
+  onDelete: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map(m => orpc.chats.remove({ id: m.key })))
+  },
 }))
 
 export const chatsMessagesCollection = createCollection(drizzleCollectionOptions({
