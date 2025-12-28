@@ -54,15 +54,9 @@ export function Profile({ className }: { className?: string }) {
       <Alert className="px-2 py-1">
         <AlertDescription className="flex items-center justify-between">
           <span>
-            You are
+            You are on the
             {' '}
-            {subscription ? 'already' : 'currently'}
-            {' '}
-            on the
-            {' '}
-            <Badge
-              variant="secondary"
-            >
+            <Badge variant="secondary">
               {subscription ? uppercaseFirst(subscription.plan) : 'Hobby'}
             </Badge>
             {' '}

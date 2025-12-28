@@ -3,6 +3,8 @@ import { authClient, bearerToken } from '~/lib/auth'
 import { queryClient } from '~/main'
 import { subscriptionModalIsOpen } from '~/store'
 
+export type Subscription = NonNullable<NonNullable<ReturnType<typeof useSubscription>>['subscription']>
+
 const subscriptionsOptions = queryOptions({
   queryKey: ['subscription', 'list'],
   queryFn: async () => {
