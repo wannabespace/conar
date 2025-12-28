@@ -1,4 +1,9 @@
 /**
+ * @name sys
+ * @type schema
+ */
+
+/**
  * @name indexes
  * @type table
  */
