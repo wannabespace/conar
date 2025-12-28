@@ -7,6 +7,7 @@ import { getClient as getClickhouseClient } from '../databases/clickhouse'
 import { getPool as getMssqlPool } from '../databases/mssql'
 import { getPool as getMysqlPool } from '../databases/mysql'
 import { getPool as getPgPool } from '../databases/pg'
+import { getDatabase as getSqliteDatabase } from '../databases/sqlite'
 
 function isConnectionError(error: unknown) {
   if (error instanceof Error) {
@@ -115,6 +116,26 @@ const queryMap = {
       }
       throw error
     }
+  },
+  sqlite: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
+    const db = getSqliteDatabase(connectionString)
+    const start = performance.now()
+
+    const isSelect = sql.trim().toUpperCase().startsWith('SELECT')
+      || sql.trim().toUpperCase().startsWith('PRAGMA')
+
+    if (isSelect) {
+      const stmt = db.prepare(sql)
+      // eslint-disable-next-line ts/no-explicit-any
+      const result = values && values.length > 0 ? stmt.all(...(values as any[])) : stmt.all()
+      return { result: result as unknown, duration: performance.now() - start }
+    }
+
+    const stmt = db.prepare(sql)
+    // eslint-disable-next-line ts/no-explicit-any
+    const info = values && values.length > 0 ? stmt.run(...(values as any[])) : stmt.run()
+
+    return { result: [{ changes: info.changes, lastInsertRowid: Number(info.lastInsertRowid) }], duration: performance.now() - start }
   },
   mssql: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
     let start = 0

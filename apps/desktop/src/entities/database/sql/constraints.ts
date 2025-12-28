@@ -120,5 +120,11 @@ export const constraintsQuery = createQuery({
         foreign_column: null,
       }))
     },
+    sqlite: async () => {
+      // SQLite constraint information requires parsing table schemas
+      // For a minimal implementation, return empty array
+      // Full implementation would parse PRAGMA statements
+      return []
+    },
   }),
 })

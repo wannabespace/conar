@@ -11,6 +11,7 @@ export function formatSql(
     [DatabaseType.MySQL]: 'mysql',
     [DatabaseType.MSSQL]: 'tsql',
     [DatabaseType.ClickHouse]: 'mysql',
+    [DatabaseType.SQLite]: 'sqlite',
   }
 
   try {
