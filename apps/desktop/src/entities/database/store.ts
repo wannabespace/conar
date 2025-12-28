@@ -16,6 +16,72 @@ export const queryToRunType = type({
   query: 'string',
 })
 
+export const layoutPresetType = type({
+  id: 'string',
+  name: 'string',
+  isBuiltIn: 'boolean',
+  sidebarVisible: 'boolean',
+  chatVisible: 'boolean',
+  resultsVisible: 'boolean',
+  chatPosition: '"right" | "bottom"',
+  resultsPosition: '"bottom" | "right"',
+})
+
+export type LayoutPreset = typeof layoutPresetType.infer
+
+export const BUILT_IN_LAYOUTS: LayoutPreset[] = [
+  {
+    id: 'editor-results-chat-right',
+    name: 'Editor + Results + Chat (Right)',
+    isBuiltIn: true,
+    sidebarVisible: true,
+    chatVisible: true,
+    resultsVisible: true,
+    chatPosition: 'right',
+    resultsPosition: 'bottom',
+  },
+  {
+    id: 'editor-chat-right',
+    name: 'Editor + Chat (Right)',
+    isBuiltIn: true,
+    sidebarVisible: true,
+    chatVisible: true,
+    resultsVisible: false,
+    chatPosition: 'right',
+    resultsPosition: 'bottom',
+  },
+  {
+    id: 'editor-results-no-chat',
+    name: 'Editor + Results (No Chat)',
+    isBuiltIn: true,
+    sidebarVisible: true,
+    chatVisible: false,
+    resultsVisible: true,
+    chatPosition: 'right',
+    resultsPosition: 'bottom',
+  },
+  {
+    id: 'focus-editor',
+    name: 'Focus Editor',
+    isBuiltIn: true,
+    sidebarVisible: false,
+    chatVisible: false,
+    resultsVisible: false,
+    chatPosition: 'right',
+    resultsPosition: 'bottom',
+  },
+  {
+    id: 'chat-bottom',
+    name: 'Editor + Results + Chat (Bottom)',
+    isBuiltIn: true,
+    sidebarVisible: true,
+    chatVisible: true,
+    resultsVisible: true,
+    chatPosition: 'bottom',
+    resultsPosition: 'bottom',
+  },
+]
+
 const pageStoreType = type({
   lastOpenedPage: 'string | null',
   lastOpenedChatId: 'string | null',
@@ -46,6 +112,8 @@ const pageStoreType = type({
   resultsVisible: 'boolean',
   chatPosition: '"right" | "bottom"',
   resultsPosition: '"bottom" | "right"',
+  activeLayoutId: 'string | null',
+  layouts: layoutPresetType.array(),
 })
 
 const defaultState: typeof pageStoreType.infer = {
@@ -83,6 +151,8 @@ const defaultState: typeof pageStoreType.infer = {
   resultsVisible: true,
   chatPosition: 'right',
   resultsPosition: 'bottom',
+  activeLayoutId: 'editor-results-chat-right',
+  layouts: [...BUILT_IN_LAYOUTS],
 }
 
 const storesMap = new Map<string, Store<typeof pageStoreType.infer>>()
@@ -96,6 +166,9 @@ export function databaseStore(id: string) {
 
   persistedState.sql ||= defaultState.sql
   persistedState.editorQueries ||= getEditorQueries(persistedState.sql)
+
+  const userLayouts = (persistedState.layouts || []).filter(l => !l.isBuiltIn)
+  persistedState.layouts = [...BUILT_IN_LAYOUTS, ...userLayouts]
 
   const state = pageStoreType(Object.assign(
     {},
@@ -136,6 +209,8 @@ export function databaseStore(id: string) {
       resultsVisible: currentVal.resultsVisible,
       chatPosition: currentVal.chatPosition,
       resultsPosition: currentVal.resultsPosition,
+      activeLayoutId: currentVal.activeLayoutId,
+      layouts: currentVal.layouts.filter(l => !l.isBuiltIn),
     } satisfies Omit<typeof currentVal, 'queriesToRun' | 'files' | 'editorQueries'>))
   })
 
@@ -269,6 +344,7 @@ export function toggleSidebar(id: string) {
   store.setState(state => ({
     ...state,
     sidebarVisible: !state.sidebarVisible,
+    activeLayoutId: null,
   } satisfies typeof state))
 }
 
@@ -277,6 +353,7 @@ export function toggleChat(id: string) {
   store.setState(state => ({
     ...state,
     chatVisible: !state.chatVisible,
+    activeLayoutId: null,
   } satisfies typeof state))
 }
 
@@ -285,6 +362,7 @@ export function toggleResults(id: string) {
   store.setState(state => ({
     ...state,
     resultsVisible: !state.resultsVisible,
+    activeLayoutId: null,
   } satisfies typeof state))
 }
 
@@ -293,6 +371,7 @@ export function setChatPosition(id: string, position: 'right' | 'bottom') {
   store.setState(state => ({
     ...state,
     chatPosition: position,
+    activeLayoutId: null,
   } satisfies typeof state))
 }
 
@@ -301,5 +380,69 @@ export function setResultsPosition(id: string, position: 'bottom' | 'right') {
   store.setState(state => ({
     ...state,
     resultsPosition: position,
+    activeLayoutId: null,
+  } satisfies typeof state))
+}
+
+export function applyLayout(id: string, layoutId: string) {
+  const store = databaseStore(id)
+  const layout = store.state.layouts.find(l => l.id === layoutId)
+  if (!layout)
+    return
+
+  store.setState(state => ({
+    ...state,
+    sidebarVisible: layout.sidebarVisible,
+    chatVisible: layout.chatVisible,
+    resultsVisible: layout.resultsVisible,
+    chatPosition: layout.chatPosition,
+    resultsPosition: layout.resultsPosition,
+    activeLayoutId: layoutId,
+  } satisfies typeof state))
+}
+
+export function createLayout(id: string, name: string): string {
+  const store = databaseStore(id)
+  const layoutId = `custom-${Date.now()}`
+  const { sidebarVisible, chatVisible, resultsVisible, chatPosition, resultsPosition } = store.state
+
+  const newLayout: LayoutPreset = {
+    id: layoutId,
+    name,
+    isBuiltIn: false,
+    sidebarVisible,
+    chatVisible,
+    resultsVisible,
+    chatPosition,
+    resultsPosition,
+  }
+
+  store.setState(state => ({
+    ...state,
+    layouts: [...state.layouts, newLayout],
+    activeLayoutId: layoutId,
+  } satisfies typeof state))
+
+  return layoutId
+}
+
+export function renameLayout(id: string, layoutId: string, newName: string) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    layouts: state.layouts.map(l =>
+      l.id === layoutId && !l.isBuiltIn
+        ? { ...l, name: newName }
+        : l,
+    ),
+  } satisfies typeof state))
+}
+
+export function deleteLayout(id: string, layoutId: string) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    layouts: state.layouts.filter(l => l.id !== layoutId || l.isBuiltIn),
+    activeLayoutId: state.activeLayoutId === layoutId ? null : state.activeLayoutId,
   } satisfies typeof state))
 }

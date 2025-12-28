@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { LayoutPreset } from '~/lib/layout-store'
+import type { LayoutPreset } from '~/entities/database/store'
 import { getOS } from '@conar/shared/utils/os'
 import { Button } from '@conar/ui/components/button'
 import {
@@ -25,19 +25,16 @@ import {
 import { useStore } from '@tanstack/react-store'
 import { useImperativeHandle, useState } from 'react'
 import {
+  applyLayout,
   databaseStore,
+  deleteLayout,
+  renameLayout,
   setChatPosition,
   setResultsPosition,
   toggleChat,
   toggleResults,
   toggleSidebar,
 } from '~/entities/database'
-import {
-  applyLayout,
-  deleteLayout,
-  layoutStore,
-  renameLayout,
-} from '~/lib/layout-store'
 
 const os = getOS(navigator.userAgent)
 const modKey = os.type === 'macos' ? '⌘' : 'Ctrl'
@@ -125,23 +122,24 @@ function LayoutThumbnail({ layout, isActive }: LayoutThumbnailProps) {
 }
 
 interface LayoutPresetItemProps {
+  databaseId: string
   layout: LayoutPreset
   isActive: boolean
 }
 
-function LayoutPresetItem({ layout, isActive }: LayoutPresetItemProps) {
+function LayoutPresetItem({ databaseId, layout, isActive }: LayoutPresetItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState(layout.name)
 
   const handleRename = () => {
     if (editName.trim() && editName !== layout.name) {
-      renameLayout(layout.id, editName.trim())
+      renameLayout(databaseId, layout.id, editName.trim())
     }
     setIsEditing(false)
   }
 
   const handleDelete = () => {
-    deleteLayout(layout.id)
+    deleteLayout(databaseId, layout.id)
   }
 
   return (
@@ -155,7 +153,7 @@ function LayoutPresetItem({ layout, isActive }: LayoutPresetItemProps) {
           focus-visible:ring-2 focus-visible:ring-ring
           active:scale-[0.98]
         `}
-        onClick={() => applyLayout(layout.id)}
+        onClick={() => applyLayout(databaseId, layout.id)}
       >
         <LayoutThumbnail layout={layout} isActive={isActive} />
       </button>
@@ -339,15 +337,14 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
     resultsVisible,
     chatPosition,
     resultsPosition,
+    layouts,
+    activeLayoutId,
   } = useStore(store, s => ({
     sidebarVisible: s.sidebarVisible,
     chatVisible: s.chatVisible,
     resultsVisible: s.resultsVisible,
     chatPosition: s.chatPosition,
     resultsPosition: s.resultsPosition,
-  }))
-
-  const { layouts, activeLayoutId } = useStore(layoutStore, s => ({
     layouts: s.layouts,
     activeLayoutId: s.activeLayoutId,
   }))
@@ -399,6 +396,7 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
             {layouts.map(layout => (
               <LayoutPresetItem
                 key={layout.id}
+                databaseId={databaseId}
                 layout={layout}
                 isActive={layout.id === activeLayoutId}
               />
