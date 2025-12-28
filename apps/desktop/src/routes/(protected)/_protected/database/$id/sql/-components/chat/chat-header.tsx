@@ -1,4 +1,5 @@
 import type { AppUIMessage } from '@conar/api/src/ai-tools'
+import type { ComponentRef } from 'react'
 import type { chats } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
@@ -12,15 +13,16 @@ import {
   DropdownMenuTrigger,
 } from '@conar/ui/components/dropdown-menu'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAddLine, RiHistoryLine } from '@remixicon/react'
+import { RiAddLine, RiDeleteBin7Line, RiHistoryLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { useEffect, useEffectEvent } from 'react'
+import { useEffect, useEffectEvent, useRef } from 'react'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { databaseStore } from '~/entities/database'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
+import { RemoveChatDialog } from './remove-chat-dialog'
 
 type Group = 'today' | 'yesterday' | 'week' | 'month' | 'older'
 
@@ -73,7 +75,9 @@ function groupChats(data: typeof chats.$inferSelect[]) {
 
 export function ChatHeader({ chatId }: { chatId: string }) {
   const { id } = Route.useParams()
+  const navigate = useNavigate()
   const store = databaseStore(id)
+  const removeDialogRef = useRef<ComponentRef<typeof RemoveChatDialog>>(null)
   const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'))
   const chat = allChats.find(chat => chat.id === chatId)
   const { data: messages } = useLiveQuery(q => q
@@ -106,76 +110,130 @@ export function ChatHeader({ chatId }: { chatId: string }) {
 
   const grouped = groupChats(allChats)
 
+  const removeChat = (chat: typeof chats.$inferSelect) => {
+    removeDialogRef.current?.remove(chat, () => {
+      if (chat.id === chatId) {
+        store.setState(state => ({
+          ...state,
+          lastOpenedChatId: null,
+        }))
+        navigate({
+          to: '/database/$id/sql',
+          params: { id },
+        })
+      }
+    })
+  }
+
   return (
-    <div className="flex justify-between items-center h-8 gap-2">
-      <CardTitle className="flex items-center gap-2 flex-1 min-w-0">
-        <span data-mask className="truncate block min-w-0">
-          {chat
-            ? <>{chat.title || <span className="block animate-pulse bg-muted rounded-md w-30 h-4" />}</>
-            : 'New Chat'}
-        </span>
-      </CardTitle>
-      <div className="flex items-center gap-2">
-        {chat && (
-          <Button
-            variant="outline"
-            size="icon-sm"
-            asChild
-            onClick={() => store.setState(state => ({
-              ...state,
-              lastOpenedChatId: null,
-            } satisfies typeof state))}
-          >
-            <Link
-              to="/database/$id/sql"
-              params={{ id }}
-            >
-              <RiAddLine className="size-4" />
-            </Link>
-          </Button>
-        )}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+    <>
+      <RemoveChatDialog ref={removeDialogRef} />
+      <div className="flex h-8 items-center justify-between gap-2">
+        <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
+          <span data-mask className="block min-w-0 truncate">
+            {chat
+              ? (
+                  <>
+                    {chat.title || (
+                      <span className={`
+                        block h-4 w-30 animate-pulse rounded-md bg-muted
+                      `}
+                      />
+                    )}
+                  </>
+                )
+              : 'New Chat'}
+          </span>
+        </CardTitle>
+        <div className="flex items-center gap-2">
+          {chat && (
             <Button
               variant="outline"
               size="icon-sm"
+              asChild
+              onClick={() => store.setState(state => ({
+                ...state,
+                lastOpenedChatId: null,
+              } satisfies typeof state))}
             >
-              <RiHistoryLine className="size-4" />
+              <Link
+                to="/database/$id/sql"
+                params={{ id }}
+              >
+                <RiAddLine className="size-4" />
+              </Link>
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-60">
-            <DropdownMenuLabel>Chats</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <ScrollArea className="max-h-[70vh]">
-              {allChats.length === 0
-                ? <DropdownMenuItem disabled>No chats found</DropdownMenuItem>
-                : (
-                    Object.entries(grouped).map(([group, chats], idx) => (
-                      <div key={group}>
-                        <DropdownMenuLabel className="opacity-70 text-xs">{groupLabelMap[group as Group]}</DropdownMenuLabel>
-                        {chats.map(chat => (
-                          <DropdownMenuItem
-                            key={chat.id}
-                            asChild
-                          >
-                            <Link
-                              to="/database/$id/sql"
-                              params={{ id }}
-                              search={{ chatId: chat.id }}
-                              className={cn('text-foreground', chat.id === chatId && 'bg-accent')}
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon-sm"
+              >
+                <RiHistoryLine className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-60">
+              <DropdownMenuLabel>Chats</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <ScrollArea className="max-h-[70vh]">
+                {allChats.length === 0
+                  ? <DropdownMenuItem disabled>No chats found</DropdownMenuItem>
+                  : (
+                      Object.entries(grouped).map(([group, chats], idx) => (
+                        <div key={group}>
+                          <DropdownMenuLabel className="text-xs opacity-70">{groupLabelMap[group as Group]}</DropdownMenuLabel>
+                          {chats.map(chat => (
+                            <DropdownMenuItem
+                              key={chat.id}
+                              asChild
+                              className="group"
                             >
-                              {chat.title || <span className="animate-pulse bg-muted rounded-md w-30 h-4" />}
-                            </Link>
-                          </DropdownMenuItem>
-                        ))}
-                        {idx !== Object.keys(grouped).length - 1 && <DropdownMenuSeparator />}
-                      </div>
-                    ))
-                  )}
-            </ScrollArea>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                              <Link
+                                to="/database/$id/sql"
+                                params={{ id }}
+                                search={{ chatId: chat.id }}
+                                className={cn(`
+                                  flex items-center justify-between gap-2
+                                  text-foreground
+                                `, chat.id === chatId && `bg-accent`)}
+                              >
+                                <span className="truncate">
+                                  {chat.title || (
+                                    <span className={`
+                                      h-4 w-30 animate-pulse rounded-md bg-muted
+                                    `}
+                                    />
+                                  )}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-xs"
+                                  className={`
+                                    -mr-1 opacity-0 transition-none
+                                    group-hover:opacity-100
+                                    hover:text-destructive
+                                  `}
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    removeChat(chat)
+                                  }}
+                                >
+                                  <RiDeleteBin7Line className="size-3.5" />
+                                </Button>
+                              </Link>
+                            </DropdownMenuItem>
+                          ))}
+                          {idx !== Object.keys(grouped).length - 1 && <DropdownMenuSeparator />}
+                        </div>
+                      ))
+                    )}
+              </ScrollArea>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
