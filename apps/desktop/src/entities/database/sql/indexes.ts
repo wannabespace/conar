@@ -1,8 +1,8 @@
 import type { Kysely } from 'kysely'
 import type { Columns as ClickHouseColumns } from '../dialects/clickhouse/schema/system'
-import type { SysColumns, SysIndexColumns, SysIndexes, SysSchemas, SysTables } from '../dialects/mssql/schema/indexes'
-import type { MysqlStatistics } from '../dialects/mysql/schema/indexes'
-import type { PgAttribute, PgClass, PgIndex, PgNamespace } from '../dialects/postgres/schema/indexes'
+import type { SysColumns, SysIndexColumns, SysIndexes, SysSchemas, SysTables } from '../dialects/mssql/schema/sys'
+import type { MysqlStatistics } from '../dialects/mysql/schema/information'
+import type { PgAttribute, PgClass, PgIndex, PgNamespace } from '../dialects/postgres/schema/catalog'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 import { createQuery } from '../query'
@@ -12,12 +12,15 @@ export const indexesType = type({
   table: 'string',
   name: 'string',
   column: 'string',
-  isUnique: 'boolean | 1 | 0',
-  isPrimary: 'boolean | 1 | 0',
+  is_unique: 'boolean | 1 | 0',
+  is_primary: 'boolean | 1 | 0',
 }).pipe(data => ({
-  ...data,
-  isUnique: !!data.isUnique,
-  isPrimary: !!data.isPrimary,
+  schema: data.schema,
+  table: data.table,
+  name: data.name,
+  column: data.column,
+  isUnique: !!data.is_unique,
+  isPrimary: !!data.is_primary,
 }))
 
 export const indexesQuery = createQuery({
@@ -44,8 +47,8 @@ export const indexesQuery = createQuery({
           't.relname as table',
           'i.relname as name',
           'a.attname as column',
-          'ix.indisunique as isUnique',
-          'ix.indisprimary as isPrimary',
+          'ix.indisunique as is_unique',
+          'ix.indisprimary as is_primary',
         ])
         .where('n.nspname', 'not in', ['pg_catalog', 'information_schema'])
         .where('t.relkind', '=', 'r')
@@ -64,8 +67,8 @@ export const indexesQuery = createQuery({
           'TABLE_NAME as table',
           'INDEX_NAME as name',
           'COLUMN_NAME as column',
-          eb => eb('NON_UNIQUE', '=', 0).as('isUnique'),
-          eb => eb('INDEX_NAME', '=', 'PRIMARY').as('isPrimary'),
+          eb => eb('NON_UNIQUE', '=', 0).as('is_unique'),
+          eb => eb('INDEX_NAME', '=', 'PRIMARY').as('is_primary'),
         ])
         .where('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
         .execute()
@@ -95,8 +98,8 @@ export const indexesQuery = createQuery({
           't.name as table',
           'i.name as name',
           'c.name as column',
-          'i.is_unique as isUnique',
-          'i.is_primary_key as isPrimary',
+          'i.is_unique as is_unique',
+          'i.is_primary_key as is_primary',
         ])
         .execute()
     },
@@ -124,8 +127,8 @@ export const indexesQuery = createQuery({
       return query.map(row => ({
         ...row,
         name: 'primary_key',
-        isUnique: true,
-        isPrimary: true,
+        is_unique: true,
+        is_primary: true,
       }))
     },
   }),
