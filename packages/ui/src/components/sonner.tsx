@@ -1,12 +1,19 @@
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
 import { useTheme } from '../theme-observer'
 
 function Toaster() {
   const { resolvedTheme } = useTheme()
+  const [isMounted, setIsMounted] = useState(false)
 
-  if (typeof document === 'undefined')
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isMounted) {
     return null
+  }
 
   return createPortal(
     <Sonner
