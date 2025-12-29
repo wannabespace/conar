@@ -55,10 +55,13 @@ interface LayoutThumbnailProps {
 }
 
 function LayoutThumbnail({ layout, isActive }: LayoutThumbnailProps) {
-  const showSidebar = layout.sidebarVisible
-  const showChat = layout.chatVisible
-  const showResults = layout.resultsVisible
-  const chatRight = layout.chatPosition === 'right'
+  const {
+    sidebarVisible: showSidebar,
+    chatVisible: showChat,
+    resultsVisible: showResults,
+    chatPosition,
+  } = layout.settings
+  const chatRight = chatPosition === 'right'
 
   return (
     <div

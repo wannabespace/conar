@@ -31,11 +31,7 @@ export const layoutPresetType = type({
   id: 'string',
   name: 'string',
   isBuiltIn: 'boolean',
-  sidebarVisible: 'boolean',
-  chatVisible: 'boolean',
-  resultsVisible: 'boolean',
-  chatPosition: '"right" | "bottom"',
-  resultsPosition: '"bottom" | "right"',
+  settings: layoutSettingsType,
 })
 
 export type LayoutPreset = typeof layoutPresetType.infer
@@ -45,51 +41,66 @@ export const BUILT_IN_LAYOUTS: LayoutPreset[] = [
     id: 'editor-results-chat-right',
     name: 'Editor + Results + Chat (Right)',
     isBuiltIn: true,
-    sidebarVisible: true,
-    chatVisible: true,
-    resultsVisible: true,
-    chatPosition: 'right',
-    resultsPosition: 'bottom',
+    settings: {
+      sidebarVisible: true,
+      chatVisible: true,
+      resultsVisible: true,
+      chatPosition: 'right',
+      resultsPosition: 'bottom',
+      activeLayoutId: 'editor-results-chat-right',
+    },
   },
   {
     id: 'editor-chat-right',
     name: 'Editor + Chat (Right)',
     isBuiltIn: true,
-    sidebarVisible: true,
-    chatVisible: true,
-    resultsVisible: false,
-    chatPosition: 'right',
-    resultsPosition: 'bottom',
+    settings: {
+      sidebarVisible: true,
+      chatVisible: true,
+      resultsVisible: false,
+      chatPosition: 'right',
+      resultsPosition: 'bottom',
+      activeLayoutId: 'editor-chat-right',
+    },
   },
   {
     id: 'editor-results-no-chat',
     name: 'Editor + Results (No Chat)',
     isBuiltIn: true,
-    sidebarVisible: true,
-    chatVisible: false,
-    resultsVisible: true,
-    chatPosition: 'right',
-    resultsPosition: 'bottom',
+    settings: {
+      sidebarVisible: true,
+      chatVisible: false,
+      resultsVisible: true,
+      chatPosition: 'right',
+      resultsPosition: 'bottom',
+      activeLayoutId: 'editor-results-no-chat',
+    },
   },
   {
     id: 'focus-editor',
     name: 'Focus Editor',
     isBuiltIn: true,
-    sidebarVisible: false,
-    chatVisible: false,
-    resultsVisible: false,
-    chatPosition: 'right',
-    resultsPosition: 'bottom',
+    settings: {
+      sidebarVisible: false,
+      chatVisible: false,
+      resultsVisible: false,
+      chatPosition: 'right',
+      resultsPosition: 'bottom',
+      activeLayoutId: 'focus-editor',
+    },
   },
   {
     id: 'chat-bottom',
     name: 'Editor + Results + Chat (Bottom)',
     isBuiltIn: true,
-    sidebarVisible: true,
-    chatVisible: true,
-    resultsVisible: true,
-    chatPosition: 'bottom',
-    resultsPosition: 'bottom',
+    settings: {
+      sidebarVisible: true,
+      chatVisible: true,
+      resultsVisible: true,
+      chatPosition: 'bottom',
+      resultsPosition: 'bottom',
+      activeLayoutId: 'chat-bottom',
+    },
   },
 ]
 
@@ -413,11 +424,7 @@ export function applyLayout(id: string, layoutId: string) {
   store.setState(state => ({
     ...state,
     layout: {
-      sidebarVisible: layoutPreset.sidebarVisible,
-      chatVisible: layoutPreset.chatVisible,
-      resultsVisible: layoutPreset.resultsVisible,
-      chatPosition: layoutPreset.chatPosition,
-      resultsPosition: layoutPreset.resultsPosition,
+      ...layoutPreset.settings,
       activeLayoutId: layoutId,
     },
   } satisfies typeof state))
@@ -426,17 +433,15 @@ export function applyLayout(id: string, layoutId: string) {
 export function createLayout(id: string, name: string): string {
   const store = databaseStore(id)
   const layoutId = `custom-${Date.now()}`
-  const { sidebarVisible, chatVisible, resultsVisible, chatPosition, resultsPosition } = store.state.layout
 
   const newLayout: LayoutPreset = {
     id: layoutId,
     name,
     isBuiltIn: false,
-    sidebarVisible,
-    chatVisible,
-    resultsVisible,
-    chatPosition,
-    resultsPosition,
+    settings: {
+      ...store.state.layout,
+      activeLayoutId: layoutId,
+    },
   }
 
   store.setState(state => ({

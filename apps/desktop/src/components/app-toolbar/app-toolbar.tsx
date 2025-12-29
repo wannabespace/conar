@@ -23,7 +23,7 @@ interface AppToolbarProps {
 
 export function AppToolbar({ databaseId, className, onNewChat }: AppToolbarProps) {
   const store = databaseStore(databaseId)
-  const { sidebarVisible, chatVisible, resultsVisible } = useStore(store, (state) => ({
+  const { sidebarVisible, chatVisible, resultsVisible } = useStore(store, state => ({
     sidebarVisible: state.layout.sidebarVisible,
     chatVisible: state.layout.chatVisible,
     resultsVisible: state.layout.resultsVisible,
