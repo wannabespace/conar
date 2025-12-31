@@ -23,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@conar/ui/components/tooltip'
+import { cn } from '@conar/ui/lib/utils'
 import {
   RiCheckLine,
   RiClipboardLine,
@@ -224,11 +225,13 @@ export function HeaderActionsCopy({ database, table, schema }: { database: typeo
   return (
     <>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className={`
-          flex h-[600px] w-[60vw] flex-row gap-0 overflow-hidden p-0
-          sm:max-w-[60vw]
-          [&>button]:hidden
-        `}
+        <DialogContent className={cn(
+          `
+            flex h-[600px] w-[60vw] flex-row gap-0 overflow-hidden p-0
+            sm:max-w-[60vw]
+          `,
+          '[&>button]:hidden',
+        )}
         >
           <CopyDialogSidebar
             activeCategory={activeCategory}
