@@ -67,11 +67,7 @@ function DatabasePage() {
   }
 
   return (
-    <div className={`
-      flex bg-gray-100
-      dark:bg-neutral-950/60
-    `}
-    >
+    <div className="flex bg-gray-100 dark:bg-neutral-950/60">
       <DatabaseSidebar
         className={cn(
           'w-16 transition-all duration-200',

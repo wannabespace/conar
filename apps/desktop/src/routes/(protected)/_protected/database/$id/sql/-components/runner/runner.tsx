@@ -144,11 +144,7 @@ export function Runner() {
                     >
                       <RiStarLine />
                       Saved
-                      <span className={`
-                        flex h-5 items-center justify-center rounded-full
-                        bg-accent px-1.5 text-xs
-                      `}
-                      >
+                      <span className="flex h-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs">
                         {queriesCount}
                       </span>
                     </Button>
@@ -200,11 +196,7 @@ export function Runner() {
           </CardHeader>
           <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
             <RunnerEditor />
-            <span className={`
-              pointer-events-none absolute right-6 bottom-2 flex flex-col
-              items-end text-xs text-muted-foreground
-            `}
-            >
+            <span className="pointer-events-none absolute right-6 bottom-2 flex flex-col items-end text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Kbd asChild>
                   <CtrlLetter letter="K" userAgent={navigator.userAgent} />
