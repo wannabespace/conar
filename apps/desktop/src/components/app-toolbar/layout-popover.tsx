@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { LayoutPreset } from '~/entities/database/store'
+import type { LayoutPreset, SetPositionParams } from '~/entities/database/store'
 import { getOS } from '@conar/shared/utils/os'
 import { Button } from '@conar/ui/components/button'
 import {
@@ -457,7 +457,7 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
                 { value: 'right', label: 'Right' },
                 { value: 'bottom', label: 'Bottom' },
               ]}
-              onChange={v => setChatPosition(databaseId, v as 'right' | 'bottom')}
+              onChange={v => setChatPosition({ id: databaseId, position: v as SetPositionParams['position'] })}
             />
             <PositionSelector
               label="Results Position"
@@ -466,7 +466,7 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
                 { value: 'bottom', label: 'Bottom' },
                 { value: 'right', label: 'Right' },
               ]}
-              onChange={v => setResultsPosition(databaseId, v as 'bottom' | 'right')}
+              onChange={v => setResultsPosition({ id: databaseId, position: v as SetPositionParams['position'] })}
             />
           </div>
         </div>

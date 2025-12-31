@@ -391,7 +391,12 @@ export function toggleResults(id: string) {
   } satisfies typeof state))
 }
 
-export function setChatPosition(id: string, position: 'right' | 'bottom') {
+export interface SetPositionParams {
+  id: string
+  position: 'right' | 'bottom'
+}
+
+export function setChatPosition({ id, position }: SetPositionParams) {
   const store = databaseStore(id)
   store.setState(state => ({
     ...state,
@@ -403,7 +408,7 @@ export function setChatPosition(id: string, position: 'right' | 'bottom') {
   } satisfies typeof state))
 }
 
-export function setResultsPosition(id: string, position: 'bottom' | 'right') {
+export function setResultsPosition({ id, position }: SetPositionParams) {
   const store = databaseStore(id)
   store.setState(state => ({
     ...state,
