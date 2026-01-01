@@ -231,6 +231,9 @@ catalogs:
     '@types/react-dom':
       specifier: ^19.2.3
       version: 19.2.3
+    '@typescript/native-preview':
+      specifier: ^7.0.0-dev.20260101.1
+      version: 7.0.0-dev.20260101.1
     '@vitejs/plugin-react':
       specifier: ^5.1.2
       version: 5.1.2
@@ -494,6 +497,9 @@ importers:
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.5
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20260101.1
       cross-env:
         specifier: 'catalog:'
         version: 10.1.0
@@ -5140,6 +5146,45 @@ packages:
   '@typescript-eslint/visitor-keys@8.50.1':
     resolution: {integrity: sha512-IrDKrw7pCRUR94zeuCSUWQ+w8JEf5ZX5jl/e6AHGSLi1/zIr0lgutfn/7JpfCey+urpgQEdrZVYzCaVVKiTwhQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260101.1':
+    resolution: {integrity: sha512-V4oWbFO5QBqvb4ra4QMFt6OV4QlEkODzn5XE+W0BdA03eQ/SljvbC0QAZqI/qNKWOqC8eXM4N3EViZEK2Dq2vQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@typescript/native-preview-darwin-x64@7.0.0-dev.20260101.1':
+    resolution: {integrity: sha512-GVQD7TUbgBQqRCwY80N5x1lP8DNpinxE7s1JyAFOc1tBOcHrIsBmGEIP/PGnJAbWbT1cJmsLIqLH+y5VWwE1cA==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@typescript/native-preview-linux-arm64@7.0.0-dev.20260101.1':
+    resolution: {integrity: sha512-IgTHV1WgajBz3W4cyNk8nCuwBrLD+00pZu7AwTfu31UPyTnnfI54+VjjK0Pz5FZN+D5Tnvy/VTaNzSbxOG7+7g==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@typescript/native-preview-linux-arm@7.0.0-dev.20260101.1':
+    resolution: {integrity: sha512-XVSkBoVC0jSNR1IO0z+T//67q0kqUY3cuYLbV0/V1z/HMxk9R8lo0UC9NP2KBsUe/MV0p3hQQFJUcqTrNfxKZA==}
+    cpu: [arm]
+    os: [linux]
+
+  '@typescript/native-preview-linux-x64@7.0.0-dev.20260101.1':
+    resolution: {integrity: sha512-1mrQsJycVCTCNXL5bG6WoNaazO0tkebW3TC05fuL1gDPFVhxE1ou1PrT9adMjilzNraYO3L+It2wm/gfPcbj+Q==}
+    cpu: [x64]
+    os: [linux]
+
+  '@typescript/native-preview-win32-arm64@7.0.0-dev.20260101.1':
+    resolution: {integrity: sha512-eFYYewyCHOt9sMmtl93b+dfNMsqD7mSQGvMym/Ih/LHreB4PJbP3XzA22/3yVl3pc0OmGqjnRAR1AEGr9AVI8g==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@typescript/native-preview-win32-x64@7.0.0-dev.20260101.1':
+    resolution: {integrity: sha512-lXOY+YXrq6ZzKbG6Exa5HmgLcRKxcEqi07r824JlQ/ENrK9Vj3LTSqXPRNbsF+EjQCQIkghROfkBtXWHm2kprQ==}
+    cpu: [x64]
+    os: [win32]
+
+  '@typescript/native-preview@7.0.0-dev.20260101.1':
+    resolution: {integrity: sha512-jcepDhtyTQbLIccBGatYR6x/ybAauDXLXYgNAW0MdIHx0YVa3XIF9kpSEE6Zq4RB9k/tHw5mwp0VgB7XDkMq1Q==}
+    hasBin: true
 
   '@typespec/ts-http-runtime@0.3.2':
     resolution: {integrity: sha512-IlqQ/Gv22xUC1r/WQm4StLkYQmaaTsXAhUVsNE0+xiyf0yRFiH5++q78U3bw6bLKDCTmh0uqKB9eG9+Bt75Dkg==}
@@ -14783,6 +14828,37 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.50.1
       eslint-visitor-keys: 4.2.1
+
+  '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260101.1':
+    optional: true
+
+  '@typescript/native-preview-darwin-x64@7.0.0-dev.20260101.1':
+    optional: true
+
+  '@typescript/native-preview-linux-arm64@7.0.0-dev.20260101.1':
+    optional: true
+
+  '@typescript/native-preview-linux-arm@7.0.0-dev.20260101.1':
+    optional: true
+
+  '@typescript/native-preview-linux-x64@7.0.0-dev.20260101.1':
+    optional: true
+
+  '@typescript/native-preview-win32-arm64@7.0.0-dev.20260101.1':
+    optional: true
+
+  '@typescript/native-preview-win32-x64@7.0.0-dev.20260101.1':
+    optional: true
+
+  '@typescript/native-preview@7.0.0-dev.20260101.1':
+    optionalDependencies:
+      '@typescript/native-preview-darwin-arm64': 7.0.0-dev.20260101.1
+      '@typescript/native-preview-darwin-x64': 7.0.0-dev.20260101.1
+      '@typescript/native-preview-linux-arm': 7.0.0-dev.20260101.1
+      '@typescript/native-preview-linux-arm64': 7.0.0-dev.20260101.1
+      '@typescript/native-preview-linux-x64': 7.0.0-dev.20260101.1
+      '@typescript/native-preview-win32-arm64': 7.0.0-dev.20260101.1
+      '@typescript/native-preview-win32-x64': 7.0.0-dev.20260101.1
 
   '@typespec/ts-http-runtime@0.3.2':
     dependencies:
