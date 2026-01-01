@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { LayoutPreset, SetPositionParams } from '~/entities/database/store'
-import { getOS } from '@conar/shared/utils/os'
 import { Button } from '@conar/ui/components/button'
+import { Ctrl, CtrlLetter, ShiftCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,8 +36,7 @@ import {
   toggleSidebar,
 } from '~/entities/database'
 
-const os = getOS(navigator.userAgent)
-const modKey = os.type === 'macos' ? '⌘' : 'Ctrl'
+const userAgent = navigator.userAgent
 
 export interface LayoutPopoverHandle {
   open: VoidFunction
@@ -249,7 +248,7 @@ function ToggleRow({
   onCheckedChange,
 }: {
   label: string
-  shortcut?: string
+  shortcut?: ReactNode
   checked: boolean
   onCheckedChange: VoidFunction
 }) {
@@ -373,7 +372,7 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
               text-muted-foreground
             `}
             >
-              {modKey}
+              <Ctrl userAgent={userAgent} />
               ,
             </kbd>
           </span>
@@ -420,19 +419,19 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
           <div className="space-y-1">
             <ToggleRow
               label="Primary Sidebar"
-              shortcut={`${modKey}B`}
+              shortcut={<CtrlLetter userAgent={userAgent} letter="B" />}
               checked={sidebarVisible}
               onCheckedChange={() => toggleSidebar(databaseId)}
             />
             <ToggleRow
               label="Chat Panel"
-              shortcut={`${modKey}J`}
+              shortcut={<CtrlLetter userAgent={userAgent} letter="J" />}
               checked={chatVisible}
               onCheckedChange={() => toggleChat(databaseId)}
             />
             <ToggleRow
               label="Results Panel"
-              shortcut={`${modKey}⇧R`}
+              shortcut={<ShiftCtrlLetter userAgent={userAgent} letter="R" />}
               checked={resultsVisible}
               onCheckedChange={() => toggleResults(databaseId)}
             />
