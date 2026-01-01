@@ -1,65 +1,23 @@
 import type * as React from 'react'
 import { cn } from '@conar/ui/lib/utils'
 import { GripVerticalIcon } from 'lucide-react'
-import * as ResizablePrimitive from 'react-resizable-panels'
-
-function ResizablePanelGroupWithAutoSave({
-  className,
-  direction,
-  autoSaveId,
-  ...props
-}: Omit<React.ComponentProps<typeof ResizablePrimitive.Group>, 'orientation'> & {
-  direction?: 'horizontal' | 'vertical'
-  autoSaveId: string
-}) {
-  const layoutProps = ResizablePrimitive.useDefaultLayout({
-    id: autoSaveId,
-    storage: localStorage,
-  })
-
-  return (
-    <ResizablePrimitive.Group
-      data-slot="resizable-panel-group"
-      data-orientation={direction}
-      orientation={direction}
-      className={cn(
-        `
-          flex size-full
-          data-[orientation=vertical]:flex-col
-        `,
-        className,
-      )}
-      {...layoutProps}
-      {...props}
-    />
-  )
-}
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 
 function ResizablePanelGroup({
   className,
-  direction,
+  direction = 'horizontal',
   autoSaveId,
   ...props
-}: Omit<React.ComponentProps<typeof ResizablePrimitive.Group>, 'orientation'> & {
+}: Omit<React.ComponentProps<typeof PanelGroup>, 'direction'> & {
   direction?: 'horizontal' | 'vertical'
   autoSaveId?: string
 }) {
-  if (autoSaveId) {
-    return (
-      <ResizablePanelGroupWithAutoSave
-        className={className}
-        direction={direction}
-        autoSaveId={autoSaveId}
-        {...props}
-      />
-    )
-  }
-
   return (
-    <ResizablePrimitive.Group
+    <PanelGroup
       data-slot="resizable-panel-group"
       data-orientation={direction}
-      orientation={direction}
+      direction={direction}
+      autoSaveId={autoSaveId}
       className={cn(
         `
           flex size-full
@@ -73,42 +31,20 @@ function ResizablePanelGroup({
 }
 
 function ResizablePanel({
-  defaultSize,
-  minSize,
-  maxSize,
-  collapsedSize,
   ...props
-}: Omit<React.ComponentProps<typeof ResizablePrimitive.Panel>, 'defaultSize' | 'minSize' | 'maxSize' | 'collapsedSize'> & {
-  defaultSize?: number | string
-  minSize?: number | string
-  maxSize?: number | string
-  collapsedSize?: number | string
-}) {
-  // In v4, numeric values are interpreted as pixels, so we add '%' for percentages
-  const toPercentage = (value: number | string | undefined) =>
-    typeof value === 'number' ? `${value}%` : value
-
-  return (
-    <ResizablePrimitive.Panel
-      data-slot="resizable-panel"
-      defaultSize={toPercentage(defaultSize)}
-      minSize={toPercentage(minSize)}
-      maxSize={toPercentage(maxSize)}
-      collapsedSize={toPercentage(collapsedSize)}
-      {...props}
-    />
-  )
+}: React.ComponentProps<typeof Panel>) {
+  return <Panel data-slot="resizable-panel" {...props} />
 }
 
 function ResizableHandle({
   withHandle,
   className,
   ...props
-}: React.ComponentProps<typeof ResizablePrimitive.Separator> & {
+}: React.ComponentProps<typeof PanelResizeHandle> & {
   withHandle?: boolean
 }) {
   return (
-    <ResizablePrimitive.Separator
+    <PanelResizeHandle
       data-slot="resizable-handle"
       className={cn(
         `
@@ -143,7 +79,7 @@ function ResizableHandle({
           <GripVerticalIcon className="size-2.5" />
         </div>
       )}
-    </ResizablePrimitive.Separator>
+    </PanelResizeHandle>
   )
 }
 
