@@ -1,8 +1,6 @@
-import type { ActiveFilter } from '@conar/shared/filters'
 import type { RemixiconComponentType } from '@remixicon/react'
 import type { databases } from '~/drizzle'
-import type { enumType } from '~/entities/database/sql/enums'
-import type { Column } from '~/entities/database/utils/table'
+import { DatabaseType } from '@conar/shared/enums/database-type'
 import { Button } from '@conar/ui/components/button'
 import {
   Dialog,
@@ -11,13 +9,10 @@ import {
   DialogTitle,
 } from '@conar/ui/components/dialog'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@conar/ui/components/dropdown-menu'
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from '@conar/ui/components/tabs'
 import {
   Tooltip,
   TooltipContent,
@@ -46,35 +41,61 @@ import * as generators from '~/entities/database/utils/generators'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
 
+interface Format {
+  type: 'sql' | 'ts' | 'zod' | 'prisma' | 'drizzle' | 'kysely'
+  label: string
+  lang: string
+  icon: RemixiconComponentType
+  // eslint-disable-next-line ts/no-explicit-any
+  generator: (...params: any[]) => string
+}
+
 const FORMATS = {
   schema: [
-    { id: 'sql', label: 'SQL', lang: 'sql', icon: RiDatabase2Line, generator: generators.generateSchemaSQL },
-    { id: 'ts', label: 'TypeScript', lang: 'typescript', icon: RiFileCodeLine, generator: generators.generateSchemaTypeScript },
-    { id: 'zod', label: 'Zod', lang: 'typescript', icon: RiShieldCheckLine, generator: generators.generateSchemaZod },
-    { id: 'prisma', label: 'Prisma', lang: 'graphql', icon: RiTriangleLine, generator: generators.generateSchemaPrisma },
-    { id: 'drizzle', label: 'Drizzle', lang: 'typescript', icon: RiDropLine, generator: generators.generateSchemaDrizzle },
-    { id: 'kysely', label: 'Kysely', lang: 'typescript', icon: RiTerminalBoxLine, generator: generators.generateSchemaKysely },
+    { type: 'sql', label: 'SQL', lang: 'sql', icon: RiDatabase2Line, generator: generators.generateSchemaSQL },
+    { type: 'ts', label: 'TypeScript', lang: 'typescript', icon: RiFileCodeLine, generator: generators.generateSchemaTypeScript },
+    { type: 'zod', label: 'Zod', lang: 'typescript', icon: RiShieldCheckLine, generator: generators.generateSchemaZod },
+    { type: 'prisma', label: 'Prisma', lang: 'graphql', icon: RiTriangleLine, generator: generators.generateSchemaPrisma },
+    { type: 'drizzle', label: 'Drizzle', lang: 'typescript', icon: RiDropLine, generator: generators.generateSchemaDrizzle },
+    { type: 'kysely', label: 'Kysely', lang: 'typescript', icon: RiTerminalBoxLine, generator: generators.generateSchemaKysely },
   ],
   query: [
-    { id: 'sql', label: 'SQL', lang: 'sql', icon: RiDatabase2Line, generator: generators.generateQuerySQL },
-    { id: 'prisma', label: 'Prisma', lang: 'typescript', icon: RiTriangleLine, generator: generators.generateQueryPrisma },
-    { id: 'drizzle', label: 'Drizzle', lang: 'typescript', icon: RiDropLine, generator: generators.generateQueryDrizzle },
-    { id: 'kysely', label: 'Kysely', lang: 'typescript', icon: RiTerminalBoxLine, generator: generators.generateQueryKysely },
+    { type: 'sql', label: 'SQL', lang: 'sql', icon: RiDatabase2Line, generator: generators.generateQuerySQL },
+    { type: 'prisma', label: 'Prisma', lang: 'typescript', icon: RiTriangleLine, generator: generators.generateQueryPrisma },
+    { type: 'drizzle', label: 'Drizzle', lang: 'typescript', icon: RiDropLine, generator: generators.generateQueryDrizzle },
+    { type: 'kysely', label: 'Kysely', lang: 'typescript', icon: RiTerminalBoxLine, generator: generators.generateQueryKysely },
   ],
-}
+} satisfies Record<string, Format[]>
 
-interface CopyDialogSidebarProps {
-  activeCategory: 'schema' | 'query'
-  activeFormatId: string
-  onFormatChange: (id: string) => void
-}
-
-function CopyDialogSidebar({ activeCategory, activeFormatId, onFormatChange }: CopyDialogSidebarProps) {
+function DialogSidebar({ activeCategory, activeFormat, onFormatChange, onCategoryChange }: {
+  activeCategory: keyof typeof FORMATS
+  activeFormat: Format
+  onFormatChange: (id: Format['type']) => void
+  onCategoryChange: (category: keyof typeof FORMATS) => void
+}) {
   return (
     <div className={`
       flex w-40 flex-col gap-1 overflow-y-auto border-r bg-muted/30 p-2
     `}
     >
+      <Tabs
+        value={activeCategory}
+        onValueChange={(value) => {
+          onCategoryChange(value as keyof typeof FORMATS)
+          // Keep the same format if it exists in the new category, otherwise use the first one
+          const newFormats = FORMATS[value as keyof typeof FORMATS]
+          const formatExists = newFormats.some(f => f.type === activeFormat.type)
+          if (!formatExists && newFormats.length > 0) {
+            onFormatChange(newFormats[0]!.type)
+          }
+        }}
+        className="mb-2"
+      >
+        <TabsList className="w-full">
+          <TabsTrigger value="schema" className="flex-1">Schema</TabsTrigger>
+          <TabsTrigger value="query" className="flex-1">Query</TabsTrigger>
+        </TabsList>
+      </Tabs>
       <div className={`
         mb-1 px-2 py-1.5 text-xs font-medium text-muted-foreground
       `}
@@ -82,13 +103,13 @@ function CopyDialogSidebar({ activeCategory, activeFormatId, onFormatChange }: C
         {activeCategory === 'schema' ? 'Schema Formats' : 'Query Formats'}
       </div>
       {FORMATS[activeCategory].map((fmt) => {
-        const isActive = fmt.id === activeFormatId
+        const isActive = fmt.type === activeFormat.type
         const Icon = fmt.icon
         return (
           <button
-            key={fmt.id}
+            key={fmt.type}
             type="button"
-            onClick={() => onFormatChange(fmt.id)}
+            onClick={() => onFormatChange(fmt.type)}
             className={`
               flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left
               text-sm transition-colors
@@ -110,13 +131,8 @@ function CopyDialogSidebar({ activeCategory, activeFormatId, onFormatChange }: C
 }
 
 interface CopyDialogEditorProps {
-  activeFormat: {
-    id: string
-    label: string
-    lang: string
-    icon: RemixiconComponentType
-  }
-  activeCategory: 'schema' | 'query'
+  activeFormat: Format
+  activeCategory: keyof typeof FORMATS
   codeContent: string
   isCopied: boolean
   onCopy: () => void
@@ -176,11 +192,11 @@ function CopyDialogEditor({ activeFormat, activeCategory, codeContent, isCopied,
   )
 }
 
-const COMPATIBILITY: Record<string, string[]> = {
-  prisma: ['postgres', 'mysql', 'mssql'],
-  drizzle: ['postgres', 'mysql', 'mssql', 'clickhouse'],
-  kysely: ['postgres', 'mysql', 'mssql', 'clickhouse'],
-}
+const COMPATIBILITY = {
+  prisma: [DatabaseType.Postgres, DatabaseType.MySQL, DatabaseType.MSSQL],
+  drizzle: [DatabaseType.Postgres, DatabaseType.MySQL, DatabaseType.MSSQL, DatabaseType.ClickHouse],
+  kysely: [DatabaseType.Postgres, DatabaseType.MySQL, DatabaseType.MSSQL, DatabaseType.ClickHouse],
+} satisfies Partial<Record<Format['type'], DatabaseType[]>>
 
 export function HeaderActionsCopy({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
   const store = usePageStoreContext()
@@ -190,50 +206,27 @@ export function HeaderActionsCopy({ database, table, schema }: { database: typeo
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<'schema' | 'query'>('schema')
-  const [activeFormatId, setActiveFormatId] = useState<string>('sql')
+  const [activeFormatType, setActiveFormatType] = useState<Format['type']>('sql')
   const [isCopied, setIsCopied] = useState(false)
 
-  const activeFormat = FORMATS[activeCategory].find(f => f.id === activeFormatId) ?? FORMATS[activeCategory][0]!
+  const activeFormat = FORMATS[activeCategory].find(f => f.type === activeFormatType) ?? FORMATS[activeCategory][0]!
 
   const codeContent = useMemo(() => {
     if (!dialogOpen)
       return ''
 
-    if (COMPATIBILITY[activeFormatId] && !COMPATIBILITY[activeFormatId].includes(database.type)) {
+    // @ts-expect-error - TODO: fix this
+    if (COMPATIBILITY[activeFormatType] && !COMPATIBILITY[activeFormatType].includes(database.type)) {
       return `Not supported for ${database.type}`
     }
 
     if (activeCategory === 'schema') {
-      return (activeFormat.generator as (table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: string) => string)(table, columns, enums, database.type)
+      // @ts-expect-error - TODO: fix this
+      return activeFormat.generator(table, columns, enums, database.type)
     }
-    return (activeFormat.generator as (table: string, filters: ActiveFilter[]) => string)(table, filters)
-  }, [activeCategory, activeFormat, dialogOpen, table, columns, filters, enums, activeFormatId, database.type])
-
-  const handleOpenDialog = (category: 'schema' | 'query', formatId: string) => {
-    setActiveCategory(category)
-    setActiveFormatId(formatId)
-    setDialogOpen(true)
-
-    const categoryFormats = FORMATS[category]
-    const format = categoryFormats.find(f => f.id === formatId) || categoryFormats[0]
-    if (format) {
-      if (COMPATIBILITY[formatId] && !COMPATIBILITY[formatId].includes(database.type)) {
-        navigator.clipboard.writeText(`Not supported for ${database.type}`)
-        toast.error(`Not supported for ${database.type}`)
-        return
-      }
-
-      let text = ''
-      if (category === 'schema') {
-        text = (format.generator as (table: string, cols: Column[], enums?: typeof enumType.infer[], dialect?: string) => string)(table, columns, enums, database.type)
-      }
-      else {
-        text = (format.generator as (table: string, filters: ActiveFilter[]) => string)(table, filters)
-      }
-      navigator.clipboard.writeText(text)
-      toast.success(`Copied ${format.label} ${category}`)
-    }
-  }
+    // @ts-expect-error - TODO: fix this
+    return activeFormat.generator(table, filters)
+  }, [activeCategory, activeFormat, dialogOpen, table, columns, filters, enums, activeFormatType, database.type])
 
   const handleDialogCopy = () => {
     navigator.clipboard.writeText(codeContent)
@@ -253,10 +246,11 @@ export function HeaderActionsCopy({ database, table, schema }: { database: typeo
           '[&>button]:hidden',
         )}
         >
-          <CopyDialogSidebar
+          <DialogSidebar
             activeCategory={activeCategory}
-            activeFormatId={activeFormatId}
-            onFormatChange={setActiveFormatId}
+            activeFormat={activeFormat}
+            onFormatChange={setActiveFormatType}
+            onCategoryChange={setActiveCategory}
           />
           <CopyDialogEditor
             activeFormat={activeFormat}
@@ -268,47 +262,22 @@ export function HeaderActionsCopy({ database, table, schema }: { database: typeo
           />
         </DialogContent>
       </Dialog>
-      <DropdownMenu>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <RiCodeSSlashLine />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="top" align="end">
-              Copy schema / query
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Copy Schema</DropdownMenuLabel>
-          {FORMATS.schema.map((fmt) => {
-            const Icon = fmt.icon
-            return (
-              <DropdownMenuItem key={fmt.id} onClick={() => handleOpenDialog('schema', fmt.id)}>
-                <Icon className="mr-2 h-4 w-4" />
-                {fmt.label}
-              </DropdownMenuItem>
-            )
-          })}
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuLabel>Copy Query</DropdownMenuLabel>
-          {FORMATS.query.map((fmt) => {
-            const Icon = fmt.icon
-            return (
-              <DropdownMenuItem key={fmt.id} onClick={() => handleOpenDialog('query', fmt.id)}>
-                <Icon className="mr-2 h-4 w-4" />
-                {fmt.label}
-              </DropdownMenuItem>
-            )
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setDialogOpen(true)}
+            >
+              <RiCodeSSlashLine />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" align="end">
+            Copy schema / query
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </>
   )
 }

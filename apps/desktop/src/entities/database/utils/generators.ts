@@ -6,6 +6,7 @@ import { findEnum, formatValue, getColumnType, quoteIdentifier, sanitize, toPasc
 import * as templates from './templates'
 
 export function generateQuerySQL(table: string, filters: ActiveFilter[]) {
+  // TODO: use kysely to generate the query
   const whereClauses = filters.map((f) => {
     const col = `"${f.column}"`
     const op = f.ref.operator
