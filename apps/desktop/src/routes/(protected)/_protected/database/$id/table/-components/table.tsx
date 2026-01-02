@@ -3,7 +3,7 @@ import type { Column } from '~/entities/database'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableProvider } from '~/components/table'
 import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, selectQuery, setQuery } from '~/entities/database'
@@ -80,7 +80,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     } satisfies typeof state))
   }, [store, rows, primaryColumns])
 
-  const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
+  const setValue = (rowIndex: number, columnName: string, value: unknown) => {
     const rowsQueryOpts = databaseRowsQuery({
       database,
       table,
@@ -105,9 +105,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           })),
         })
       : data)
-  }, [database, table, schema, store])
+  }
 
-  const saveValue = useCallback(async (rowIndex: number, columnId: string, newValue: unknown) => {
+  const saveValue = async (rowIndex: number, columnId: string, newValue: unknown) => {
     const rowsQueryOpts = databaseRowsQuery({
       database,
       table,
@@ -186,7 +186,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         description: e instanceof Error ? e.message : String(e),
       })
     }
-  }, [database, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
+  }
 
   const tableColumns = useMemo(() => {
     if (!columns)

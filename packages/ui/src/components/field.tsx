@@ -3,7 +3,6 @@ import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
 import { cn } from '@conar/ui/lib/utils'
 import { cva } from 'class-variance-authority'
-import { useMemo } from 'react'
 
 function FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>) {
   return (
@@ -189,7 +188,7 @@ function FieldError({
 }: React.ComponentProps<'div'> & {
   errors?: Array<{ message?: string } | undefined>
 }) {
-  const content = useMemo(() => {
+  const content = (() => {
     if (children) {
       return children
     }
@@ -214,7 +213,7 @@ function FieldError({
         )}
       </ul>
     )
-  }, [children, errors])
+  })()
 
   if (!content) {
     return null

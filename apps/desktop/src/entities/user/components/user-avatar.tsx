@@ -1,6 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@conar/ui/components/avatar'
 import { cn } from '@conar/ui/lib/utils'
-import { useMemo } from 'react'
 import { authClient } from '~/lib/auth'
 
 function getFallback(name: string | undefined, email: string | undefined) {
@@ -20,7 +19,7 @@ function getFallback(name: string | undefined, email: string | undefined) {
 export function UserAvatar({ className, fallbackClassName }: { className?: string, fallbackClassName?: string }) {
   const { data } = authClient.useSession()
 
-  const fallback = useMemo(() => getFallback(data?.user.name, data?.user.email), [data?.user.name, data?.user.email])
+  const fallback = getFallback(data?.user.name, data?.user.email)
 
   return (
     <Avatar className={cn('size-6', className)}>

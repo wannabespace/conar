@@ -2,10 +2,9 @@ import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ComponentProps, CSSProperties } from 'react'
 import type { ColumnRenderer } from '.'
 import { cn } from '@conar/ui/lib/utils'
-import { memo } from 'react'
 import { useTableContext } from '.'
 
-const VirtualColumn = memo(function VirtualColumn({
+function VirtualColumn({
   virtualColumn,
   column,
   value,
@@ -51,13 +50,13 @@ const VirtualColumn = memo(function VirtualColumn({
       }}
     />
   )
-})
+}
 
 const spacerStyle: CSSProperties = {
   contain: 'layout style size',
 }
 
-const Row = memo(function Row({
+function Row({
   size,
   rowIndex,
 }: {
@@ -72,12 +71,15 @@ const Row = memo(function Row({
 
   return (
     <div
-      className={cn('flex w-fit border-b min-w-full hover:bg-accent/30', rowIndex === lastIndex && 'border-b-0')}
+      className={cn(`
+        flex w-fit min-w-full border-b
+        hover:bg-accent/30
+      `, rowIndex === lastIndex && `border-b-0`)}
       style={{ height: `${size}px`, contain: 'layout style' }}
     >
       <div
         aria-hidden="true"
-        className="w-(--table-scroll-left-offset) will-change-[height] shrink-0"
+        className="w-(--table-scroll-left-offset) shrink-0 will-change-[height]"
         style={spacerStyle}
       />
       {virtualColumns.map((virtualColumn) => {
@@ -96,12 +98,14 @@ const Row = memo(function Row({
       })}
       <div
         aria-hidden="true"
-        className="w-(--table-scroll-right-offset) will-change-[height] shrink-0"
+        className={`
+          w-(--table-scroll-right-offset) shrink-0 will-change-[height]
+        `}
         style={spacerStyle}
       />
     </div>
   )
-})
+}
 
 export function TableBody({ className, style, ...props }: ComponentProps<'div'>) {
   const virtualRows = useTableContext(context => context.virtualRows)
@@ -115,7 +119,7 @@ export function TableBody({ className, style, ...props }: ComponentProps<'div'>)
     >
       <div
         aria-hidden="true"
-        className="h-(--table-scroll-top-offset) will-change-[height] shrink-0"
+        className="h-(--table-scroll-top-offset) shrink-0 will-change-[height]"
         style={spacerStyle}
       />
       {virtualRows.map(virtualRow => (
@@ -127,7 +131,9 @@ export function TableBody({ className, style, ...props }: ComponentProps<'div'>)
       ))}
       <div
         aria-hidden="true"
-        className="h-(--table-scroll-bottom-offset) will-change-[height] shrink-0"
+        className={`
+          h-(--table-scroll-bottom-offset) shrink-0 will-change-[height]
+        `}
         style={spacerStyle}
       />
     </div>

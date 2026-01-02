@@ -36,14 +36,14 @@ export function sessionStorageValue<T>(key: string, defaultValue: T) {
 }
 
 export function useSessionStorage<T>(key: string, defaultValue: T | (() => T)) {
-  const value = React.useMemo(() => {
+  const value = (() => {
     const defaultVal = typeof defaultValue === 'function' ? (defaultValue as () => T)() : defaultValue
     return sessionStorageValue(key, defaultVal)
-  }, [key, defaultValue])
+  })()
   const [storedValue, setStoredValue] = React.useState(value.get)
-  const setValue = React.useCallback((newValue: T | ((val: T) => T)) => {
+  const setValue = (newValue: T | ((val: T) => T)) => {
     value.set(typeof newValue === 'function' ? (newValue as (val: T) => T)(storedValue) : newValue)
-  }, [value, storedValue])
+  }
 
   React.useEffect(() => {
     const abortController = new AbortController()

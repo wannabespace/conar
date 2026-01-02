@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/c
 import { copy } from '@conar/ui/lib/copy'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 import { authClient } from '~/lib/auth'
 
 export const Route = createFileRoute('/open')({
@@ -19,14 +19,14 @@ function OpenPage() {
   const { 'code-challenge': codeChallenge, 'new-user': newUser, connnect } = Route.useSearch()
   const { data, isPending } = authClient.useSession()
 
-  const getUrl = useCallback((token: string, codeChallenge: string) => `${connnect ? 'connnect' : 'conar'}://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`, [connnect, newUser])
+  const getUrl = (token: string, codeChallenge: string) => `${connnect ? 'connnect' : 'conar'}://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
 
-  const handleOpenSession = useCallback((codeChallenge: string) => {
+  const handleOpenSession = (codeChallenge: string) => {
     if (!data)
       return
 
     location.assign(getUrl(data.session.token, codeChallenge))
-  }, [data, getUrl])
+  }
 
   const handleCopyUrl = () => {
     if (!data)
