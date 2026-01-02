@@ -59,19 +59,19 @@ export function useMediaControls(
     }
   }, [mediaRef])
 
-  const play = async () => {
+  const play = React.useCallback(async () => {
     if (mediaRef.current) {
       await mediaRef.current.play()
     }
-  }
+  }, [mediaRef])
 
-  const pause = () => {
+  const pause = React.useCallback(() => {
     if (mediaRef.current) {
       mediaRef.current.pause()
     }
-  }
+  }, [mediaRef])
 
-  const toggle = async () => {
+  const toggle = React.useCallback(async () => {
     if (mediaRef.current) {
       if (state.isPlaying) {
         mediaRef.current.pause()
@@ -80,32 +80,32 @@ export function useMediaControls(
         await mediaRef.current.play()
       }
     }
-  }
+  }, [mediaRef, state.isPlaying])
 
-  const stop = () => {
+  const stop = React.useCallback(() => {
     if (mediaRef.current) {
       mediaRef.current.pause()
       mediaRef.current.currentTime = 0
     }
-  }
+  }, [mediaRef])
 
-  const toggleMute = (isMuted?: boolean) => {
+  const toggleMute = React.useCallback((isMuted?: boolean) => {
     if (mediaRef.current) {
       mediaRef.current.muted = isMuted ?? !mediaRef.current.muted
     }
-  }
+  }, [mediaRef])
 
-  const setVolumeValue = (value: number) => {
+  const setVolumeValue = React.useCallback((value: number) => {
     if (mediaRef.current) {
       mediaRef.current.volume = Math.max(0, Math.min(1, value))
     }
-  }
+  }, [mediaRef])
 
-  const setCurrentTimeValue = (time: number) => {
+  const setCurrentTimeValue = React.useCallback((time: number) => {
     if (mediaRef.current) {
       mediaRef.current.currentTime = Math.max(0, Math.min(state.duration, time))
     }
-  }
+  }, [mediaRef, state.duration])
 
   return {
     play,
