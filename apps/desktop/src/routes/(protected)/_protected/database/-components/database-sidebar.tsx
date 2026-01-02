@@ -6,6 +6,7 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
 import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
@@ -19,7 +20,6 @@ import { Link, useMatches, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { ThemeToggle } from '~/components/theme-toggle'
 import {
   DatabaseIcon,
   databasesCollection,
@@ -37,8 +37,14 @@ const os = getOS(navigator.userAgent)
 
 function baseClasses(isActive = false) {
   return cn(
-    'cursor-pointer text-foreground size-9 rounded-md flex items-center justify-center border border-transparent',
-    isActive && 'bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary',
+    `
+      flex size-9 cursor-pointer items-center justify-center rounded-md border
+      border-transparent text-foreground
+    `,
+    isActive && `
+      border-primary/20 bg-primary/10 text-primary
+      hover:bg-primary/20
+    `,
   )
 }
 
@@ -81,7 +87,7 @@ function SupportButton() {
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
         </DialogHeader>
-        <div className="text-muted-foreground mb-2">
+        <div className="mb-2 text-muted-foreground">
           Have a question, suggestion, or need assistance?
           We're here to listen!
         </div>
@@ -149,13 +155,16 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="relative group">
+          <div className="group relative">
             {!isActive && (
               <span
                 className={cn(
-                  'absolute z-10 top-0 right-0 -translate-y-1/2 translate-x-1/2',
-                  'flex items-center justify-center',
-                  'size-4 bg-background rounded-full text-foreground opacity-0 group-hover:opacity-100',
+                  `
+                    absolute top-0 right-0 z-10 flex size-4 translate-x-1/2
+                    -translate-y-1/2 items-center justify-center rounded-full
+                    bg-background text-foreground opacity-0
+                    group-hover:opacity-100
+                  `,
                 )}
                 onClick={onCloseClick}
               >
@@ -166,13 +175,16 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
               className={cn(
                 baseClasses(isActive),
                 database.color && isActive
-                  ? 'text-(--color) bg-(--color)/10 hover:bg-(--color)/20 border-(--color)/20'
+                  ? `
+                    border-(--color)/20 bg-(--color)/10 text-(--color)
+                    hover:bg-(--color)/20
+                  `
                   : '',
               )}
               style={database.color ? { '--color': database.color } : {}}
               {...params}
             >
-              <span className="font-bold text-sm">
+              <span className="text-sm font-bold">
                 {database.name
                   .replace(/[^a-z0-9\s]/gi, '')
                   .split(/\s+/)
@@ -186,7 +198,7 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
         </TooltipTrigger>
         <TooltipContent side="right" sideOffset={10}>
           <span className="flex items-center gap-2 font-medium">
-            <DatabaseIcon type={database.type} className="size-4 -ml-1" />
+            <DatabaseIcon type={database.type} className="-ml-1 size-4" />
             {database.name}
           </span>
         </TooltipContent>
@@ -209,8 +221,8 @@ function LastOpenedDatabases() {
 function MainLinks() {
   const { database } = Route.useLoaderData()
   const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
-  const matches = useMatches({
-    select: matches => matches.map(match => match.routeId),
+  const match = useMatches({
+    select: matches => matches.map(match => match.routeId).at(-1),
   })
   const store = databaseStore(database.id)
   const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
@@ -224,10 +236,10 @@ function MainLinks() {
     }
   }, [store, lastOpenedTable, tableParam, schemaParam])
 
-  const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
-  const isActiveTables = matches.includes('/(protected)/_protected/database/$id/table/')
-  const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
-  const isActiveVisualizer = matches.includes('/(protected)/_protected/database/$id/visualizer/')
+  const isActiveSql = match === '/(protected)/_protected/database/$id/sql/'
+  const isActiveTables = match === '/(protected)/_protected/database/$id/table/'
+  const isActiveEnums = match === '/(protected)/_protected/database/$id/enums/'
+  const isActiveVisualizer = match === '/(protected)/_protected/database/$id/visualizer/'
 
   const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
 
@@ -340,7 +352,10 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
           </Tooltip>
         </TooltipProvider>
       </div>
-      <ScrollArea className="relative p-4 flex flex-col items-center flex-1 gap-2">
+      <ScrollArea className={`
+        relative flex flex-1 flex-col items-center gap-2 p-4
+      `}
+      >
         <div className="w-full">
           <div className="flex w-full flex-col">
             <MainLinks />
@@ -353,7 +368,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
           </div>
         </div>
       </ScrollArea>
-      <div className="p-4 pt-0 flex flex-col items-center">
+      <div className="flex flex-col items-center p-4 pt-0">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -389,8 +404,16 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
         </TooltipProvider>
         <ThemeToggle>
           <Button size="icon" variant="ghost">
-            <RiSunLine className="size-4 dark:hidden" />
-            <RiMoonLine className="size-4 hidden dark:block" />
+            <RiSunLine className={`
+              size-4
+              dark:hidden
+            `}
+            />
+            <RiMoonLine className={`
+              hidden size-4
+              dark:block
+            `}
+            />
           </Button>
         </ThemeToggle>
         {false && <SettingsButton />}

@@ -1,12 +1,11 @@
 import { toast } from 'sonner'
 import { invalidateSubscriptionsQuery } from '~/entities/user/hooks/use-subscription'
-import { bearerToken, codeChallenge, resetToken, successAuthToast } from '~/lib/auth'
+import { bearerToken, codeChallenge, successAuthToast } from '~/lib/auth'
 import { decrypt } from './encryption'
 
 export async function handleDeepLink(url: string): Promise<{
   type:
     | 'session'
-    | 'reset-password'
     | 'unknown'
     | 'subscription-success'
     | 'subscription-cancel'
@@ -18,14 +17,6 @@ export async function handleDeepLink(url: string): Promise<{
 
     return {
       type: 'session',
-    }
-  }
-
-  if (pathname === '/reset-password') {
-    await handleResetPassword(searchParams)
-
-    return {
-      type: 'reset-password',
     }
   }
 
@@ -81,19 +72,6 @@ export async function handleSession(searchParams: URLSearchParams) {
   bearerToken.set(token)
   codeChallenge.remove()
   successAuthToast(!!newUser)
-}
-
-export async function handleResetPassword(searchParams: URLSearchParams) {
-  const token = searchParams.get('token')
-
-  if (!token) {
-    toast.error('Invalid reset password link', {
-      description: 'Please request a new password reset link.',
-    })
-    return
-  }
-
-  resetToken.set(token)
 }
 
 export async function handleSubscriptionSuccess() {

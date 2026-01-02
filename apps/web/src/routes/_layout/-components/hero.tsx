@@ -5,6 +5,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { DownloadButton } from '~/components/download-button'
+import { SEO } from '~/constants'
 
 const words = {
   [DatabaseType.Postgres]: 'Postgres',
@@ -33,10 +34,10 @@ export function Hero({ className }: { className?: string }) {
         lg:w-auto lg:flex-1
       `}
       >
-        <h1 className={`
-          text-[clamp(2.5rem,min(8vh,8vw),5rem)] leading-[0.9] font-medium
+        <h1 className={cn(`
+          text-[clamp(2rem,min(7vh,7vw),4rem)] leading-none font-medium
           text-balance
-        `}
+        `)}
         >
           <motion.span
             initial={{ opacity: 0, filter: 'blur(10px)' }}
@@ -97,7 +98,7 @@ export function Hero({ className }: { className?: string }) {
             lg:text-right lg:text-xl
           `}
         >
-          Conar is an AI-powered data management tool that lets you focus on working with your data while it handles the complexity
+          {SEO.description}
         </motion.h2>
         <motion.div
           initial={{ opacity: 0, filter: 'blur(10px)', y: 20 }}

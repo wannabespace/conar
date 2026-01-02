@@ -3,25 +3,18 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { FieldGroup } from '@conar/ui/components/field'
 import { useAppForm } from '@conar/ui/hooks/use-app-form'
 import { useStore } from '@tanstack/react-form'
-import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { authClient, resetToken } from '~/lib/auth'
-import { handleError } from '~/lib/error'
+import { authClient } from '~/lib/auth'
 
-export const Route = createFileRoute('/(public)/_auth/reset-password')({
-  loader: () => {
-    const token = resetToken.get()
-
-    if (!token) {
-      toast.error('Invalid reset token', {
-        description: 'Please request a new password reset link.',
-      })
-      throw redirect({ to: '/forgot-password' })
-    }
-
-    return { token }
+export const Route = createFileRoute('/_auth/reset-password')({
+  validateSearch: type({
+    token: 'string',
+  }),
+  onError: () => {
+    throw redirect({ to: '/forgot-password' })
   },
   component: ResetPasswordPage,
 })
@@ -33,24 +26,9 @@ const passwordSchema = type({
 
 function ResetPasswordPage() {
   const navigate = useNavigate()
-  const { token } = Route.useLoaderData()
+  const { token } = Route.useSearch()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-
-  const handleResetSuccess = () => {
-    resetToken.remove()
-    toast.success('Password reset successfully', {
-      description: 'You can now sign in with your new password.',
-    })
-    navigate({ to: '/sign-in' })
-  }
-
-  const handleResetError = () => {
-    resetToken.remove()
-    toast.error('Reset link expired or invalid', {
-      description: 'The reset password token is invalid or expired.',
-    })
-  }
 
   const form = useAppForm({
     defaultValues: {
@@ -61,28 +39,28 @@ function ResetPasswordPage() {
       onSubmit: passwordSchema,
     },
     onSubmit: async ({ value }) => {
-      try {
-        const { error, data } = await authClient.resetPassword({
-          newPassword: value.password,
-          token,
+      const { error, data } = await authClient.resetPassword({
+        newPassword: value.password,
+        token,
+      })
+
+      if (error) {
+        toast.error('Reset link expired or invalid', {
+          description: 'The reset password token is invalid or expired.',
         })
-
-        if (error) {
-          handleResetError()
-          return
-        }
-
-        if (data?.status) {
-          handleResetSuccess()
-        }
-        else {
-          toast.error('Password reset failed', {
-            description: 'Please try again or request a new reset link.',
-          })
-        }
+        return
       }
-      catch (error) {
-        handleError(error)
+
+      if (data?.status) {
+        toast.success('Password reset successfully', {
+          description: 'You can now sign in with your new password.',
+        })
+        navigate({ to: '/sign-in' })
+      }
+      else {
+        toast.error('Password reset failed', {
+          description: 'Please try again or request a new reset link.',
+        })
       }
     },
   })
@@ -92,7 +70,10 @@ function ResetPasswordPage() {
   return (
     <>
       <div className="space-y-2">
-        <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+        <h1 className={`
+          flex items-center gap-2 text-2xl font-semibold tracking-tight
+        `}
+        >
           Reset your password
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -144,15 +125,6 @@ function ResetPasswordPage() {
             <LoadingContent loading={isSubmitting}>
               Reset password
             </LoadingContent>
-          </Button>
-          <Button
-            variant="link"
-            className="w-full text-center text-muted-foreground"
-            asChild
-          >
-            <Link to="/sign-in">
-              Back to sign in
-            </Link>
           </Button>
         </FieldGroup>
       </form>

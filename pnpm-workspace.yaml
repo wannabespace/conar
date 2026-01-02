@@ -96,7 +96,6 @@ catalog:
   consola: ^3.4.2
   cross-env: ^10.1.0
   date-fns: ^4.1.0
-  dayjs: ^1.11.19
   drizzle-arktype: ^0.1.3
   drizzle-kit: ^0.31.8
   drizzle-orm: ^0.45.1

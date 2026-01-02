@@ -4,10 +4,10 @@ import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { bearerToken } from './auth'
-import { getApiUrl } from './utils'
+import { apiUrl } from './utils'
 
 const link = new RPCLink({
-  url: `${getApiUrl()}/rpc`,
+  url: `${apiUrl}/rpc`,
   headers: async () => {
     const token = bearerToken.get()
 

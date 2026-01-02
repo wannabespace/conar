@@ -82,7 +82,7 @@
     "arktype": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "better-auth": "catalog:",
-    "dayjs": "catalog:",
+    "date-fns": "catalog:",
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
     "electron": "catalog:",

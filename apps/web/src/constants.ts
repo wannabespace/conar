@@ -14,3 +14,8 @@ export const DOWNLOAD_LINKS = {
     exe: 'https://download.conar.app/windows/nsis/x64',
   },
 } satisfies Partial<Record<OS, Record<string, string>>>
+
+export const SEO = {
+  title: 'AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse (beta)',
+  description: 'Conar is an AI-powered data management tool that lets you focus on working with your data while it handles the complexity.',
+}

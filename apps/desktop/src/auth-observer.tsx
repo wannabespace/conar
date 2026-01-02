@@ -65,9 +65,6 @@ export function AuthObserver() {
     if (type === 'session') {
       refetch()
     }
-    else if (type === 'reset-password') {
-      router.navigate({ to: '/reset-password' })
-    }
   }
 
   const handleEvent = useEffectEvent(handle)

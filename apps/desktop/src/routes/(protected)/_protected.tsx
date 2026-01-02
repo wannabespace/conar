@@ -6,7 +6,6 @@ import { useDatabasesSync } from '~/entities/database'
 import { useQueriesSync } from '~/entities/query/sync'
 import { authClient } from '~/lib/auth'
 import { ActionsCenter } from './-components/actions-center'
-import { SubscriptionModal } from './-components/subscription-modal'
 
 export const Route = createFileRoute('/(protected)/_protected')({
   component: ProtectedLayout,
@@ -41,7 +40,6 @@ function ProtectedLayout() {
   return (
     <>
       <ActionsCenter />
-      <SubscriptionModal />
       <Outlet />
     </>
   )

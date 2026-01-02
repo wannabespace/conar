@@ -2,7 +2,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useTheme } from '@conar/ui/use-theme'
 import { RiComputerLine, RiMoonLine, RiSunLine } from '@remixicon/react'
 
-export function ThemeToggle({ children }: { children: React.ReactNode }) {
+export function ThemeToggle({ children, side = 'right' }: { children: React.ReactNode, side?: 'top' | 'right' | 'bottom' | 'left' }) {
   const { setTheme } = useTheme()
 
   return (
@@ -10,7 +10,7 @@ export function ThemeToggle({ children }: { children: React.ReactNode }) {
       <DropdownMenuTrigger asChild>
         {children}
       </DropdownMenuTrigger>
-      <DropdownMenuContent side="right" className="min-w-32">
+      <DropdownMenuContent side={side} className="min-w-32">
         <DropdownMenuItem onClick={() => setTheme('light')}>
           <RiSunLine aria-hidden="true" />
           Light

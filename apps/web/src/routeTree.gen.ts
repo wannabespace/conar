@@ -9,29 +9,47 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as OpenRouteImport } from './routes/open'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as LayoutRouteImport } from './routes/_layout'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as SubscriptionSuccessRouteImport } from './routes/subscription/success'
 import { Route as SubscriptionCancelRouteImport } from './routes/subscription/cancel'
+import { Route as AccountSettingsRouteImport } from './routes/account/settings'
+import { Route as AccountBillingRouteImport } from './routes/account/billing'
 import { Route as LayoutTermsOfServiceRouteImport } from './routes/_layout/terms-of-service'
 import { Route as LayoutPrivacyPolicyRouteImport } from './routes/_layout/privacy-policy'
+import { Route as LayoutHomeRouteImport } from './routes/_layout/home'
 import { Route as LayoutDownloadRouteImport } from './routes/_layout/download'
+import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
+import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
+import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
+import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OpenRoute = OpenRouteImport.update({
   id: '/open',
   path: '/open',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AccountRoute,
 } as any)
 const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
@@ -48,6 +66,16 @@ const SubscriptionCancelRoute = SubscriptionCancelRouteImport.update({
   path: '/subscription/cancel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountSettingsRoute = AccountSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountBillingRoute = AccountBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AccountRoute,
+} as any)
 const LayoutTermsOfServiceRoute = LayoutTermsOfServiceRouteImport.update({
   id: '/terms-of-service',
   path: '/terms-of-service',
@@ -58,100 +86,174 @@ const LayoutPrivacyPolicyRoute = LayoutPrivacyPolicyRouteImport.update({
   path: '/privacy-policy',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutHomeRoute = LayoutHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutDownloadRoute = LayoutDownloadRouteImport.update({
   id: '/download',
   path: '/download',
   getParentRoute: () => LayoutRoute,
 } as any)
+const AuthSignUpRoute = AuthSignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthSignInRoute = AuthSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => AuthRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/account': typeof AccountRouteWithChildren
   '/open': typeof OpenRoute
-  '/reset-password': typeof ResetPasswordRoute
+  '/forgot-password': typeof AuthForgotPasswordRoute
+  '/reset-password': typeof AuthResetPasswordRoute
+  '/sign-in': typeof AuthSignInRoute
+  '/sign-up': typeof AuthSignUpRoute
   '/download': typeof LayoutDownloadRoute
+  '/home': typeof LayoutHomeRoute
   '/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/account/billing': typeof AccountBillingRoute
+  '/account/settings': typeof AccountSettingsRoute
   '/subscription/cancel': typeof SubscriptionCancelRoute
   '/subscription/success': typeof SubscriptionSuccessRoute
   '/': typeof LayoutIndexRoute
+  '/account/': typeof AccountIndexRoute
 }
 export interface FileRoutesByTo {
   '/open': typeof OpenRoute
-  '/reset-password': typeof ResetPasswordRoute
+  '/forgot-password': typeof AuthForgotPasswordRoute
+  '/reset-password': typeof AuthResetPasswordRoute
+  '/sign-in': typeof AuthSignInRoute
+  '/sign-up': typeof AuthSignUpRoute
   '/download': typeof LayoutDownloadRoute
+  '/home': typeof LayoutHomeRoute
   '/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/account/billing': typeof AccountBillingRoute
+  '/account/settings': typeof AccountSettingsRoute
   '/subscription/cancel': typeof SubscriptionCancelRoute
   '/subscription/success': typeof SubscriptionSuccessRoute
   '/': typeof LayoutIndexRoute
+  '/account': typeof AccountIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_auth': typeof AuthRouteWithChildren
   '/_layout': typeof LayoutRouteWithChildren
+  '/account': typeof AccountRouteWithChildren
   '/open': typeof OpenRoute
-  '/reset-password': typeof ResetPasswordRoute
+  '/_auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/_auth/reset-password': typeof AuthResetPasswordRoute
+  '/_auth/sign-in': typeof AuthSignInRoute
+  '/_auth/sign-up': typeof AuthSignUpRoute
   '/_layout/download': typeof LayoutDownloadRoute
+  '/_layout/home': typeof LayoutHomeRoute
   '/_layout/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/account/billing': typeof AccountBillingRoute
+  '/account/settings': typeof AccountSettingsRoute
   '/subscription/cancel': typeof SubscriptionCancelRoute
   '/subscription/success': typeof SubscriptionSuccessRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/account/': typeof AccountIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/account'
     | '/open'
+    | '/forgot-password'
     | '/reset-password'
+    | '/sign-in'
+    | '/sign-up'
     | '/download'
+    | '/home'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/account/billing'
+    | '/account/settings'
     | '/subscription/cancel'
     | '/subscription/success'
     | '/'
+    | '/account/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/open'
+    | '/forgot-password'
     | '/reset-password'
+    | '/sign-in'
+    | '/sign-up'
     | '/download'
+    | '/home'
     | '/privacy-policy'
     | '/terms-of-service'
+    | '/account/billing'
+    | '/account/settings'
     | '/subscription/cancel'
     | '/subscription/success'
     | '/'
+    | '/account'
   id:
     | '__root__'
+    | '/_auth'
     | '/_layout'
+    | '/account'
     | '/open'
-    | '/reset-password'
+    | '/_auth/forgot-password'
+    | '/_auth/reset-password'
+    | '/_auth/sign-in'
+    | '/_auth/sign-up'
     | '/_layout/download'
+    | '/_layout/home'
     | '/_layout/privacy-policy'
     | '/_layout/terms-of-service'
+    | '/account/billing'
+    | '/account/settings'
     | '/subscription/cancel'
     | '/subscription/success'
     | '/_layout/'
+    | '/account/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AuthRoute: typeof AuthRouteWithChildren
   LayoutRoute: typeof LayoutRouteWithChildren
+  AccountRoute: typeof AccountRouteWithChildren
   OpenRoute: typeof OpenRoute
-  ResetPasswordRoute: typeof ResetPasswordRoute
   SubscriptionCancelRoute: typeof SubscriptionCancelRoute
   SubscriptionSuccessRoute: typeof SubscriptionSuccessRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/open': {
       id: '/open'
       path: '/open'
       fullPath: '/open'
       preLoaderRoute: typeof OpenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_layout': {
@@ -160,6 +262,20 @@ declare module '@tanstack/react-router' {
       fullPath: ''
       preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/': {
+      id: '/account/'
+      path: '/'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof AccountRoute
     }
     '/_layout/': {
       id: '/_layout/'
@@ -182,6 +298,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubscriptionCancelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/settings': {
+      id: '/account/settings'
+      path: '/settings'
+      fullPath: '/account/settings'
+      preLoaderRoute: typeof AccountSettingsRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/billing': {
+      id: '/account/billing'
+      path: '/billing'
+      fullPath: '/account/billing'
+      preLoaderRoute: typeof AccountBillingRouteImport
+      parentRoute: typeof AccountRoute
+    }
     '/_layout/terms-of-service': {
       id: '/_layout/terms-of-service'
       path: '/terms-of-service'
@@ -196,6 +326,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutPrivacyPolicyRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/home': {
+      id: '/_layout/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof LayoutHomeRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/download': {
       id: '/_layout/download'
       path: '/download'
@@ -203,11 +340,56 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutDownloadRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_auth/sign-up': {
+      id: '/_auth/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof AuthSignUpRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/sign-in': {
+      id: '/_auth/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof AuthSignInRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/reset-password': {
+      id: '/_auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/forgot-password': {
+      id: '/_auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
   }
 }
 
+interface AuthRouteChildren {
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+  AuthSignInRoute: typeof AuthSignInRoute
+  AuthSignUpRoute: typeof AuthSignUpRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
+  AuthSignInRoute: AuthSignInRoute,
+  AuthSignUpRoute: AuthSignUpRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 interface LayoutRouteChildren {
   LayoutDownloadRoute: typeof LayoutDownloadRoute
+  LayoutHomeRoute: typeof LayoutHomeRoute
   LayoutPrivacyPolicyRoute: typeof LayoutPrivacyPolicyRoute
   LayoutTermsOfServiceRoute: typeof LayoutTermsOfServiceRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
@@ -215,6 +397,7 @@ interface LayoutRouteChildren {
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutDownloadRoute: LayoutDownloadRoute,
+  LayoutHomeRoute: LayoutHomeRoute,
   LayoutPrivacyPolicyRoute: LayoutPrivacyPolicyRoute,
   LayoutTermsOfServiceRoute: LayoutTermsOfServiceRoute,
   LayoutIndexRoute: LayoutIndexRoute,
@@ -223,10 +406,26 @@ const LayoutRouteChildren: LayoutRouteChildren = {
 const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
+interface AccountRouteChildren {
+  AccountBillingRoute: typeof AccountBillingRoute
+  AccountSettingsRoute: typeof AccountSettingsRoute
+  AccountIndexRoute: typeof AccountIndexRoute
+}
+
+const AccountRouteChildren: AccountRouteChildren = {
+  AccountBillingRoute: AccountBillingRoute,
+  AccountSettingsRoute: AccountSettingsRoute,
+  AccountIndexRoute: AccountIndexRoute,
+}
+
+const AccountRouteWithChildren =
+  AccountRoute._addFileChildren(AccountRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
+  AuthRoute: AuthRouteWithChildren,
   LayoutRoute: LayoutRouteWithChildren,
+  AccountRoute: AccountRouteWithChildren,
   OpenRoute: OpenRoute,
-  ResetPasswordRoute: ResetPasswordRoute,
   SubscriptionCancelRoute: SubscriptionCancelRoute,
   SubscriptionSuccessRoute: SubscriptionSuccessRoute,
 }

@@ -1,4 +1,5 @@
 import type { RouterClient } from '@orpc/server'
+import { account } from './account'
 import { ai } from './ai'
 import { banner } from './banner'
 import { chats } from './chats'
@@ -15,6 +16,7 @@ export const router = {
   queries,
   databases,
   banner,
+  account,
 }
 
 export type ORPCRouter = RouterClient<typeof router>

@@ -91,7 +91,6 @@ function ForgotPasswordPage() {
               />
             )}
           </form.AppField>
-
           <Button
             className="w-full"
             type="submit"

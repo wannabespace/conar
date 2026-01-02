@@ -16,7 +16,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiAddLine, RiDeleteBin7Line, RiHistoryLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate } from '@tanstack/react-router'
-import dayjs from 'dayjs'
+import { getMonth, getWeek, getYear, isToday, isYesterday } from 'date-fns'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
 import { databaseStore } from '~/entities/database'
@@ -43,24 +43,24 @@ function groupChats(data: typeof chats.$inferSelect[]) {
     older: [],
   }
 
-  const now = dayjs()
-  const thisWeek = now.week()
-  const thisMonth = now.month()
-  const thisYear = now.year()
+  const now = new Date()
+  const thisWeek = getWeek(now)
+  const thisMonth = getMonth(now)
+  const thisYear = getYear(now)
 
   for (const chat of data) {
-    const chatDate = dayjs(chat.createdAt)
+    const chatDate = new Date(chat.createdAt)
 
-    if (chatDate.isToday()) {
+    if (isToday(chatDate)) {
       groups.today.push(chat)
     }
-    else if (chatDate.isYesterday()) {
+    else if (isYesterday(chatDate)) {
       groups.yesterday.push(chat)
     }
-    else if (chatDate.year() === thisYear && chatDate.week() === thisWeek) {
+    else if (getYear(chatDate) === thisYear && getWeek(chatDate) === thisWeek) {
       groups.week.push(chat)
     }
-    else if (chatDate.year() === thisYear && chatDate.month() === thisMonth) {
+    else if (getYear(chatDate) === thisYear && getMonth(chatDate) === thisMonth) {
       groups.month.push(chat)
     }
     else {

@@ -1,16 +1,18 @@
 import type { ComponentProps } from 'react'
 import { SOCIAL_LINKS } from '@conar/shared/constants'
-import { Badge } from '@conar/ui/components/badge'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
+import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiDiscordLine, RiGithubFill, RiTwitterXLine } from '@remixicon/react'
+import { RiDiscordLine, RiGithubFill, RiMoonLine, RiSunLine, RiTwitterXLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
+import { authClient } from '~/lib/auth'
 import { getRepoOptions } from '~/queries'
 import { NAVBAR_HEIGHT_BASE } from '~/routes/_layout'
+import { NavbarTextLogo } from './navbar-text-logo'
 
 const AppLogoMotion = motion.create(AppLogo)
 
@@ -18,6 +20,8 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   const { scrollY } = useScroll()
   const scale = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [1.8, 1])
   const { data } = useQuery(getRepoOptions)
+  const { data: session } = authClient.useSession()
+  const isSignedIn = !!session?.user
 
   return (
     <header
@@ -27,23 +31,9 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
       `, className)}
       {...props}
     >
-      <div className="flex flex-1 items-center gap-2">
-        <Link
-          to="/"
-          className={`
-            text-base font-medium tracking-tighter text-foreground
-            sm:text-lg
-            lg:text-xl
-          `}
-        >
-          Conar
-        </Link>
-        <Badge variant="default" className="bg-warning/20 text-warning">
-          Beta
-        </Badge>
-      </div>
+      <NavbarTextLogo to={isSignedIn ? '/home' : '/'} />
       <div className="flex flex-1 justify-center">
-        <Link to="/" className="text-primary">
+        <Link to={isSignedIn ? '/home' : '/'} className="text-primary">
           <AppLogoMotion
             className={`
               size-5
@@ -128,6 +118,41 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
               `, !data && `animate-pulse text-muted-foreground`)}
             />
           </a>
+        </Button>
+        <ThemeToggle side="bottom">
+          <Button size="icon-sm" variant="ghost">
+            <RiSunLine className={`
+              size-4
+              dark:hidden
+            `}
+            />
+            <RiMoonLine className={`
+              hidden size-4
+              dark:block
+            `}
+            />
+          </Button>
+        </ThemeToggle>
+        <Button
+          variant="outline"
+          size="sm"
+          className={`
+            hidden gap-1
+            sm:flex sm:gap-2
+          `}
+          asChild
+        >
+          {isSignedIn
+            ? (
+                <Link to="/account">
+                  Account
+                </Link>
+              )
+            : (
+                <Link to="/sign-in">
+                  Sign in
+                </Link>
+              )}
         </Button>
         <Button
           size="sm"

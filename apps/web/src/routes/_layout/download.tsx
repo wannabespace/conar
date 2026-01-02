@@ -7,6 +7,7 @@ import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { Linux } from '@conar/ui/components/icons/linux'
 import { Tooltip, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
@@ -81,28 +82,20 @@ function HomebrewInstall() {
             readOnly
           />
         </div>
+        <CopyButton text={BREW_INSTALL_COMMAND} copiedText="Command copied to clipboard" />
         <Button
-          size="sm"
+          size="icon-sm"
           variant="ghost"
           onClick={handleCopy}
           className="shrink-0"
         >
-          <span className="flex items-center gap-1.5">
-            <ContentSwitch
-              active={copied}
-              onSwitchEnd={() => setCopied(false)}
-              activeContent={<RiCheckLine className="size-4 text-success" />}
-            >
-              <RiFileCopyLine className="size-4" />
-            </ContentSwitch>
-            <span className={`
-              hidden
-              sm:inline
-            `}
-            >
-              Copy
-            </span>
-          </span>
+          <ContentSwitch
+            active={copied}
+            onSwitchEnd={() => setCopied(false)}
+            activeContent={<RiCheckLine className="size-4 text-success" />}
+          >
+            <RiFileCopyLine className="size-4" />
+          </ContentSwitch>
         </Button>
       </Card>
     </div>

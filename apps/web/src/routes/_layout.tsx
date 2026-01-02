@@ -21,10 +21,10 @@ function MainLayout() {
 
   return (
     <motion.div style={{ '--navbar-height': navbarHeightPx }}>
-      <div className={`
+      <div className={cn(`
         sticky top-0 z-50 h-(--navbar-height) w-full bg-gray-100
         dark:bg-neutral-950
-      `}
+      `)}
       >
         <div className={`
           relative container mx-auto flex h-full w-full items-center

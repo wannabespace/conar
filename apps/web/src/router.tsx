@@ -3,12 +3,16 @@ import '@conar/shared/arktype-config'
 import { QueryClient } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
+import { handleError } from './utils/error'
 
 export function getRouter() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         retry: false,
+      },
+      mutations: {
+        onError: handleError,
       },
     },
   })
