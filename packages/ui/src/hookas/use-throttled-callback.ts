@@ -3,7 +3,6 @@ import * as React from 'react'
 // eslint-disable-next-line ts/no-explicit-any
 export function useThrottledCallback<T extends (...args: any[]) => any>(
   fn: T,
-  _deps: React.DependencyList,
   delay: number,
 ): (...args: Parameters<T>) => void {
   const lastExecutedRef = React.useRef(0)

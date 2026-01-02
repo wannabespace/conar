@@ -103,7 +103,7 @@ function Header() {
       return
 
     setNotVisibleColumns(getNotVisibleColumns(el, columns))
-  }, [direction, columns], 200)
+  }, 200)
 
   useEffect(() => {
     const el = scrollRef.current
