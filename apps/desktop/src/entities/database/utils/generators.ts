@@ -1,94 +1,13 @@
 import type { ActiveFilter } from '@conar/shared/filters'
+import type { enumType } from '../sql/enums'
 import type { Column } from './table'
+import type { DatabaseDialect } from './types'
+import { findEnum, formatValue, getColumnType, quoteIdentifier, sanitize, toPascalCase } from './helpers'
 import * as templates from './templates'
-
-type GeneratorFormat = 'ts' | 'zod' | 'prisma' | 'sql' | 'drizzle' | 'kysely'
-
-const TYPE_MAPPINGS: Record<GeneratorFormat, (type: string) => string> = {
-  ts: (t) => {
-    if (/int|float|decimal|number|double/i.test(t))
-      return 'number'
-    if (/bool/i.test(t))
-      return 'boolean'
-    if (/date|time/i.test(t))
-      return 'Date'
-    if (/json/i.test(t))
-      return 'any'
-    return 'string'
-  },
-  zod: (t) => {
-    if (/int|float|decimal|number|double/i.test(t))
-      return 'z.number()'
-    if (/bool/i.test(t))
-      return 'z.boolean()'
-    if (/date|time/i.test(t))
-      return 'z.date()'
-    if (/json/i.test(t))
-      return 'z.any()'
-    return 'z.string()'
-  },
-  prisma: (t) => {
-    if (/int/i.test(t))
-      return 'Int'
-    if (/float|double/i.test(t))
-      return 'Float'
-    if (/decimal/i.test(t))
-      return 'Decimal'
-    if (/bool/i.test(t))
-      return 'Boolean'
-    if (/date|timestamp/i.test(t))
-      return 'DateTime'
-    if (/json/i.test(t))
-      return 'Json'
-    return 'String'
-  },
-  drizzle: (t) => {
-    if (/serial/i.test(t))
-      return 'serial'
-    if (/int/i.test(t))
-      return 'integer'
-    if (/text/i.test(t))
-      return 'text'
-    if (/varchar/i.test(t))
-      return 'varchar'
-    if (/bool/i.test(t))
-      return 'boolean'
-    if (/timestamp/i.test(t))
-      return 'timestamp'
-    if (/date/i.test(t))
-      return 'date'
-    if (/json/i.test(t))
-      return 'json'
-    return 'text'
-  },
-  sql: t => t,
-  kysely: t => t,
-}
-
-function getColumnType(type: string | undefined, format: GeneratorFormat): string {
-  if (!type)
-    return 'any'
-  const mapper = TYPE_MAPPINGS[format]
-  return mapper ? mapper(type) : type
-}
-
-function formatValue(value: unknown): string {
-  if (value === null)
-    return 'NULL'
-  if (typeof value === 'string')
-    return `'${value.replace(/'/g, '\'\'')}'`
-  if (typeof value === 'number')
-    return String(value)
-  if (typeof value === 'boolean')
-    return value ? 'TRUE' : 'FALSE'
-  if (value instanceof Date)
-    return `'${value.toISOString()}'`
-  return `'${String(value)}'`
-}
 
 export function generateQuerySQL(table: string, filters: ActiveFilter[]) {
   const whereClauses = filters.map((f) => {
-    const col = f.column
+    const col = `"${f.column}"`
     const op = f.ref.operator
 
     if (f.ref.hasValue === false)
@@ -136,7 +55,8 @@ export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
         value = opMap[op] === 'equals' ? value : { [opMap[op]]: value }
       }
     }
-    return { ...acc, [f.column]: value }
+    const colName = f.column.match(/^[a-z_$][\w$]*$/i) ? f.column : `"${f.column}"`
+    return { ...acc, [colName]: value }
   }, {})
 
   const jsonWhere = Object.keys(where).length > 0
@@ -177,7 +97,6 @@ export function generateQueryKysely(table: string, filters: ActiveFilter[]) {
   const conditions = filters.map((f) => {
     const op = f.ref.operator.toUpperCase()
     const col = f.column
-
     if (f.ref.hasValue === false) {
       return `'${col}', '${f.ref.operator.toLowerCase()}'`
     }
@@ -193,76 +112,271 @@ export function generateQueryKysely(table: string, filters: ActiveFilter[]) {
   return templates.kyselyQueryTemplate(table, conditions)
 }
 
-export function generateSchemaSQL(table: string, columns: Column[]) {
+export function generateSchemaSQL(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: DatabaseDialect = 'postgres') {
+  const foreignKeys: string[] = []
+  const usedEnums = new Map<string, typeof enumType.infer>()
+  const isMysql = dialect === 'mysql'
+  const isMssql = dialect === 'mssql'
+  const isClickhouse = dialect === 'clickhouse'
+  const pkColumns: string[] = []
+
   const cols = columns.map((c) => {
-    const parts = [c.id, c.type]
+    let typeDef = c.type ?? ''
+    const lowerType = typeDef.toLowerCase()
+
+    const match = findEnum(c, table, enums)
+
+    if (match || lowerType === 'enum' || lowerType === 'set' || (isClickhouse && lowerType.startsWith('enum'))) {
+      if (match && match.values.length > 0) {
+        if (isClickhouse) {
+          const prefix = match.values.length > 255 ? 'Enum16' : 'Enum8'
+          const valuesList = match.values.map((v, i) => `'${v.replace(/'/g, '\'\'')}' = ${i + 1}`).join(', ')
+          typeDef = `${prefix}(${valuesList})`
+        }
+        else if (isMysql) {
+          const valuesList = match.values.map(v => `'${v.replace(/'/g, '\'\'')}'`).join(', ')
+          typeDef = `${lowerType.toUpperCase()}(${valuesList})`
+        }
+        else {
+          if (!isMssql) {
+            usedEnums.set(match.name, match)
+            typeDef = `"${match.name}"`
+          }
+          else {
+            typeDef = match.name
+          }
+        }
+      }
+      else if (c.enum) {
+        if (isMysql && c.enum.includes('\'')) {
+          typeDef = `ENUM(${c.enum})`
+        }
+        else {
+          typeDef = c.enum
+        }
+      }
+    }
+    const parts = [quoteIdentifier(c.id, dialect), typeDef]
     if (!c.isNullable)
       parts.push('NOT NULL')
 
-    if (c.primaryKey)
-      parts.push('PRIMARY KEY')
-    return `  ${parts.join(' ')}`
-  }).join(',\n')
+    if (c.primaryKey) {
+      pkColumns.push(quoteIdentifier(c.id, dialect))
+      if (isMysql && /int|serial/i.test(c.type || ''))
+        parts.push('AUTO_INCREMENT')
+      if (isMssql && /int/i.test(c.type || ''))
+        parts.push('IDENTITY(1,1)')
+    }
 
-  return templates.sqlSchemaTemplate(table, cols)
+    if (c.primaryKey && !isClickhouse)
+      parts.push('PRIMARY KEY')
+
+    if (c.foreign && !isClickhouse) {
+      foreignKeys.push(`FOREIGN KEY (${quoteIdentifier(c.id, dialect)}) REFERENCES ${quoteIdentifier(c.foreign.table, dialect)}(${quoteIdentifier(c.foreign.column, dialect)})`)
+    }
+
+    return `  ${parts.join(' ')}`
+  })
+
+  if (foreignKeys.length > 0) {
+    cols.push(...foreignKeys.map(fk => `  ${fk}`))
+  }
+
+  const definitions: string[] = []
+
+  if (usedEnums.size > 0 && !isMysql && !isMssql && !isClickhouse) {
+    usedEnums.forEach((e) => {
+      const vals = e.values.map(v => `'${v.replace(/'/g, '\'\'')}'`).join(', ')
+      definitions.push(`CREATE TYPE "${e.name}" AS ENUM (${vals});`)
+    })
+  }
+
+  const columnsString = cols.join(',\n')
+  let schema = templates.sqlSchemaTemplate(quoteIdentifier(table, dialect), columnsString)
+
+  if (isClickhouse) {
+    const orderBy = pkColumns.length > 0 ? (pkColumns.length > 1 ? `(${pkColumns.join(', ')})` : pkColumns[0]) : 'tuple()'
+    schema = schema.replace(/\);\s*$/, `) ENGINE = MergeTree() ORDER BY ${orderBy};`)
+  }
+
+  return definitions.length > 0 ? `${definitions.join('\n')}\n\n${schema}` : schema
 }
 
-export function generateSchemaTypeScript(table: string, columns: Column[]) {
-  const cols = columns.map(c =>
-    `  ${c.id}${c.isNullable ? '?' : ''}: ${getColumnType(c.type, 'ts')};`,
-  ).join('\n')
+export function generateSchemaTypeScript(table: string, columns: Column[], enums: typeof enumType.infer[] = []) {
+  const cols = columns.map((c) => {
+    const safeId = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
+    let typeScriptType = getColumnType(c.type, 'ts')
+
+    const match = findEnum(c, table, enums)
+    if (match?.values.length) {
+      typeScriptType = match.values.map(v => `'${v}'`).join(' | ')
+      if (c.type === 'set')
+        typeScriptType = `(${typeScriptType})[]`
+    }
+
+    return `  ${safeId}${c.isNullable ? '?' : ''}: ${typeScriptType};`
+  }).join('\n')
 
   return templates.typeScriptSchemaTemplate(table, cols)
 }
 
-export function generateSchemaZod(table: string, columns: Column[]) {
+export function generateSchemaZod(table: string, columns: Column[], enums: typeof enumType.infer[] = []) {
   const cols = columns.map((c) => {
+    const safeId = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
     let t = getColumnType(c.type, 'zod')
+
+    const match = findEnum(c, table, enums)
+    if (match?.values.length) {
+      const valuesArr = match.values.map(v => `'${v}'`).join(', ')
+      t = `z.enum([${valuesArr}])`
+      if (c.type === 'set')
+        t = `${t}.array()`
+    }
+
     if (c.isNullable)
       t += '.nullable()'
-    return `  ${c.id}: ${t},`
+    return `  ${safeId}: ${t},`
   }).join('\n')
 
   return templates.zodSchemaTemplate(table, cols)
 }
 
-export function generateSchemaPrisma(table: string, columns: Column[]) {
+export function generateSchemaPrisma(table: string, columns: Column[], enums: typeof enumType.infer[] = []) {
+  const extraBlocks: string[] = []
+  const relations: string[] = []
+
   const cols = columns.map((c) => {
-    const prismaType = getColumnType(c.type, 'prisma')
-    const parts = [c.id, prismaType + (c.isNullable ? '?' : '')]
+    let prismaType = getColumnType(c.type, 'prisma')
+
+    const match = findEnum(c, table, enums)
+    if (match?.values.length) {
+      const enumName = toPascalCase(match.name || `${table}_${c.id}`)
+      prismaType = enumName
+
+      const enumValues = match.values.map((v) => {
+        if (/^[a-z]\w*$/i.test(v))
+          return `  ${v}`
+        return `  ${sanitize(v)} @map("${v}")`
+      }).join('\n')
+
+      extraBlocks.push(`enum ${enumName} {\n${enumValues}\n}`)
+    }
+
+    const isValidId = /^[a-z][\w$]*$/i.test(c.id)
+    const fieldName = isValidId ? c.id : sanitize(c.id)
+    const needsMap = !isValidId
+
+    const parts = [fieldName, prismaType + (c.isNullable ? '?' : '')]
     if (c.primaryKey) {
       parts.push('@id')
       if (prismaType === 'Int')
         parts.push('@default(autoincrement())')
     }
-    return `  ${parts.join(' ')}`
-  }).join('\n')
 
-  return templates.prismaSchemaTemplate(table, cols)
+    if (needsMap) {
+      parts.push(`@map("${c.id}")`)
+    }
+
+    if (c.foreign) {
+      const relName = c.foreign.table.toLowerCase()
+      const relType = toPascalCase(c.foreign.table)
+      relations.push(`  ${relName} ${relType} @relation(fields: [${fieldName}], references: [${c.foreign.column}])`)
+    }
+
+    return `  ${parts.join(' ')}`
+  })
+
+  const body = cols.join('\n') + (relations.length ? `\n\n${relations.join('\n')}` : '')
+
+  const uniqueExtras = Array.from(new Set(extraBlocks))
+
+  return templates.prismaSchemaTemplate(table, body) + (uniqueExtras.length ? `\n\n${uniqueExtras.join('\n\n')}` : '')
 }
 
-export function generateSchemaDrizzle(table: string, columns: Column[]) {
-  const imports = new Set(columns.map(c => getColumnType(c.type, 'drizzle')))
+export function generateSchemaDrizzle(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: DatabaseDialect = 'postgres') {
+  let tableFunc = 'pgTable'
+  let importPath = 'drizzle-orm/pg-core'
+  let enumFunc = 'pgEnum'
+
+  if (dialect === 'mysql') {
+    tableFunc = 'mysqlTable'
+    importPath = 'drizzle-orm/mysql-core'
+    enumFunc = 'mysqlEnum'
+  }
+  else if (dialect === 'mssql') {
+    tableFunc = 'mssqlTable'
+    importPath = 'drizzle-orm/mssql-core'
+    enumFunc = ''
+  }
+  else if (dialect === 'clickhouse') {
+    tableFunc = 'clickhouseTable'
+    importPath = 'drizzle-orm/clickhouse-core'
+    enumFunc = 'enum'
+  }
+
+  const imports = new Set<string>()
+  const extras: string[] = []
 
   const cols = columns.map((c) => {
-    const typeFunc = getColumnType(c.type, 'drizzle')
-    let chain = `${typeFunc}('${c.id}')`
+    let typeFunc = getColumnType(c.type, 'drizzle')
+    imports.add(typeFunc)
+
+    let enumVarName = ''
+
+    const match = findEnum(c, table, enums)
+    if (enumFunc && match?.values.length) {
+      const eName = match.name || `${table}_${c.id}`
+      enumVarName = `${eName}Enum`
+      const valuesList = match.values.map(v => `'${v}'`).join(', ')
+
+      imports.add(enumFunc)
+      extras.push(`export const ${enumVarName} = ${enumFunc}('${eName}', [${valuesList}]);`)
+
+      typeFunc = enumVarName
+    }
+
+    const safeKey = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
+
+    let chain = ''
+    if (enumVarName) {
+      chain = `${enumVarName}('${c.id}')`
+    }
+    else {
+      chain = `${typeFunc}('${c.id}')`
+    }
+
     if (!c.isNullable)
       chain += '.notNull()'
     if (c.primaryKey)
       chain += '.primaryKey()'
-    return `  ${c.id}: ${chain},`
+
+    if (c.foreign && dialect !== 'clickhouse') {
+      const refTable = toPascalCase(c.foreign.table)
+      chain += `.references(() => ${refTable}.${c.foreign.column})`
+    }
+
+    return `  ${safeKey}: ${chain},`
   }).join('\n')
 
-  return templates.drizzleSchemaTemplate(table, Array.from(imports), cols)
+  const base = templates.drizzleSchemaTemplate(table, Array.from(imports), cols, tableFunc, importPath)
+  return (extras.length ? `${extras.join('\n')}\n\n` : '') + base
 }
 
-export function generateSchemaKysely(table: string, columns: Column[]) {
+export function generateSchemaKysely(table: string, columns: Column[], enums: typeof enumType.infer[] = []) {
   const body = columns.map((c) => {
-    const tsType = getColumnType(c.type, 'ts')
+    let tsType = getColumnType(c.type, 'ts')
+
+    const match = findEnum(c, table, enums)
+    if (match?.values.length) {
+      tsType = match.values.map(v => `'${v}'`).join(' | ')
+      if (c.type === 'set')
+        tsType = `(${tsType})[]`
+    }
+
     const isGenerated = c.primaryKey
     const typeDef = isGenerated ? `Generated<${tsType}>` : tsType
-    return `  ${c.id}: ${typeDef};`
+    const safeKey = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
+    return `  ${safeKey}: ${typeDef};`
   }).join('\n')
 
   return templates.kyselySchemaTemplate(table, body)

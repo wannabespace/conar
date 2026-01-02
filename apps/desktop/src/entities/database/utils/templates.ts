@@ -1,3 +1,5 @@
+import { toPascalCase } from './helpers'
+
 export function sqlSchemaTemplate(table: string, columns: string) {
   return `CREATE TABLE ${table} (
 ${columns}
@@ -5,51 +7,58 @@ ${columns}
 }
 
 export function typeScriptSchemaTemplate(table: string, columns: string) {
-  return `export interface ${table} {
+  const pascalName = toPascalCase(table)
+  return `export interface ${pascalName} {
 ${columns}
 }`
 }
 
 export function zodSchemaTemplate(table: string, columns: string) {
+  const pascalName = toPascalCase(table)
   return `import { z } from 'zod';
 
-export const ${table}Schema = z.object({
+export const ${pascalName}Schema = z.object({
 ${columns}
 });
 
-export type ${table} = z.infer<typeof ${table}Schema>;`
+export type ${pascalName} = z.infer<typeof ${pascalName}Schema>;`
 }
 
 export function prismaSchemaTemplate(table: string, columns: string) {
-  return `model ${table} {
-${columns}
+  const pascalName = toPascalCase(table)
+  const mapAttribute = pascalName !== table ? `\n  @@map("${table}")` : ''
+  return `model ${pascalName} {
+${columns}${mapAttribute}
 }`
 }
 
-export function drizzleSchemaTemplate(table: string, imports: string[], columns: string) {
-  return `import { ${imports.join(', ')}, pgTable } from 'drizzle-orm/pg-core';
+export function drizzleSchemaTemplate(table: string, imports: string[], columns: string, tableFunc: string = 'pgTable', importPath: string = 'drizzle-orm/pg-core') {
+  const escapedTable = table.replace(/'/g, '\\\'')
+  const pascalName = toPascalCase(table)
+  return `import { ${imports.join(', ')}, ${tableFunc} } from '${importPath}';
 
-export const ${table} = pgTable('${table}', {
+export const ${pascalName} = ${tableFunc}('${escapedTable}', {
 ${columns}
 });`
 }
 
 export function kyselySchemaTemplate(table: string, body: string) {
+  const pascalTable = toPascalCase(table)
   return `import { Generated } from 'kysely';
 
-export interface ${table}Table {
+export interface ${pascalTable}Table {
 ${body}
 }
 
 export interface Database {
-  ${table}: ${table}Table;
+  ${table}: ${pascalTable}Table;
 }`
 }
 
 export function sqlQueryTemplate(table: string, where: string) {
   return where
-    ? `SELECT * FROM ${table} WHERE ${where};`
-    : `SELECT * FROM ${table};`
+    ? `SELECT * FROM "${table}" WHERE ${where};`
+    : `SELECT * FROM "${table}";`
 }
 
 export function prismaQueryTemplate(table: string, whereObj: string) {
@@ -65,7 +74,8 @@ export function drizzleQueryTemplate(table: string, conditions: string) {
 }
 
 export function kyselyQueryTemplate(table: string, conditions: string) {
+  const escapedTable = table.replace(/'/g, '\\\'')
   return conditions
-    ? `await db.selectFrom('${table}').selectAll().where(${conditions}).execute()`
-    : `await db.selectFrom('${table}').selectAll().execute()`
+    ? `await db.selectFrom('${escapedTable}').selectAll().where(${conditions}).execute()`
+    : `await db.selectFrom('${escapedTable}').selectAll().execute()`
 }

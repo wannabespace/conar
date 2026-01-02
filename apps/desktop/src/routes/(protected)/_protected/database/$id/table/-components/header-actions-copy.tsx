@@ -1,6 +1,7 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { RemixiconComponentType } from '@remixicon/react'
 import type { databases } from '~/drizzle'
+import type { enumType } from '~/entities/database/sql/enums'
 import type { Column } from '~/entities/database/utils/table'
 import { Button } from '@conar/ui/components/button'
 import {
@@ -40,6 +41,7 @@ import { useStore } from '@tanstack/react-store'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
+import { useDatabaseEnums } from '~/entities/database'
 import * as generators from '~/entities/database/utils/generators'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
@@ -173,10 +175,17 @@ function CopyDialogEditor({ activeFormat, activeCategory, codeContent, isCopied,
   )
 }
 
+const COMPATIBILITY: Record<string, string[]> = {
+  prisma: ['postgres', 'mysql', 'mssql'],
+  drizzle: ['postgres', 'mysql', 'mssql', 'clickhouse'],
+  kysely: ['postgres', 'mysql', 'mssql', 'clickhouse'],
+}
+
 export function HeaderActionsCopy({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
   const store = usePageStoreContext()
   const filters = useStore(store, state => state.filters)
   const columns = useTableColumns({ database, table, schema })
+  const { data: enums } = useDatabaseEnums({ database })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<'schema' | 'query'>('schema')
@@ -189,11 +198,15 @@ export function HeaderActionsCopy({ database, table, schema }: { database: typeo
     if (!dialogOpen)
       return ''
 
+    if (COMPATIBILITY[activeFormatId] && !COMPATIBILITY[activeFormatId].includes(database.type)) {
+      return `Not supported for ${database.type}`
+    }
+
     if (activeCategory === 'schema') {
-      return (activeFormat.generator as (table: string, columns: Column[]) => string)(table, columns)
+      return (activeFormat.generator as (table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: string) => string)(table, columns, enums, database.type)
     }
     return (activeFormat.generator as (table: string, filters: ActiveFilter[]) => string)(table, filters)
-  }, [activeCategory, activeFormat, dialogOpen, table, columns, filters])
+  }, [activeCategory, activeFormat, dialogOpen, table, columns, filters, enums, activeFormatId, database.type])
 
   const handleOpenDialog = (category: 'schema' | 'query', formatId: string) => {
     setActiveCategory(category)
@@ -203,9 +216,15 @@ export function HeaderActionsCopy({ database, table, schema }: { database: typeo
     const categoryFormats = FORMATS[category]
     const format = categoryFormats.find(f => f.id === formatId) || categoryFormats[0]
     if (format) {
+      if (COMPATIBILITY[formatId] && !COMPATIBILITY[formatId].includes(database.type)) {
+        navigator.clipboard.writeText(`Not supported for ${database.type}`)
+        toast.error(`Not supported for ${database.type}`)
+        return
+      }
+
       let text = ''
       if (category === 'schema') {
-        text = (format.generator as (table: string, cols: Column[]) => string)(table, columns)
+        text = (format.generator as (table: string, cols: Column[], enums?: typeof enumType.infer[], dialect?: string) => string)(table, columns, enums, database.type)
       }
       else {
         text = (format.generator as (table: string, filters: ActiveFilter[]) => string)(table, filters)
