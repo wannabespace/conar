@@ -157,6 +157,23 @@ export function generateSchemaSQL(table: string, columns: Column[], enums: typeo
         }
       }
     }
+    else {
+      typeDef = getColumnType(c.type, 'sql', dialect)
+
+      if (c.maxLength) {
+        const len = c.maxLength === -1 ? 'MAX' : c.maxLength
+        if (/(?:var)?char|binary/i.test(typeDef) && !/text/i.test(typeDef))
+          typeDef += `(${len})`
+      }
+
+      if (c.precision && /decimal|numeric/i.test(typeDef)) {
+        typeDef += `(${c.precision}${c.scale ? `, ${c.scale}` : ''})`
+      }
+
+      if (isClickhouse && c.isNullable) {
+        typeDef = `Nullable(${typeDef})`
+      }
+    }
     const parts = [quoteIdentifier(c.id, dialect), typeDef]
     if (!c.isNullable)
       parts.push('NOT NULL')
@@ -171,6 +188,8 @@ export function generateSchemaSQL(table: string, columns: Column[], enums: typeo
 
     if (c.primaryKey && !isClickhouse)
       parts.push('PRIMARY KEY')
+    else if (c.unique)
+      parts.push('UNIQUE')
 
     if (c.foreign && !isClickhouse) {
       foreignKeys.push(`FOREIGN KEY (${quoteIdentifier(c.id, dialect)}) REFERENCES ${quoteIdentifier(c.foreign.table, dialect)}(${quoteIdentifier(c.foreign.column, dialect)})`)
@@ -242,12 +261,12 @@ export function generateSchemaZod(table: string, columns: Column[], enums: typeo
   return templates.zodSchemaTemplate(table, cols)
 }
 
-export function generateSchemaPrisma(table: string, columns: Column[], enums: typeof enumType.infer[] = []) {
+export function generateSchemaPrisma(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: DatabaseDialect = 'postgres') {
   const extraBlocks: string[] = []
   const relations: string[] = []
 
   const cols = columns.map((c) => {
-    let prismaType = getColumnType(c.type, 'prisma')
+    let prismaType = getColumnType(c.type, 'prisma', dialect)
 
     const match = findEnum(c, table, enums)
     if (match?.values.length) {
@@ -272,6 +291,9 @@ export function generateSchemaPrisma(table: string, columns: Column[], enums: ty
       parts.push('@id')
       if (prismaType === 'Int')
         parts.push('@default(autoincrement())')
+    }
+    else if (c.unique) {
+      parts.push('@unique')
     }
 
     if (needsMap) {
@@ -319,7 +341,7 @@ export function generateSchemaDrizzle(table: string, columns: Column[], enums: t
   const extras: string[] = []
 
   const cols = columns.map((c) => {
-    let typeFunc = getColumnType(c.type, 'drizzle')
+    let typeFunc = getColumnType(c.type, 'drizzle', dialect)
     imports.add(typeFunc)
 
     let enumVarName = ''
@@ -343,13 +365,22 @@ export function generateSchemaDrizzle(table: string, columns: Column[], enums: t
       chain = `${enumVarName}('${c.id}')`
     }
     else {
-      chain = `${typeFunc}('${c.id}')`
+      let options = ''
+      if (c.maxLength && c.maxLength !== -1 && ['varchar', 'char', 'nvarchar'].includes(typeFunc)) {
+        options = `, { length: ${c.maxLength} }`
+      }
+      else if (typeFunc === 'decimal' && c.precision) {
+        options = `, { precision: ${c.precision}${c.scale ? `, scale: ${c.scale}` : ''} }`
+      }
+      chain = `${typeFunc}('${c.id}'${options})`
     }
 
     if (!c.isNullable)
       chain += '.notNull()'
     if (c.primaryKey)
       chain += '.primaryKey()'
+    if (c.unique && !c.primaryKey)
+      chain += '.unique()'
 
     if (c.foreign && dialect !== 'clickhouse') {
       const refTable = toPascalCase(c.foreign.table)
@@ -375,7 +406,9 @@ export function generateSchemaKysely(table: string, columns: Column[], enums: ty
     }
 
     const isGenerated = c.primaryKey
-    const typeDef = isGenerated ? `Generated<${tsType}>` : tsType
+    let typeDef = isGenerated ? `Generated<${tsType}>` : tsType
+    if (c.isNullable)
+      typeDef += ' | null'
     const safeKey = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
     return `  ${safeKey}: ${typeDef};`
   }).join('\n')

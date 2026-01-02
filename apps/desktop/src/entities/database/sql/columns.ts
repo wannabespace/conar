@@ -13,6 +13,9 @@ export const columnType = type({
   'isArray?': 'boolean',
   'editable?': 'boolean',
   'nullable': 'boolean | 1 | 0',
+  'maxLength?': 'number | null',
+  'precision?': 'number | null',
+  'scale?': 'number | null',
 })
   .pipe(({ editable, nullable, ...data }) => ({
     ...data,
@@ -68,6 +71,9 @@ export const columnsQuery = createQuery({
           'column_default as default',
           'data_type',
           'udt_name',
+          'character_maximum_length as maxLength',
+          'numeric_precision as precision',
+          'numeric_scale as scale',
           eb.case('is_nullable')
             .when('YES')
             .then(true)
@@ -104,6 +110,9 @@ export const columnsQuery = createQuery({
           'TABLE_NAME as table',
           'COLUMN_NAME as id',
           'COLUMN_DEFAULT as default',
+          'CHARACTER_MAXIMUM_LENGTH as maxLength',
+          'NUMERIC_PRECISION as precision',
+          'NUMERIC_SCALE as scale',
           eb.fn.coalesce('DATA_TYPE', 'COLUMN_TYPE').as('type'),
           eb
             .case('IS_NULLABLE')
@@ -135,6 +144,9 @@ export const columnsQuery = createQuery({
           'TABLE_NAME as table',
           'COLUMN_NAME as name',
           'COLUMN_DEFAULT as default',
+          'CHARACTER_MAXIMUM_LENGTH as maxLength',
+          'NUMERIC_PRECISION as precision',
+          'NUMERIC_SCALE as scale',
           'DATA_TYPE as type',
           eb
             .case('IS_NULLABLE')

@@ -44,6 +44,7 @@ ${columns}
 
 export function kyselySchemaTemplate(table: string, body: string) {
   const pascalTable = toPascalCase(table)
+  const safeTableKey = /^[a-z_$][\w$]*$/i.test(table) ? table : `'${table}'`
   return `import { Generated } from 'kysely';
 
 export interface ${pascalTable}Table {
@@ -51,7 +52,7 @@ ${body}
 }
 
 export interface Database {
-  ${table}: ${pascalTable}Table;
+  ${safeTableKey}: ${pascalTable}Table;
 }`
 }
 

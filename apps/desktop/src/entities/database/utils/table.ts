@@ -6,6 +6,9 @@ export interface Column {
   isArray?: boolean
   isEditable?: boolean
   isNullable?: boolean
+  maxLength?: number | null
+  precision?: number | null
+  scale?: number | null
   unique?: string
   primaryKey?: string
   foreign?: {

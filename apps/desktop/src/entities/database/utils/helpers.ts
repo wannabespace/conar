@@ -233,11 +233,11 @@ export function sanitize(name: string) {
   return name.replace(/\W/g, '_')
 }
 
-export const TYPE_MAPPINGS: Record<GeneratorFormat, (type: string) => string> = {
+export const TYPE_MAPPINGS: Record<GeneratorFormat, (type: string, dialect?: DatabaseDialect) => string> = {
   ts: (t) => {
-    if (/int|float|decimal|number|double/i.test(t))
+    if (/int|float|decimal|number|double|numeric/i.test(t))
       return 'number'
-    if (/bool/i.test(t))
+    if (/bool|bit/i.test(t))
       return 'boolean'
     if (/date|time/i.test(t))
       return 'Date'
@@ -246,9 +246,9 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, (type: string) => string> = 
     return 'string'
   },
   zod: (t) => {
-    if (/int|float|decimal|number|double/i.test(t))
+    if (/int|float|decimal|number|double|numeric/i.test(t))
       return 'z.number()'
-    if (/bool/i.test(t))
+    if (/bool|bit/i.test(t))
       return 'z.boolean()'
     if (/date|time/i.test(t))
       return 'z.date()'
@@ -256,14 +256,16 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, (type: string) => string> = 
       return 'z.any()'
     return 'z.string()'
   },
-  prisma: (t) => {
+  prisma: (t, d) => {
+    if (d === 'mssql' && /^date$/i.test(t))
+      return 'DateTime @db.Date'
     if (/int/i.test(t))
       return 'Int'
     if (/float|double/i.test(t))
       return 'Float'
-    if (/decimal/i.test(t))
+    if (/decimal|numeric/i.test(t))
       return 'Decimal'
-    if (/bool/i.test(t))
+    if (/bool|bit/i.test(t))
       return 'Boolean'
     if (/date|timestamp/i.test(t))
       return 'DateTime'
@@ -271,34 +273,70 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, (type: string) => string> = 
       return 'Json'
     return 'String'
   },
-  drizzle: (t) => {
+  drizzle: (t, d) => {
+    if (d === 'mssql' && /datetime2/i.test(t))
+      return 'datetime2'
+    if (d === 'mssql' && /datetime/i.test(t))
+      return 'datetime'
+
     if (/serial/i.test(t))
       return 'serial'
+    if (/tinyint/i.test(t))
+      return 'tinyint'
     if (/int/i.test(t))
       return 'integer'
     if (/text/i.test(t))
       return 'text'
-    if (/varchar/i.test(t))
+    if (/nvarchar/i.test(t))
+      return 'nvarchar'
+    if (/varchar|varying|char/i.test(t))
       return 'varchar'
+    if (/bit/i.test(t))
+      return 'bit'
     if (/bool/i.test(t))
       return 'boolean'
     if (/timestamp/i.test(t))
       return 'timestamp'
-    if (/date/i.test(t))
+    if (/datetime2/i.test(t))
+      return 'datetime2'
+    if (/datetime/i.test(t))
+      return 'datetime'
+    if (/^date$/i.test(t))
       return 'date'
-    if (/json/i.test(t))
+    if (/decimal|numeric/i.test(t))
+      return 'decimal'
+    if (/float|double|real/i.test(t)) {
+      if (d === 'mysql')
+        return 'double'
+      if (d === 'postgres')
+        return 'doublePrecision'
+      if (d === 'mssql')
+        return 'float'
+      return 'real'
+    }
+    if (d !== 'mssql' && /json/i.test(t))
       return 'json'
     return 'text'
   },
-  sql: t => t,
+  sql: (t, d) => {
+    if (d === 'postgres') {
+      if (/datetime2/i.test(t))
+        return 'timestamp'
+      if (/nvarchar/i.test(t))
+        return 'varchar'
+      if (/int32/i.test(t))
+        return 'integer'
+    }
+    return t
+  },
   kysely: t => t,
 }
 
-export function getColumnType(type: string | undefined, format: GeneratorFormat): string {
+export function getColumnType(type: string | undefined, format: GeneratorFormat, dialect?: DatabaseDialect): string {
   if (!type)
     return 'any'
   const mapper = TYPE_MAPPINGS[format]
-  return mapper ? mapper(type) : type
+  return mapper ? mapper(type, dialect) : type
 }
 
 export function formatValue(value: unknown): string {
