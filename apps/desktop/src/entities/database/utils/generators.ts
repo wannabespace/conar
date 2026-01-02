@@ -338,6 +338,7 @@ export function generateSchemaDrizzle(table: string, columns: Column[], enums: t
   }
 
   const imports = new Set<string>()
+  const foreignKeyImports = new Set<string>()
   const extras: string[] = []
 
   const cols = columns.map((c) => {
@@ -385,10 +386,16 @@ export function generateSchemaDrizzle(table: string, columns: Column[], enums: t
     if (c.foreign && dialect !== 'clickhouse') {
       const refTable = toPascalCase(c.foreign.table)
       chain += `.references(() => ${refTable}.${c.foreign.column})`
+
+      foreignKeyImports.add(`import { ${refTable} } from './${c.foreign.table}';`)
     }
 
     return `  ${safeKey}: ${chain},`
   }).join('\n')
+
+  if (foreignKeyImports.size > 0) {
+    extras.push(...Array.from(foreignKeyImports))
+  }
 
   const base = templates.drizzleSchemaTemplate(table, Array.from(imports), cols, tableFunc, importPath)
   return (extras.length ? `${extras.join('\n')}\n\n` : '') + base
