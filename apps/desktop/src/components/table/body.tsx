@@ -2,9 +2,10 @@ import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ComponentProps, CSSProperties } from 'react'
 import type { ColumnRenderer } from '.'
 import { cn } from '@conar/ui/lib/utils'
+import { memo } from 'react'
 import { useTableContext } from '.'
 
-function VirtualColumn({
+const VirtualColumn = memo(function VirtualColumn({
   virtualColumn,
   column,
   value,
@@ -50,13 +51,13 @@ function VirtualColumn({
       }}
     />
   )
-}
+})
 
 const spacerStyle: CSSProperties = {
   contain: 'layout style size',
 }
 
-function Row({
+const Row = memo(function Row({
   size,
   rowIndex,
 }: {
@@ -105,7 +106,7 @@ function Row({
       />
     </div>
   )
-}
+})
 
 export function TableBody({ className, style, ...props }: ComponentProps<'div'>) {
   const virtualRows = useTableContext(context => context.virtualRows)

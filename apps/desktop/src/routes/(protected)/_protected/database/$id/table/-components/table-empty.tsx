@@ -1,7 +1,8 @@
 import { cn } from '@conar/ui/lib/utils'
 import { RiMoreLine } from '@remixicon/react'
+import { memo } from 'react'
 
-export function TableEmpty({ className, title, description }: { className?: string, title: string, description: string }) {
+export const TableEmpty = memo(function TableEmpty({ className, title, description }: { className?: string, title: string, description: string }) {
   return (
     <div className={cn('sticky left-0 pointer-events-none flex items-center justify-center', className)}>
       <div className="flex flex-col items-center justify-center w-full h-32">
@@ -13,4 +14,4 @@ export function TableEmpty({ className, title, description }: { className?: stri
       </div>
     </div>
   )
-}
+})

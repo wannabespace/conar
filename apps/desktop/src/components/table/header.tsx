@@ -2,9 +2,10 @@ import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ComponentProps, CSSProperties, ReactNode } from 'react'
 import type { ColumnRenderer } from '.'
 import { cn } from '@conar/ui/lib/utils'
+import { memo } from 'react'
 import { useTableContext } from '.'
 
-function VirtualHeaderColumn({
+const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   virtualColumn,
   column,
 }: {
@@ -45,7 +46,7 @@ function VirtualHeaderColumn({
       }}
     />
   )
-}
+})
 
 export function TableHeader({
   className,

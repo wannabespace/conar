@@ -9,7 +9,7 @@ export function useDebouncedMemo<T>(factory: () => T, deps: React.DependencyList
   const debouncedSetState = useDebouncedCallback((value: T) => {
     // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
     setState(value)
-  }, delay)
+  }, [], delay)
 
   React.useEffect(() => {
     debouncedSetState(factoryEvent())

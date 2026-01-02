@@ -3,7 +3,7 @@ import type { Column } from '~/entities/database'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableProvider } from '~/components/table'
 import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, selectQuery, setQuery } from '~/entities/database'
@@ -80,7 +80,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     } satisfies typeof state))
   }, [store, rows, primaryColumns])
 
-  const setValue = (rowIndex: number, columnName: string, value: unknown) => {
+  const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
     const rowsQueryOpts = databaseRowsQuery({
       database,
       table,
@@ -105,9 +105,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           })),
         })
       : data)
-  }
+  }, [database, table, schema, store])
 
-  const saveValue = async (rowIndex: number, columnId: string, newValue: unknown) => {
+  const saveValue = useCallback(async (rowIndex: number, columnId: string, newValue: unknown) => {
     const rowsQueryOpts = databaseRowsQuery({
       database,
       table,
@@ -186,7 +186,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         description: e instanceof Error ? e.message : String(e),
       })
     }
-  }
+  }, [database, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
 
   const tableColumns = useMemo(() => {
     if (!columns)
@@ -198,7 +198,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       .map(column => ({
         id: column.id,
         size: getColumnSize(column.type)
-          // 25 it's a ~size of the button, 6 it's a ~size of the number
+        // 25 it's a ~size of the button, 6 it's a ~size of the number
           + (column.references?.length ? 25 + 6 : 0)
           + (column.foreign ? 25 : 0),
         header: props => (
@@ -255,12 +255,27 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
             : error
               ? <TableError error={error} />
               : rows?.length === 0
-                ? <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
+                ? (
+                    <TableEmpty
+                      className="bottom-0 h-[calc(100%-5rem)]"
+                      title="Table is empty"
+                      description="There are no records to show"
+                    />
+                  )
                 : tableColumns.length === 0
-                  ? <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />
+                  ? (
+                      <TableEmpty
+                        className="h-[calc(100%-5rem)]"
+                        title="No columns to show"
+                        description="Please show at least one column"
+                      />
+                    )
                   : (
                       <>
-                        <TableBody data-mask className="bg-background" />
+                        <TableBody
+                          data-mask
+                          className="bg-background"
+                        />
                         <TableInfiniteLoader
                           table={table}
                           schema={schema}
