@@ -167,6 +167,7 @@ function CopyDialogEditor({ activeFormat, activeCategory, codeContent, isCopied,
             fontSize: 13,
             lineNumbers: 'off',
             padding: { top: 16, bottom: 16 },
+            scrollBeyondLastLine: false,
           }}
           className="h-full w-full"
         />
@@ -257,7 +258,6 @@ export function HeaderActionsCopy({ database, table, schema }: { database: typeo
             activeFormatId={activeFormatId}
             onFormatChange={setActiveFormatId}
           />
-
           <CopyDialogEditor
             activeFormat={activeFormat}
             activeCategory={activeCategory}
@@ -268,7 +268,6 @@ export function HeaderActionsCopy({ database, table, schema }: { database: typeo
           />
         </DialogContent>
       </Dialog>
-
       <DropdownMenu>
         <TooltipProvider>
           <Tooltip>
@@ -284,7 +283,6 @@ export function HeaderActionsCopy({ database, table, schema }: { database: typeo
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Copy Schema</DropdownMenuLabel>
           {FORMATS.schema.map((fmt) => {

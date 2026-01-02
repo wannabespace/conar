@@ -8,6 +8,7 @@ export const columnType = type({
   'id': 'string',
   'default': 'string | null',
   'type': 'string',
+  'label': 'string',
   'enum?': 'string',
   'isArray?': 'boolean',
   'editable?': 'boolean',
@@ -88,7 +89,8 @@ export const columnsQuery = createQuery({
 
       return query.map(({ data_type, udt_name, ...row }) => ({
         ...row,
-        type: data_type === 'ARRAY' ? `${getPgColumnType(data_type, udt_name)}[]` : getPgColumnType(data_type, udt_name),
+        type: data_type === 'ARRAY' ? `${udt_name.slice(1)}[]` : data_type,
+        label: data_type === 'ARRAY' ? `${getPgColumnType(data_type, udt_name)}[]` : getPgColumnType(data_type, udt_name),
         // TODO: handle enum name if data_type is ARRAY
         enum: data_type === 'USER-DEFINED' ? udt_name : undefined,
         isArray: data_type === 'ARRAY',
@@ -120,6 +122,7 @@ export const columnsQuery = createQuery({
 
       return query.map(column => ({
         ...column,
+        label: column.type,
         enum: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
         isArray: column.type === 'set',
       } satisfies typeof columnType.inferIn))
@@ -151,6 +154,7 @@ export const columnsQuery = createQuery({
       return query.map(({ name, ...column }) => ({
         ...column,
         id: name,
+        label: column.type,
         enum: column.type === 'set' || column.type === 'enum' ? name : undefined,
         isArray: column.type === 'set',
       } satisfies typeof columnType.inferIn))
@@ -180,6 +184,7 @@ export const columnsQuery = createQuery({
 
       return query.map(row => ({
         ...row,
+        label: row.type,
         enum: row.type.includes('Enum') ? row.id : undefined,
         type: getClickhouseColumnType(row.type),
       }))
