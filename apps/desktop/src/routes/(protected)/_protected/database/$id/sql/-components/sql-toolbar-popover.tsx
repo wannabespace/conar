@@ -1,7 +1,4 @@
 import type { ReactNode } from 'react'
-import type {
-  layoutSettingsType,
-} from '~/entities/database'
 import { Button } from '@conar/ui/components/button'
 import { Ctrl, CtrlLetter, ShiftCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Label } from '@conar/ui/components/label'
@@ -64,7 +61,7 @@ function ToggleRow({
   )
 }
 
-function PositionSelector({
+function PositionSelector<T extends string>({
   label,
   value,
   options,
@@ -72,8 +69,8 @@ function PositionSelector({
 }: {
   label: string
   value: string
-  options: { value: string, label: string }[]
-  onChange: (value: string) => void
+  options: { value: T, label: string }[]
+  onChange: (value: T) => void
 }) {
   return (
     <div className={`
@@ -215,10 +212,10 @@ export function SqlToolbarPopover({ ref, databaseId, children }: {
               label="Chat Position"
               value={chatPosition}
               options={[
-                { value: 'right', label: 'Right' },
-                { value: 'bottom', label: 'Bottom' },
+                { value: 'left' as const, label: 'Left' },
+                { value: 'right' as const, label: 'Right' },
               ]}
-              onChange={v => setChatPosition(databaseId, v as typeof layoutSettingsType.infer['chatPosition'])}
+              onChange={v => setChatPosition(databaseId, v)}
             />
           </div>
         </div>
