@@ -27,13 +27,11 @@ export function Pricing({ className }: PricingSectionProps) {
     <section
       aria-labelledby="pricing-heading"
       className={cn(
-        'relative bg-background text-foreground',
         `
-          py-8
+          relative overflow-hidden bg-background py-8 text-foreground
           sm:py-12
           lg:py-16
         `,
-        'overflow-hidden',
         className,
       )}
     >
