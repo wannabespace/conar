@@ -1,4 +1,4 @@
-import type { BetterAuthPlugin, User } from 'better-auth'
+import type { Auth, BetterAuthPlugin, User } from 'better-auth'
 import { stripe } from '@better-auth/stripe'
 import { PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
@@ -66,7 +66,7 @@ function noSetCookiePlugin() {
   } satisfies BetterAuthPlugin
 }
 
-export const auth = betterAuth({
+export const auth: Auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,

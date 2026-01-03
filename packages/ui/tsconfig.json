@@ -1,7 +1,6 @@
 {
   "extends": "@conar/configs/ts/react.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@conar/ui/*": ["./src/*"]
     },
