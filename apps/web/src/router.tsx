@@ -2,6 +2,7 @@
 import '@conar/shared/arktype-config'
 import { QueryClient } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
+import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { routeTree } from './routeTree.gen'
 import { handleError } from './utils/error'
 
@@ -23,6 +24,10 @@ export function getRouter() {
     context: {
       queryClient,
     },
+  })
+  setupRouterSsrQueryIntegration({
+    router,
+    queryClient,
   })
 
   return router

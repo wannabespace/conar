@@ -64,6 +64,7 @@ catalog:
   '@tanstack/react-query-devtools': ^5.91.1
   '@tanstack/react-router': ^1.144.0
   '@tanstack/react-router-devtools': ^1.144.0
+  '@tanstack/react-router-ssr-query': ^1.144.0
   '@tanstack/react-start': ^1.145.0
   '@tanstack/react-store': ^0.8.0
   '@tanstack/react-virtual': ^3.13.13

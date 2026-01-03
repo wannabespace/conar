@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { orpc, orpcQuery } from '~/lib/orpc'
 
@@ -42,34 +42,12 @@ export function useUpgradeSubscription() {
   }
 }
 
-export function useRestoreSubscription() {
-  const queryClient = useQueryClient()
-
-  const { mutate: restore, isPending: isRestoring } = useMutation({
-    mutationKey: ['subscription', 'restore'],
-    mutationFn: async () => {
-      await orpc.account.subscription.restore()
-    },
-    onSuccess() {
-      queryClient.invalidateQueries(orpcQuery.account.subscription.list.queryOptions())
-    },
-  })
-
-  return {
-    restore,
-    isRestoring,
-  }
-}
-
-export function useBillingPortal() {
-  const router = useRouter()
-  const { url } = router.buildLocation({ to: '/account' })
-
+export function useBillingPortal({ returnUrl}: { returnUrl: string }) {
   const { mutate: openBillingPortal, isPending: isOpening } = useMutation({
     mutationKey: ['subscription', 'billingPortal'],
     mutationFn: async () => {
       const result = await orpc.account.subscription.billingPortal({
-        returnUrl: url.href,
+        returnUrl,
       })
 
       location.assign(result.url)

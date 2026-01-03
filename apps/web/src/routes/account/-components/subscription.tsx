@@ -5,14 +5,17 @@ import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowUpLine, RiLoader4Fill, RiRefreshLine, RiWalletLine } from '@remixicon/react'
-import { useBillingPortal, useRestoreSubscription, useSubscription, useUpgradeSubscription } from '~/hooks/use-subscription'
+import { RiArrowUpLine, RiLoader4Fill, RiTimeLine, RiWalletLine } from '@remixicon/react'
+import { useRouter } from '@tanstack/react-router'
+import { format } from 'date-fns'
+import { useBillingPortal, useSubscription, useUpgradeSubscription } from '~/hooks/use-subscription'
 import { HOBBY_PLAN, PRO_PLAN } from '~/utils/pricing'
 
 export function Subscription() {
   const { subscription, isPending } = useSubscription()
-  const { restore, isRestoring } = useRestoreSubscription()
-  const { openBillingPortal, isOpening } = useBillingPortal()
+  const router = useRouter()
+  const returnUrl = router.buildLocation({ to: '/account' }).url.href
+  const { openBillingPortal, isOpening } = useBillingPortal({ returnUrl })
   const { upgrade, isUpgrading } = useUpgradeSubscription()
 
   const plans: (PricingPlan & {
@@ -35,18 +38,14 @@ export function Subscription() {
                   Manage Subscription
                 </LoadingContent>
               </Button>
-              {subscription.cancelAtPeriodEnd && (
-                <Button
-                  size="xs"
-                  variant="outline"
-                  disabled={isRestoring}
-                  onClick={() => restore()}
+              {(subscription.cancelAtPeriodEnd || subscription.cancelAt) && (
+                <span className={`
+                  flex items-center gap-1 text-xs text-muted-foreground
+                `}
                 >
-                  <LoadingContent loading={isRestoring} loaderClassName="size-3.5">
-                    <RiRefreshLine className="size-3.5" />
-                    Restore Subscription
-                  </LoadingContent>
-                </Button>
+                  <RiTimeLine className="size-3.5" />
+                  {subscription.cancelAt ? `Cancels at ${format(subscription.cancelAt, 'MMM d, yyyy')}` : 'Cancels at period end'}
+                </span>
               )}
             </div>
           )

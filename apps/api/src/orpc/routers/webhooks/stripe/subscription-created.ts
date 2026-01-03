@@ -9,13 +9,13 @@ type SubscriptionCreatedEvent = Extract<Stripe.Event, { type: 'customer.subscrip
 export async function subscriptionCreated(event: Stripe.Event) {
   const subscription = event.data.object as SubscriptionCreatedEvent['data']['object']
 
-  consola.info('Stripe subscription created', { subscription: JSON.stringify(subscription) })
-
   const userId = subscription.metadata?.userId
 
   if (!userId) {
     throw new Error('No userId found in subscription metadata')
   }
+
+  consola.info('Stripe subscription created', { subscription: JSON.stringify(subscription) })
 
   const [existing] = await db
     .select({ id: subscriptions.id })
@@ -36,6 +36,7 @@ export async function subscriptionCreated(event: Stripe.Event) {
     trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
     trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
     cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
+    cancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
   } satisfies typeof subscriptions.$inferInsert
 
   if (existing) {

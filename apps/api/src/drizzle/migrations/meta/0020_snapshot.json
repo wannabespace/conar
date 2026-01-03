@@ -1,5 +1,5 @@
 {
-  "id": "d7466bc4-bedd-414c-923f-2266a3e08073",
+  "id": "28d4e82c-565d-437d-b603-c135e6930232",
   "prevId": "513f83e6-7458-4852-924a-f4861ae461fd",
   "version": "7",
   "dialect": "postgresql",
@@ -1292,6 +1292,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "cancel_at": {
+          "name": "cancel_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "cancel_at_period_end": {
           "name": "cancel_at_period_end",
           "type": "boolean",
@@ -1300,23 +1306,7 @@
           "default": false
         }
       },
-      "indexes": {
-        "subscriptions_user_id_index": {
-          "name": "subscriptions_user_id_index",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "subscriptions_user_id_users_id_fk": {
           "name": "subscriptions_user_id_users_id_fk",

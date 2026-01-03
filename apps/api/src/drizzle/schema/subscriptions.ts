@@ -1,7 +1,6 @@
 import type { Stripe } from 'stripe'
 import {
   boolean,
-  index,
   pgTable,
   text,
   timestamp,
@@ -22,5 +21,6 @@ export const subscriptions = pgTable('subscriptions', {
   periodEnd: timestamp({ withTimezone: true }),
   trialStart: timestamp({ withTimezone: true }),
   trialEnd: timestamp({ withTimezone: true }),
+  cancelAt: timestamp({ withTimezone: true }),
   cancelAtPeriodEnd: boolean().default(false),
-}, table => [index().on(table.userId)])
+})

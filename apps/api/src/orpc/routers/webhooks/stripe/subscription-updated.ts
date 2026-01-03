@@ -32,6 +32,7 @@ export async function subscriptionUpdated(event: Stripe.Event) {
       trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
       trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
       cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
+      cancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
     })
     .where(eq(subscriptions.id, existing.id))
 }

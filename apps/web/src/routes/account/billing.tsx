@@ -13,7 +13,7 @@ import {
 } from '@conar/ui/components/table'
 import { RiExternalLinkLine, RiWalletLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { useBillingPortal } from '~/hooks/use-subscription'
 import { orpcQuery } from '~/lib/orpc'
@@ -31,7 +31,9 @@ function formatCurrency(amount: number) {
 
 function RouteComponent() {
   const { data: invoices = [], isPending } = useQuery(orpcQuery.account.invoices.queryOptions())
-  const { openBillingPortal, isOpening } = useBillingPortal()
+  const router = useRouter()
+  const returnUrl = router.buildLocation({ to: '/account/billing' }).url.href
+  const { openBillingPortal, isOpening } = useBillingPortal({ returnUrl })
 
   return (
     <div>
