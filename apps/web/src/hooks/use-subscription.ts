@@ -1,29 +1,11 @@
-import type { QueryClient } from '@tanstack/react-query'
-import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import { authClient } from '~/lib/auth'
+import { orpc, orpcQuery } from '~/lib/orpc'
 
 export type Subscription = NonNullable<NonNullable<ReturnType<typeof useSubscription>>['subscription']>
 
-const subscriptionsOptions = queryOptions({
-  queryKey: ['subscription', 'list'],
-  queryFn: async () => {
-    const { data, error } = await authClient.subscription.list()
-
-    if (error) {
-      throw error
-    }
-
-    return data
-  },
-})
-
-export function invalidateSubscriptionsQuery(queryClient: QueryClient) {
-  queryClient.invalidateQueries(subscriptionsOptions)
-}
-
 export function useSubscriptionsQuery() {
-  return useQuery(subscriptionsOptions)
+  return useQuery(orpcQuery.account.subscription.list.queryOptions())
 }
 
 export function useSubscription() {
@@ -43,16 +25,14 @@ export function useUpgradeSubscription() {
   const { mutate: upgrade, isPending: isUpgrading } = useMutation({
     mutationKey: ['subscription', 'upgrade'],
     mutationFn: async () => {
-      const { error } = await authClient.subscription.upgrade({
-        plan: 'pro',
+      const result = await orpc.account.subscription.upgrade({
         returnUrl: returnUrl.href,
         successUrl: successUrl.href,
         cancelUrl: cancelUrl.href,
+        isYearly: false,
       })
 
-      if (error) {
-        throw error
-      }
+      location.assign(result.url)
     },
   })
 
@@ -62,48 +42,16 @@ export function useUpgradeSubscription() {
   }
 }
 
-export function useCancelSubscription() {
-  const queryClient = useQueryClient()
-  const router = useRouter()
-  const { url } = router.buildLocation({ to: '/account' })
-
-  const { mutate: cancel, isPending: isCancelling } = useMutation({
-    mutationKey: ['subscription', 'cancel'],
-    mutationFn: async () => {
-      const { error } = await authClient.subscription.cancel({
-        returnUrl: url.href,
-      })
-
-      if (error) {
-        invalidateSubscriptionsQuery(queryClient)
-        throw error
-      }
-    },
-  })
-
-  return {
-    cancel,
-    isCancelling,
-  }
-}
-
 export function useRestoreSubscription() {
   const queryClient = useQueryClient()
 
   const { mutate: restore, isPending: isRestoring } = useMutation({
     mutationKey: ['subscription', 'restore'],
     mutationFn: async () => {
-      const { data, error } = await authClient.subscription.restore()
-
-      if (error) {
-        invalidateSubscriptionsQuery(queryClient)
-        throw error
-      }
-
-      return data
+      await orpc.account.subscription.restore()
     },
     onSuccess() {
-      invalidateSubscriptionsQuery(queryClient)
+      queryClient.invalidateQueries(orpcQuery.account.subscription.list.queryOptions())
     },
   })
 
@@ -120,15 +68,11 @@ export function useBillingPortal() {
   const { mutate: openBillingPortal, isPending: isOpening } = useMutation({
     mutationKey: ['subscription', 'billingPortal'],
     mutationFn: async () => {
-      const { data, error } = await authClient.subscription.billingPortal({
+      const result = await orpc.account.subscription.billingPortal({
         returnUrl: url.href,
       })
 
-      if (error) {
-        throw error
-      }
-
-      return data.url!
+      location.assign(result.url)
     },
   })
 

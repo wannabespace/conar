@@ -37,7 +37,6 @@
   },
   "devDependencies": {
     "@ai-sdk/react": "catalog:",
-    "@better-auth/stripe": "catalog:",
     "@conar/api": "workspace:*",
     "@conar/configs": "workspace:*",
     "@conar/connection": "workspace:*",

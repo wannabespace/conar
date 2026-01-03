@@ -1,5 +1,4 @@
 import type { BetterAuthPlugin, User } from 'better-auth'
-import { stripe } from '@better-auth/stripe'
 import { PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
@@ -11,7 +10,6 @@ import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
 import { sendEmail } from '~/lib/email'
 import { loops } from '~/lib/loops'
-import { stripe as stripeClient } from './stripe'
 
 async function loopsUpdateUser(user: User) {
   try {
@@ -100,28 +98,6 @@ export const auth = betterAuth({
     emailHarmony(),
     noSetCookiePlugin(),
     anonymous(),
-    ...(stripeClient
-      ? [stripe({
-          stripeClient,
-          subscription: {
-            enabled: true,
-            plans: [
-              {
-                name: 'Pro',
-                priceId: env.STRIPE_MONTH_PRICE_ID!,
-                annualDiscountPriceId: env.STRIPE_ANNUAL_PRICE_ID!,
-                // freeTrial: {
-                //   days: 7,
-                // },
-              },
-            ],
-          },
-          onEvent: async (event) => {
-            console.log(event)
-          },
-          stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
-        })]
-      : []),
   ],
   user: {
     additionalFields: {
@@ -130,6 +106,12 @@ export const auth = betterAuth({
         returned: false,
         input: false,
         defaultValue: () => nanoid(),
+      },
+      stripe_customer_id: {
+        type: 'string',
+        returned: false,
+        input: false,
+        required: false,
       },
     },
   },

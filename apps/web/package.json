@@ -9,7 +9,6 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@better-auth/stripe": "catalog:",
     "@databuddy/sdk": "catalog:",
     "@number-flow/react": "catalog:",
     "@octokit/rest": "catalog:",

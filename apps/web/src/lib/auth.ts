@@ -1,5 +1,4 @@
 import type { auth } from '@conar/api/src/lib/auth'
-import { stripeClient } from '@better-auth/stripe/client'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequestHeaders } from '@tanstack/react-start/server'
 import { inferAdditionalFields, lastLoginMethodClient, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
@@ -14,7 +13,6 @@ export const authClient = createAuthClient({
     twoFactorClient(),
     magicLinkClient(),
     lastLoginMethodClient(),
-    stripeClient({ subscription: true }),
   ],
 })
 

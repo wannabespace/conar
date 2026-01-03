@@ -1,0 +1,37 @@
+import type Stripe from 'stripe'
+import { eq } from 'drizzle-orm'
+import { db, subscriptions } from '~/drizzle'
+
+type SubscriptionDeletedEvent = Extract<Stripe.Event, { type: 'customer.subscription.deleted' }>
+
+export async function subscriptionDeleted(event: Stripe.Event) {
+  if (event.type !== 'customer.subscription.deleted')
+    return
+
+  const subscription = event.data.object as SubscriptionDeletedEvent['data']['object']
+
+  const [existing] = await db
+    .select({ id: subscriptions.id })
+    .from(subscriptions)
+    .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
+    .limit(1)
+
+  if (!existing) {
+    throw new Error(`Subscription ${subscription.id} not found in database`)
+  }
+
+  const periodStart = subscription.items.data[0]?.current_period_start ? new Date(subscription.items.data[0].current_period_start * 1000) : null
+  const periodEnd = subscription.items.data[0]?.current_period_end ? new Date(subscription.items.data[0].current_period_end * 1000) : null
+
+  await db
+    .update(subscriptions)
+    .set({
+      status: 'canceled' as const,
+      periodStart,
+      periodEnd,
+      trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
+      trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+      cancelAtPeriodEnd: false,
+    })
+    .where(eq(subscriptions.id, existing.id))
+}

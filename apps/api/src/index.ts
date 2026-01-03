@@ -50,7 +50,7 @@ app.get('/', (c) => {
 app.on(['GET', 'POST'], '/auth/*', c => auth.handler(c.req.raw))
 
 app.use('/rpc/*', async (c, next) => {
-  const { matched, response } = await handler.handle(c.req.raw, {
+  const { matched, response } = await handler.handle(c.req.raw.clone(), {
     prefix: '/rpc',
     context: createContext(c),
   })

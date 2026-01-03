@@ -1,5 +1,4 @@
 import type { auth } from '@conar/api/src/lib/auth'
-import { stripeClient } from '@better-auth/stripe/client'
 import { inferAdditionalFields } from 'better-auth/client/plugins'
 import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
@@ -40,7 +39,6 @@ export const authClient = createAuthClient({
   basePath: '/auth',
   plugins: [
     inferAdditionalFields<typeof auth>(),
-    stripeClient({ subscription: true }),
     bearer(),
   ],
   fetchOptions: {

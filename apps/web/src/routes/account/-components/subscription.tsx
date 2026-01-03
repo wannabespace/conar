@@ -5,22 +5,15 @@ import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowUpLine, RiCloseLine, RiLoader4Fill, RiRefreshLine, RiWalletLine } from '@remixicon/react'
-import { useBillingPortal, useCancelSubscription, useRestoreSubscription, useSubscription, useUpgradeSubscription } from '~/hooks/use-subscription'
+import { RiArrowUpLine, RiLoader4Fill, RiRefreshLine, RiWalletLine } from '@remixicon/react'
+import { useBillingPortal, useRestoreSubscription, useSubscription, useUpgradeSubscription } from '~/hooks/use-subscription'
 import { HOBBY_PLAN, PRO_PLAN } from '~/utils/pricing'
 
 export function Subscription() {
   const { subscription, isPending } = useSubscription()
-  const { cancel, isCancelling } = useCancelSubscription()
   const { restore, isRestoring } = useRestoreSubscription()
   const { openBillingPortal, isOpening } = useBillingPortal()
   const { upgrade, isUpgrading } = useUpgradeSubscription()
-
-  const isActive = subscription?.status === 'active'
-  const isTrialing = subscription?.status === 'trialing'
-  const endDate = isTrialing && subscription?.trialEnd ? subscription?.trialEnd : subscription?.periodEnd
-
-  console.log(isActive, isTrialing, endDate)
 
   const plans: (PricingPlan & {
     footer?: ReactNode
@@ -42,33 +35,19 @@ export function Subscription() {
                   Manage Subscription
                 </LoadingContent>
               </Button>
-              {subscription.cancelAtPeriodEnd
-                ? (
-                    <Button
-                      size="xs"
-                      variant="outline"
-                      disabled={isRestoring}
-                      onClick={() => restore()}
-                    >
-                      <LoadingContent loading={isRestoring} loaderClassName="size-3.5">
-                        <RiRefreshLine className="size-3.5" />
-                        Restore Subscription
-                      </LoadingContent>
-                    </Button>
-                  )
-                : (isActive || isTrialing) && (
-                    <Button
-                      size="xs"
-                      variant="outline"
-                      disabled={isCancelling}
-                      onClick={() => cancel()}
-                    >
-                      <LoadingContent loading={isCancelling} loaderClassName="size-3.5">
-                        <RiCloseLine className="size-3.5" />
-                        Cancel Subscription
-                      </LoadingContent>
-                    </Button>
-                  )}
+              {subscription.cancelAtPeriodEnd && (
+                <Button
+                  size="xs"
+                  variant="outline"
+                  disabled={isRestoring}
+                  onClick={() => restore()}
+                >
+                  <LoadingContent loading={isRestoring} loaderClassName="size-3.5">
+                    <RiRefreshLine className="size-3.5" />
+                    Restore Subscription
+                  </LoadingContent>
+                </Button>
+              )}
             </div>
           )
         : (

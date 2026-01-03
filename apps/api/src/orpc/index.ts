@@ -1,8 +1,10 @@
 import type { Context } from './context'
 import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
-import { db } from '~/drizzle'
+import { eq } from 'drizzle-orm'
+import { db, subscriptions } from '~/drizzle'
 import { auth } from '~/lib/auth'
+import { stripe } from '~/lib/stripe'
 
 export const orpc = os.$context<Context>()
 
@@ -21,14 +23,18 @@ async function getUserSecret(userId: string) {
   return user.secret
 }
 
-export const authMiddleware = orpc.middleware(async ({ context, next }) => {
-  const session = await auth.api.getSession({
-    headers: context.headers,
-  })
+async function getSession(headers: Headers) {
+  const session = await auth.api.getSession({ headers })
 
   if (!session) {
     throw new ORPCError('UNAUTHORIZED', { message: 'We could not find your session. Please sign in again.' })
   }
+
+  return session
+}
+
+export const authMiddleware = orpc.middleware(async ({ context, next }) => {
+  const session = await getSession(context.headers)
 
   return next({
     context: {
@@ -38,18 +44,21 @@ export const authMiddleware = orpc.middleware(async ({ context, next }) => {
   })
 })
 
-async function getSubscription(context: Context) {
-  const subscriptions = await auth.api.listActiveSubscriptions({
-    headers: context.headers,
-  })
-  return subscriptions.find(s => s.status === 'active' || s.status === 'trialing') ?? null
+async function getSubscription(userId: string) {
+  const userSubscriptions = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, userId))
+
+  return userSubscriptions.find(s => s.status === 'active' || s.status === 'trialing') ?? null
 }
 
-export const requireSubscriptionMiddleware = authMiddleware.concat(orpc.middleware(async ({ context, next }) => {
+export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, next }) => {
+  const session = await getSession(context.headers)
   const minorVersion = context.minorVersion ?? 0
-  const subscription = await getSubscription(context)
+  const subscription = await getSubscription(session.user.id)
 
-  if (!subscription) {
+  if (!subscription && stripe) {
     throw new ORPCError('FORBIDDEN', {
       message: minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
         ? 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.'
@@ -57,5 +66,11 @@ export const requireSubscriptionMiddleware = authMiddleware.concat(orpc.middlewa
     })
   }
 
-  return next({ context: { subscription } })
-}))
+  return next({
+    context: {
+      ...session,
+      getUserSecret: () => getUserSecret(session.user.id),
+      subscription,
+    },
+  })
+})

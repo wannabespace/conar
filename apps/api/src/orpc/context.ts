@@ -26,6 +26,7 @@ export function createContext(c: HonoContext) {
   const majorVersion = Number(desktopVersion?.split('.')[0]) || null
 
   return {
+    request: c.req.raw,
     headers: h,
     setHeader: (key: string, value: string) => {
       c.res.headers.set(key, value)

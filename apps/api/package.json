@@ -17,7 +17,6 @@
     "@ai-sdk/openai": "catalog:",
     "@ai-sdk/provider": "catalog:",
     "@ai-sdk/xai": "catalog:",
-    "@better-auth/stripe": "catalog:",
     "@conar/connection": "workspace:*",
     "@conar/shared": "workspace:*",
     "@exalabs/ai-sdk": "catalog:",

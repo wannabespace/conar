@@ -2,7 +2,6 @@ import { relations } from 'drizzle-orm'
 import {
   boolean,
   index,
-  integer,
   pgTable,
   text,
   timestamp,
@@ -20,8 +19,8 @@ export const users = pgTable('users', {
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   normalizedEmail: text('normalized_email').unique(),
   isAnonymous: boolean('is_anonymous').default(false),
-  stripeCustomerId: text('stripe_customer_id'),
   secret: text('secret').notNull(),
+  stripeCustomerId: text('stripe_customer_id'),
 })
 
 export const sessions = pgTable(
@@ -137,21 +136,6 @@ export const invitations = pgTable(
     index('invitations_email_idx').on(table.email),
   ],
 )
-
-export const subscriptions = pgTable('subscriptions', {
-  ...baseTable,
-  plan: text('plan').notNull(),
-  referenceId: text('reference_id').notNull(),
-  stripeCustomerId: text('stripe_customer_id'),
-  stripeSubscriptionId: text('stripe_subscription_id'),
-  status: text('status').default('incomplete'),
-  periodStart: timestamp('period_start', { withTimezone: true }),
-  periodEnd: timestamp('period_end', { withTimezone: true }),
-  trialStart: timestamp('trial_start', { withTimezone: true }),
-  trialEnd: timestamp('trial_end', { withTimezone: true }),
-  cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false),
-  seats: integer('seats'),
-})
 
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
