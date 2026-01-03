@@ -104,8 +104,8 @@ export function TableHeaderCell({
             </Button>
           )}
         </div>
-        {column?.type && (
-          <div data-footer={!!column.type} className="flex items-center gap-1">
+        {column?.label && (
+          <div data-footer={!!column.label} className="flex items-center gap-1">
             {column.primaryKey && (
               <TooltipProvider>
                 <Tooltip>
@@ -215,7 +215,7 @@ export function TableHeaderCell({
                           decoration-dotted
                         `}
                         >
-                          {column.type}
+                          {column.label}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -239,7 +239,7 @@ export function TableHeaderCell({
                 )
               : (
                   <span className="truncate font-mono text-muted-foreground">
-                    {column.type}
+                    {column.label}
                   </span>
                 )}
           </div>

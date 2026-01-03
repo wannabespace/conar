@@ -12,6 +12,7 @@ import { databaseConstraintsQuery, databaseRowsQuery, databaseTableColumnsQuery,
 import { queryClient } from '~/main'
 import { usePageStoreContext } from '../-store'
 import { HeaderActionsColumns } from './header-actions-columns'
+import { HeaderActionsCopy } from './header-actions-copy'
 import { HeaderActionsDelete } from './header-actions-delete'
 import { HeaderActionsFilters } from './header-actions-filters'
 import { HeaderActionsOrder } from './header-actions-order'
@@ -76,6 +77,11 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
         table={table}
         schema={schema}
         database={database}
+      />
+      <HeaderActionsCopy
+        database={database}
+        table={table}
+        schema={schema}
       />
       <HeaderActionsColumns
         database={database}
