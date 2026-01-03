@@ -22,8 +22,6 @@ export const layoutSettingsType = type({
   chatPosition: '"left" | "right"',
 })
 
-export type LayoutSettings = typeof layoutSettingsType.infer
-
 export const layoutPresetType = type({
   id: 'string',
   name: 'string',

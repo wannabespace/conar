@@ -12,21 +12,19 @@ import {
 import { useStore } from '@tanstack/react-store'
 import { useRef } from 'react'
 import { databaseStore, toggleChat, toggleResults } from '~/entities/database'
-import { LayoutPopover } from './layout-popover'
+import { SqlToolbarPopover } from './sql-toolbar-popover'
 
-interface AppToolbarProps {
+export function SqlToolbar({ databaseId, className, onNewChat }: {
   databaseId: string
   className?: string
-  onNewChat?: VoidFunction
-}
-
-export function AppToolbar({ databaseId, className, onNewChat }: AppToolbarProps) {
+  onNewChat?: () => void
+}) {
   const store = databaseStore(databaseId)
   const { chatVisible, resultsVisible } = useStore(store, state => ({
     chatVisible: state.layout.chatVisible,
     resultsVisible: state.layout.resultsVisible,
   }))
-  const layoutPopoverRef = useRef<ComponentRef<typeof LayoutPopover>>(null)
+  const layoutPopoverRef = useRef<ComponentRef<typeof SqlToolbarPopover>>(null)
 
   return (
     <div className={cn('flex items-center gap-0.5', className)}>
@@ -101,7 +99,7 @@ export function AppToolbar({ databaseId, className, onNewChat }: AppToolbarProps
         </TooltipContent>
       </Tooltip>
 
-      <LayoutPopover ref={layoutPopoverRef} databaseId={databaseId}>
+      <SqlToolbarPopover ref={layoutPopoverRef} databaseId={databaseId}>
         <Button
           size="icon-sm"
           variant="ghost"
@@ -110,7 +108,7 @@ export function AppToolbar({ databaseId, className, onNewChat }: AppToolbarProps
         >
           <RiSettings4Line className="size-4" />
         </Button>
-      </LayoutPopover>
+      </SqlToolbarPopover>
     </div>
   )
 }

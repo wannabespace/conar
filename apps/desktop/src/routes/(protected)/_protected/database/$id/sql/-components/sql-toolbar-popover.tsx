@@ -8,7 +8,7 @@ import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Separator } from '@conar/ui/components/separator'
 import { Switch } from '@conar/ui/components/switch'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { useStore } from '@tanstack/react-store'
 import { useImperativeHandle, useState } from 'react'
@@ -19,18 +19,6 @@ import {
   toggleResults,
 } from '~/entities/database'
 
-const userAgent = navigator.userAgent
-
-export interface LayoutPopoverHandle {
-  open: VoidFunction
-  close: VoidFunction
-}
-
-interface LayoutPopoverProps {
-  databaseId: string
-  children: ReactNode
-}
-
 function ToggleRow({
   label,
   shortcut,
@@ -40,7 +28,7 @@ function ToggleRow({
   label: string
   shortcut?: ReactNode
   checked: boolean
-  onCheckedChange: VoidFunction
+  onCheckedChange: () => void
 }) {
   return (
     <div className={`
@@ -119,7 +107,13 @@ function PositionSelector({
   )
 }
 
-export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps & { ref?: React.RefObject<LayoutPopoverHandle | null> }) {
+export function SqlToolbarPopover({ ref, databaseId, children }: {
+  databaseId: string
+  children: ReactNode
+} & { ref?: React.RefObject<{
+  open: () => void
+  close: () => void
+} | null> }) {
   const [open, setOpen] = useState(false)
 
   const store = databaseStore(databaseId)
@@ -140,26 +134,28 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <Tooltip open={open ? false : undefined}>
-        <PopoverTrigger asChild>
-          <TooltipTrigger asChild>
-            {children}
-          </TooltipTrigger>
-        </PopoverTrigger>
-        <TooltipContent side="bottom" className="font-medium">
-          <span className="flex items-center gap-2">
-            Layout Settings
-            <kbd className={`
-              rounded border border-border/50 bg-muted px-1.5 py-0.5 text-[10px]
-              text-muted-foreground
-            `}
-            >
-              <Ctrl userAgent={userAgent} />
-              ,
-            </kbd>
-          </span>
-        </TooltipContent>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <PopoverTrigger asChild>
+            <TooltipTrigger asChild>
+              {children}
+            </TooltipTrigger>
+          </PopoverTrigger>
+          <TooltipContent side="bottom" className="font-medium">
+            <span className="flex items-center gap-2">
+              Layout Settings
+              <kbd className={`
+                rounded border border-border/50 bg-muted px-1.5 py-0.5
+                text-[10px] text-muted-foreground
+              `}
+              >
+                <Ctrl userAgent={navigator.userAgent} />
+                ,
+              </kbd>
+            </span>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <PopoverContent
         className="w-88 border-border/50 p-0 shadow-xl backdrop-blur-sm"
         align="start"
@@ -191,13 +187,13 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
           <div className="space-y-1">
             <ToggleRow
               label="Chat Panel"
-              shortcut={<CtrlLetter userAgent={userAgent} letter="J" />}
+              shortcut={<CtrlLetter userAgent={navigator.userAgent} letter="J" />}
               checked={chatVisible}
               onCheckedChange={() => toggleChat(databaseId)}
             />
             <ToggleRow
               label="Results Panel"
-              shortcut={<ShiftCtrlLetter userAgent={userAgent} letter="R" />}
+              shortcut={<ShiftCtrlLetter userAgent={navigator.userAgent} letter="R" />}
               checked={resultsVisible}
               onCheckedChange={() => toggleResults(databaseId)}
             />
@@ -230,5 +226,3 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
     </Popover>
   )
 }
-
-LayoutPopover.displayName = 'LayoutPopover'

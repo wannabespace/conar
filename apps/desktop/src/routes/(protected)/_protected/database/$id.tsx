@@ -69,15 +69,12 @@ function DatabasePage() {
       dark:bg-neutral-950/60
     `}
     >
-      <DatabaseSidebar
-        className="w-16 transition-all duration-200"
-      />
+      <DatabaseSidebar className="w-16" />
       <div
         className={cn(
           `
             m-2 ml-0 flex h-[calc(100%-(--spacing(4)))]
             w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col
-            transition-all duration-200
           `,
         )}
       >
@@ -91,7 +88,7 @@ function DatabasePage() {
           </ResizablePanel>
           {loggerOpened && (
             <>
-              <ResizableHandle className="bg-body h-1!" />
+              <ResizableHandle className="h-1!" />
               <ResizablePanel
                 defaultSize={30}
                 minSize={10}

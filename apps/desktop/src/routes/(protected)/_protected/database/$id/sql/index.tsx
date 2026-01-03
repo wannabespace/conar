@@ -1,13 +1,13 @@
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect } from 'react'
-import { AppToolbar, useLayoutShortcuts } from '~/components/app-toolbar'
-import { databaseStore, toggleChat } from '~/entities/database'
+import { databaseStore } from '~/entities/database'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
+import { SqlToolbar } from './-components/sql-toolbar'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/sql/',
@@ -36,7 +36,6 @@ function DatabaseSqlPage() {
   const { database } = Route.useLoaderData()
   const { chatId } = Route.useSearch()
   const store = databaseStore(database.id)
-  const navigate = useNavigate()
 
   const { chatVisible, chatPosition } = useStore(store, s => ({
     chatVisible: s.layout.chatVisible,
@@ -50,26 +49,6 @@ function DatabaseSqlPage() {
     } satisfies typeof state))
   }, [chatId, store])
 
-  const handleNewChat = () => {
-    store.setState(state => ({
-      ...state,
-      lastOpenedChatId: null,
-    }))
-
-    if (!store.state.layout.chatVisible) {
-      toggleChat(database.id)
-    }
-    navigate({
-      to: '/database/$id/sql',
-      params: { id: database.id },
-    })
-  }
-
-  useLayoutShortcuts({
-    databaseId: database.id,
-    onNewChat: handleNewChat,
-  })
-
   const isChatRight = chatPosition === 'right'
   const direction = isChatRight ? 'horizontal' : 'vertical'
 
@@ -80,7 +59,7 @@ function DatabaseSqlPage() {
         backdrop-blur-sm
       `}
       >
-        <AppToolbar databaseId={database.id} onNewChat={handleNewChat} />
+        <SqlToolbar databaseId={database.id} />
       </div>
 
       <div className="min-h-0 flex-1">
