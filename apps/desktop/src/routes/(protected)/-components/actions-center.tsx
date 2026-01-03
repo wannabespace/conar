@@ -8,8 +8,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { DatabaseIcon, databasesCollection, databaseTablesAndSchemasQuery, prefetchDatabaseCore, useDatabaseLinkParams } from '~/entities/database'
-import { appStore } from '~/store'
-import { setIsOpen } from './actions-center-store'
+import { appStore, setActionsCenterIsOpen } from '~/store'
 
 function ActionsDatabaseTables({ database }: { database: typeof databases.$inferSelect }) {
   const { data: tablesAndSchemas } = useQuery({
@@ -22,7 +21,7 @@ function ActionsDatabaseTables({ database }: { database: typeof databases.$infer
     return null
 
   function onTableSelect(schema: string, table: string) {
-    setIsOpen(false)
+    setActionsCenterIsOpen(false)
     router.navigate({ to: '/database/$id/table', params: { id: database.id }, search: { schema, table } })
   }
 
@@ -50,7 +49,7 @@ function ActionsDatabase({ database }: { database: typeof databases.$inferSelect
   const params = useDatabaseLinkParams(database.id)
 
   function onDatabaseSelect(database: typeof databasesTable.$inferSelect) {
-    setIsOpen(false)
+    setActionsCenterIsOpen(false)
 
     prefetchDatabaseCore(database)
     router.navigate(params)
@@ -90,20 +89,20 @@ export function ActionsCenter() {
     if (!databases || databases.length === 0)
       return
 
-    setIsOpen(!isOpen)
+    setActionsCenterIsOpen(!isOpen)
   })
 
   const currentConnection = databases?.find(database => database.id === id)
 
   return (
-    <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
+    <CommandDialog open={isOpen} onOpenChange={setActionsCenterIsOpen}>
       <CommandInput placeholder="Type a command..." />
       <CommandList className="max-h-140">
         <CommandEmpty>No commands found.</CommandEmpty>
         <CommandGroup heading="Commands">
           <CommandItem
             onSelect={() => {
-              setIsOpen(false)
+              setActionsCenterIsOpen(false)
               router.navigate({ to: '/' })
             }}
           >
@@ -112,7 +111,7 @@ export function ActionsCenter() {
           </CommandItem>
           <CommandItem
             onSelect={() => {
-              setIsOpen(false)
+              setActionsCenterIsOpen(false)
               router.navigate({ to: '/create' })
             }}
           >

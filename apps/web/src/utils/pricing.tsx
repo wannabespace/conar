@@ -4,7 +4,6 @@ import { RiCircleLine, RiVipCrownLine } from '@remixicon/react'
 interface Feature {
   name: string
   description: string
-  included: boolean
 }
 
 export interface PricingPlan {
@@ -24,28 +23,24 @@ export const HOBBY_PLAN: PricingPlan = {
     monthly: 0,
     yearly: 0,
   },
-  description: 'Perfect for discover the app and explore the core features',
+  description: 'Perfect for discovering the app and exploring the core features',
   icon: RiCircleLine,
   features: [
     {
-      name: 'AI-Powered Data Filtering',
-      description: 'Ask AI to create filters for you instead of entering them manually',
-      included: true,
+      name: 'Cloud sync',
+      description: 'Sync connections across devices',
+    },
+    {
+      name: 'Data management',
+      description: 'View and browse data',
+    },
+    {
+      name: 'Limited AI',
+      description: 'Use AI to work with your data',
     },
     {
       name: 'Natural Language Queries',
       description: 'Ask questions in natural language and get instant SQL queries',
-      included: true,
-    },
-    {
-      name: 'Basic Data Management',
-      description: 'View and browse data with basic filtering capabilities',
-      included: true,
-    },
-    {
-      name: 'Cloud Synchronization',
-      description: 'Sync your connections with the cloud for backup',
-      included: true,
     },
   ],
 }
@@ -56,18 +51,20 @@ export const PRO_PLAN: PricingPlan = {
     monthly: 10,
     yearly: 100,
   },
-  description: 'Unlock more features to improve your experience',
+  description: 'Unlock advanced features and priority support for power users',
   icon: RiVipCrownLine,
   features: [
     {
-      name: 'Everything in Free',
+      name: 'Everything in Hobby',
       description: 'All features from the free plan included',
-      included: true,
     },
-    // {
-    //   name: 'Priority Support',
-    //   description: '24/7 priority email and chat support',
-    //   included: true,
-    // },
+    {
+      name: 'Custom AI Models',
+      description: 'Choose from multiple AI providers (OpenAI, Anthropic, Gemini, XAI)',
+    },
+    {
+      name: 'Advanced Query Optimization',
+      description: 'Get AI-powered suggestions to optimize your SQL queries',
+    },
   ],
 }
