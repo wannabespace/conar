@@ -14,3 +14,6 @@ export const DOWNLOAD_LINKS = {
     exe: 'https://download.conar.app/windows/nsis/x64',
   },
 } satisfies Partial<Record<OS, Record<string, string>>>
+
+export const NAVBAR_HEIGHT_BASE = 150
+export const NAVBAR_HEIGHT_SCROLLED = 60
