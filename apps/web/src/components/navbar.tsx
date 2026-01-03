@@ -9,9 +9,9 @@ import { RiDiscordLine, RiGithubFill, RiMoonLine, RiSunLine, RiTwitterXLine } fr
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
+import { NAVBAR_HEIGHT_BASE } from '~/constants'
 import { authClient } from '~/lib/auth'
 import { getRepoOptions } from '~/queries'
-import { NAVBAR_HEIGHT_BASE } from '~/routes/_layout'
 import { NavbarTextLogo } from './navbar-text-logo'
 
 const AppLogoMotion = motion.create(AppLogo)

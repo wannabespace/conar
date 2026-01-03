@@ -5,9 +5,7 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { Footer } from '~/components/footer'
 import { Navbar } from '~/components/navbar'
-import { NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED } from './layout-constants'
-
-export { NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED } from './layout-constants'
+import { NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED } from '~/constants'
 
 export const Route = createFileRoute('/_layout')({
   component: MainLayout,
