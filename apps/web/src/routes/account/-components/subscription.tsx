@@ -1,51 +1,13 @@
 import type { ReactNode } from 'react'
-import { uppercaseFirst } from '@conar/shared/utils/helpers'
-import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
+import type { PricingPlan } from '~/utils/pricing'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowUpLine, RiCircleLine, RiCloseLine, RiInformationLine, RiLoader4Fill, RiRefreshLine, RiVipCrownLine, RiWalletLine } from '@remixicon/react'
-import { format } from 'date-fns'
+import { RiArrowUpLine, RiCloseLine, RiLoader4Fill, RiRefreshLine, RiWalletLine } from '@remixicon/react'
 import { useBillingPortal, useCancelSubscription, useRestoreSubscription, useSubscription, useUpgradeSubscription } from '~/hooks/use-subscription'
-
-function DetailField({ label, value, className }: { label: string, value: string, className?: string }) {
-  return (
-    <div className="space-y-0.5">
-      <p className="text-xs text-muted-foreground">
-        {label}
-      </p>
-      <p className={cn('text-sm font-medium', className)}>
-        {value}
-      </p>
-    </div>
-  )
-}
-
-function SubscriptionBlock({
-  name,
-  description,
-}: { children: React.ReactNode, name: string, description: string }) {
-  return (
-    <div className="flex items-center gap-4">
-      <span className={`
-        flex size-8 shrink-0 items-center justify-center rounded-xl bg-muted
-      `}
-      >
-        <RiVipCrownLine className="size-5 text-muted-foreground" />
-      </span>
-      <div>
-        <AlertTitle className="text-xl font-bold">{name}</AlertTitle>
-        <AlertDescription className="text-sm text-nowrap text-muted-foreground">
-          {description}
-        </AlertDescription>
-      </div>
-    </div>
-  )
-}
-
-const formatDate = (date: Date | null | undefined) => date ? format(date, 'MMMM d, yyyy') : 'N/A'
+import { HOBBY_PLAN, PRO_PLAN } from '~/utils/pricing'
 
 export function Subscription() {
   const { subscription, isPending } = useSubscription()
@@ -57,6 +19,77 @@ export function Subscription() {
   const isActive = subscription?.status === 'active'
   const isTrialing = subscription?.status === 'trialing'
   const endDate = isTrialing && subscription?.trialEnd ? subscription?.trialEnd : subscription?.periodEnd
+
+  console.log(isActive, isTrialing, endDate)
+
+  const plans: (PricingPlan & {
+    footer?: ReactNode
+  })[] = [
+    HOBBY_PLAN,
+    {
+      ...PRO_PLAN,
+      footer: subscription
+        ? (
+            <div className="flex items-center gap-2">
+              <Button
+                size="xs"
+                variant="outline"
+                disabled={isOpening}
+                onClick={() => openBillingPortal()}
+              >
+                <LoadingContent loading={isOpening} loaderClassName="size-3.5">
+                  <RiWalletLine className="size-3.5" />
+                  Manage Subscription
+                </LoadingContent>
+              </Button>
+              {subscription.cancelAtPeriodEnd
+                ? (
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      disabled={isRestoring}
+                      onClick={() => restore()}
+                    >
+                      <LoadingContent loading={isRestoring} loaderClassName="size-3.5">
+                        <RiRefreshLine className="size-3.5" />
+                        Restore Subscription
+                      </LoadingContent>
+                    </Button>
+                  )
+                : (isActive || isTrialing) && (
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      disabled={isCancelling}
+                      onClick={() => cancel()}
+                    >
+                      <LoadingContent loading={isCancelling} loaderClassName="size-3.5">
+                        <RiCloseLine className="size-3.5" />
+                        Cancel Subscription
+                      </LoadingContent>
+                    </Button>
+                  )}
+            </div>
+          )
+        : (
+            <div className="flex items-center gap-4">
+              <Button
+                size="xs"
+                disabled={isUpgrading}
+                onClick={() => upgrade()}
+              >
+                <LoadingContent loading={isUpgrading} loaderClassName="size-3.5">
+                  <RiArrowUpLine className="size-3.5" />
+                  Upgrade to Pro
+                </LoadingContent>
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                7-day free trial included
+              </span>
+            </div>
+          ),
+    },
+  ]
 
   return (
     <Card>
@@ -77,71 +110,38 @@ export function Subscription() {
           lg:grid
         `}
         >
-          <div className={`
-            flex h-50 flex-col justify-between rounded-lg border p-4
-          `}
-          >
-            <div className="flex flex-col gap-4">
-              <span className={`
-                flex size-10 shrink-0 items-center justify-center rounded-md
-                bg-muted
+          {plans.map(plan => (
+            <div
+              key={plan.name}
+              className={`
+                flex h-50 flex-col justify-between rounded-lg border p-4
               `}
-              >
-                <RiCircleLine className="size-5 text-muted-foreground" />
-              </span>
-              <div>
-                <div className="flex items-center gap-2 text-lg">
-                  <span className="font-medium">Hobby</span>
-                  {!subscription && (
-                    <Badge variant="secondary">
-                      Current
-                    </Badge>
-                  )}
+            >
+              <div className="flex flex-col gap-4">
+                <span className={`
+                  flex size-10 shrink-0 items-center justify-center rounded-md
+                  bg-muted
+                `}
+                >
+                  <plan.icon className="size-5 text-muted-foreground" />
+                </span>
+                <div>
+                  <div className="flex items-center gap-2 text-lg">
+                    <span className="font-medium">{plan.name}</span>
+                    {subscription?.plan === plan.name.toLowerCase() && (
+                      <Badge variant="secondary">
+                        Current
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {plan.description}
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Perfect for discover the app and explore the core features
-                </p>
               </div>
+              <div>{plan.footer}</div>
             </div>
-            <div className="">
-              456
-            </div>
-          </div>
-          <Alert className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <span className={`
-                flex size-10 shrink-0 items-center justify-center rounded-md
-                bg-muted
-              `}
-              >
-                <RiVipCrownLine className="size-5 text-muted-foreground" />
-              </span>
-              <div>
-                <AlertTitle className="text-lg font-bold">Hobby</AlertTitle>
-                <AlertDescription className="text-sm text-muted-foreground">
-                  Perfect for discover the app and explore the core features
-                </AlertDescription>
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <Button
-                size="sm"
-                disabled={isUpgrading}
-                onClick={() => upgrade()}
-              >
-                <LoadingContent loading={isUpgrading}>
-                  <RiArrowUpLine className="size-4" />
-                  Upgrade to Pro
-                </LoadingContent>
-              </Button>
-              <span className={`
-                max-w-sm text-right text-xs text-balance text-muted-foreground
-              `}
-              >
-                7-day free trial included
-              </span>
-            </div>
-          </Alert>
+          ))}
         </div>
       </CardContent>
     </Card>

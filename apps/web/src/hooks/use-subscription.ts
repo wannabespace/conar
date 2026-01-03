@@ -35,32 +35,24 @@ export function useSubscription() {
 }
 
 export function useUpgradeSubscription() {
-  const queryClient = useQueryClient()
   const router = useRouter()
-  const { url: returnUrl } = router.buildLocation({ from: '/account' })
-  const { url: successUrl } = router.buildLocation({ from: '/account', search: { subscription: 'success' } })
-  const { url: cancelUrl } = router.buildLocation({ from: '/account', search: { subscription: 'cancel' } })
+  const { url: returnUrl } = router.buildLocation({ to: '/account' })
+  const { url: successUrl } = router.buildLocation({ to: '/account', search: { subscription: 'success' } })
+  const { url: cancelUrl } = router.buildLocation({ to: '/account', search: { subscription: 'cancel' } })
 
   const { mutate: upgrade, isPending: isUpgrading } = useMutation({
     mutationKey: ['subscription', 'upgrade'],
     mutationFn: async () => {
-      const { data, error } = await authClient.subscription.upgrade({
+      const { error } = await authClient.subscription.upgrade({
         plan: 'pro',
-        disableRedirect: true,
         returnUrl: returnUrl.href,
         successUrl: successUrl.href,
         cancelUrl: cancelUrl.href,
       })
 
       if (error) {
-        invalidateSubscriptionsQuery(queryClient)
         throw error
       }
-
-      return data.url!
-    },
-    onSuccess(url) {
-      window.open(url, '_blank')
     },
   })
 
@@ -73,12 +65,12 @@ export function useUpgradeSubscription() {
 export function useCancelSubscription() {
   const queryClient = useQueryClient()
   const router = useRouter()
-  const { url } = router.buildLocation({ from: '/account' })
+  const { url } = router.buildLocation({ to: '/account' })
 
   const { mutate: cancel, isPending: isCancelling } = useMutation({
     mutationKey: ['subscription', 'cancel'],
     mutationFn: async () => {
-      const { data, error } = await authClient.subscription.cancel({
+      const { error } = await authClient.subscription.cancel({
         returnUrl: url.href,
       })
 
@@ -86,8 +78,6 @@ export function useCancelSubscription() {
         invalidateSubscriptionsQuery(queryClient)
         throw error
       }
-
-      return data.url!
     },
   })
 
@@ -125,7 +115,7 @@ export function useRestoreSubscription() {
 
 export function useBillingPortal() {
   const router = useRouter()
-  const { url } = router.buildLocation({ from: '/account/billing' })
+  const { url } = router.buildLocation({ to: '/account' })
 
   const { mutate: openBillingPortal, isPending: isOpening } = useMutation({
     mutationKey: ['subscription', 'billingPortal'],

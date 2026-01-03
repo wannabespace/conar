@@ -1,4 +1,3 @@
-import { ACCOUNT_LINK } from '@conar/shared/constants'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
@@ -6,7 +5,7 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Skeleton } from '@conar/ui/components/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiExternalLinkLine, RiLogoutCircleRLine, RiUserLine } from '@remixicon/react'
+import { RiExternalLinkLine, RiLogoutCircleRLine } from '@remixicon/react'
 import { UserAvatar, useSignOut } from '~/entities/user'
 import { useSubscription } from '~/entities/user/hooks/use-subscription'
 
@@ -51,7 +50,7 @@ export function Profile({ className }: { className?: string }) {
             size="sm"
             asChild
           >
-            <a href={ACCOUNT_LINK} target="_blank">
+            <a href={`${import.meta.env.VITE_PUBLIC_WEB_URL}/account`} target="_blank">
               Account
               <RiExternalLinkLine className="size-3.5 text-muted-foreground" />
             </a>

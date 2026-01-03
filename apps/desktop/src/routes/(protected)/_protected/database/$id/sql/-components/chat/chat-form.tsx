@@ -18,7 +18,6 @@ import { TipTap } from '~/components/tiptap'
 import { databaseStore } from '~/entities/database'
 import { useSubscription } from '~/entities/user/hooks/use-subscription'
 import { orpcQuery } from '~/lib/orpc'
-import { appStore } from '~/store'
 import { Route } from '../..'
 import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
@@ -220,7 +219,7 @@ export function ChatForm() {
               variant="outline"
               size="xs"
               onClick={() => {
-                appStore.setState(state => ({ ...state, subscriptionModalIsOpen: true } satisfies typeof state))
+                // TODO: subs
               }}
             >
               upgrade

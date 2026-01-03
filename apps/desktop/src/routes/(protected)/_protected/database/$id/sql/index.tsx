@@ -6,7 +6,6 @@ import { type } from 'arktype'
 import { useEffect, useRef, useState } from 'react'
 import { databaseStore } from '~/entities/database'
 import { useSubscription } from '~/entities/user/hooks/use-subscription'
-import { appStore } from '~/store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
@@ -69,7 +68,7 @@ function DatabaseSqlPage() {
           isChatCollapsed={isChatCollapsed}
           onChatClick={() => {
             if (!subscription) {
-              appStore.setState(state => ({ ...state, subscriptionModalIsOpen: true } satisfies typeof state))
+              // TODO: subs
               return
             }
 

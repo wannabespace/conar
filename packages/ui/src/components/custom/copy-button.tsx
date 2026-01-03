@@ -7,17 +7,18 @@ import { ContentSwitch } from './content-switch'
 
 type Size = Extract<ComponentProps<typeof Button>['size'], `icon-${string}`>
 
-export function CopyButton({ text, copiedText, ...props }: { text: string, copiedText?: string, className?: string, size?: Size }) {
+export function CopyButton({ text, size = 'icon-sm', ...props }: { text: string, className?: string, size?: Size }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
-    copy(text, copiedText)
+    copy(text)
     setCopied(true)
   }
 
   return (
     <Button
       {...props}
+      size={size}
       variant="ghost"
       onClick={handleCopy}
     >

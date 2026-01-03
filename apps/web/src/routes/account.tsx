@@ -4,14 +4,14 @@ import { Button } from '@conar/ui/components/button'
 import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
 import { Separator } from '@conar/ui/components/separator'
 import { cn } from '@conar/ui/lib/utils'
-import { RiDashboard3Line, RiFileListLine, RiLogoutCircleLine, RiMoonLine, RiSunLine, RiUserLine } from '@remixicon/react'
+import { RiDashboard3Line, RiFileListLine, RiLogoutCircleLine, RiMoonLine, RiSunLine } from '@remixicon/react'
 import { createFileRoute, Link, Outlet, redirect, useMatches, useRouter } from '@tanstack/react-router'
 import { Footer } from '~/components/footer'
 import { NavbarTextLogo } from '~/components/navbar-text-logo'
 import { authClient, getSessionIsomorphic } from '~/lib/auth'
 
 export const Route = createFileRoute('/account')({
-  component: RouteComponent,
+  component: AccountLayout,
   loader: async () => {
     const { data } = await getSessionIsomorphic()
 
@@ -40,7 +40,7 @@ function SidebarLink({ active, ...props }: LinkProps & { active: boolean }) {
   )
 }
 
-function RouteComponent() {
+function AccountLayout() {
   const router = useRouter()
   const match = useMatches({
     select: matches => matches.map(match => match.routeId).at(-1),
@@ -49,23 +49,18 @@ function RouteComponent() {
 
   return (
     <div className={`
-      container mx-auto flex min-h-screen flex-col justify-between px-4 py-8
+      container mx-auto flex min-h-screen flex-col justify-between px-4
     `}
     >
-      <header
-        className={cn(`
-          mb-10 flex items-center justify-between px-4
-          sm:px-0
-        `)}
-      >
+      <header className="mb-10 flex h-15 items-center justify-between">
         <NavbarTextLogo to="/home" />
         <div className="flex flex-1 justify-center">
           <Link to="/home" className="text-primary">
             <AppLogo
               className={`
-                size-6
-                sm:size-8
-                lg:size-10
+                size-5
+                sm:size-6
+                lg:size-8
               `}
             />
           </Link>

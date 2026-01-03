@@ -6,14 +6,11 @@ import { Badge } from '@conar/ui/components/badge'
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
-import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { Linux } from '@conar/ui/components/icons/linux'
 import { Tooltip, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { copy } from '@conar/ui/lib/copy'
-import { RiAppleFill, RiCheckLine, RiFileCopyLine, RiTerminalLine, RiWindowsFill } from '@remixicon/react'
+import { RiAppleFill, RiTerminalLine, RiWindowsFill } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
 import { DownloadButton } from '~/components/download-button'
 import { DOWNLOAD_LINKS } from '~/constants'
 import { getOSIsomorphic } from '~/utils/os'
@@ -31,13 +28,6 @@ export const Route = createFileRoute('/_layout/download')({
 })
 
 function HomebrewInstall() {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = () => {
-    copy(BREW_INSTALL_COMMAND, 'Command copied to clipboard')
-    setCopied(true)
-  }
-
   if (os?.type !== 'macos') {
     return null
   }
@@ -82,21 +72,7 @@ function HomebrewInstall() {
             readOnly
           />
         </div>
-        <CopyButton text={BREW_INSTALL_COMMAND} copiedText="Command copied to clipboard" />
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          onClick={handleCopy}
-          className="shrink-0"
-        >
-          <ContentSwitch
-            active={copied}
-            onSwitchEnd={() => setCopied(false)}
-            activeContent={<RiCheckLine className="size-4 text-success" />}
-          >
-            <RiFileCopyLine className="size-4" />
-          </ContentSwitch>
-        </Button>
+        <CopyButton text={BREW_INSTALL_COMMAND} />
       </Card>
     </div>
   )

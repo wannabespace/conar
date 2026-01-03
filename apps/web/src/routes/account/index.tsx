@@ -1,4 +1,3 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { Subscription } from './-components/subscription'

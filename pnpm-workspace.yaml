@@ -14,7 +14,7 @@ catalog:
   '@ai-sdk/xai': ^2.0.42
   '@antfu/eslint-config': ^6.7.3
   '@base-ui/react': ^1.0.0
-  '@better-auth/stripe': ^1.4.9
+  '@better-auth/stripe': ^1.4.10
   '@clickhouse/client': ^1.15.0
   '@commitlint/cli': ^20.2.0
   '@commitlint/config-conventional': ^20.2.0
@@ -88,7 +88,7 @@ catalog:
   arkregex: ^0.0.5
   arktype: ^2.1.29
   babel-plugin-react-compiler: ^1.0.0
-  better-auth: ^1.4.9
+  better-auth: ^1.4.10
   better-auth-harmony: ^1.2.5
   class-variance-authority: ^0.7.1
   clsx: ^2.1.1

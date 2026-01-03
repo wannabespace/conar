@@ -4,8 +4,6 @@ export const SOCIAL_LINKS = {
   DISCORD: 'https://discord.gg/XweDPUVadR',
 } as const
 
-export const ACCOUNT_LINK = 'https://conar.app/account'
-
 export const SUPPORT_EMAIL = 'valerii.strilets@gmail.com'
 
 export const BREW_INSTALL_COMMAND = 'brew install --cask conar'
