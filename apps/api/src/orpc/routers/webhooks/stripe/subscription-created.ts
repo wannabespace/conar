@@ -4,10 +4,11 @@ import { eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
 import { db, subscriptions, users } from '~/drizzle'
 
-type SubscriptionCreatedEvent = Extract<Stripe.Event, { type: 'customer.subscription.created' }>
-
 export async function subscriptionCreated(event: Stripe.Event) {
-  const subscription = event.data.object as SubscriptionCreatedEvent['data']['object']
+  if (event.type !== 'customer.subscription.created')
+    return
+
+  const subscription = event.data.object
 
   const userId = subscription.metadata?.userId
 
@@ -30,7 +31,7 @@ export async function subscriptionCreated(event: Stripe.Event) {
     plan: 'pro',
     userId,
     stripeSubscriptionId: subscription.id,
-    status: subscription.status === 'trialing' ? 'trialing' : 'active',
+    status: subscription.status,
     periodStart,
     periodEnd,
     trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,

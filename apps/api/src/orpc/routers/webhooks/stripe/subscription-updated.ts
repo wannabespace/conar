@@ -2,13 +2,11 @@ import type Stripe from 'stripe'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
 
-type SubscriptionUpdatedEvent = Extract<Stripe.Event, { type: 'customer.subscription.updated' }>
-
 export async function subscriptionUpdated(event: Stripe.Event) {
   if (event.type !== 'customer.subscription.updated')
     return
 
-  const subscription = event.data.object as SubscriptionUpdatedEvent['data']['object']
+  const subscription = event.data.object
 
   const [existing] = await db
     .select({ id: subscriptions.id })

@@ -61,7 +61,7 @@ export const upgrade = orpc
         },
       ],
       subscription_data: {
-        // trial_period_days: 7,
+        trial_period_days: 7,
         metadata: {
           userId: user.id,
         },

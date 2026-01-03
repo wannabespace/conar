@@ -2,13 +2,11 @@ import type Stripe from 'stripe'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
 
-type SubscriptionDeletedEvent = Extract<Stripe.Event, { type: 'customer.subscription.deleted' }>
-
 export async function subscriptionDeleted(event: Stripe.Event) {
   if (event.type !== 'customer.subscription.deleted')
     return
 
-  const subscription = event.data.object as SubscriptionDeletedEvent['data']['object']
+  const subscription = event.data.object
 
   const [existing] = await db
     .select({ id: subscriptions.id })
@@ -26,7 +24,7 @@ export async function subscriptionDeleted(event: Stripe.Event) {
   await db
     .update(subscriptions)
     .set({
-      status: 'canceled' as const,
+      status: subscription.status,
       periodStart,
       periodEnd,
       trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,

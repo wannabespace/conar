@@ -56,7 +56,7 @@ export const PRO_PLAN: PricingPlan = {
     monthly: 10,
     yearly: 100,
   },
-  description: 'For developers who want to use more features',
+  description: 'Unlock more features to improve your experience',
   icon: RiVipCrownLine,
   features: [
     {

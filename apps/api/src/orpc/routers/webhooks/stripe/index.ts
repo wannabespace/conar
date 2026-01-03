@@ -5,7 +5,7 @@ import { orpc } from '~/orpc'
 import { subscriptionCreated } from './subscription-created'
 import { subscriptionDeleted } from './subscription-deleted'
 import { subscriptionUpdated } from './subscription-updated'
-import { validateRequest, validateSubscriptionPrices } from './validate'
+import { validateRequest } from './validate'
 
 const eventMap = new Map<Stripe.Event.Type, (event: Stripe.Event) => Promise<void>>([
   ['customer.subscription.created', subscriptionCreated],
@@ -18,7 +18,6 @@ export const stripe = orpc
   .handler(async ({ context }) => {
     try {
       const event = await validateRequest(context.request)
-      validateSubscriptionPrices(event)
 
       const handler = eventMap.get(event.type)
 

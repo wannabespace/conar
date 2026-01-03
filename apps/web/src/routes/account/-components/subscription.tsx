@@ -4,10 +4,12 @@ import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { Skeleton } from '@conar/ui/components/skeleton'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowUpLine, RiLoader4Fill, RiTimeLine, RiWalletLine } from '@remixicon/react'
+import { RiLoader4Fill, RiTimeLine, RiWalletLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
-import { format } from 'date-fns'
+import { format, formatDistanceToNow } from 'date-fns'
 import { useBillingPortal, useSubscription, useUpgradeSubscription } from '~/hooks/use-subscription'
 import { HOBBY_PLAN, PRO_PLAN } from '~/utils/pricing'
 
@@ -24,48 +26,82 @@ export function Subscription() {
     HOBBY_PLAN,
     {
       ...PRO_PLAN,
-      footer: subscription
+      footer: isPending
         ? (
             <div className="flex items-center gap-2">
-              <Button
-                size="xs"
-                variant="outline"
-                disabled={isOpening}
-                onClick={() => openBillingPortal()}
-              >
-                <LoadingContent loading={isOpening} loaderClassName="size-3.5">
-                  <RiWalletLine className="size-3.5" />
-                  Manage Subscription
-                </LoadingContent>
-              </Button>
-              {(subscription.cancelAtPeriodEnd || subscription.cancelAt) && (
+              <Skeleton
+                className="h-5 w-30"
+              />
+              <Skeleton
+                className="h-5 w-30"
+              />
+            </div>
+          )
+        : subscription
+          ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  size="xs"
+                  variant="outline"
+                  disabled={isOpening}
+                  onClick={() => openBillingPortal()}
+                >
+                  <LoadingContent loading={isOpening} loaderClassName="size-3.5">
+                    <RiWalletLine className="size-3.5" />
+                    Manage Subscription
+                  </LoadingContent>
+                </Button>
                 <span className={`
                   flex items-center gap-1 text-xs text-muted-foreground
                 `}
                 >
                   <RiTimeLine className="size-3.5" />
-                  {subscription.cancelAt ? `Cancels at ${format(subscription.cancelAt, 'MMM d, yyyy')}` : 'Cancels at period end'}
+                  {(subscription.cancelAtPeriodEnd || subscription.cancelAt)
+                    ? subscription.cancelAt ? `Cancels at ${format(subscription.cancelAt, 'MMM d, yyyy')}` : 'Cancels at period end'
+                    : subscription.status === 'trialing' && subscription.trialEnd
+                      ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span>
+                                  Free trial ends in
+                                  {' '}
+                                  {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <span>
+                                  Your trial will end on
+                                  {' '}
+                                  {format(subscription.trialEnd, 'MMM d, yyyy h:mm a')}
+                                </span>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )
+                      : (subscription.periodEnd
+                          ? `Next payment on ${format(subscription.periodEnd, 'MMM d, yyyy')}`
+                          : 'No upcoming payment'
+                        )}
                 </span>
-              )}
-            </div>
-          )
-        : (
-            <div className="flex items-center gap-4">
-              <Button
-                size="xs"
-                disabled={isUpgrading}
-                onClick={() => upgrade()}
-              >
-                <LoadingContent loading={isUpgrading} loaderClassName="size-3.5">
-                  <RiArrowUpLine className="size-3.5" />
-                  Upgrade to Pro
-                </LoadingContent>
-              </Button>
-              <span className="text-xs text-muted-foreground">
-                7-day free trial included
-              </span>
-            </div>
-          ),
+              </div>
+            )
+          : (
+              <div className="flex items-center gap-4">
+                <Button
+                  size="xs"
+                  disabled={isUpgrading}
+                  onClick={() => upgrade()}
+                >
+                  <LoadingContent loading={isUpgrading} loaderClassName="size-3.5">
+                    Upgrade to Pro
+                  </LoadingContent>
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  7-day free trial included
+                </span>
+              </div>
+            ),
     },
   ]
 
@@ -106,7 +142,7 @@ export function Subscription() {
                 <div>
                   <div className="flex items-center gap-2 text-lg">
                     <span className="font-medium">{plan.name}</span>
-                    {subscription?.plan === plan.name.toLowerCase() && (
+                    {!isPending && ((subscription?.plan === plan.name.toLowerCase() || (!subscription && plan.name === 'Hobby'))) && (
                       <Badge variant="secondary">
                         Current
                       </Badge>
