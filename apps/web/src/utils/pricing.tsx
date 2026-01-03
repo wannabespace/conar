@@ -27,20 +27,16 @@ export const HOBBY_PLAN: PricingPlan = {
   icon: RiCircleLine,
   features: [
     {
+      name: 'Limited AI',
+      description: 'Use AI to work with your data',
+    },
+    {
       name: 'Cloud sync',
       description: 'Sync connections across devices',
     },
     {
       name: 'Data management',
       description: 'View and browse data',
-    },
-    {
-      name: 'Limited AI',
-      description: 'Use AI to work with your data',
-    },
-    {
-      name: 'Natural Language Queries',
-      description: 'Ask questions in natural language and get instant SQL queries',
     },
   ],
 }
@@ -51,7 +47,7 @@ export const PRO_PLAN: PricingPlan = {
     monthly: 10,
     yearly: 100,
   },
-  description: 'Unlock advanced features and priority support for power users',
+  description: 'Unlock more features to improve your experience',
   icon: RiVipCrownLine,
   features: [
     {
@@ -59,12 +55,12 @@ export const PRO_PLAN: PricingPlan = {
       description: 'All features from the free plan included',
     },
     {
-      name: 'Custom AI Models',
-      description: 'Choose from multiple AI providers (OpenAI, Anthropic, Gemini, XAI)',
+      name: 'Advanced AI',
+      description: 'More AI features and unlimited queries',
     },
     {
-      name: 'Advanced Query Optimization',
-      description: 'Get AI-powered suggestions to optimize your SQL queries',
+      name: 'More data management',
+      description: 'Unlock all data management features',
     },
   ],
 }

@@ -1,5 +1,5 @@
 {
-  "id": "28d4e82c-565d-437d-b603-c135e6930232",
+  "id": "b88bd226-c8f7-42db-b5d8-68430018e80f",
   "prevId": "513f83e6-7458-4852-924a-f4861ae461fd",
   "version": "7",
   "dialect": "postgresql",
@@ -1268,6 +1268,13 @@
           "notNull": false,
           "default": "'incomplete'"
         },
+        "period": {
+          "name": "period",
+          "type": "subscription_period",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
         "period_start": {
           "name": "period_start",
           "type": "timestamp with time zone",
@@ -1346,6 +1353,14 @@
       "values": [
         "cloud",
         "cloud_without_password"
+      ]
+    },
+    "public.subscription_period": {
+      "name": "subscription_period",
+      "schema": "public",
+      "values": [
+        "monthly",
+        "yearly"
       ]
     }
   },

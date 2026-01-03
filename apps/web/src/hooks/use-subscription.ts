@@ -24,12 +24,12 @@ export function useUpgradeSubscription() {
 
   const { mutate: upgrade, isPending: isUpgrading } = useMutation({
     mutationKey: ['subscription', 'upgrade'],
-    mutationFn: async () => {
+    mutationFn: async (isYearly: boolean = false) => {
       const result = await orpc.account.subscription.upgrade({
         returnUrl: returnUrl.href,
         successUrl: successUrl.href,
         cancelUrl: cancelUrl.href,
-        isYearly: false,
+        isYearly,
       })
 
       location.assign(result.url)

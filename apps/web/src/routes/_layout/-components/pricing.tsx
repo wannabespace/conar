@@ -203,7 +203,7 @@ export function Pricing({ className }: PricingSectionProps) {
               </div>
             </div>
             <div className={`
-              mt-auto mb-5 p-6 pt-0
+              mt-auto p-6 pt-0
               sm:p-8
             `}
             >

@@ -1,4 +1,6 @@
+CREATE TYPE "public"."subscription_period" AS ENUM('monthly', 'yearly');--> statement-breakpoint
 ALTER TABLE "subscriptions" ADD COLUMN "user_id" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "subscriptions" ADD COLUMN "period" "subscription_period" NOT NULL;--> statement-breakpoint
 ALTER TABLE "subscriptions" ADD COLUMN "cancel_at" timestamp with time zone;--> statement-breakpoint
 ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "subscriptions" DROP COLUMN "reference_id";--> statement-breakpoint

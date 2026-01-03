@@ -10,8 +10,19 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiLoader4Fill, RiTimeLine, RiWalletLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { format, formatDistanceToNow } from 'date-fns'
+import { useState } from 'react'
 import { useBillingPortal, useSubscription, useUpgradeSubscription } from '~/hooks/use-subscription'
 import { HOBBY_PLAN, PRO_PLAN } from '~/utils/pricing'
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    currencyDisplay: 'narrowSymbol',
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+  }).format(amount)
+}
 
 export function Subscription() {
   const { subscription, isPending } = useSubscription()
@@ -19,6 +30,11 @@ export function Subscription() {
   const returnUrl = router.buildLocation({ to: '/account' }).url.href
   const { openBillingPortal, isOpening } = useBillingPortal({ returnUrl })
   const { upgrade, isUpgrading } = useUpgradeSubscription()
+  const [isYearly, setIsYearly] = useState(false)
+
+  if (subscription && subscription.period === 'yearly' && !isYearly) {
+    setIsYearly(true)
+  }
 
   const plans: (PricingPlan & {
     footer?: ReactNode
@@ -91,7 +107,7 @@ export function Subscription() {
                 <Button
                   size="xs"
                   disabled={isUpgrading}
-                  onClick={() => upgrade()}
+                  onClick={() => upgrade(isYearly)}
                 >
                   <LoadingContent loading={isUpgrading} loaderClassName="size-3.5">
                     Upgrade to Pro
@@ -107,16 +123,48 @@ export function Subscription() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          Subscription
-          {isPending && (
-            <RiLoader4Fill
-              className={cn('size-4 animate-spin')}
-            />
-          )}
-        </CardTitle>
-        <CardDescription>Manage your subscription</CardDescription>
+      <CardHeader className="flex-row justify-between space-y-0">
+        <div className="flex flex-col">
+          <CardTitle className="flex items-center gap-2">
+            Subscription
+            {isPending && (
+              <RiLoader4Fill
+                className={cn('size-4 animate-spin')}
+              />
+            )}
+          </CardTitle>
+          <CardDescription>Manage your subscription</CardDescription>
+        </div>
+        {!subscription && !isPending && (
+          <div className="flex items-center">
+            <div className={`
+              inline-flex items-center rounded-full border bg-card p-1 shadow-sm
+            `}
+            >
+              {['Monthly', 'Yearly'].map(period => (
+                <button
+                  type="button"
+                  key={period}
+                  onClick={() => setIsYearly(period === 'Yearly')}
+                  className={cn(
+                    `
+                      rounded-full px-3 py-1 text-sm font-medium transition-all
+                      duration-100
+                    `,
+                    (period === 'Yearly') === isYearly
+                      ? 'bg-primary text-primary-foreground'
+                      : `
+                        text-muted-foreground
+                        hover:text-foreground
+                      `,
+                  )}
+                >
+                  {period}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <div className={`
@@ -141,7 +189,19 @@ export function Subscription() {
                 </span>
                 <div>
                   <div className="flex items-center gap-2 text-lg">
-                    <span className="font-medium">{plan.name}</span>
+                    <span className="font-medium">
+                      {plan.name}
+                      {' '}
+                      {plan.price.monthly > 0 && (
+                        <span className={`
+                          text-sm font-normal text-muted-foreground
+                        `}
+                        >
+                          {formatCurrency(isYearly ? plan.price.yearly : plan.price.monthly)}
+                          {isYearly ? '/year' : '/month'}
+                        </span>
+                      )}
+                    </span>
                     {!isPending && ((subscription?.plan === plan.name.toLowerCase() || (!subscription && plan.name === 'Hobby'))) && (
                       <Badge variant="secondary">
                         Current
