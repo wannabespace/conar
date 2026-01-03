@@ -4,19 +4,25 @@ import { type } from 'arktype'
 import { toast } from 'sonner'
 import { getEditorQueries } from '~/entities/database/utils/helpers'
 
-export const tabType = type({
+const tabType = type({
   table: 'string',
   schema: 'string',
   preview: 'boolean',
 })
 
-export const queryToRunType = type({
+const queryToRunType = type({
   startLineNumber: 'number',
   endLineNumber: 'number',
   query: 'string',
 })
 
-const pageStoreType = type({
+const layoutSettingsType = type({
+  chatVisible: 'boolean',
+  resultsVisible: 'boolean',
+  chatPosition: '"left" | "right"',
+})
+
+export const databaseStoreType = type({
   lastOpenedPage: 'string | null',
   lastOpenedChatId: 'string | null',
   lastOpenedTable: type({
@@ -41,9 +47,10 @@ const pageStoreType = type({
     schema: 'string',
     table: 'string',
   }).array(),
+  layout: layoutSettingsType,
 })
 
-const defaultState: typeof pageStoreType.infer = {
+const defaultState: typeof databaseStoreType.infer = {
   lastOpenedPage: null,
   lastOpenedChatId: null,
   lastOpenedTable: null,
@@ -73,9 +80,14 @@ const defaultState: typeof pageStoreType.infer = {
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
   pinnedTables: [],
+  layout: {
+    chatVisible: true,
+    chatPosition: 'right',
+    resultsVisible: true,
+  },
 }
 
-const storesMap = new Map<string, Store<typeof pageStoreType.infer>>()
+const storesMap = new Map<string, Store<typeof databaseStoreType.infer>>()
 
 export function databaseStore(id: string) {
   if (storesMap.has(id)) {
@@ -87,7 +99,7 @@ export function databaseStore(id: string) {
   persistedState.sql ||= defaultState.sql
   persistedState.editorQueries ||= getEditorQueries(persistedState.sql)
 
-  const state = pageStoreType(Object.assign(
+  const state = databaseStoreType(Object.assign(
     {},
     defaultState,
     persistedState,
@@ -97,7 +109,7 @@ export function databaseStore(id: string) {
     console.error('Invalid database store state', state.summary)
   }
 
-  const store = new Store<typeof pageStoreType.infer>(
+  const store = new Store<typeof databaseStoreType.infer>(
     state instanceof type.errors ? defaultState : state,
   )
 
@@ -121,6 +133,7 @@ export function databaseStore(id: string) {
       tablesSearch: currentVal.tablesSearch,
       tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
       pinnedTables: currentVal.pinnedTables,
+      layout: currentVal.layout,
     } satisfies Omit<typeof currentVal, 'queriesToRun' | 'files' | 'editorQueries'>))
   })
 
@@ -247,4 +260,37 @@ export function cleanupPinnedTables(
 
     return state
   })
+}
+
+export function toggleChat(id: string) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    layout: {
+      ...state.layout,
+      chatVisible: !state.layout.chatVisible,
+    },
+  } satisfies typeof state))
+}
+
+export function toggleResults(id: string) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    layout: {
+      ...state.layout,
+      resultsVisible: !state.layout.resultsVisible,
+    },
+  } satisfies typeof state))
+}
+
+export function setChatPosition(id: string, position: typeof layoutSettingsType.infer['chatPosition']) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    layout: {
+      ...state.layout,
+      chatPosition: position,
+    },
+  } satisfies typeof state))
 }

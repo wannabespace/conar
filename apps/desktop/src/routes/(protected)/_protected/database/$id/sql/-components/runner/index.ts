@@ -1,12 +1,12 @@
 import type { databases } from '~/drizzle'
-import type { queryToRunType } from '~/entities/database'
+import type { databaseStoreType } from '~/entities/database'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { databaseStore, executeAndLogSql, hasDangerousSqlKeywords } from '~/entities/database'
 
 export * from './runner'
 
-function transformResult({ rows, query, startLineNumber, endLineNumber}: { rows: unknown[] } & Pick<typeof queryToRunType.infer, 'query' | 'startLineNumber' | 'endLineNumber'>) {
+function transformResult({ rows, query, startLineNumber, endLineNumber}: { rows: unknown[] } & Pick<typeof databaseStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: rows as Record<string, unknown>[],
     error: null,
@@ -16,7 +16,7 @@ function transformResult({ rows, query, startLineNumber, endLineNumber}: { rows:
   }
 }
 
-function transformError({ error, query, startLineNumber, endLineNumber }: { error: unknown } & Pick<typeof queryToRunType.infer, 'query' | 'startLineNumber' | 'endLineNumber'>) {
+function transformError({ error, query, startLineNumber, endLineNumber }: { error: unknown } & Pick<typeof databaseStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: null,
     error: error instanceof Error ? error.message : String(error),
