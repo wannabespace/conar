@@ -33,6 +33,7 @@ catalog:
   '@orpc/contract': ^1.13.1
   '@orpc/server': ^1.13.1
   '@orpc/tanstack-query': ^1.13.1
+  '@paralleldrive/cuid2': ^3.0.4
   '@playwright/test': ^1.57.0
   '@posthog/ai': ^7.3.0
   '@radix-ui/react-accordion': ^1.2.12
@@ -135,6 +136,7 @@ catalog:
   posthog-js: ^1.310.1
   posthog-node: ^5.18.0
   react: ^19.2.3
+  react-day-picker: ^9.11.2
   react-dom: ^19.2.3
   react-grab: ^0.0.94
   react-markdown: ^10.1.0
