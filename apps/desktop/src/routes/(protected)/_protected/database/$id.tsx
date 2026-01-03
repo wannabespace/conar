@@ -42,10 +42,7 @@ function DatabasePage() {
     select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
   const store = databaseStore(database.id)
-  const { loggerOpened, sidebarVisible } = useStore(store, state => ({
-    loggerOpened: state.loggerOpened,
-    sidebarVisible: state.layout.sidebarVisible,
-  }))
+  const loggerOpened = useStore(store, state => state.loggerOpened)
 
   useEffect(() => {
     if (currentPageId) {
@@ -67,22 +64,21 @@ function DatabasePage() {
   }
 
   return (
-    <div className="flex bg-gray-100 dark:bg-neutral-950/60">
+    <div className={`
+      flex bg-gray-100
+      dark:bg-neutral-950/60
+    `}
+    >
       <DatabaseSidebar
-        className={cn(
-          'w-16 transition-all duration-200',
-          {
-            'w-0 overflow-hidden opacity-0': !sidebarVisible,
-          },
-        )}
+        className="w-16 transition-all duration-200"
       />
       <div
         className={cn(
-          'm-2 flex flex-col transition-all duration-200',
-          {
-            'ml-0 h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))]': sidebarVisible,
-            'h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(4)))]': !sidebarVisible,
-          },
+          `
+            m-2 ml-0 flex h-[calc(100%-(--spacing(4)))]
+            w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col
+            transition-all duration-200
+          `,
         )}
       >
         <ResizablePanelGroup

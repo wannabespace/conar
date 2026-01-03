@@ -6,13 +6,12 @@ import { cn } from '@conar/ui/lib/utils'
 import {
   RiAddLine,
   RiChat3Line,
-  RiLayoutLeftLine,
   RiSettings4Line,
   RiTableLine,
 } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useRef } from 'react'
-import { databaseStore, toggleChat, toggleResults, toggleSidebar } from '~/entities/database'
+import { databaseStore, toggleChat, toggleResults } from '~/entities/database'
 import { LayoutPopover } from './layout-popover'
 
 interface AppToolbarProps {
@@ -23,8 +22,7 @@ interface AppToolbarProps {
 
 export function AppToolbar({ databaseId, className, onNewChat }: AppToolbarProps) {
   const store = databaseStore(databaseId)
-  const { sidebarVisible, chatVisible, resultsVisible } = useStore(store, state => ({
-    sidebarVisible: state.layout.sidebarVisible,
+  const { chatVisible, resultsVisible } = useStore(store, state => ({
     chatVisible: state.layout.chatVisible,
     resultsVisible: state.layout.resultsVisible,
   }))
@@ -47,31 +45,14 @@ export function AppToolbar({ databaseId, className, onNewChat }: AppToolbarProps
         <TooltipContent side="bottom">
           <span className="flex items-center gap-2">
             New Chat
-            <CtrlLetter userAgent={navigator.userAgent} letter="N" className="text-[10px] opacity-60" />
+            <CtrlLetter
+              userAgent={navigator.userAgent}
+              letter="N"
+              className="text-[10px] opacity-60"
+            />
           </span>
         </TooltipContent>
       </Tooltip>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            className={cn('size-7', sidebarVisible && 'bg-accent')}
-            onClick={() => toggleSidebar(databaseId)}
-            aria-label="Toggle sidebar"
-          >
-            <RiLayoutLeftLine className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">
-          <span className="flex items-center gap-2">
-            Toggle Sidebar
-            <CtrlLetter userAgent={navigator.userAgent} letter="B" className="text-[10px] opacity-60" />
-          </span>
-        </TooltipContent>
-      </Tooltip>
-
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -87,7 +68,11 @@ export function AppToolbar({ databaseId, className, onNewChat }: AppToolbarProps
         <TooltipContent side="bottom">
           <span className="flex items-center gap-2">
             Toggle Chat
-            <CtrlLetter userAgent={navigator.userAgent} letter="J" className="text-[10px] opacity-60" />
+            <CtrlLetter
+              userAgent={navigator.userAgent}
+              letter="J"
+              className="text-[10px] opacity-60"
+            />
           </span>
         </TooltipContent>
       </Tooltip>
@@ -107,7 +92,11 @@ export function AppToolbar({ databaseId, className, onNewChat }: AppToolbarProps
         <TooltipContent side="bottom">
           <span className="flex items-center gap-2">
             Toggle Results
-            <ShiftCtrlLetter userAgent={navigator.userAgent} letter="R" className="text-[10px] opacity-60" />
+            <ShiftCtrlLetter
+              userAgent={navigator.userAgent}
+              letter="R"
+              className="text-[10px] opacity-60"
+            />
           </span>
         </TooltipContent>
       </Tooltip>

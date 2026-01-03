@@ -1,39 +1,22 @@
 import type { ReactNode } from 'react'
-import type { LayoutPreset, SetPositionParams } from '~/entities/database/store'
+import type {
+  layoutSettingsType,
+} from '~/entities/database'
 import { Button } from '@conar/ui/components/button'
 import { Ctrl, CtrlLetter, ShiftCtrlLetter } from '@conar/ui/components/custom/shortcuts'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@conar/ui/components/dropdown-menu'
-import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Separator } from '@conar/ui/components/separator'
 import { Switch } from '@conar/ui/components/switch'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import {
-  RiCheckLine,
-  RiDeleteBinLine,
-  RiEditLine,
-  RiMoreLine,
-} from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useImperativeHandle, useState } from 'react'
 import {
-  applyLayout,
   databaseStore,
-  deleteLayout,
-  renameLayout,
   setChatPosition,
-  setResultsPosition,
   toggleChat,
   toggleResults,
-  toggleSidebar,
 } from '~/entities/database'
 
 const userAgent = navigator.userAgent
@@ -46,199 +29,6 @@ export interface LayoutPopoverHandle {
 interface LayoutPopoverProps {
   databaseId: string
   children: ReactNode
-}
-
-interface LayoutThumbnailProps {
-  layout: LayoutPreset
-  isActive: boolean
-}
-
-function LayoutThumbnail({ layout, isActive }: LayoutThumbnailProps) {
-  const {
-    sidebarVisible: showSidebar,
-    chatVisible: showChat,
-    resultsVisible: showResults,
-    chatPosition,
-  } = layout.settings
-  const chatRight = chatPosition === 'right'
-
-  return (
-    <div
-      className={cn(
-        `
-          relative aspect-[4/3] w-full cursor-pointer rounded-lg border-2 p-1.5
-          transition-all duration-200
-        `,
-        isActive
-          ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20'
-          : `
-            border-border/50 bg-card/50
-            hover:border-border hover:bg-card hover:shadow-sm
-          `,
-      )}
-    >
-      <div className="flex h-full gap-1">
-        {showSidebar && (
-          <div className="w-2 rounded-sm bg-primary/60" />
-        )}
-
-        <div className={cn('flex flex-1 gap-1', chatRight
-          ? 'flex-row'
-          : `flex-col`)}
-        >
-          <div className={cn('flex flex-col gap-1', chatRight
-            ? 'flex-1'
-            : `flex-1`)}
-          >
-            <div className={cn(
-              'rounded-sm bg-primary/40',
-              showResults ? 'flex-1' : 'h-full',
-            )}
-            />
-            {showResults && (
-              <div className="flex-1 rounded-sm bg-primary/20" />
-            )}
-          </div>
-
-          {showChat && (
-            <div className={cn(
-              'rounded-sm bg-blue-500/40',
-              chatRight ? 'w-1/3' : 'h-1/3',
-            )}
-            />
-          )}
-        </div>
-      </div>
-
-      {isActive && (
-        <div className={`
-          absolute -top-1 -right-1 flex size-4 items-center justify-center
-          rounded-full bg-primary shadow-sm
-        `}
-        >
-          <RiCheckLine className="size-2.5 text-primary-foreground" />
-        </div>
-      )}
-    </div>
-  )
-}
-
-interface LayoutPresetItemProps {
-  databaseId: string
-  layout: LayoutPreset
-  isActive: boolean
-}
-
-function LayoutPresetItem({ databaseId, layout, isActive }: LayoutPresetItemProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [editName, setEditName] = useState(layout.name)
-
-  const handleRename = () => {
-    if (editName.trim() && editName !== layout.name) {
-      renameLayout(databaseId, layout.id, editName.trim())
-    }
-    setIsEditing(false)
-  }
-
-  const handleDelete = () => {
-    deleteLayout(databaseId, layout.id)
-  }
-
-  return (
-    <div className="group relative">
-      <button
-        type="button"
-        className={`
-          w-full rounded-lg text-left transition-all duration-200
-          hover:scale-[1.02]
-          focus:outline-none
-          focus-visible:ring-2 focus-visible:ring-ring
-          active:scale-[0.98]
-        `}
-        onClick={() => applyLayout(databaseId, layout.id)}
-      >
-        <LayoutThumbnail layout={layout} isActive={isActive} />
-      </button>
-
-      <div className="mt-2 flex items-center justify-between px-0.5">
-        {isEditing
-          ? (
-              <Input
-                value={editName}
-                onChange={e => setEditName(e.target.value)}
-                onBlur={handleRename}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter')
-                    handleRename()
-                  if (e.key === 'Escape') {
-                    setEditName(layout.name)
-                    setIsEditing(false)
-                  }
-                }}
-                className={`
-                  h-6 border-input bg-background px-2 text-xs font-medium
-                  focus:border-primary
-                `}
-                autoFocus
-              />
-            )
-          : (
-              <span className={cn(
-                'flex-1 truncate text-xs font-medium transition-colors',
-                isActive
-                  ? 'text-primary'
-                  : `
-                    text-muted-foreground
-                    group-hover:text-foreground
-                  `,
-              )}
-              >
-                {layout.name}
-              </span>
-            )}
-
-        {!layout.isBuiltIn && !isEditing && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="icon-xs"
-                variant="ghost"
-                className={cn(
-                  `
-                    size-5 opacity-0 transition-all duration-200
-                    hover:bg-muted
-                  `,
-                  'group-hover:scale-100 group-hover:opacity-100',
-                )}
-              >
-                <RiMoreLine className="size-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-32">
-              <DropdownMenuItem
-                onClick={() => setIsEditing(true)}
-                className="cursor-pointer"
-              >
-                <RiEditLine className="mr-2 size-3.5" />
-                Rename
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleDelete}
-                className={`
-                  cursor-pointer text-destructive
-                  focus:bg-destructive/10 focus:text-destructive
-                `}
-              >
-                <RiDeleteBinLine className="mr-2 size-3.5" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
-    </div>
-  )
 }
 
 function ToggleRow({
@@ -334,21 +124,13 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
 
   const store = databaseStore(databaseId)
   const {
-    sidebarVisible,
     chatVisible,
     resultsVisible,
     chatPosition,
-    resultsPosition,
-    layouts,
-    activeLayoutId,
   } = useStore(store, s => ({
-    sidebarVisible: s.layout.sidebarVisible,
     chatVisible: s.layout.chatVisible,
     resultsVisible: s.layout.resultsVisible,
     chatPosition: s.layout.chatPosition,
-    resultsPosition: s.layout.resultsPosition,
-    layouts: s.layouts,
-    activeLayoutId: s.layout.activeLayoutId,
   }))
 
   useImperativeHandle(ref, () => ({
@@ -394,16 +176,6 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
               Layout Presets
             </h4>
           </div>
-          <div className="grid grid-cols-4 gap-3">
-            {layouts.map(layout => (
-              <LayoutPresetItem
-                key={layout.id}
-                databaseId={databaseId}
-                layout={layout}
-                isActive={layout.id === activeLayoutId}
-              />
-            ))}
-          </div>
         </div>
 
         <Separator className="bg-border/50" />
@@ -417,12 +189,6 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
             Panel Visibility
           </h4>
           <div className="space-y-1">
-            <ToggleRow
-              label="Primary Sidebar"
-              shortcut={<CtrlLetter userAgent={userAgent} letter="B" />}
-              checked={sidebarVisible}
-              onCheckedChange={() => toggleSidebar(databaseId)}
-            />
             <ToggleRow
               label="Chat Panel"
               shortcut={<CtrlLetter userAgent={userAgent} letter="J" />}
@@ -456,16 +222,7 @@ export function LayoutPopover({ ref, databaseId, children }: LayoutPopoverProps 
                 { value: 'right', label: 'Right' },
                 { value: 'bottom', label: 'Bottom' },
               ]}
-              onChange={v => setChatPosition({ id: databaseId, position: v as SetPositionParams['position'] })}
-            />
-            <PositionSelector
-              label="Results Position"
-              value={resultsPosition}
-              options={[
-                { value: 'bottom', label: 'Bottom' },
-                { value: 'right', label: 'Right' },
-              ]}
-              onChange={v => setResultsPosition({ id: databaseId, position: v as SetPositionParams['position'] })}
+              onChange={v => setChatPosition(databaseId, v as typeof layoutSettingsType.infer['chatPosition'])}
             />
           </div>
         </div>

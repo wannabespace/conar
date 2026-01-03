@@ -75,7 +75,11 @@ function DatabaseSqlPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-9 shrink-0 items-center border-b bg-background/50 px-2 backdrop-blur-sm">
+      <div className={`
+        flex h-9 shrink-0 items-center border-b bg-background/50 px-2
+        backdrop-blur-sm
+      `}
+      >
         <AppToolbar databaseId={database.id} onNewChat={handleNewChat} />
       </div>
 

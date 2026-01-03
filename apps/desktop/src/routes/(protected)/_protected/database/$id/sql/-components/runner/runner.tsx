@@ -57,12 +57,11 @@ export function Runner() {
   )
   const [isFormatting, setIsFormatting] = useState(false)
   const store = databaseStore(database.id)
-  const { selectedLines, editorQueries, sql, resultsVisible, resultsPosition } = useStore(store, state => ({
+  const { selectedLines, editorQueries, sql, resultsVisible } = useStore(store, state => ({
     selectedLines: state.selectedLines,
     editorQueries: state.editorQueries,
     sql: state.sql,
     resultsVisible: state.layout.resultsVisible,
-    resultsPosition: state.layout.resultsPosition,
   }))
 
   useTrackSelectedLinesChange()
@@ -112,9 +111,6 @@ export function Runner() {
     }
   }
 
-  const isResultsRight = resultsPosition === 'right'
-  const direction = isResultsRight ? 'horizontal' : 'vertical'
-
   return (
     <RunnerContext.Provider
       value={{
@@ -123,13 +119,13 @@ export function Runner() {
       }}
     >
       <ResizablePanelGroup
-        autoSaveId={`sql-layout-${direction}`}
-        direction={direction}
+        autoSaveId={`sql-layout-${database.id}`}
+        direction="vertical"
         className="h-full"
       >
         <ResizablePanel
           minSize={20}
-          defaultSize={resultsVisible ? (isResultsRight ? 70 : 50) : 100}
+          defaultSize={resultsVisible ? 70 : 100}
         >
           <CardHeader className="h-14 bg-card py-3">
             <CardTitle className="flex items-center justify-between gap-2">
@@ -144,7 +140,11 @@ export function Runner() {
                     >
                       <RiStarLine />
                       Saved
-                      <span className="flex h-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs">
+                      <span className={`
+                        flex h-5 items-center justify-center rounded-full
+                        bg-accent px-1.5 text-xs
+                      `}
+                      >
                         {queriesCount}
                       </span>
                     </Button>
@@ -180,6 +180,7 @@ export function Runner() {
                 >
                   <RiPlayFill />
                   Run
+                  {' '}
                   {selectedLines.length > 0 ? 'selected' : 'all'}
                   {selectedLines.length > 0 && (
                     <NumberFlow
@@ -196,7 +197,11 @@ export function Runner() {
           </CardHeader>
           <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
             <RunnerEditor />
-            <span className="pointer-events-none absolute right-6 bottom-2 flex flex-col items-end text-xs text-muted-foreground">
+            <span className={`
+              pointer-events-none absolute right-6 bottom-2 flex flex-col
+              items-end text-xs text-muted-foreground
+            `}
+            >
               <span className="flex items-center gap-1">
                 <Kbd asChild>
                   <CtrlLetter letter="K" userAgent={navigator.userAgent} />
@@ -221,7 +226,7 @@ export function Runner() {
             <ResizableHandle withHandle />
             <ResizablePanel
               minSize={20}
-              defaultSize={isResultsRight ? 30 : 50}
+              defaultSize={30}
             >
               <RunnerResults />
             </ResizablePanel>
