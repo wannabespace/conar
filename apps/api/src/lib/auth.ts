@@ -1,9 +1,9 @@
-import type { Auth, BetterAuthPlugin, User } from 'better-auth'
+import type { Auth, BetterAuthOptions, User } from 'better-auth'
 import { PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { consola } from 'consola'
 import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
@@ -33,35 +33,6 @@ async function loopsUpdateUser(user: User) {
     }
     throw error
   }
-}
-
-/**
- * Plugin to prevent setting the "set-cookie" header in responses.
- * We use it to prevent the cookie from being set in the desktop app because it uses bearer token instead of cookies.
- */
-function noSetCookiePlugin() {
-  return {
-    id: 'no-set-cookie',
-    hooks: {
-      after: [
-        {
-          matcher: ctx => !!ctx.request?.headers.get('x-desktop'),
-          handler: createAuthMiddleware(async (ctx) => {
-            const headers = ctx.context.responseHeaders
-
-            if (headers) {
-              const setCookies = headers.get('set-cookie')
-
-              if (!setCookies)
-                return
-
-              headers.delete('set-cookie')
-            }
-          }),
-        },
-      ],
-    },
-  } satisfies BetterAuthPlugin
 }
 
 export const auth: Auth = betterAuth({
@@ -96,7 +67,6 @@ export const auth: Auth = betterAuth({
     }),
     lastLoginMethod(),
     emailHarmony(),
-    noSetCookiePlugin(),
     anonymous(),
   ],
   user: {
@@ -114,9 +84,6 @@ export const auth: Auth = betterAuth({
         required: false,
       },
     },
-  },
-  account: {
-    skipStateCookieCheck: true,
   },
   databaseHooks: {
     user: {
@@ -184,4 +151,4 @@ export const auth: Auth = betterAuth({
       clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
-})
+} satisfies BetterAuthOptions)

@@ -1,5 +1,3 @@
-import type { auth } from '@conar/api/src/lib/auth'
-import { inferAdditionalFields } from 'better-auth/client/plugins'
 import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { toast } from 'sonner'
@@ -38,7 +36,6 @@ export const authClient = createAuthClient({
   baseURL: apiUrl,
   basePath: '/auth',
   plugins: [
-    inferAdditionalFields<typeof auth>(),
     bearer(),
   ],
   fetchOptions: {

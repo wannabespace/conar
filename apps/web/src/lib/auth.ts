@@ -1,14 +1,12 @@
-import type { auth } from '@conar/api/src/lib/auth'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequestHeaders } from '@tanstack/react-start/server'
-import { inferAdditionalFields, lastLoginMethodClient, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
+import { lastLoginMethodClient, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_PUBLIC_API_URL,
   basePath: '/auth',
   plugins: [
-    inferAdditionalFields<typeof auth>(),
     organizationClient(),
     twoFactorClient(),
     magicLinkClient(),
