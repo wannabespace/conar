@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@conar/ui/components/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAddLine, RiDeleteBin7Line, RiHistoryLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
@@ -206,22 +207,29 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                                     />
                                   )}
                                 </span>
-                                <Button
-                                  variant="ghost"
-                                  size="icon-xs"
-                                  className={`
-                                    -mr-1 opacity-0 transition-none
-                                    group-hover:opacity-100
-                                    hover:text-destructive
-                                  `}
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    removeChat(chat)
-                                  }}
-                                >
-                                  <RiDeleteBin7Line className="size-3.5" />
-                                </Button>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon-xs"
+                                        className={`
+                                          -mr-1 opacity-0 transition-none
+                                          group-hover:opacity-100
+                                          hover:text-destructive
+                                        `}
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          e.stopPropagation()
+                                          removeChat(chat)
+                                        }}
+                                      >
+                                        <RiDeleteBin7Line className="size-3.5" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Delete Chat</TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               </Link>
                             </DropdownMenuItem>
                           ))}
