@@ -1,7 +1,7 @@
 import type { Column } from '../utils/table'
 import { useMutation } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
-import { getEditableValue } from '../lib/render'
+import { getEditableValue } from '../utils/render'
 import { CellContext } from './cell-context'
 
 export function TableCellProvider({

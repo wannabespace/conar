@@ -16,7 +16,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
-import { databaseStore } from '~/entities/database'
+import { databaseStore } from '~/entities/database/store'
 import { formatSql } from '~/lib/formatter'
 import { sqlLogsStore } from '../sql'
 

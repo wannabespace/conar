@@ -5,7 +5,7 @@ import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databasesCollection } from '~/entities/database'
+import { databasesCollection } from '~/entities/database/sync'
 
 interface RenameConnectionDialogProps {
   ref?: React.RefObject<{

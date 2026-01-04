@@ -1,5 +1,5 @@
 import type { databases } from '~/drizzle'
-import type { DatabaseMutationMetadata } from '~/entities/database'
+import type { DatabaseMutationMetadata } from '~/entities/database/sync'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
@@ -10,7 +10,10 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { databasesCollection, executeSql } from '~/entities/database'
+import { executeSql } from '~/entities/database/sql'
+import {
+  databasesCollection,
+} from '~/entities/database/sync'
 
 export function PasswordForm({ database }: { database: typeof databases.$inferSelect }) {
   const router = useRouter()
@@ -56,9 +59,9 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
   })
 
   return (
-    <div className="min-h-[inherit] h-screen flex flex-col justify-center">
-      <div className="w-full flex flex-col gap-6 max-w-xl mx-auto py-10 px-6">
-        <div className="flex items-center gap-2 w-full">
+    <div className="flex h-screen min-h-[inherit] flex-col justify-center">
+      <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-6 py-10">
+        <div className="flex w-full items-center gap-2">
           <Button
             type="button"
             variant="link"
@@ -70,7 +73,7 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
           </Button>
         </div>
         <form
-          className="flex items-center w-full justify-center"
+          className="flex w-full items-center justify-center"
           onSubmit={(e) => {
             e.preventDefault()
             savePassword(password)
@@ -103,7 +106,7 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-2 top-1/2 size-7 -translate-y-1/2"
+                    className="absolute top-1/2 right-2 size-7 -translate-y-1/2"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >

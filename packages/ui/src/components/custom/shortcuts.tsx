@@ -43,3 +43,13 @@ export function ShiftCtrlEnter({ userAgent, className, ...props }: ComponentProp
     </kbd>
   )
 }
+
+export function ShiftCtrlLetter({ userAgent, letter, className, ...props }: ComponentProps<'kbd'> & { userAgent: string, letter: string }) {
+  return (
+    <kbd className={cn('flex items-center text-xs', className)} {...props}>
+      <Ctrl userAgent={userAgent} />
+      <RiArrowUpLine className="size-3" />
+      {letter}
+    </kbd>
+  )
+}

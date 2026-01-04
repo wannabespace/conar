@@ -1,4 +1,4 @@
-import type { constraintsType, tablesAndSchemasType } from '~/entities/database'
+import type { constraintsType, tablesAndSchemasType } from '~/entities/database/sql'
 import type { columnType } from '~/entities/database/sql/columns'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
@@ -10,7 +10,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
 import { useEffect, useEffectEvent, useMemo, useState } from 'react'
 import { animationHooks } from '~/enter'
-import { databaseConstraintsQuery, databaseTableColumnsQuery, databaseTablesAndSchemasQuery, prefetchDatabaseCore, ReactFlowNode } from '~/entities/database'
+import { ReactFlowNode } from '~/entities/database/components'
+import { databaseConstraintsQuery, databaseTableColumnsQuery, databaseTablesAndSchemasQuery } from '~/entities/database/queries'
+import { prefetchDatabaseCore } from '~/entities/database/utils'
 import { getEdges, getLayoutElements, getNodes } from './-lib'
 
 export const Route = createFileRoute(
