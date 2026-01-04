@@ -14,7 +14,7 @@ import { checkForUpdates, updatesStore } from '~/updates-observer'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
 
-export const Route = createFileRoute('/(protected)/_protected/')({
+export const Route = createFileRoute('/_protected/')({
   component: DashboardPage,
   head: () => ({
     meta: [{ title: title('Dashboard') }],

@@ -6,7 +6,7 @@ import { Switch } from '@conar/ui/components/switch'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute(
-  '/(protected)/_protected/database/$id/settings/',
+  '/_protected/database/$id/settings/',
 )({
   component: DatabaseSettingsPage,
   loader: ({ context }) => ({ database: context.database }),

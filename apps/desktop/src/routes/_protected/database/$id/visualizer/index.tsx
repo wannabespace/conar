@@ -16,7 +16,7 @@ import { prefetchDatabaseCore } from '~/entities/database/utils'
 import { getEdges, getLayoutElements, getNodes } from './-lib'
 
 export const Route = createFileRoute(
-  '/(protected)/_protected/database/$id/visualizer/',
+  '/_protected/database/$id/visualizer/',
 )({
   component: VisualizerPage,
   loader: ({ context }) => {

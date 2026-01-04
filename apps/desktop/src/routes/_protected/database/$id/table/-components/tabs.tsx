@@ -110,7 +110,7 @@ function SortableTab({
   onFocus: (ref: RefObject<HTMLDivElement | null>) => void
 }) {
   const router = useRouter()
-  const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
+  const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const ref = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(ref, 'full')
 
@@ -165,7 +165,7 @@ export function TablesTabs({
   database: typeof databases.$inferSelect
   className?: string
 }) {
-  const { schema: schemaParam, table: tableParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
+  const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const router = useRouter()
   const store = databaseStore(database.id)
   const tabs = useStore(store, state => state.tabs)

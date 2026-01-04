@@ -21,7 +21,7 @@ import { useTableColumns } from './-queries/use-columns-query'
 import { createPageStore, PageStoreContext } from './-store'
 
 export const Route = createFileRoute(
-  '/(protected)/_protected/database/$id/table/',
+  '/_protected/database/$id/table/',
 )({
   validateSearch: type({
     'schema?': 'string',

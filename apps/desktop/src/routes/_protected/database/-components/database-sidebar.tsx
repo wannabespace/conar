@@ -233,10 +233,10 @@ function MainLinks() {
     }
   }, [store, lastOpenedTable, tableParam, schemaParam])
 
-  const isActiveSql = match === '/(protected)/_protected/database/$id/sql/'
-  const isActiveTables = match === '/(protected)/_protected/database/$id/table/'
-  const isActiveEnums = match === '/(protected)/_protected/database/$id/enums/'
-  const isActiveVisualizer = match === '/(protected)/_protected/database/$id/visualizer/'
+  const isActiveSql = match === '/_protected/database/$id/sql/'
+  const isActiveTables = match === '/_protected/database/$id/table/'
+  const isActiveEnums = match === '/_protected/database/$id/enums/'
+  const isActiveVisualizer = match === '/_protected/database/$id/visualizer/'
 
   const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
 

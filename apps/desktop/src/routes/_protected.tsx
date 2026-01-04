@@ -7,7 +7,7 @@ import { useQueriesSync } from '~/entities/query/sync'
 import { authClient } from '~/lib/auth'
 import { ActionsCenter } from './-components/actions-center'
 
-export const Route = createFileRoute('/(protected)/_protected')({
+export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
 })
 

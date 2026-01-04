@@ -108,7 +108,7 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
           ? { connectionString: prepareConnectionStringToCloud(m.changes.connectionString, m.modified.syncType) }
           : {}),
       })))
-    router.invalidate({ filter: r => r.routeId === '/(protected)/_protected/database/$id' })
+    router.invalidate({ filter: r => r.routeId === '/_protected/database/$id' })
   },
   onDelete: async ({ transaction }) => {
     await orpc.databases.remove(transaction.mutations.map(m => ({ id: m.key })))

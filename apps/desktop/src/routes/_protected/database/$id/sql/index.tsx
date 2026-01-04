@@ -10,7 +10,7 @@ import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
 export const Route = createFileRoute(
-  '/(protected)/_protected/database/$id/sql/',
+  '/_protected/database/$id/sql/',
 )({
   component: DatabaseSqlPage,
   validateSearch: type({

@@ -24,7 +24,7 @@ import { StepSave } from './-components/step-save'
 import { StepType } from './-components/step-type'
 
 export const Route = createFileRoute(
-  '/(protected)/_protected/create/',
+  '/_protected/create/',
 )({
   component: CreateConnectionPage,
   head: () => ({

@@ -170,7 +170,7 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
 export function TablesTree({ className, search }: { className?: string, search?: string }) {
   const { database } = Route.useRouteContext()
   const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas({ database })
-  const { schema: schemaParam } = useSearch({ from: '/(protected)/_protected/database/$id/table/' })
+  const { schema: schemaParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const store = databaseStore(database.id)
   const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const pinnedTables = useStore(store, state => state.pinnedTables)

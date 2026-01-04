@@ -14,7 +14,7 @@ import { lastOpenedDatabases, prefetchDatabaseCore } from '~/entities/database/u
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
 
-export const Route = createFileRoute('/(protected)/_protected/database/$id')({
+export const Route = createFileRoute('/_protected/database/$id')({
   component: DatabasePage,
   beforeLoad: async ({ params }) => {
     const database = databasesCollection.get(params.id)
@@ -36,7 +36,7 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
 })
 
 function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
-  return routesIds.find(route => route.includes('/(protected)/_protected/database/$id/')) as typeof databaseStoreType.infer['lastOpenedPage']
+  return routesIds.find(route => route.includes('/_protected/database/$id/')) as typeof databaseStoreType.infer['lastOpenedPage']
 }
 
 function DatabasePage() {

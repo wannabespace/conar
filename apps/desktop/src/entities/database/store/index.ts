@@ -24,7 +24,7 @@ const layoutSettingsType = type({
 })
 
 export const databaseStoreType = type({
-  lastOpenedPage: 'string | null' as type.cast<(Extract<keyof FileRoutesById, `/(protected)/_protected/database/$id/${string}`> | null)>,
+  lastOpenedPage: 'string | null' as type.cast<(Extract<keyof FileRoutesById, `/_protected/database/$id/${string}`> | null)>,
   lastOpenedChatId: 'string | null',
   lastOpenedTable: type({
     schema: 'string',
