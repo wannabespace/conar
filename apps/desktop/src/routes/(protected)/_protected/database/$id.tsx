@@ -1,11 +1,12 @@
 import type { databaseStoreType } from '~/entities/database/store'
 import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@conar/shared/utils/title'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { cn } from '@conar/ui/lib/utils'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
+import { useDefaultLayout } from 'react-resizable-panels'
 import { QueryLogger } from '~/entities/database/components'
 import { databaseStore } from '~/entities/database/store'
 import { databasesCollection } from '~/entities/database/sync'
@@ -61,6 +62,11 @@ function DatabasePage() {
       lastOpenedDatabases.set([database.id, ...last.filter(dbId => dbId !== database.id)].slice(0, 3))
   }, [database.id])
 
+  const { defaultLayout, onLayoutChange } = useDefaultLayout({
+    id: `logger-layout-${database.id}`,
+    storage: localStorage,
+  })
+
   if (database.isPasswordExists && !database.isPasswordPopulated) {
     return <PasswordForm database={database} />
   }
@@ -81,20 +87,21 @@ function DatabasePage() {
         )}
       >
         <ResizablePanelGroup
-          direction="vertical"
+          orientation="vertical"
           className="min-h-0 flex-1"
-          autoSaveId={`logger-layout-${database.id}`}
+          defaultLayout={defaultLayout}
+          onLayoutChange={onLayoutChange}
         >
-          <ResizablePanel defaultSize={70} minSize={50}>
+          <ResizablePanel defaultSize="70%" minSize="50%">
             <Outlet />
           </ResizablePanel>
           {loggerOpened && (
             <>
-              <ResizableHandle className="h-1!" />
+              <ResizableSeparator className="h-1" />
               <ResizablePanel
-                defaultSize={30}
-                minSize={10}
-                maxSize={50}
+                defaultSize="30%"
+                minSize="10%"
+                maxSize="50%"
                 className="overflow-auto rounded-lg border bg-background"
               >
                 <QueryLogger database={database} />

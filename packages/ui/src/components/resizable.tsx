@@ -1,28 +1,16 @@
-import type * as React from 'react'
-import { cn } from '@conar/ui/lib/utils'
-import { GripVerticalIcon } from 'lucide-react'
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
+import { RiDraggable } from '@remixicon/react'
+import * as ResizablePrimitive from 'react-resizable-panels'
+import { cn } from '../lib/utils'
 
 function ResizablePanelGroup({
   className,
-  direction = 'horizontal',
-  autoSaveId,
   ...props
-}: Omit<React.ComponentProps<typeof PanelGroup>, 'direction'> & {
-  direction?: 'horizontal' | 'vertical'
-  autoSaveId?: string
-}) {
+}: ResizablePrimitive.GroupProps) {
   return (
-    <PanelGroup
+    <ResizablePrimitive.Group
       data-slot="resizable-panel-group"
-      data-orientation={direction}
-      direction={direction}
-      autoSaveId={autoSaveId}
       className={cn(
-        `
-          flex size-full
-          data-[orientation=vertical]:flex-col
-        `,
+        'size-full',
         className,
       )}
       {...props}
@@ -32,38 +20,29 @@ function ResizablePanelGroup({
 
 function ResizablePanel({
   ...props
-}: React.ComponentProps<typeof Panel>) {
-  return <Panel data-slot="resizable-panel" {...props} />
+}: ResizablePrimitive.PanelProps) {
+  return <ResizablePrimitive.Panel data-slot="resizable-panel" {...props} />
 }
 
-function ResizableHandle({
+function ResizableSeparator({
   withHandle,
   className,
   ...props
-}: React.ComponentProps<typeof PanelResizeHandle> & {
+}: ResizablePrimitive.SeparatorProps & {
   withHandle?: boolean
 }) {
   return (
-    <PanelResizeHandle
-      data-slot="resizable-handle"
+    <ResizablePrimitive.Separator
+      data-slot="resizable-separator"
       className={cn(
         `
-          relative flex w-px cursor-col-resize items-center justify-center
-          bg-border
-          after:absolute after:inset-y-0 after:left-1/2 after:w-1
-          after:-translate-x-1/2
-          focus-visible:ring-1 focus-visible:ring-ring
-          focus-visible:ring-offset-1 focus-visible:outline-hidden
-        `,
-        `
-          [[data-orientation=vertical]>&]:h-px
-          [[data-orientation=vertical]>&]:w-full
-          [[data-orientation=vertical]>&]:cursor-row-resize
-          [[data-orientation=vertical]>&]:after:left-0
-          [[data-orientation=vertical]>&]:after:h-1
-          [[data-orientation=vertical]>&]:after:w-full
-          [[data-orientation=vertical]>&]:after:translate-x-0
-          [[data-orientation=vertical]>&]:after:-translate-y-1/2
+          group relative min-h-1 min-w-1 shrink-0 rounded-sm delay-75
+          duration-75
+          focus-visible:bg-primary/40
+          data-[separator='active']:bg-primary/30
+          data-[separator='hover']:bg-primary/50
+          data-[separator='hover']:aria-[orientation='horizontal']:cursor-row-resize
+          data-[separator='hover']:aria-[orientation='vertical']:cursor-col-resize
         `,
         className,
       )}
@@ -71,16 +50,25 @@ function ResizableHandle({
     >
       {withHandle && (
         <div className={`
-          z-10 flex h-4 w-3 items-center justify-center rounded-xs border
-          bg-border
-          in-data-[orientation=vertical]:rotate-90
+          pointer-events-none absolute top-1/2 left-1/2 -translate-1/2
+          rounded-xs bg-border delay-75 duration-75
+          group-aria-[orientation='horizontal']:px-0.5
+          group-aria-[orientation='horizontal']:py-px
+          group-aria-[orientation='vertical']:px-0.5
+          group-aria-[orientation='vertical']:py-px
+          group-data-[separator='active']:bg-primary
+          group-data-[separator='hover']:bg-primary
         `}
         >
-          <GripVerticalIcon className="size-2.5" />
+          <RiDraggable className={`
+            size-2.5
+            group-aria-[orientation='horizontal']:rotate-90
+          `}
+          />
         </div>
       )}
-    </PanelResizeHandle>
+    </ResizablePrimitive.Separator>
   )
 }
 
-export { ResizableHandle, ResizablePanel, ResizablePanelGroup }
+export { ResizablePanel, ResizablePanelGroup, ResizableSeparator }
