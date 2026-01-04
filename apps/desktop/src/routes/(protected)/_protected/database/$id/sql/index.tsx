@@ -50,7 +50,6 @@ function DatabaseSqlPage() {
   }, [chatId, store])
 
   const isChatRight = chatPosition === 'right'
-  const direction = isChatRight ? 'horizontal' : 'vertical'
 
   return (
     <div className="flex h-full flex-col">
@@ -64,8 +63,8 @@ function DatabaseSqlPage() {
 
       <div className="min-h-0 flex-1">
         <ResizablePanelGroup
-          autoSaveId={`sql-layout-main-${direction}`}
-          direction={direction}
+          autoSaveId="sql-layout-main"
+          direction="horizontal"
           className="h-full"
         >
           <ResizablePanel
@@ -78,9 +77,10 @@ function DatabaseSqlPage() {
 
           {chatVisible && (
             <>
-              <ResizableHandle className={isChatRight
-                ? 'w-1 bg-transparent'
-                : `h-1 bg-transparent`}
+              <ResizableHandle
+                className={isChatRight
+                  ? 'w-1 bg-transparent'
+                  : `h-1 bg-transparent`}
               />
               <ResizablePanel
                 defaultSize={30}

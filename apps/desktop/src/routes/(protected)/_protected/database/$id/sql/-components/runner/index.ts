@@ -6,7 +6,7 @@ import { databaseStore, executeAndLogSql, hasDangerousSqlKeywords } from '~/enti
 
 export * from './runner'
 
-function transformResult({ rows, query, startLineNumber, endLineNumber}: { rows: unknown[] } & Pick<typeof databaseStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
+function transformResult({ rows, query, startLineNumber, endLineNumber }: { rows: unknown[] } & Pick<typeof databaseStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: rows as Record<string, unknown>[],
     error: null,
