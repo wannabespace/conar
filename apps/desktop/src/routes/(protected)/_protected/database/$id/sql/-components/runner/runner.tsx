@@ -7,7 +7,7 @@ import { Kbd } from '@conar/ui/components/kbd'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import NumberFlow from '@number-flow/react'
-import { RiBrush2Line, RiCheckLine, RiPlayFill, RiStarLine } from '@remixicon/react'
+import { RiBrush2Line, RiCheckLine, RiPlayFill, RiSettings3Line, RiStarLine } from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
@@ -24,6 +24,7 @@ import { RunnerEditor } from './runner-editor'
 import { RunnerQueries } from './runner-queries'
 import { RunnerResults } from './runner-results'
 import { RunnerSaveDialog } from './runner-save-dialog'
+import { RunnerSettings } from './runner-settings'
 
 function useTrackSelectedLinesChange() {
   const { database } = Route.useRouteContext()
@@ -130,7 +131,14 @@ export function Runner() {
         >
           <CardHeader className="h-14 bg-card py-3">
             <CardTitle className="flex items-center justify-between gap-2">
-              SQL Queries Runner
+              <div className="flex items-center gap-2">
+                SQL Runner
+                <RunnerSettings>
+                  <Button variant="ghost" size="icon-sm">
+                    <RiSettings3Line />
+                  </Button>
+                </RunnerSettings>
+              </div>
               <div className="flex gap-2">
                 <Popover>
                   <PopoverTrigger asChild>

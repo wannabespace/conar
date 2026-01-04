@@ -7,7 +7,6 @@ import { useEffect } from 'react'
 import { databaseStore } from '~/entities/database/store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
-import { SqlToolbar } from './-components/sql-toolbar'
 
 export const Route = createFileRoute(
   '/(protected)/_protected/database/$id/sql/',
@@ -32,6 +31,31 @@ export const Route = createFileRoute(
   }),
 })
 
+function ChatPanel() {
+  return (
+    <ResizablePanel
+      defaultSize={30}
+      minSize={15}
+      maxSize={50}
+      className="rounded-lg border bg-background"
+    >
+      <Chat className="h-full" />
+    </ResizablePanel>
+  )
+}
+
+function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
+  return (
+    <ResizablePanel
+      defaultSize={chatVisible ? 70 : 100}
+      minSize={30}
+      className="rounded-lg border bg-background"
+    >
+      <Runner />
+    </ResizablePanel>
+  )
+}
+
 function DatabaseSqlPage() {
   const { database } = Route.useLoaderData()
   const { chatId } = Route.useSearch()
@@ -49,51 +73,35 @@ function DatabaseSqlPage() {
     } satisfies typeof state))
   }, [chatId, store])
 
-  const isChatRight = chatPosition === 'right'
-
   return (
-    <div className="flex h-full flex-col">
-      <div className={`
-        flex h-9 shrink-0 items-center border-b bg-background/50 px-2
-        backdrop-blur-sm
-      `}
-      >
-        <SqlToolbar databaseId={database.id} />
-      </div>
-
-      <div className="min-h-0 flex-1">
-        <ResizablePanelGroup
-          autoSaveId="sql-layout-main"
-          direction="horizontal"
-          className="h-full"
-        >
-          <ResizablePanel
-            defaultSize={chatVisible ? 70 : 100}
-            minSize={30}
-            className="m-1 mr-0 flex flex-col rounded-lg border bg-background"
-          >
-            <Runner />
-          </ResizablePanel>
-
-          {chatVisible && (
+    <ResizablePanelGroup
+      autoSaveId="sql-layout-main"
+      direction="horizontal"
+      className="flex h-full"
+    >
+      {chatVisible
+        ? (
             <>
-              <ResizableHandle
-                className={isChatRight
-                  ? 'w-1 bg-transparent'
-                  : `h-1 bg-transparent`}
-              />
-              <ResizablePanel
-                defaultSize={30}
-                minSize={15}
-                maxSize={50}
-                className="m-1 rounded-lg border bg-background"
-              >
-                <Chat className="h-full" />
-              </ResizablePanel>
+              {chatPosition === 'left'
+                ? (
+                    <>
+                      <ChatPanel key="chat" />
+                      <ResizableHandle className="w-1 bg-transparent" />
+                      <RunnerPanel key="runner" />
+                    </>
+                  )
+                : (
+                    <>
+                      <RunnerPanel key="runner" />
+                      <ResizableHandle className="w-1 bg-transparent" />
+                      <ChatPanel key="chat" />
+                    </>
+                  )}
             </>
+          )
+        : (
+            <RunnerPanel key="runner" chatVisible={false} />
           )}
-        </ResizablePanelGroup>
-      </div>
-    </div>
+    </ResizablePanelGroup>
   )
 }
