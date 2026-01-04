@@ -20,14 +20,11 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ThemeToggle } from '~/components/theme-toggle'
-import {
-  DatabaseIcon,
-  databasesCollection,
-  databaseStore,
-  lastOpenedDatabases,
-  useDatabaseLinkParams,
-  useLastOpenedDatabases,
-} from '~/entities/database'
+import { DatabaseIcon } from '~/entities/database/components'
+import { useDatabaseLinkParams } from '~/entities/database/hooks'
+import { databaseStore } from '~/entities/database/store'
+import { databasesCollection } from '~/entities/database/sync'
+import { lastOpenedDatabases, useLastOpenedDatabases } from '~/entities/database/utils'
 import { UserButton } from '~/entities/user'
 import { orpcQuery } from '~/lib/orpc'
 import { actionsCenterStore } from '~/routes/(protected)/-components/actions-center'

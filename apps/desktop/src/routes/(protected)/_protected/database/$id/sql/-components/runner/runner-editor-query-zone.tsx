@@ -9,7 +9,7 @@ import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
 import { useIsFetching } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
-import { databaseStore } from '~/entities/database'
+import { databaseStore } from '~/entities/database/store'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 

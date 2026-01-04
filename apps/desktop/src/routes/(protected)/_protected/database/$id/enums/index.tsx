@@ -14,7 +14,7 @@ import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiListIndefinite, RiLi
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
-import { useDatabaseEnums, useDatabaseTablesAndSchemas } from '~/entities/database'
+import { useDatabaseEnums, useDatabaseTablesAndSchemas } from '~/entities/database/queries'
 
 const MotionCard = motion.create(Card)
 

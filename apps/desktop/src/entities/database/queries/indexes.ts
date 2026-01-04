@@ -1,6 +1,6 @@
 import type { databases } from '~/drizzle'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { indexesQuery } from '../sql/indexes'
+import { indexesQuery } from '../sql/index'
 
 export function databaseIndexesQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
