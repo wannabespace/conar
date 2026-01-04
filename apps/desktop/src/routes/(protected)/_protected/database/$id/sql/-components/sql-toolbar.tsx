@@ -4,17 +4,16 @@ import { CtrlLetter, ShiftCtrlLetter } from '@conar/ui/components/custom/shortcu
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import {
-  RiAddLine,
   RiChat3Line,
   RiSettings4Line,
   RiTableLine,
 } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useRef } from 'react'
-import { databaseStore, toggleChat, toggleResults } from '~/entities/database'
+import { databaseStore, toggleChat, toggleResults } from '~/entities/database/store'
 import { SqlToolbarPopover } from './sql-toolbar-popover'
 
-export function SqlToolbar({ databaseId, className, onNewChat }: {
+export function SqlToolbar({ databaseId, className, onNewChat: _onNewChat }: {
   databaseId: string
   className?: string
   onNewChat?: () => void
@@ -28,29 +27,6 @@ export function SqlToolbar({ databaseId, className, onNewChat }: {
 
   return (
     <div className={cn('flex items-center gap-0.5', className)}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            className="size-7"
-            onClick={onNewChat}
-            aria-label="New chat"
-          >
-            <RiAddLine className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">
-          <span className="flex items-center gap-2">
-            New Chat
-            <CtrlLetter
-              userAgent={navigator.userAgent}
-              letter="N"
-              className="text-[10px] opacity-60"
-            />
-          </span>
-        </TooltipContent>
-      </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

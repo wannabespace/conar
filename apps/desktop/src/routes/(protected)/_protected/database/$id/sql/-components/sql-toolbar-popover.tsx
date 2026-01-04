@@ -9,12 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { cn } from '@conar/ui/lib/utils'
 import { useStore } from '@tanstack/react-store'
 import { useImperativeHandle, useState } from 'react'
-import {
-  databaseStore,
-  setChatPosition,
-  toggleChat,
-  toggleResults,
-} from '~/entities/database'
+import { databaseStore, setChatPosition, toggleChat, toggleResults } from '~/entities/database/store'
 
 function ToggleRow({
   label,

@@ -1,6 +1,6 @@
 import type { ComponentProps, RefObject } from 'react'
 import type { databases } from '~/drizzle'
-import type { databaseStoreType } from '~/entities/database'
+import type { databaseStoreType } from '~/entities/database/store'
 import { getOS, isCtrlAndKey } from '@conar/shared/utils/os'
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -12,7 +12,8 @@ import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { motion, Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import { addTab, databaseStore, prefetchDatabaseTableCore, removeTab, updateTabs } from '~/entities/database'
+import { addTab, databaseStore, removeTab, updateTabs } from '~/entities/database/store'
+import { prefetchDatabaseTableCore } from '~/entities/database/utils'
 import { getPageStoreState } from '../-store'
 
 const MotionScrollViewport = motion.create(ScrollViewport)

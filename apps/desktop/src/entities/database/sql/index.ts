@@ -3,6 +3,17 @@ import type { databases } from '~/drizzle'
 import { Store } from '@tanstack/react-store'
 import { formatSql } from '~/lib/formatter'
 
+export * from './constraints'
+export * from './delete-rows'
+export * from './drop-table'
+export * from './enums'
+export * from './rename-table'
+export * from './rows'
+export * from './select'
+export * from './set'
+export * from './tables-and-schemas'
+export * from './total'
+
 export function executeSql({
   type,
   connectionString,

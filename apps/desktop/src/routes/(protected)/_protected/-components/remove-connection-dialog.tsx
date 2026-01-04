@@ -2,7 +2,7 @@ import type { databases } from '~/drizzle'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databasesCollection } from '~/entities/database'
+import { databasesCollection } from '~/entities/database/sync'
 
 interface RemoveConnectionDialogProps {
   ref?: React.RefObject<{

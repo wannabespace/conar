@@ -1,17 +1,15 @@
+import type { databaseStoreType } from '~/entities/database/store'
+import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
 import { cn } from '@conar/ui/lib/utils'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
-import {
-  databasesCollection,
-  databaseStore,
-  getDatabasePageId,
-  lastOpenedDatabases,
-  prefetchDatabaseCore,
-} from '~/entities/database'
-import { QueryLogger } from '~/entities/database/components/query-logger'
+import { QueryLogger } from '~/entities/database/components'
+import { databaseStore } from '~/entities/database/store'
+import { databasesCollection } from '~/entities/database/sync'
+import { lastOpenedDatabases, prefetchDatabaseCore } from '~/entities/database/utils'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
 
@@ -35,6 +33,10 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
     meta: loaderData ? [{ title: title(loaderData.database.name) }] : [],
   }),
 })
+
+function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
+  return routesIds.find(route => route.includes('/(protected)/_protected/database/$id/')) as typeof databaseStoreType.infer['lastOpenedPage']
+}
 
 function DatabasePage() {
   const { database } = Route.useLoaderData()
