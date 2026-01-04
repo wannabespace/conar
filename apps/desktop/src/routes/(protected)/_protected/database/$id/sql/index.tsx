@@ -1,11 +1,11 @@
-import type { ComponentRef } from 'react'
 import { title } from '@conar/shared/utils/title'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
-import { useEffect, useRef, useState } from 'react'
-import { databaseStore } from '~/entities/database'
-import { useSubscription } from '~/entities/user/hooks/use-subscription'
+import { useEffect } from 'react'
+import { useDefaultLayout } from 'react-resizable-panels'
+import { databaseStore } from '~/entities/database/store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
@@ -32,15 +32,42 @@ export const Route = createFileRoute(
   }),
 })
 
-const MIN_CHAT_SIZE = 20
+const MIN_CHAT_SIZE = '15%'
+
+function ChatPanel() {
+  return (
+    <ResizablePanel
+      defaultSize="30%"
+      minSize={MIN_CHAT_SIZE}
+      maxSize="50%"
+      className="rounded-lg border bg-background"
+    >
+      <Chat className="h-full" />
+    </ResizablePanel>
+  )
+}
+
+function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
+  return (
+    <ResizablePanel
+      defaultSize={chatVisible ? '70%' : '100%'}
+      minSize="30%"
+      className="rounded-lg border bg-background"
+    >
+      <Runner />
+    </ResizablePanel>
+  )
+}
 
 function DatabaseSqlPage() {
   const { database } = Route.useLoaderData()
   const { chatId } = Route.useSearch()
   const store = databaseStore(database.id)
-  const [isChatCollapsed, setIsChatCollapsed] = useState(false)
-  const ref = useRef<ComponentRef<typeof ResizablePanelGroup>>(null)
-  const { subscription } = useSubscription()
+
+  const { chatVisible, chatPosition } = useStore(store, s => ({
+    chatVisible: s.layout.chatVisible,
+    chatPosition: s.layout.chatPosition,
+  }))
 
   useEffect(() => {
     store.setState(state => ({
@@ -49,52 +76,41 @@ function DatabaseSqlPage() {
     } satisfies typeof state))
   }, [chatId, store])
 
+  const { defaultLayout, onLayoutChange } = useDefaultLayout({
+    id: `sql-layout-${database.id}`,
+    storage: localStorage,
+  })
+
   return (
     <ResizablePanelGroup
-      ref={ref}
-      autoSaveId="sql-layout-x"
-      direction="horizontal"
-      className="flex"
-      onLayout={([, chat = 0]) => {
-        setIsChatCollapsed(chat === 0)
-      }}
+      defaultLayout={defaultLayout}
+      onLayoutChange={onLayoutChange}
+      orientation="horizontal"
+      className="flex h-full"
     >
-      <ResizablePanel
-        defaultSize={70}
-        minSize={30}
-        className="flex flex-col gap-4 rounded-lg border bg-background"
-      >
-        <Runner
-          isChatCollapsed={isChatCollapsed}
-          onChatClick={() => {
-            if (!subscription) {
-              // TODO: subs
-              return
-            }
-
-            if (isChatCollapsed) {
-              ref.current?.setLayout([100 - MIN_CHAT_SIZE, MIN_CHAT_SIZE])
-            }
-            else {
-              ref.current?.setLayout([100, 0])
-            }
-          }}
-        />
-      </ResizablePanel>
-      {subscription && (
-        <>
-          <ResizableHandle className="w-1 bg-transparent" />
-          <ResizablePanel
-            defaultSize={30}
-            minSize={MIN_CHAT_SIZE}
-            maxSize={50}
-            collapsible
-            className="rounded-lg border bg-background"
-          >
-            <Chat className="h-full" />
-          </ResizablePanel>
-        </>
-      )}
+      {chatVisible
+        ? (
+            <>
+              {chatPosition === 'left'
+                ? (
+                    <>
+                      <ChatPanel key="chat" />
+                      <ResizableSeparator className="w-1" />
+                      <RunnerPanel key="runner" />
+                    </>
+                  )
+                : (
+                    <>
+                      <RunnerPanel key="runner" />
+                      <ResizableSeparator className="w-1" />
+                      <ChatPanel key="chat" />
+                    </>
+                  )}
+            </>
+          )
+        : (
+            <RunnerPanel key="runner" chatVisible={false} />
+          )}
     </ResizablePanelGroup>
   )
 }

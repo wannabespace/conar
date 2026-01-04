@@ -7,7 +7,11 @@ import { useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { DatabaseIcon, databasesCollection, databaseTablesAndSchemasQuery, prefetchDatabaseCore, useDatabaseLinkParams } from '~/entities/database'
+import { DatabaseIcon } from '~/entities/database/components'
+import { useDatabaseLinkParams } from '~/entities/database/hooks'
+import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
+import { databasesCollection } from '~/entities/database/sync'
+import { prefetchDatabaseCore } from '~/entities/database/utils'
 import { appStore, setActionsCenterIsOpen } from '~/store'
 
 function ActionsDatabaseTables({ database }: { database: typeof databases.$inferSelect }) {

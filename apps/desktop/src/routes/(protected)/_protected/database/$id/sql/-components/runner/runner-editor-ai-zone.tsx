@@ -8,7 +8,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { MonacoDiff } from '~/components/monaco'
-import { databaseTablesAndSchemasQuery } from '~/entities/database'
+import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 

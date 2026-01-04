@@ -1,7 +1,7 @@
 import type { LinkProps } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
-import { databaseStore } from '~/entities/database'
+import { databaseStore } from '~/entities/database/store'
 
 export function useDatabaseLinkParams(id: string) {
   const store = databaseStore(id)

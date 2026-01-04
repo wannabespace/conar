@@ -5,17 +5,17 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { CtrlEnter, CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Kbd } from '@conar/ui/components/kbd'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
-import { Separator } from '@conar/ui/components/separator'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import NumberFlow from '@number-flow/react'
-import { RiBrush2Line, RiChatAiLine, RiCheckLine, RiPlayFill, RiStarLine } from '@remixicon/react'
+import { RiBrush2Line, RiCheckLine, RiPlayFill, RiSettings3Line, RiStarLine } from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { databaseStore, hasDangerousSqlKeywords } from '~/entities/database'
-import { queriesCollection } from '~/entities/query'
+import { useDefaultLayout } from 'react-resizable-panels'
+import { databaseStore } from '~/entities/database/store'
+import { hasDangerousSqlKeywords } from '~/entities/database/utils'
+import { queriesCollection } from '~/entities/query/sync'
 import { formatSql } from '~/lib/formatter'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
@@ -25,6 +25,7 @@ import { RunnerEditor } from './runner-editor'
 import { RunnerQueries } from './runner-queries'
 import { RunnerResults } from './runner-results'
 import { RunnerSaveDialog } from './runner-save-dialog'
+import { RunnerSettings } from './runner-settings'
 
 function useTrackSelectedLinesChange() {
   const { database } = Route.useRouteContext()
@@ -47,14 +48,10 @@ function useTrackSelectedLinesChange() {
   }, [store, currentLineNumbers])
 }
 
-export function Runner({ isChatCollapsed, onChatClick }: { isChatCollapsed: boolean, onChatClick: () => void }) {
+export function Runner() {
   const { database } = Route.useRouteContext()
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
-  const store = databaseStore(database.id)
-  const selectedLines = useStore(store, state => state.selectedLines)
-  const editorQueries = useStore(store, state => state.editorQueries)
-  const sql = useStore(store, state => state.sql)
   const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
     .where(({ queries }) => eq(queries.databaseId, database.id))
@@ -62,6 +59,13 @@ export function Runner({ isChatCollapsed, onChatClick }: { isChatCollapsed: bool
     .findOne(),
   )
   const [isFormatting, setIsFormatting] = useState(false)
+  const store = databaseStore(database.id)
+  const { selectedLines, editorQueries, sql, resultsVisible } = useStore(store, state => ({
+    selectedLines: state.selectedLines,
+    editorQueries: state.editorQueries,
+    sql: state.sql,
+    resultsVisible: state.layout.resultsVisible,
+  }))
 
   useTrackSelectedLinesChange()
 
@@ -110,6 +114,11 @@ export function Runner({ isChatCollapsed, onChatClick }: { isChatCollapsed: bool
     }
   }
 
+  const { defaultLayout, onLayoutChange } = useDefaultLayout({
+    id: `sql-layout-${database.id}`,
+    storage: localStorage,
+  })
+
   return (
     <RunnerContext.Provider
       value={{
@@ -117,131 +126,128 @@ export function Runner({ isChatCollapsed, onChatClick }: { isChatCollapsed: bool
         save: q => saveQueryDialogRef.current?.open(q),
       }}
     >
-      <ResizablePanelGroup autoSaveId="sql-layout-y" direction="vertical">
-        <ResizablePanel minSize={20}>
-          <ResizablePanelGroup autoSaveId="sql-layout-x" direction="horizontal">
-            <ResizablePanel minSize={50}>
-              <CardHeader className="h-14 bg-card py-3">
-                <CardTitle className="flex items-center justify-between gap-2">
-                  SQL Queries Runner
-                  <div className="flex items-center gap-2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          className="relative"
-                          variant="secondary"
-                          size="sm"
-                        >
-                          <RiStarLine />
-                          Saved
-                          <span className={`
-                            flex h-5 items-center justify-center rounded-full
-                            bg-accent px-1.5 text-xs
-                          `}
-                          >
-                            {queriesCount}
-                          </span>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="min-w-md p-0"
-                        onOpenAutoFocus={e => e.preventDefault()}
-                      >
-                        <RunnerQueries />
-                      </PopoverContent>
-                    </Popover>
+      <ResizablePanelGroup
+        defaultLayout={defaultLayout}
+        onLayoutChange={onLayoutChange}
+        orientation="vertical"
+        className="h-full"
+      >
+        <ResizablePanel
+          minSize="20%"
+          defaultSize={resultsVisible ? '70%' : '100%'}
+        >
+          <CardHeader className="h-14 bg-card py-3">
+            <CardTitle className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                SQL Runner
+                <RunnerSettings>
+                  <Button variant="ghost" size="icon-sm">
+                    <RiSettings3Line />
+                  </Button>
+                </RunnerSettings>
+              </div>
+              <div className="flex gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
                     <Button
+                      className="relative"
                       variant="secondary"
                       size="sm"
-                      onClick={() => {
-                        format()
-                        setIsFormatting(true)
-                      }}
                     >
-                      <ContentSwitch
-                        active={isFormatting}
-                        activeContent={<RiCheckLine className="text-success" />}
-                        onSwitchEnd={() => setIsFormatting(false)}
+                      <RiStarLine />
+                      Saved
+                      <span className={`
+                        flex h-5 items-center justify-center rounded-full
+                        bg-accent px-1.5 text-xs
+                      `}
                       >
-                        <RiBrush2Line />
-                      </ContentSwitch>
-                      Format
+                        {queriesCount}
+                      </span>
                     </Button>
-                    <Button
-                      disabled={fetchStatus === 'fetching'}
-                      size="sm"
-                      onClick={() => runQueriesWithAlert(queriesToRun)}
-                    >
-                      <RiPlayFill />
-                      Run
-                      {' '}
-                      {selectedLines.length > 0 ? 'selected' : 'all'}
-                      {selectedLines.length > 0 && (
-                        <NumberFlow
-                          value={queriesToRun.length}
-                          prefix="("
-                          suffix=")"
-                          className="tabular-nums"
-                          spinTiming={{ duration: 200 }}
-                        />
-                      )}
-                    </Button>
-                    {isChatCollapsed && (
-                      <>
-                        <Separator orientation="vertical" className="mx-1 h-4!" />
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={onChatClick}
-                              className="gap-1"
-                            >
-                              <RiChatAiLine />
-                              Chat
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent align="center" side="bottom">
-                            Chat is available only with a subscription
-                          </TooltipContent>
-                        </Tooltip>
-                      </>
-                    )}
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
-                <RunnerEditor />
-                <span className={`
-                  pointer-events-none absolute right-6 bottom-2 flex flex-col
-                  items-end text-xs text-muted-foreground
-                `}
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="min-w-md p-0"
+                    onOpenAutoFocus={e => e.preventDefault()}
+                  >
+                    <RunnerQueries />
+                  </PopoverContent>
+                </Popover>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    format()
+                    setIsFormatting(true)
+                  }}
                 >
-                  <span className="flex items-center gap-1">
-                    <Kbd asChild>
-                      <CtrlLetter letter="K" userAgent={navigator.userAgent} />
-                    </Kbd>
-                    {' '}
-                    to call the AI
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Kbd asChild>
-                      <CtrlEnter userAgent={navigator.userAgent} />
-                    </Kbd>
-                    {' '}
-                    to run the focused query
-                  </span>
-                </span>
+                  <ContentSwitch
+                    active={isFormatting}
+                    activeContent={<RiCheckLine className="text-success" />}
+                    onSwitchEnd={() => setIsFormatting(false)}
+                  >
+                    <RiBrush2Line />
+                  </ContentSwitch>
+                  Format
+                </Button>
+                <Button
+                  disabled={fetchStatus === 'fetching'}
+                  size="sm"
+                  onClick={() => runQueriesWithAlert(queriesToRun)}
+                >
+                  <RiPlayFill />
+                  Run
+                  {' '}
+                  {selectedLines.length > 0 ? 'selected' : 'all'}
+                  {selectedLines.length > 0 && (
+                    <NumberFlow
+                      value={queriesToRun.length}
+                      prefix="("
+                      suffix=")"
+                      className="tabular-nums"
+                      spinTiming={{ duration: 200 }}
+                    />
+                  )}
+                </Button>
               </div>
-              <RunnerSaveDialog ref={saveQueryDialogRef} />
-              <RunnerAlertDialog ref={alertDialogRef} />
+            </CardTitle>
+          </CardHeader>
+          <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
+            <RunnerEditor />
+            <span className={`
+              pointer-events-none absolute right-6 bottom-2 flex flex-col
+              items-end text-xs text-muted-foreground
+            `}
+            >
+              <span className="flex items-center gap-1">
+                <Kbd asChild>
+                  <CtrlLetter letter="K" userAgent={navigator.userAgent} />
+                </Kbd>
+                {' '}
+                to call the AI
+              </span>
+              <span className="flex items-center gap-1">
+                <Kbd asChild>
+                  <CtrlEnter userAgent={navigator.userAgent} />
+                </Kbd>
+                {' '}
+                to run the focused query
+              </span>
+            </span>
+          </div>
+          <RunnerSaveDialog ref={saveQueryDialogRef} />
+          <RunnerAlertDialog ref={alertDialogRef} />
+        </ResizablePanel>
+        {resultsVisible && (
+          <>
+            <ResizableSeparator withHandle />
+            <ResizablePanel
+              minSize="20%"
+              defaultSize="30%"
+            >
+              <RunnerResults />
             </ResizablePanel>
-          </ResizablePanelGroup>
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel minSize={20}>
-          <RunnerResults />
-        </ResizablePanel>
+          </>
+        )}
       </ResizablePanelGroup>
     </RunnerContext.Provider>
   )

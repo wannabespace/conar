@@ -1,6 +1,6 @@
 import type { ComponentProps, RefObject } from 'react'
 import type { databases } from '~/drizzle'
-import type { tabType } from '~/entities/database'
+import type { databaseStoreType } from '~/entities/database/store'
 import { getOS, isCtrlAndKey } from '@conar/shared/utils/os'
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -12,7 +12,8 @@ import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { motion, Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import { addTab, databaseStore, prefetchDatabaseTableCore, removeTab, updateTabs } from '~/entities/database'
+import { addTab, databaseStore, removeTab, updateTabs } from '~/entities/database/store'
+import { prefetchDatabaseTableCore } from '~/entities/database/utils'
 import { getPageStoreState } from '../-store'
 
 const MotionScrollViewport = motion.create(ScrollViewport)
@@ -25,7 +26,11 @@ function CloseButton({ onClick }: { onClick: (e: React.MouseEvent<SVGSVGElement>
       <Tooltip>
         <TooltipTrigger asChild>
           <RiCloseLine
-            className="size-3.5 opacity-0 group-hover:opacity-30 hover:opacity-100"
+            className={`
+              size-3.5 opacity-0
+              group-hover:opacity-30
+              hover:opacity-100
+            `}
             onClick={onClick}
           />
         </TooltipTrigger>
@@ -55,16 +60,22 @@ function TabButton({
       data-mask
       type="button"
       className={cn(
-        'group text-foreground flex h-full items-center gap-1 pl-2 pr-1.5 text-sm rounded-sm border border-transparent',
-        'hover:bg-muted/70 hover:border-accent',
-        active && 'bg-primary/10 border-primary/50 hover:bg-primary/10 hover:border-primary/50',
+        `
+          group flex h-full items-center gap-1 rounded-sm border
+          border-transparent pr-1.5 pl-2 text-sm text-foreground
+        `,
+        'hover:border-accent hover:bg-muted/70',
+        active && `
+          border-primary/50 bg-primary/10
+          hover:border-primary/50 hover:bg-primary/10
+        `,
         className,
       )}
       {...props}
     >
       <RiTableLine
         className={cn(
-          'size-4 text-muted-foreground shrink-0 opacity-50',
+          'size-4 shrink-0 text-muted-foreground opacity-50',
           active && 'text-primary opacity-100',
         )}
       />
@@ -91,7 +102,7 @@ function SortableTab({
   onFocus,
 }: {
   id: string
-  item: { id: string, tab: typeof tabType.infer }
+  item: { id: string, tab: typeof databaseStoreType.infer['tabs'][number] }
   showSchema: boolean
   onClose: () => void
   onDoubleClick: () => void
@@ -117,7 +128,10 @@ function SortableTab({
       as="div"
       ref={ref}
       className={cn(
-        'bg-background aria-pressed:z-10 relative rounded-sm',
+        `
+          relative rounded-sm bg-background
+          aria-pressed:z-10
+        `,
         item.tab.preview && 'italic',
       )}
     >
@@ -243,7 +257,7 @@ export function TablesTabs({
     <ScrollArea>
       <MotionScrollViewport
         layoutScroll
-        className={cn('flex p-1 gap-1', className)}
+        className={cn('flex gap-1 p-1', className)}
       >
         <Reorder.Group
           axis="x"

@@ -6,8 +6,8 @@ import { Skeleton } from '@conar/ui/components/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiExternalLinkLine, RiLogoutCircleRLine } from '@remixicon/react'
-import { UserAvatar, useSignOut } from '~/entities/user'
-import { useSubscription } from '~/entities/user/hooks/use-subscription'
+import { UserAvatar } from '~/entities/user/components'
+import { useSignOut, useSubscription } from '~/entities/user/hooks'
 
 export function Profile({ className }: { className?: string }) {
   const { data, signOut, isSigningOut } = useSignOut()
