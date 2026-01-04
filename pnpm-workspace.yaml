@@ -138,7 +138,7 @@ catalog:
   react-dom: ^19.2.3
   react-grab: ^0.0.94
   react-markdown: ^10.1.0
-  react-resizable-panels: ^3.0.6
+  react-resizable-panels: ^4.2.0
   react-scan: ^0.4.3
   redis: ^5.10.0
   remark-gfm: ^4.0.1

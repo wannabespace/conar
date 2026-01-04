@@ -5,13 +5,14 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { CtrlEnter, CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Kbd } from '@conar/ui/components/kbd'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import NumberFlow from '@number-flow/react'
 import { RiBrush2Line, RiCheckLine, RiPlayFill, RiSettings3Line, RiStarLine } from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useDefaultLayout } from 'react-resizable-panels'
 import { databaseStore } from '~/entities/database/store'
 import { hasDangerousSqlKeywords } from '~/entities/database/utils'
 import { queriesCollection } from '~/entities/query'
@@ -113,6 +114,11 @@ export function Runner() {
     }
   }
 
+  const { defaultLayout, onLayoutChange } = useDefaultLayout({
+    id: `sql-layout-${database.id}`,
+    storage: localStorage,
+  })
+
   return (
     <RunnerContext.Provider
       value={{
@@ -121,13 +127,14 @@ export function Runner() {
       }}
     >
       <ResizablePanelGroup
-        autoSaveId={`sql-layout-${database.id}`}
-        direction="vertical"
+        defaultLayout={defaultLayout}
+        onLayoutChange={onLayoutChange}
+        orientation="vertical"
         className="h-full"
       >
         <ResizablePanel
-          minSize={20}
-          defaultSize={resultsVisible ? 70 : 100}
+          minSize="20%"
+          defaultSize={resultsVisible ? '70%' : '100%'}
         >
           <CardHeader className="h-14 bg-card py-3">
             <CardTitle className="flex items-center justify-between gap-2">
@@ -232,10 +239,10 @@ export function Runner() {
         </ResizablePanel>
         {resultsVisible && (
           <>
-            <ResizableHandle withHandle />
+            <ResizableSeparator withHandle />
             <ResizablePanel
-              minSize={20}
-              defaultSize={30}
+              minSize="20%"
+              defaultSize="30%"
             >
               <RunnerResults />
             </ResizablePanel>

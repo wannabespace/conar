@@ -1,9 +1,10 @@
 import { title } from '@conar/shared/utils/title'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect } from 'react'
+import { useDefaultLayout } from 'react-resizable-panels'
 import { databaseStore } from '~/entities/database/store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
@@ -34,9 +35,9 @@ export const Route = createFileRoute(
 function ChatPanel() {
   return (
     <ResizablePanel
-      defaultSize={30}
-      minSize={15}
-      maxSize={50}
+      defaultSize="30%"
+      minSize="15%"
+      maxSize="50%"
       className="rounded-lg border bg-background"
     >
       <Chat className="h-full" />
@@ -47,8 +48,8 @@ function ChatPanel() {
 function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
   return (
     <ResizablePanel
-      defaultSize={chatVisible ? 70 : 100}
-      minSize={30}
+      defaultSize={chatVisible ? '70%' : '100%'}
+      minSize="30%"
       className="rounded-lg border bg-background"
     >
       <Runner />
@@ -73,10 +74,16 @@ function DatabaseSqlPage() {
     } satisfies typeof state))
   }, [chatId, store])
 
+  const { defaultLayout, onLayoutChange } = useDefaultLayout({
+    id: `sql-layout-${database.id}`,
+    storage: localStorage,
+  })
+
   return (
     <ResizablePanelGroup
-      autoSaveId="sql-layout-main"
-      direction="horizontal"
+      defaultLayout={defaultLayout}
+      onLayoutChange={onLayoutChange}
+      orientation="horizontal"
       className="flex h-full"
     >
       {chatVisible
@@ -86,14 +93,14 @@ function DatabaseSqlPage() {
                 ? (
                     <>
                       <ChatPanel key="chat" />
-                      <ResizableHandle className="w-1 bg-transparent" />
+                      <ResizableSeparator className="w-1" />
                       <RunnerPanel key="runner" />
                     </>
                   )
                 : (
                     <>
                       <RunnerPanel key="runner" />
-                      <ResizableHandle className="w-1 bg-transparent" />
+                      <ResizableSeparator className="w-1" />
                       <ChatPanel key="chat" />
                     </>
                   )}
