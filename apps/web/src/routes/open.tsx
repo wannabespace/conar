@@ -1,7 +1,7 @@
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { copy } from '@conar/ui/lib/copy'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
 import { authClient } from '~/lib/auth'
@@ -12,6 +12,9 @@ export const Route = createFileRoute('/open')({
     'code-challenge': 'string',
     'new-user?': 'boolean',
   }),
+  onError: () => {
+    throw redirect({ to: '/sign-in' })
+  },
 })
 
 function OpenPage() {
@@ -29,12 +32,10 @@ function OpenPage() {
   }
 
   useEffect(() => {
-    if (isPending)
+    if (isPending || !data || !codeChallenge)
       return
 
-    if (codeChallenge && data) {
-      location.assign(getUrlEvent(data.session.token, codeChallenge))
-    }
+    location.assign(getUrlEvent(data.session.token, codeChallenge))
   }, [isPending, codeChallenge, data])
 
   return (
