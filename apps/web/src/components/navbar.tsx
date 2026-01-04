@@ -9,8 +9,8 @@ import { RiDiscordLine, RiGithubFill, RiTwitterXLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
+import { NAVBAR_HEIGHT_BASE } from '~/constants'
 import { getRepoOptions } from '~/queries'
-import { NAVBAR_HEIGHT_BASE } from '~/routes/_layout'
 
 const AppLogoMotion = motion.create(AppLogo)
 

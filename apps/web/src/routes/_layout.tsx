@@ -5,13 +5,11 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { Footer } from '~/components/footer'
 import { Navbar } from '~/components/navbar'
+import { NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED } from '~/constants'
 
 export const Route = createFileRoute('/_layout')({
   component: MainLayout,
 })
-
-export const NAVBAR_HEIGHT_BASE = 150
-export const NAVBAR_HEIGHT_SCROLLED = 60
 
 function MainLayout() {
   const { scrollY } = useScroll()

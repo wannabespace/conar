@@ -2,7 +2,7 @@
 import { cn } from '@conar/ui/lib/utils'
 import { useMemo } from 'react'
 import { useTableContext } from '~/components/table'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database/utils'
 
 const ROWS_COUNT = 20
 
@@ -28,15 +28,18 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: {
       {Array.from({ length: ROWS_COUNT }).map((_, rowIndex) => (
         <div
           key={rowIndex}
-          className="flex w-fit border-b min-w-full last:border-b-0"
+          className={`
+            flex w-fit min-w-full border-b
+            last:border-b-0
+          `}
           style={{
             height: `${DEFAULT_ROW_HEIGHT}px`,
             opacity: 1 - (rowIndex * (1 / ROWS_COUNT)),
           }}
         >
           {selectable && (
-            <div className="p-2 pl-4 shrink-0">
-              <div className="size-4 bg-muted animate-pulse rounded" />
+            <div className="shrink-0 p-2 pl-4">
+              <div className="size-4 animate-pulse rounded bg-muted" />
             </div>
           )}
           {cols.map((column, index) => {
@@ -45,12 +48,18 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: {
             return (
               <div
                 key={index}
-                className="first:pl-4 shrink-0 px-2 py-1 h-full flex items-center"
+                className={`
+                  flex h-full shrink-0 items-center px-2 py-1
+                  first:pl-4
+                `}
                 style={{
                   width: `${width}px`,
                 }}
               >
-                <div className="shrink-0 h-4 bg-muted animate-pulse rounded w-3/4" />
+                <div className={`
+                  h-4 w-3/4 shrink-0 animate-pulse rounded bg-muted
+                `}
+                />
               </div>
             )
           })}

@@ -1,7 +1,7 @@
 import { databaseLabels, DatabaseType } from '@conar/shared/enums/database-type'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
-import { DatabaseIcon } from '~/entities/database'
+import { DatabaseIcon } from '~/entities/database/components'
 import { MongoIcon } from '~/icons/mongo'
 
 export function StepType({ type, setType }: { type: DatabaseType | null, setType: (type: DatabaseType) => void }) {

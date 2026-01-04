@@ -1,16 +1,15 @@
+import type { databaseStoreType } from '~/entities/database/store'
+import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@conar/shared/utils/title'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
+import { cn } from '@conar/ui/lib/utils'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
-import {
-  databasesCollection,
-  databaseStore,
-  getDatabasePageId,
-  lastOpenedDatabases,
-  prefetchDatabaseCore,
-} from '~/entities/database'
-import { QueryLogger } from '~/entities/database/components/query-logger'
+import { QueryLogger } from '~/entities/database/components'
+import { databaseStore } from '~/entities/database/store'
+import { databasesCollection } from '~/entities/database/sync'
+import { lastOpenedDatabases, prefetchDatabaseCore } from '~/entities/database/utils'
 import { DatabaseSidebar } from './-components/database-sidebar'
 import { PasswordForm } from './-components/password-form'
 
@@ -34,6 +33,10 @@ export const Route = createFileRoute('/(protected)/_protected/database/$id')({
     meta: loaderData ? [{ title: title(loaderData.database.name) }] : [],
   }),
 })
+
+function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
+  return routesIds.find(route => route.includes('/(protected)/_protected/database/$id/')) as typeof databaseStoreType.infer['lastOpenedPage']
+}
 
 function DatabasePage() {
   const { database } = Route.useLoaderData()
@@ -63,12 +66,23 @@ function DatabasePage() {
   }
 
   return (
-    <div className="flex bg-gray-100 dark:bg-neutral-950/60">
+    <div className={`
+      flex bg-gray-100
+      dark:bg-neutral-950/60
+    `}
+    >
       <DatabaseSidebar className="w-16" />
-      <div className="h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))] m-2 ml-0 flex flex-col">
+      <div
+        className={cn(
+          `
+            m-2 ml-0 flex h-[calc(100%-(--spacing(4)))]
+            w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col
+          `,
+        )}
+      >
         <ResizablePanelGroup
           direction="vertical"
-          className="flex-1 min-h-0"
+          className="min-h-0 flex-1"
           autoSaveId={`logger-layout-${database.id}`}
         >
           <ResizablePanel defaultSize={70} minSize={50}>
@@ -76,8 +90,13 @@ function DatabasePage() {
           </ResizablePanel>
           {loggerOpened && (
             <>
-              <ResizableHandle className="h-1! bg-body" />
-              <ResizablePanel defaultSize={30} minSize={10} maxSize={50} className="border overflow-auto rounded-lg bg-background">
+              <ResizableHandle className="h-1!" />
+              <ResizablePanel
+                defaultSize={30}
+                minSize={10}
+                maxSize={50}
+                className="overflow-auto rounded-lg border bg-background"
+              >
                 <QueryLogger database={database} />
               </ResizablePanel>
             </>

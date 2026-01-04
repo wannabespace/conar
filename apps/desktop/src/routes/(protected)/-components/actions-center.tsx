@@ -6,16 +6,15 @@ import { RiAddLine, RiDashboardLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
-import { Store, useStore } from '@tanstack/react-store'
-import { DatabaseIcon, databasesCollection, databaseTablesAndSchemasQuery, prefetchDatabaseCore, useDatabaseLinkParams } from '~/entities/database'
+import { useStore } from '@tanstack/react-store'
+import { DatabaseIcon } from '~/entities/database/components'
+import { useDatabaseLinkParams } from '~/entities/database/hooks'
+import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
+import { databasesCollection } from '~/entities/database/sync'
+import { prefetchDatabaseCore } from '~/entities/database/utils'
+import { actionsCenterStore, setIsOpen } from './actions-center-store'
 
-export const actionsCenterStore = new Store({
-  isOpen: false,
-})
-
-function setIsOpen(isOpen: boolean) {
-  actionsCenterStore.setState(state => ({ ...state, isOpen }))
-}
+export { actionsCenterStore } from './actions-center-store'
 
 function ActionsDatabaseTables({ database }: { database: typeof databases.$inferSelect }) {
   const { data: tablesAndSchemas } = useQuery({
@@ -68,10 +67,14 @@ function ActionsDatabase({ database }: { database: typeof databases.$inferSelect
       onSelect={() => onDatabaseSelect(database)}
     >
       <DatabaseIcon type={database.type} className="size-4 shrink-0" />
-      <div className="flex gap-2 items-center">
+      <div className="flex items-center gap-2">
         {database.name}
         {database.label && (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-muted-foreground/10 text-muted-foreground whitespace-nowrap">
+          <span className={`
+            rounded-full bg-muted-foreground/10 px-2 py-0.5 text-xs
+            whitespace-nowrap text-muted-foreground
+          `}
+          >
             {database.label}
           </span>
         )}
