@@ -1,29 +1,11 @@
-import type { ScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
-import type { ContextSelector } from '@fluentui/react-context-selector'
-import type { VirtualItem } from '@tanstack/react-virtual'
-import type { ReactNode, RefObject } from 'react'
+import type { ReactNode } from 'react'
 import type { ColumnRenderer } from '.'
 import { useScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
-import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useRef } from 'react'
+import { TableContext } from './table-context'
 
-interface TableContextType {
-  scrollRef: RefObject<HTMLDivElement | null>
-  scrollDirection: ScrollDirection
-  rows: Record<string, unknown>[]
-  columns: ColumnRenderer[]
-  virtualRows: VirtualItem[]
-  virtualColumns: VirtualItem[]
-  tableHeight: number
-  tableWidth: number
-}
-
-const TableContext = createContext<TableContextType>(null!)
-
-export function useTableContext<T>(selector: ContextSelector<TableContextType, T>) {
-  return useContextSelector(TableContext, selector)
-}
+export type { TableContextType } from './table-context'
 
 export function TableProvider({
   rows,

@@ -15,10 +15,9 @@ import { TableInfiniteLoader } from '~/routes/(protected)/_protected/database/$i
 import { TableBodySkeleton } from '~/routes/(protected)/_protected/database/$id/table/-components/table-skeleton'
 import { getColumnSize } from '~/routes/(protected)/_protected/database/$id/table/-lib'
 import { useTableColumns } from '~/routes/(protected)/_protected/database/$id/table/-queries/use-columns-query'
-import { DEFAULT_ROW_HEIGHT } from '..'
-import { getDisplayValue } from '../lib/render'
 import { databaseRowsQuery } from '../queries/rows'
-import { DEFAULT_COLUMN_WIDTH } from '../utils/helpers'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '../utils'
+import { getDisplayValue } from '../utils/render'
 import { TableCellContent } from './table-cell-content'
 
 const { useLoaderData } = getRouteApi('/(protected)/_protected/database/$id')
@@ -79,8 +78,12 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
       estimatedRowSize={DEFAULT_ROW_HEIGHT}
       estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
     >
-      <div className="size-full relative">
-        <div className="px-4 flex items-center justify-between h-8 text-xs text-muted-foreground bg-background">
+      <div className="relative size-full">
+        <div className={`
+          flex h-8 items-center justify-between bg-background px-4 text-xs
+          text-muted-foreground
+        `}
+        >
           <div>
             Showing records from
             {' '}
@@ -112,7 +115,10 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
             </Link>
           </Button>
         </div>
-        <Table className="bg-background h-[calc(100%-(--spacing(8)))] rounded-b-lg">
+        <Table className={`
+          h-[calc(100%-(--spacing(8)))] rounded-b-lg bg-background
+        `}
+        >
           <TableHeader />
           {isRowsPending
             ? <TableBodySkeleton />

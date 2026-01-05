@@ -9,8 +9,8 @@ import { RiDiscordLine, RiGithubFill, RiTwitterXLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
+import { NAVBAR_HEIGHT_BASE } from '~/constants'
 import { getRepoOptions } from '~/queries'
-import { NAVBAR_HEIGHT_BASE } from '~/routes/_layout'
 
 const AppLogoMotion = motion.create(AppLogo)
 
@@ -20,28 +20,52 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   const { data } = useQuery(getRepoOptions)
 
   return (
-    <header className={cn('flex items-center justify-between px-4 sm:px-0', className)} {...props}>
-      <div className="flex-1 flex items-center gap-2">
-        <Link to="/" className="text-foreground font-medium text-base sm:text-lg lg:text-xl tracking-tighter">
+    <header
+      className={cn(`
+        flex items-center justify-between px-4
+        sm:px-0
+      `, className)}
+      {...props}
+    >
+      <div className="flex flex-1 items-center gap-2">
+        <Link
+          to="/"
+          className={`
+            text-base font-medium tracking-tighter text-foreground
+            sm:text-lg
+            lg:text-xl
+          `}
+        >
           Conar
         </Link>
         <Badge variant="default" className="bg-warning/20 text-warning">
           Beta
         </Badge>
       </div>
-      <div className="flex-1 flex justify-center">
+      <div className="flex flex-1 justify-center">
         <Link to="/" className="text-primary">
           <AppLogoMotion
-            className="size-5 sm:size-6 lg:size-8"
+            className={`
+              size-5
+              sm:size-6
+              lg:size-8
+            `}
             style={{ scale }}
           />
         </Link>
       </div>
-      <div className="flex-1 flex items-center justify-end gap-1 sm:gap-2">
+      <div className={`
+        flex flex-1 items-center justify-end gap-1
+        sm:gap-2
+      `}
+      >
         <Button
           variant="ghost"
           size="icon-sm"
-          className="gap-1 sm:gap-2 hidden sm:flex"
+          className={`
+            hidden gap-1
+            sm:flex sm:gap-2
+          `}
           asChild
         >
           <a
@@ -49,13 +73,20 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <RiTwitterXLine className="h-3 w-3 sm:h-4 sm:w-4" />
+            <RiTwitterXLine className={`
+              h-3 w-3
+              sm:h-4 sm:w-4
+            `}
+            />
           </a>
         </Button>
         <Button
           variant="ghost"
           size="icon-sm"
-          className="gap-1 sm:gap-2 hidden sm:flex"
+          className={`
+            hidden gap-1
+            sm:flex sm:gap-2
+          `}
           asChild
         >
           <a
@@ -63,13 +94,20 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <RiDiscordLine className="size-3 sm:size-4" />
+            <RiDiscordLine className={`
+              size-3
+              sm:size-4
+            `}
+            />
           </a>
         </Button>
         <Button
           variant="ghost"
           size="sm"
-          className="gap-1 sm:gap-2 hidden sm:flex"
+          className={`
+            hidden gap-1
+            sm:flex sm:gap-2
+          `}
           asChild
         >
           <a
@@ -77,20 +115,36 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <RiGithubFill className="size-3 sm:size-4" />
+            <RiGithubFill className={`
+              size-3
+              sm:size-4
+            `}
+            />
             <NumberFlow
               value={data?.stargazers_count || 0}
-              className={cn('tabular-nums duration-200 text-xs sm:text-sm', !data && 'animate-pulse text-muted-foreground')}
+              className={cn(`
+                text-xs tabular-nums duration-200
+                sm:text-sm
+              `, !data && `animate-pulse text-muted-foreground`)}
             />
           </a>
         </Button>
         <Button
           size="sm"
-          className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
+          className={`
+            gap-1 px-2 text-xs
+            sm:gap-2 sm:px-3 sm:text-sm
+          `}
           asChild
         >
           <Link to="/download">
-            <span className="hidden sm:inline">Get Started</span>
+            <span className={`
+              hidden
+              sm:inline
+            `}
+            >
+              Get Started
+            </span>
             <span className="sm:hidden">Download</span>
           </Link>
         </Button>

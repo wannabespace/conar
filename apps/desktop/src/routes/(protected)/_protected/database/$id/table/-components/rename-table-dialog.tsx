@@ -17,7 +17,9 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseTablesAndSchemasQuery, renameTab, renameTableQuery } from '~/entities/database'
+import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
+import { renameTableQuery } from '~/entities/database/sql'
+import { renameTab } from '~/entities/database/store'
 import { queryClient } from '~/main'
 
 interface RenameTableDialogProps {

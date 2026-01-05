@@ -2,7 +2,7 @@ import type { queries } from '~/drizzle'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { queriesCollection } from '~/entities/query'
+import { queriesCollection } from '~/entities/query/sync'
 
 interface RemoveQueryDialogProps {
   ref?: React.RefObject<{

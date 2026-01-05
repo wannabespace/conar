@@ -1,20 +1,23 @@
 import type { ColumnRenderer } from '~/components/table'
-import type { Column } from '~/entities/database'
+import type { Column } from '~/entities/database/utils'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableProvider } from '~/components/table'
-import { databaseRowsQuery, DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, selectQuery, setQuery } from '~/entities/database'
-import { TableCell } from '~/entities/database/components/table-cell'
+import { TableCell } from '~/entities/database/components'
+import { databaseRowsQuery } from '~/entities/database/queries'
 import { useDatabaseEnums } from '~/entities/database/queries/enums'
+import { selectQuery, setQuery } from '~/entities/database/sql'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database/utils'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { getColumnSize, selectSymbol } from '../-lib'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
 import { useHeaderActionsOrder } from './header-actions-order'
+import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
 import { TableHeaderCell } from './table-header-cell'
@@ -33,12 +36,19 @@ function prepareValue(value: unknown, column?: Column): unknown {
 
 export function TableError({ error }: { error: Error }) {
   return (
-    <div className="sticky left-0 pointer-events-none h-full flex items-center pb-10 justify-center">
-      <div className="flex flex-col items-center p-4 bg-card rounded-lg border max-w-md">
-        <div className="text-destructive mb-1">
+    <div className={`
+      pointer-events-none sticky left-0 flex h-full items-center justify-center
+      pb-10
+    `}
+    >
+      <div className={`
+        flex max-w-md flex-col items-center rounded-lg border bg-card p-4
+      `}
+      >
+        <div className="mb-1 text-destructive">
           Error occurred
         </div>
-        <p className="text-sm font-mono text-center text-muted-foreground">
+        <p className="text-center font-mono text-sm text-muted-foreground">
           {error.message}
         </p>
       </div>
@@ -56,6 +66,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
   const { onOrder } = useHeaderActionsOrder()
+  const renameColumnRef = useRef<{ rename: (schema: string, table: string, column: string) => void }>(null)
 
   useEffect(() => {
     if (!rows || !store.state.selected)
@@ -196,6 +207,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           <TableHeaderCell
             column={column}
             onSort={() => onOrder(column.id)}
+            onRename={database.type === 'clickhouse' && column.primaryKey // Clickhouse doesn't support renaming primary keys
+              ? undefined
+              : () => renameColumnRef.current?.rename(schema, table, column.id)}
             {...props}
           />
         ),
@@ -235,7 +249,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       estimatedRowSize={DEFAULT_ROW_HEIGHT}
       estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
     >
-      <div className="size-full relative bg-background">
+      <div className="relative size-full bg-background">
         <Table>
           <TableHeader />
           {isRowsPending
@@ -260,6 +274,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
                     )}
         </Table>
       </div>
+      <RenameColumnDialog ref={renameColumnRef} database={database} />
     </TableProvider>
   )
 }

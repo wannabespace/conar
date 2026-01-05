@@ -6,7 +6,7 @@ import { RiLoaderLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 import { useTableContext } from '~/components/table'
-import { databaseRowsQuery } from '~/entities/database'
+import { databaseRowsQuery } from '~/entities/database/queries'
 import { TableEmpty } from './table-empty'
 
 export function TableInfiniteLoader({

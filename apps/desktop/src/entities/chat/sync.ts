@@ -3,7 +3,7 @@ import { createCollection } from '@tanstack/react-db'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
 import { chats, chatsMessages, db, waitForMigrations } from '~/drizzle'
-import { waitForDatabasesSync } from '~/entities/database'
+import { waitForDatabasesSync } from '~/entities/database/sync'
 import { bearerToken } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
@@ -36,6 +36,9 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
       }
     })
     resolve()
+  },
+  onDelete: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map(m => orpc.chats.remove({ id: m.key })))
   },
 }))
 

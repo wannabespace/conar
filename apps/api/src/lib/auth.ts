@@ -1,4 +1,4 @@
-import type { BetterAuthPlugin, User } from 'better-auth'
+import type { Auth, BetterAuthPlugin, User } from 'better-auth'
 import { stripe } from '@better-auth/stripe'
 import { PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
@@ -66,7 +66,7 @@ function noSetCookiePlugin() {
   } satisfies BetterAuthPlugin
 }
 
-export const auth = betterAuth({
+export const auth: Auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
@@ -100,24 +100,26 @@ export const auth = betterAuth({
     emailHarmony(),
     noSetCookiePlugin(),
     anonymous(),
-    stripe({
-      stripeClient,
-      subscription: {
-        enabled: true,
-        plans: [
-          {
-            name: 'Pro',
-            priceId: env.STRIPE_MONTH_PRICE_ID!,
-            annualDiscountPriceId: env.STRIPE_ANNUAL_PRICE_ID!,
-            freeTrial: {
-              days: 7,
-            },
+    ...(stripeClient
+      ? [stripe({
+          stripeClient,
+          subscription: {
+            enabled: true,
+            plans: [
+              {
+                name: 'Pro',
+                priceId: env.STRIPE_MONTH_PRICE_ID!,
+                annualDiscountPriceId: env.STRIPE_ANNUAL_PRICE_ID!,
+                freeTrial: {
+                  days: 7,
+                },
+              },
+            ],
           },
-        ],
-      },
-      stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
-      createCustomerOnSignUp: true,
-    }),
+          stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
+          createCustomerOnSignUp: true,
+        })]
+      : []),
   ],
   user: {
     additionalFields: {

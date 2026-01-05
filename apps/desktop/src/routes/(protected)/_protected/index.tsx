@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useDatabasesSync } from '~/entities/database'
+import { useDatabasesSync } from '~/entities/database/sync'
 import { checkForUpdates, updatesStore } from '~/updates-observer'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'

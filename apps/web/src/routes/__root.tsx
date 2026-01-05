@@ -77,7 +77,11 @@ function RootComponent() {
       <head>
         <HeadContent />
       </head>
-      <body className="bg-gray-100 dark:bg-neutral-950">
+      <body className={`
+        bg-gray-100
+        dark:bg-neutral-950
+      `}
+      >
         <QueryClientProvider client={queryClient}>
           <Outlet />
           <ThemeObserver />

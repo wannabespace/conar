@@ -44,7 +44,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
     <EventsProvider>
       <ThemeObserver />
       <Toaster />
-      <div className="flex items-center justify-center min-h-screen p-4">
+      <div className="flex min-h-screen items-center justify-center p-4">
         <div className="relative z-20 w-full max-w-lg">
           <Card>
             <CardHeader className="text-center">

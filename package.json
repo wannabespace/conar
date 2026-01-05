@@ -1,7 +1,7 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.26.2",
+  "packageManager": "pnpm@10.27.0",
   "engines": {
     "bun": ">=1.3.0"
   },
@@ -21,8 +21,8 @@
     "drizzle:migrate": "turbo run drizzle:migrate",
     "check-types": "turbo run check-types",
     "update": "taze -r -I major",
-    "docker:start": "docker-compose -f docker-compose.dev.yml up -d",
-    "docker:stop": "docker-compose -f docker-compose.dev.yml down"
+    "docker:start": "docker compose -f docker-compose.dev.yml up -d",
+    "docker:stop": "docker compose -f docker-compose.dev.yml down"
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
@@ -30,6 +30,7 @@
     "@commitlint/config-conventional": "catalog:",
     "@eslint-react/eslint-plugin": "catalog:",
     "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "cross-env": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-better-tailwindcss": "catalog:",

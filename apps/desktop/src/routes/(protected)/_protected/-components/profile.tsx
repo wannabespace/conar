@@ -3,7 +3,8 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Skeleton } from '@conar/ui/components/skeleton'
 import { cn } from '@conar/ui/lib/utils'
 import { RiLogoutBoxLine } from '@remixicon/react'
-import { UserAvatar, useSignOut } from '~/entities/user'
+import { UserAvatar } from '~/entities/user/components'
+import { useSignOut } from '~/entities/user/hooks'
 
 export function Profile({ className }: { className?: string }) {
   const { data, signOut, isSigningOut } = useSignOut()

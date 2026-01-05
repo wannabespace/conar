@@ -1,6 +1,6 @@
 import type { databases } from '~/drizzle'
 import { useQueries } from '@tanstack/react-query'
-import { databaseConstraintsQuery, databaseTableColumnsQuery } from '~/entities/database'
+import { databaseConstraintsQuery, databaseTableColumnsQuery } from '~/entities/database/queries'
 
 export function useTableColumns({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
   const [columns, constraints] = useQueries({

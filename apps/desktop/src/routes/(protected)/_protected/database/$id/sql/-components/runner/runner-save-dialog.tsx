@@ -12,7 +12,7 @@ import { Label } from '@conar/ui/components/label'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
-import { queriesCollection } from '~/entities/query'
+import { queriesCollection } from '~/entities/query/sync'
 import { Route } from '../..'
 
 interface RunnerSaveDialogProps {

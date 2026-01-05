@@ -4,7 +4,7 @@ import { ShiftCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { RiAlertLine } from '@remixicon/react'
 import { useImperativeHandle, useRef, useState } from 'react'
-import { DANGEROUS_SQL_KEYWORDS } from '~/entities/database'
+import { DANGEROUS_SQL_KEYWORDS } from '~/entities/database/utils'
 
 const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
 
