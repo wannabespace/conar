@@ -117,6 +117,7 @@ catalog:
   ioredis: ^5.8.2
   ioredis-mock: ^8.13.1
   js-base64: ^3.7.8
+  js-confetti: ^0.13.1
   kysely: ^0.28.9
   loops: ^6.0.1
   lucide-react: ^0.562.0

@@ -20,7 +20,10 @@ export function Pricing({ className }: PricingSectionProps) {
 
   const plans: (PricingPlan & { link: LinkProps })[] = [
     { ...HOBBY_PLAN, link: { to: '/download' } },
-    { ...PRO_PLAN, link: { to: session ? '/account' : '/sign-in' } },
+    { ...PRO_PLAN, link: {
+      to: session ? '/account' : '/sign-in',
+      search: { period: isYearly ? 'yearly' : 'monthly' },
+    } },
   ]
 
   return (
