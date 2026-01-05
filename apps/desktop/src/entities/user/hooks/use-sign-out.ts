@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
+import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
 import { databasesCollection } from '~/entities/database/sync'
 import { queriesCollection } from '~/entities/query/sync'
 import { authClient, fullSignOut } from '~/lib/auth'

@@ -2,7 +2,7 @@ import type { chats } from '~/drizzle'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { chatsCollection } from '~/entities/chat'
+import { chatsCollection } from '~/entities/chat/sync'
 
 interface RemoveChatDialogProps {
   ref?: React.RefObject<{

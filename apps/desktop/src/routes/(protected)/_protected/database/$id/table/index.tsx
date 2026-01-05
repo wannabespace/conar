@@ -3,11 +3,12 @@ import type { Store } from '@tanstack/react-store'
 import type { storeState } from './-store'
 import { SQL_FILTERS_GROUPED } from '@conar/shared/filters/sql'
 import { title } from '@conar/shared/utils/title'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@conar/ui/components/resizable'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
+import { useDefaultLayout } from 'react-resizable-panels'
 import { FiltersProvider } from '~/components/table'
 import { addTab, databaseStore } from '~/entities/database/store'
 import { prefetchDatabaseCore, prefetchDatabaseTableCore } from '~/entities/database/utils'
@@ -160,23 +161,29 @@ function DatabaseTablesPage() {
     handleLastOpenedTableEvent()
   }, [schema, table, lastOpenedTable])
 
+  const { defaultLayout, onLayoutChange } = useDefaultLayout({
+    id: `database-layout-${database.id}`,
+    storage: localStorage,
+  })
+
   return (
     <ResizablePanelGroup
-      autoSaveId={`database-layout-${database.id}`}
-      direction="horizontal"
+      defaultLayout={defaultLayout}
+      onLayoutChange={onLayoutChange}
+      orientation="horizontal"
       className="flex"
     >
       <ResizablePanel
-        defaultSize={20}
-        minSize={10}
-        maxSize={50}
+        defaultSize="20%"
+        minSize="10%"
+        maxSize="50%"
         className="h-full rounded-lg border bg-background"
       >
         <Sidebar key={database.id} />
       </ResizablePanel>
-      <ResizableHandle className="w-1 bg-transparent" />
+      <ResizableSeparator className="w-1 bg-transparent" />
       <ResizablePanel
-        defaultSize={80}
+        defaultSize="80%"
         className="flex-1 rounded-lg border bg-background"
       >
         {schema && table && tableStore
