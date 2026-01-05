@@ -7,7 +7,7 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Skeleton } from '@conar/ui/components/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiLoader4Fill, RiTimeLine, RiWalletLine } from '@remixicon/react'
+import { RiHeart3Fill, RiInformationLine, RiLoader4Fill, RiTimeLine, RiWalletLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { format, formatDistanceToNow } from 'date-fns'
 import { useState } from 'react'
@@ -133,7 +133,42 @@ export function Subscription() {
               />
             )}
           </CardTitle>
-          <CardDescription>Manage your subscription</CardDescription>
+          <CardDescription className="flex items-center gap-2">
+            Manage your subscription
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="focus:outline-none">
+                    <RiInformationLine className="size-4" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs bg-background p-0">
+                  <div className={`
+                    space-y-4 bg-linear-to-b from-primary/5 to-card p-4 text-sm
+                  `}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`
+                        inline-flex size-6 items-center justify-center
+                        rounded-full bg-primary/20 text-primary
+                      `}
+                      >
+                        <RiHeart3Fill className="size-4" />
+                      </span>
+                      <span className="font-semibold text-primary">Conar is indie & user-supported</span>
+                    </div>
+                    <p className="text-balance text-foreground">
+                      Our small team works every day to improve Conar without sponsors or VCs, and on our own terms.
+                    </p>
+                    <p className="text-balance text-muted-foreground">
+                      Your subscription directly supports our work and future development.
+                    </p>
+                    <p className="font-medium text-balance text-foreground">Thank you for helping us stay independent.</p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </CardDescription>
         </div>
         {!subscription && !isPending && (
           <div className="flex items-center">
