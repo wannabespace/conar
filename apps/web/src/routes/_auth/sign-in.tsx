@@ -6,9 +6,8 @@ import { AuthForm } from './-components/auth-form'
 export const Route = createFileRoute('/_auth/sign-in')({
   component: SignInPage,
   validateSearch: type({
-    'redirectTo?': 'string',
+    'redirectPath?': 'string',
   }),
-  loaderDeps: ({ search }) => search,
   loader: async () => {
     const { data } = await getSessionIsomorphic()
 
@@ -19,6 +18,6 @@ export const Route = createFileRoute('/_auth/sign-in')({
 })
 
 function SignInPage() {
-  const { redirectTo } = Route.useSearch()
-  return <AuthForm type="sign-in" redirectTo={redirectTo} />
+  const { redirectPath } = Route.useSearch()
+  return <AuthForm type="sign-in" redirectPath={redirectPath} />
 }

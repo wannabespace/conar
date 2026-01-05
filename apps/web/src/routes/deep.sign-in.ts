@@ -3,31 +3,26 @@ import { type } from 'arktype'
 import { getSessionIsomorphic } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
-const searchType = type({
-  'codeChallenge': 'string',
-  'newUser?': 'boolean',
-})
-
 export const Route = createFileRoute('/deep/sign-in')({
-  server: {
-    handlers: {
-      GET: async ({ request }) => {
-        const url = new URL(request.url)
-        const { codeChallenge, newUser } = searchType.assert(Object.fromEntries(url.searchParams.entries()))
+  validateSearch: type({
+    'codeChallenge': 'string',
+    'newUser?': 'boolean',
+  }),
+  loaderDeps: ({ search }) => search,
+  loader: async ({ deps }) => {
+    const { codeChallenge, newUser } = deps
 
-        const { data } = await getSessionIsomorphic()
+    const { data } = await getSessionIsomorphic()
 
-        if (!data) {
-          throw redirect({
-            to: '/sign-in',
-            search: { redirectTo: `/deep/sign-in?codeChallenge=${codeChallenge}${newUser ? '&newUser=true' : ''}` },
-          })
-        }
+    if (data) {
+      await orpc.account.challenge.publish({ codeChallenge, newUser })
 
-        await orpc.account.challenge.publish({ codeChallenge, newUser })
+      throw redirect({ to: '/open' })
+    }
 
-        throw redirect({ to: '/open' })
-      },
-    },
+    throw redirect({
+      to: '/sign-in',
+      search: { redirectPath: `/deep/sign-in?codeChallenge=${codeChallenge}` },
+    })
   },
 })

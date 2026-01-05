@@ -27,16 +27,22 @@ const signUpSchema = baseAuthSchema.and({
   name: 'string',
 })
 
-function useSocialMutation(provider: 'google' | 'github', redirectTo?: string) {
+function useSocialMutation(provider: 'google' | 'github', redirectPath?: string) {
   const router = useRouter()
   const { url } = router.buildLocation({ to: '/account' })
 
   return useMutation({
     mutationKey: ['social', provider],
     mutationFn: async () => {
+      const callbackUrl = new URL(redirectPath ? location.origin + redirectPath : url.href)
+      const newUserCallbackUrl = new URL(callbackUrl)
+
+      newUserCallbackUrl.searchParams.set('newUser', 'true')
+
       const { error } = await authClient.signIn.social({
         provider,
-        callbackURL: redirectTo ? location.origin + redirectTo : url.href,
+        callbackURL: callbackUrl.href,
+        newUserCallbackURL: newUserCallbackUrl.href,
       })
 
       if (error) {
@@ -57,10 +63,10 @@ function Last() {
   )
 }
 
-function SocialAuthForm({ redirectTo }: { redirectTo?: string }) {
+function SocialAuthForm({ redirectPath }: { redirectPath?: string }) {
   const lastMethod = authClient.getLastUsedLoginMethod()
-  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google', redirectTo)
-  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github', redirectTo)
+  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google', redirectPath)
+  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github', redirectPath)
 
   return (
     <>
@@ -98,7 +104,7 @@ function SocialAuthForm({ redirectTo }: { redirectTo?: string }) {
   )
 }
 
-export function AuthForm({ type, redirectTo }: { type: Type, redirectTo?: string }) {
+export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: string }) {
   const lastMethod = authClient.getLastUsedLoginMethod()
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
@@ -133,7 +139,7 @@ export function AuthForm({ type, redirectTo }: { type: Type, redirectTo?: string
             action: {
               label: 'Sign in',
               onClick: () => {
-                router.navigate({ to: '/sign-in' })
+                router.navigate({ to: '/sign-in', search: { redirectPath } })
               },
             },
           })
@@ -143,7 +149,18 @@ export function AuthForm({ type, redirectTo }: { type: Type, redirectTo?: string
         }
       }
 
-      router.invalidate()
+      if (redirectPath) {
+        const url = new URL(location.origin + redirectPath)
+
+        if (type === 'sign-up') {
+          url.searchParams.set('newUser', 'true')
+        }
+
+        await router.navigate({ to: url.pathname + url.search })
+      }
+      else {
+        await router.invalidate()
+      }
     },
   })
 
@@ -160,7 +177,10 @@ export function AuthForm({ type, redirectTo }: { type: Type, redirectTo?: string
             ? 'Already have an account?'
             : 'Don\'t have an account?'}
           {' '}
-          <Link to={type === 'sign-up' ? '/sign-in' : '/sign-up'}>
+          <Link
+            to={type === 'sign-up' ? '/sign-in' : '/sign-up'}
+            search={{ redirectPath }}
+          >
             {type === 'sign-up' ? 'Sign in' : 'Sign up'}
           </Link>
         </p>
@@ -265,7 +285,7 @@ export function AuthForm({ type, redirectTo }: { type: Type, redirectTo?: string
           Or continue with
         </span>
       </div>
-      <SocialAuthForm redirectTo={redirectTo} />
+      <SocialAuthForm redirectPath={redirectPath} />
     </>
   )
 }

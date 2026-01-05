@@ -14,14 +14,6 @@ export const Route = createFileRoute('/open')({
   }),
 })
 
-function getUrl(token: string, codeChallenge: string, newUser?: boolean) {
-  return `conar://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
-}
-
-function handleCopyUrl(token: string, codeChallenge: string, newUser?: boolean) {
-  copy(getUrl(token, codeChallenge, newUser), 'URL copied to clipboard')
-}
-
 function OpenPageContent() {
   const { data } = authClient.useSession()
 
@@ -72,6 +64,14 @@ function OpenPageContent() {
       </Card>
     </div>
   )
+}
+
+function getUrl(token: string, codeChallenge: string, newUser?: boolean) {
+  return `conar://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
+}
+
+function handleCopyUrl(token: string, codeChallenge: string, newUser?: boolean) {
+  copy(getUrl(token, codeChallenge, newUser), 'URL copied to clipboard')
 }
 
 function OpenPage() {
