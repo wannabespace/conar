@@ -36,6 +36,7 @@
     "pg": "catalog:"
   },
   "devDependencies": {
+    "@ai-sdk/mcp": "catalog:",
     "@ai-sdk/react": "catalog:",
     "@conar/api": "workspace:*",
     "@conar/configs": "workspace:*",

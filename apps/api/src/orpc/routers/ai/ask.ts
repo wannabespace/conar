@@ -1,16 +1,16 @@
-import type { LanguageModel } from 'ai'
+import type { LanguageModelV3 } from '@ai-sdk/provider'
 import type { AppUIMessage } from '~/ai-tools'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
-import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
+import { convertToModelMessages, smoothStream, streamText } from 'ai'
 import { createRetryable } from 'ai-retry'
 import { type } from 'arktype'
 import { consola } from 'consola'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
-import { convertToAppUIMessage, tools } from '~/ai-tools'
+import { context7ToolDescriptions, convertToAppUIMessage, createContext7Tools, getContext7SystemPrompt, tools } from '~/ai-tools'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
@@ -32,8 +32,8 @@ const chatInputType = type({
 const mainModel = createRetryable({
   model: anthropic('claude-sonnet-4-5'),
   retries: [
-    anthropic('claude-opus-4-1'),
-    google('gemini-2.5-pro'),
+    { model: anthropic('claude-opus-4-1') },
+    { model: google('gemini-2.5-pro') },
   ],
 })
 
@@ -49,7 +49,7 @@ function handleError(error: unknown) {
   return 'Sorry, I was unable to generate a response due to an error. Please try again.'
 }
 
-function generateStream({
+async function generateStream({
   messages,
   type,
   context,
@@ -61,7 +61,7 @@ function generateStream({
   messages: AppUIMessage[]
   type: typeof chatInputType.infer['type']
   context: typeof chatInputType.infer['context']
-  model: Exclude<LanguageModel, string>
+  model: Exclude<LanguageModelV3, string>
   signal?: AbortSignal
   chatId: string
   userId: string
@@ -73,7 +73,16 @@ function generateStream({
     partsCount: message.parts.length,
   })), null, 2))
 
-  return streamText({
+  const context7Tools = createContext7Tools()
+
+  const allTools = {
+    ...tools,
+    ...context7Tools,
+  }
+
+  const modelMessages = await convertToModelMessages(messages)
+
+  return await streamText({
     messages: [
       {
         role: 'system',
@@ -98,23 +107,34 @@ function generateStream({
           'Additional information:',
           `- Current date and time: ${new Date().toISOString()}`,
           '',
-          'You can use the following tools to help you generate the SQL code:',
-          `- ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}`,
+          '## Available Tools',
           '',
-          'User provided context:',
+          '### Database Tools',
+          `${Object.entries(tools).map(([toolName, { description }]) => `- **${toolName}**: ${description}`).join('\n')}`,
+          '',
+          '### Context7 Documentation Tools',
+          'Use these tools to search for up-to-date library documentation when users ask about programming concepts, APIs, or need code examples.',
+          '',
+          `- **resolveLibrary**: ${context7ToolDescriptions.resolveLibrary}`,
+          '',
+          `- **getLibraryDocs**: ${context7ToolDescriptions.getLibraryDocs}`,
+          '',
+          '### Context7 Workflow',
+          getContext7SystemPrompt(),
+          '',
+          '## User Provided Context',
           context,
         ].join('\n'),
       },
-      ...convertToModelMessages(messages),
+      ...modelMessages,
     ],
-    stopWhen: stepCountIs(20),
     abortSignal: signal,
     model: withPosthog(model, {
       chatId,
       userId,
     }),
     experimental_transform: smoothStream(),
-    tools,
+    tools: allTools,
   })
 }
 
@@ -201,7 +221,7 @@ export const ask = orpc
     })
 
     try {
-      const result = generateStream({
+      const result = await generateStream({
         type: input.type,
         model: input.fallback ? fallbackModel : mainModel,
         context: input.context,
@@ -250,14 +270,13 @@ export const ask = orpc
         },
         onError: (error) => {
           consola.error('error toUIMessageStream onError', error)
-
           return handleError(error)
         },
       })
 
       try {
         const streamId = v7()
-        await streamContext.createNewResumableStream(streamId, () => result.textStream)
+        await streamContext.createNewResumableStream(streamId, () => result.textStream as unknown as ReadableStream<string>)
         await db.update(chats).set({ activeStreamId: streamId }).where(eq(chats.id, input.id))
       }
       catch (error) {

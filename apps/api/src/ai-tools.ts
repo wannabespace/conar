@@ -1,9 +1,21 @@
-import type { InferUITools, UIDataTypes, UIMessage } from 'ai'
+import type { InferUITools, Tool, UIDataTypes, UIMessage } from 'ai'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { webSearch } from '@exalabs/ai-sdk'
+import {
+  AGENT_PROMPT as CONTEXT7_AGENT_PROMPT,
+  GET_LIBRARY_DOCS_DESCRIPTION,
+  getLibraryDocs,
+  RESOLVE_LIBRARY_DESCRIPTION,
+  resolveLibrary,
+} from '@upstash/context7-tools-ai-sdk'
 import { tool } from 'ai'
 import * as z from 'zod'
 import { env } from '~/env'
+
+const context7Config = {
+  apiKey: env.CONTEXT7_API_KEY,
+  defaultMaxResults: 15,
+}
 
 export const tools = {
   columns: tool({
@@ -15,12 +27,15 @@ export const tools = {
       }),
     }),
     outputSchema: z.array(z.object({
-      isEditable: z.boolean(),
-      isNullable: z.boolean(),
+      schema: z.string(),
       table: z.string(),
       id: z.string(),
-      type: z.string(),
       default: z.string().nullable(),
+      type: z.string(),
+      enum: z.string().optional(),
+      isArray: z.boolean().optional(),
+      isEditable: z.boolean(),
+      isNullable: z.boolean(),
     })),
   }),
   enums: tool({
@@ -58,9 +73,28 @@ export const tools = {
         schemaName: z.string().describe('The name of the schema to query'),
       }).describe('The name of the table and schema to query'),
     }),
-    outputSchema: z.any(),
+    outputSchema: z.union([
+      z.array(z.record(z.string(), z.unknown())),
+      z.object({ error: z.string() }),
+    ]),
   }),
   webSearch: webSearch({ apiKey: env.EXA_API_KEY }),
+}
+
+export function createContext7Tools(): Record<string, Tool> {
+  return {
+    resolveLibrary: resolveLibrary(context7Config),
+    getLibraryDocs: getLibraryDocs(context7Config),
+  }
+}
+
+export function getContext7SystemPrompt(): string {
+  return CONTEXT7_AGENT_PROMPT
+}
+
+export const context7ToolDescriptions = {
+  resolveLibrary: RESOLVE_LIBRARY_DESCRIPTION,
+  getLibraryDocs: GET_LIBRARY_DOCS_DESCRIPTION,
 }
 
 export type AppUIMessage = UIMessage<
