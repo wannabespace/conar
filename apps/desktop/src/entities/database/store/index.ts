@@ -44,6 +44,19 @@ export const databaseStoreType = type({
   tabs: tabType.array(),
   tablesSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
+  tablesTreeOpenedFolders: type({
+    schema: 'string',
+    folder: 'string',
+  }).array(),
+  tableGroups: type({
+    schema: 'string',
+    folder: 'string',
+    tables: 'string[]',
+  }).array(),
+  selectedTables: type({
+    schema: 'string',
+    table: 'string',
+  }).array(),
   pinnedTables: type({
     schema: 'string',
     table: 'string',
@@ -80,6 +93,9 @@ const defaultState: typeof databaseStoreType.infer = {
   tabs: [],
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
+  tablesTreeOpenedFolders: [],
+  tableGroups: [],
+  selectedTables: [],
   pinnedTables: [],
   layout: {
     chatVisible: true,
@@ -133,6 +149,9 @@ export function databaseStore(id: string) {
       tabs: currentVal.tabs,
       tablesSearch: currentVal.tablesSearch,
       tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
+      tablesTreeOpenedFolders: currentVal.tablesTreeOpenedFolders,
+      tableGroups: currentVal.tableGroups,
+      selectedTables: currentVal.selectedTables,
       pinnedTables: currentVal.pinnedTables,
       layout: currentVal.layout,
     } satisfies Omit<typeof currentVal, 'queriesToRun' | 'files' | 'editorQueries'>))

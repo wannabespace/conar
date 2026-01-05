@@ -148,3 +148,144 @@ export function setChatPosition(id: string, position: typeof databaseStoreType.i
     },
   } satisfies typeof state))
 }
+
+export function toggleFolder(id: string, schema: string, folder: string) {
+  const store = databaseStore(id)
+  store.setState((state) => {
+    const key = `${schema}:${folder}`
+    const isOpen = state.tablesTreeOpenedFolders.some(f => `${f.schema}:${f.folder}` === key)
+
+    return {
+      ...state,
+      tablesTreeOpenedFolders: isOpen
+        ? state.tablesTreeOpenedFolders.filter(f => `${f.schema}:${f.folder}` !== key)
+        : [...state.tablesTreeOpenedFolders, { schema, folder }],
+    } satisfies typeof state
+  })
+}
+
+export function addTableToGroup(id: string, schema: string, folder: string, table: string) {
+  const store = databaseStore(id)
+  store.setState((state) => {
+    const existingGroup = state.tableGroups.find(g => g.schema === schema && g.folder === folder)
+
+    if (existingGroup) {
+      if (existingGroup.tables.includes(table)) {
+        return state
+      }
+
+      return {
+        ...state,
+        tableGroups: state.tableGroups.map(g =>
+          g.schema === schema && g.folder === folder
+            ? { ...g, tables: [...g.tables, table] }
+            : g,
+        ),
+      } satisfies typeof state
+    }
+
+    return {
+      ...state,
+      tableGroups: [...state.tableGroups, { schema, folder, tables: [table] }],
+    } satisfies typeof state
+  })
+}
+
+export function removeTableFromGroup(id: string, schema: string, folder: string, table: string) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    tableGroups: state.tableGroups
+      .map(g =>
+        g.schema === schema && g.folder === folder
+          ? { ...g, tables: g.tables.filter(t => t !== table) }
+          : g,
+      )
+      .filter(g => g.tables.length > 0),
+  } satisfies typeof state))
+}
+
+export function renameGroup(id: string, schema: string, oldFolder: string, newFolder: string) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    tableGroups: state.tableGroups.map(g =>
+      g.schema === schema && g.folder === oldFolder
+        ? { ...g, folder: newFolder }
+        : g,
+    ),
+    tablesTreeOpenedFolders: state.tablesTreeOpenedFolders.map(f =>
+      f.schema === schema && f.folder === oldFolder
+        ? { schema, folder: newFolder }
+        : f,
+    ),
+  } satisfies typeof state))
+}
+
+export function deleteGroup(id: string, schema: string, folder: string) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    tableGroups: state.tableGroups.filter(g => !(g.schema === schema && g.folder === folder)),
+    tablesTreeOpenedFolders: state.tablesTreeOpenedFolders.filter(f => !(f.schema === schema && f.folder === folder)),
+  } satisfies typeof state))
+}
+
+export function toggleTableSelection(id: string, schema: string, table: string) {
+  const store = databaseStore(id)
+  store.setState((state) => {
+    const key = `${schema}:${table}`
+    const isSelected = state.selectedTables.some(t => `${t.schema}:${t.table}` === key)
+
+    return {
+      ...state,
+      selectedTables: isSelected
+        ? state.selectedTables.filter(t => `${t.schema}:${t.table}` !== key)
+        : [...state.selectedTables, { schema, table }],
+    } satisfies typeof state
+  })
+}
+
+export function clearTableSelection(id: string) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    selectedTables: [],
+  } satisfies typeof state))
+}
+
+export function selectMultipleTables(id: string, tables: { schema: string, table: string }[]) {
+  const store = databaseStore(id)
+  store.setState(state => ({
+    ...state,
+    selectedTables: tables,
+  } satisfies typeof state))
+}
+
+export function addMultipleTablesToGroup(id: string, schema: string, folder: string, tables: string[]) {
+  const store = databaseStore(id)
+  store.setState((state) => {
+    const existingGroup = state.tableGroups.find(g => g.schema === schema && g.folder === folder)
+
+    if (existingGroup) {
+      const newTables = tables.filter(t => !existingGroup.tables.includes(t))
+      if (newTables.length === 0) {
+        return state
+      }
+
+      return {
+        ...state,
+        tableGroups: state.tableGroups.map(g =>
+          g.schema === schema && g.folder === folder
+            ? { ...g, tables: [...g.tables, ...newTables] }
+            : g,
+        ),
+      } satisfies typeof state
+    }
+
+    return {
+      ...state,
+      tableGroups: [...state.tableGroups, { schema, folder, tables }],
+    } satisfies typeof state
+  })
+}
