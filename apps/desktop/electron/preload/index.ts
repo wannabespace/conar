@@ -1,6 +1,6 @@
 import type { sendToast } from '../main'
 import type { electron } from '../main/lib/events'
-import type { UpdatesStatus } from '~/updates-observer'
+import type { UpdatesStatus } from '~/use-updates-observer'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { contextBridge, ipcRenderer } from 'electron'
 
@@ -8,7 +8,6 @@ export type ElectronPreload = typeof electron & {
   app: {
     onDeepLink: (callback: (url: string) => void) => () => void
     onUpdatesStatus: (callback: (params: { status: UpdatesStatus, message?: string }) => void) => () => void
-    onNavigate: (callback: (path: string) => void) => () => void
     onSendToast: (callback: (params: Parameters<typeof sendToast>[0]) => void) => () => void
   }
   versions: {
@@ -60,11 +59,6 @@ contextBridge.exposeInMainWorld('electron', {
       const listener = (_event: Electron.IpcRendererEvent, { status, message }: { status: UpdatesStatus, message?: string }) => callback({ status, message })
       ipcRenderer.on('updates-status', listener)
       return () => ipcRenderer.off('updates-status', listener)
-    },
-    onNavigate: (callback) => {
-      const listener = (_event: Electron.IpcRendererEvent, path: string) => callback(path)
-      ipcRenderer.on('app.navigate', listener)
-      return () => ipcRenderer.off('app.navigate', listener)
     },
     onSendToast: (callback) => {
       const listener = (_event: Electron.IpcRendererEvent, params: Parameters<typeof sendToast>[0]) => callback(params)

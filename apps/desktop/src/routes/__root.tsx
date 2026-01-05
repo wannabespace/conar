@@ -15,7 +15,8 @@ import { ErrorPage } from '~/error-page'
 import { authClient } from '~/lib/auth'
 import { EventsProvider } from '~/lib/events'
 import { queryClient } from '~/main'
-import { useUpdatesObserver } from '~/updates-observer'
+import { useDeepLinksObserver } from '~/use-deep-links-observer'
+import { useUpdatesObserver } from '~/use-updates-observer'
 
 export const Route = createRootRoute({
   component: RootDocument,
@@ -30,6 +31,7 @@ function RootDocument() {
   const router = useRouter()
 
   useUpdatesObserver()
+  useDeepLinksObserver()
 
   useEffect(() => {
     if (isPending)
@@ -37,12 +39,6 @@ function RootDocument() {
 
     enterAppAnimation()
   }, [isPending])
-
-  useEffect(() => {
-    return window.electron?.app.onNavigate((path) => {
-      router.navigate({ to: path })
-    })
-  }, [router])
 
   return (
     <>

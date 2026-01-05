@@ -1,13 +1,12 @@
 import { useNetwork } from '@conar/ui/hookas/use-network'
 import { useMatches, useRouter } from '@tanstack/react-router'
-import { useEffect, useEffectEvent } from 'react'
+import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { identifyUser } from '~/lib/events'
 import { authClient, bearerToken } from './lib/auth'
-import { handleDeepLink } from './lib/deep-links'
 
 export function AuthObserver() {
-  const { data, error, isPending, refetch } = authClient.useSession()
+  const { data, error, isPending } = authClient.useSession()
   const router = useRouter()
   const { online } = useNetwork()
   const match = useMatches({
@@ -56,26 +55,6 @@ export function AuthObserver() {
     if (isSignedInButServerError && online)
       toast.error('Something went wrong with our server. You can continue working, but some features may not work as expected.')
   }, [isSignedInButServerError, online])
-
-  async function handle(url: string) {
-    const { type } = await handleDeepLink(url)
-
-    if (type === 'session') {
-      refetch()
-    }
-  }
-
-  const handleEvent = useEffectEvent(handle)
-
-  useEffect(() => {
-    if (window.initialDeepLink) {
-      handleEvent(window.initialDeepLink)
-
-      window.initialDeepLink = null
-    }
-
-    return window.electron?.app.onDeepLink(handleEvent)
-  }, [])
 
   return <></>
 }

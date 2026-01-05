@@ -10,7 +10,7 @@ import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, Ri
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useDatabasesSync } from '~/entities/database/sync'
-import { checkForUpdates, updatesStore } from '~/updates-observer'
+import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
 
@@ -27,13 +27,21 @@ function DashboardPage() {
 
   return (
     <ScrollArea className="overflow-auto">
-      <div className="flex flex-col mx-auto max-w-3xl w-full px-6 py-10 h-full">
-        <h1 className="scroll-m-20 mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
+      <div className="mx-auto flex h-full w-full max-w-3xl flex-col px-6 py-10">
+        <h1 className={`
+          mb-6 scroll-m-20 text-4xl font-extrabold tracking-tight
+          lg:text-5xl
+        `}
+        >
           Dashboard
         </h1>
         <Profile className="mb-8" />
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl lg:text-4xl font-bold">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className={`
+            text-3xl font-bold
+            lg:text-4xl
+          `}
+          >
             Connections
           </h2>
           <div className="flex items-center gap-2">
@@ -44,7 +52,12 @@ function DashboardPage() {
               onClick={() => sync()}
             >
               <LoadingContent loading={isSyncing}>
-                <ContentSwitch active={isSyncing} activeContent={<RiCheckLine className="text-success" />}>
+                <ContentSwitch
+                  active={isSyncing}
+                  activeContent={(
+                    <RiCheckLine className="text-success" />
+                  )}
+                >
                   <RiLoopLeftLine />
                 </ContentSwitch>
               </LoadingContent>
@@ -60,12 +73,15 @@ function DashboardPage() {
         <DatabasesList />
         <div className="mt-auto py-6">
           <Separator />
-          <div className="mt-3 flex gap-2 items-center">
+          <div className="mt-3 flex items-center gap-2">
             <a
               href="https://conar.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
+              className={`
+                p-1 text-muted-foreground/50 transition-colors
+                hover:text-muted-foreground/70
+              `}
             >
               <RiGlobalLine className="size-4" />
             </a>
@@ -73,7 +89,10 @@ function DashboardPage() {
               href={SOCIAL_LINKS.TWITTER}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
+              className={`
+                p-1 text-muted-foreground/50 transition-colors
+                hover:text-muted-foreground/70
+              `}
             >
               <RiTwitterXLine className="size-4" />
             </a>
@@ -81,7 +100,10 @@ function DashboardPage() {
               href={SOCIAL_LINKS.DISCORD}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
+              className={`
+                p-1 text-muted-foreground/50 transition-colors
+                hover:text-muted-foreground/70
+              `}
             >
               <RiDiscordLine className="size-4" />
             </a>
@@ -89,7 +111,10 @@ function DashboardPage() {
               href={SOCIAL_LINKS.GITHUB}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground/50 p-1 hover:text-muted-foreground/70 transition-colors"
+              className={`
+                p-1 text-muted-foreground/50 transition-colors
+                hover:text-muted-foreground/70
+              `}
             >
               <RiGithubLine className="size-4" />
             </a>
@@ -97,7 +122,11 @@ function DashboardPage() {
             <button
               type="button"
               onClick={() => checkForUpdates()}
-              className="cursor-pointer text-xs text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors"
+              className={`
+                cursor-pointer text-xs text-muted-foreground/50
+                transition-colors
+                hover:text-muted-foreground/70
+              `}
             >
               Current version
               {' '}
@@ -105,11 +134,19 @@ function DashboardPage() {
               {version}
             </button>
             {' '}
-            {versionStatus === 'checking' && <RiLoader4Line className="size-3 animate-spin text-muted-foreground/50" />}
+            {versionStatus === 'checking' && (
+              <RiLoader4Line className={`
+                size-3 animate-spin text-muted-foreground/50
+              `}
+              />
+            )}
             {versionStatus === 'downloading' && (
               <Tooltip>
                 <TooltipTrigger>
-                  <RiDownloadLine className="size-3 animate-bounce text-muted-foreground/50" />
+                  <RiDownloadLine className={`
+                    size-3 animate-bounce text-muted-foreground/50
+                  `}
+                  />
                 </TooltipTrigger>
                 <TooltipContent>
                   Downloading update...

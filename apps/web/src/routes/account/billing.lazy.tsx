@@ -13,12 +13,12 @@ import {
 } from '@conar/ui/components/table'
 import { RiExternalLinkLine, RiWalletLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { useBillingPortal } from '~/hooks/use-subscription'
 import { orpcQuery } from '~/lib/orpc'
 
-export const Route = createFileRoute('/account/billing')({
+export const Route = createLazyFileRoute('/account/billing')({
   component: RouteComponent,
 })
 
@@ -76,21 +76,24 @@ function RouteComponent() {
                   <TableBody>
                     {isPending
                       ? Array.from({ length: 5 }).map((_, index) => (
-                          // eslint-disable-next-line react/no-array-index-key
-                          <TableRow key={`skeleton-${index}`}>
-                            <TableCell style={{ width: '35%' }}>
-                              <Skeleton className="h-4 w-40" />
-                            </TableCell>
-                            <TableCell style={{ width: '25%' }}>
-                              <Skeleton className="h-4 w-20" />
-                            </TableCell>
-                            <TableCell style={{ width: '20%' }}>
-                              <Skeleton className="h-4 w-16" />
-                            </TableCell>
-                            <TableCell style={{ width: '20%' }}>
-                              <Skeleton className="ml-auto h-4 w-12" />
-                            </TableCell>
-                          </TableRow>
+
+                          (
+                            // eslint-disable-next-line react/no-array-index-key
+                            <TableRow key={`skeleton-${index}`}>
+                              <TableCell style={{ width: '35%' }}>
+                                <Skeleton className="h-4 w-40" />
+                              </TableCell>
+                              <TableCell style={{ width: '25%' }}>
+                                <Skeleton className="h-4 w-20" />
+                              </TableCell>
+                              <TableCell style={{ width: '20%' }}>
+                                <Skeleton className="h-4 w-16" />
+                              </TableCell>
+                              <TableCell style={{ width: '20%' }}>
+                                <Skeleton className="ml-auto h-4 w-12" />
+                              </TableCell>
+                            </TableRow>
+                          )
                         ))
                       : (
                           invoices.map(invoice => (

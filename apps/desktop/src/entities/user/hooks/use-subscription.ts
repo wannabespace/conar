@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { orpcQuery } from '~/lib/orpc'
 
 export function useSubscriptionsQuery() {
-  return useQuery(orpcQuery.account.subscription.list.queryOptions())
+  return useQuery(orpcQuery.account.subscription.list.queryOptions({
+    throwOnError: false,
+  }))
 }
 
 export function useSubscription() {

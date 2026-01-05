@@ -27,7 +27,7 @@ const signUpSchema = baseAuthSchema.and({
   name: 'string',
 })
 
-function useSocialMutation(provider: 'google' | 'github') {
+function useSocialMutation(provider: 'google' | 'github', redirectTo?: string) {
   const router = useRouter()
   const { url } = router.buildLocation({ to: '/account' })
 
@@ -36,7 +36,7 @@ function useSocialMutation(provider: 'google' | 'github') {
     mutationFn: async () => {
       const { error } = await authClient.signIn.social({
         provider,
-        callbackURL: url.href,
+        callbackURL: redirectTo ? location.origin + redirectTo : url.href,
       })
 
       if (error) {
@@ -57,10 +57,10 @@ function Last() {
   )
 }
 
-function SocialAuthForm() {
+function SocialAuthForm({ redirectTo }: { redirectTo?: string }) {
   const lastMethod = authClient.getLastUsedLoginMethod()
-  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google')
-  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github')
+  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google', redirectTo)
+  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github', redirectTo)
 
   return (
     <>
@@ -98,7 +98,7 @@ function SocialAuthForm() {
   )
 }
 
-export function AuthForm({ type }: { type: Type }) {
+export function AuthForm({ type, redirectTo }: { type: Type, redirectTo?: string }) {
   const lastMethod = authClient.getLastUsedLoginMethod()
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
@@ -265,7 +265,7 @@ export function AuthForm({ type }: { type: Type }) {
           Or continue with
         </span>
       </div>
-      <SocialAuthForm />
+      <SocialAuthForm redirectTo={redirectTo} />
     </>
   )
 }

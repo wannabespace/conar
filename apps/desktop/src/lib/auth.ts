@@ -5,20 +5,12 @@ import { clearDb } from '~/drizzle'
 import { identifyUser } from './events'
 import { apiUrl } from './utils'
 
-export const CODE_CHALLENGE_KEY = 'conar.code_challenge'
-export const BEARER_TOKEN_KEY = 'conar.bearer_token'
-export const RESET_TOKEN_KEY = 'conar.reset_token'
+const BEARER_TOKEN_KEY = 'conar.bearer_token'
 
 export const bearerToken = {
   get: () => localStorage.getItem(BEARER_TOKEN_KEY),
   set: (bearerToken: string) => localStorage.setItem(BEARER_TOKEN_KEY, bearerToken),
   remove: () => localStorage.removeItem(BEARER_TOKEN_KEY),
-}
-
-export const codeChallenge = {
-  get: () => sessionStorage.getItem(CODE_CHALLENGE_KEY),
-  set: (codeChallenge: string) => sessionStorage.setItem(CODE_CHALLENGE_KEY, codeChallenge),
-  remove: () => sessionStorage.removeItem(CODE_CHALLENGE_KEY),
 }
 
 export function successAuthToast(newUser: boolean) {

@@ -2,9 +2,11 @@ catalogMode: prefer
 cleanupUnusedCatalogs: true
 shellEmulator: true
 trustPolicy: no-downgrade
+
 packages:
   - packages/*
   - apps/*
+
 catalog:
   '@ai-sdk/anthropic': ^2.0.56
   '@ai-sdk/google': ^2.0.51
@@ -162,6 +164,7 @@ catalog:
   vite: ^7.3.0
   vite-tsconfig-paths: ^6.0.3
   zod: ^4.3.5
+
 ignoredBuiltDependencies:
   - '@firebase/util'
   - core-js
@@ -169,6 +172,7 @@ ignoredBuiltDependencies:
   - esbuild
   - protobufjs
 onlyBuiltDependencies:
+
   - lefthook
   - electron
   - electron-winstaller

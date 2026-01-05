@@ -76,6 +76,7 @@ export const auth: Auth = betterAuth({
         returned: false,
         input: false,
         defaultValue: () => nanoid(),
+        required: true,
       },
       stripe_customer_id: {
         type: 'string',

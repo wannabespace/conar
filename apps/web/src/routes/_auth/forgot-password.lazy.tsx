@@ -2,11 +2,11 @@ import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { useAppForm } from '@conar/ui/hooks/use-app-form'
 import { useMutation } from '@tanstack/react-query'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { authClient } from '~/lib/auth'
 
-export const Route = createFileRoute('/_auth/forgot-password')({
+export const Route = createLazyFileRoute('/_auth/forgot-password')({
   component: ForgotPasswordPage,
 })
 
