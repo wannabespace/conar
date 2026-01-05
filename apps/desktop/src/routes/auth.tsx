@@ -16,15 +16,15 @@ export const Route = createFileRoute('/auth')({
   component: AuthPage,
 })
 
-let verifier: string | null = null
-
 function AuthPage() {
   const { refetch } = authClient.useSession()
+  const [verifier, setVerifier] = useState<string | null>(null)
   const [codeChallenge, setCodeChallenge] = useState<string | null>(null)
 
   const signInWithChallenge = async () => {
-    verifier = generateVerifier()
+    const verifier = generateVerifier()
     const codeChallenge = await generateCodeChallenge(verifier)
+    setVerifier(verifier)
     setCodeChallenge(codeChallenge)
     window.open(`${import.meta.env.VITE_PUBLIC_WEB_URL}/deep/sign-in?codeChallenge=${codeChallenge}`, '_blank')
   }
@@ -47,7 +47,7 @@ function AuthPage() {
     }
 
     exchange({ codeChallenge, verifier })
-  }, [data, exchange, codeChallenge])
+  }, [data, exchange, codeChallenge, verifier])
 
   return (
     <div className="flex flex-col bg-background px-4 py-6">
