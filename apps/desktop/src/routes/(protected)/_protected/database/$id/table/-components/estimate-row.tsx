@@ -12,17 +12,26 @@ export function TableRowCounter({ schema, table }: TableRowCounterProps) {
   const { database } = Route.useLoaderData()
 
   const { data, isLoading } = useQuery<{
-    count: number
+    count: string
     isEstimated: boolean
   }>({
-    queryKey: ['totalCount', database?.id, schema, table],
+    queryKey: [
+      'database',
+      database?.id,
+      'schema',
+      schema,
+      'table',
+      table,
+      'total',
+      { enforceExactCount: false },
+    ],
 
     queryFn: () =>
       totalQuery.run(database, {
         schema,
         table,
         enforceExactCount: false,
-      }) as Promise<{ count: number, isEstimated: boolean }>,
+      }),
 
     enabled: Boolean(database?.id && table),
     staleTime: Infinity,
@@ -34,7 +43,15 @@ export function TableRowCounter({ schema, table }: TableRowCounterProps) {
     return <span className="animate-pulse opacity-50 text-[11px]">...</span>
   }
 
-  const count = Number.isNaN(data.count) ? 0 : data.count
+  const count = Number(data.count)
+
+  if (!Number.isFinite(count)) {
+    return (
+      <span className="text-muted-foreground text-[11px]">
+        —
+      </span>
+    )
+  }
 
   return (
     <span className="inline-flex items-center gap-1 text-[11px] font-medium">
