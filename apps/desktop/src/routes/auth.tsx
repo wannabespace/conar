@@ -2,7 +2,7 @@ import { generateCodeChallenge, generateVerifier } from '@conar/shared/utils/cha
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
 import { RiErrorWarningLine, RiLoader3Line } from '@remixicon/react'
-import { skipToken, useQuery } from '@tanstack/react-query'
+import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
@@ -16,31 +16,38 @@ export const Route = createFileRoute('/auth')({
   component: AuthPage,
 })
 
+let verifier: string | null = null
+
 function AuthPage() {
   const { refetch } = authClient.useSession()
-  const [input, setInput] = useState<{ codeChallenge: string, verifier: string } | undefined>(undefined)
+  const [codeChallenge, setCodeChallenge] = useState<string | null>(null)
 
   const signInWithChallenge = async () => {
-    const verifier = generateVerifier()
+    verifier = generateVerifier()
     const codeChallenge = await generateCodeChallenge(verifier)
-    setInput({ codeChallenge, verifier })
+    setCodeChallenge(codeChallenge)
     window.open(`${import.meta.env.VITE_PUBLIC_WEB_URL}/deep/sign-in?codeChallenge=${codeChallenge}`, '_blank')
   }
 
   const { data, error, isPending } = useQuery(orpcQuery.account.challenge.listen.experimental_liveOptions({
-    input: input || skipToken,
+    input: codeChallenge ? { codeChallenge } : skipToken,
     throwOnError: false,
+  }))
+  const { mutate: exchange } = useMutation(orpcQuery.account.challenge.exchange.mutationOptions({
+    onSuccess: (data) => {
+      bearerToken.set(data.token)
+      refetch()
+      successAuthToast(!!data.newUser)
+    },
   }))
 
   useEffect(() => {
-    if (!data) {
+    if (!data?.ready || !codeChallenge || !verifier) {
       return
     }
 
-    bearerToken.set(data.token)
-    refetch()
-    successAuthToast(!!data.newUser)
-  }, [data, refetch])
+    exchange({ codeChallenge, verifier })
+  }, [data, exchange, codeChallenge])
 
   return (
     <div className="flex flex-col bg-background px-4 py-6">
@@ -52,13 +59,13 @@ function AuthPage() {
           className="mb-8 size-12"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
         />
         <motion.h1
           className="text-2xl font-medium tracking-tighter text-foreground"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.33 }}
+          transition={{ duration: 0.8, delay: 0.23 }}
         >
           Conar
         </motion.h1>
@@ -66,7 +73,7 @@ function AuthPage() {
           className="mb-8 text-muted-foreground"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.36 }}
+          transition={{ duration: 0.8, delay: 0.26 }}
         >
           Start managing your data
         </motion.p>
@@ -74,7 +81,7 @@ function AuthPage() {
           className="mb-2 w-full"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.39 }}
+          transition={{ duration: 0.8, delay: 0.29 }}
           onClick={() => signInWithChallenge()}
         >
           Sign In
@@ -93,7 +100,7 @@ function AuthPage() {
               {error.message}
             </motion.div>
           )}
-          {!!input && isPending && (
+          {!!codeChallenge && isPending && (
             <motion.div
               layout
               initial={{ opacity: 0, height: 0 }}
@@ -112,7 +119,7 @@ function AuthPage() {
         className="mx-auto mt-auto w-full max-w-md pt-10"
         initial={{ y: 50 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.8, delay: 0.5, type: 'spring' }}
+        transition={{ duration: 0.8, delay: 0.4, type: 'spring' }}
       >
         <Button
           className="w-full"
