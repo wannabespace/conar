@@ -12,7 +12,7 @@ import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiFileList2Line, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSettings3Line, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSettings3Line, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
@@ -236,8 +236,8 @@ function MainLinks() {
   const isActiveSql = matches.includes('/(protected)/_protected/database/$id/sql/')
   const isActiveTables = matches.includes('/(protected)/_protected/database/$id/table/')
   const isActiveEnums = matches.includes('/(protected)/_protected/database/$id/enums/')
-  const isActiveConstraints = matches.includes('/(protected)/_protected/database/$id/constraints/')
-  const isActiveIndexes = matches.includes('/(protected)/_protected/database/$id/indexes/')
+  const isActiveConstraints = matches.includes('/(protected)/_protected/database/$id/constraint-index-tabs')
+  const isActiveIndexes = isActiveConstraints
   const isActiveVisualizer = matches.includes('/(protected)/_protected/database/$id/visualizer/')
 
   const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
@@ -319,28 +319,14 @@ function MainLinks() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              to="/database/$id/constraints"
+              to="/database/$id/constraint-index-tabs"
               params={{ id: database.id }}
-              className={baseClasses(isActiveConstraints)}
+              className={baseClasses(isActiveConstraints || isActiveIndexes)}
             >
               <RiShieldCheckLine className="size-4" />
             </Link>
           </TooltipTrigger>
-          <TooltipContent side="right">Constraints</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              to="/database/$id/indexes"
-              params={{ id: database.id }}
-              className={baseClasses(isActiveIndexes)}
-            >
-              <RiFileList2Line className="size-4" />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">Indexes</TooltipContent>
+          <TooltipContent side="right">Constraints & Indexes</TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <TooltipProvider>
