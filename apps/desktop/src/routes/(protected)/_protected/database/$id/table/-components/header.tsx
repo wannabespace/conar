@@ -11,25 +11,25 @@ export function Header({ table, schema }: { table: string, schema: string }) {
   const columnsCount = columns?.length ?? 0
 
   return (
-    <div className="flex gap-6 w-full items-center justify-between">
-      <div className="flex flex-1 gap-4 items-center">
+    <div className="flex w-full items-center justify-between gap-6">
+      <div className="flex flex-1 items-center gap-4">
         <div className="shrink-0">
-          <h2 className="font-medium text-sm mb-0.5 space-x-1">
-            <span className="text-muted-foreground">{schema}</span>
+          <h2 className="mb-0.5 space-x-1 text-sm font-medium">
+            <span className="text-muted-foreground">
+              {schema}
+            </span>
             {' '}
             <span className="text-muted-foreground/20">/</span>
-            {' '}
             <span data-mask>{table}</span>
           </h2>
-          <p className="text-muted-foreground text-xs">
+          <p className="text-xs text-muted-foreground">
             <span className="tabular-nums">{columnsCount}</span>
             {' '}
             column
             {columnsCount === 1 ? '' : 's'}
             {' '}
             •
-            {' '}
-            <TableRowCounter schema={schema} table={table} />
+            <TableRowCounter schema={schema} table={table} database={database}/>
           </p>
         </div>
         <Separator orientation="vertical" className="h-6!" />
