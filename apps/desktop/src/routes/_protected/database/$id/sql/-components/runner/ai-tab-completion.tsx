@@ -3,91 +3,69 @@ import type { editor } from 'monaco-editor'
 import type { CompletionRegistration } from 'monacopilot'
 import type { RefObject } from 'react'
 import * as monaco from 'monaco-editor'
-import { LanguageIdEnum } from 'monaco-sql-languages'
 import { registerCompletion } from 'monacopilot'
 import { useCallback, useEffect, useRef } from 'react'
 import { databaseAICompletionContext } from '~/entities/database/utils/monaco'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
 
-export const dialectsMap = {
-  postgres: LanguageIdEnum.PG,
-  mysql: LanguageIdEnum.MYSQL,
-  mssql: LanguageIdEnum.PG,
-  clickhouse: LanguageIdEnum.MYSQL,
-} satisfies Record<DatabaseType, LanguageIdEnum>
+const dialectsMap = {
+  postgres: 'pg',
+  mysql: 'mysql',
+  mssql: 'mssql',
+  clickhouse: 'mysql',
+} satisfies Record<DatabaseType, string>
 
 interface Cache {
-  prefix: string
+  before: string
   completion: string
 }
 
-interface FetchCompletionProps {
-  model: editor.ITextModel
-  position: monaco.Position
-  aiConfig: Awaited<ReturnType<typeof databaseAICompletionContext>>
-  signal: AbortSignal
-}
-
-interface CheckCacheProps {
-  model: editor.ITextModel
-  position: monaco.Position
-  cache: Cache | null
-}
-
-function checkCache({
-  model,
-  position,
-  cache,
-}: CheckCacheProps): { completion: string } | null {
+function getCache(
+  model: editor.ITextModel,
+  position: monaco.Position,
+  cache: Cache | null,
+): { completion: string } | null {
   if (!cache)
     return null
 
   const offset = model.getOffsetAt(position)
-  const textFull = model.getValue()
-  const textBefore = textFull.substring(0, offset)
+  const textBefore = model.getValue().substring(0, offset)
 
-  if (textBefore.startsWith(cache.prefix)) {
-    const addedText = textBefore.slice(cache.prefix.length)
+  if (!textBefore.startsWith(cache.before))
+    return null
 
-    if (cache.completion.startsWith(addedText)) {
-      const remainingCompletion = cache.completion.slice(addedText.length)
-      if (remainingCompletion.length > 0) {
-        return { completion: remainingCompletion }
-      }
-      return { completion: '' }
-    }
-  }
-  return null
+  const addedText = textBefore.slice(cache.before.length)
+
+  if (!cache.completion.startsWith(addedText))
+    return null
+
+  const remainingCompletion = cache.completion.slice(addedText.length)
+  return { completion: remainingCompletion }
 }
 
-async function fetchCompletion({
-  model,
-  position,
-  aiConfig,
-  signal,
-}: FetchCompletionProps) {
-  const fileContent = model.getValue()
+async function fetchCompletion(
+  model: editor.ITextModel,
+  position: monaco.Position,
+  aiConfig: Awaited<ReturnType<typeof databaseAICompletionContext>>,
+  signal: AbortSignal,
+): Promise<{ result: { completion: string }, context: string } | null> {
   const offset = model.getOffsetAt(position)
-  const context = fileContent.substring(0, offset)
-  const suffix = fileContent.substring(offset)
+  const context = model.getValue().substring(0, offset)
+  const suffix = model.getValue().substring(offset)
 
-  if (context.trim().length < 2) {
+  if (context.trim().length < 2)
     return null
-  }
 
   const schemaContext = await aiConfig.buildSchemaContext()
-
-  const transformedBody = {
+  const result = await orpc.ai.codeCompletion({
     context,
     suffix,
     instruction: 'Complete the SQL query with secure and safe optimised version',
-    fileContent,
+    fileContent: model.getValue(),
     databaseType: aiConfig.databaseType,
     schemaContext,
-  }
-
-  const result = await orpc.ai.codeCompletion(transformedBody, { signal })
+  }, { signal })
 
   return { result, context }
 }
@@ -103,8 +81,10 @@ export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStan
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const clearPending = useCallback(() => {
-    if (debounceTimerRef.current)
+    if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
@@ -123,29 +103,27 @@ export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStan
     if (!model || !position || !aiConfig)
       return { completion: '' }
 
-    const cachedResult = checkCache({
-      model,
-      position,
-      cache: completionCacheRef.current,
-    })
-    if (cachedResult) {
+    const cachedResult = getCache(model, position, completionCacheRef.current)
+    if (cachedResult)
       return cachedResult
-    }
 
-    if (completionCacheRef.current && !cachedResult) {
-      const offset = model.getOffsetAt(position)
-      const textBefore = model.getValue().substring(0, offset)
-      if (!textBefore.startsWith(completionCacheRef.current.prefix)) {
-        completionCacheRef.current = null
-      }
-    }
+    if (completionCacheRef.current)
+      completionCacheRef.current = null
 
     clearPending()
 
     return new Promise<{ completion: string }>((resolve) => {
       pendingResolveRef.current = resolve
       debounceTimerRef.current = setTimeout(async () => {
-        if (!monacoRef.current) {
+        if (pendingResolveRef.current !== resolve) {
+          resolve({ completion: '' })
+          return
+        }
+
+        const model = monacoRef.current?.getModel()
+        const position = monacoRef.current?.getPosition()
+
+        if (!model || !position || !aiConfigRef.current) {
           resolve({ completion: '' })
           return
         }
@@ -154,35 +132,26 @@ export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStan
         abortControllerRef.current = controller
 
         try {
-          const model = monacoRef.current?.getModel()
-          const position = monacoRef.current?.getPosition()
-
-          if (!model || !position) {
-            resolve({ completion: '' })
-            return
-          }
-
-          const fetchResult = await fetchCompletion({
+          const fetchResult = await fetchCompletion(
             model,
             position,
-            aiConfig,
-            signal: controller.signal,
-          })
+            aiConfigRef.current,
+            controller.signal,
+          )
 
           if (!fetchResult) {
             resolve({ completion: '' })
             return
           }
 
-          const { result, context } = fetchResult
-
           completionCacheRef.current = {
-            prefix: context,
-            completion: result.completion,
+            before: fetchResult.context,
+            completion: fetchResult.result.completion,
           }
 
           if (pendingResolveRef.current === resolve) {
-            resolve({ completion: result.completion })
+            resolve({ completion: fetchResult.result.completion })
+            pendingResolveRef.current = null
           }
           else {
             resolve({ completion: '' })
@@ -193,7 +162,7 @@ export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStan
             resolve({ completion: '' })
             return
           }
-          console.error(error)
+          console.error('AI completion error:', error)
           resolve({ completion: '' })
         }
         finally {
