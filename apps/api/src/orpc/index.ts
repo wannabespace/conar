@@ -62,8 +62,8 @@ export const requireSubscriptionMiddleware = stripe
       if (!subscription) {
         throw new ORPCError('FORBIDDEN', {
           message: minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
-            ? 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.'
-            : 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.',
+            ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
+            : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
         })
       }
 
