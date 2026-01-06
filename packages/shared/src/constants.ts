@@ -33,3 +33,5 @@ export const COLOR_OPTIONS = [
   '#9333ea',
   '#db2777',
 ]
+
+export const LATEST_VERSION_BEFORE_SUBSCRIPTION = 26 as const

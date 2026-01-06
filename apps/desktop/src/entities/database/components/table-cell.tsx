@@ -12,13 +12,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftDownLine, RiArrowRightUpLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
-import dayjs from 'dayjs'
+import { format, isValid } from 'date-fns'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
-import { getDisplayValue } from '../lib/render'
+import { getDisplayValue } from '../utils/render'
 import { TableCellContent } from './table-cell-content'
 import { TableCellProvider } from './table-cell-provider'
 import { TableCellReferences } from './table-cell-references'
@@ -250,10 +250,10 @@ function getTimestamp(value: unknown, column: Column) {
   )
   && value
   && (typeof value === 'string' || typeof value === 'number')
-    ? dayjs(value)
+    ? new Date(value)
     : null
 
-  return date?.isValid() ? date : null
+  return date && isValid(date) ? date : null
 }
 
 export function TableCell({
@@ -468,7 +468,7 @@ export function TableCell({
             </TooltipTrigger>
             {date && (
               <TooltipContent>
-                {date.format('DD MMMM YYYY, HH:mm:ss (Z)')}
+                {format(date, 'dd MMMM yyyy, HH:mm:ss (z)')}
               </TooltipContent>
             )}
           </Tooltip>

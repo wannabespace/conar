@@ -3,10 +3,10 @@ import { DatabaseType } from '@conar/shared/enums/database-type'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { withPosthog } from '~/lib/posthog'
-import { authMiddleware, orpc } from '~/orpc'
+import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 
 export const fixSQL = orpc
-  .use(authMiddleware)
+  .use(requireSubscriptionMiddleware)
   .input(type({
     sql: 'string',
     error: 'string',

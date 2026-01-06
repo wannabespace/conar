@@ -23,12 +23,14 @@ export const getPool = memoize(async (connectionString: string) => {
       await pool.query('SELECT 1')
       return pool
     },
-    !hasSsl && (async () => {
+    !hasSsl && (async ({ previousError }) => {
       const pool = mysql2.createPool({
         ...conf,
         ssl: defaultSSLConfig,
       })
-      await pool.query('SELECT 1')
+      await pool.query('SELECT 1').catch(() => {
+        throw previousError
+      })
       return pool
     }),
   )

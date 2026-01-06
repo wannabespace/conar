@@ -1,4 +1,4 @@
-import { decrypt } from '@conar/shared/encryption'
+import { decrypt } from '@conar/shared/utils/encryption'
 import { ORPCError } from '@orpc/server'
 import { desc, eq } from 'drizzle-orm'
 import { databases, db } from '~/drizzle'
