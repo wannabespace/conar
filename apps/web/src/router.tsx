@@ -1,6 +1,6 @@
 /* eslint-disable perfectionist/sort-imports */
 import '@conar/shared/arktype-config'
-import { QueryClient } from '@tanstack/react-query'
+import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { routeTree } from './routeTree.gen'
@@ -11,6 +11,7 @@ export function getRouter() {
     defaultOptions: {
       queries: {
         retry: false,
+        placeholderData: keepPreviousData,
       },
       mutations: {
         onError: handleError,

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { RiExternalLinkLine, RiSparklingFill, RiVipCrownLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
+import { toast } from 'sonner'
 import { useSubscription } from '~/entities/user/hooks'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
@@ -11,10 +12,11 @@ export function SubscriptionModal() {
   const { subscription } = useSubscription()
 
   useEffect(() => {
-    if (subscription) {
+    if (isSubscriptionDialogOpen && subscription) {
       setIsSubscriptionDialogOpen(false)
+      toast.success('Subscription successful! Conar Pro features are now unlocked.')
     }
-  }, [subscription])
+  }, [isSubscriptionDialogOpen, subscription])
 
   const accountUrl = `${import.meta.env.VITE_PUBLIC_WEB_URL}/account`
 
@@ -33,7 +35,7 @@ export function SubscriptionModal() {
             >
               <RiVipCrownLine className="size-4 text-primary" />
             </div>
-            <DialogTitle className="font-semibold text-primary">Pro Features</DialogTitle>
+            <DialogTitle className="font-semibold text-primary">Pro Feature</DialogTitle>
           </div>
           <DialogDescription className="text-foreground">
             Subscribe to Pro to access this feature and unlock the full power of Conar.

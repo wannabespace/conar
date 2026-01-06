@@ -31,7 +31,7 @@ export function TipTap({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder,
+        placeholder: () => placeholder || '',
       }),
       Extension.create({
         addKeyboardShortcuts() {
@@ -55,15 +55,14 @@ export function TipTap({
     parseOptions: {
       preserveWhitespace: 'full',
     },
-    immediatelyRender: true,
+    editable: !disabled,
     content: value,
     onUpdate: ({ editor }) => setValue(editor.getText()),
-  }, [onEnter, placeholder, setValue])
+  }, [onEnter, disabled, placeholder, setValue])
 
   useEffect(() => {
     if (editor) {
       editor.setOptions({
-        editable: !disabled,
         editorProps: {
           attributes: {
             class: cn(className) || '',
@@ -71,7 +70,7 @@ export function TipTap({
         },
       })
     }
-  }, [editor, disabled, className])
+  }, [editor, className])
 
   useImperativeHandle(ref, () => ({
     editor,

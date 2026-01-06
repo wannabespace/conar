@@ -4,12 +4,8 @@ import { orpc, orpcQuery } from '~/lib/orpc'
 
 export type Subscription = NonNullable<NonNullable<ReturnType<typeof useSubscription>>['subscription']>
 
-export function useSubscriptionsQuery() {
-  return useQuery(orpcQuery.account.subscription.list.queryOptions())
-}
-
 export function useSubscription() {
-  const { data: list, isPending } = useSubscriptionsQuery()
+  const { data: list, isPending } = useQuery(orpcQuery.account.subscription.list.queryOptions())
 
   const subscription = list?.find(s => s.status === 'active' || s.status === 'trialing') ?? null
 
