@@ -47,7 +47,17 @@ app.get('/', (c) => {
   return c.redirect(env.WEB_URL)
 })
 
-app.on(['GET', 'POST'], '/auth/*', c => auth.handler(c.req.raw))
+app.on(['GET', 'POST'], '/auth/*', (c) => {
+  const req = c.req.raw
+
+  const origin = req.headers.get('origin')
+
+  if (!origin) {
+    req.headers.set('origin', 'file://')
+  }
+
+  return auth.handler(req)
+})
 
 app.use('/rpc/*', async (c, next) => {
   const desktopVersion = c.req.header('x-desktop-version')
