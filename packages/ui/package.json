@@ -8,13 +8,14 @@
     "./components/*": "./src/components/*.tsx",
     "./hooks/*": "./src/hooks/*.ts",
     "./hookas/*": "./src/hookas/*.ts",
-    "./theme-observer": "./src/theme-observer.tsx"
+    "./theme-observer": "./src/theme-observer.tsx",
+    "./use-theme": "./src/use-theme.ts"
   },
   "scripts": {
-    "check-types": "tsc"
+    "check-types": "tsgo"
   },
   "dependencies": {
-    "@base-ui-components/react": "catalog:",
+    "@base-ui/react": "catalog:",
     "@conar/configs": "workspace:*",
     "@conar/shared": "workspace:*",
     "@radix-ui/react-accordion": "catalog:",

@@ -2,16 +2,10 @@
 import '@conar/shared/arktype-config'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import dayjs from 'dayjs'
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
-import isToday from 'dayjs/plugin/isToday'
-import isYesterday from 'dayjs/plugin/isYesterday'
-import weekOfYear from 'dayjs/plugin/weekOfYear'
 import { createRoot } from 'react-dom/client'
 import { runMigrations } from './drizzle'
-import { chatsCollection } from './entities/chat'
-import { databasesCollection } from './entities/database'
+import { chatsCollection } from './entities/chat/sync'
+import { databasesCollection } from './entities/database/sync'
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
 import { routeTree } from './routeTree.gen'
@@ -20,16 +14,11 @@ import './assets/styles.css'
 import '@conar/ui/globals.css'
 import { toast } from 'sonner'
 
-dayjs.extend(isToday)
-dayjs.extend(isYesterday)
-dayjs.extend(isSameOrAfter)
-dayjs.extend(isSameOrBefore)
-dayjs.extend(weekOfYear)
-
 if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => {
     scan()
   })
+  import('react-grab')
 }
 
 window.electron?.app.onDeepLink(async (url) => {
@@ -57,6 +46,23 @@ export const queryClient = new QueryClient({
       onError: handleError,
     },
   },
+})
+
+export const subscriptionQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: 'always',
+      placeholderData: keepPreviousData,
+    },
+    mutations: {
+      onError: handleError,
+    },
+  },
+})
+
+// Native trigger don't work for some reason, so we need to use this workaround
+window.addEventListener('focus', () => {
+  subscriptionQueryClient.refetchQueries()
 })
 
 export const router = createRouter({

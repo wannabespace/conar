@@ -19,6 +19,18 @@ import { auth } from './lib/auth'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
 
+const handler = new RPCHandler(router, {
+  interceptors: [
+    onError((error) => {
+      consola.error(error)
+    }),
+    async ({ request, next }) => {
+      consola.log('Desktop version: ', request.headers['x-desktop-version'] || 'Unknown')
+      return next()
+    },
+  ],
+})
+
 const app = new Hono()
 
 app.use(logger())
@@ -35,22 +47,20 @@ app.get('/', (c) => {
   return c.redirect(env.WEB_URL)
 })
 
-app.on(['GET', 'POST'], '/auth/*', c => auth.handler(c.req.raw))
+app.on(['GET', 'POST'], '/auth/*', (c) => {
+  const req = c.req.raw
 
-const handler = new RPCHandler(router, {
-  interceptors: [
-    onError((error) => {
-      consola.error(error)
-    }),
-    async ({ request, next }) => {
-      consola.log('Desktop version: ', request.headers['x-desktop-version'] || 'Unknown')
-      return next()
-    },
-  ],
+  const origin = req.headers.get('origin')
+
+  if (!origin) {
+    req.headers.set('origin', 'file://')
+  }
+
+  return auth.handler(req)
 })
 
 app.use('/rpc/*', async (c, next) => {
-  const { matched, response } = await handler.handle(c.req.raw, {
+  const { matched, response } = await handler.handle(c.req.raw.clone(), {
     prefix: '/rpc',
     context: createContext(c),
   })

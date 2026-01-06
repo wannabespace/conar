@@ -1,10 +1,9 @@
-import type { BetterAuthPlugin, User } from 'better-auth'
+import type { Auth, BetterAuthOptions, User } from 'better-auth'
 import { PORTS } from '@conar/shared/constants'
-import { type } from 'arktype'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { anonymous, bearer, createAuthEndpoint, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { consola } from 'consola'
 import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
@@ -36,42 +35,12 @@ async function loopsUpdateUser(user: User) {
   }
 }
 
-/**
- * Plugin to prevent setting the "set-cookie" header in responses.
- * We use it to prevent the cookie from being set in the desktop app because it uses bearer token instead of cookies.
- */
-function noSetCookiePlugin() {
-  return {
-    id: 'no-set-cookie',
-    hooks: {
-      after: [
-        {
-          matcher: ctx => !!ctx.request?.headers.get('x-desktop'),
-          handler: createAuthMiddleware(async (ctx) => {
-            const headers = ctx.context.responseHeaders
-
-            if (headers instanceof Headers) {
-              const setCookies = headers.get('set-cookie')
-
-              if (!setCookies)
-                return
-
-              headers.delete('set-cookie')
-            }
-          }),
-        },
-      ],
-    },
-  } satisfies BetterAuthPlugin
-}
-
-export const auth = betterAuth({
+export const auth: Auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
   basePath: '/auth',
   plugins: [
-    oldChangeEmail(),
     bearer(),
     twoFactor(),
     organization({
@@ -98,7 +67,6 @@ export const auth = betterAuth({
     }),
     lastLoginMethod(),
     emailHarmony(),
-    noSetCookiePlugin(),
     anonymous(),
   ],
   user: {
@@ -108,11 +76,15 @@ export const auth = betterAuth({
         returned: false,
         input: false,
         defaultValue: () => nanoid(),
+        required: true,
+      },
+      stripe_customer_id: {
+        type: 'string',
+        returned: false,
+        input: false,
+        required: false,
       },
     },
-  },
-  account: {
-    skipStateCookieCheck: true,
   },
   databaseHooks: {
     user: {
@@ -126,6 +98,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     env.WEB_URL,
+    'file://',
     ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
     ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
   ],
@@ -180,27 +153,4 @@ export const auth = betterAuth({
       clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
-})
-
-// Legacy endpoint for changing email
-function oldChangeEmail(): BetterAuthPlugin {
-  return {
-    id: 'old-change-email',
-    endpoints: {
-      forgetPassword: createAuthEndpoint(
-        'forget-password',
-        {
-          method: 'POST',
-          operationId: 'forgetPassword',
-          body: type({
-            email: 'string.email',
-            redirectTo: 'string?',
-          }),
-        },
-        (ctx) => {
-          return auth.api.requestPasswordReset(ctx)
-        },
-      ),
-    },
-  }
-};
+} satisfies BetterAuthOptions)

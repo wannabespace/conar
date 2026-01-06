@@ -1,5 +1,5 @@
 import type { Rectangle } from 'electron'
-import type { UpdatesStatus } from '~/updates-observer'
+import type { UpdatesStatus } from '~/use-updates-observer'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'

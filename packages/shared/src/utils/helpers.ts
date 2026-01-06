@@ -19,6 +19,16 @@ export function escapeSpecialCharacters(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+export function pick<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+  const result = {} as Pick<T, K>
+  for (const key of keys) {
+    if (key in obj) {
+      result[key] = obj[key]
+    }
+  }
+  return result
+}
+
 export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
   return Object.fromEntries(Object.entries(obj).filter(([key]) => !keys.includes(key as K))) as Omit<T, K>
 }
@@ -50,6 +60,19 @@ export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<{ data: T,
   }
   catch (error) {
     return { data: null, error }
+  }
+}
+
+export function uppercaseFirst(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1)
+}
+
+export function tryParseJson<T>(json: string): T | null {
+  try {
+    return JSON.parse(json) as T
+  }
+  catch {
+    return null
   }
 }
 

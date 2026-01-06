@@ -1,5 +1,6 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
-import { decrypt, encrypt } from '@conar/shared/encryption'
+import { decrypt, encrypt } from '@conar/shared/utils/encryption'
+import { tryParseJson } from '@conar/shared/utils/helpers'
 import { app, ipcMain } from 'electron'
 import { autoUpdater, sendToast } from '..'
 import { getClient as getClickhouseClient } from '../databases/clickhouse'
@@ -77,31 +78,43 @@ const queryMap = {
     return { result: result as unknown, duration: performance.now() - start! }
   },
   clickhouse: async ({ connectionString, sql }: { sql: string, connectionString: string, insertValues?: unknown[] }) => {
-    const client = getClickhouseClient(connectionString)
-    const isSelect = [
-      'SELECT',
-      'SHOW',
-      'DESCRIBE',
-      'EXPLAIN',
-      'WITH',
-      'CHECK',
-    ].some(keyword => sql.trim().toUpperCase().startsWith(keyword))
-    let start = 0
+    try {
+      const client = getClickhouseClient(connectionString)
+      const isSelect = [
+        'SELECT',
+        'SHOW',
+        'DESCRIBE',
+        'EXPLAIN',
+        'WITH',
+        'CHECK',
+      ].some(keyword => sql.trim().toUpperCase().startsWith(keyword))
+      let start = 0
 
-    if (isSelect) {
-      const result = await retryIfConnectionError(() => {
+      if (isSelect) {
+        const result = await retryIfConnectionError(() => {
+          start = performance.now()
+          return client.query({ query: sql, format: 'JSONEachRow' }).then(result => result.json())
+        })
+        return { result, duration: performance.now() - start }
+      }
+
+      await retryIfConnectionError(() => {
         start = performance.now()
-        return client.query({ query: sql, format: 'JSONEachRow' }).then(result => result.json())
+        return client.exec({ query: sql })
       })
-      return { result, duration: performance.now() - start }
+
+      return { result: [], duration: performance.now() - start }
     }
+    catch (error) {
+      if (error instanceof Error) {
+        const parsed = tryParseJson<Partial<{ message: string, status: string, code: number, request_id: string }>>(error.message)
 
-    await retryIfConnectionError(() => {
-      start = performance.now()
-      return client.exec({ query: sql })
-    })
-
-    return { result: [], duration: performance.now() - start }
+        if (parsed?.message) {
+          throw new Error(parsed.message)
+        }
+      }
+      throw error
+    }
   },
   mssql: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
     let start = 0

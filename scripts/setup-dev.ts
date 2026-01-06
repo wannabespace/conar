@@ -50,7 +50,7 @@ function createEnvFile(envExamplePath: string) {
     return true
   }
   catch (error) {
-    console.error(`Failed to create .env file: ${envPath}`, error.message)
+    console.error(`Failed to create .env file: ${envPath}`, error instanceof Error ? error.message : error)
     return false
   }
 }
@@ -80,7 +80,7 @@ function setupDev() {
 }
 
 // Run the setup if this script is executed directly
-if (__filename === process.argv[1]) {
+if (__filename === process.argv[1] && process.env.NODE_ENV !== 'production') {
   setupDev()
 }
 
