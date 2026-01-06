@@ -50,7 +50,7 @@ async function getSubscription(userId: string) {
     .from(subscriptions)
     .where(eq(subscriptions.userId, userId))
 
-  return userSubscriptions.find(s => (s.status === 'active' && !s.cancelAt) || s.status === 'trialing') ?? null
+  return userSubscriptions.find(s => (s.status === 'active' || s.status === 'trialing') && !s.cancelAt) ?? null
 }
 
 export const requireSubscriptionMiddleware = stripe
