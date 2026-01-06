@@ -2,10 +2,10 @@ import { google } from '@ai-sdk/google'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { generateText } from 'ai'
 import { z } from 'zod'
-import { authMiddleware, orpc } from '~/orpc'
+import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 
 export const codeCompletion = orpc
-  .use(authMiddleware)
+  .use(requireSubscriptionMiddleware)
   .input(z.object({
     context: z.string(),
     suffix: z.string().optional(),
