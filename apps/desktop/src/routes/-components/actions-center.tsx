@@ -12,7 +12,7 @@ import { useDatabaseLinkParams } from '~/entities/database/hooks'
 import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
 import { databasesCollection } from '~/entities/database/sync'
 import { prefetchDatabaseCore } from '~/entities/database/utils'
-import { appStore, setActionsCenterIsOpen } from '~/store'
+import { appStore, setIsActionCenterOpen } from '~/store'
 
 function ActionsDatabaseTables({ database }: { database: typeof databases.$inferSelect }) {
   const { data: tablesAndSchemas } = useQuery({
@@ -25,7 +25,7 @@ function ActionsDatabaseTables({ database }: { database: typeof databases.$infer
     return null
 
   function onTableSelect(schema: string, table: string) {
-    setActionsCenterIsOpen(false)
+    setIsActionCenterOpen(false)
     router.navigate({ to: '/database/$id/table', params: { id: database.id }, search: { schema, table } })
   }
 
@@ -53,7 +53,7 @@ function ActionsDatabase({ database }: { database: typeof databases.$inferSelect
   const params = useDatabaseLinkParams(database.id)
 
   function onDatabaseSelect(database: typeof databasesTable.$inferSelect) {
-    setActionsCenterIsOpen(false)
+    setIsActionCenterOpen(false)
 
     prefetchDatabaseCore(database)
     router.navigate(params)
@@ -85,7 +85,7 @@ export function ActionsCenter() {
   const { data: databases } = useLiveQuery(q => q
     .from({ databases: databasesCollection })
     .orderBy(({ databases }) => databases.createdAt, 'desc'))
-  const isOpen = useStore(appStore, state => state.actionsCenterIsOpen)
+  const isOpen = useStore(appStore, state => state.isActionCenterOpen)
   const router = useRouter()
   const { id } = useParams({ strict: false })
 
@@ -93,20 +93,20 @@ export function ActionsCenter() {
     if (!databases || databases.length === 0)
       return
 
-    setActionsCenterIsOpen(!isOpen)
+    setIsActionCenterOpen(!isOpen)
   })
 
   const currentConnection = databases?.find(database => database.id === id)
 
   return (
-    <CommandDialog open={isOpen} onOpenChange={setActionsCenterIsOpen}>
+    <CommandDialog open={isOpen} onOpenChange={setIsActionCenterOpen}>
       <CommandInput placeholder="Type a command..." />
       <CommandList className="max-h-140">
         <CommandEmpty>No commands found.</CommandEmpty>
         <CommandGroup heading="Commands">
           <CommandItem
             onSelect={() => {
-              setActionsCenterIsOpen(false)
+              setIsActionCenterOpen(false)
               router.navigate({ to: '/' })
             }}
           >
@@ -115,7 +115,7 @@ export function ActionsCenter() {
           </CommandItem>
           <CommandItem
             onSelect={() => {
-              setActionsCenterIsOpen(false)
+              setIsActionCenterOpen(false)
               router.navigate({ to: '/create' })
             }}
           >

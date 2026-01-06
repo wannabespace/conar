@@ -203,16 +203,25 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           // 25 it's a ~size of the button, 6 it's a ~size of the number
           + (column.references?.length ? 25 + 6 : 0)
           + (column.foreign ? 25 : 0),
-        header: props => (
-          <TableHeaderCell
-            column={column}
-            onSort={() => onOrder(column.id)}
-            onRename={database.type === 'clickhouse' && column.primaryKey // Clickhouse doesn't support renaming primary keys
-              ? undefined
-              : () => renameColumnRef.current?.rename(schema, table, column.id)}
-            {...props}
-          />
-        ),
+        header: (props) => {
+          let onRename: (() => void) | undefined
+
+          if (
+            !column.primaryKey
+            && database.type !== 'clickhouse'
+          ) {
+            onRename = () => renameColumnRef.current?.rename(schema, table, column.id)
+          }
+
+          return (
+            <TableHeaderCell
+              column={column}
+              onSort={() => onOrder(column.id)}
+              onRename={onRename}
+              {...props}
+            />
+          )
+        },
         cell: (props) => {
           const values = enums?.find(e => e.name === column.enum
             && (e.metadata?.column ? e.metadata.column === column.id : true)
@@ -240,7 +249,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     }
 
     return sortedColumns
-  }, [table, columns, hiddenColumns, primaryColumns, saveValue, onOrder, enums])
+  }, [database, table, schema, columns, hiddenColumns, primaryColumns, saveValue, onOrder, enums])
 
   return (
     <TableProvider
@@ -249,7 +258,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       estimatedRowSize={DEFAULT_ROW_HEIGHT}
       estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
     >
-      <div className="relative size-full bg-background">
+      <div className="relative size-full">
         <Table>
           <TableHeader />
           {isRowsPending

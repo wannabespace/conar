@@ -1,6 +1,7 @@
 import { useNetwork } from '@conar/ui/hookas/use-network'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect, useEffectEvent } from 'react'
+import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { useChatsMessagesSync, useChatsSync } from '~/entities/chat/sync'
 import { useDatabasesSync } from '~/entities/database/sync'
 import { useQueriesSync } from '~/entities/query/sync'
@@ -39,6 +40,7 @@ function ProtectedLayout() {
 
   return (
     <>
+      <SubscriptionModal />
       <ActionsCenter />
       <Outlet />
     </>

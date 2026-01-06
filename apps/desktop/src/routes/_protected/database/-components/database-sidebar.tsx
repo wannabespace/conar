@@ -388,7 +388,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => appStore.setState(state => ({ ...state, actionsCenterIsOpen: true } satisfies typeof state))}
+                onClick={() => appStore.setState(state => ({ ...state, isActionCenterOpen: true } satisfies typeof state))}
               >
                 <RiCommandLine className="size-4" />
               </Button>

@@ -48,6 +48,23 @@ export const queryClient = new QueryClient({
   },
 })
 
+export const subscriptionQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: 'always',
+      placeholderData: keepPreviousData,
+    },
+    mutations: {
+      onError: handleError,
+    },
+  },
+})
+
+// Native trigger don't work for some reason, so we need to use this workaround
+window.addEventListener('focus', () => {
+  subscriptionQueryClient.refetchQueries()
+})
+
 export const router = createRouter({
   history: import.meta.env.VITE_TEST ? createBrowserHistory() : createHashHistory(),
   routeTree,

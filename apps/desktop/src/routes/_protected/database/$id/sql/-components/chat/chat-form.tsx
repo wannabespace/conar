@@ -18,6 +18,7 @@ import { TipTap } from '~/components/tiptap'
 import { databaseStore } from '~/entities/database/store'
 import { useSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
+import { setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
 import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
@@ -215,15 +216,16 @@ export function ChatForm() {
             `}
           >
             Please
+            {' '}
             <Button
               variant="outline"
+              className="px-1 py-0.5"
               size="xs"
-              onClick={() => {
-                // TODO: subs
-              }}
+              onClick={() => setIsSubscriptionDialogOpen(true)}
             >
               upgrade
             </Button>
+            {' '}
             your subscription to generate SQL queries.
           </span>
         )}

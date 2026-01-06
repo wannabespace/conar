@@ -136,7 +136,7 @@ export function Runner() {
           minSize="20%"
           defaultSize={resultsVisible ? '70%' : '100%'}
         >
-          <CardHeader className="h-14 bg-card py-3">
+          <CardHeader className="h-14 py-3">
             <CardTitle className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 SQL Runner
@@ -239,7 +239,7 @@ export function Runner() {
         </ResizablePanel>
         {resultsVisible && (
           <>
-            <ResizableSeparator withHandle />
+            <ResizableSeparator withHandle className="bg-border" />
             <ResizablePanel
               minSize="20%"
               defaultSize="30%"
