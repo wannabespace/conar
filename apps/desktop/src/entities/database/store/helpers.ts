@@ -116,13 +116,13 @@ export function cleanupPinnedTables(
   })
 }
 
-export function toggleChat(id: string) {
+export function toggleChat(id: string, isVisible?: boolean) {
   const store = databaseStore(id)
   store.setState(state => ({
     ...state,
     layout: {
       ...state.layout,
-      chatVisible: !state.layout.chatVisible,
+      chatVisible: isVisible ?? !state.layout.chatVisible,
     },
   } satisfies typeof state))
 }

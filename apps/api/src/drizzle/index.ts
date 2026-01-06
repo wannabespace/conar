@@ -5,12 +5,14 @@ import * as auth from './schema/auth'
 import * as chats from './schema/chats'
 import * as databases from './schema/databases'
 import * as queries from './schema/queries'
+import * as subscriptions from './schema/subscriptions'
 import '@electric-sql/pglite'
 
 export * from './schema/auth'
 export * from './schema/chats'
 export * from './schema/databases'
 export * from './schema/queries'
+export * from './schema/subscriptions'
 
 const config = {
   logger: true,
@@ -19,6 +21,7 @@ const config = {
     ...databases,
     ...chats,
     ...queries,
+    ...subscriptions,
   },
   casing: 'snake_case',
 } satisfies Parameters<typeof drizzle>[1]

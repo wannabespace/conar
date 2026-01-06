@@ -13,8 +13,8 @@ function TestimonialCard({ className, children, testimonialId, ...props }: Testi
   return (
     <article
       className={cn(`
-        rounded-2xl border bg-card p-6 transition-all duration-300
-        sm:p-8
+        rounded-2xl border bg-card p-4 transition-all duration-300
+        sm:p-6
       `, className)}
       data-testimonial={testimonialId}
       {...props}
@@ -51,7 +51,7 @@ function Testimonial({ name, login, avatar, link, children, className }: Testimo
       `, className)}
       >
         <Avatar className={`
-          size-10 flex-shrink-0 rounded-full
+          size-10 shrink-0 rounded-full
           sm:size-12
         `}
         >
@@ -108,7 +108,7 @@ function JoinTestimonials() {
       <div className="text-center">
         <div className={`
           mx-auto mb-3 flex size-10 items-center justify-center rounded-xl
-          bg-gradient-to-br from-primary/20 to-primary/10
+          bg-linear-to-br from-primary/20 to-primary/10
           sm:mb-4 sm:size-12
         `}
         >
@@ -259,10 +259,9 @@ export function Testimonials() {
           Testimonials
         </h2>
         <p className={`
-          mx-auto max-w-3xl text-center text-3xl leading-tight font-bold
+          mx-auto max-w-3xl text-center text-2xl leading-tight font-bold
           text-balance
-          sm:text-4xl
-          md:text-5xl
+          sm:text-3xl
         `}
         >
           Loved by developers worldwide

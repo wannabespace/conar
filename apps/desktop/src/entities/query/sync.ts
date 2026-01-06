@@ -41,7 +41,6 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
 const syncQueriesMutationOptions = {
   mutationKey: ['sync-queries'],
   mutationFn: queriesCollection.utils.runSync,
-  onError: () => {},
 } satisfies MutationOptions
 
 export function useQueriesSync() {

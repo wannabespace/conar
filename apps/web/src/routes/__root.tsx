@@ -1,13 +1,14 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { Toaster } from '@conar/ui/components/sonner'
 import appCss from '@conar/ui/globals.css?url'
-import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
+import { cn } from '@conar/ui/lib/utils'
 import { ThemeObserver } from '@conar/ui/theme-observer'
 import { Databuddy } from '@databuddy/sdk/react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { createRootRouteWithContext, HeadContent, Outlet, Scripts, useRouterState } from '@tanstack/react-router'
+import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
 import { getRepoOptions } from '~/queries'
 import { seo } from '~/utils/seo'
@@ -36,8 +37,8 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       ...seo({
-        title: 'Conar.app - AI-powered modern alternative to DBeaver and pgAdmin',
-        description: 'AI-powered tool that makes database operations easier. Built for PostgreSQL. Modern alternative to traditional database management tools.',
+        title: `Conar.app - ${SEO.title}`,
+        description: SEO.description,
         image: '/og-image.png',
       }),
       { name: 'apple-mobile-web-app-title', content: 'Conar' },
@@ -51,11 +52,12 @@ export const Route = createRootRouteWithContext<{
       { rel: 'manifest', href: '/site.webmanifest' },
     ],
     scripts: [
-      {
-        defer: true,
-        src: 'https://assets.onedollarstats.com/stonks.js',
-        ...(import.meta.env.DEV ? { 'data-debug': 'conar.app' } : {}),
-      },
+      ...(import.meta.env.DEV
+        ? []
+        : [{
+            defer: true,
+            src: 'https://assets.onedollarstats.com/stonks.js',
+          }]),
     ],
   }),
   component: RootComponent,
@@ -64,23 +66,16 @@ export const Route = createRootRouteWithContext<{
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext()
-  const pathname = useRouterState({ select: state => state.location.pathname })
-
-  useMountedEffect(() => {
-    window.scrollTo({
-      top: 0,
-    })
-  }, [pathname])
 
   return (
     <html suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body className={`
+      <body className={cn(`
         bg-gray-100
         dark:bg-neutral-950
-      `}
+      `)}
       >
         <QueryClientProvider client={queryClient}>
           <Outlet />

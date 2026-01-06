@@ -1,17 +1,15 @@
-import type { Auth, BetterAuthPlugin, User } from 'better-auth'
-import { stripe } from '@better-auth/stripe'
+import type { Auth, BetterAuthOptions, User } from 'better-auth'
 import { PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { consola } from 'consola'
 import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
 import { sendEmail } from '~/lib/email'
 import { loops } from '~/lib/loops'
-import { stripe as stripeClient } from './stripe'
 
 async function loopsUpdateUser(user: User) {
   try {
@@ -35,35 +33,6 @@ async function loopsUpdateUser(user: User) {
     }
     throw error
   }
-}
-
-/**
- * Plugin to prevent setting the "set-cookie" header in responses.
- * We use it to prevent the cookie from being set in the desktop app because it uses bearer token instead of cookies.
- */
-function noSetCookiePlugin() {
-  return {
-    id: 'no-set-cookie',
-    hooks: {
-      after: [
-        {
-          matcher: ctx => !!ctx.request?.headers.get('x-desktop'),
-          handler: createAuthMiddleware(async (ctx) => {
-            const headers = ctx.context.responseHeaders
-
-            if (headers) {
-              const setCookies = headers.get('set-cookie')
-
-              if (!setCookies)
-                return
-
-              headers.delete('set-cookie')
-            }
-          }),
-        },
-      ],
-    },
-  } satisfies BetterAuthPlugin
 }
 
 export const auth: Auth = betterAuth({
@@ -98,28 +67,7 @@ export const auth: Auth = betterAuth({
     }),
     lastLoginMethod(),
     emailHarmony(),
-    noSetCookiePlugin(),
     anonymous(),
-    ...(stripeClient
-      ? [stripe({
-          stripeClient,
-          subscription: {
-            enabled: true,
-            plans: [
-              {
-                name: 'Pro',
-                priceId: env.STRIPE_MONTH_PRICE_ID!,
-                annualDiscountPriceId: env.STRIPE_ANNUAL_PRICE_ID!,
-                freeTrial: {
-                  days: 7,
-                },
-              },
-            ],
-          },
-          stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
-          createCustomerOnSignUp: true,
-        })]
-      : []),
   ],
   user: {
     additionalFields: {
@@ -128,11 +76,15 @@ export const auth: Auth = betterAuth({
         returned: false,
         input: false,
         defaultValue: () => nanoid(),
+        required: true,
+      },
+      stripe_customer_id: {
+        type: 'string',
+        returned: false,
+        input: false,
+        required: false,
       },
     },
-  },
-  account: {
-    skipStateCookieCheck: true,
   },
   databaseHooks: {
     user: {
@@ -201,4 +153,4 @@ export const auth: Auth = betterAuth({
       clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
-})
+} satisfies BetterAuthOptions)

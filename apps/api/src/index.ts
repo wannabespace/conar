@@ -60,14 +60,7 @@ app.on(['GET', 'POST'], '/auth/*', (c) => {
 })
 
 app.use('/rpc/*', async (c, next) => {
-  const desktopVersion = c.req.header('x-desktop-version')
-  if (!desktopVersion) {
-    return c.json({
-      message: 'You\'re using outdated version of the desktop app. Please update to the latest version from conar.app/download.',
-    }, 400)
-  }
-
-  const { matched, response } = await handler.handle(c.req.raw, {
+  const { matched, response } = await handler.handle(c.req.raw.clone(), {
     prefix: '/rpc',
     context: createContext(c),
   })
