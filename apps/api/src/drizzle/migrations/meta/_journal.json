@@ -138,15 +138,8 @@
     {
       "idx": 19,
       "version": "7",
-      "when": 1766350696042,
-      "tag": "0019_nasty_captain_universe",
-      "breakpoints": true
-    },
-    {
-      "idx": 20,
-      "version": "7",
-      "when": 1767480998796,
-      "tag": "0020_material_lady_vermin",
+      "when": 1767702158433,
+      "tag": "0019_quiet_whiplash",
       "breakpoints": true
     }
   ]
