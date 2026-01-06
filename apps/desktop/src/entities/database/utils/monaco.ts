@@ -180,10 +180,10 @@ export async function databaseAICompletionContext(database: typeof databases.$in
       queryClient.ensureQueryData(databaseEnumsQuery({ database })),
     ])
 
-    let context = ''
+    const contextLines: string[] = []
 
     for (const schema of tablesAndSchemas.schemas) {
-      context += `\nSchema: ${schema.name}\n`
+      contextLines.push('', `Schema: ${schema.name}`, '')
 
       for (const tableName of schema.tables) {
         const columns = await queryClient.ensureQueryData(
@@ -194,21 +194,21 @@ export async function databaseAICompletionContext(database: typeof databases.$in
           }),
         )
 
-        context += `  Table: ${tableName}\n`
+        contextLines.push(`  Table: ${tableName}`, '')
         columns.forEach((col) => {
-          context += `    - ${col.id}: ${col.type}${col.isNullable ? ' (nullable)' : ' (not null)'}\n`
+          contextLines.push(`    - ${col.id}: ${col.type} ${col.isNullable ? '(nullable)' : '(not null)'}`)
         })
       }
     }
 
     if (enums?.length > 0) {
-      context += '\nEnums:\n'
+      contextLines.push('', 'Enums:', '')
       enums.forEach((enumItem) => {
-        context += `  ${enumItem.schema}.${enumItem.name}: [${enumItem.values.join(', ')}]\n`
+        contextLines.push(`  ${enumItem.schema}.${enumItem.name}: [${enumItem.values.join(', ')}]`)
       })
     }
 
-    return context
+    return contextLines.join('\n')
   }
 
   return {
