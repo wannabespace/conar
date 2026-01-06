@@ -39,8 +39,8 @@ export function Pricing({ className }: PricingSectionProps) {
       )}
     >
       <div className={`
-        mb-12 px-4 text-center
-        sm:mb-16
+        mb-6 px-4 text-center
+        sm:mb-10
       `}
       >
         <h2
