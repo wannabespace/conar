@@ -5,13 +5,11 @@ import { db, users } from '~/drizzle'
 import { stripe } from '~/lib/stripe'
 import { authMiddleware, orpc } from '~/orpc'
 
-const billingPortalInput = type({
-  returnUrl: 'string',
-})
-
 export const billingPortal = orpc
   .use(authMiddleware)
-  .input(billingPortalInput)
+  .input(type({
+    returnUrl: 'string',
+  }))
   .handler(async ({ context, input }) => {
     if (!stripe) {
       throw new ORPCError('INTERNAL_SERVER_ERROR', { message: 'Stripe is not configured' })
