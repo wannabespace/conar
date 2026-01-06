@@ -98,6 +98,7 @@ export const auth: Auth = betterAuth({
   },
   trustedOrigins: [
     env.WEB_URL,
+    'file://',
     ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
     ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
   ],
@@ -106,10 +107,6 @@ export const auth: Auth = betterAuth({
     database: {
       generateId: 'uuid',
     },
-  },
-  // TODO: remove
-  account: {
-    skipStateCookieCheck: true,
   },
   experimental: {
     joins: true,
