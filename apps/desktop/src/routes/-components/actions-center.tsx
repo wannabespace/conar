@@ -1,0 +1,135 @@
+import type { databases, databases as databasesTable } from '~/drizzle'
+import { isCtrlAndKey } from '@conar/shared/utils/os'
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
+import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
+import { RiAddLine, RiDashboardLine, RiTableLine } from '@remixicon/react'
+import { useLiveQuery } from '@tanstack/react-db'
+import { useQuery } from '@tanstack/react-query'
+import { useParams, useRouter } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
+import { DatabaseIcon } from '~/entities/database/components'
+import { useDatabaseLinkParams } from '~/entities/database/hooks'
+import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
+import { databasesCollection } from '~/entities/database/sync'
+import { prefetchDatabaseCore } from '~/entities/database/utils'
+import { appStore, setIsActionCenterOpen } from '~/store'
+
+function ActionsDatabaseTables({ database }: { database: typeof databases.$inferSelect }) {
+  const { data: tablesAndSchemas } = useQuery({
+    ...databaseTablesAndSchemasQuery({ database }),
+    throwOnError: false,
+  })
+  const router = useRouter()
+
+  if (!tablesAndSchemas)
+    return null
+
+  function onTableSelect(schema: string, table: string) {
+    setIsActionCenterOpen(false)
+    router.navigate({ to: '/database/$id/table', params: { id: database.id }, search: { schema, table } })
+  }
+
+  return (
+    <CommandGroup heading={`${database.name} Tables`} value={database.name}>
+      {tablesAndSchemas.schemas.map(schema => schema.tables.map(table => (
+        <CommandItem
+          key={table}
+          keywords={[schema.name, table]}
+          value={`${schema.name}.${table}`}
+          onSelect={() => onTableSelect(schema.name, table)}
+        >
+          <RiTableLine className="size-4 shrink-0 text-muted-foreground" />
+          {schema.name}
+          .
+          {table}
+        </CommandItem>
+      )))}
+    </CommandGroup>
+  )
+}
+
+function ActionsDatabase({ database }: { database: typeof databases.$inferSelect }) {
+  const router = useRouter()
+  const params = useDatabaseLinkParams(database.id)
+
+  function onDatabaseSelect(database: typeof databasesTable.$inferSelect) {
+    setIsActionCenterOpen(false)
+
+    prefetchDatabaseCore(database)
+    router.navigate(params)
+  }
+
+  return (
+    <CommandItem
+      key={database.id}
+      onSelect={() => onDatabaseSelect(database)}
+    >
+      <DatabaseIcon type={database.type} className="size-4 shrink-0" />
+      <div className="flex items-center gap-2">
+        {database.name}
+        {database.label && (
+          <span className={`
+            rounded-full bg-muted-foreground/10 px-2 py-0.5 text-xs
+            whitespace-nowrap text-muted-foreground
+          `}
+          >
+            {database.label}
+          </span>
+        )}
+      </div>
+    </CommandItem>
+  )
+}
+
+export function ActionsCenter() {
+  const { data: databases } = useLiveQuery(q => q
+    .from({ databases: databasesCollection })
+    .orderBy(({ databases }) => databases.createdAt, 'desc'))
+  const isOpen = useStore(appStore, state => state.isActionCenterOpen)
+  const router = useRouter()
+  const { id } = useParams({ strict: false })
+
+  useKeyboardEvent(e => isCtrlAndKey(e, 'p'), () => {
+    if (!databases || databases.length === 0)
+      return
+
+    setIsActionCenterOpen(!isOpen)
+  })
+
+  const currentConnection = databases?.find(database => database.id === id)
+
+  return (
+    <CommandDialog open={isOpen} onOpenChange={setIsActionCenterOpen}>
+      <CommandInput placeholder="Type a command..." />
+      <CommandList className="max-h-140">
+        <CommandEmpty>No commands found.</CommandEmpty>
+        <CommandGroup heading="Commands">
+          <CommandItem
+            onSelect={() => {
+              setIsActionCenterOpen(false)
+              router.navigate({ to: '/' })
+            }}
+          >
+            <RiDashboardLine className="size-4 shrink-0 text-muted-foreground" />
+            Dashboard
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              setIsActionCenterOpen(false)
+              router.navigate({ to: '/create' })
+            }}
+          >
+            <RiAddLine className="size-4 shrink-0 text-muted-foreground" />
+            Add new connection...
+          </CommandItem>
+        </CommandGroup>
+        {!!databases?.length && (
+          <CommandGroup heading="Databases">
+            {databases.map(database => <ActionsDatabase key={database.id} database={database} />)}
+          </CommandGroup>
+        )}
+        {currentConnection && <ActionsDatabaseTables database={currentConnection} />}
+      </CommandList>
+    </CommandDialog>
+  )
+}

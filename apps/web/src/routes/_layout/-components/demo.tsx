@@ -47,7 +47,12 @@ function Image({ className, image, index, type }: { className?: string, image: s
   const props = {
     src: image,
     className: cn(
-      type === 'dark' ? 'dark:block hidden' : 'dark:hidden',
+      type === 'dark'
+        ? `
+          hidden
+          dark:block
+        `
+        : 'dark:hidden',
       index === 0 ? 'mx-auto' : 'absolute top-0 left-0 rounded-xl',
       className,
     ),
@@ -71,7 +76,7 @@ function Image({ className, image, index, type }: { className?: string, image: s
 
 function Images() {
   return (
-    <div className="relative w-fit mx-auto rounded-xl">
+    <div className="relative mx-auto w-fit rounded-xl">
       {imagesLight.map((image, index) => (
         <Image
           key={image}
@@ -88,7 +93,11 @@ function Images() {
           type="dark"
         />
       ))}
-      <div className="absolute z-10 inset-x-0 bottom-0 h-full bg-gradient-to-t from-background to-transparent" />
+      <div className={`
+        absolute inset-x-0 bottom-0 z-10 h-full bg-gradient-to-t from-background
+        to-transparent
+      `}
+      />
     </div>
   )
 }
