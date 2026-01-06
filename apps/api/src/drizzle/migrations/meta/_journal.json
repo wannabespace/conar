@@ -134,6 +134,13 @@
       "when": 1766228230812,
       "tag": "0018_perpetual_sheva_callister",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1767702158433,
+      "tag": "0019_quiet_whiplash",
+      "breakpoints": true
     }
   ]
 }

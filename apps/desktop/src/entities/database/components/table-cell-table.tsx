@@ -8,19 +8,19 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
-import { TableError } from '~/routes/(protected)/_protected/database/$id/table/-components/table'
-import { TableEmpty } from '~/routes/(protected)/_protected/database/$id/table/-components/table-empty'
-import { TableHeaderCell } from '~/routes/(protected)/_protected/database/$id/table/-components/table-header-cell'
-import { TableInfiniteLoader } from '~/routes/(protected)/_protected/database/$id/table/-components/table-infinite-loader'
-import { TableBodySkeleton } from '~/routes/(protected)/_protected/database/$id/table/-components/table-skeleton'
-import { getColumnSize } from '~/routes/(protected)/_protected/database/$id/table/-lib'
-import { useTableColumns } from '~/routes/(protected)/_protected/database/$id/table/-queries/use-columns-query'
+import { TableError } from '~/routes/_protected/database/$id/table/-components/table'
+import { TableEmpty } from '~/routes/_protected/database/$id/table/-components/table-empty'
+import { TableHeaderCell } from '~/routes/_protected/database/$id/table/-components/table-header-cell'
+import { TableInfiniteLoader } from '~/routes/_protected/database/$id/table/-components/table-infinite-loader'
+import { TableBodySkeleton } from '~/routes/_protected/database/$id/table/-components/table-skeleton'
+import { getColumnSize } from '~/routes/_protected/database/$id/table/-lib'
+import { useTableColumns } from '~/routes/_protected/database/$id/table/-queries/use-columns-query'
 import { databaseRowsQuery } from '../queries/rows'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '../utils'
 import { getDisplayValue } from '../utils/render'
 import { TableCellContent } from './table-cell-content'
 
-const { useLoaderData } = getRouteApi('/(protected)/_protected/database/$id')
+const { useLoaderData } = getRouteApi('/_protected/database/$id')
 
 export function TableCellTable({ schema, table, column, value }: { schema: string, table: string, column: string, value: unknown }) {
   const { database } = useLoaderData()

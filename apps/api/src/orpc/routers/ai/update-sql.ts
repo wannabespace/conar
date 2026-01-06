@@ -3,10 +3,10 @@ import { DatabaseType } from '@conar/shared/enums/database-type'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { withPosthog } from '~/lib/posthog'
-import { authMiddleware, orpc } from '~/orpc'
+import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 
 export const updateSQL = orpc
-  .use(authMiddleware)
+  .use(requireSubscriptionMiddleware)
   .input(type({
     sql: 'string',
     prompt: 'string',
@@ -15,7 +15,7 @@ export const updateSQL = orpc
   }))
   .handler(async ({ input, signal, context }) => {
     const { text } = await generateText({
-      model: withPosthog(anthropic('claude-haiku-4-5'), {
+      model: withPosthog(anthropic('claude-sonnet-4-5'), {
         userId: context.user.id,
       }),
       messages: [
@@ -29,6 +29,7 @@ export const updateSQL = orpc
             'If the input SQL is correct and only minor changes are needed (such as adding a WHERE clause, changing a column or value, etc.), update just that part.',
             'User\'s prompt can contain several SQL queries, you should update all of them.',
             'Always return a valid SQL query as output, without any explanations or markdown.',
+
             'This SQL will paste directly into a SQL editor.',
             '',
             'Database context:',

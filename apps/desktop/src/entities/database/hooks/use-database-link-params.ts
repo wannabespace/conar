@@ -9,20 +9,20 @@ export function useDatabaseLinkParams(id: string) {
 
   return useMemo((): LinkProps => {
     if (lastOpenedPage) {
-      if (lastOpenedPage === '/(protected)/_protected/database/$id/enums/') {
+      if (lastOpenedPage === '/_protected/database/$id/enums/') {
         return {
           to: '/database/$id/enums',
           params: { id },
         }
       }
-      else if (lastOpenedPage === '/(protected)/_protected/database/$id/sql/') {
+      else if (lastOpenedPage === '/_protected/database/$id/sql/') {
         return {
           to: '/database/$id/sql',
           params: { id },
           search: lastChatId ? { chatId: lastChatId } : undefined,
         }
       }
-      else if (lastOpenedPage === '/(protected)/_protected/database/$id/visualizer/') {
+      else if (lastOpenedPage === '/_protected/database/$id/visualizer/') {
         return {
           to: '/database/$id/visualizer',
           params: { id },

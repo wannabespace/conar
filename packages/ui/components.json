@@ -16,5 +16,8 @@
     "ui": "@conar/ui/components",
     "lib": "@conar/ui/lib",
     "hooks": "@conar/ui/hooks"
+  },
+  "registries": {
+    "@react-bits": "https://reactbits.dev/r/{name}.json"
   }
 }

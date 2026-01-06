@@ -9,209 +9,143 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as publicAuthRouteImport } from './routes/(public)/_auth'
-import { Route as protectedProtectedRouteImport } from './routes/(protected)/_protected'
-import { Route as protectedProtectedIndexRouteImport } from './routes/(protected)/_protected/index'
-import { Route as publicAuthTwoFactorRouteImport } from './routes/(public)/_auth/two-factor'
-import { Route as publicAuthSignUpRouteImport } from './routes/(public)/_auth/sign-up'
-import { Route as publicAuthSignInRouteImport } from './routes/(public)/_auth/sign-in'
-import { Route as publicAuthResetPasswordRouteImport } from './routes/(public)/_auth/reset-password'
-import { Route as publicAuthForgotPasswordRouteImport } from './routes/(public)/_auth/forgot-password'
-import { Route as protectedProtectedCreateIndexRouteImport } from './routes/(protected)/_protected/create/index'
-import { Route as publicAuthTwoFactorSetupRouteImport } from './routes/(public)/_auth/two-factor.setup'
-import { Route as protectedProtectedDatabaseIdRouteImport } from './routes/(protected)/_protected/database/$id'
-import { Route as protectedProtectedDatabaseIdConstraintIndexTabsRouteImport } from './routes/(protected)/_protected/database/$id/constraint-index-tabs'
-import { Route as protectedProtectedDatabaseIdVisualizerIndexRouteImport } from './routes/(protected)/_protected/database/$id/visualizer/index'
-import { Route as protectedProtectedDatabaseIdTableIndexRouteImport } from './routes/(protected)/_protected/database/$id/table/index'
-import { Route as protectedProtectedDatabaseIdSqlIndexRouteImport } from './routes/(protected)/_protected/database/$id/sql/index'
-import { Route as protectedProtectedDatabaseIdSettingsIndexRouteImport } from './routes/(protected)/_protected/database/$id/settings/index'
-import { Route as protectedProtectedDatabaseIdEnumsIndexRouteImport } from './routes/(protected)/_protected/database/$id/enums/index'
-import { Route as protectedProtectedDatabaseIdConstraintIndexTabsIndexesIndexRouteImport } from './routes/(protected)/_protected/database/$id/constraint-index-tabs/indexes/index'
-import { Route as protectedProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRouteImport } from './routes/(protected)/_protected/database/$id/constraint-index-tabs/constraints/index'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ProtectedRouteImport } from './routes/_protected'
+import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
+import { Route as ProtectedCreateIndexRouteImport } from './routes/_protected/create/index'
+import { Route as ProtectedDatabaseIdRouteImport } from './routes/_protected/database/$id'
+import { Route as ProtectedDatabaseIdConstraintIndexTabsRouteImport } from './routes/_protected/database/$id/constraint-index-tabs'
+import { Route as ProtectedDatabaseIdVisualizerIndexRouteImport } from './routes/_protected/database/$id/visualizer/index'
+import { Route as ProtectedDatabaseIdTableIndexRouteImport } from './routes/_protected/database/$id/table/index'
+import { Route as ProtectedDatabaseIdSqlIndexRouteImport } from './routes/_protected/database/$id/sql/index'
+import { Route as ProtectedDatabaseIdSettingsIndexRouteImport } from './routes/_protected/database/$id/settings/index'
+import { Route as ProtectedDatabaseIdEnumsIndexRouteImport } from './routes/_protected/database/$id/enums/index'
+import { Route as ProtectedDatabaseIdConstraintIndexTabsIndexesIndexRouteImport } from './routes/_protected/database/$id/constraint-index-tabs/indexes/index'
+import { Route as ProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRouteImport } from './routes/_protected/database/$id/constraint-index-tabs/constraints/index'
 
-const publicAuthRoute = publicAuthRouteImport.update({
-  id: '/(public)/_auth',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const protectedProtectedRoute = protectedProtectedRouteImport.update({
-  id: '/(protected)/_protected',
+const ProtectedRoute = ProtectedRouteImport.update({
+  id: '/_protected',
   getParentRoute: () => rootRouteImport,
 } as any)
-const protectedProtectedIndexRoute = protectedProtectedIndexRouteImport.update({
+const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => protectedProtectedRoute,
+  getParentRoute: () => ProtectedRoute,
 } as any)
-const publicAuthTwoFactorRoute = publicAuthTwoFactorRouteImport.update({
-  id: '/two-factor',
-  path: '/two-factor',
-  getParentRoute: () => publicAuthRoute,
+const ProtectedCreateIndexRoute = ProtectedCreateIndexRouteImport.update({
+  id: '/create/',
+  path: '/create/',
+  getParentRoute: () => ProtectedRoute,
 } as any)
-const publicAuthSignUpRoute = publicAuthSignUpRouteImport.update({
-  id: '/sign-up',
-  path: '/sign-up',
-  getParentRoute: () => publicAuthRoute,
+const ProtectedDatabaseIdRoute = ProtectedDatabaseIdRouteImport.update({
+  id: '/database/$id',
+  path: '/database/$id',
+  getParentRoute: () => ProtectedRoute,
 } as any)
-const publicAuthSignInRoute = publicAuthSignInRouteImport.update({
-  id: '/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => publicAuthRoute,
-} as any)
-const publicAuthResetPasswordRoute = publicAuthResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => publicAuthRoute,
-} as any)
-const publicAuthForgotPasswordRoute =
-  publicAuthForgotPasswordRouteImport.update({
-    id: '/forgot-password',
-    path: '/forgot-password',
-    getParentRoute: () => publicAuthRoute,
-  } as any)
-const protectedProtectedCreateIndexRoute =
-  protectedProtectedCreateIndexRouteImport.update({
-    id: '/create/',
-    path: '/create/',
-    getParentRoute: () => protectedProtectedRoute,
-  } as any)
-const publicAuthTwoFactorSetupRoute =
-  publicAuthTwoFactorSetupRouteImport.update({
-    id: '/setup',
-    path: '/setup',
-    getParentRoute: () => publicAuthTwoFactorRoute,
-  } as any)
-const protectedProtectedDatabaseIdRoute =
-  protectedProtectedDatabaseIdRouteImport.update({
-    id: '/database/$id',
-    path: '/database/$id',
-    getParentRoute: () => protectedProtectedRoute,
-  } as any)
-const protectedProtectedDatabaseIdConstraintIndexTabsRoute =
-  protectedProtectedDatabaseIdConstraintIndexTabsRouteImport.update({
+const ProtectedDatabaseIdConstraintIndexTabsRoute =
+  ProtectedDatabaseIdConstraintIndexTabsRouteImport.update({
     id: '/constraint-index-tabs',
     path: '/constraint-index-tabs',
-    getParentRoute: () => protectedProtectedDatabaseIdRoute,
+    getParentRoute: () => ProtectedDatabaseIdRoute,
   } as any)
-const protectedProtectedDatabaseIdVisualizerIndexRoute =
-  protectedProtectedDatabaseIdVisualizerIndexRouteImport.update({
+const ProtectedDatabaseIdVisualizerIndexRoute =
+  ProtectedDatabaseIdVisualizerIndexRouteImport.update({
     id: '/visualizer/',
     path: '/visualizer/',
-    getParentRoute: () => protectedProtectedDatabaseIdRoute,
+    getParentRoute: () => ProtectedDatabaseIdRoute,
   } as any)
-const protectedProtectedDatabaseIdTableIndexRoute =
-  protectedProtectedDatabaseIdTableIndexRouteImport.update({
+const ProtectedDatabaseIdTableIndexRoute =
+  ProtectedDatabaseIdTableIndexRouteImport.update({
     id: '/table/',
     path: '/table/',
-    getParentRoute: () => protectedProtectedDatabaseIdRoute,
+    getParentRoute: () => ProtectedDatabaseIdRoute,
   } as any)
-const protectedProtectedDatabaseIdSqlIndexRoute =
-  protectedProtectedDatabaseIdSqlIndexRouteImport.update({
+const ProtectedDatabaseIdSqlIndexRoute =
+  ProtectedDatabaseIdSqlIndexRouteImport.update({
     id: '/sql/',
     path: '/sql/',
-    getParentRoute: () => protectedProtectedDatabaseIdRoute,
+    getParentRoute: () => ProtectedDatabaseIdRoute,
   } as any)
-const protectedProtectedDatabaseIdSettingsIndexRoute =
-  protectedProtectedDatabaseIdSettingsIndexRouteImport.update({
+const ProtectedDatabaseIdSettingsIndexRoute =
+  ProtectedDatabaseIdSettingsIndexRouteImport.update({
     id: '/settings/',
     path: '/settings/',
-    getParentRoute: () => protectedProtectedDatabaseIdRoute,
+    getParentRoute: () => ProtectedDatabaseIdRoute,
   } as any)
-const protectedProtectedDatabaseIdEnumsIndexRoute =
-  protectedProtectedDatabaseIdEnumsIndexRouteImport.update({
+const ProtectedDatabaseIdEnumsIndexRoute =
+  ProtectedDatabaseIdEnumsIndexRouteImport.update({
     id: '/enums/',
     path: '/enums/',
-    getParentRoute: () => protectedProtectedDatabaseIdRoute,
+    getParentRoute: () => ProtectedDatabaseIdRoute,
   } as any)
-const protectedProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute =
-  protectedProtectedDatabaseIdConstraintIndexTabsIndexesIndexRouteImport.update(
-    {
-      id: '/indexes/',
-      path: '/indexes/',
-      getParentRoute: () =>
-        protectedProtectedDatabaseIdConstraintIndexTabsRoute,
-    } as any,
-  )
-const protectedProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute =
-  protectedProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRouteImport.update(
-    {
-      id: '/constraints/',
-      path: '/constraints/',
-      getParentRoute: () =>
-        protectedProtectedDatabaseIdConstraintIndexTabsRoute,
-    } as any,
-  )
+const ProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute =
+  ProtectedDatabaseIdConstraintIndexTabsIndexesIndexRouteImport.update({
+    id: '/indexes/',
+    path: '/indexes/',
+    getParentRoute: () => ProtectedDatabaseIdConstraintIndexTabsRoute,
+  } as any)
+const ProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute =
+  ProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRouteImport.update({
+    id: '/constraints/',
+    path: '/constraints/',
+    getParentRoute: () => ProtectedDatabaseIdConstraintIndexTabsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/forgot-password': typeof publicAuthForgotPasswordRoute
-  '/reset-password': typeof publicAuthResetPasswordRoute
-  '/sign-in': typeof publicAuthSignInRoute
-  '/sign-up': typeof publicAuthSignUpRoute
-  '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
-  '/': typeof protectedProtectedIndexRoute
-  '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
-  '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
-  '/create': typeof protectedProtectedCreateIndexRoute
-  '/database/$id/constraint-index-tabs': typeof protectedProtectedDatabaseIdConstraintIndexTabsRouteWithChildren
-  '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
-  '/database/$id/settings': typeof protectedProtectedDatabaseIdSettingsIndexRoute
-  '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
-  '/database/$id/table': typeof protectedProtectedDatabaseIdTableIndexRoute
-  '/database/$id/visualizer': typeof protectedProtectedDatabaseIdVisualizerIndexRoute
-  '/database/$id/constraint-index-tabs/constraints': typeof protectedProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute
-  '/database/$id/constraint-index-tabs/indexes': typeof protectedProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute
+  '/auth': typeof AuthRoute
+  '/': typeof ProtectedIndexRoute
+  '/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
+  '/create': typeof ProtectedCreateIndexRoute
+  '/database/$id/constraint-index-tabs': typeof ProtectedDatabaseIdConstraintIndexTabsRouteWithChildren
+  '/database/$id/enums': typeof ProtectedDatabaseIdEnumsIndexRoute
+  '/database/$id/settings': typeof ProtectedDatabaseIdSettingsIndexRoute
+  '/database/$id/sql': typeof ProtectedDatabaseIdSqlIndexRoute
+  '/database/$id/table': typeof ProtectedDatabaseIdTableIndexRoute
+  '/database/$id/visualizer': typeof ProtectedDatabaseIdVisualizerIndexRoute
+  '/database/$id/constraint-index-tabs/constraints': typeof ProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute
+  '/database/$id/constraint-index-tabs/indexes': typeof ProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute
 }
 export interface FileRoutesByTo {
-  '/forgot-password': typeof publicAuthForgotPasswordRoute
-  '/reset-password': typeof publicAuthResetPasswordRoute
-  '/sign-in': typeof publicAuthSignInRoute
-  '/sign-up': typeof publicAuthSignUpRoute
-  '/two-factor': typeof publicAuthTwoFactorRouteWithChildren
-  '/': typeof protectedProtectedIndexRoute
-  '/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
-  '/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
-  '/create': typeof protectedProtectedCreateIndexRoute
-  '/database/$id/constraint-index-tabs': typeof protectedProtectedDatabaseIdConstraintIndexTabsRouteWithChildren
-  '/database/$id/enums': typeof protectedProtectedDatabaseIdEnumsIndexRoute
-  '/database/$id/settings': typeof protectedProtectedDatabaseIdSettingsIndexRoute
-  '/database/$id/sql': typeof protectedProtectedDatabaseIdSqlIndexRoute
-  '/database/$id/table': typeof protectedProtectedDatabaseIdTableIndexRoute
-  '/database/$id/visualizer': typeof protectedProtectedDatabaseIdVisualizerIndexRoute
-  '/database/$id/constraint-index-tabs/constraints': typeof protectedProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute
-  '/database/$id/constraint-index-tabs/indexes': typeof protectedProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute
+  '/auth': typeof AuthRoute
+  '/': typeof ProtectedIndexRoute
+  '/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
+  '/create': typeof ProtectedCreateIndexRoute
+  '/database/$id/constraint-index-tabs': typeof ProtectedDatabaseIdConstraintIndexTabsRouteWithChildren
+  '/database/$id/enums': typeof ProtectedDatabaseIdEnumsIndexRoute
+  '/database/$id/settings': typeof ProtectedDatabaseIdSettingsIndexRoute
+  '/database/$id/sql': typeof ProtectedDatabaseIdSqlIndexRoute
+  '/database/$id/table': typeof ProtectedDatabaseIdTableIndexRoute
+  '/database/$id/visualizer': typeof ProtectedDatabaseIdVisualizerIndexRoute
+  '/database/$id/constraint-index-tabs/constraints': typeof ProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute
+  '/database/$id/constraint-index-tabs/indexes': typeof ProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/(protected)/_protected': typeof protectedProtectedRouteWithChildren
-  '/(public)/_auth': typeof publicAuthRouteWithChildren
-  '/(public)/_auth/forgot-password': typeof publicAuthForgotPasswordRoute
-  '/(public)/_auth/reset-password': typeof publicAuthResetPasswordRoute
-  '/(public)/_auth/sign-in': typeof publicAuthSignInRoute
-  '/(public)/_auth/sign-up': typeof publicAuthSignUpRoute
-  '/(public)/_auth/two-factor': typeof publicAuthTwoFactorRouteWithChildren
-  '/(protected)/_protected/': typeof protectedProtectedIndexRoute
-  '/(protected)/_protected/database/$id': typeof protectedProtectedDatabaseIdRouteWithChildren
-  '/(public)/_auth/two-factor/setup': typeof publicAuthTwoFactorSetupRoute
-  '/(protected)/_protected/create/': typeof protectedProtectedCreateIndexRoute
-  '/(protected)/_protected/database/$id/constraint-index-tabs': typeof protectedProtectedDatabaseIdConstraintIndexTabsRouteWithChildren
-  '/(protected)/_protected/database/$id/enums/': typeof protectedProtectedDatabaseIdEnumsIndexRoute
-  '/(protected)/_protected/database/$id/settings/': typeof protectedProtectedDatabaseIdSettingsIndexRoute
-  '/(protected)/_protected/database/$id/sql/': typeof protectedProtectedDatabaseIdSqlIndexRoute
-  '/(protected)/_protected/database/$id/table/': typeof protectedProtectedDatabaseIdTableIndexRoute
-  '/(protected)/_protected/database/$id/visualizer/': typeof protectedProtectedDatabaseIdVisualizerIndexRoute
-  '/(protected)/_protected/database/$id/constraint-index-tabs/constraints/': typeof protectedProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute
-  '/(protected)/_protected/database/$id/constraint-index-tabs/indexes/': typeof protectedProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute
+  '/_protected': typeof ProtectedRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_protected/': typeof ProtectedIndexRoute
+  '/_protected/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
+  '/_protected/create/': typeof ProtectedCreateIndexRoute
+  '/_protected/database/$id/constraint-index-tabs': typeof ProtectedDatabaseIdConstraintIndexTabsRouteWithChildren
+  '/_protected/database/$id/enums/': typeof ProtectedDatabaseIdEnumsIndexRoute
+  '/_protected/database/$id/settings/': typeof ProtectedDatabaseIdSettingsIndexRoute
+  '/_protected/database/$id/sql/': typeof ProtectedDatabaseIdSqlIndexRoute
+  '/_protected/database/$id/table/': typeof ProtectedDatabaseIdTableIndexRoute
+  '/_protected/database/$id/visualizer/': typeof ProtectedDatabaseIdVisualizerIndexRoute
+  '/_protected/database/$id/constraint-index-tabs/constraints/': typeof ProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute
+  '/_protected/database/$id/constraint-index-tabs/indexes/': typeof ProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/forgot-password'
-    | '/reset-password'
-    | '/sign-in'
-    | '/sign-up'
-    | '/two-factor'
+    | '/auth'
     | '/'
     | '/database/$id'
-    | '/two-factor/setup'
     | '/create'
     | '/database/$id/constraint-index-tabs'
     | '/database/$id/enums'
@@ -223,14 +157,9 @@ export interface FileRouteTypes {
     | '/database/$id/constraint-index-tabs/indexes'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/forgot-password'
-    | '/reset-password'
-    | '/sign-in'
-    | '/sign-up'
-    | '/two-factor'
+    | '/auth'
     | '/'
     | '/database/$id'
-    | '/two-factor/setup'
     | '/create'
     | '/database/$id/constraint-index-tabs'
     | '/database/$id/enums'
@@ -242,268 +171,182 @@ export interface FileRouteTypes {
     | '/database/$id/constraint-index-tabs/indexes'
   id:
     | '__root__'
-    | '/(protected)/_protected'
-    | '/(public)/_auth'
-    | '/(public)/_auth/forgot-password'
-    | '/(public)/_auth/reset-password'
-    | '/(public)/_auth/sign-in'
-    | '/(public)/_auth/sign-up'
-    | '/(public)/_auth/two-factor'
-    | '/(protected)/_protected/'
-    | '/(protected)/_protected/database/$id'
-    | '/(public)/_auth/two-factor/setup'
-    | '/(protected)/_protected/create/'
-    | '/(protected)/_protected/database/$id/constraint-index-tabs'
-    | '/(protected)/_protected/database/$id/enums/'
-    | '/(protected)/_protected/database/$id/settings/'
-    | '/(protected)/_protected/database/$id/sql/'
-    | '/(protected)/_protected/database/$id/table/'
-    | '/(protected)/_protected/database/$id/visualizer/'
-    | '/(protected)/_protected/database/$id/constraint-index-tabs/constraints/'
-    | '/(protected)/_protected/database/$id/constraint-index-tabs/indexes/'
+    | '/_protected'
+    | '/auth'
+    | '/_protected/'
+    | '/_protected/database/$id'
+    | '/_protected/create/'
+    | '/_protected/database/$id/constraint-index-tabs'
+    | '/_protected/database/$id/enums/'
+    | '/_protected/database/$id/settings/'
+    | '/_protected/database/$id/sql/'
+    | '/_protected/database/$id/table/'
+    | '/_protected/database/$id/visualizer/'
+    | '/_protected/database/$id/constraint-index-tabs/constraints/'
+    | '/_protected/database/$id/constraint-index-tabs/indexes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  protectedProtectedRoute: typeof protectedProtectedRouteWithChildren
-  publicAuthRoute: typeof publicAuthRouteWithChildren
+  ProtectedRoute: typeof ProtectedRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/(public)/_auth': {
-      id: '/(public)/_auth'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof publicAuthRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(protected)/_protected': {
-      id: '/(protected)/_protected'
+    '/_protected': {
+      id: '/_protected'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof protectedProtectedRouteImport
+      preLoaderRoute: typeof ProtectedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(protected)/_protected/': {
-      id: '/(protected)/_protected/'
+    '/_protected/': {
+      id: '/_protected/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof protectedProtectedIndexRouteImport
-      parentRoute: typeof protectedProtectedRoute
+      preLoaderRoute: typeof ProtectedIndexRouteImport
+      parentRoute: typeof ProtectedRoute
     }
-    '/(public)/_auth/two-factor': {
-      id: '/(public)/_auth/two-factor'
-      path: '/two-factor'
-      fullPath: '/two-factor'
-      preLoaderRoute: typeof publicAuthTwoFactorRouteImport
-      parentRoute: typeof publicAuthRoute
-    }
-    '/(public)/_auth/sign-up': {
-      id: '/(public)/_auth/sign-up'
-      path: '/sign-up'
-      fullPath: '/sign-up'
-      preLoaderRoute: typeof publicAuthSignUpRouteImport
-      parentRoute: typeof publicAuthRoute
-    }
-    '/(public)/_auth/sign-in': {
-      id: '/(public)/_auth/sign-in'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof publicAuthSignInRouteImport
-      parentRoute: typeof publicAuthRoute
-    }
-    '/(public)/_auth/reset-password': {
-      id: '/(public)/_auth/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof publicAuthResetPasswordRouteImport
-      parentRoute: typeof publicAuthRoute
-    }
-    '/(public)/_auth/forgot-password': {
-      id: '/(public)/_auth/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof publicAuthForgotPasswordRouteImport
-      parentRoute: typeof publicAuthRoute
-    }
-    '/(protected)/_protected/create/': {
-      id: '/(protected)/_protected/create/'
+    '/_protected/create/': {
+      id: '/_protected/create/'
       path: '/create'
       fullPath: '/create'
-      preLoaderRoute: typeof protectedProtectedCreateIndexRouteImport
-      parentRoute: typeof protectedProtectedRoute
+      preLoaderRoute: typeof ProtectedCreateIndexRouteImport
+      parentRoute: typeof ProtectedRoute
     }
-    '/(public)/_auth/two-factor/setup': {
-      id: '/(public)/_auth/two-factor/setup'
-      path: '/setup'
-      fullPath: '/two-factor/setup'
-      preLoaderRoute: typeof publicAuthTwoFactorSetupRouteImport
-      parentRoute: typeof publicAuthTwoFactorRoute
-    }
-    '/(protected)/_protected/database/$id': {
-      id: '/(protected)/_protected/database/$id'
+    '/_protected/database/$id': {
+      id: '/_protected/database/$id'
       path: '/database/$id'
       fullPath: '/database/$id'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdRouteImport
-      parentRoute: typeof protectedProtectedRoute
+      preLoaderRoute: typeof ProtectedDatabaseIdRouteImport
+      parentRoute: typeof ProtectedRoute
     }
-    '/(protected)/_protected/database/$id/constraint-index-tabs': {
-      id: '/(protected)/_protected/database/$id/constraint-index-tabs'
+    '/_protected/database/$id/constraint-index-tabs': {
+      id: '/_protected/database/$id/constraint-index-tabs'
       path: '/constraint-index-tabs'
       fullPath: '/database/$id/constraint-index-tabs'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdConstraintIndexTabsRouteImport
-      parentRoute: typeof protectedProtectedDatabaseIdRoute
+      preLoaderRoute: typeof ProtectedDatabaseIdConstraintIndexTabsRouteImport
+      parentRoute: typeof ProtectedDatabaseIdRoute
     }
-    '/(protected)/_protected/database/$id/visualizer/': {
-      id: '/(protected)/_protected/database/$id/visualizer/'
+    '/_protected/database/$id/visualizer/': {
+      id: '/_protected/database/$id/visualizer/'
       path: '/visualizer'
       fullPath: '/database/$id/visualizer'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdVisualizerIndexRouteImport
-      parentRoute: typeof protectedProtectedDatabaseIdRoute
+      preLoaderRoute: typeof ProtectedDatabaseIdVisualizerIndexRouteImport
+      parentRoute: typeof ProtectedDatabaseIdRoute
     }
-    '/(protected)/_protected/database/$id/table/': {
-      id: '/(protected)/_protected/database/$id/table/'
+    '/_protected/database/$id/table/': {
+      id: '/_protected/database/$id/table/'
       path: '/table'
       fullPath: '/database/$id/table'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdTableIndexRouteImport
-      parentRoute: typeof protectedProtectedDatabaseIdRoute
+      preLoaderRoute: typeof ProtectedDatabaseIdTableIndexRouteImport
+      parentRoute: typeof ProtectedDatabaseIdRoute
     }
-    '/(protected)/_protected/database/$id/sql/': {
-      id: '/(protected)/_protected/database/$id/sql/'
+    '/_protected/database/$id/sql/': {
+      id: '/_protected/database/$id/sql/'
       path: '/sql'
       fullPath: '/database/$id/sql'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdSqlIndexRouteImport
-      parentRoute: typeof protectedProtectedDatabaseIdRoute
+      preLoaderRoute: typeof ProtectedDatabaseIdSqlIndexRouteImport
+      parentRoute: typeof ProtectedDatabaseIdRoute
     }
-    '/(protected)/_protected/database/$id/settings/': {
-      id: '/(protected)/_protected/database/$id/settings/'
+    '/_protected/database/$id/settings/': {
+      id: '/_protected/database/$id/settings/'
       path: '/settings'
       fullPath: '/database/$id/settings'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdSettingsIndexRouteImport
-      parentRoute: typeof protectedProtectedDatabaseIdRoute
+      preLoaderRoute: typeof ProtectedDatabaseIdSettingsIndexRouteImport
+      parentRoute: typeof ProtectedDatabaseIdRoute
     }
-    '/(protected)/_protected/database/$id/enums/': {
-      id: '/(protected)/_protected/database/$id/enums/'
+    '/_protected/database/$id/enums/': {
+      id: '/_protected/database/$id/enums/'
       path: '/enums'
       fullPath: '/database/$id/enums'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdEnumsIndexRouteImport
-      parentRoute: typeof protectedProtectedDatabaseIdRoute
+      preLoaderRoute: typeof ProtectedDatabaseIdEnumsIndexRouteImport
+      parentRoute: typeof ProtectedDatabaseIdRoute
     }
-    '/(protected)/_protected/database/$id/constraint-index-tabs/indexes/': {
-      id: '/(protected)/_protected/database/$id/constraint-index-tabs/indexes/'
+    '/_protected/database/$id/constraint-index-tabs/indexes/': {
+      id: '/_protected/database/$id/constraint-index-tabs/indexes/'
       path: '/indexes'
       fullPath: '/database/$id/constraint-index-tabs/indexes'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdConstraintIndexTabsIndexesIndexRouteImport
-      parentRoute: typeof protectedProtectedDatabaseIdConstraintIndexTabsRoute
+      preLoaderRoute: typeof ProtectedDatabaseIdConstraintIndexTabsIndexesIndexRouteImport
+      parentRoute: typeof ProtectedDatabaseIdConstraintIndexTabsRoute
     }
-    '/(protected)/_protected/database/$id/constraint-index-tabs/constraints/': {
-      id: '/(protected)/_protected/database/$id/constraint-index-tabs/constraints/'
+    '/_protected/database/$id/constraint-index-tabs/constraints/': {
+      id: '/_protected/database/$id/constraint-index-tabs/constraints/'
       path: '/constraints'
       fullPath: '/database/$id/constraint-index-tabs/constraints'
-      preLoaderRoute: typeof protectedProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRouteImport
-      parentRoute: typeof protectedProtectedDatabaseIdConstraintIndexTabsRoute
+      preLoaderRoute: typeof ProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRouteImport
+      parentRoute: typeof ProtectedDatabaseIdConstraintIndexTabsRoute
     }
   }
 }
 
-interface protectedProtectedDatabaseIdConstraintIndexTabsRouteChildren {
-  protectedProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute: typeof protectedProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute
-  protectedProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute: typeof protectedProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute
+interface ProtectedDatabaseIdConstraintIndexTabsRouteChildren {
+  ProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute: typeof ProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute
+  ProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute: typeof ProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute
 }
 
-const protectedProtectedDatabaseIdConstraintIndexTabsRouteChildren: protectedProtectedDatabaseIdConstraintIndexTabsRouteChildren =
+const ProtectedDatabaseIdConstraintIndexTabsRouteChildren: ProtectedDatabaseIdConstraintIndexTabsRouteChildren =
   {
-    protectedProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute:
-      protectedProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute,
-    protectedProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute:
-      protectedProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute,
+    ProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute:
+      ProtectedDatabaseIdConstraintIndexTabsConstraintsIndexRoute,
+    ProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute:
+      ProtectedDatabaseIdConstraintIndexTabsIndexesIndexRoute,
   }
 
-const protectedProtectedDatabaseIdConstraintIndexTabsRouteWithChildren =
-  protectedProtectedDatabaseIdConstraintIndexTabsRoute._addFileChildren(
-    protectedProtectedDatabaseIdConstraintIndexTabsRouteChildren,
+const ProtectedDatabaseIdConstraintIndexTabsRouteWithChildren =
+  ProtectedDatabaseIdConstraintIndexTabsRoute._addFileChildren(
+    ProtectedDatabaseIdConstraintIndexTabsRouteChildren,
   )
 
-interface protectedProtectedDatabaseIdRouteChildren {
-  protectedProtectedDatabaseIdConstraintIndexTabsRoute: typeof protectedProtectedDatabaseIdConstraintIndexTabsRouteWithChildren
-  protectedProtectedDatabaseIdEnumsIndexRoute: typeof protectedProtectedDatabaseIdEnumsIndexRoute
-  protectedProtectedDatabaseIdSettingsIndexRoute: typeof protectedProtectedDatabaseIdSettingsIndexRoute
-  protectedProtectedDatabaseIdSqlIndexRoute: typeof protectedProtectedDatabaseIdSqlIndexRoute
-  protectedProtectedDatabaseIdTableIndexRoute: typeof protectedProtectedDatabaseIdTableIndexRoute
-  protectedProtectedDatabaseIdVisualizerIndexRoute: typeof protectedProtectedDatabaseIdVisualizerIndexRoute
+interface ProtectedDatabaseIdRouteChildren {
+  ProtectedDatabaseIdConstraintIndexTabsRoute: typeof ProtectedDatabaseIdConstraintIndexTabsRouteWithChildren
+  ProtectedDatabaseIdEnumsIndexRoute: typeof ProtectedDatabaseIdEnumsIndexRoute
+  ProtectedDatabaseIdSettingsIndexRoute: typeof ProtectedDatabaseIdSettingsIndexRoute
+  ProtectedDatabaseIdSqlIndexRoute: typeof ProtectedDatabaseIdSqlIndexRoute
+  ProtectedDatabaseIdTableIndexRoute: typeof ProtectedDatabaseIdTableIndexRoute
+  ProtectedDatabaseIdVisualizerIndexRoute: typeof ProtectedDatabaseIdVisualizerIndexRoute
 }
 
-const protectedProtectedDatabaseIdRouteChildren: protectedProtectedDatabaseIdRouteChildren =
-  {
-    protectedProtectedDatabaseIdConstraintIndexTabsRoute:
-      protectedProtectedDatabaseIdConstraintIndexTabsRouteWithChildren,
-    protectedProtectedDatabaseIdEnumsIndexRoute:
-      protectedProtectedDatabaseIdEnumsIndexRoute,
-    protectedProtectedDatabaseIdSettingsIndexRoute:
-      protectedProtectedDatabaseIdSettingsIndexRoute,
-    protectedProtectedDatabaseIdSqlIndexRoute:
-      protectedProtectedDatabaseIdSqlIndexRoute,
-    protectedProtectedDatabaseIdTableIndexRoute:
-      protectedProtectedDatabaseIdTableIndexRoute,
-    protectedProtectedDatabaseIdVisualizerIndexRoute:
-      protectedProtectedDatabaseIdVisualizerIndexRoute,
-  }
-
-const protectedProtectedDatabaseIdRouteWithChildren =
-  protectedProtectedDatabaseIdRoute._addFileChildren(
-    protectedProtectedDatabaseIdRouteChildren,
-  )
-
-interface protectedProtectedRouteChildren {
-  protectedProtectedIndexRoute: typeof protectedProtectedIndexRoute
-  protectedProtectedDatabaseIdRoute: typeof protectedProtectedDatabaseIdRouteWithChildren
-  protectedProtectedCreateIndexRoute: typeof protectedProtectedCreateIndexRoute
+const ProtectedDatabaseIdRouteChildren: ProtectedDatabaseIdRouteChildren = {
+  ProtectedDatabaseIdConstraintIndexTabsRoute:
+    ProtectedDatabaseIdConstraintIndexTabsRouteWithChildren,
+  ProtectedDatabaseIdEnumsIndexRoute: ProtectedDatabaseIdEnumsIndexRoute,
+  ProtectedDatabaseIdSettingsIndexRoute: ProtectedDatabaseIdSettingsIndexRoute,
+  ProtectedDatabaseIdSqlIndexRoute: ProtectedDatabaseIdSqlIndexRoute,
+  ProtectedDatabaseIdTableIndexRoute: ProtectedDatabaseIdTableIndexRoute,
+  ProtectedDatabaseIdVisualizerIndexRoute:
+    ProtectedDatabaseIdVisualizerIndexRoute,
 }
 
-const protectedProtectedRouteChildren: protectedProtectedRouteChildren = {
-  protectedProtectedIndexRoute: protectedProtectedIndexRoute,
-  protectedProtectedDatabaseIdRoute:
-    protectedProtectedDatabaseIdRouteWithChildren,
-  protectedProtectedCreateIndexRoute: protectedProtectedCreateIndexRoute,
+const ProtectedDatabaseIdRouteWithChildren =
+  ProtectedDatabaseIdRoute._addFileChildren(ProtectedDatabaseIdRouteChildren)
+
+interface ProtectedRouteChildren {
+  ProtectedIndexRoute: typeof ProtectedIndexRoute
+  ProtectedDatabaseIdRoute: typeof ProtectedDatabaseIdRouteWithChildren
+  ProtectedCreateIndexRoute: typeof ProtectedCreateIndexRoute
 }
 
-const protectedProtectedRouteWithChildren =
-  protectedProtectedRoute._addFileChildren(protectedProtectedRouteChildren)
-
-interface publicAuthTwoFactorRouteChildren {
-  publicAuthTwoFactorSetupRoute: typeof publicAuthTwoFactorSetupRoute
+const ProtectedRouteChildren: ProtectedRouteChildren = {
+  ProtectedIndexRoute: ProtectedIndexRoute,
+  ProtectedDatabaseIdRoute: ProtectedDatabaseIdRouteWithChildren,
+  ProtectedCreateIndexRoute: ProtectedCreateIndexRoute,
 }
 
-const publicAuthTwoFactorRouteChildren: publicAuthTwoFactorRouteChildren = {
-  publicAuthTwoFactorSetupRoute: publicAuthTwoFactorSetupRoute,
-}
-
-const publicAuthTwoFactorRouteWithChildren =
-  publicAuthTwoFactorRoute._addFileChildren(publicAuthTwoFactorRouteChildren)
-
-interface publicAuthRouteChildren {
-  publicAuthForgotPasswordRoute: typeof publicAuthForgotPasswordRoute
-  publicAuthResetPasswordRoute: typeof publicAuthResetPasswordRoute
-  publicAuthSignInRoute: typeof publicAuthSignInRoute
-  publicAuthSignUpRoute: typeof publicAuthSignUpRoute
-  publicAuthTwoFactorRoute: typeof publicAuthTwoFactorRouteWithChildren
-}
-
-const publicAuthRouteChildren: publicAuthRouteChildren = {
-  publicAuthForgotPasswordRoute: publicAuthForgotPasswordRoute,
-  publicAuthResetPasswordRoute: publicAuthResetPasswordRoute,
-  publicAuthSignInRoute: publicAuthSignInRoute,
-  publicAuthSignUpRoute: publicAuthSignUpRoute,
-  publicAuthTwoFactorRoute: publicAuthTwoFactorRouteWithChildren,
-}
-
-const publicAuthRouteWithChildren = publicAuthRoute._addFileChildren(
-  publicAuthRouteChildren,
+const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
+  ProtectedRouteChildren,
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  protectedProtectedRoute: protectedProtectedRouteWithChildren,
-  publicAuthRoute: publicAuthRouteWithChildren,
+  ProtectedRoute: ProtectedRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

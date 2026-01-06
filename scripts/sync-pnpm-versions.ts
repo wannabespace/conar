@@ -83,6 +83,6 @@ function syncPnpmVersion() {
   }
 }
 
-if (__filename === process.argv[1]) {
+if (__filename === process.argv[1] && process.env.NODE_ENV !== 'production') {
   syncPnpmVersion()
 }

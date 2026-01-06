@@ -10,6 +10,7 @@ export function useSignOut() {
   const { refetch, data } = authClient.useSession()
 
   const { mutate: signOut, isPending: isSigningOut } = useMutation({
+    mutationKey: ['sign-out'],
     mutationFn: async () => {
       await fullSignOut()
       refetch()

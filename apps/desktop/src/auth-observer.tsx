@@ -1,20 +1,17 @@
 import { useNetwork } from '@conar/ui/hookas/use-network'
-import { useLocation, useRouter } from '@tanstack/react-router'
-import { useEffect, useEffectEvent } from 'react'
+import { useMatches, useRouter } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { identifyUser } from '~/lib/events'
 import { authClient, bearerToken } from './lib/auth'
-import { handleDeepLink } from './lib/deep-links'
-
-// It means we can access these pages only without a token
-const authRoutes = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password']
-const publicRoutes = [...authRoutes]
 
 export function AuthObserver() {
-  const { data, error, isPending, refetch } = authClient.useSession()
+  const { data, error, isPending } = authClient.useSession()
   const router = useRouter()
-  const location = useLocation()
   const { online } = useNetwork()
+  const match = useMatches({
+    select: matches => matches.map(match => match.routeId).at(-1),
+  })
 
   const isSignedInButServerError = !!bearerToken.get() && !!error
 
@@ -39,49 +36,25 @@ export function AuthObserver() {
      * To not block the app, we navigate to the home page to continue working
      */
     if (isSignedInButServerError) {
-      if (authRoutes.includes(location.pathname))
+      if (match === '/auth')
         router.navigate({ to: '/' })
 
       return
     }
 
-    if (data?.user && authRoutes.includes(location.pathname)) {
+    if (data?.user && match === '/auth') {
       router.navigate({ to: '/' })
     }
 
-    if (!data?.user && !publicRoutes.includes(location.pathname)) {
-      router.navigate({ to: '/sign-in' })
+    if (!data?.user && match !== '/auth') {
+      router.navigate({ to: '/auth' })
     }
-  }, [router, isPending, data?.user, location.pathname, isSignedInButServerError])
+  }, [router, isPending, data?.user, match, isSignedInButServerError])
 
   useEffect(() => {
     if (isSignedInButServerError && online)
       toast.error('Something went wrong with our server. You can continue working, but some features may not work as expected.')
   }, [isSignedInButServerError, online])
-
-  async function handle(url: string) {
-    const { type } = await handleDeepLink(url)
-
-    if (type === 'session') {
-      refetch()
-    }
-    else if (type === 'reset-password') {
-      router.navigate({ to: '/reset-password' })
-    }
-  }
-
-  const handleEvent = useEffectEvent(handle)
-
-  useEffect(() => {
-    if (window.initialDeepLink) {
-      handleEvent(window.initialDeepLink)
-
-      window.initialDeepLink = null
-    }
-
-    const cleanup = window.electron?.app.onDeepLink(handleEvent)
-    return cleanup
-  }, [])
 
   return <></>
 }
