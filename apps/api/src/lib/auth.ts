@@ -107,6 +107,10 @@ export const auth: Auth = betterAuth({
       generateId: 'uuid',
     },
   },
+  // TODO: remove
+  account: {
+    skipStateCookieCheck: true,
+  },
   experimental: {
     joins: true,
   },
