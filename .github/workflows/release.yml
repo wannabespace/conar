@@ -30,6 +30,5 @@ jobs:
           TODESKTOP_ACCESS_TOKEN: ${{ secrets.TODESKTOP_ACCESS_TOKEN }}
           TODESKTOP_EMAIL: ${{ secrets.TODESKTOP_EMAIL }}
           VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
-          VITE_PUBLIC_AUTH_SECRET: ${{ secrets.VITE_PUBLIC_AUTH_SECRET }}
           VITE_PUBLIC_POSTHOG_API_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_API_KEY }}
           VITE_PUBLIC_WEB_URL: ${{ secrets.VITE_PUBLIC_WEB_URL }}
