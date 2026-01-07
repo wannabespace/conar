@@ -42,9 +42,6 @@ catalogs:
     '@dagrejs/dagre':
       specifier: 1.1.8
       version: 1.1.8
-    '@databuddy/sdk':
-      specifier: ^2.3.24
-      version: 2.3.24
     '@electric-sql/pglite':
       specifier: ^0.3.14
       version: 0.3.14
@@ -946,9 +943,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@databuddy/sdk':
-        specifier: 'catalog:'
-        version: 2.3.24(@ai-sdk/provider@2.0.0)(ai@5.0.116(zod@4.3.5))(react@19.2.3)
       '@number-flow/react':
         specifier: 'catalog:'
         version: 0.5.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1711,29 +1705,6 @@ packages:
   '@dagrejs/graphlib@2.2.4':
     resolution: {integrity: sha512-mepCf/e9+SKYy1d02/UkvSy6+6MoyXhVxP8lLDfA7BPE1X1d4dR0sZznmbM8/XVJ1GPM+Svnx7Xj6ZweByWUkw==}
     engines: {node: '>17.0.0'}
-
-  '@databuddy/sdk@2.3.24':
-    resolution: {integrity: sha512-CALVw5bof4kwaKR7FpyxSNlgpbA7RlGrKCd51N17DlEA6q6L6GA+nWpgGQ4rgierqHKzwx+tY5xgBTD0y7QXgA==}
-    peerDependencies:
-      '@ai-sdk/provider': ^2.0.0
-      ai: ^5.0.51
-      msw: ^2.11.5
-      react: '>=18'
-      tokenlens: ^2.0.0-alpha.3
-      vue: '>=3'
-    peerDependenciesMeta:
-      '@ai-sdk/provider':
-        optional: true
-      ai:
-        optional: true
-      msw:
-        optional: true
-      react:
-        optional: true
-      tokenlens:
-        optional: true
-      vue:
-        optional: true
 
   '@develar/schema-utils@2.6.5':
     resolution: {integrity: sha512-0cp4PsWQ/9avqTVMCtZ+GirikIA36ikvjtHweU4/j8yLtgObI0+JUPhYFScgwlteveGB1rt3Cm8UhN04XayDig==}
@@ -11303,12 +11274,6 @@ snapshots:
       '@dagrejs/graphlib': 2.2.4
 
   '@dagrejs/graphlib@2.2.4': {}
-
-  '@databuddy/sdk@2.3.24(@ai-sdk/provider@2.0.0)(ai@5.0.116(zod@4.3.5))(react@19.2.3)':
-    optionalDependencies:
-      '@ai-sdk/provider': 2.0.0
-      ai: 5.0.116(zod@4.3.5)
-      react: 19.2.3
 
   '@develar/schema-utils@2.6.5':
     dependencies:
