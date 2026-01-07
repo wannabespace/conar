@@ -2,7 +2,6 @@
   "$schema": "https://unpkg.com/@todesktop/cli@1.18.3/schemas/schema.json",
   "id": "25112796k32u7",
   "appId": "com.wannabespace.conar",
-  "icon": "./resources/icon-1024x1024.png",
   "appPath": ".",
   "schemaVersion": 1,
   "nodeVersion": "24.6.0",
@@ -20,15 +19,17 @@
   },
   "appProtocolScheme": "conar",
   "mac": {
-    "category": "public.app-category.developer-tools",
-    "icon": "./resources/macos-icon-1024x1024.png"
+    "icon": "./resources/macos-icon-1024x1024.png",
+    "category": "public.app-category.developer-tools"
   },
   "windows": {
+    "icon": "./resources/icon-1024x1024.png",
     "publisherName": [
       "Wannabe Space, LLC"
     ]
   },
   "linux": {
+    "icon": "./resources/icon-1024x1024.png",
     "category": "Development"
   }
 }
