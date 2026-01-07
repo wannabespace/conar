@@ -15,9 +15,5 @@ export const authClient = createAuthClient({
 })
 
 export const getSessionIsomorphic = createIsomorphicFn()
-  .server(() => {
-    const headers = getRequestHeaders()
-    console.log('headers', headers)
-    return authClient.getSession({ fetchOptions: { headers } })
-  })
+  .server(() => authClient.getSession({ fetchOptions: { headers: getRequestHeaders() } }))
   .client(() => authClient.getSession())
