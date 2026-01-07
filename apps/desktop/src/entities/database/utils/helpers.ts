@@ -1,6 +1,6 @@
 import type { enumType } from '../sql/enums'
 import type { Column } from './table'
-import type { DatabaseDialect, GeneratorFormat } from './types'
+import type { DatabaseDialect, GeneratorFormat, PrismaFilterValue } from './types'
 
 export const DEFAULT_PAGE_LIMIT = 100
 
@@ -475,4 +475,8 @@ export function findEnum(c: Column, table: string, enums: typeof enumType.infer[
     || (c.enum && e.name === c.enum)
     || (c.type && e.name === c.type),
   )
+}
+
+export function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
+  return v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
 }

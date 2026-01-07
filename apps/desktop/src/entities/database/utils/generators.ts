@@ -1,8 +1,8 @@
-import type { ActiveFilter, Filter } from '@conar/shared/filters'
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { enumType } from '../sql/enums'
 import type { Column } from './table'
 import type { DatabaseDialect, PrismaFilterValue } from './types'
-import { findEnum, formatValue, getColumnType, quoteIdentifier, sanitize, toPascalCase } from './helpers'
+import { findEnum, formatValue, getColumnType, isPrismaFilterValue, quoteIdentifier, sanitize, toPascalCase } from './helpers'
 import * as templates from './templates'
 
 export function generateQuerySQL(table: string, filters: ActiveFilter[]) {
@@ -24,25 +24,30 @@ export function generateQuerySQL(table: string, filters: ActiveFilter[]) {
   return templates.sqlQueryTemplate(table, whereClauses)
 }
 
-export function generateQueryPrisma(table: string, filters: ActiveFilter<Filter, PrismaFilterValue>[]) {
-  const where = filters.reduce<Record<string, PrismaFilterValue>>((acc: Record<string, PrismaFilterValue>, f: ActiveFilter<Filter, PrismaFilterValue>) => {
-    let value: PrismaFilterValue | undefined = f.values[0]
+export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
+  const where = filters.reduce<Record<string, PrismaFilterValue>>((acc: Record<string, PrismaFilterValue>, f) => {
+    const value = f.values[0]
+    let finalValue: PrismaFilterValue
     const op = f.ref.operator.toUpperCase()
 
     if (f.ref.isArray) {
       if (op === 'IN')
-        value = { in: f.values }
+        finalValue = { in: f.values.filter(isPrismaFilterValue) }
       else if (op === 'NOT IN')
-        value = { notIn: f.values }
+        finalValue = { notIn: f.values.filter(isPrismaFilterValue) }
+      else
+        return acc
     }
     else if (f.ref.hasValue === false) {
       if (op === 'IS NULL')
-        value = null
+        finalValue = null
       else if (op === 'IS NOT NULL')
-        value = { not: null }
+        finalValue = { not: null }
+      else
+        return acc
     }
     else {
-      if (value === undefined)
+      if (!isPrismaFilterValue(value))
         return acc
 
       const opMap: Record<string, string> = {
@@ -55,21 +60,16 @@ export function generateQueryPrisma(table: string, filters: ActiveFilter<Filter,
         'LIKE': 'contains',
         'ILIKE': 'contains',
       }
-      if (opMap[op]) {
-        value = opMap[op] === 'equals' ? value : { [opMap[op]]: value }
-      }
+      if (opMap[op])
+        finalValue = opMap[op] === 'equals' ? value : { [opMap[op]]: value }
+      else
+        return acc
     }
-    if (value === undefined)
-      return acc
 
     const colName = f.column.match(/^[a-z_$][\w$]*$/i) ? f.column : `"${f.column}"`
 
     const existing = acc[colName]
-    if (existing && typeof existing === 'object' && value && typeof value === 'object' && !Array.isArray(value)) {
-      value = { ...existing, ...value }
-    }
-
-    return { ...acc, [colName]: value }
+    return { ...acc, [colName]: existing && typeof existing === 'object' && typeof finalValue === 'object' && finalValue !== null && existing !== null ? { ...existing, ...finalValue } : finalValue }
   }, {})
 
   const jsonWhere = Object.keys(where).length > 0

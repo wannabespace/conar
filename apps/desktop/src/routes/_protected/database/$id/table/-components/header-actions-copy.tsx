@@ -1,5 +1,7 @@
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { RemixiconComponentType } from '@remixicon/react'
 import type { databases } from '~/drizzle'
+import type { DatabaseDialect, GeneratorFormat } from '~/entities/database/utils/types'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { Button } from '@conar/ui/components/button'
 import {
@@ -41,16 +43,25 @@ import * as generators from '~/entities/database/utils/generators'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
 
-interface Format {
-  type: 'sql' | 'ts' | 'zod' | 'prisma' | 'drizzle' | 'kysely'
+interface SchemaFormat {
+  type: GeneratorFormat
   label: string
   lang: string
   icon: RemixiconComponentType
-  // eslint-disable-next-line ts/no-explicit-any
-  generator: (...params: any[]) => string
+  generator: typeof generators.generateSchemaTypeScript
 }
 
-const FORMATS = {
+interface QueryFormat {
+  type: GeneratorFormat
+  label: string
+  lang: string
+  icon: RemixiconComponentType
+  generator: (table: string, filters: ActiveFilter[]) => string
+}
+
+type Format = SchemaFormat | QueryFormat
+
+const FORMATS: { schema: SchemaFormat[], query: QueryFormat[] } = {
   schema: [
     { type: 'sql', label: 'SQL', lang: 'sql', icon: RiDatabase2Line, generator: generators.generateSchemaSQL },
     { type: 'ts', label: 'TypeScript', lang: 'typescript', icon: RiFileCodeLine, generator: generators.generateSchemaTypeScript },
@@ -65,7 +76,7 @@ const FORMATS = {
     { type: 'drizzle', label: 'Drizzle', lang: 'typescript', icon: RiDropLine, generator: generators.generateQueryDrizzle },
     { type: 'kysely', label: 'Kysely', lang: 'typescript', icon: RiTerminalBoxLine, generator: generators.generateQueryKysely },
   ],
-} satisfies Record<string, Format[]>
+}
 
 function DialogSidebar({ activeCategory, activeFormat, onFormatChange, onCategoryChange }: {
   activeCategory: keyof typeof FORMATS
@@ -192,11 +203,11 @@ function CopyDialogEditor({ activeFormat, activeCategory, codeContent, isCopied,
   )
 }
 
-const COMPATIBILITY = {
+const COMPATIBILITY: Partial<Record<GeneratorFormat, DatabaseType[]>> = {
   prisma: [DatabaseType.Postgres, DatabaseType.MySQL, DatabaseType.MSSQL],
   drizzle: [DatabaseType.Postgres, DatabaseType.MySQL, DatabaseType.MSSQL, DatabaseType.ClickHouse],
   kysely: [DatabaseType.Postgres, DatabaseType.MySQL, DatabaseType.MSSQL, DatabaseType.ClickHouse],
-} satisfies Partial<Record<Format['type'], DatabaseType[]>>
+}
 
 export function HeaderActionsCopy({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
   const store = usePageStoreContext()
@@ -206,7 +217,7 @@ export function HeaderActionsCopy({ database, table, schema }: { database: typeo
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<'schema' | 'query'>('schema')
-  const [activeFormatType, setActiveFormatType] = useState<Format['type']>('sql')
+  const [activeFormatType, setActiveFormatType] = useState<GeneratorFormat>('sql')
   const [isCopied, setIsCopied] = useState(false)
 
   const activeFormat = FORMATS[activeCategory].find(f => f.type === activeFormatType) ?? FORMATS[activeCategory][0]!
@@ -215,17 +226,16 @@ export function HeaderActionsCopy({ database, table, schema }: { database: typeo
     if (!dialogOpen)
       return ''
 
-    // @ts-expect-error - TODO: fix this
     if (COMPATIBILITY[activeFormatType] && !COMPATIBILITY[activeFormatType].includes(database.type)) {
       return `Not supported for ${database.type}`
     }
 
     if (activeCategory === 'schema') {
-      // @ts-expect-error - TODO: fix this
-      return activeFormat.generator(table, columns, enums, database.type)
+      const format = activeFormat as SchemaFormat
+      return format.generator(table, columns, enums, database.type as DatabaseDialect)
     }
-    // @ts-expect-error - TODO: fix this
-    return activeFormat.generator(table, filters)
+    const format = activeFormat as QueryFormat
+    return format.generator(table, filters)
   }, [activeCategory, activeFormat, dialogOpen, table, columns, filters, enums, activeFormatType, database.type])
 
   const handleDialogCopy = () => {
