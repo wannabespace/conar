@@ -14,7 +14,6 @@ const eventMap = new Map<Stripe.Event.Type, (event: Stripe.Event) => Promise<voi
 ])
 
 export const stripe = orpc
-  .route({ method: 'POST', path: '/webhooks/stripe' })
   .handler(async ({ context }) => {
     try {
       const event = await validateRequest(context.request)

@@ -43,6 +43,19 @@ app.use(cors({
   credentials: true,
 }))
 
+app.use('*', async (c, next) => {
+  await next()
+
+  if (c.res.status !== 200) {
+    consola.error('Non-200 response', {
+      status: c.res.status,
+      path: c.req.path,
+      method: c.req.method,
+      url: c.req.url,
+    })
+  }
+})
+
 app.get('/', (c) => {
   return c.redirect(env.WEB_URL)
 })
