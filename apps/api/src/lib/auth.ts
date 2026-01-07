@@ -111,6 +111,10 @@ export const auth: Auth = betterAuth({
   experimental: {
     joins: true,
   },
+  // TODO: Remove this in future, it needed only for desktop auth in old versions
+  account: {
+    skipStateCookieCheck: true,
+  },
   database: drizzleAdapter(db, {
     provider: 'pg',
     usePlural: true,
