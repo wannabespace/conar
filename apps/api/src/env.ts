@@ -31,6 +31,7 @@ const envType = type({
   BANNER_TEXT: 'string?',
   EXA_API_KEY: 'string',
   GITHUB_TOKEN: 'string',
+  TODESKTOP_WEBHOOK_SECRET: 'string',
 })
 
 const devOptionalEnvs = [
@@ -53,6 +54,7 @@ const devOptionalEnvs = [
   'GITHUB_CLIENT_SECRET',
   'EXA_API_KEY',
   'GITHUB_TOKEN',
+  'TODESKTOP_WEBHOOK_SECRET',
 ] satisfies (keyof typeof envType.infer)[]
 
 export const env = nodeEnv === 'production' || nodeEnv === 'test'
