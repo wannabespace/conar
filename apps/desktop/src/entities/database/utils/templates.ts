@@ -15,29 +15,32 @@ ${columns}
 
 export function zodSchemaTemplate(table: string, columns: string) {
   const pascalName = toPascalCase(table)
+  const camelName = pascalName.charAt(0).toLowerCase() + pascalName.slice(1)
   return `import { z } from 'zod';
 
-export const ${pascalName}Schema = z.object({
+export const ${camelName}Schema = z.object({
 ${columns}
 });
 
-export type ${pascalName} = z.infer<typeof ${pascalName}Schema>;`
+export type ${pascalName} = z.infer<typeof ${camelName}Schema>;`
 }
 
 export function prismaSchemaTemplate(table: string, columns: string) {
-  const pascalName = toPascalCase(table)
-  const mapAttribute = pascalName !== table ? `\n  @@map("${table}")` : ''
-  return `model ${pascalName} {
+  const isValidId = /^[a-z]\w*$/i.test(table)
+  const modelName = isValidId ? table : toPascalCase(table)
+  const mapAttribute = modelName !== table ? `\n  @@map("${table}")` : ''
+  return `model ${modelName} {
 ${columns}${mapAttribute}
 }`
 }
 
 export function drizzleSchemaTemplate(table: string, imports: string[], columns: string, tableFunc: string = 'pgTable', importPath: string = 'drizzle-orm/pg-core') {
   const escapedTable = table.replace(/'/g, '\\\'')
-  const pascalName = toPascalCase(table)
+  const isValidId = /^[a-z_$][\w$]*$/i.test(table)
+  const varName = isValidId ? table : toPascalCase(table)
   return `import { ${imports.join(', ')}, ${tableFunc} } from '${importPath}';
 
-export const ${pascalName} = ${tableFunc}('${escapedTable}', {
+export const ${varName} = ${tableFunc}('${escapedTable}', {
 ${columns}
 });`
 }
@@ -58,25 +61,29 @@ export interface Database {
 
 export function sqlQueryTemplate(table: string, where: string) {
   return where
-    ? `SELECT * FROM "${table}" WHERE ${where};`
+    ? `SELECT * FROM "${table}"\nWHERE ${where};`
     : `SELECT * FROM "${table}";`
 }
 
 export function prismaQueryTemplate(table: string, whereObj: string) {
-  return whereObj !== '{}'
-    ? `await prisma.${table}.findMany({ where: ${whereObj} })`
-    : `await prisma.${table}.findMany()`
+  if (whereObj === '{}')
+    return `await prisma.${table}.findMany()`
+
+  const indented = whereObj.replace(/\n/g, '\n  ')
+  return `await prisma.${table}.findMany({
+  where: ${indented}
+})`
 }
 
 export function drizzleQueryTemplate(table: string, conditions: string) {
   return conditions
-    ? `await db.select().from(${table}).where(and(${conditions}))`
+    ? `await db.select()\n  .from(${table})\n  .where(and(\n    ${conditions}\n  ))`
     : `await db.select().from(${table})`
 }
 
 export function kyselyQueryTemplate(table: string, conditions: string) {
   const escapedTable = table.replace(/'/g, '\\\'')
   return conditions
-    ? `await db.selectFrom('${escapedTable}').selectAll().where(${conditions}).execute()`
+    ? `await db.selectFrom('${escapedTable}')\n  .selectAll()\n  .where(${conditions})\n  .execute()`
     : `await db.selectFrom('${escapedTable}').selectAll().execute()`
 }

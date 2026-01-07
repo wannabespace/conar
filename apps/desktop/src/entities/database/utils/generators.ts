@@ -1,7 +1,7 @@
-import type { ActiveFilter } from '@conar/shared/filters'
+import type { ActiveFilter, Filter } from '@conar/shared/filters'
 import type { enumType } from '../sql/enums'
 import type { Column } from './table'
-import type { DatabaseDialect } from './types'
+import type { DatabaseDialect, PrismaFilterValue } from './types'
 import { findEnum, formatValue, getColumnType, quoteIdentifier, sanitize, toPascalCase } from './helpers'
 import * as templates from './templates'
 
@@ -19,14 +19,14 @@ export function generateQuerySQL(table: string, filters: ActiveFilter[]) {
       : formatValue(f.values[0])
 
     return `${col} ${op} ${val}`
-  }).join(' AND ')
+  }).join('\n  AND ')
 
   return templates.sqlQueryTemplate(table, whereClauses)
 }
 
-export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
-  const where = filters.reduce((acc, f) => {
-    let value = f.values[0] as string | number | boolean | Date | object | null
+export function generateQueryPrisma(table: string, filters: ActiveFilter<Filter, PrismaFilterValue>[]) {
+  const where = filters.reduce<Record<string, PrismaFilterValue>>((acc: Record<string, PrismaFilterValue>, f: ActiveFilter<Filter, PrismaFilterValue>) => {
+    let value: PrismaFilterValue | undefined = f.values[0]
     const op = f.ref.operator.toUpperCase()
 
     if (f.ref.isArray) {
@@ -42,6 +42,9 @@ export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
         value = { not: null }
     }
     else {
+      if (value === undefined)
+        return acc
+
       const opMap: Record<string, string> = {
         '=': 'equals',
         '!=': 'not',
@@ -56,7 +59,16 @@ export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
         value = opMap[op] === 'equals' ? value : { [opMap[op]]: value }
       }
     }
+    if (value === undefined)
+      return acc
+
     const colName = f.column.match(/^[a-z_$][\w$]*$/i) ? f.column : `"${f.column}"`
+
+    const existing = acc[colName]
+    if (existing && typeof existing === 'object' && value && typeof value === 'object' && !Array.isArray(value)) {
+      value = { ...existing, ...value }
+    }
+
     return { ...acc, [colName]: value }
   }, {})
 
@@ -89,7 +101,7 @@ export function generateQueryDrizzle(table: string, filters: ActiveFilter[]) {
       case 'ILIKE': return `ilike(${col}, ${val})`
       default: return undefined
     }
-  }).filter(Boolean).join(', ')
+  }).filter(Boolean).join(',\n    ')
 
   return templates.drizzleQueryTemplate(table, conditions)
 }
@@ -108,7 +120,7 @@ export function generateQueryKysely(table: string, filters: ActiveFilter[]) {
     else {
       return `'${col}', '${f.ref.operator}', ${formatValue(f.values[0])}`
     }
-  }).filter(Boolean).join(').where(')
+  }).filter(Boolean).join(')\n  .where(')
 
   return templates.kyselyQueryTemplate(table, conditions)
 }
@@ -170,6 +182,10 @@ export function generateSchemaSQL(table: string, columns: Column[], enums: typeo
         typeDef += `(${c.precision}${c.scale ? `, ${c.scale}` : ''})`
       }
 
+      if (!isClickhouse) {
+        typeDef = typeDef.toUpperCase()
+      }
+
       if (isClickhouse && c.isNullable) {
         typeDef = `Nullable(${typeDef})`
       }
@@ -222,10 +238,10 @@ export function generateSchemaSQL(table: string, columns: Column[], enums: typeo
   return definitions.length > 0 ? `${definitions.join('\n')}\n\n${schema}` : schema
 }
 
-export function generateSchemaTypeScript(table: string, columns: Column[], enums: typeof enumType.infer[] = []) {
+export function generateSchemaTypeScript(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: DatabaseDialect = 'postgres') {
   const cols = columns.map((c) => {
     const safeId = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
-    let typeScriptType = getColumnType(c.type, 'ts')
+    let typeScriptType = getColumnType(c.type, 'ts', dialect)
 
     const match = findEnum(c, table, enums)
     if (match?.values.length) {
@@ -240,10 +256,10 @@ export function generateSchemaTypeScript(table: string, columns: Column[], enums
   return templates.typeScriptSchemaTemplate(table, cols)
 }
 
-export function generateSchemaZod(table: string, columns: Column[], enums: typeof enumType.infer[] = []) {
+export function generateSchemaZod(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: DatabaseDialect = 'postgres') {
   const cols = columns.map((c) => {
     const safeId = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
-    let t = getColumnType(c.type, 'zod')
+    let t = getColumnType(c.type, 'zod', dialect)
 
     const match = findEnum(c, table, enums)
     if (match?.values.length) {
@@ -401,9 +417,9 @@ export function generateSchemaDrizzle(table: string, columns: Column[], enums: t
   return (extras.length ? `${extras.join('\n')}\n\n` : '') + base
 }
 
-export function generateSchemaKysely(table: string, columns: Column[], enums: typeof enumType.infer[] = []) {
+export function generateSchemaKysely(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: DatabaseDialect = 'postgres') {
   const body = columns.map((c) => {
-    let tsType = getColumnType(c.type, 'ts')
+    let tsType = getColumnType(c.type, 'ts', dialect)
 
     const match = findEnum(c, table, enums)
     if (match?.values.length) {
