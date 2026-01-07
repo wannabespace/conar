@@ -47,7 +47,7 @@ export function ContentSwitch({
       </span>
       <span
         className={cn(
-          'absolute inset-0 transition-all flex items-center justify-center',
+          'absolute inset-0 flex items-center justify-center transition-all',
           isActive ? 'scale-100 opacity-100' : 'scale-0 opacity-0',
         )}
       >

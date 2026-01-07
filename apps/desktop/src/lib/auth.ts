@@ -1,39 +1,16 @@
-import type { auth } from '@conar/api/src/lib/auth'
-import { stripeClient } from '@better-auth/stripe/client'
-import {
-  inferAdditionalFields,
-  lastLoginMethodClient,
-  magicLinkClient,
-  organizationClient,
-  twoFactorClient,
-} from 'better-auth/client/plugins'
 import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { toast } from 'sonner'
 import { clearDb } from '~/drizzle'
 import { identifyUser } from './events'
-import { getApiUrl } from './utils'
+import { apiUrl } from './utils'
 
-export const CODE_CHALLENGE_KEY = 'conar.code_challenge'
-export const BEARER_TOKEN_KEY = 'conar.bearer_token'
-export const RESET_TOKEN_KEY = 'conar.reset_token'
+const BEARER_TOKEN_KEY = 'conar.bearer_token'
 
 export const bearerToken = {
   get: () => localStorage.getItem(BEARER_TOKEN_KEY),
   set: (bearerToken: string) => localStorage.setItem(BEARER_TOKEN_KEY, bearerToken),
   remove: () => localStorage.removeItem(BEARER_TOKEN_KEY),
-}
-
-export const resetToken = {
-  get: () => sessionStorage.getItem(RESET_TOKEN_KEY),
-  set: (resetToken: string) => sessionStorage.setItem(RESET_TOKEN_KEY, resetToken),
-  remove: () => sessionStorage.removeItem(RESET_TOKEN_KEY),
-}
-
-export const codeChallenge = {
-  get: () => sessionStorage.getItem(CODE_CHALLENGE_KEY),
-  set: (codeChallenge: string) => sessionStorage.setItem(CODE_CHALLENGE_KEY, codeChallenge),
-  remove: () => sessionStorage.removeItem(CODE_CHALLENGE_KEY),
 }
 
 export function successAuthToast(newUser: boolean) {
@@ -48,16 +25,10 @@ export function successAuthToast(newUser: boolean) {
 }
 
 export const authClient = createAuthClient({
-  baseURL: getApiUrl(),
+  baseURL: apiUrl,
   basePath: '/auth',
   plugins: [
-    inferAdditionalFields<typeof auth>(),
-    stripeClient({ subscription: true }),
     bearer(),
-    organizationClient(),
-    twoFactorClient(),
-    magicLinkClient(),
-    lastLoginMethodClient(),
   ],
   fetchOptions: {
     auth: {

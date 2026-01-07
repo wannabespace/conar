@@ -80,7 +80,7 @@ function setupDev() {
 }
 
 // Run the setup if this script is executed directly
-if (__filename === process.argv[1]) {
+if (__filename === process.argv[1] && process.env.NODE_ENV !== 'production') {
   setupDev()
 }
 

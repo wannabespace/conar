@@ -4,6 +4,7 @@
  */
 export interface System {
   databases: Databases
+  columns: Columns
 }
 
 /**
@@ -17,7 +18,6 @@ interface Databases {
   metadata_path: string
   uuid: string
   comment: string
-  columns: Columns
 }
 
 /**

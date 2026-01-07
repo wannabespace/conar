@@ -3,14 +3,14 @@ import { createCollection } from '@tanstack/react-db'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
 import { chats, chatsMessages, db, waitForMigrations } from '~/drizzle'
-import { waitForDatabasesSync } from '~/entities/database'
+import { waitForDatabasesSync } from '~/entities/database/sync'
 import { bearerToken } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
-const { promise, resolve } = Promise.withResolvers()
+let resolvers = Promise.withResolvers()
 
 export function waitForChatsSync() {
-  return promise
+  return resolvers.promise
 }
 
 export const chatsCollection = createCollection(drizzleCollectionOptions({
@@ -24,6 +24,8 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
       return
     }
 
+    resolvers = Promise.withResolvers()
+
     await waitForDatabasesSync()
     const sync = await orpc.chats.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
@@ -35,7 +37,10 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
         write(item)
       }
     })
-    resolve()
+    resolvers.resolve()
+  },
+  onDelete: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map(m => orpc.chats.remove({ id: m.key })))
   },
 }))
 
@@ -67,7 +72,6 @@ export const chatsMessagesCollection = createCollection(drizzleCollectionOptions
 const syncChatsMutationOptions = {
   mutationKey: ['sync-chats'],
   mutationFn: chatsCollection.utils.runSync,
-  onError: () => {},
 } satisfies MutationOptions
 
 export function useChatsSync() {

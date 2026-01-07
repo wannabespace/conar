@@ -1,7 +1,10 @@
 import type { Context } from './context'
+import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
-import { db } from '~/drizzle'
+import { eq } from 'drizzle-orm'
+import { db, subscriptions } from '~/drizzle'
 import { auth } from '~/lib/auth'
+import { stripe } from '~/lib/stripe'
 
 export const orpc = os.$context<Context>()
 
@@ -20,14 +23,18 @@ async function getUserSecret(userId: string) {
   return user.secret
 }
 
-export const authMiddleware = orpc.middleware(async ({ context, next }) => {
-  const session = await auth.api.getSession({
-    headers: context.headers,
-  })
+async function getSession(headers: Headers) {
+  const session = await auth.api.getSession({ headers })
 
   if (!session) {
     throw new ORPCError('UNAUTHORIZED', { message: 'We could not find your session. Please sign in again.' })
   }
+
+  return session
+}
+
+export const authMiddleware = orpc.middleware(async ({ context, next }) => {
+  const session = await getSession(context.headers)
 
   return next({
     context: {
@@ -36,3 +43,35 @@ export const authMiddleware = orpc.middleware(async ({ context, next }) => {
     },
   })
 })
+
+async function getSubscription(userId: string) {
+  const userSubscriptions = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, userId))
+
+  return userSubscriptions.find(s => (s.status === 'active' || s.status === 'trialing') && !s.cancelAt) ?? null
+}
+
+export const requireSubscriptionMiddleware = stripe
+  ? orpc.middleware(async ({ context, next }) => {
+      const session = await getSession(context.headers)
+      const minorVersion = context.minorVersion ?? 0
+      const subscription = await getSubscription(session.user.id)
+
+      if (!subscription) {
+        throw new ORPCError('FORBIDDEN', {
+          message: minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
+            ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
+            : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
+        })
+      }
+
+      return next({
+        context: {
+          ...session,
+          getUserSecret: () => getUserSecret(session.user.id),
+        },
+      })
+    })
+  : authMiddleware

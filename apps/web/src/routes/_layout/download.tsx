@@ -6,13 +6,11 @@ import { Badge } from '@conar/ui/components/badge'
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
-import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { Linux } from '@conar/ui/components/icons/linux'
 import { Tooltip, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { copy } from '@conar/ui/lib/copy'
-import { RiAppleFill, RiCheckLine, RiFileCopyLine, RiTerminalLine, RiWindowsFill } from '@remixicon/react'
+import { RiAppleFill, RiTerminalLine, RiWindowsFill } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
 import { DownloadButton } from '~/components/download-button'
 import { DOWNLOAD_LINKS } from '~/constants'
 import { getOSIsomorphic } from '~/utils/os'
@@ -30,49 +28,51 @@ export const Route = createFileRoute('/_layout/download')({
 })
 
 function HomebrewInstall() {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = () => {
-    copy(BREW_INSTALL_COMMAND, 'Command copied to clipboard')
-    setCopied(true)
-  }
-
   if (os?.type !== 'macos') {
     return null
   }
 
   return (
-    <div className="w-full max-w-xl px-4 mb-8 sm:mb-12">
-      <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4">Install via Homebrew</h2>
-      <Card className="flex items-center justify-between p-3 sm:p-2 gap-4 sm:gap-8 w-full">
-        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-          <div className="flex items-center justify-center size-8 bg-muted rounded-lg shrink-0">
-            <RiTerminalLine className="text-muted-foreground size-4" />
+    <div className={`
+      mb-8 w-full max-w-xl px-4
+      sm:mb-12
+    `}
+    >
+      <h2 className={`
+        mb-4 text-center text-xl font-semibold
+        sm:text-2xl
+      `}
+      >
+        Install via Homebrew
+      </h2>
+      <Card className={`
+        flex w-full items-center justify-between gap-4 p-3
+        sm:gap-8 sm:p-2
+      `}
+      >
+        <div className={`
+          flex min-w-0 flex-1 items-center gap-3
+          sm:gap-4
+        `}
+        >
+          <div className={`
+            flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted
+          `}
+          >
+            <RiTerminalLine className="size-4 text-muted-foreground" />
           </div>
           <input
             type="text"
-            className="text-sm sm:text-base font-mono bg-transparent border-none p-0 pr-10 m-0 outline-none flex-1 block"
+            className={`
+              m-0 block flex-1 border-none bg-transparent p-0 pr-10 font-mono
+              text-sm outline-none
+              sm:text-base
+            `}
             value={BREW_INSTALL_COMMAND}
             readOnly
           />
         </div>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={handleCopy}
-          className="shrink-0"
-        >
-          <span className="flex items-center gap-1.5">
-            <ContentSwitch
-              active={copied}
-              onSwitchEnd={() => setCopied(false)}
-              activeContent={<RiCheckLine className="size-4 text-success" />}
-            >
-              <RiFileCopyLine className="size-4" />
-            </ContentSwitch>
-            <span className="hidden sm:inline">Copy</span>
-          </span>
-        </Button>
+        <CopyButton text={BREW_INSTALL_COMMAND} />
       </Card>
     </div>
   )
@@ -128,17 +128,38 @@ function DownloadOption({ Icon, type, arch, link }: {
   link: string
 }) {
   return (
-    <Card className="flex items-center justify-between p-3 sm:p-2 gap-4 sm:gap-8 w-full">
-      <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-        <div className="flex items-center justify-center size-8 bg-muted rounded-lg shrink-0">
-          <Icon className="text-muted-foreground size-4" />
+    <Card className={`
+      flex w-full items-center justify-between gap-4 p-3
+      sm:gap-8 sm:p-2
+    `}
+    >
+      <div className={`
+        flex min-w-0 flex-1 items-center gap-3
+        sm:gap-4
+      `}
+      >
+        <div className={`
+          flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted
+        `}
+        >
+          <Icon className="size-4 text-muted-foreground" />
         </div>
         <div className="flex flex-col items-start">
-          <span className="font-medium text-sm sm:text-base truncate w-full">
+          <span className={`
+            w-full truncate text-sm font-medium
+            sm:text-base
+          `}
+          >
             {osMap[type].label}
             {' '}
             {arch && (
-              <Badge variant="outline" className="text-xs sm:text-sm">
+              <Badge
+                variant="outline"
+                className={`
+                  text-xs
+                  sm:text-sm
+                `}
+              >
                 {arch}
               </Badge>
             )}
@@ -168,24 +189,54 @@ function DownloadOption({ Icon, type, arch, link }: {
 
 function RouteComponent() {
   return (
-    <div className="flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-[10vh]">
-      <div className="flex flex-col items-center max-w-2xl mx-auto text-center w-full">
-        <AppLogoSquare className="size-24 sm:size-32 mb-4 sm:mb-6" />
-        <h1 className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3 tracking-tight font-medium px-2">
+    <div className={`
+      flex flex-col items-center justify-center px-4 py-8
+      sm:px-6 sm:py-[10vh]
+    `}
+    >
+      <div className={`
+        mx-auto flex w-full max-w-2xl flex-col items-center text-center
+      `}
+      >
+        <AppLogoSquare className={`
+          mb-4 size-24
+          sm:mb-6 sm:size-32
+        `}
+        />
+        <h1 className={`
+          mb-2 px-2 text-2xl font-medium tracking-tight
+          sm:mb-3 sm:text-3xl
+          md:text-4xl
+        `}
+        >
           Download
           {' '}
           <strong>Conar</strong>
         </h1>
-        <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-10 px-2">
+        <p className={`
+          mb-6 px-2 text-base text-muted-foreground
+          sm:mb-10 sm:text-lg
+        `}
+        >
           Available for macOS, Windows and Linux
         </p>
-        <div className="mb-8 sm:mb-12 text-center space-y-2 px-4">
+        <div className={`
+          mb-8 space-y-2 px-4 text-center
+          sm:mb-12
+        `}
+        >
           <DownloadButton />
         </div>
         <HomebrewInstall />
         <div className="w-full max-w-xl px-4">
-          <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4">All platforms</h2>
-          <div className="space-y-2 w-full">
+          <h2 className={`
+            mb-4 text-center text-xl font-semibold
+            sm:text-2xl
+          `}
+          >
+            All platforms
+          </h2>
+          <div className="w-full space-y-2">
             <AllPlatforms />
           </div>
         </div>
