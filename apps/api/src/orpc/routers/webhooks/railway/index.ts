@@ -14,7 +14,8 @@ export const railway = orpc.handler(async ({ context }) => {
     subject: 'Alert from Railway',
     template: 'Alert',
     props: {
-      json: await context.request.json(),
+      text: JSON.stringify(await context.request.json(), null, 2),
+      service: 'Railway',
     },
   })
 })

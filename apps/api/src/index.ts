@@ -46,8 +46,8 @@ app.use(cors({
 app.use('*', async (c, next) => {
   await next()
 
-  if (c.res.status !== 200) {
-    consola.error('Non-200 response', {
+  if (c.res.status >= 400 && c.res.status !== 401) {
+    consola.error('Alerting response status', {
       status: c.res.status,
       path: c.req.path,
       method: c.req.method,
