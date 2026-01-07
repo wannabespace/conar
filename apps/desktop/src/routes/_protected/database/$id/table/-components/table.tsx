@@ -184,7 +184,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         setValue(rowIndex, columnId, realValue ?? undefined)
     }
     catch (e) {
-      toast.error('New value was saved, but the updated value was not selected', {
+      toast.error('New value was saved, but the updated value was not refreshed', {
         description: e instanceof Error ? e.message : String(e),
       })
     }

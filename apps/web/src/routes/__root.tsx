@@ -78,8 +78,8 @@ function RootComponent() {
       `)}
       >
         <QueryClientProvider client={queryClient}>
-          <Outlet />
           <ThemeObserver />
+          <Outlet />
           <ReactQueryDevtools buttonPosition="bottom-left" />
         </QueryClientProvider>
         <Toaster />

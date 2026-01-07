@@ -43,6 +43,19 @@ app.use(cors({
   credentials: true,
 }))
 
+app.use('*', async (c, next) => {
+  await next()
+
+  if (c.res.status >= 400 && c.res.status !== 401) {
+    consola.error('Alerting response status', {
+      status: c.res.status,
+      path: c.req.path,
+      method: c.req.method,
+      url: c.req.url,
+    })
+  }
+})
+
 app.get('/', (c) => {
   return c.redirect(env.WEB_URL)
 })

@@ -23,7 +23,8 @@ export const exchange = orpc
       throw new ORPCError('FORBIDDEN', { message: 'We couldn\'t authenticate you. Please try signing in again.' })
     }
 
-    const { token } = await (await auth.$context).internalAdapter.createSession(data.userId)
+    const context = await auth.$context
+    const { token } = await context.internalAdapter.createSession(data.userId)
     await codeChallengeRedis.delete(input.codeChallenge)
     return { token, newUser: data.newUser }
   })
