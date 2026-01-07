@@ -20,7 +20,8 @@
   },
   "appProtocolScheme": "conar",
   "mac": {
-    "category": "public.app-category.developer-tools"
+    "category": "public.app-category.developer-tools",
+    "icon": "./resources/macos-icon-1024x1024.png"
   },
   "windows": {
     "publisherName": [

@@ -8,6 +8,7 @@ const envType = type({
   API_URL: 'string',
   WEB_URL: 'string',
   DATABASE_URL: 'string',
+  ALERTS_EMAIL: 'string',
   ENCRYPTION_SECRET: 'string',
   BETTER_AUTH_SECRET: 'string',
   STRIPE_SECRET_KEY: 'string?', // TODO: remove optional after the new release
@@ -33,6 +34,7 @@ const envType = type({
 })
 
 const devOptionalEnvs = [
+  'ALERTS_EMAIL',
   'STRIPE_SECRET_KEY',
   'STRIPE_WEBHOOK_SECRET',
   'STRIPE_MONTH_PRICE_ID',
