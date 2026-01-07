@@ -3,6 +3,7 @@ import type { editor } from 'monaco-editor'
 import type { CompletionRegistration } from 'monacopilot'
 import type { RefObject } from 'react'
 import * as monaco from 'monaco-editor'
+import { LanguageIdEnum } from 'monaco-sql-languages'
 import { registerCompletion } from 'monacopilot'
 import { useCallback, useEffect, useRef } from 'react'
 import { databaseAICompletionContext } from '~/entities/database/utils/monaco'
@@ -10,11 +11,11 @@ import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
 
 const dialectsMap = {
-  postgres: 'pg',
-  mysql: 'mysql',
-  mssql: 'mssql',
-  clickhouse: 'mysql',
-} satisfies Record<DatabaseType, string>
+  postgres: LanguageIdEnum.PG,
+  mysql: LanguageIdEnum.MYSQL,
+  mssql: LanguageIdEnum.PG,
+  clickhouse: LanguageIdEnum.MYSQL,
+} satisfies Record<DatabaseType, LanguageIdEnum>
 
 interface Cache {
   before: string
