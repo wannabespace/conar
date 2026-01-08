@@ -235,7 +235,7 @@ export function Subscription() {
                           text-sm font-normal text-muted-foreground
                         `}
                         >
-                          {subscription
+                          {subscription && subscription.plan === plan.name.toLowerCase()
                             ? formatCurrency(subscription.price)
                             : formatCurrency(isYearly ? plan.price.yearly : plan.price.monthly)}
                           {subscription?.period === 'yearly' ? '/year' : '/month'}
