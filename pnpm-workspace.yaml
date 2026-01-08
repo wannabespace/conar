@@ -20,7 +20,6 @@ catalog:
   '@commitlint/cli': ^20.3.0
   '@commitlint/config-conventional': ^20.3.0
   '@dagrejs/dagre': 1.1.8
-  '@databuddy/sdk': ^2.3.24
   '@electric-sql/pglite': ^0.3.14
   '@eslint-react/eslint-plugin': ^2.5.1
   '@exalabs/ai-sdk': ^1.0.5

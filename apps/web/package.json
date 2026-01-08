@@ -9,7 +9,6 @@
     "check-types": "tsgo"
   },
   "dependencies": {
-    "@databuddy/sdk": "catalog:",
     "@number-flow/react": "catalog:",
     "@octokit/rest": "catalog:",
     "@orpc/client": "catalog:",

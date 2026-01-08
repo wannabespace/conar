@@ -1,4 +1,5 @@
 import type Stripe from 'stripe'
+import consola from 'consola'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
 import { env } from '~/env'
@@ -16,7 +17,8 @@ export async function subscriptionDeleted(event: Stripe.Event) {
     .limit(1)
 
   if (!existing) {
-    throw new Error(`Subscription ${subscription.id} not found in database`)
+    consola.warn('Subscription not found in database', { event: JSON.stringify(event) })
+    return
   }
 
   const period = subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
