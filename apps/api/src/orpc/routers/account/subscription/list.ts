@@ -10,6 +10,7 @@ export const list = orpc
       plan: subscriptions.plan,
       status: subscriptions.status,
       period: subscriptions.period,
+      price: subscriptions.price,
       periodStart: subscriptions.periodStart,
       periodEnd: subscriptions.periodEnd,
       trialStart: subscriptions.trialStart,

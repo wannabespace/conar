@@ -209,20 +209,21 @@ export function Subscription() {
           lg:grid
         `}
         >
-          {plans.map(plan => (
+          {plans.map((plan, planIndex) => (
             <div
               key={plan.name}
-              className={`
+              className={cn(`
                 flex h-50 flex-col justify-between rounded-lg border p-4
-              `}
+                duration-100
+              `)}
             >
               <div className="flex flex-col gap-4">
-                <span className={`
+                <span className={cn(`
                   flex size-10 shrink-0 items-center justify-center rounded-md
-                  bg-muted
-                `}
+                  bg-muted text-primary-foreground duration-100
+                `)}
                 >
-                  <plan.icon className="size-5 text-muted-foreground" />
+                  <plan.icon className="size-5 duration-100" />
                 </span>
                 <div>
                   <div className="flex items-center gap-2 text-lg">
@@ -234,12 +235,14 @@ export function Subscription() {
                           text-sm font-normal text-muted-foreground
                         `}
                         >
-                          {formatCurrency(isYearly ? plan.price.yearly : plan.price.monthly)}
-                          {isYearly ? '/year' : '/month'}
+                          {subscription && subscription.plan === plan.name.toLowerCase()
+                            ? formatCurrency(subscription.price)
+                            : formatCurrency(isYearly ? plan.price.yearly : plan.price.monthly)}
+                          {subscription?.period === 'yearly' ? '/year' : '/month'}
                         </span>
                       )}
                     </span>
-                    {!isPending && ((subscription?.plan === plan.name.toLowerCase() || (!subscription && plan.name === 'Hobby'))) && (
+                    {!isPending && ((subscription?.plan === plan.name.toLowerCase() || (!subscription && planIndex === 0))) && (
                       <Badge variant="secondary">
                         Current
                       </Badge>
