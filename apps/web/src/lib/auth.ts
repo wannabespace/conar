@@ -18,8 +18,6 @@ export const getSessionIsomorphic = createIsomorphicFn()
   .server(() => {
     const request = getRequest()
 
-    console.log('cookie', request.headers.get('cookie'))
-
     return authClient.getSession({
       fetchOptions: {
         headers: {

@@ -4,7 +4,6 @@ import { getSessionIsomorphic } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
 export const Route = createFileRoute('/deep/sign-in')({
-  component: () => <></>,
   validateSearch: type({
     'codeChallenge': 'string',
     'newUser?': 'boolean',
