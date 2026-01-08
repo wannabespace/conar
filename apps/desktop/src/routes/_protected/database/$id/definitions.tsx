@@ -4,13 +4,13 @@ import { RiFileList3Line, RiKey2Line } from '@remixicon/react'
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute(
-  '/_protected/database/$id/constraint-index-tabs',
+  '/_protected/database/$id/definitions',
 )({
   component: SideTabsLayout,
   beforeLoad: ({ location, params }) => {
-    if (location.pathname.endsWith('/constraint-index-tabs') || location.pathname.endsWith('/constraint-index-tabs/')) {
+    if (location.pathname.endsWith('/definitions') || location.pathname.endsWith('/definitions/')) {
       throw redirect({
-        to: '/database/$id/constraint-index-tabs/indexes',
+        to: '/database/$id/definitions/indexes',
         params: { id: params.id },
         replace: true,
       })
@@ -45,14 +45,14 @@ function SideTabsLayout() {
 
         <nav className="space-y-1">
           <SidebarLink
-            to="/database/$id/constraint-index-tabs/indexes"
+            to="/database/$id/definitions/indexes"
             params={{ id }}
           >
             <RiFileList3Line className="size-4" />
             Indexes
           </SidebarLink>
           <SidebarLink
-            to="/database/$id/constraint-index-tabs/constraints"
+            to="/database/$id/definitions/constraints"
             params={{ id }}
           >
             <RiKey2Line className="size-4" />

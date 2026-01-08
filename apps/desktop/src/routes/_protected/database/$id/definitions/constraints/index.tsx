@@ -1,4 +1,5 @@
 import type { constraintsType } from '~/entities/database/sql/constraints'
+import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
@@ -19,11 +20,11 @@ import { RiCloseLine, RiDatabase2Line, RiFilter3Line, RiInformationLine, RiKey2L
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
-import { useDatabaseConstraints, useDatabaseTablesAndSchemas } from '~/entities/database'
+import { useDatabaseConstraints, useDatabaseTablesAndSchemas } from '~/entities/database/queries'
 
 const MotionCard = motion.create(Card)
 
-export const Route = createFileRoute('/_protected/database/$id/constraint-index-tabs/constraints/')({
+export const Route = createFileRoute('/_protected/database/$id/definitions/constraints/')({
   component: DatabaseConstraintsPage,
   loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({
@@ -82,7 +83,7 @@ function DatabaseConstraintsPage() {
     switch (type) {
       case 'primaryKey': return 'Primary Key'
       case 'foreignKey': return 'Foreign Key'
-      default: return type.charAt(0).toUpperCase() + type.slice(1)
+      default: return uppercaseFirst(type)
     }
   }
 

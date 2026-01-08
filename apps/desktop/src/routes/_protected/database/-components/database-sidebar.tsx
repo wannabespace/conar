@@ -233,8 +233,7 @@ function MainLinks() {
     }
   }, [store, lastOpenedTable, tableParam, schemaParam])
 
-  const isActiveConstraints = match === '/_protected/database/$id/constraint-index-tabs'
-  const isActiveIndexes = isActiveConstraints
+  const isActiveConstraintsAndIndexes = match === '/_protected/database/$id/definitions'
 
   const isActiveSql = match === '/_protected/database/$id/sql/'
   const isActiveTables = match === '/_protected/database/$id/table/'
@@ -320,9 +319,9 @@ function MainLinks() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              to="/database/$id/constraint-index-tabs"
+              to="/database/$id/definitions"
               params={{ id: database.id }}
-              className={baseClasses(isActiveConstraints || isActiveIndexes)}
+              className={baseClasses(isActiveConstraintsAndIndexes)}
             >
               <RiShieldCheckLine className="size-4" />
             </Link>

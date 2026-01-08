@@ -23,7 +23,7 @@ import { useDatabaseIndexes, useDatabaseTablesAndSchemas } from '~/entities/data
 
 const MotionCard = motion.create(Card)
 
-export const Route = createFileRoute('/_protected/database/$id/constraint-index-tabs/indexes/')({
+export const Route = createFileRoute('/_protected/database/$id/definitions/indexes/')({
   component: DatabaseIndexesPage,
   loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({

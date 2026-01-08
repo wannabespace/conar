@@ -9,10 +9,10 @@ export const indexesType = type({
   column: 'string',
   is_unique: 'boolean | 1 | 0',
   is_primary: 'boolean | 1 | 0',
-}).pipe(data => ({
+}).pipe(({ is_unique, is_primary, ...data }) => ({
   ...data,
-  isUnique: !!data.is_unique,
-  isPrimary: !!data.is_primary,
+  isUnique: !!is_unique,
+  isPrimary: !!is_primary,
 }))
 
 export const indexesQuery = createQuery({
