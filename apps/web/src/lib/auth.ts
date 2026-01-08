@@ -22,7 +22,7 @@ export const getSessionIsomorphic = createIsomorphicFn()
         headers,
         credentials: 'include',
         onRequest: (request) => {
-          console.log('onRequest', request)
+          console.log('onRequest', request.headers)
         },
         onResponse: (response) => {
           console.log('onResponse', response)
