@@ -4,7 +4,6 @@ import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
 import { auth } from '~/lib/auth'
-import { stripe } from '~/lib/stripe'
 
 export const orpc = os.$context<Context>()
 
@@ -53,25 +52,27 @@ async function getSubscription(userId: string) {
   return userSubscriptions.find(s => (s.status === 'active' || s.status === 'trialing') && !s.cancelAt) ?? null
 }
 
-export const requireSubscriptionMiddleware = stripe
-  ? orpc.middleware(async ({ context, next }) => {
-      const session = await getSession(context.headers)
-      const minorVersion = context.minorVersion ?? 0
-      const subscription = await getSubscription(session.user.id)
+export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, next }) => {
+  const session = await getSession(context.headers)
+  const minorVersion = context.minorVersion ?? 0
+  const subscription = await getSubscription(session.user.id)
 
-      if (!subscription) {
-        throw new ORPCError('FORBIDDEN', {
-          message: minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
-            ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
-            : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
-        })
-      }
-
-      return next({
-        context: {
-          ...session,
-          getUserSecret: () => getUserSecret(session.user.id),
-        },
-      })
+  if (
+    !subscription
+    // TODO: remove this after Stripe is released
+    && minorVersion >= LATEST_VERSION_BEFORE_SUBSCRIPTION
+  ) {
+    throw new ORPCError('FORBIDDEN', {
+      message: minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
+        ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
+        : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
     })
-  : authMiddleware
+  }
+
+  return next({
+    context: {
+      ...session,
+      getUserSecret: () => getUserSecret(session.user.id),
+    },
+  })
+})

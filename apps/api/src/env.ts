@@ -11,7 +11,7 @@ const envType = type({
   ALERTS_EMAIL: 'string',
   ENCRYPTION_SECRET: 'string',
   BETTER_AUTH_SECRET: 'string',
-  STRIPE_SECRET_KEY: 'string?', // TODO: remove optional after the new release
+  STRIPE_SECRET_KEY: 'string',
   STRIPE_WEBHOOK_SECRET: 'string',
   STRIPE_MONTH_PRICE_ID: 'string',
   STRIPE_ANNUAL_PRICE_ID: 'string',
