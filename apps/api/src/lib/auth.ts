@@ -122,7 +122,8 @@ export const auth: Auth = betterAuth({
   ],
   advanced: {
     cookiePrefix: 'conar',
-    defaultCookieAttributes: {
+    crossSubDomainCookies: {
+      enabled: true,
       domain: new URL(env.WEB_URL).host,
     },
     database: {
