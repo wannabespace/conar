@@ -122,6 +122,9 @@ export const auth: Auth = betterAuth({
   ],
   advanced: {
     cookiePrefix: 'conar',
+    defaultCookieAttributes: {
+      domain: new URL(env.WEB_URL).host,
+    },
     database: {
       generateId: 'uuid',
     },
