@@ -1,6 +1,7 @@
 import type { Stripe } from 'stripe'
 import {
   boolean,
+  integer,
   pgEnum,
   pgTable,
   text,
@@ -21,6 +22,7 @@ export const subscriptions = pgTable('subscriptions', {
   stripeSubscriptionId: text(),
   status: text().$type<Stripe.Subscription.Status>().default('incomplete'),
   period: subscriptionPeriod().notNull(),
+  price: integer().notNull(),
   periodStart: timestamp({ withTimezone: true }),
   periodEnd: timestamp({ withTimezone: true }),
   trialStart: timestamp({ withTimezone: true }),

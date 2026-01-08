@@ -4,6 +4,7 @@ import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
 import { auth } from '~/lib/auth'
+import { redis } from '~/lib/redis'
 
 export const orpc = os.$context<Context>()
 
@@ -44,12 +45,25 @@ export const authMiddleware = orpc.middleware(async ({ context, next }) => {
 })
 
 async function getSubscription(userId: string) {
-  const userSubscriptions = await db
-    .select()
-    .from(subscriptions)
-    .where(eq(subscriptions.userId, userId))
+  const cachedSubscription = await redis.get(`subscription:${userId}`)
 
-  return userSubscriptions.find(s => (s.status === 'active' || s.status === 'trialing') && !s.cancelAt) ?? null
+  if (cachedSubscription) {
+    return JSON.parse(cachedSubscription) as typeof subscriptions.$inferSelect
+  }
+
+  const userSubscriptions = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
+
+  const subscription = userSubscriptions.find(s => (s.status === 'active' || s.status === 'trialing') && !s.cancelAt) ?? null
+
+  if (subscription) {
+    await redis.setex(
+      `subscription:${userId}`,
+      60 * 30, // 30 minutes
+      JSON.stringify(subscription),
+    )
+  }
+
+  return subscription
 }
 
 export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, next }) => {

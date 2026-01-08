@@ -3,7 +3,7 @@ import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { createIsomorphicFn } from '@tanstack/react-start'
-import { getRequestHeaders } from '@tanstack/react-start/server'
+import { getRequest } from '@tanstack/react-start/server'
 
 const getClientLink = createIsomorphicFn()
   .client(() => new RPCLink({
@@ -17,7 +17,13 @@ const getClientLink = createIsomorphicFn()
   }))
   .server(() => new RPCLink({
     url: `${import.meta.env.VITE_PUBLIC_API_URL}/rpc`,
-    headers: () => getRequestHeaders(),
+    headers: () => {
+      const request = getRequest()
+
+      return {
+        cookie: request.headers.get('cookie') ?? '',
+      }
+    },
   }))
 
 export const orpc: ORPCRouter = createORPCClient(getClientLink())
