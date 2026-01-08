@@ -13,7 +13,7 @@ export interface PgCatalog {
  * @name pg_namespace
  * @type table
  */
-export interface PgNamespace {
+interface PgNamespace {
   oid: number
   nspname: string
   nspowner: number
@@ -24,7 +24,7 @@ export interface PgNamespace {
  * @name pg_class
  * @type table
  */
-export interface PgClass {
+interface PgClass {
   oid: number
   relname: string
   relnamespace: number
@@ -35,7 +35,7 @@ export interface PgClass {
  * @name pg_index
  * @type table
  */
-export interface PgIndex {
+interface PgIndex {
   indrelid: number
   indexrelid: number
   indkey: unknown
@@ -47,7 +47,7 @@ export interface PgIndex {
  * @name pg_attribute
  * @type table
  */
-export interface PgAttribute {
+interface PgAttribute {
   attrelid: number
   attnum: number
   attname: string

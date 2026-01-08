@@ -14,7 +14,7 @@ export interface Sys {
  * @name indexes
  * @type table
  */
-export interface Indexes {
+interface Indexes {
   object_id: number
   index_id: number
   name: string
