@@ -65,34 +65,38 @@ export const auth: Auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          if (resend) {
-            const [firstName, ...lastName] = user.name.split(' ')
-
-            await resend.contacts.create({
-              email: user.email,
-              firstName: firstName!,
-              lastName: lastName.join(' '),
-              properties: {
-                userId: user.id,
-              },
-            })
+          if (nodeEnv !== 'production' || !resend) {
+            return
           }
+
+          const [firstName, ...lastName] = user.name.split(' ')
+
+          await resend.contacts.create({
+            email: user.email,
+            firstName: firstName!,
+            lastName: lastName.join(' '),
+            properties: {
+              userId: user.id,
+            },
+          })
         },
       },
       update: {
         after: async (user) => {
-          if (resend) {
-            const [firstName, ...lastName] = user.name.split(' ')
-
-            await resend.contacts.update({
-              email: user.email,
-              firstName: firstName!,
-              lastName: lastName.join(' '),
-              properties: {
-                userId: user.id,
-              },
-            })
+          if (nodeEnv !== 'production' || !resend) {
+            return
           }
+
+          const [firstName, ...lastName] = user.name.split(' ')
+
+          await resend.contacts.update({
+            email: user.email,
+            firstName: firstName!,
+            lastName: lastName.join(' '),
+            properties: {
+              userId: user.id,
+            },
+          })
         },
       },
     },
