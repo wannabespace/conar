@@ -1,7 +1,7 @@
 import { SUPPORT_EMAIL } from '@conar/shared/constants'
 import { type } from 'arktype'
 import { consola } from 'consola'
-import { resend } from '~/lib/email'
+import { resend } from '~/lib/resend'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const contact = orpc

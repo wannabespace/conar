@@ -31,9 +31,9 @@ Welcome to Conar ("we," "our," or "us"), owned by Wannabe Space, LLC. We are com
 - **Google**: Gemini models for AI features
 - **XAI**: Grok models for AI capabilities
 
-### Analytics and Authentication
+### Analytics, Email, and Authentication
 - **PostHog**: Usage analytics and session recording (inputs and data are masked)
-- **Loops**: User engagement and product analytics
+- **Resend**: Transactional and notification email delivery
 - **Google OAuth & GitHub OAuth**: Social login options
 
 ## 4. Your Rights and Choices
