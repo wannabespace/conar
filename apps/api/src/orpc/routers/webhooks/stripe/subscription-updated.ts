@@ -20,6 +20,7 @@ export async function subscriptionUpdated(event: Stripe.Event) {
   }
 
   const period = subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
+  const price = subscription.items.data[0]?.price.unit_amount ? subscription.items.data[0].price.unit_amount / 100 : 0
   const periodStart = subscription.items.data[0]?.current_period_start ? new Date(subscription.items.data[0].current_period_start * 1000) : null
   const periodEnd = subscription.items.data[0]?.current_period_end ? new Date(subscription.items.data[0].current_period_end * 1000) : null
 
@@ -34,6 +35,7 @@ export async function subscriptionUpdated(event: Stripe.Event) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
       cancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
       period,
+      price,
     })
     .where(eq(subscriptions.id, existing.id))
 }

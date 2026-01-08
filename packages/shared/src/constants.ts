@@ -4,6 +4,9 @@ export const SOCIAL_LINKS = {
   DISCORD: 'https://discord.gg/XweDPUVadR',
 } as const
 
+export const GITHUB_REPO_OWNER = 'wannabespace' as const
+export const GITHUB_REPO_NAME = 'conar' as const
+
 export const SUPPORT_EMAIL = 'valerii.strilets@gmail.com'
 
 export const BREW_INSTALL_COMMAND = 'brew install --cask conar'

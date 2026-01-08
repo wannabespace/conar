@@ -3,7 +3,6 @@ import { Toaster } from '@conar/ui/components/sonner'
 import appCss from '@conar/ui/globals.css?url'
 import { cn } from '@conar/ui/lib/utils'
 import { ThemeObserver } from '@conar/ui/theme-observer'
-import { Databuddy } from '@databuddy/sdk/react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
@@ -83,11 +82,6 @@ function RootComponent() {
           <ReactQueryDevtools buttonPosition="bottom-left" />
         </QueryClientProvider>
         <Toaster />
-        <Databuddy
-          clientId="4cWwAbS06aDNledzhodgS"
-          enableBatching
-          disabled={import.meta.env.DEV}
-        />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>
