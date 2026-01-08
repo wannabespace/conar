@@ -2,7 +2,6 @@ import { relations } from 'drizzle-orm'
 import {
   boolean,
   index,
-  integer,
   pgTable,
   text,
   timestamp,
@@ -137,19 +136,6 @@ export const invitations = pgTable(
     index('invitations_email_idx').on(table.email),
   ],
 )
-
-export const deviceCodes = pgTable('device_codes', {
-  ...baseTable,
-  deviceCode: text('device_code').notNull(),
-  userCode: text('user_code').notNull(),
-  userId: text('user_id'),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  status: text('status').notNull(),
-  lastPolledAt: timestamp('last_polled_at'),
-  pollingInterval: integer('polling_interval'),
-  clientId: text('client_id'),
-  scope: text('scope'),
-})
 
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
