@@ -21,6 +21,7 @@
     "@conar/shared": "workspace:*",
     "@exalabs/ai-sdk": "catalog:",
     "@hono/arktype-validator": "catalog:",
+    "@octokit/rest": "catalog:",
     "@orpc/server": "catalog:",
     "@posthog/ai": "catalog:",
     "@react-email/components": "catalog:",

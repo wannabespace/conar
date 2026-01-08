@@ -16,15 +16,15 @@ const iconsMap: Partial<Record<OS, (props: { className?: string }) => React.Reac
 }
 
 export function DownloadButton({ className }: { className?: string }) {
-  if (!os) {
+  const links = os ? DOWNLOAD_LINKS[os.type as keyof typeof DOWNLOAD_LINKS] : null
+
+  if (!os || !links) {
     return (
       <Button disabled variant="secondary" size="lg" className={className}>
         No downloads for your operating system :(
       </Button>
     )
   }
-
-  const links = DOWNLOAD_LINKS[os.type as keyof typeof DOWNLOAD_LINKS]
 
   const Icon = iconsMap[os.type] || null
 
