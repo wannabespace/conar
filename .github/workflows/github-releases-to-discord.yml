@@ -1,4 +1,4 @@
-name: GitHub Releases to Discord
+name: Release to Discord
 
 on:
   release:
