@@ -8,6 +8,7 @@ const envType = type({
   API_URL: 'string',
   WEB_URL: 'string',
   DATABASE_URL: 'string',
+  ALERTS_EMAIL: 'string',
   ENCRYPTION_SECRET: 'string',
   BETTER_AUTH_SECRET: 'string',
   STRIPE_SECRET_KEY: 'string?', // TODO: remove optional after the new release
@@ -30,9 +31,11 @@ const envType = type({
   BANNER_TEXT: 'string?',
   EXA_API_KEY: 'string',
   GITHUB_TOKEN: 'string',
+  TODESKTOP_WEBHOOK_SECRET: 'string',
 })
 
 const devOptionalEnvs = [
+  'ALERTS_EMAIL',
   'STRIPE_SECRET_KEY',
   'STRIPE_WEBHOOK_SECRET',
   'STRIPE_MONTH_PRICE_ID',
@@ -51,6 +54,7 @@ const devOptionalEnvs = [
   'GITHUB_CLIENT_SECRET',
   'EXA_API_KEY',
   'GITHUB_TOKEN',
+  'TODESKTOP_WEBHOOK_SECRET',
 ] satisfies (keyof typeof envType.infer)[]
 
 export const env = nodeEnv === 'production' || nodeEnv === 'test'

@@ -16,13 +16,12 @@ catalog:
   '@ai-sdk/xai': ^2.0.42
   '@antfu/eslint-config': ^6.7.3
   '@base-ui/react': ^1.0.0
-  '@clickhouse/client': ^1.15.0
+  '@clickhouse/client': ^1.16.0
   '@commitlint/cli': ^20.3.0
   '@commitlint/config-conventional': ^20.3.0
   '@dagrejs/dagre': 1.1.8
-  '@databuddy/sdk': ^2.3.22
   '@electric-sql/pglite': ^0.3.14
-  '@eslint-react/eslint-plugin': ^2.5.0
+  '@eslint-react/eslint-plugin': ^2.5.1
   '@exalabs/ai-sdk': ^1.0.5
   '@faker-js/faker': ^10.2.0
   '@fluentui/react-context-selector': ^9.2.13
@@ -55,25 +54,25 @@ catalog:
   '@radix-ui/react-toggle': ^1.1.10
   '@radix-ui/react-toggle-group': ^1.1.11
   '@radix-ui/react-tooltip': ^1.2.8
-  '@react-email/components': ^1.0.3
+  '@react-email/components': ^1.0.4
   '@remixicon/react': ^4.8.0
   '@tailwindcss/typography': ^0.5.19
   '@tailwindcss/vite': ^4.1.18
   '@tanstack/react-db': ^0.1.60
-  '@tanstack/react-devtools': ^0.9.0
+  '@tanstack/react-devtools': ^0.9.1
   '@tanstack/react-form': ^1.27.7
   '@tanstack/react-query': ^5.90.16
   '@tanstack/react-query-devtools': ^5.91.2
-  '@tanstack/react-router': ^1.144.0
-  '@tanstack/react-router-devtools': ^1.144.0
-  '@tanstack/react-router-ssr-query': ^1.144.0
-  '@tanstack/react-start': ^1.145.3
+  '@tanstack/react-router': ^1.145.7
+  '@tanstack/react-router-devtools': ^1.145.7
+  '@tanstack/react-router-ssr-query': ^1.145.7
+  '@tanstack/react-start': ^1.145.10
   '@tanstack/react-store': ^0.8.0
-  '@tanstack/react-virtual': ^3.13.16
-  '@tanstack/router-plugin': ^1.145.2
-  '@tiptap/extension-placeholder': ^3.14.0
-  '@tiptap/react': ^3.14.0
-  '@tiptap/starter-kit': ^3.14.0
+  '@tanstack/react-virtual': ^3.13.17
+  '@tanstack/router-plugin': ^1.145.10
+  '@tiptap/extension-placeholder': ^3.15.3
+  '@tiptap/react': ^3.15.3
+  '@tiptap/starter-kit': ^3.15.3
   '@todesktop/cli': ^1.18.3
   '@todesktop/runtime': ^2.1.3
   '@toon-format/toon': ^2.1.0
@@ -83,7 +82,7 @@ catalog:
   '@types/pg': ^8.16.0
   '@types/react': ^19.2.7
   '@types/react-dom': ^19.2.3
-  '@typescript/native-preview': ^7.0.0-dev.20260104.1
+  '@typescript/native-preview': ^7.0.0-dev.20260107.1
   '@vitejs/plugin-react': ^5.1.2
   '@xyflow/react': ^12.10.0
   ai: ^5.0.116
@@ -103,7 +102,7 @@ catalog:
   drizzle-kit: ^0.31.8
   drizzle-orm: ^0.45.1
   electron: 39.2.6
-  electron-builder: ^26.0.12
+  electron-builder: ^26.4.0
   electron-store: ^11.0.2
   electron-vite: ^5.0.0
   eslint: ^9.39.2
@@ -114,7 +113,7 @@ catalog:
   hookable: ^6.0.1
   husky: ^9.1.7
   input-otp: ^1.4.2
-  ioredis: ^5.8.2
+  ioredis: ^5.9.0
   ioredis-mock: ^8.13.1
   js-base64: ^3.7.8
   js-confetti: ^0.13.1
@@ -125,7 +124,7 @@ catalog:
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
   monaco-themes: ^0.4.8
-  motion: ^12.23.26
+  motion: ^12.24.10
   mssql: ^12.2.0
   mysql2: ^3.16.0
   nanoid: ^5.1.6
@@ -133,14 +132,14 @@ catalog:
   npm-run-all2: ^8.0.4
   pg: ^8.16.3
   playwright: ^1.57.0
-  postgres: ^3.4.7
-  posthog-js: ^1.313.0
-  posthog-node: ^5.18.1
+  postgres: ^3.4.8
+  posthog-js: ^1.315.0
+  posthog-node: ^5.19.0
   react: ^19.2.3
   react-dom: ^19.2.3
   react-grab: ^0.0.98
   react-markdown: ^10.1.0
-  react-resizable-panels: ^4.2.1
+  react-resizable-panels: ^4.3.0
   react-scan: ^0.4.3
   redis: ^5.10.0
   remark-gfm: ^4.0.1
@@ -148,7 +147,7 @@ catalog:
   resumable-stream: ^2.2.10
   sonner: ^2.0.7
   sql-formatter: ^15.6.12
-  stripe: ^20.1.0
+  stripe: ^20.1.1
   superjson: ^2.2.6
   tailwind-merge: ^3.4.0
   tailwind-scrollbar: ^4.0.2
@@ -156,13 +155,13 @@ catalog:
   tanstack-db-pglite: ^1.0.5
   taze: ^19.9.2
   tsx: ^4.21.0
-  turbo: ^2.7.2
+  turbo: ^2.7.3
   tw-animate-css: ^1.4.0
   typescript: ^5.9.3
   ua-parser-js: ^2.0.7
   use-stick-to-bottom: ^1.1.1
   uuid: ^13.0.0
-  vite: ^7.3.0
+  vite: ^7.3.1
   vite-tsconfig-paths: ^6.0.3
   zod: ^4.3.5
 

@@ -96,6 +96,24 @@ export const auth: Auth = betterAuth({
       },
     },
   },
+  onAPIError: {
+    onError: async (error) => {
+      if (!env.ALERTS_EMAIL) {
+        consola.error('ALERTS_EMAIL is not set')
+        return
+      }
+
+      await sendEmail({
+        to: env.ALERTS_EMAIL,
+        subject: 'Alert from Better Auth',
+        template: 'Alert',
+        props: {
+          text: typeof error === 'object' && error !== null ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2) : String(error),
+          service: 'Better Auth',
+        },
+      })
+    },
+  },
   trustedOrigins: [
     env.WEB_URL,
     'file://',
@@ -104,12 +122,20 @@ export const auth: Auth = betterAuth({
   ],
   advanced: {
     cookiePrefix: 'conar',
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: new URL(env.WEB_URL).host,
+    },
     database: {
       generateId: 'uuid',
     },
   },
   experimental: {
     joins: true,
+  },
+  // TODO: Remove this in future, it needed only for desktop auth in old versions
+  account: {
+    skipStateCookieCheck: true,
   },
   database: drizzleAdapter(db, {
     provider: 'pg',

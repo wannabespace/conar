@@ -78,7 +78,7 @@ function AuthPage() {
           Start managing your data
         </motion.p>
         <ButtonMotion
-          className="mb-4 w-full"
+          className="mb-2 w-full"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.29 }}
