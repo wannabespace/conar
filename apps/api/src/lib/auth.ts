@@ -76,7 +76,7 @@ export const auth: Auth = betterAuth({
             firstName: firstName!,
             lastName: lastName.join(' '),
             properties: {
-              userId: user.id,
+              id: user.id,
             },
           })
         },
@@ -94,7 +94,7 @@ export const auth: Auth = betterAuth({
             firstName: firstName!,
             lastName: lastName.join(' '),
             properties: {
-              userId: user.id,
+              id: user.id,
             },
           })
         },
