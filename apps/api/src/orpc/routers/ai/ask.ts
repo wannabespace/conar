@@ -276,7 +276,17 @@ export const ask = orpc
 
       try {
         const streamId = v7()
-        await streamContext.createNewResumableStream(streamId, () => result.textStream as unknown as ReadableStream<string>)
+        const getResultTextStream = (): ReadableStream<string> => {
+          const textStream = (result as { textStream?: unknown }).textStream
+          if (textStream instanceof ReadableStream) {
+            return textStream as ReadableStream<string>
+          }
+          consola.error('Expected result.textStream to be a ReadableStream, got', textStream)
+          throw new ORPCError('INTERNAL_SERVER_ERROR', {
+            message: 'Streaming is not available for this response.',
+          })
+        }
+        await streamContext.createNewResumableStream(streamId, getResultTextStream)
         await db.update(chats).set({ activeStreamId: streamId }).where(eq(chats.id, input.id))
       }
       catch (error) {

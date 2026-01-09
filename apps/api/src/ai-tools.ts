@@ -9,12 +9,19 @@ import {
   resolveLibrary,
 } from '@upstash/context7-tools-ai-sdk'
 import { tool } from 'ai'
+import { consola } from 'consola'
 import * as z from 'zod'
 import { env } from '~/env'
 
-const context7Config = {
-  apiKey: env.CONTEXT7_API_KEY,
-  defaultMaxResults: 15,
+function getContext7Config() {
+  if (!env.CONTEXT7_API_KEY) {
+    consola.warn('CONTEXT7_API_KEY is not set, Context7 tools will not be available')
+    return null
+  }
+  return {
+    apiKey: env.CONTEXT7_API_KEY,
+    defaultMaxResults: 15,
+  }
 }
 
 export const tools = {
@@ -82,9 +89,13 @@ export const tools = {
 }
 
 export function createContext7Tools(): Record<string, Tool> {
+  const config = getContext7Config()
+  if (!config) {
+    return {}
+  }
   return {
-    resolveLibrary: resolveLibrary(context7Config),
-    getLibraryDocs: getLibraryDocs(context7Config),
+    resolveLibrary: resolveLibrary(config),
+    getLibraryDocs: getLibraryDocs(config),
   }
 }
 

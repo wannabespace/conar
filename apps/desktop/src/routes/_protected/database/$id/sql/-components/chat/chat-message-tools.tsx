@@ -38,7 +38,8 @@ function setToolOpen(stableKey: string, isOpen: boolean) {
   toolOpenStore.set(stableKey, isOpen)
   if (toolOpenStore.size <= MAX_TOOL_OPEN_ENTRIES)
     return
-  const firstKey = toolOpenStore.keys().next().value as string | undefined
+  const iteratorResult = toolOpenStore.keys().next()
+  const firstKey = iteratorResult.done ? undefined : iteratorResult.value
   if (firstKey)
     toolOpenStore.delete(firstKey)
 }
@@ -144,7 +145,11 @@ const ChatMessageTool = memo(function ChatMessageTool({ part, className }: { par
 
   return (
     <SingleAccordion
-      className={cn('my-2 first:mt-0 last:mb-0', className)}
+      className={cn(`
+        my-2
+        first:mt-0
+        last:mb-0
+      `, className)}
       open={open}
       onOpenChange={onOpenChange}
     >

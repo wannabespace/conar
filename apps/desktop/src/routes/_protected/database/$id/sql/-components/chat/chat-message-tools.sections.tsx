@@ -58,19 +58,21 @@ const ToggleLink = memo(function ToggleLink({
   )
 })
 
+interface ToolHeaderRowProps {
+  tool: ToolPart
+  iconRenderer: (props: { className?: string, tool: ToolPart }) => ReactNode
+  tooltip: string
+  text: string
+  title?: string
+}
+
 const ToolHeaderRow = memo(function ToolHeaderRow({
   tool,
   iconRenderer,
   tooltip,
   text,
   title,
-}: {
-  tool: ToolPart
-  iconRenderer: (props: { className?: string, tool: ToolPart }) => ReactNode
-  tooltip: string
-  text: string
-  title?: string
-}) {
+}: ToolHeaderRowProps) {
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2">
       <span className="shrink-0" title={tooltip}>
@@ -89,6 +91,15 @@ const ToolHeaderRow = memo(function ToolHeaderRow({
   )
 })
 
+interface CompactRowProps {
+  tool: ToolPart
+  iconRenderer: (props: { className?: string, tool: ToolPart }) => ReactNode
+  tooltip: string
+  text: string
+  className?: string
+  subtle?: boolean
+}
+
 const CompactRow = memo(function CompactRow({
   tool,
   iconRenderer,
@@ -96,14 +107,7 @@ const CompactRow = memo(function CompactRow({
   text,
   className,
   subtle,
-}: {
-  tool: ToolPart
-  iconRenderer: (props: { className?: string, tool: ToolPart }) => ReactNode
-  tooltip: string
-  text: string
-  className?: string
-  subtle?: boolean
-}) {
+}: CompactRowProps) {
   return (
     <div className={cn('my-2 flex min-w-0 items-center gap-2', className)} title={tooltip}>
       <span className="shrink-0">{iconRenderer({ tool, className: 'size-4' })}</span>
@@ -126,15 +130,15 @@ function KeyValueList({ value, maxEntries }: { value: Record<string, unknown>, m
   const entries = Object.entries(value)
   if (entries.length === 0)
     return null
-  // For preview mode (maxEntries) we sort keys to keep output stable across renders.
   const visible = maxEntries
     ? entries
         .toSorted(([a], [b]) => a.localeCompare(b))
         .slice(0, maxEntries)
     : entries
+
   return (
     <div className="space-y-1 text-sm">
-      {visible.map(([k, v]) => (
+      {visible.map(([k, v]: [string, unknown]) => (
         <div key={k} className="flex min-w-0 gap-2">
           <div className="shrink-0 text-muted-foreground">{k}</div>
           <div
@@ -208,7 +212,11 @@ const ResponseSection = memo(function ResponseSection({
   )
 })
 
-const ParametersSection = memo(function ParametersSection({ input }: { input: unknown }) {
+interface ParametersSectionProps {
+  input: Record<string, unknown> | unknown
+}
+
+const ParametersSection = memo(function ParametersSection({ input }: ParametersSectionProps) {
   const [showFull, setShowFull] = useState(false)
 
   const inputObj = isRecord(input) ? input : null

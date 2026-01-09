@@ -9,14 +9,22 @@ export type ToolType
     | 'tool-getLibraryDocs'
     | (string & {})
 
+export type ToolInput = Record<string, unknown> | unknown
+export type ToolOutput = Record<string, unknown> | unknown[] | unknown
+
 export type ToolPart = Omit<ToolUIPart, 'type' | 'input' | 'output'> & {
   type: ToolType
-  input?: unknown
-  output?: unknown
+  input?: ToolInput
+  output?: ToolOutput
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
+  if (value === null || typeof value !== 'object')
+    return false
+  if (Array.isArray(value))
+    return false
+  const proto = Object.getPrototypeOf(value)
+  return proto === Object.prototype || proto === null
 }
 
 export function readString(obj: Record<string, unknown>, key: string): string | undefined {
