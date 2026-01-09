@@ -2,6 +2,7 @@ import { Separator } from '@conar/ui/components/separator'
 import NumberFlow from '@number-flow/react'
 import { useStore } from '@tanstack/react-store'
 import { useDatabaseTableTotal } from '~/entities/database/queries'
+import { TableRowCounter } from './estimate-rows.tsx'
 import { Route } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
@@ -38,20 +39,11 @@ export function Header({ table, schema }: { table: string, schema: string }) {
             {' '}
             •
             {' '}
-            {total !== undefined
-              ? (
-                  <NumberFlow
-                    className="tabular-nums"
-                    value={total}
-                    style={{
-                      '--number-flow-mask-height': '0px',
-                    }}
-                  />
-                )
-              : <span className="animate-pulse">...</span>}
-            {' '}
-            row
-            {total !== undefined && total !== 1 && 's'}
+          <TableRowCounter 
+              schema={schema} 
+              table={table} 
+              database={database} 
+            />
           </p>
         </div>
         <Separator orientation="vertical" className="h-6!" />
