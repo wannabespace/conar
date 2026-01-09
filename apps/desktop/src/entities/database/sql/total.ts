@@ -31,10 +31,10 @@ export const totalQuery = createQuery({
           .executeTakeFirst()
 
         if (estimate && Number(estimate.count) >= 0) {
-          return { 
-        count: String(Math.round(Number(estimate.count))), 
-        isEstimated: true 
-      }
+          return {
+            count: String(Math.round(Number(estimate.count))),
+            isEstimated: true,
+          }
         }
       }
 
