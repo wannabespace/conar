@@ -63,7 +63,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
 
   const { mutate: dropTable, isPending } = useMutation({
     mutationFn: async () => {
-      await dropTableQuery.run(database, { table, schema, cascade })
+      await dropTableQuery(database, { table, schema, cascade })
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully dropped`)

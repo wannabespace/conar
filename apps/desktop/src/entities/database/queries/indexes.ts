@@ -5,7 +5,7 @@ import { indexesQuery } from '../sql/index'
 export function databaseIndexesQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
     queryKey: ['database', database.id, 'indexes'],
-    queryFn: () => indexesQuery.run(database),
+    queryFn: () => indexesQuery(database),
   })
 }
 

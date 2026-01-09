@@ -60,8 +60,8 @@ function DatabaseIndexesPage() {
   }, [schemas, selectedSchema])
 
   const groupedIndexes = useMemo(() => {
-    return indexes?.reduce<Record<string, GroupedIndex>>((acc, item) => {
-      const indexItem = item as IndexItem
+    return indexes?.reduce<Record<string, GroupedIndex>>((acc: Record<string, GroupedIndex>, item: IndexItem) => {
+      const indexItem = item
 
       if (indexItem.schema !== selectedSchema)
         return acc
@@ -267,7 +267,7 @@ function DatabaseIndexesPage() {
                     </Badge>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {item.columns.map(col => (
+                    {item.columns.map((col: string) => (
                       <Badge
                         key={col}
                         variant="secondary"

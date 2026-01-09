@@ -1,5 +1,5 @@
 import type { Context } from './context'
-import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
+import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
@@ -44,7 +44,15 @@ export const authMiddleware = orpc.middleware(async ({ context, next }) => {
   })
 })
 
-async function getSubscription(userId: string) {
+export const optionalAuthMiddleware = orpc.middleware(async ({ context, next }) => {
+  const session = await getSession(context.headers)
+
+  return next({
+    context: session,
+  })
+})
+
+export async function getSubscription(userId: string) {
   const cachedSubscription = await redis.get(`subscription:${userId}`)
 
   if (cachedSubscription) {
@@ -53,7 +61,7 @@ async function getSubscription(userId: string) {
 
   const userSubscriptions = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
 
-  const subscription = userSubscriptions.find(s => (s.status === 'active' || s.status === 'trialing') && !s.cancelAt) ?? null
+  const subscription = userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number]) && !s.cancelAt) ?? null
 
   if (subscription) {
     await redis.setex(
@@ -71,11 +79,7 @@ export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, n
   const minorVersion = context.minorVersion ?? 0
   const subscription = await getSubscription(session.user.id)
 
-  if (
-    !subscription
-    // TODO: remove this after Stripe is released
-    && minorVersion >= LATEST_VERSION_BEFORE_SUBSCRIPTION
-  ) {
+  if (!subscription) {
     throw new ORPCError('FORBIDDEN', {
       message: minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
         ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
