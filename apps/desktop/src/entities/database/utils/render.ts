@@ -7,7 +7,15 @@ function prepareValue(value: unknown) {
   return value
 }
 
-export function getEditableValue(value: unknown, oneLine: boolean, column?: Column) {
+export function getEditableValue({
+  value,
+  oneLine,
+  column,
+}: {
+  value: unknown
+  oneLine: boolean
+  column: Column
+}) {
   const _value = prepareValue(value)
 
   if (typeof _value === 'object' && _value !== null) {
@@ -16,7 +24,7 @@ export function getEditableValue(value: unknown, oneLine: boolean, column?: Colu
       : JSON.stringify(_value, null, 2)
   }
 
-  if (column && column.type === 'boolean' && !column.isArray && _value === null)
+  if (column.type === 'boolean' && !column.isArray && _value === null)
     return 'false'
 
   return oneLine
@@ -24,7 +32,15 @@ export function getEditableValue(value: unknown, oneLine: boolean, column?: Colu
     : String(_value ?? '')
 }
 
-export function getDisplayValue(value: unknown, size: number, column?: Column) {
+export function getDisplayValue({
+  value,
+  size,
+  column,
+}: {
+  value: unknown
+  size: number
+  column: Column
+}) {
   if (value === null)
     return 'null'
 
@@ -37,5 +53,5 @@ export function getDisplayValue(value: unknown, size: number, column?: Column) {
     Used 6 as a multiplier because 1 symbol takes ~6px width
     + 5 to make sure there are extra symbols for ellipsis
   */
-  return getEditableValue(value, true, column).slice(0, (size / 6) + 5)
+  return getEditableValue({ value, oneLine: true, column }).slice(0, (size / 6) + 5)
 }
