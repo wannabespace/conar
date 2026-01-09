@@ -220,7 +220,7 @@ export function Subscription() {
               <div className="flex flex-col gap-4">
                 <span className={cn(`
                   flex size-10 shrink-0 items-center justify-center rounded-md
-                  bg-muted text-primary-foreground duration-100
+                  bg-muted text-muted-foreground duration-100
                 `)}
                 >
                   <plan.icon className="size-5 duration-100" />
