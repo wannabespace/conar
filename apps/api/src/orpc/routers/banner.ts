@@ -18,15 +18,10 @@ export const banner = orpc
       && context.minorVersion
       && context.minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
     ) {
-      // TODO: remove this after Stripe is released
       items.push({
-        text: 'We\'ve released a new version with subscriptions, so some features will soon be unavailable to you without a subscription.',
+        text: 'Some features now require a subscription. Please update the app and subscribe to a plan to continue using them.',
         type: 'info',
       })
-      // items.push({
-      //   text: 'Some features now require a subscription. Please update the app and subscribe to a plan to continue using them.',
-      //   type: 'info',
-      // })
     }
 
     if (env.BANNER_TEXT) {

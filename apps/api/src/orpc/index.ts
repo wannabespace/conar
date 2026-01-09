@@ -71,11 +71,7 @@ export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, n
   const minorVersion = context.minorVersion ?? 0
   const subscription = await getSubscription(session.user.id)
 
-  if (
-    !subscription
-    // TODO: remove this after Stripe is released
-    && minorVersion >= LATEST_VERSION_BEFORE_SUBSCRIPTION
-  ) {
+  if (!subscription) {
     throw new ORPCError('FORBIDDEN', {
       message: minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
         ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
