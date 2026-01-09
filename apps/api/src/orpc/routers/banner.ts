@@ -1,8 +1,8 @@
-import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
+import { LATEST_VERSION_BEFORE_SUBSCRIPTION, SUBSCRIPTION_PAST_DUE_MESSAGE } from '@conar/shared/constants'
 import { type } from 'arktype'
 import { env } from '~/env'
 import { stripe } from '~/lib/stripe'
-import { orpc } from '~/orpc'
+import { getSubscription, optionalAuthMiddleware, orpc } from '~/orpc'
 
 const bannerType = type({
   text: 'string',
@@ -10,8 +10,11 @@ const bannerType = type({
 }).array()
 
 export const banner = orpc
+  .use(optionalAuthMiddleware)
   .output(bannerType)
-  .handler(({ context }) => {
+  .handler(async ({ context }) => {
+    const subscription = context.user ? await getSubscription(context.user.id) : null
+
     const items: typeof bannerType.infer = []
 
     if (stripe
@@ -21,6 +24,13 @@ export const banner = orpc
       items.push({
         text: 'Some features now require a subscription. Please update the app and subscribe to a plan to continue using them.',
         type: 'info',
+      })
+    }
+
+    if (subscription?.status === 'past_due') {
+      items.push({
+        text: SUBSCRIPTION_PAST_DUE_MESSAGE,
+        type: 'error',
       })
     }
 

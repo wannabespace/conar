@@ -1,5 +1,5 @@
 import type { Context } from './context'
-import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
+import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
@@ -44,7 +44,15 @@ export const authMiddleware = orpc.middleware(async ({ context, next }) => {
   })
 })
 
-async function getSubscription(userId: string) {
+export const optionalAuthMiddleware = orpc.middleware(async ({ context, next }) => {
+  const session = await getSession(context.headers)
+
+  return next({
+    context: session,
+  })
+})
+
+export async function getSubscription(userId: string) {
   const cachedSubscription = await redis.get(`subscription:${userId}`)
 
   if (cachedSubscription) {
@@ -53,7 +61,7 @@ async function getSubscription(userId: string) {
 
   const userSubscriptions = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
 
-  const subscription = userSubscriptions.find(s => (s.status === 'active' || s.status === 'trialing') && !s.cancelAt) ?? null
+  const subscription = userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number]) && !s.cancelAt) ?? null
 
   if (subscription) {
     await redis.setex(
