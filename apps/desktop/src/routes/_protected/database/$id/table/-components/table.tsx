@@ -29,9 +29,6 @@ function prepareValue(value: unknown, column?: Column): unknown {
   if (!column)
     return value
 
-  if (column.type === 'boolean' && !column.isArray && value === '')
-    return false
-
   return typeof value === 'string' && column.isArray
     ? JSON.parse(value)
     : value

@@ -56,7 +56,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
             style={props.style}
           >
             <span className="truncate">
-              {getDisplayValue(props.value, props.size)}
+              {getDisplayValue(props.value, props.size, column)}
             </span>
           </TableCellContent>
         ),

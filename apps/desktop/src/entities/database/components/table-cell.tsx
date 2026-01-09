@@ -272,7 +272,7 @@ export function TableCell({
   className?: string
   values?: string[]
 } & TableCellProps) {
-  const displayValue = getDisplayValue(value, size)
+  const displayValue = getDisplayValue(value, size, column)
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isForeignOpen, setIsForeignOpen] = useState(false)
