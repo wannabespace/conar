@@ -14,7 +14,7 @@ import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { isToolUIPart } from 'ai'
+import { isStaticToolUIPart } from 'ai'
 import { regex } from 'arkregex'
 import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
@@ -246,7 +246,7 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loadi
       )
     }
 
-    if (isToolUIPart(part)) {
+    if (isStaticToolUIPart(part)) {
       return (
         <ChatMessageTool
           // eslint-disable-next-line react/no-array-index-key

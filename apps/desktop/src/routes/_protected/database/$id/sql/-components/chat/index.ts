@@ -1,5 +1,5 @@
 import type { AppUIMessage, tools } from '@conar/api/src/ai-tools'
-import type { InferToolInput, InferToolOutput } from 'ai'
+import type { InferToolInput } from 'ai'
 import type { chatsMessages, databases } from '~/drizzle'
 import { Chat } from '@ai-sdk/react'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
@@ -93,7 +93,10 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         }
 
         if (options.trigger === 'regenerate-message' && options.messageId && chatsMessagesCollection.has(options.messageId)) {
-          chatsMessagesCollection.delete(options.messageId)
+          const existingMessage = chatsMessagesCollection.get(options.messageId)
+          if (existingMessage) {
+            chatsMessagesCollection.delete(options.messageId)
+          }
         }
 
         const store = databaseStore(database.id)
@@ -156,7 +159,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           database,
           table: input.tableAndSchema.tableName,
           schema: input.tableAndSchema.schemaName,
-        })) satisfies InferToolOutput<typeof tools.columns>
+        }))
 
         chat.addToolOutput({
           tool: 'columns',
@@ -169,7 +172,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           schema: r.schema,
           name: r.name,
           value: v,
-        })))) satisfies InferToolOutput<typeof tools.enums>
+        }))))
 
         chat.addToolOutput({
           tool: 'enums',
@@ -203,7 +206,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           filtersConcatOperator: input.whereConcatOperator,
         }).catch(error => ({
           error: error instanceof Error ? error.message : 'Error during the query execution',
-        })) satisfies InferToolOutput<typeof tools.select>
+        }))
 
         chat.addToolOutput({
           tool: 'select',
