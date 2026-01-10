@@ -25,7 +25,11 @@ export function TableCellProvider({
   onSaveError?: (error: Error) => void
   values?: string[]
 }) {
-  const [value, setValue] = useState<string>(() => getEditableValue(initialValue, false))
+  const [value, setValue] = useState<string>(() => getEditableValue({
+    value: initialValue,
+    oneLine: false,
+    column,
+  }))
 
   const { mutate: update } = useMutation({
     mutationFn: async ({ rowIndex, value }: { value: string | null, rowIndex: number }) => {

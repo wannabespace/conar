@@ -1,6 +1,6 @@
 import consola from 'consola'
 import { env } from '~/env'
-import { sendEmail } from '~/lib/email'
+import { sendEmail } from '~/lib/resend'
 import { orpc } from '~/orpc'
 
 export const railway = orpc.handler(async ({ context }) => {

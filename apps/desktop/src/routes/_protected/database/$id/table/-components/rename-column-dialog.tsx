@@ -47,7 +47,7 @@ export function RenameColumnDialog({ ref, database }: RenameColumnDialogProps) {
 
   const { mutate: renameColumn, isPending } = useMutation({
     mutationFn: async () => {
-      await renameColumnQuery.run(database, {
+      await renameColumnQuery(database, {
         schema,
         table,
         oldColumn: column,

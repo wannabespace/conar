@@ -47,7 +47,7 @@ export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
 
   const { mutate: renameTable, isPending } = useMutation({
     mutationFn: async () => {
-      await renameTableQuery.run(database, { schema, oldTable: table, newTable: newTableName })
+      await renameTableQuery(database, { schema, oldTable: table, newTable: newTableName })
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)

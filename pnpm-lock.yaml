@@ -336,9 +336,6 @@ catalogs:
     kysely:
       specifier: ^0.28.9
       version: 0.28.9
-    loops:
-      specifier: ^6.0.1
-      version: 6.0.1
     lucide-react:
       specifier: ^0.562.0
       version: 0.562.0
@@ -617,9 +614,6 @@ importers:
       ioredis-mock:
         specifier: 'catalog:'
         version: 8.13.1(@types/ioredis-mock@8.2.6(ioredis@5.9.0))(ioredis@5.9.0)
-      loops:
-        specifier: 'catalog:'
-        version: 6.0.1
       nanoid:
         specifier: 'catalog:'
         version: 5.1.6
@@ -8091,10 +8085,6 @@ packages:
   longest-streak@3.1.0:
     resolution: {integrity: sha512-9Ri+o0JYgehTaVBBDoMqIl8GXtbWg711O3srftcHhZ0dqnETqLaoIK0x17fUw9rFSlK/0NlsKe0Ahhyl5pXE2g==}
 
-  loops@6.0.1:
-    resolution: {integrity: sha512-ds2CwBA2WuAv50yyHmIpTAzWa4dbVyuSwR9NWtqnlE+78FINILCaxJjDgqNqVYLU1rYioj7mRJNkb6k2/L1EtQ==}
-    engines: {node: '>=18'}
-
   loose-envify@1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
@@ -14706,10 +14696,10 @@ snapshots:
       firebase: 11.10.0
       git-rev-sync: 3.0.2
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)
-      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
-      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
-      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
-      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
+      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
+      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
+      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
+      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
       is-ci: 3.0.1
       is-installed-globally: 0.3.2
       js-yaml: 4.1.1
@@ -17899,7 +17889,7 @@ snapshots:
 
   ini@4.1.1: {}
 
-  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
+  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
     dependencies:
       gradient-string: 1.2.0
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)
@@ -17907,14 +17897,14 @@ snapshots:
       react: 17.0.2
       strip-ansi: 6.0.1
 
-  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
+  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
     dependencies:
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)
       prop-types: 15.8.1
       react: 17.0.2
       terminal-link: 2.1.1
 
-  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
+  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
     dependencies:
       arr-rotate: 1.0.0
       figures: 3.2.0
@@ -17922,7 +17912,7 @@ snapshots:
       lodash.isequal: 4.5.0
       react: 17.0.2
 
-  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
+  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
     dependencies:
       chalk: 4.1.2
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)
@@ -18422,8 +18412,6 @@ snapshots:
   long@5.3.2: {}
 
   longest-streak@3.1.0: {}
-
-  loops@6.0.1: {}
 
   loose-envify@1.4.0:
     dependencies:

@@ -27,7 +27,7 @@ export function useServerDatabases(database: typeof databases.$inferSelect) {
         connectionString: url.toString(),
       }
 
-      const dbNames = await listDatabasesQuery.run(systemDatabase)
+      const dbNames = await listDatabasesQuery(systemDatabase)
       const currentDbName = new SafeURL(database.connectionString).pathname.replace(/^\//, '')
       return dbNames.filter(name => name !== currentDbName)
     },
