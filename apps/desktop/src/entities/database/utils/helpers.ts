@@ -1,3 +1,7 @@
+import type { enumType } from '../sql/enums'
+import type { Column } from './table'
+import type { DatabaseDialect, GeneratorFormat, PrismaFilterValue } from './types'
+
 export const DEFAULT_PAGE_LIMIT = 100
 
 export const DEFAULT_ROW_HEIGHT = 32
@@ -207,4 +211,272 @@ export function getEditorQueries(sql: string) {
   }
 
   return queries
+}
+
+export function toPascalCase(name: string): string {
+  const alphanumeric = name.replace(/[^a-z0-9]+/gi, ' ')
+  const words = alphanumeric.trim().split(/\s+/).filter(Boolean)
+  let pascal = words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')
+
+  if (!pascal) {
+    pascal = 'Table'
+  }
+
+  if (/^[^A-Z_]/i.test(pascal)) {
+    pascal = `_${pascal}`
+  }
+
+  return pascal
+}
+
+export function sanitize(name: string) {
+  return name.replace(/\W/g, '_')
+}
+
+function tsMapper(t: string) {
+  if (/int|float|decimal|number|double|numeric/i.test(t))
+    return 'number'
+  if (/bool|bit/i.test(t))
+    return 'boolean'
+  if (/date|time/i.test(t))
+    return 'Date'
+  if (/json/i.test(t))
+    return 'any'
+  return 'string'
+}
+
+function zodMapper(t: string) {
+  if (/int|float|decimal|number|double|numeric/i.test(t))
+    return 'z.number()'
+  if (/bool|bit/i.test(t))
+    return 'z.boolean()'
+  if (/date|time/i.test(t))
+    return 'z.date()'
+  if (/json/i.test(t))
+    return 'z.any()'
+  return 'z.string()'
+}
+
+const sqlDefault = (t: string) => t
+const kyselyDefault = (t: string) => t
+
+export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<DatabaseDialect, (type: string) => string>> = {
+  ts: {
+    postgres: tsMapper,
+    mysql: tsMapper,
+    mssql: tsMapper,
+    clickhouse: tsMapper,
+  },
+  zod: {
+    postgres: zodMapper,
+    mysql: zodMapper,
+    mssql: zodMapper,
+    clickhouse: zodMapper,
+  },
+  prisma: {
+    postgres: (t) => {
+      if (/decimal|numeric/i.test(t))
+        return 'Decimal'
+      if (/bool/i.test(t))
+        return 'Boolean'
+      if (/date|timestamp/i.test(t))
+        return 'DateTime'
+      if (/json/i.test(t))
+        return 'Json'
+      if (/int/i.test(t))
+        return 'Int'
+      if (/float/i.test(t))
+        return 'Float'
+      return 'String'
+    },
+    mysql: (t) => {
+      if (/decimal|numeric/i.test(t))
+        return 'Decimal'
+      if (/bool/i.test(t))
+        return 'Boolean'
+      if (/date|timestamp/i.test(t))
+        return 'DateTime'
+      if (/json/i.test(t))
+        return 'Json'
+      if (/int/i.test(t))
+        return 'Int'
+      if (/float/i.test(t))
+        return 'Float'
+      return 'String'
+    },
+    mssql: (t) => {
+      if (/^date$/i.test(t))
+        return 'DateTime @db.Date'
+      if (/decimal|numeric/i.test(t))
+        return 'Decimal'
+      if (/bool|bit/i.test(t))
+        return 'Boolean'
+      if (/date|timestamp/i.test(t))
+        return 'DateTime'
+      if (/json/i.test(t))
+        return 'Json'
+      if (/int/i.test(t))
+        return 'Int'
+      if (/float/i.test(t))
+        return 'Float'
+      return 'String'
+    },
+    clickhouse: () => '',
+  },
+  drizzle: {
+    postgres: (t) => {
+      if (/serial/i.test(t))
+        return 'serial'
+      if (/int/i.test(t))
+        return 'integer'
+      if (/text/i.test(t))
+        return 'text'
+      if (/varchar|character varying/i.test(t))
+        return 'varchar'
+      if (/bool/i.test(t))
+        return 'boolean'
+      if (/timestamp/i.test(t))
+        return 'timestamp'
+      if (/date/i.test(t))
+        return 'date'
+      if (/decimal|numeric/i.test(t))
+        return 'decimal'
+      if (/double|float|real/i.test(t))
+        return 'doublePrecision'
+      if (/json/i.test(t))
+        return 'json'
+      return 'text'
+    },
+    mysql: (t) => {
+      if (/serial/i.test(t))
+        return 'serial'
+      if (/tinyint/i.test(t))
+        return 'tinyint'
+      if (/int/i.test(t))
+        return 'int'
+      if (/text/i.test(t))
+        return 'text'
+      if (/varchar/i.test(t))
+        return 'varchar'
+      if (/bool/i.test(t))
+        return 'boolean'
+      if (/timestamp/i.test(t))
+        return 'timestamp'
+      if (/datetime/i.test(t))
+        return 'datetime'
+      if (/date/i.test(t))
+        return 'date'
+      if (/decimal|numeric/i.test(t))
+        return 'decimal'
+      if (/double|float|real/i.test(t))
+        return 'double'
+      if (/json/i.test(t))
+        return 'json'
+      return 'text'
+    },
+    mssql: (t) => {
+      if (/datetime2/i.test(t))
+        return 'datetime2'
+      if (/datetime/i.test(t))
+        return 'datetime'
+      if (/date/i.test(t))
+        return 'date'
+      if (/int/i.test(t))
+        return 'integer'
+      if (/bit/i.test(t))
+        return 'bit'
+      if (/bool/i.test(t))
+        return 'boolean'
+      if (/text/i.test(t))
+        return 'text'
+      if (/nvarchar/i.test(t))
+        return 'nvarchar'
+      if (/varchar/i.test(t))
+        return 'varchar'
+      if (/decimal|numeric/i.test(t))
+        return 'decimal'
+      if (/float|real/i.test(t))
+        return 'float'
+      return 'text'
+    },
+    clickhouse: (t) => {
+      if (/int/i.test(t))
+        return 'integer'
+      if (/text/i.test(t))
+        return 'text'
+      if (/bool/i.test(t))
+        return 'boolean'
+      if (/date/i.test(t))
+        return 'date'
+      if (/decimal/i.test(t))
+        return 'decimal'
+      if (/real|float/i.test(t))
+        return 'real'
+      if (/json/i.test(t))
+        return 'json'
+      return 'text'
+    },
+  },
+  sql: {
+    postgres: (t) => {
+      if (/datetime2/i.test(t))
+        return 'timestamp'
+      if (/nvarchar/i.test(t))
+        return 'varchar'
+      if (/int32/i.test(t))
+        return 'integer'
+      return t
+    },
+    mysql: sqlDefault,
+    mssql: sqlDefault,
+    clickhouse: sqlDefault,
+  },
+  kysely: {
+    postgres: kyselyDefault,
+    mysql: kyselyDefault,
+    mssql: kyselyDefault,
+    clickhouse: kyselyDefault,
+  },
+}
+
+export function getColumnType(type: string | undefined, format: GeneratorFormat, dialect: DatabaseDialect = 'postgres'): string {
+  if (!type)
+    return 'any'
+
+  const mapper = TYPE_MAPPINGS[format][dialect]
+  return mapper ? mapper(type) : ''
+}
+
+export function formatValue(value: unknown): string {
+  if (value === null)
+    return 'NULL'
+  if (typeof value === 'string')
+    return `'${value.replace(/'/g, '\'\'')}'`
+  if (typeof value === 'number')
+    return String(value)
+  if (typeof value === 'boolean')
+    return value ? 'TRUE' : 'FALSE'
+  if (value instanceof Date)
+    return `'${value.toISOString()}'`
+  return `'${String(value)}'`
+}
+
+export function quoteIdentifier(name: string, dialect: DatabaseDialect) {
+  if (dialect === 'mysql' || dialect === 'clickhouse')
+    return `\`${name}\``
+  if (dialect === 'mssql')
+    return `[${name}]`
+  return `"${name}"`
+}
+
+export function findEnum(c: Column, table: string, enums: typeof enumType.infer[]) {
+  return enums.find(e =>
+    (e.metadata?.table === table && e.metadata?.column === c.id)
+    || (c.enum && e.name === c.enum)
+    || (c.type && e.name === c.type),
+  )
+}
+
+export function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
+  return v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
 }
