@@ -43,21 +43,45 @@ app.use(cors({
   credentials: true,
 }))
 
+app.use('*', async (c, next) => {
+  await next()
+
+  // TEMP: Remove cookies with domain api.conar.app
+  const setCookieHeaders = c.res.headers.getSetCookie()
+  const filteredCookies = setCookieHeaders.filter(cookie => !cookie.includes('api.conar.app'))
+  c.res.headers.delete('Set-Cookie')
+  for (const cookie of filteredCookies) {
+    c.res.headers.append('Set-Cookie', cookie)
+  }
+
+  if (c.res.status >= 400 && c.res.status !== 401) {
+    consola.error('Alerting response status', {
+      status: c.res.status,
+      path: c.req.path,
+      method: c.req.method,
+      url: c.req.url,
+    })
+  }
+})
+
 app.get('/', (c) => {
   return c.redirect(env.WEB_URL)
 })
 
-app.on(['GET', 'POST'], '/auth/*', c => auth.handler(c.req.raw))
+app.on(['GET', 'POST'], '/auth/*', (c) => {
+  const req = c.req.raw
 
-app.use('/rpc/*', async (c, next) => {
-  const desktopVersion = c.req.header('x-desktop-version')
-  if (!desktopVersion) {
-    return c.json({
-      message: 'You\'re using outdated version of the desktop app. Please update to the latest version from conar.app/download.',
-    }, 400)
+  const origin = req.headers.get('origin')
+
+  if (!origin) {
+    req.headers.set('origin', 'file://')
   }
 
-  const { matched, response } = await handler.handle(c.req.raw, {
+  return auth.handler(req)
+})
+
+app.use('/rpc/*', async (c, next) => {
+  const { matched, response } = await handler.handle(c.req.raw.clone(), {
     prefix: '/rpc',
     context: createContext(c),
   })

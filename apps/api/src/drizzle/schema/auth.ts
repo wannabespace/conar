@@ -2,7 +2,6 @@ import { relations } from 'drizzle-orm'
 import {
   boolean,
   index,
-  integer,
   pgTable,
   text,
   timestamp,
@@ -20,15 +19,15 @@ export const users = pgTable('users', {
   twoFactorEnabled: boolean('two_factor_enabled').default(false),
   normalizedEmail: text('normalized_email').unique(),
   isAnonymous: boolean('is_anonymous').default(false),
-  stripeCustomerId: text('stripe_customer_id'),
   secret: text('secret').notNull(),
+  stripeCustomerId: text('stripe_customer_id'),
 })
 
 export const sessions = pgTable(
   'sessions',
   {
     ...baseTable,
-    expiresAt: timestamp('expires_at').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     token: text('token').notNull().unique(),
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
@@ -52,8 +51,8 @@ export const accounts = pgTable(
     accessToken: text('access_token'),
     refreshToken: text('refresh_token'),
     idToken: text('id_token'),
-    accessTokenExpiresAt: timestamp('access_token_expires_at'),
-    refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true }),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { withTimezone: true }),
     scope: text('scope'),
     password: text('password'),
   },
@@ -66,7 +65,7 @@ export const verifications = pgTable(
     ...baseTable,
     identifier: text('identifier').notNull(),
     value: text('value').notNull(),
-    expiresAt: timestamp('expires_at').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   },
   table => [index('verifications_identifier_idx').on(table.identifier)],
 )
@@ -127,7 +126,7 @@ export const invitations = pgTable(
     email: text('email').notNull(),
     role: text('role'),
     status: text('status').default('pending').notNull(),
-    expiresAt: timestamp('expires_at').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     inviterId: uuid('inviter_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
@@ -137,21 +136,6 @@ export const invitations = pgTable(
     index('invitations_email_idx').on(table.email),
   ],
 )
-
-export const subscriptions = pgTable('subscriptions', {
-  ...baseTable,
-  plan: text('plan').notNull(),
-  referenceId: text('reference_id').notNull(),
-  stripeCustomerId: text('stripe_customer_id'),
-  stripeSubscriptionId: text('stripe_subscription_id'),
-  status: text('status').default('incomplete'),
-  periodStart: timestamp('period_start'),
-  periodEnd: timestamp('period_end'),
-  trialStart: timestamp('trial_start'),
-  trialEnd: timestamp('trial_end'),
-  cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false),
-  seats: integer('seats'),
-})
 
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),

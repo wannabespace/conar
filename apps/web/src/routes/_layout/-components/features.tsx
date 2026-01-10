@@ -283,8 +283,7 @@ function UserMessage({ children, ...props }: MessageProps) {
   return (
     <div className="flex gap-3" {...props}>
       <div className={`
-        flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full
-        bg-muted
+        flex size-7 shrink-0 items-center justify-center rounded-full bg-muted
       `}
       >
         <RiUserLine className="size-4 text-muted-foreground" aria-hidden="true" />
@@ -388,7 +387,7 @@ function CloudSync() {
         `}
         >
           <div className={`
-            flex size-10 flex-shrink-0 items-center justify-center rounded-md
+            flex size-10 shrink-0 items-center justify-center rounded-md
             bg-linear-to-br from-primary/20 to-primary/10
             sm:size-12
           `}
@@ -429,7 +428,7 @@ function CloudSync() {
         `}
         >
           <div className={`
-            flex size-10 flex-shrink-0 items-center justify-center rounded-md
+            flex size-10 shrink-0 items-center justify-center rounded-md
             bg-linear-to-br from-primary/20 to-primary/10
             sm:size-12
           `}
@@ -493,7 +492,7 @@ function DataActionCard({ icon, title, description, color }: DataActionCardProps
   return (
     <div className={cn(
       `
-        cursor-pointer rounded-lg border bg-gradient-to-br p-3 transition-all
+        cursor-pointer rounded-lg border bg-linear-to-br p-3 transition-all
         duration-300
         hover:shadow-md
         sm:p-4
@@ -508,7 +507,7 @@ function DataActionCard({ icon, title, description, color }: DataActionCardProps
       >
         <div className={cn(
           `
-            flex size-6 flex-shrink-0 items-center justify-center rounded-md
+            flex size-6 shrink-0 items-center justify-center rounded-md
             sm:size-7
           `,
           bgColorClasses[color],
@@ -609,10 +608,9 @@ export function Features() {
           Features
         </h2>
         <p className={`
-          mx-auto max-w-3xl text-center text-3xl leading-tight font-bold
+          mx-auto max-w-3xl text-center text-2xl leading-tight font-bold
           text-balance
-          sm:text-4xl
-          md:text-5xl
+          sm:text-3xl
         `}
         >
           All the basic features you expect, plus powerful capabilities that set us apart

@@ -13,7 +13,7 @@ import { v7 } from 'uuid'
 import { convertToAppUIMessage, tools } from '~/ai-tools'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
-import { authMiddleware, orpc } from '~/orpc'
+import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 import { streamContext } from './resume-stream'
 
 const chatInputType = type({
@@ -158,7 +158,7 @@ async function ensureChat({
 }
 
 export const ask = orpc
-  .use(authMiddleware)
+  .use(requireSubscriptionMiddleware)
   .use(async ({ context, next }) => {
     context.setHeader('Transfer-Encoding', 'chunked')
     context.setHeader('Connection', 'keep-alive')

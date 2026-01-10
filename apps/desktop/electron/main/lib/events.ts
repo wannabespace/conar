@@ -1,5 +1,5 @@
 import type { DatabaseType } from '@conar/shared/enums/database-type'
-import { decrypt, encrypt } from '@conar/shared/encryption'
+import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { tryParseJson } from '@conar/shared/utils/helpers'
 import { app, ipcMain } from 'electron'
 import { autoUpdater, sendToast } from '..'

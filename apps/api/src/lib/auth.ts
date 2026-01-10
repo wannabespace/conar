@@ -1,70 +1,14 @@
-import type { Auth, BetterAuthPlugin, User } from 'better-auth'
-import { stripe } from '@better-auth/stripe'
+import type { Auth, BetterAuthOptions } from 'better-auth'
 import { PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { consola } from 'consola'
 import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
-import { sendEmail } from '~/lib/email'
-import { loops } from '~/lib/loops'
-import { stripe as stripeClient } from './stripe'
-
-async function loopsUpdateUser(user: User) {
-  try {
-    if (loops) {
-      const [firstName, ...lastName] = user.name.split(' ')
-
-      await loops.updateContact({
-        email: user.email,
-        userId: user.id,
-        properties: {
-          name: user.name,
-          firstName: firstName!,
-          lastName: lastName.join(' '),
-        },
-      })
-    }
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      consola.error('Failed to update loops contact', error.message)
-    }
-    throw error
-  }
-}
-
-/**
- * Plugin to prevent setting the "set-cookie" header in responses.
- * We use it to prevent the cookie from being set in the desktop app because it uses bearer token instead of cookies.
- */
-function noSetCookiePlugin() {
-  return {
-    id: 'no-set-cookie',
-    hooks: {
-      after: [
-        {
-          matcher: ctx => !!ctx.request?.headers.get('x-desktop'),
-          handler: createAuthMiddleware(async (ctx) => {
-            const headers = ctx.context.responseHeaders
-
-            if (headers) {
-              const setCookies = headers.get('set-cookie')
-
-              if (!setCookies)
-                return
-
-              headers.delete('set-cookie')
-            }
-          }),
-        },
-      ],
-    },
-  } satisfies BetterAuthPlugin
-}
+import { resend, sendEmail } from '~/lib/resend'
 
 export const auth: Auth = betterAuth({
   appName: 'Conar',
@@ -98,28 +42,7 @@ export const auth: Auth = betterAuth({
     }),
     lastLoginMethod(),
     emailHarmony(),
-    noSetCookiePlugin(),
     anonymous(),
-    ...(stripeClient
-      ? [stripe({
-          stripeClient,
-          subscription: {
-            enabled: true,
-            plans: [
-              {
-                name: 'Pro',
-                priceId: env.STRIPE_MONTH_PRICE_ID!,
-                annualDiscountPriceId: env.STRIPE_ANNUAL_PRICE_ID!,
-                freeTrial: {
-                  days: 7,
-                },
-              },
-            ],
-          },
-          stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET!,
-          createCustomerOnSignUp: true,
-        })]
-      : []),
   ],
   user: {
     additionalFields: {
@@ -128,35 +51,96 @@ export const auth: Auth = betterAuth({
         returned: false,
         input: false,
         defaultValue: () => nanoid(),
+        required: true,
+      },
+      stripe_customer_id: {
+        type: 'string',
+        returned: false,
+        input: false,
+        required: false,
       },
     },
-  },
-  account: {
-    skipStateCookieCheck: true,
   },
   databaseHooks: {
     user: {
       create: {
-        after: loopsUpdateUser,
+        after: async (user) => {
+          if (nodeEnv !== 'production' || !resend) {
+            return
+          }
+
+          const [firstName, ...lastName] = user.name.split(' ')
+
+          await resend.contacts.create({
+            email: user.email,
+            firstName: firstName!,
+            lastName: lastName.join(' '),
+            properties: {
+              id: user.id,
+            },
+          })
+        },
       },
       update: {
-        after: loopsUpdateUser,
+        after: async (user) => {
+          if (nodeEnv !== 'production' || !resend) {
+            return
+          }
+
+          const [firstName, ...lastName] = user.name.split(' ')
+
+          await resend.contacts.update({
+            email: user.email,
+            firstName: firstName!,
+            lastName: lastName.join(' '),
+            properties: {
+              id: user.id,
+            },
+          })
+        },
       },
+    },
+  },
+  onAPIError: {
+    onError: async (error) => {
+      if (!env.ALERTS_EMAIL) {
+        consola.error('ALERTS_EMAIL is not set')
+        return
+      }
+
+      await sendEmail({
+        to: env.ALERTS_EMAIL,
+        subject: 'Alert from Better Auth',
+        template: 'Alert',
+        props: {
+          text: typeof error === 'object' && error !== null ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2) : String(error),
+          service: 'Better Auth',
+        },
+      })
     },
   },
   trustedOrigins: [
     env.WEB_URL,
+    'file://',
     ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
     ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
   ],
   advanced: {
     cookiePrefix: 'conar',
+    crossSubDomainCookies: {
+      enabled: nodeEnv === 'production',
+      domain: new URL(env.WEB_URL).host,
+    },
     database: {
       generateId: 'uuid',
     },
   },
   experimental: {
     joins: true,
+  },
+  // TODO: Remove this in future, it needed only for desktop auth in old versions
+  account: {
+    skipStateCookieCheck: true,
   },
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -200,4 +184,4 @@ export const auth: Auth = betterAuth({
       clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
-})
+} satisfies BetterAuthOptions)

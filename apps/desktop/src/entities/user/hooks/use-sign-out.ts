@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { chatsCollection, chatsMessagesCollection } from '~/entities/chat'
-import { databasesCollection } from '~/entities/database'
+import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
+import { databasesCollection } from '~/entities/database/sync'
 import { queriesCollection } from '~/entities/query/sync'
 import { authClient, fullSignOut } from '~/lib/auth'
 import { queryClient } from '~/main'
@@ -10,6 +10,7 @@ export function useSignOut() {
   const { refetch, data } = authClient.useSession()
 
   const { mutate: signOut, isPending: isSigningOut } = useMutation({
+    mutationKey: ['sign-out'],
     mutationFn: async () => {
       await fullSignOut()
       refetch()

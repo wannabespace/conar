@@ -1,135 +1,46 @@
+import type { LinkProps } from '@tanstack/react-router'
+import type { PricingPlan } from '~/utils/pricing'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
-import { RiArrowRightLine, RiCheckLine, RiCircleLine, RiMoneyDollarCircleLine, RiStarLine } from '@remixicon/react'
-import { useRouter } from '@tanstack/react-router'
+import { RiArrowRightLine, RiCheckLine } from '@remixicon/react'
+import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
-
-interface Feature {
-  name: string
-  description: string
-  included: boolean
-}
-
-interface PricingTier {
-  name: string
-  price: {
-    monthly: number
-    yearly: number
-  }
-  description: string
-  features: Feature[]
-  highlight?: boolean
-  badge?: string
-  icon: React.ReactNode
-  onClick?: () => void
-}
+import { authClient } from '~/lib/auth'
+import { HOBBY_PLAN, PRO_PLAN } from '~/utils/pricing'
 
 interface PricingSectionProps {
   className?: string
 }
 
 export function Pricing({ className }: PricingSectionProps) {
-  const router = useRouter()
+  const { data: session } = authClient.useSession()
   const [isYearly, setIsYearly] = useState(false)
 
-  const tiers: PricingTier[] = [
-    {
-      name: 'Free',
-      price: {
-        monthly: 0,
-        yearly: 0,
-      },
-      description: 'Perfect for individuals and small projects',
-      icon: (
-        <div className="relative">
-          <div className={`
-            absolute inset-0 rounded-full bg-gradient-to-r from-gray-500/30
-            to-gray-500/30 blur-2xl
-          `}
-          />
-          <RiCircleLine className={`
-            relative z-10 h-7 w-7 animate-[float_3s_ease-in-out_infinite]
-            text-gray-500
-            dark:text-gray-400
-          `}
-          />
-        </div>
-      ),
-      onClick: () => {
-        router.navigate({ to: '/download' })
-      },
-      features: [
-        {
-          name: 'AI-Powered Data Filtering',
-          description: 'Ask AI to create filters for you instead of entering them manually',
-          included: true,
-        },
-        {
-          name: 'Natural Language Queries',
-          description: 'Ask questions in natural language and get instant SQL queries',
-          included: true,
-        },
-        {
-          name: 'Basic Data Management',
-          description: 'View and browse data with basic filtering capabilities',
-          included: true,
-        },
-        {
-          name: 'Cloud Synchronization',
-          description: 'Sync your connections with the cloud for backup',
-          included: true,
-        },
-      ],
-    },
-    {
-      name: 'Pro',
-      price: {
-        monthly: 0,
-        yearly: 0,
-      },
-      description: 'All features free during beta',
-      // description: 'For developers who want more',
-      highlight: true,
-      badge: 'Most Popular',
-      icon: (
-        <div className="relative">
-          <RiMoneyDollarCircleLine className="relative z-10 size-7" />
-        </div>
-      ),
-      features: [
-        {
-          name: 'Everything in Free',
-          description: 'All features from the free plan included',
-          included: true,
-        },
-        // {
-        //   name: 'Priority Support',
-        //   description: '24/7 priority email and chat support',
-        //   included: true,
-        // },
-      ],
-    },
+  const plans: (PricingPlan & { link: LinkProps })[] = [
+    { ...HOBBY_PLAN, link: { to: '/download' } },
+    { ...PRO_PLAN, link: {
+      to: session ? '/account' : '/sign-in',
+      search: { period: isYearly ? 'yearly' : 'monthly' },
+    } },
   ]
 
   return (
     <section
       aria-labelledby="pricing-heading"
       className={cn(
-        'relative bg-background text-foreground',
         `
-          py-8
+          relative overflow-hidden bg-background py-8 text-foreground
           sm:py-12
           lg:py-16
         `,
-        'overflow-hidden',
         className,
       )}
     >
       <div className={`
-        mb-12 px-4 text-center
-        sm:mb-16
+        mb-6 px-4 text-center
+        sm:mb-10
       `}
       >
         <h2
@@ -142,18 +53,17 @@ export function Pricing({ className }: PricingSectionProps) {
           Pricing
         </h2>
         <p className={`
-          mx-auto max-w-3xl text-center text-3xl leading-tight font-bold
+          mx-auto max-w-3xl text-center text-2xl leading-tight font-bold
           text-balance
-          sm:text-4xl
-          md:text-5xl
+          sm:text-3xl
         `}
         >
           Choose the plan that fits your needs
         </p>
       </div>
       <div className={`
-        mb-6 flex flex-col items-center gap-6
-        sm:mb-10
+        mb-3 flex flex-col items-center gap-6
+        sm:mb-6
       `}
       >
         <div className={`
@@ -168,7 +78,7 @@ export function Pricing({ className }: PricingSectionProps) {
               className={cn(
                 `
                   rounded-full px-6 py-2.5 text-sm font-medium transition-all
-                  duration-300
+                  duration-100
                   sm:px-8
                 `,
                 (period === 'Yearly') === isYearly
@@ -183,21 +93,6 @@ export function Pricing({ className }: PricingSectionProps) {
             </button>
           ))}
         </div>
-        <div className="flex h-6 items-center">
-          {isYearly && tiers[1]!.price.yearly > 0 && tiers[1]!.price.monthly > 0 && (
-            <div className={`
-              flex items-center gap-2 text-sm font-medium text-green-600
-              dark:text-green-400
-            `}
-            >
-              <RiStarLine className="size-4" />
-              Save
-              {' '}
-              {Math.round((1 - (tiers[1]!.price.yearly / (tiers[1]!.price.monthly * 12))) * 100)}
-              % with yearly billing
-            </div>
-          )}
-        </div>
       </div>
       <div className={`
         mx-auto grid max-w-5xl grid-cols-1 gap-4 px-4
@@ -205,28 +100,11 @@ export function Pricing({ className }: PricingSectionProps) {
         lg:grid-cols-2
       `}
       >
-        {tiers.map(tier => (
+        {plans.map(plan => (
           <Card
-            key={tier.name}
-            className={cn(
-              `
-                relative flex flex-col transition-all duration-300
-                hover:shadow-lg
-              `,
-              tier.highlight && 'shadow-lg ring-2 ring-primary/20',
-            )}
+            key={plan.name}
+            className="relative flex flex-col p-0"
           >
-            {tier.badge && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <div className={`
-                  rounded-full bg-primary px-3 py-1 text-xs font-medium
-                  text-primary-foreground shadow-lg
-                `}
-                >
-                  {tier.badge}
-                </div>
-              </div>
-            )}
             <div className={`
               flex-1 p-6
               sm:p-8
@@ -239,62 +117,63 @@ export function Pricing({ className }: PricingSectionProps) {
               >
                 <div
                   className={cn(
-                    'rounded-xl p-3',
-                    tier.highlight
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted text-muted-foreground',
+                    'rounded-xl bg-muted p-3 text-muted-foreground',
                   )}
                 >
-                  {tier.icon}
+                  <plan.icon
+                    className="size-7 text-muted-foreground"
+                  />
                 </div>
-                <h3 className={`
-                  text-xl font-semibold text-foreground
-                  sm:text-2xl
-                `}
-                >
-                  {tier.name}
+                <h3 className="text-lg font-semibold text-foreground">
+                  {plan.name}
                 </h3>
               </div>
-
               <div className={`
                 mb-6
                 sm:mb-8
               `}
               >
                 <div className="flex items-baseline gap-2">
-                  <NumberFlowGroup>
-                    <NumberFlow
-                      value={isYearly ? tier.price.yearly : tier.price.monthly}
-                      className={`
-                        text-4xl font-bold text-foreground
-                        sm:text-5xl
-                        [&::part(right)]:text-sm [&::part(right)]:font-normal
-                        [&::part(right)]:text-muted-foreground
-                      `}
-                      format={{
-                        style: 'currency',
-                        currency: 'USD',
-                        currencyDisplay: 'narrowSymbol',
-                      }}
-                      suffix={tier.price.monthly === 0 ? '/forever' : isYearly ? '/year' : '/month'}
-                    />
-                  </NumberFlowGroup>
+                  {plan.price.monthly > 0
+                    ? (
+                        <NumberFlowGroup>
+                          <NumberFlow
+                            value={isYearly ? plan.price.yearly : plan.price.monthly}
+                            className={`
+                              text-4xl font-bold text-foreground
+                              [&::part(right)]:text-sm
+                              [&::part(right)]:font-normal
+                              [&::part(right)]:text-muted-foreground
+                            `}
+                            format={{
+                              style: 'currency',
+                              currency: 'USD',
+                              currencyDisplay: 'narrowSymbol',
+                            }}
+                            suffix={isYearly ? '/year' : '/month'}
+                          />
+                        </NumberFlowGroup>
+                      )
+                    : (
+                        <span className="text-4xl font-bold text-foreground">
+                          Free
+                        </span>
+                      )}
                 </div>
                 <p className={`
                   mt-2 text-sm text-muted-foreground
                   sm:text-base
                 `}
                 >
-                  {tier.description}
+                  {plan.description}
                 </p>
               </div>
-
               <div className={`
                 space-y-4
                 sm:space-y-5
               `}
               >
-                {tier.features.map(feature => (
+                {plan.features.map(feature => (
                   <div
                     key={feature.name}
                     className={`
@@ -303,20 +182,9 @@ export function Pricing({ className }: PricingSectionProps) {
                     `}
                   >
                     <div
-                      className={cn(
-                        `
-                          mt-1 flex-shrink-0 rounded-full p-0.5
-                          transition-colors duration-200
-                        `,
-                        feature.included
-                          ? `
-                            text-green-600
-                            dark:text-green-400
-                          `
-                          : 'text-muted-foreground/50',
-                      )}
+                      className="mt-1 shrink-0 rounded-full p-0.5"
                     >
-                      <RiCheckLine className="h-4 w-4" />
+                      <RiCheckLine className="size-4" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className={`
@@ -337,47 +205,27 @@ export function Pricing({ className }: PricingSectionProps) {
                 ))}
               </div>
             </div>
-
             <div className={`
-              mt-auto mb-5 p-6 pt-0
+              mt-auto p-6 pt-0
               sm:p-8
             `}
             >
               <Button
                 className="relative w-full"
-                variant={tier.highlight ? 'default' : 'outline'}
+                variant="outline"
                 size="lg"
-                disabled={tier.highlight}
-                onClick={tier.onClick}
+                asChild
               >
-                <span className={`
-                  relative z-10 flex items-center justify-center gap-2
-                `}
-                >
-                  {tier.highlight
-                    ? (
-                        <>
-                          Get Pro Plan
-                          <RiArrowRightLine className="h-4 w-4" />
-                        </>
-                      )
-                    : (
-                        <>
-                          Get Started Free
-                          <RiArrowRightLine className="h-4 w-4" />
-                        </>
-                      )}
-                </span>
+                <Link {...plan.link}>
+                  <span className={`
+                    relative z-10 flex items-center justify-center gap-2
+                  `}
+                  >
+                    {plan.price.monthly > 0 ? `Get ${plan.name}` : 'Download'}
+                    <RiArrowRightLine className="size-4" />
+                  </span>
+                </Link>
               </Button>
-              {tier.price.monthly === 0 && (
-                <p className={`
-                  absolute right-0 bottom-5 left-0 mt-3 text-center text-xs
-                  text-muted-foreground
-                `}
-                >
-                  No credit card required
-                </p>
-              )}
             </div>
           </Card>
         ))}

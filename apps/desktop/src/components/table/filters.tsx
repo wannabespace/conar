@@ -40,7 +40,7 @@ function FilterColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLInputElem
             >
               <RiDatabase2Line className="size-4 opacity-50" />
               <span>{column.id}</span>
-              <span className="ml-auto text-xs text-muted-foreground text-right">{column.type}</span>
+              <span className="ml-auto text-right text-xs text-muted-foreground">{column.type}</span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -85,7 +85,12 @@ function FilterSelector({
                 >
                   <RiFilterLine className="size-4 opacity-50" />
                   <span>{filter.label}</span>
-                  <span className="ml-auto text-xs text-muted-foreground text-right">{filter.operator}</span>
+                  <span className={`
+                    ml-auto text-right text-xs text-muted-foreground
+                  `}
+                  >
+                    {filter.operator}
+                  </span>
                 </CommandItem>
               )
             })}
@@ -132,7 +137,7 @@ function FilterValueSelector({
             }
           }}
         />
-        <div className="px-4 py-4 flex flex-col gap-4 text-sm">
+        <div className="flex flex-col gap-4 px-4 py-4 text-sm">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">Filtering</span>
@@ -141,45 +146,63 @@ function FilterValueSelector({
             <Separator />
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">Operator</span>
-              <span className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-medium">{operator}</span>
+              <span className={`
+                rounded-md bg-muted px-2 py-0.5 text-xs font-medium
+                text-muted-foreground
+              `}
+              >
+                {operator}
+              </span>
             </div>
           </div>
           {operator.toLowerCase().includes('like') && (
-            <div className="px-3 py-2 bg-primary/5 border border-primary/20 rounded-md text-xs text-foreground">
-              <span className="text-primary font-semibold">Tip:</span>
+            <div className={`
+              rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs
+              text-foreground
+            `}
+            >
+              <span className="font-semibold text-primary">Tip:</span>
               {' '}
               <span>
                 Use
-                <kbd className="px-1.5 py-0.5 bg-muted border rounded text-xs">%</kbd>
+                <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">%</kbd>
                 {' '}
                 as wildcard
               </span>
             </div>
           )}
           {operator.toLowerCase().includes('in') && (
-            <div className="px-3 py-2 bg-primary/5 border border-primary/20 rounded-md text-xs text-foreground">
-              <span className="text-primary font-semibold">Tip:</span>
+            <div className={`
+              rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs
+              text-foreground
+            `}
+            >
+              <span className="font-semibold text-primary">Tip:</span>
               {' '}
               <span>
                 Separate multiple values with commas
                 {' '}
-                <kbd className="px-1.5 py-0.5 bg-muted border rounded text-xs">,</kbd>
+                <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">,</kbd>
               </span>
             </div>
           )}
           {operator.toLowerCase().includes('between') && (
-            <div className="px-3 py-2 bg-primary/5 border border-primary/20 rounded-md text-xs text-foreground">
-              <span className="text-primary font-semibold">Tip:</span>
+            <div className={`
+              rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs
+              text-foreground
+            `}
+            >
+              <span className="font-semibold text-primary">Tip:</span>
               {' '}
               <span>
                 Separate range values with
                 {' '}
-                <kbd className="px-1.5 py-0.5 bg-muted border rounded text-xs">AND</kbd>
+                <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">AND</kbd>
               </span>
             </div>
           )}
         </div>
-        <div className="p-2 border-t flex justify-end">
+        <div className="flex justify-end border-t p-2">
           <Button
             onClick={onApply}
             size="xs"
@@ -205,9 +228,19 @@ export function FilterItem({
   const [values, setValues] = useState(filter.values)
 
   return (
-    <div className="flex items-center border rounded-sm overflow-hidden h-6 bg-card">
+    <div className={`
+      flex h-6 items-center overflow-hidden rounded-sm border bg-card
+    `}
+    >
       <Popover>
-        <PopoverTrigger data-mask className="text-xs flex items-center gap-1 px-2 h-full hover:bg-accent/50 transition-colors font-medium">
+        <PopoverTrigger
+          data-mask
+          className={`
+            flex h-full items-center gap-1 px-2 text-xs font-medium
+            transition-colors
+            hover:bg-accent/50
+          `}
+        >
           <RiDatabase2Line className="size-3 text-primary/70" />
           {filter.column}
         </PopoverTrigger>
@@ -219,7 +252,11 @@ export function FilterItem({
       </Popover>
       <Separator orientation="vertical" />
       <Popover>
-        <PopoverTrigger className="text-xs px-2 h-full hover:bg-accent/50 transition-colors text-muted-foreground">
+        <PopoverTrigger className={`
+          h-full px-2 text-xs text-muted-foreground transition-colors
+          hover:bg-accent/50
+        `}
+        >
           {filter.ref.operator}
         </PopoverTrigger>
         <PopoverContent className="p-0 shadow-md">
@@ -232,13 +269,21 @@ export function FilterItem({
       {filter.ref.hasValue !== false && (
         <>
           <Popover>
-            <PopoverTrigger className="text-xs px-2 h-full hover:bg-accent/50 transition-colors">
-              <div data-mask className="font-mono truncate max-w-60">
+            <PopoverTrigger className={`
+              h-full px-2 text-xs transition-colors
+              hover:bg-accent/50
+            `}
+            >
+              <div data-mask className="max-w-60 truncate font-mono">
                 {filter.values?.join(', ')}
-                {(filter.values?.length === 0 || filter.values?.every(value => value === '')) && <span className="opacity-30">Empty</span>}
+                {(filter.values?.length === 0 || filter.values?.every(value => value === '')) && (
+                  <span className="opacity-30">
+                    Empty
+                  </span>
+                )}
               </div>
             </PopoverTrigger>
-            <PopoverContent className="p-0 shadow-md max-h-[calc(100vh-10rem)]">
+            <PopoverContent className="max-h-[calc(100vh-10rem)] p-0 shadow-md">
               <FilterValueSelector
                 column={filter.column}
                 operator={filter.ref.operator}
@@ -254,7 +299,10 @@ export function FilterItem({
       )}
       <button
         type="button"
-        className="flex items-center justify-center hover:bg-destructive/10 hover:text-destructive transition-colors h-full w-6"
+        className={`
+          flex h-full w-6 items-center justify-center transition-colors
+          hover:bg-destructive/10 hover:text-destructive
+        `}
         onClick={onRemove}
         aria-label="Remove filter"
       >
@@ -288,11 +336,14 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
 
   const column = columns.find(column => column.id === selectedColumn)
 
-  useEffect(() => {
-    if (column && selectedFilter) {
-      onAdd({ column: column.id, ref: selectedFilter, values })
+  const handleFilterSelect = (filter: Filter) => {
+    if (filter.hasValue === false) {
+      onAdd({ column: column!.id, ref: filter, values: [''] })
     }
-  }, [column, selectedFilter, values, onAdd])
+    else {
+      setSelectedFilter(filter)
+    }
+  }
 
   return (
     <div>
@@ -302,7 +353,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
       {column && !selectedFilter && (
         <FilterSelector
           ref={operatorRef}
-          onSelect={setSelectedFilter}
+          onSelect={handleFilterSelect}
           onBackspace={() => {
             if (values.length === 0) {
               setSelectedColumn(null)

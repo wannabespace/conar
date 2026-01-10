@@ -5,9 +5,7 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { Footer } from '~/components/footer'
 import { Navbar } from '~/components/navbar'
-import { NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED } from './layout-constants'
-
-export { NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED } from './layout-constants'
+import { NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED } from '~/constants'
 
 export const Route = createFileRoute('/_layout')({
   component: MainLayout,
@@ -20,16 +18,13 @@ function MainLayout() {
   const blurTranslateY = useTransform(() => `${Math.min((NAVBAR_HEIGHT_BASE - scrollY.get()) * -1, 0)}px`)
 
   return (
-    <motion.div style={{ '--navbar-height': navbarHeightPx }}>
-      <div className={`
+    <motion.div className="container mx-auto px-4" style={{ '--navbar-height': navbarHeightPx }}>
+      <div className={cn(`
         sticky top-0 z-50 h-(--navbar-height) w-full bg-gray-100
         dark:bg-neutral-950
-      `}
+      `)}
       >
-        <div className={`
-          relative container mx-auto flex h-full w-full items-center
-        `}
-        >
+        <div className="relative flex h-full w-full items-center">
           <Navbar className="w-full" />
           <div className={`
             pointer-events-none absolute top-full right-0 left-0 h-10 w-full
@@ -44,7 +39,7 @@ function MainLayout() {
           </div>
         </div>
       </div>
-      <div className="container mx-auto rounded-3xl bg-background">
+      <div className="rounded-3xl bg-background">
         <motion.div
           className={cn(
             'sticky inset-x-0 top-(--navbar-height) z-30 w-full',
@@ -83,7 +78,6 @@ function MainLayout() {
         initial={{ opacity: 0, y: -100 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
-        className="container mx-auto"
       >
         <TextHoverEffect className="tracking-tighter" text="Conar" />
       </motion.div>

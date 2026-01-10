@@ -1,5 +1,5 @@
-import { encrypt } from '@conar/shared/encryption'
 import { SyncType } from '@conar/shared/enums/sync-type'
+import { encrypt } from '@conar/shared/utils/encryption'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { databases, databasesInsertSchema, db } from '~/drizzle'
 import { authMiddleware, orpc } from '~/orpc'
