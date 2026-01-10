@@ -1,5 +1,5 @@
 import { createIsomorphicFn } from '@tanstack/react-start'
-import { getRequestHeaders } from '@tanstack/react-start/server'
+import { getRequest } from '@tanstack/react-start/server'
 import { lastLoginMethodClient, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 
@@ -15,7 +15,15 @@ export const authClient = createAuthClient({
 })
 
 export const getSessionIsomorphic = createIsomorphicFn()
-  .server(() => authClient.getSession({ fetchOptions: {
-    headers: getRequestHeaders(),
-  } }))
+  .server(() => {
+    const request = getRequest()
+
+    return authClient.getSession({
+      fetchOptions: {
+        headers: {
+          cookie: request.headers.get('cookie') ?? '',
+        },
+      },
+    })
+  })
   .client(() => authClient.getSession())

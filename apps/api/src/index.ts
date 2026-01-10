@@ -43,6 +43,27 @@ app.use(cors({
   credentials: true,
 }))
 
+app.use('*', async (c, next) => {
+  await next()
+
+  // TEMP: Remove cookies with domain api.conar.app
+  const setCookieHeaders = c.res.headers.getSetCookie()
+  const filteredCookies = setCookieHeaders.filter(cookie => !cookie.includes('api.conar.app'))
+  c.res.headers.delete('Set-Cookie')
+  for (const cookie of filteredCookies) {
+    c.res.headers.append('Set-Cookie', cookie)
+  }
+
+  if (c.res.status >= 400 && c.res.status !== 401) {
+    consola.error('Alerting response status', {
+      status: c.res.status,
+      path: c.req.path,
+      method: c.req.method,
+      url: c.req.url,
+    })
+  }
+})
+
 app.get('/', (c) => {
   return c.redirect(env.WEB_URL)
 })

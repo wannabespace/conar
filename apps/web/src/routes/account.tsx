@@ -23,7 +23,7 @@ export const Route = createFileRoute('/account')({
     const { data } = await getSessionIsomorphic()
 
     if (!data?.user) {
-      throw redirect({ to: '/' })
+      throw redirect({ to: '/sign-in' })
     }
 
     return data

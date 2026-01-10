@@ -1,4 +1,4 @@
-import type { Auth, BetterAuthOptions, User } from 'better-auth'
+import type { Auth, BetterAuthOptions } from 'better-auth'
 import { PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
@@ -8,32 +8,7 @@ import { consola } from 'consola'
 import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
-import { sendEmail } from '~/lib/email'
-import { loops } from '~/lib/loops'
-
-async function loopsUpdateUser(user: User) {
-  try {
-    if (loops) {
-      const [firstName, ...lastName] = user.name.split(' ')
-
-      await loops.updateContact({
-        email: user.email,
-        userId: user.id,
-        properties: {
-          name: user.name,
-          firstName: firstName!,
-          lastName: lastName.join(' '),
-        },
-      })
-    }
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      consola.error('Failed to update loops contact', error.message)
-    }
-    throw error
-  }
-}
+import { resend, sendEmail } from '~/lib/resend'
 
 export const auth: Auth = betterAuth({
   appName: 'Conar',
@@ -89,11 +64,59 @@ export const auth: Auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        after: loopsUpdateUser,
+        after: async (user) => {
+          if (nodeEnv !== 'production' || !resend) {
+            return
+          }
+
+          const [firstName, ...lastName] = user.name.split(' ')
+
+          await resend.contacts.create({
+            email: user.email,
+            firstName: firstName!,
+            lastName: lastName.join(' '),
+            properties: {
+              id: user.id,
+            },
+          })
+        },
       },
       update: {
-        after: loopsUpdateUser,
+        after: async (user) => {
+          if (nodeEnv !== 'production' || !resend) {
+            return
+          }
+
+          const [firstName, ...lastName] = user.name.split(' ')
+
+          await resend.contacts.update({
+            email: user.email,
+            firstName: firstName!,
+            lastName: lastName.join(' '),
+            properties: {
+              id: user.id,
+            },
+          })
+        },
       },
+    },
+  },
+  onAPIError: {
+    onError: async (error) => {
+      if (!env.ALERTS_EMAIL) {
+        consola.error('ALERTS_EMAIL is not set')
+        return
+      }
+
+      await sendEmail({
+        to: env.ALERTS_EMAIL,
+        subject: 'Alert from Better Auth',
+        template: 'Alert',
+        props: {
+          text: typeof error === 'object' && error !== null ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2) : String(error),
+          service: 'Better Auth',
+        },
+      })
     },
   },
   trustedOrigins: [
@@ -104,12 +127,20 @@ export const auth: Auth = betterAuth({
   ],
   advanced: {
     cookiePrefix: 'conar',
+    crossSubDomainCookies: {
+      enabled: nodeEnv === 'production',
+      domain: new URL(env.WEB_URL).host,
+    },
     database: {
       generateId: 'uuid',
     },
   },
   experimental: {
     joins: true,
+  },
+  // TODO: Remove this in future, it needed only for desktop auth in old versions
+  account: {
+    skipStateCookieCheck: true,
   },
   database: drizzleAdapter(db, {
     provider: 'pg',

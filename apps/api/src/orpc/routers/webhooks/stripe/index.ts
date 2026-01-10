@@ -1,6 +1,8 @@
 import type Stripe from 'stripe'
 import { ORPCError } from '@orpc/server'
 import { consola } from 'consola'
+import { env } from '~/env'
+import { sendEmail } from '~/lib/resend'
 import { orpc } from '~/orpc'
 import { subscriptionCreated } from './subscription-created'
 import { subscriptionDeleted } from './subscription-deleted'
@@ -14,7 +16,6 @@ const eventMap = new Map<Stripe.Event.Type, (event: Stripe.Event) => Promise<voi
 ])
 
 export const stripe = orpc
-  .route({ method: 'POST', path: '/webhooks/stripe' })
   .handler(async ({ context }) => {
     try {
       const event = await validateRequest(context.request)
@@ -25,7 +26,21 @@ export const stripe = orpc
         throw new ORPCError('BAD_REQUEST', { message: 'Stripe event not found' })
       }
 
-      await handler(event)
+      await handler(event).catch(async (error) => {
+        if (env.ALERTS_EMAIL) {
+          await sendEmail({
+            to: env.ALERTS_EMAIL,
+            subject: `Alert from Stripe: ${event.type}`,
+            template: 'Alert',
+            props: {
+              text: typeof error === 'object' && error !== null ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2) : String(error),
+              service: 'Stripe',
+            },
+          })
+        }
+
+        throw error
+      })
 
       consola.success(`Stripe event ${event.type} handled`, { event: { id: event.id } })
 
