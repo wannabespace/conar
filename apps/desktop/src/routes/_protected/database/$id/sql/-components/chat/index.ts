@@ -179,7 +179,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       }
       else if (toolCall.toolName === 'select') {
         const input = toolCall.input as InferToolInput<typeof tools.select>
-        const output = await rowsQuery.run(database, {
+        const output = await rowsQuery(database, {
           schema: input.tableAndSchema.schemaName,
           table: input.tableAndSchema.tableName,
           limit: input.limit,
