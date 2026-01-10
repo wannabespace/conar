@@ -47,7 +47,7 @@ Conar is an AI-powered open-source project that simplifies database interactions
 - Supabase
 - Railway
 - PostHog
-- Loops
+- Resend
 - ToDesktop
 
 ## Development Setup

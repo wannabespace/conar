@@ -144,7 +144,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     const setValues = { [columnId]: preparedValue }
 
     try {
-      await setQuery.run(database, {
+      await setQuery(database, {
         schema,
         table,
         values: setValues,
@@ -168,7 +168,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       : filter)
 
     try {
-      const [result] = await selectQuery.run(database, {
+      const [result] = await selectQuery(database, {
         schema,
         table,
         select: modifiedColumns,
