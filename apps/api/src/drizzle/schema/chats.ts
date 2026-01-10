@@ -16,7 +16,7 @@ export const chats = pgTable('chats', {
 }, t => [
   index().on(t.userId),
   index().on(t.databaseId),
-]).enableRLS()
+])
 
 export const chatsSelectSchema = createSelectSchema(chats)
 
@@ -29,7 +29,7 @@ export const chatsMessages = pgTable('chats_messages', {
 }, t => [
   index().on(t.chatId),
   index().on(t.role),
-]).enableRLS()
+])
 
 export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
 
