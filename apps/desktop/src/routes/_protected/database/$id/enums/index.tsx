@@ -1,6 +1,7 @@
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
+import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/hightlight'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiListIndefinite, RiListUnordered, RiStackLine, RiTable2 } from '@remixicon/react'
+import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiListIndefinite, RiListUnordered, RiRefreshLine, RiStackLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
@@ -27,7 +28,7 @@ export const Route = createFileRoute('/_protected/database/$id/enums/')({
 
 function DatabaseEnumsPage() {
   const { database } = Route.useLoaderData()
-  const { data: enums } = useDatabaseEnums({ database })
+  const { data: enums, refetch, isRefetching } = useDatabaseEnums({ database })
   const { data } = useDatabaseTablesAndSchemas({ database })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
@@ -99,6 +100,17 @@ function DatabaseEnumsPage() {
                 </SelectContent>
               </Select>
             )}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => refetch()}
+              disabled={isRefetching}
+            >
+              <RiRefreshLine className={cn('size-4', isRefetching && `
+                animate-spin
+              `)}
+              />
+            </Button>
           </div>
         </div>
         <div className="mt-2 grid grid-cols-1 gap-4">

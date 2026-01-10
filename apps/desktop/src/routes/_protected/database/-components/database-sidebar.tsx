@@ -13,7 +13,7 @@ import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSettings3Line, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSettings3Line, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
@@ -233,6 +233,8 @@ function MainLinks() {
     }
   }, [store, lastOpenedTable, tableParam, schemaParam])
 
+  const isActiveConstraintsAndIndexes = match === '/_protected/database/$id/definitions'
+
   const isActiveSql = match === '/_protected/database/$id/sql/'
   const isActiveTables = match === '/_protected/database/$id/table/'
   const isActiveEnums = match === '/_protected/database/$id/enums/'
@@ -311,6 +313,20 @@ function MainLinks() {
             Enums
             {database.type === DatabaseType.MySQL && ' & Sets'}
           </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              to="/database/$id/definitions"
+              params={{ id: database.id }}
+              className={baseClasses(isActiveConstraintsAndIndexes)}
+            >
+              <RiShieldCheckLine className="size-4" />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="right">Constraints & Indexes</TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <TooltipProvider>
