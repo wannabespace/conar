@@ -1,10 +1,11 @@
-import type { ComponentProps } from 'react'
+import type { ComponentProps, KeyboardEvent, MouseEvent } from 'react'
 import type { TableCellProps, TableHeaderCellProps } from '~/components/table'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
+import { useRef } from 'react'
 import { useTableContext } from '~/components/table'
-import { usePageStoreContext } from '../-store'
+import { useLastClickedIndexRef, usePageStoreContext, useSelectionStateRef } from '../-store'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -79,26 +80,75 @@ export function SelectionCell({ rowIndex, columnIndex, className, size, keys }: 
 }) {
   const store = usePageStoreContext()
   const rows = useTableContext(state => state.rows)
+  const lastClickedIndexRef = useLastClickedIndexRef()
+  const selectionStateRef = useSelectionStateRef()
+  const shiftKeyRef = useRef(false)
   const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])))
+
+  const handleMouseDown = (event: MouseEvent<HTMLInputElement>) => {
+    shiftKeyRef.current = event.shiftKey
+  }
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === ' ' || event.key === 'Enter') {
+      shiftKeyRef.current = event.shiftKey
+    }
+  }
+
+  const handleChange = () => {
+    const lastIndex = lastClickedIndexRef.current
+    const isShiftHeld = shiftKeyRef.current
+
+    if (isShiftHeld && lastIndex !== null && lastIndex !== rowIndex) {
+      const start = Math.min(lastIndex, rowIndex)
+      const end = Math.max(lastIndex, rowIndex)
+
+      const rangeRows = rows.slice(start, end + 1)
+      const rangeKeys = rangeRows.map(row =>
+        keys.reduce<Record<string, string>>((acc, key) => ({ ...acc, [key]: row[key] as string }), {}),
+      )
+
+      store.setState(state => ({
+        ...state,
+        selected: rangeKeys,
+      } satisfies typeof state))
+
+      selectionStateRef.current = {
+        anchorIndex: lastIndex,
+        focusIndex: rowIndex,
+        lastExpandDirection: rowIndex > lastIndex ? 'down' : 'up',
+      }
+    }
+    else {
+      if (isSelected) {
+        store.setState(state => ({
+          ...state,
+          selected: store.state.selected.filter(row => !keys.every(key => row[key] === rows[rowIndex]![key])),
+        } satisfies typeof state))
+
+        selectionStateRef.current = { anchorIndex: null, focusIndex: null, lastExpandDirection: null }
+      }
+      else {
+        store.setState(state => ({
+          ...state,
+          selected: [...state.selected, keys.reduce((acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] }), {})],
+        } satisfies typeof state))
+
+        selectionStateRef.current = { anchorIndex: rowIndex, focusIndex: rowIndex, lastExpandDirection: null }
+      }
+    }
+
+    lastClickedIndexRef.current = rowIndex
+    shiftKeyRef.current = false
+  }
 
   return (
     <div className={cn('flex items-center w-fit', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
       <IndeterminateCheckbox
         checked={isSelected}
-        onChange={() => {
-          if (isSelected) {
-            store.setState(state => ({
-              ...state,
-              selected: store.state.selected.filter(row => !keys.every(key => row[key] === rows[rowIndex]![key])),
-            } satisfies typeof state))
-          }
-          else {
-            store.setState(state => ({
-              ...state,
-              selected: [...state.selected, keys.reduce((acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] }), {})],
-            } satisfies typeof state))
-          }
-        }}
+        onMouseDown={handleMouseDown}
+        onKeyDown={handleKeyDown}
+        onChange={handleChange}
       />
     </div>
   )
