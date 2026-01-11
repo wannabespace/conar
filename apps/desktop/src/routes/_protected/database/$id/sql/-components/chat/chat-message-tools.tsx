@@ -1,5 +1,5 @@
 import type { tools } from '@conar/api/src/ai-tools'
-import type { InferUITools, ToolUIPart } from 'ai'
+import type { DynamicToolUIPart, InferUITools, ToolUIPart } from 'ai'
 import type { ReactNode } from 'react'
 import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -162,15 +162,30 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
 }
 
 const STATE_ICONS: Record<ToolUIPart['state'], (props: { className?: string, tool: ToolUIPart<InferUITools<typeof tools>> }) => React.ReactNode> = {
-  'input-streaming': ({ className }) => <RiLoader4Line className={cn('text-primary animate-spin', className)} />,
-  'input-available': ({ className }) => <RiLoader4Line className={cn('text-primary animate-spin', className)} />,
+  'input-streaming': ({ className }) => (
+    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+  ),
+  'input-available': ({ className }) => (
+    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+  ),
   'output-available': ({ className, tool }) => {
     if (tool.type === 'tool-webSearch') {
       return <RiEarthLine className={cn('text-muted-foreground', className)} />
     }
     return <RiHammerLine className={cn('text-muted-foreground', className)} />
   },
-  'output-error': ({ className }) => <RiErrorWarningLine className={cn('text-red-600', className)} />,
+  'output-error': ({ className }) => (
+    <RiErrorWarningLine className={cn(`text-red-600`, className)} />
+  ),
+  'approval-requested': ({ className }) => (
+    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+  ),
+  'approval-responded': ({ className }) => (
+    <RiHammerLine className={cn(`text-muted-foreground`, className)} />
+  ),
+  'output-denied': ({ className }) => (
+    <RiErrorWarningLine className={cn(`text-red-600`, className)} />
+  ),
 }
 
 const STATE_LABELS: Record<ToolUIPart['state'], string> = {
@@ -178,9 +193,36 @@ const STATE_LABELS: Record<ToolUIPart['state'], string> = {
   'input-available': 'Tool response received',
   'output-available': 'Tool response available',
   'output-error': 'Tool call failed',
+  'approval-requested': 'Waiting for approval...',
+  'approval-responded': 'Approval processed',
+  'output-denied': 'Output denied',
 }
 
-export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
+export function ChatMessageTool({
+  part,
+  className,
+}: {
+  part: ToolUIPart<InferUITools<typeof tools>> | DynamicToolUIPart
+  className?: string
+}) {
+  if (part.type === 'dynamic-tool') {
+    return (
+      <SingleAccordion className={cn('my-4 first:mt-0 last:mb-0', className)}>
+        <SingleAccordionTrigger className="min-w-0 gap-2">
+          <RiLoader4Line className="size-4 shrink-0 animate-spin text-primary" />
+          <span className="min-w-0 flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">
+            {part.toolName}
+          </span>
+        </SingleAccordionTrigger>
+        <SingleAccordionContent>
+          <div className="text-xs text-muted-foreground">
+            Dynamic tool call not fully supported in this view.
+          </div>
+        </SingleAccordionContent>
+      </SingleAccordion>
+    )
+  }
+
   const tool = part as ToolUIPart<InferUITools<typeof tools>>
   const label = getToolLabel(tool)
   const Icon = STATE_ICONS[tool.state]
