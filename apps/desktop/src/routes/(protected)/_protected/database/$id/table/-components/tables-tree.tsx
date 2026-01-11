@@ -12,17 +12,16 @@ import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiFolderLine, RiMoreLine,
 import { Link, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
-import React, { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useDatabaseTablesAndSchemas } from '~/entities/database/queries'
-import { addMultipleTablesToGroup, addTab, cleanupPinnedTables, clearTableSelection, databaseStore, deleteGroup, removeTableFromGroup, toggleFolder, togglePinTable, toggleTableSelection } from '~/entities/database/store'
+import { addTab, addTableToFolder, cleanupPinnedTables, clearTableSelection, databaseStore, removeTableFromFolder, toggleFolder, togglePinTable, toggleTableSelection } from '~/entities/database/store'
 import { Route } from '..'
 import { AddToFolderDialog } from './add-to-folder-dialog'
+import { DeleteFolderDialog } from './delete-folder-dialog'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameFolderDialog } from './rename-folder-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
-
-const MotionSeparator = motion.create(Separator)
 
 const treeVariants = {
   visible: { opacity: 1, height: 'auto' },
@@ -34,6 +33,8 @@ const treeTransition = {
   opacity: { duration: 0.1 },
   height: { duration: 0.1 },
 }
+
+const MotionSeparator = motion.create(Separator)
 
 function Skeleton() {
   return (
@@ -47,6 +48,116 @@ function Skeleton() {
           />
         </div>
       ))}
+    </div>
+  )
+}
+
+interface TableInFolderItemProps {
+  schema: string
+  table: string
+  search?: string
+  onRemove: () => void
+  onRename: () => void
+  onDrop: () => void
+}
+
+function TableInFolderItem({ schema, table, search, onRemove, onRename, onDrop }: TableInFolderItemProps) {
+  const { database } = Route.useRouteContext()
+
+  const handleDragStart = (e: React.DragEvent) => {
+    const dragData = {
+      type: 'table',
+      schema,
+      tables: [table],
+    }
+
+    e.dataTransfer.setData('application/json', JSON.stringify(dragData))
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  return (
+    <div className="group/table-in-folder relative">
+      <Link
+        to="/database/$id/table"
+        params={{ id: database.id }}
+        search={{
+          schema,
+          table,
+        }}
+        preloadDelay={200}
+        onDoubleClick={() => addTab(database.id, schema, table)}
+        draggable={true}
+        onDragStart={handleDragStart}
+        className={cn(
+          `
+            flex w-full items-center gap-2 rounded-md border border-transparent
+            px-2 py-1 text-sm text-foreground
+            hover:bg-accent/30
+          `,
+        )}
+      >
+        <RiTableLine
+          className="size-4 shrink-0 text-muted-foreground opacity-50"
+        />
+        <span className="truncate">
+          <HighlightText text={table} match={search} />
+        </span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              className={`
+                ml-auto opacity-0 transition-opacity
+                group-hover/table-in-folder:opacity-100
+                focus-visible:opacity-100
+              `}
+              onClick={e => e.stopPropagation()}
+            >
+              <RiMoreLine className="size-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-48">
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                copyToClipboard(table, 'Table name copied')
+              }}
+            >
+              <RiFileCopyLine className="size-4" />
+              Copy Name
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                onRemove()
+              }}
+            >
+              <RiFolderLine className="size-4" />
+              Remove from Folder
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                onRename()
+              }}
+            >
+              <RiEditLine className="size-4" />
+              Rename Table
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDrop()
+              }}
+            >
+              <RiDeleteBin7Line className="size-4" />
+              Drop Table
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Link>
     </div>
   )
 }
@@ -65,63 +176,79 @@ function FolderItem({ schema, folder, tables, search, onRename, onDelete, onRemo
   const { database } = Route.useRouteContext()
   const store = databaseStore(database.id)
   const openedFolders = useStore(store, state => state.tablesTreeOpenedFolders)
+  const selectedTables = useStore(store, state => state.selectedTables)
   const isOpen = openedFolders.some(f => f.schema === schema && f.folder === folder)
   const [isDragOver, setIsDragOver] = useState(false)
-  const folderRef = useRef<HTMLDivElement>(null)
 
-  const handleDragStateChange = useEffectEvent((e: CustomEvent<{ isDragging: boolean, tables: { schema: string, table: string }[] }>) => {
-    if (!e.detail.isDragging) {
-      setIsDragOver(false)
-    }
-  })
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(true)
+  }
 
-  const checkDragOver = useEffectEvent((e: Event) => {
-    if (!folderRef.current)
-      return
-
-    const mouseEvent = e as unknown as { clientX: number, clientY: number }
-    const rect = folderRef.current.getBoundingClientRect()
-    const isOver = (
-      mouseEvent.clientX >= rect.left
-      && mouseEvent.clientX <= rect.right
-      && mouseEvent.clientY >= rect.top
-      && mouseEvent.clientY <= rect.bottom
-    )
-
-    setIsDragOver(isOver)
-  })
-
-  const handleDrop = useEffectEvent((e: CustomEvent<{ tables: { schema: string, table: string }[] }>) => {
-    if (!isDragOver)
-      return
-
-    const tablesToAdd = e.detail.tables
-      .filter(t => t.schema === schema)
-      .map(t => t.table)
-
-    if (tablesToAdd.length > 0) {
-      addMultipleTablesToGroup(database.id, schema, folder, tablesToAdd)
-      clearTableSelection(database.id)
-      toast.success(`Added ${tablesToAdd.length} table${tablesToAdd.length > 1 ? 's' : ''} to "${folder}"`)
-    }
-
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     setIsDragOver(false)
-  })
+  }
 
-  useEffect(() => {
-    window.addEventListener('tableDragState', handleDragStateChange as EventListener)
-    return () => window.removeEventListener('tableDragState', handleDragStateChange as EventListener)
-  }, [])
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
 
-  useEffect(() => {
-    window.addEventListener('tableDragMove', checkDragOver)
-    return () => window.removeEventListener('tableDragMove', checkDragOver)
-  }, [])
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('application/json'))
 
-  useEffect(() => {
-    window.addEventListener('tableDrop', handleDrop as EventListener)
-    return () => window.removeEventListener('tableDrop', handleDrop as EventListener)
-  }, [])
+      if (data.type === 'table' && data.schema === schema) {
+        const tablesToMove = data.tables as string[]
+
+        const tableFolders = store.state.tableFolders.filter(f => f.schema === schema)
+        const currentFolder = tableFolders.find(f => f.folder === folder)
+
+        const allAlreadyInFolder = tablesToMove.every(table =>
+          currentFolder?.tables.includes(table),
+        )
+
+        if (allAlreadyInFolder) {
+          return
+        }
+
+        let moved = false
+
+        tablesToMove.forEach((table) => {
+          tableFolders.forEach((existingFolder) => {
+            if (existingFolder.tables.includes(table) && existingFolder.folder !== folder) {
+              removeTableFromFolder(database.id, schema, existingFolder.folder, table)
+              moved = true
+            }
+          })
+        })
+
+        tablesToMove.forEach((table) => {
+          if (!currentFolder?.tables.includes(table)) {
+            addTableToFolder(database.id, schema, folder, table)
+            moved = true
+          }
+        })
+
+        if (moved) {
+          if (selectedTables.length > 0) {
+            clearTableSelection(database.id)
+          }
+
+          toast.success(
+            tablesToMove.length === 1
+              ? `Table "${tablesToMove[0]}" moved to folder "${folder}"`
+              : `${tablesToMove.length} tables moved to folder "${folder}"`,
+          )
+        }
+      }
+    }
+    catch (error) {
+      console.error('Failed to parse drop data:', error)
+    }
+  }
 
   return (
     <motion.div
@@ -133,7 +260,6 @@ function FolderItem({ schema, folder, tables, search, onRename, onDelete, onRemo
       className="space-y-0.5"
     >
       <div
-        ref={folderRef}
         className={cn(
           `
             group flex w-full cursor-pointer items-center gap-2 rounded-md
@@ -141,9 +267,12 @@ function FolderItem({ schema, folder, tables, search, onRename, onDelete, onRemo
             transition-colors
             hover:bg-accent/30
           `,
-          isDragOver && 'border-primary/50 bg-primary/20 ring-2 ring-primary/30',
+          isDragOver && 'border-primary bg-primary/10',
         )}
         onClick={() => toggleFolder(database.id, schema, folder)}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <RiFolderLine
           className="size-4 shrink-0 text-muted-foreground opacity-50"
@@ -199,91 +328,21 @@ function FolderItem({ schema, folder, tables, search, onRename, onDelete, onRemo
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="space-y-0.5 overflow-hidden pl-4"
+            className="overflow-hidden pl-4"
           >
-            {tables.map(table => (
-              <div key={table} className="group/table-in-folder relative">
-                <Link
-                  to="/database/$id/table"
-                  params={{ id: database.id }}
-                  search={{
-                    schema,
-                    table,
-                  }}
-                  preloadDelay={200}
-                  onDoubleClick={() => addTab(database.id, schema, table)}
-                  className={cn(
-                    `
-                      flex w-full items-center gap-2 rounded-md border
-                      border-transparent px-2 py-1 text-sm text-foreground
-                      hover:bg-accent/30
-                    `,
-                  )}
-                >
-                  <RiTableLine
-                    className="size-4 shrink-0 text-muted-foreground opacity-50"
-                  />
-                  <span className="truncate">
-                    <HighlightText text={table} match={search} />
-                  </span>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        className={`
-                          ml-auto opacity-0 transition-opacity
-                          group-hover/table-in-folder:opacity-100
-                          focus-visible:opacity-100
-                        `}
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <RiMoreLine className="size-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="min-w-48">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          copyToClipboard(table, 'Table name copied')
-                        }}
-                      >
-                        <RiFileCopyLine className="size-4" />
-                        Copy Name
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onRemoveTable(table)
-                        }}
-                      >
-                        <RiFolderLine className="size-4" />
-                        Remove from Folder
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onRenameTable(table)
-                        }}
-                      >
-                        <RiEditLine className="size-4" />
-                        Rename Table
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onDropTable(table)
-                        }}
-                      >
-                        <RiDeleteBin7Line className="size-4" />
-                        Drop Table
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </Link>
-              </div>
-            ))}
+            <div className="space-y-0.5">
+              {tables.map(table => (
+                <TableInFolderItem
+                  key={table}
+                  schema={schema}
+                  table={table}
+                  search={search}
+                  onRemove={() => onRemoveTable(table)}
+                  onRename={() => onRenameTable(table)}
+                  onDrop={() => onDropTable(table)}
+                />
+              ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -305,7 +364,6 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop, on
   const store = databaseStore(database.id)
   const selectedTables = useStore(store, state => state.selectedTables)
   const isSelected = selectedTables.some(t => t.schema === schema && t.table === table)
-  const [isDragging, setIsDragging] = useState(false)
 
   const handleClick = (e: React.MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
@@ -314,61 +372,23 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop, on
     }
   }
 
-  const handleDragStart = () => {
-    setIsDragging(true)
-    const tables = isSelected ? selectedTables : [{ schema, table }]
+  const handleDragStart = (e: React.DragEvent) => {
+    const tablesToDrag = isSelected && selectedTables.length > 0
+      ? selectedTables.filter(t => t.schema === schema).map(t => t.table)
+      : [table]
 
-    window.dispatchEvent(new CustomEvent('tableDragState', {
-      detail: { isDragging: true, tables },
-    }))
-  }
+    const dragData = {
+      type: 'table',
+      schema,
+      tables: tablesToDrag,
+    }
 
-  const handleDrag = (_event: MouseEvent, info: { point: { x: number, y: number } }) => {
-    const customEvent = new CustomEvent('tableDragMove', {
-      detail: { x: info.point.x, y: info.point.y },
-    })
-    window.dispatchEvent(customEvent)
-
-    const mouseEvent = new MouseEvent('tableDragMove', {
-      clientX: info.point.x,
-      clientY: info.point.y,
-    })
-    window.dispatchEvent(mouseEvent)
-  }
-
-  const handleDragEnd = () => {
-    setIsDragging(false)
-    const tables = isSelected ? selectedTables : [{ schema, table }]
-
-    window.dispatchEvent(new CustomEvent('tableDrop', {
-      detail: { tables },
-    }))
-
-    window.dispatchEvent(new CustomEvent('tableDragState', {
-      detail: { isDragging: false, tables: [] },
-    }))
+    e.dataTransfer.setData('application/json', JSON.stringify(dragData))
+    e.dataTransfer.effectAllowed = 'move'
   }
 
   return (
-    <motion.div
-      drag
-      dragMomentum={false}
-      dragElastic={0}
-      dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-      dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
-      onDragStart={handleDragStart}
-      onDrag={handleDrag as (event: MouseEvent | TouchEvent | PointerEvent, info: { point: { x: number, y: number } }) => void}
-      onDragEnd={handleDragEnd}
-      whileDrag={{ scale: 1.05, opacity: 0.8, zIndex: 1000 }}
-      style={{ touchAction: 'none' }}
-      className={cn(
-        `
-          cursor-grab
-          active:cursor-grabbing
-        `,
-        isDragging && 'pointer-events-none',
-      )}
-    >
+    <div className="relative">
       <Link
         to="/database/$id/table"
         params={{ id: database.id }}
@@ -379,7 +399,8 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop, on
         preloadDelay={200}
         onClick={handleClick}
         onDoubleClick={() => addTab(database.id, schema, table)}
-        draggable={false}
+        draggable={true}
+        onDragStart={handleDragStart}
         className={cn(
           `
             group flex w-full items-center gap-2 rounded-md border
@@ -484,7 +505,94 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop, on
           </DropdownMenuContent>
         </DropdownMenu>
       </Link>
-    </motion.div>
+    </div>
+  )
+}
+
+function UnpinnedTablesDropZone({ schema, children }: { schema: string, children: React.ReactNode }) {
+  const { database } = Route.useRouteContext()
+  const store = databaseStore(database.id)
+  const selectedTables = useStore(store, state => state.selectedTables)
+  const [isDragOver, setIsDragOver] = useState(false)
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
+
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('application/json'))
+
+      if (data.type === 'table' && data.schema === schema) {
+        const tablesToMove = data.tables as string[]
+        const tableFolders = store.state.tableFolders.filter(f => f.schema === schema)
+        const tablesInFolders = tablesToMove.filter(table =>
+          tableFolders.some(folder => folder.tables.includes(table)),
+        )
+
+        if (tablesInFolders.length === 0) {
+          return
+        }
+
+        tablesToMove.forEach((table) => {
+          tableFolders.forEach((folder) => {
+            if (folder.tables.includes(table)) {
+              removeTableFromFolder(database.id, schema, folder.folder, table)
+            }
+          })
+        })
+
+        if (selectedTables.length > 0) {
+          clearTableSelection(database.id)
+        }
+
+        toast.success(
+          tablesInFolders.length === 1
+            ? `Table "${tablesInFolders[0]}" removed from folder`
+            : `${tablesInFolders.length} tables removed from folders`,
+        )
+      }
+    }
+    catch (error) {
+      console.error('Failed to parse drop data:', error)
+    }
+  }
+
+  return (
+    <div
+      className={cn(
+        'relative rounded-md transition-colors',
+        isDragOver && 'bg-accent/20 ring-2 ring-primary/30',
+      )}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {children}
+      {isDragOver && (
+        <div className={`
+          pointer-events-none absolute inset-0 flex items-center justify-center
+          rounded-md border-2 border-dashed border-primary bg-primary/5
+        `}
+        >
+          <span className="text-sm font-medium text-primary">
+            Drop to remove from folder
+          </span>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -495,12 +603,13 @@ export function TablesTree({ className, search }: { className?: string, search?:
   const store = databaseStore(database.id)
   const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const pinnedTables = useStore(store, state => state.pinnedTables)
-  const tableGroups = useStore(store, state => state.tableGroups)
+  const tableFolders = useStore(store, state => state.tableFolders)
   const selectedTables = useStore(store, state => state.selectedTables)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
   const addToFolderDialogRef = useRef<ComponentRef<typeof AddToFolderDialog>>(null)
   const renameFolderDialogRef = useRef<ComponentRef<typeof RenameFolderDialog>>(null)
+  const deleteFolderDialogRef = useRef<ComponentRef<typeof DeleteFolderDialog>>(null)
 
   useEffect(() => {
     if (!tablesAndSchemas)
@@ -530,10 +639,10 @@ export function TablesTree({ className, search }: { className?: string, search?:
       const unpinned: string[] = []
       const groupedTables = new Set<string>()
 
-      const schemaGroups = tableGroups.filter(g => g.schema === schema.name)
+      const schemaFolders = tableFolders.filter(g => g.schema === schema.name)
 
-      schemaGroups.forEach((group) => {
-        group.tables.forEach((table) => {
+      schemaFolders.forEach((folder) => {
+        folder.tables.forEach((table) => {
           if (schema.tables.includes(table)) {
             groupedTables.add(table)
           }
@@ -558,13 +667,13 @@ export function TablesTree({ className, search }: { className?: string, search?:
         ...schema,
         pinnedTables: pinned,
         unpinnedTables: unpinned,
-        folders: schemaGroups.map(group => ({
-          name: group.folder,
-          tables: group.tables.filter(t => schema.tables.includes(t)),
+        folders: schemaFolders.map(folder => ({
+          name: folder.folder,
+          tables: folder.tables.filter(t => schema.tables.includes(t)),
         })),
       }
     })
-  }, [search, tablesAndSchemas, pinnedTables, tableGroups])
+  }, [search, tablesAndSchemas, pinnedTables, tableFolders])
 
   const searchAccordionValue = useMemo(() => search
     ? filteredTablesAndSchemas.map(schema => schema.name)
@@ -586,6 +695,10 @@ export function TablesTree({ className, search }: { className?: string, search?:
       />
       <RenameFolderDialog
         ref={renameFolderDialogRef}
+        database={database}
+      />
+      <DeleteFolderDialog
+        ref={deleteFolderDialogRef}
         database={database}
       />
       {selectedTables.length > 0 && (
@@ -692,27 +805,22 @@ export function TablesTree({ className, search }: { className?: string, search?:
                         </AccordionTrigger>
                         <AccordionContent className="pb-0">
                           <AnimatePresence mode="popLayout">
-                            {schema.pinnedTables.map(table => (
-                              <motion.div
-                                key={`${schema.name}:${table}`}
-                                layout
-                                variants={treeVariants}
-                                initial={search ? treeVariants.hidden : false}
-                                animate="visible"
-                                exit="hidden"
-                                transition={treeTransition}
-                              >
-                                <TableItem
-                                  schema={schema.name}
-                                  table={table}
-                                  pinned
-                                  search={search}
-                                  onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
-                                  onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
-                                  onAddToFolder={() => addToFolderDialogRef.current?.addToFolder(schema.name, table)}
-                                />
-                              </motion.div>
-                            ))}
+                            {schema.pinnedTables.length > 0 && (
+                              <div className="space-y-0.5">
+                                {schema.pinnedTables.map(table => (
+                                  <TableItem
+                                    key={`${schema.name}:${table}`}
+                                    schema={schema.name}
+                                    table={table}
+                                    pinned
+                                    search={search}
+                                    onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
+                                    onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
+                                    onAddToFolder={() => addToFolderDialogRef.current?.addToFolder(schema.name, table)}
+                                  />
+                                ))}
+                              </div>
+                            )}
                             {schema.pinnedTables.length > 0 && (schema.unpinnedTables.length > 0 || schema.folders.length > 0) && (
                               <MotionSeparator
                                 className="my-2 h-px!"
@@ -732,8 +840,8 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                 tables={folder.tables}
                                 search={search}
                                 onRename={() => renameFolderDialogRef.current?.rename(schema.name, folder.name)}
-                                onDelete={() => deleteGroup(database.id, schema.name, folder.name)}
-                                onRemoveTable={table => removeTableFromGroup(database.id, schema.name, folder.name, table)}
+                                onDelete={() => deleteFolderDialogRef.current?.deleteFolder(schema.name, folder.name)}
+                                onRemoveTable={table => removeTableFromFolder(database.id, schema.name, folder.name, table)}
                                 onRenameTable={table => renameTableDialogRef.current?.rename(schema.name, table)}
                                 onDropTable={table => dropTableDialogRef.current?.drop(schema.name, table)}
                               />
@@ -749,26 +857,23 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                 transition={treeTransition}
                               />
                             )}
-                            {schema.unpinnedTables.map(table => (
-                              <motion.div
-                                key={`${schema.name}:${table}`}
-                                layout
-                                variants={treeVariants}
-                                initial={search ? treeVariants.hidden : false}
-                                animate="visible"
-                                exit="hidden"
-                                transition={treeTransition}
-                              >
-                                <TableItem
-                                  schema={schema.name}
-                                  table={table}
-                                  search={search}
-                                  onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
-                                  onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
-                                  onAddToFolder={() => addToFolderDialogRef.current?.addToFolder(schema.name, table)}
-                                />
-                              </motion.div>
-                            ))}
+                            {schema.unpinnedTables.length > 0 && (
+                              <UnpinnedTablesDropZone schema={schema.name}>
+                                <div className="space-y-0.5">
+                                  {schema.unpinnedTables.map(table => (
+                                    <TableItem
+                                      key={`${schema.name}:${table}`}
+                                      schema={schema.name}
+                                      table={table}
+                                      search={search}
+                                      onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
+                                      onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
+                                      onAddToFolder={() => addToFolderDialogRef.current?.addToFolder(schema.name, table)}
+                                    />
+                                  ))}
+                                </div>
+                              </UnpinnedTablesDropZone>
+                            )}
                           </AnimatePresence>
                         </AccordionContent>
                       </AccordionItem>

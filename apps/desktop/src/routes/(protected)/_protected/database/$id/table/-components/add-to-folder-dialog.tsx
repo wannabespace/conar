@@ -14,7 +14,7 @@ import { RiAddLine, RiFolderLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { addTableToGroup, databaseStore } from '~/entities/database/store'
+import { addTableToFolder, databaseStore } from '~/entities/database/store'
 
 interface AddToFolderDialogProps {
   ref: React.RefObject<{
@@ -31,7 +31,7 @@ export function AddToFolderDialog({ ref, database }: AddToFolderDialogProps) {
   const [showNewFolder, setShowNewFolder] = useState(false)
 
   const store = databaseStore(database.id)
-  const tableGroups = useStore(store, state => state.tableGroups)
+  const tableFolders = useStore(store, state => state.tableFolders)
 
   useImperativeHandle(ref, () => ({
     addToFolder: (schema: string, table: string) => {
@@ -43,12 +43,12 @@ export function AddToFolderDialog({ ref, database }: AddToFolderDialogProps) {
     },
   }))
 
-  const existingFolders = tableGroups
+  const existingFolders = tableFolders
     .filter(g => g.schema === schema)
     .map(g => g.folder)
 
   const handleAddToExistingFolder = (folder: string) => {
-    addTableToGroup(database.id, schema, folder, table)
+    addTableToFolder(database.id, schema, folder, table)
     toast.success(`Table "${table}" added to folder "${folder}"`)
     setOpen(false)
   }
@@ -64,7 +64,7 @@ export function AddToFolderDialog({ ref, database }: AddToFolderDialogProps) {
       return
     }
 
-    addTableToGroup(database.id, schema, newFolderName.trim(), table)
+    addTableToFolder(database.id, schema, newFolderName.trim(), table)
     toast.success(`Table "${table}" added to new folder "${newFolderName.trim()}"`)
     setOpen(false)
   }

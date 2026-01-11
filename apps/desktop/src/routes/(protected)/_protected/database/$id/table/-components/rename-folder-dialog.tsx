@@ -12,7 +12,7 @@ import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { renameGroup } from '~/entities/database/store'
+import { folderExists, renameFolder } from '~/entities/database/store'
 
 interface RenameFolderDialogProps {
   ref: React.RefObject<{
@@ -47,9 +47,20 @@ export function RenameFolderDialog({ ref, database }: RenameFolderDialogProps) {
       return
     }
 
-    renameGroup(database.id, schema, folder, newFolderName.trim())
-    toast.success(`Folder "${folder}" renamed to "${newFolderName.trim()}"`)
-    setOpen(false)
+    if (folderExists(database.id, schema, newFolderName.trim())) {
+      toast.error(`A folder named "${newFolderName.trim()}" already exists in this schema`)
+      return
+    }
+
+    const success = renameFolder(database.id, schema, folder, newFolderName.trim())
+
+    if (success) {
+      toast.success(`Folder "${folder}" renamed to "${newFolderName.trim()}"`)
+      setOpen(false)
+    }
+    else {
+      toast.error('Failed to rename folder')
+    }
   }
 
   const canConfirm = newFolderName.trim() !== '' && newFolderName.trim() !== folder

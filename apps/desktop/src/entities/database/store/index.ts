@@ -48,7 +48,7 @@ export const databaseStoreType = type({
     schema: 'string',
     folder: 'string',
   }).array(),
-  tableGroups: type({
+  tableFolders: type({
     schema: 'string',
     folder: 'string',
     tables: 'string[]',
@@ -94,7 +94,7 @@ const defaultState: typeof databaseStoreType.infer = {
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
   tablesTreeOpenedFolders: [],
-  tableGroups: [],
+  tableFolders: [],
   selectedTables: [],
   pinnedTables: [],
   layout: {
@@ -150,7 +150,7 @@ export function databaseStore(id: string) {
       tablesSearch: currentVal.tablesSearch,
       tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
       tablesTreeOpenedFolders: currentVal.tablesTreeOpenedFolders,
-      tableGroups: currentVal.tableGroups,
+      tableFolders: currentVal.tableFolders,
       selectedTables: currentVal.selectedTables,
       pinnedTables: currentVal.pinnedTables,
       layout: currentVal.layout,

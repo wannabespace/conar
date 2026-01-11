@@ -164,19 +164,28 @@ export function toggleFolder(id: string, schema: string, folder: string) {
   })
 }
 
-export function addTableToGroup(id: string, schema: string, folder: string, table: string) {
+export function addTableToFolder(id: string, schema: string, folder: string, table: string) {
   const store = databaseStore(id)
   store.setState((state) => {
-    const existingGroup = state.tableGroups.find(g => g.schema === schema && g.folder === folder)
+    // First, remove the table from any other folder in the same schema
+    const updatedFolders = state.tableFolders
+      .map(g =>
+        g.schema === schema && g.tables.includes(table)
+          ? { ...g, tables: g.tables.filter(t => t !== table) }
+          : g,
+      )
+      .filter(g => g.tables.length > 0)
 
-    if (existingGroup) {
-      if (existingGroup.tables.includes(table)) {
+    const existingFolder = updatedFolders.find(g => g.schema === schema && g.folder === folder)
+
+    if (existingFolder) {
+      if (existingFolder.tables.includes(table)) {
         return state
       }
 
       return {
         ...state,
-        tableGroups: state.tableGroups.map(g =>
+        tableFolders: updatedFolders.map(g =>
           g.schema === schema && g.folder === folder
             ? { ...g, tables: [...g.tables, table] }
             : g,
@@ -186,16 +195,16 @@ export function addTableToGroup(id: string, schema: string, folder: string, tabl
 
     return {
       ...state,
-      tableGroups: [...state.tableGroups, { schema, folder, tables: [table] }],
+      tableFolders: [...updatedFolders, { schema, folder, tables: [table] }],
     } satisfies typeof state
   })
 }
 
-export function removeTableFromGroup(id: string, schema: string, folder: string, table: string) {
+export function removeTableFromFolder(id: string, schema: string, folder: string, table: string) {
   const store = databaseStore(id)
   store.setState(state => ({
     ...state,
-    tableGroups: state.tableGroups
+    tableFolders: state.tableFolders
       .map(g =>
         g.schema === schema && g.folder === folder
           ? { ...g, tables: g.tables.filter(t => t !== table) }
@@ -205,11 +214,22 @@ export function removeTableFromGroup(id: string, schema: string, folder: string,
   } satisfies typeof state))
 }
 
-export function renameGroup(id: string, schema: string, oldFolder: string, newFolder: string) {
+export function folderExists(id: string, schema: string, folder: string): boolean {
   const store = databaseStore(id)
+  return store.state.tableFolders.some(g => g.schema === schema && g.folder === folder)
+}
+
+export function renameFolder(id: string, schema: string, oldFolder: string, newFolder: string): boolean {
+  const store = databaseStore(id)
+
+  // Check if a folder with the new name already exists
+  if (folderExists(id, schema, newFolder)) {
+    return false
+  }
+
   store.setState(state => ({
     ...state,
-    tableGroups: state.tableGroups.map(g =>
+    tableFolders: state.tableFolders.map(g =>
       g.schema === schema && g.folder === oldFolder
         ? { ...g, folder: newFolder }
         : g,
@@ -220,13 +240,15 @@ export function renameGroup(id: string, schema: string, oldFolder: string, newFo
         : f,
     ),
   } satisfies typeof state))
+
+  return true
 }
 
-export function deleteGroup(id: string, schema: string, folder: string) {
+export function deleteFolder(id: string, schema: string, folder: string) {
   const store = databaseStore(id)
   store.setState(state => ({
     ...state,
-    tableGroups: state.tableGroups.filter(g => !(g.schema === schema && g.folder === folder)),
+    tableFolders: state.tableFolders.filter(g => !(g.schema === schema && g.folder === folder)),
     tablesTreeOpenedFolders: state.tablesTreeOpenedFolders.filter(f => !(f.schema === schema && f.folder === folder)),
   } satisfies typeof state))
 }
@@ -262,20 +284,32 @@ export function selectMultipleTables(id: string, tables: { schema: string, table
   } satisfies typeof state))
 }
 
-export function addMultipleTablesToGroup(id: string, schema: string, folder: string, tables: string[]) {
+export function addMultipleTablesToFolder(id: string, schema: string, folder: string, tables: string[]) {
   const store = databaseStore(id)
   store.setState((state) => {
-    const existingGroup = state.tableGroups.find(g => g.schema === schema && g.folder === folder)
+    // First, remove all these tables from any other folder in the same schema
+    const updatedFolders = state.tableFolders
+      .map(g =>
+        g.schema === schema
+          ? { ...g, tables: g.tables.filter(t => !tables.includes(t)) }
+          : g,
+      )
+      .filter(g => g.tables.length > 0)
 
-    if (existingGroup) {
-      const newTables = tables.filter(t => !existingGroup.tables.includes(t))
+    const existingFolder = updatedFolders.find(g => g.schema === schema && g.folder === folder)
+
+    if (existingFolder) {
+      const newTables = tables.filter(t => !existingFolder.tables.includes(t))
       if (newTables.length === 0) {
-        return state
+        return {
+          ...state,
+          tableFolders: updatedFolders,
+        } satisfies typeof state
       }
 
       return {
         ...state,
-        tableGroups: state.tableGroups.map(g =>
+        tableFolders: updatedFolders.map(g =>
           g.schema === schema && g.folder === folder
             ? { ...g, tables: [...g.tables, ...newTables] }
             : g,
@@ -285,7 +319,7 @@ export function addMultipleTablesToGroup(id: string, schema: string, folder: str
 
     return {
       ...state,
-      tableGroups: [...state.tableGroups, { schema, folder, tables }],
+      tableFolders: [...updatedFolders, { schema, folder, tables }],
     } satisfies typeof state
   })
 }
