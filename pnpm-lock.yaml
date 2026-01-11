@@ -192,6 +192,9 @@ catalogs:
     '@tanstack/router-plugin':
       specifier: ^1.145.10
       version: 1.145.10
+    '@tiptap/extension-mention':
+      specifier: ^3.15.3
+      version: 3.15.3
     '@tiptap/extension-placeholder':
       specifier: ^3.15.3
       version: 3.15.3
@@ -199,6 +202,9 @@ catalogs:
       specifier: ^3.15.3
       version: 3.15.3
     '@tiptap/starter-kit':
+      specifier: ^3.15.3
+      version: 3.15.3
+    '@tiptap/suggestion':
       specifier: ^3.15.3
       version: 3.15.3
     '@todesktop/cli':
@@ -784,6 +790,9 @@ importers:
       '@tanstack/router-plugin':
         specifier: 'catalog:'
         version: 1.145.10(@tanstack/react-router@1.145.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))
+      '@tiptap/extension-mention':
+        specifier: 'catalog:'
+        version: 3.15.3(@tiptap/core@3.15.3(@tiptap/pm@3.15.3))(@tiptap/pm@3.15.3)(@tiptap/suggestion@3.15.3(@tiptap/core@3.15.3(@tiptap/pm@3.15.3))(@tiptap/pm@3.15.3))
       '@tiptap/extension-placeholder':
         specifier: 'catalog:'
         version: 3.15.3(@tiptap/extensions@3.15.3(@tiptap/core@3.15.3(@tiptap/pm@3.15.3))(@tiptap/pm@3.15.3))
@@ -793,6 +802,9 @@ importers:
       '@tiptap/starter-kit':
         specifier: 'catalog:'
         version: 3.15.3
+      '@tiptap/suggestion':
+        specifier: 'catalog:'
+        version: 3.15.3(@tiptap/core@3.15.3(@tiptap/pm@3.15.3))(@tiptap/pm@3.15.3)
       '@todesktop/cli':
         specifier: 'catalog:'
         version: 1.18.3(@types/react@19.2.7)
@@ -4827,6 +4839,13 @@ packages:
       '@tiptap/core': ^3.15.3
       '@tiptap/pm': ^3.15.3
 
+  '@tiptap/extension-mention@3.15.3':
+    resolution: {integrity: sha512-4YpwiQyumKZrlfiw4ExDzrDRarC4kkaC7RjEl4kYhzutID1Zy1WLES1B0CoZN9wRds/mjrQjfCFE5HE+2g3D6w==}
+    peerDependencies:
+      '@tiptap/core': ^3.15.3
+      '@tiptap/pm': ^3.15.3
+      '@tiptap/suggestion': ^3.15.3
+
   '@tiptap/extension-ordered-list@3.15.3':
     resolution: {integrity: sha512-/8uhw528Iy0c9wF6tHCiIn0ToM0Ml6Ll2c/3iPRnKr4IjXwx2Lr994stUFihb+oqGZwV1J8CPcZJ4Ufpdqi4Dw==}
     peerDependencies:
@@ -4878,6 +4897,12 @@ packages:
 
   '@tiptap/starter-kit@3.15.3':
     resolution: {integrity: sha512-ia+eQr9Mt1ln2UO+kK4kFTJOrZK4GhvZXFjpCCYuHtco3rhr2fZAIxEEY4cl/vo5VO5WWyPqxhkFeLcoWmNjSw==}
+
+  '@tiptap/suggestion@3.15.3':
+    resolution: {integrity: sha512-+CbaHhPfKUe+fNpUIQaOPhh6xI+xL5jbK1zw++U+CZIRrVAAmHRhO+D0O2HdiE1RK7596y8bRqMiB2CRHF7emA==}
+    peerDependencies:
+      '@tiptap/core': ^3.15.3
+      '@tiptap/pm': ^3.15.3
 
   '@todesktop/cli@1.18.3':
     resolution: {integrity: sha512-EgE/AHGz3pfAHcqCdThmWaRqhW5I55wHv+oBjxu69v4JVRWQuG3ckamyVoYEdrnRTMaSHZEQsgCxmW8VyIWvcQ==}
@@ -14578,6 +14603,12 @@ snapshots:
       '@tiptap/core': 3.15.3(@tiptap/pm@3.15.3)
       '@tiptap/pm': 3.15.3
 
+  '@tiptap/extension-mention@3.15.3(@tiptap/core@3.15.3(@tiptap/pm@3.15.3))(@tiptap/pm@3.15.3)(@tiptap/suggestion@3.15.3(@tiptap/core@3.15.3(@tiptap/pm@3.15.3))(@tiptap/pm@3.15.3))':
+    dependencies:
+      '@tiptap/core': 3.15.3(@tiptap/pm@3.15.3)
+      '@tiptap/pm': 3.15.3
+      '@tiptap/suggestion': 3.15.3(@tiptap/core@3.15.3(@tiptap/pm@3.15.3))(@tiptap/pm@3.15.3)
+
   '@tiptap/extension-ordered-list@3.15.3(@tiptap/extension-list@3.15.3(@tiptap/core@3.15.3(@tiptap/pm@3.15.3))(@tiptap/pm@3.15.3))':
     dependencies:
       '@tiptap/extension-list': 3.15.3(@tiptap/core@3.15.3(@tiptap/pm@3.15.3))(@tiptap/pm@3.15.3)
@@ -14672,6 +14703,11 @@ snapshots:
       '@tiptap/extensions': 3.15.3(@tiptap/core@3.15.3(@tiptap/pm@3.15.3))(@tiptap/pm@3.15.3)
       '@tiptap/pm': 3.15.3
 
+  '@tiptap/suggestion@3.15.3(@tiptap/core@3.15.3(@tiptap/pm@3.15.3))(@tiptap/pm@3.15.3)':
+    dependencies:
+      '@tiptap/core': 3.15.3(@tiptap/pm@3.15.3)
+      '@tiptap/pm': 3.15.3
+
   '@todesktop/cli@1.18.3(@types/react@19.2.7)':
     dependencies:
       '@sentry/node': 8.55.0
@@ -14696,10 +14732,10 @@ snapshots:
       firebase: 11.10.0
       git-rev-sync: 3.0.2
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)
-      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
-      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
-      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
-      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2)
+      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
+      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
+      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
+      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2)
       is-ci: 3.0.1
       is-installed-globally: 0.3.2
       js-yaml: 4.1.1
@@ -17889,7 +17925,7 @@ snapshots:
 
   ini@4.1.1: {}
 
-  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
+  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
     dependencies:
       gradient-string: 1.2.0
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)
@@ -17897,14 +17933,14 @@ snapshots:
       react: 17.0.2
       strip-ansi: 6.0.1
 
-  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
+  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
     dependencies:
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)
       prop-types: 15.8.1
       react: 17.0.2
       terminal-link: 2.1.1
 
-  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
+  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
     dependencies:
       arr-rotate: 1.0.0
       figures: 3.2.0
@@ -17912,7 +17948,7 @@ snapshots:
       lodash.isequal: 4.5.0
       react: 17.0.2
 
-  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.7)(react@17.0.2))(react@17.0.2):
+  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.7)(react@19.2.3))(react@17.0.2):
     dependencies:
       chalk: 4.1.2
       ink: 3.2.0(@types/react@19.2.7)(react@17.0.2)

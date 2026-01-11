@@ -1,6 +1,8 @@
+import type { MentionOptions } from '@tiptap/extension-mention'
 import type { Editor } from '@tiptap/react'
 import type { ComponentProps, RefObject } from 'react'
 import { cn } from '@conar/ui/lib/utils'
+import Mention from '@tiptap/extension-mention'
 import Placeholder from '@tiptap/extension-placeholder'
 import { EditorContent, Extension, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -16,6 +18,7 @@ export function TipTap({
   className,
   ref,
   disabled,
+  mentionSuggestion,
   ...props
 }: {
   value: string
@@ -23,6 +26,7 @@ export function TipTap({
   placeholder?: string
   onEnter?: (value: string) => void
   onImageAdd?: (file: File) => void
+  mentionSuggestion?: MentionOptions['suggestion']
   ref: RefObject<{
     editor: Editor
   } | null>
@@ -33,6 +37,16 @@ export function TipTap({
       Placeholder.configure({
         placeholder: () => placeholder || '',
       }),
+      ...(mentionSuggestion
+        ? [
+            Mention.configure({
+              HTMLAttributes: {
+                class: 'rounded bg-accent px-1 py-0.5 text-accent-foreground',
+              },
+              suggestion: mentionSuggestion,
+            }),
+          ]
+        : []),
       Extension.create({
         addKeyboardShortcuts() {
           return {
@@ -58,7 +72,7 @@ export function TipTap({
     editable: !disabled,
     content: value,
     onUpdate: ({ editor }) => setValue(editor.getText()),
-  }, [onEnter, disabled, placeholder, setValue])
+  }, [onEnter, disabled, placeholder, setValue, mentionSuggestion])
 
   useEffect(() => {
     if (editor) {

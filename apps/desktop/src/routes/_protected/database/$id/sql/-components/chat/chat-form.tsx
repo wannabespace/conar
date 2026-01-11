@@ -1,4 +1,6 @@
+import type { SuggestionProps } from '@tiptap/suggestion'
 import type { ChangeEvent, ComponentRef } from 'react'
+import type { MentionListRef } from '~/components/tiptap-mention-list'
 import { useChat } from '@ai-sdk/react'
 import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { isCtrlAndKey } from '@conar/shared/utils/os'
@@ -9,12 +11,15 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useEffectEvent, useRef } from 'react'
+import { ReactRenderer } from '@tiptap/react'
+import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
+import { MentionList } from '~/components/tiptap-mention-list'
+import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
 import { databaseStore } from '~/entities/database/store'
 import { useSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
@@ -60,6 +65,7 @@ export function ChatForm() {
   const store = databaseStore(database.id)
   const input = useStore(store, state => state.chatInput)
   const { subscription } = useSubscription()
+  const { data: tablesAndSchemas } = useQuery(databaseTablesAndSchemasQuery({ database }))
 
   useEffect(() => {
     if (ref.current) {
@@ -170,7 +176,6 @@ export function ChatForm() {
     },
   }))
 
-  // Handler for file input change
   const handleFileAttach = (e: ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files
 
@@ -196,6 +201,88 @@ export function ChatForm() {
     target: elementRef,
     deps: [chat.id],
   })
+
+  const mentionSuggestion = useMemo(() => {
+    if (!tablesAndSchemas)
+      return undefined
+
+    const allTables = tablesAndSchemas.schemas.flatMap(schema =>
+      schema.tables.map(table => ({ schema: schema.name, table })),
+    )
+
+    return {
+      items: ({ query }: { query: string }) => {
+        const lowerQuery = query.toLowerCase()
+        return allTables
+          .filter(item =>
+            `${item.schema}.${item.table}`.toLowerCase().includes(lowerQuery)
+            || item.table.toLowerCase().includes(lowerQuery),
+          )
+          .slice(0, 15)
+      },
+      render: () => {
+        let component: ReactRenderer<MentionListRef> | undefined
+        let popup: HTMLElement | undefined
+
+        return {
+          onStart: (props: SuggestionProps<{ schema: string, table: string }>) => {
+            component = new ReactRenderer(MentionList, {
+              props,
+              editor: props.editor,
+            })
+
+            if (!props.clientRect) {
+              return
+            }
+
+            popup = component.element
+            popup.style.position = 'fixed'
+            popup.style.zIndex = '50'
+            document.body.appendChild(popup)
+
+            const updatePosition = () => {
+              if (!props.clientRect || !popup)
+                return
+
+              const rect = (props.clientRect as () => DOMRect)()
+              popup.style.bottom = `${window.innerHeight - rect.top + 4}px`
+              popup.style.left = `${rect.left + window.scrollX}px`
+              popup.style.top = 'auto'
+            }
+
+            updatePosition()
+          },
+
+          onUpdate(props: SuggestionProps<{ schema: string, table: string }>) {
+            component?.updateProps(props)
+
+            if (!props.clientRect || !popup) {
+              return
+            }
+
+            const rect = (props.clientRect as () => DOMRect)()
+            popup.style.bottom = `${window.innerHeight - rect.top + 4}px`
+            popup.style.left = `${rect.left + window.scrollX}px`
+            popup.style.top = 'auto'
+          },
+
+          onKeyDown(props: { event: KeyboardEvent }) {
+            if (props.event.key === 'Escape') {
+              return true
+            }
+
+            return component?.ref?.onKeyDown(props) ?? false
+          },
+
+          onExit() {
+            popup?.remove()
+            component?.destroy()
+            popup = undefined
+          },
+        }
+      },
+    }
+  }, [tablesAndSchemas])
 
   return (
     <div
@@ -241,7 +328,7 @@ export function ChatForm() {
           }}
           placeholder="Generate SQL queries using natural language"
           className={`
-            max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm outline-none
+            max-h-62.5 min-h-12.5 overflow-y-auto p-2 text-sm outline-none
           `}
           disabled={!subscription}
           onEnter={handleSend}
@@ -251,6 +338,7 @@ export function ChatForm() {
               files: [...store.state.files, file],
             } satisfies typeof state))
           }}
+          mentionSuggestion={mentionSuggestion}
         />
         <div className={`
           pointer-events-none flex items-end justify-between px-2 pb-2
