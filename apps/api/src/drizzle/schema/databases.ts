@@ -22,7 +22,7 @@ export const databases = pgTable('databases', ({ uuid, text, boolean }) => ({
   color: text(),
   isPasswordExists: boolean('password_exists').notNull(),
   syncType: syncType().notNull(),
-})).enableRLS()
+}))
 
 export const databasesSelectSchema = createSelectSchema(databases)
 export const databasesUpdateSchema = createUpdateSchema(databases)

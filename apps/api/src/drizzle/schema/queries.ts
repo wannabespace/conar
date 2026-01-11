@@ -12,7 +12,7 @@ export const queries = pgTable('queries', ({ uuid, text }) => ({
   databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }).notNull(),
   name: text().notNull(),
   query: encryptedText().notNull(),
-})).enableRLS()
+}))
 
 export const queriesSelectSchema = createSelectSchema(queries)
 export const queriesInsertSchema = createInsertSchema(queries)
