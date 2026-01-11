@@ -108,12 +108,18 @@ export const auth: Auth = betterAuth({
         return
       }
 
+      const text = typeof error === 'object' && error !== null ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2) : String(error)
+
+      if (text.includes('Invalid email')) {
+        return
+      }
+
       await sendEmail({
         to: env.ALERTS_EMAIL,
         subject: 'Alert from Better Auth',
         template: 'Alert',
         props: {
-          text: typeof error === 'object' && error !== null ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2) : String(error),
+          text,
           service: 'Better Auth',
         },
       })
