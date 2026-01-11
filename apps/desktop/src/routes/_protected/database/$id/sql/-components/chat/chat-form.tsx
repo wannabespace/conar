@@ -223,6 +223,7 @@ export function ChatForm() {
       render: () => {
         let component: ReactRenderer<MentionListRef> | undefined
         let popup: HTMLElement | undefined
+        let updatePositionFn: (() => void) | undefined
 
         return {
           onStart: (props: SuggestionProps<{ schema: string, table: string }>) => {
@@ -240,7 +241,7 @@ export function ChatForm() {
             popup.style.zIndex = '50'
             document.body.appendChild(popup)
 
-            const updatePosition = () => {
+            updatePositionFn = () => {
               if (!props.clientRect || !popup)
                 return
 
@@ -250,7 +251,10 @@ export function ChatForm() {
               popup.style.top = 'auto'
             }
 
-            updatePosition()
+            updatePositionFn()
+
+            window.addEventListener('resize', updatePositionFn)
+            window.addEventListener('scroll', updatePositionFn, true)
           },
 
           onUpdate(props: SuggestionProps<{ schema: string, table: string }>) {
@@ -275,9 +279,16 @@ export function ChatForm() {
           },
 
           onExit() {
+            if (updatePositionFn) {
+              window.removeEventListener('resize', updatePositionFn)
+              window.removeEventListener('scroll', updatePositionFn, true)
+              updatePositionFn = undefined
+            }
+
             popup?.remove()
             component?.destroy()
             popup = undefined
+            component = undefined
           },
         }
       },

@@ -80,15 +80,20 @@ export function MentionList({ ref, ...props }: MentionListProps & { ref?: React.
   }
 
   return (
-    <div className={`
-      z-50 max-h-48 min-w-40 overflow-y-auto rounded-md border bg-popover
-      text-popover-foreground shadow-md
-    `}
+    <div
+      role="listbox"
+      aria-label="Table suggestions"
+      className={`
+        z-50 max-h-48 min-w-40 overflow-y-auto rounded-md border bg-popover
+        text-popover-foreground shadow-md
+      `}
     >
       {props.items.map((item, index) => (
         <button
           ref={index === selectedIndex ? selectedRef : null}
           type="button"
+          role="option"
+          aria-selected={index === selectedIndex}
           className={cn(
             `
               flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left
