@@ -134,7 +134,6 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         chatsMessagesCollection.update(message.id, (draft) => {
           Object.assign(draft, {
             ...message,
-            createdAt: message.metadata?.createdAt || new Date(),
             updatedAt: message.metadata?.updatedAt || new Date(),
           })
         })
