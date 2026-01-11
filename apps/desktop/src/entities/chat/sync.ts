@@ -39,8 +39,14 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
     })
     resolvers.resolve()
   },
+  onInsert: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map(m => orpc.chats.create(m.modified)))
+  },
+  onUpdate: async ({ transaction }) => {
+    await Promise.all(transaction.mutations.map(m => orpc.chats.update({ id: m.key, ...m.changes })))
+  },
   onDelete: async ({ transaction }) => {
-    await Promise.all(transaction.mutations.map(m => orpc.chats.remove({ id: m.key })))
+    await orpc.chats.remove(transaction.mutations.map(m => ({ id: m.key })))
   },
 }))
 

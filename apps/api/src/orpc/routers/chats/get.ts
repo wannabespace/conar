@@ -15,5 +15,4 @@ export const get = orpc
         orderBy: desc(chatsMessages.createdAt),
       },
     },
-  }),
-  )
+  }))

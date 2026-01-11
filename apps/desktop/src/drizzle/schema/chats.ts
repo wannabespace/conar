@@ -6,7 +6,7 @@ import { databases } from './databases'
 
 export const chats = pgTable('chats', {
   ...baseTable,
-  databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }),
+  databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }).notNull(),
   title: text(),
 })
 

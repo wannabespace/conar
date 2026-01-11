@@ -1,4 +1,4 @@
-import { ask } from './ask'
+import { ask } from './ask__legacy'
 import { enhancePrompt } from './enhance-prompt'
 import { filters } from './filters'
 import { fixSQL } from './fix-sql'
