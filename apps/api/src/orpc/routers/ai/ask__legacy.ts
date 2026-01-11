@@ -1,4 +1,4 @@
-import type { LanguageModel } from 'ai'
+import type { LanguageModelV3 } from '@ai-sdk/provider'
 import type { AppUIMessage } from '~/ai-tools'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
@@ -31,7 +31,7 @@ const chatInputType = type({
 const mainModel = createRetryable({
   model: anthropic('claude-sonnet-4-5'),
   retries: [
-    anthropic('claude-opus-4-1'),
+    anthropic('claude-opus-4-5'),
     google('gemini-2.5-pro'),
   ],
 })
@@ -48,7 +48,7 @@ function handleError(error: unknown) {
   return 'Sorry, I was unable to generate a response due to an error. Please try again.'
 }
 
-function generateStream({
+async function generateStream({
   messages,
   type,
   context,
@@ -60,7 +60,7 @@ function generateStream({
   messages: AppUIMessage[]
   type: typeof chatInputType.infer['type']
   context: typeof chatInputType.infer['context']
-  model: Exclude<LanguageModel, string>
+  model: Exclude<LanguageModelV3, string>
   signal?: AbortSignal
   chatId: string
   userId: string
@@ -71,6 +71,8 @@ function generateStream({
     role: message.role,
     partsCount: message.parts.length,
   })), null, 2))
+
+  const modelMessages = await convertToModelMessages(messages)
 
   return streamText({
     messages: [
@@ -104,7 +106,7 @@ function generateStream({
           context,
         ].join('\n'),
       },
-      ...convertToModelMessages(messages),
+      ...modelMessages,
     ],
     stopWhen: stepCountIs(20),
     abortSignal: signal,
@@ -200,7 +202,7 @@ export const ask = orpc
     })
 
     try {
-      const result = generateStream({
+      const result = await generateStream({
         type: input.type,
         model: input.fallback ? fallbackModel : mainModel,
         context: input.context,

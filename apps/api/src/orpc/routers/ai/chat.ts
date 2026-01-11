@@ -91,7 +91,7 @@ export const chat = orpc
               context,
             ].join('\n'),
           },
-          ...convertToModelMessages(input.messages),
+          ...(await convertToModelMessages(input.messages)),
         ],
         stopWhen: stepCountIs(Number.POSITIVE_INFINITY),
         abortSignal: signal,
