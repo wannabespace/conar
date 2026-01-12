@@ -4,13 +4,14 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
+import { AGENT_PROMPT } from '@upstash/context7-tools-ai-sdk'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryable } from 'ai-retry'
 import { type } from 'arktype'
 import { consola } from 'consola'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
-import { context7ToolDescriptions, convertToAppUIMessage, createContext7Tools, getContext7SystemPrompt, tools } from '~/ai-tools'
+import { context7ToolDescriptions, convertToAppUIMessage, createContext7Tools, tools } from '~/ai-tools'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
@@ -118,7 +119,7 @@ async function generateStream({
           `- **getLibraryDocs**: ${context7ToolDescriptions.getLibraryDocs}`,
           '',
           '### Context7 Workflow',
-          getContext7SystemPrompt(),
+          AGENT_PROMPT,
           '',
           '## User Provided Context',
           context,
