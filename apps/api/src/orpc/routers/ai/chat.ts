@@ -85,7 +85,7 @@ export const chat = orpc
               `- ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}`,
               '',
               'User provided context:',
-              context,
+              input.context,
             ].join('\n'),
           },
           ...(await convertToModelMessages(input.messages)),
