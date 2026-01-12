@@ -2,7 +2,6 @@ import type { InferUITools, Tool, UIDataTypes, UIMessage } from 'ai'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { webSearch } from '@exalabs/ai-sdk'
 import {
-  AGENT_PROMPT as CONTEXT7_AGENT_PROMPT,
   GET_LIBRARY_DOCS_DESCRIPTION,
   getLibraryDocs,
   RESOLVE_LIBRARY_DESCRIPTION,
@@ -83,10 +82,6 @@ export function createContext7Tools(): Record<string, Tool> {
     resolveLibrary: resolveLibrary(config),
     getLibraryDocs: getLibraryDocs(config),
   }
-}
-
-export function getContext7SystemPrompt(): string {
-  return CONTEXT7_AGENT_PROMPT
 }
 
 export const context7ToolDescriptions = {

@@ -118,6 +118,22 @@ interface ChatMessageToolProps {
   className?: string
 }
 
+function getToolIcon(loading: boolean, error: boolean, toolType?: string) {
+  if (loading)
+    return RiLoader4Line
+  if (error)
+    return RiErrorWarningLine
+  return ICONS[toolType ?? ''] ?? RiHammerLine
+}
+
+function getToolTitle(loading: boolean, error: boolean, name: string) {
+  if (error)
+    return `Failed ${name}`
+  if (loading)
+    return `Running ${name}`
+  return `Ran ${name}`
+}
+
 export const ChatMessageTool = memo<ChatMessageToolProps>(({ part, className }) => {
   const loading = part.state === 'input-streaming' || part.state === 'input-available'
   const error = part.state === 'output-error'
@@ -125,8 +141,9 @@ export const ChatMessageTool = memo<ChatMessageToolProps>(({ part, className }) 
 
   const errorMsg = error ? extractErrorMessage(part.output) : null
 
-  const Icon = loading ? RiLoader4Line : error ? RiErrorWarningLine : ICONS[part.type ?? ''] ?? RiHammerLine
-  const title = error ? `Failed ${name}` : loading ? `Running ${name}` : `Ran ${name}`
+  const Icon = getToolIcon(loading, error, part.type)
+  const title = getToolTitle(loading, error, name)
+
   const hasDetails = part.input != null || part.output != null
 
   const [open, setOpen] = useState(error)
