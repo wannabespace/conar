@@ -7,21 +7,11 @@ import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'a
 import { createRetryable } from 'ai-retry'
 import { type } from 'arktype'
 import { consola } from 'consola'
-import { eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
 import { tools } from '~/ai-tools'
-import { chats, chatsMessages, db } from '~/drizzle'
+import { chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
-
-const chatInputType = type({
-  'id': 'string.uuid.v7',
-  'type': type.valueOf(DatabaseType),
-  'context?': 'string',
-  'createdAt?': 'Date',
-  'updatedAt?': 'Date',
-  'messages': 'object[]' as type.cast<AppUIMessage[]>,
-})
 
 const model = createRetryable({
   model: anthropic('claude-sonnet-4-5'),
@@ -49,7 +39,14 @@ export const chat = orpc
 
     return next()
   })
-  .input(chatInputType)
+  .input(type({
+    'id': 'string.uuid.v7',
+    'type': type.valueOf(DatabaseType),
+    'context?': 'string',
+    'createdAt?': 'Date',
+    'updatedAt?': 'Date',
+    'messages': 'object[]' as type.cast<AppUIMessage[]>,
+  }))
   .handler(async ({ input, context, signal }) => {
     try {
       consola.info('messages', JSON.stringify(input.messages.map(message => ({
@@ -132,8 +129,6 @@ export const chat = orpc
                 updatedAt: result.responseMessage.metadata?.updatedAt,
               },
             })
-
-            await db.update(chats).set({ activeStreamId: null }).where(eq(chats.id, input.id))
           }
           catch (error) {
             consola.error('error onFinish transaction', error)

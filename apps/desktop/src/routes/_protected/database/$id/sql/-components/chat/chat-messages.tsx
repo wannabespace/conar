@@ -433,13 +433,6 @@ function ErrorMessage({ error, className, ...props }: { error: Error } & Compone
             >
               Retry
             </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => chat.regenerate({ body: { fallback: true } })}
-            >
-              Retry with fallback model
-            </Button>
           </div>
         </AlertDescription>
       </Alert>

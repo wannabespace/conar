@@ -34,6 +34,8 @@ export const chatsMessages = pgTable('chats_messages', {
 ])
 
 export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
+export const chatsMessagesInsertSchema = createInsertSchema(chatsMessages)
+export const chatsMessagesUpdateSchema = createUpdateSchema(chatsMessages)
 
 export const chatsRelations = relations(chats, ({ one, many }) => ({
   user: one(users, {
