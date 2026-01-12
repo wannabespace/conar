@@ -1,45 +1,28 @@
-import type { tools } from '@conar/api/src/ai-tools'
-import type { DynamicToolUIPart, InferUITools, ToolUIPart } from 'ai'
-import type { ReactNode } from 'react'
-import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import type { DynamicToolUIPart, ToolUIPart } from 'ai'
+import type { editor } from 'monaco-editor'
+import type { ComponentType } from 'react'
+import {
+  SingleAccordion,
+  SingleAccordionContent,
+  SingleAccordionTrigger,
+  SingleAccordionTriggerArrow,
+} from '@conar/ui/components/custom/single-accordion'
 import { cn } from '@conar/ui/lib/utils'
-import { RiEarthLine, RiErrorWarningLine, RiHammerLine, RiLoader4Line } from '@remixicon/react'
-import { AnimatePresence, motion } from 'motion/react'
-import { InfoTable } from '~/components/info-table'
+import {
+  RiBook2Line,
+  RiEarthLine,
+  RiErrorWarningLine,
+  RiHammerLine,
+  RiLoader4Line,
+  RiSearchLine,
+} from '@remixicon/react'
+import { memo, useEffect, useState } from 'react'
 import { Monaco } from '~/components/monaco'
-import { FaviconWithFallback } from './favicon-with-fallback'
 
-function getToolLabel(tool: ToolUIPart<InferUITools<typeof tools>>) {
-  if (tool.type === 'tool-columns') {
-    if (tool.input) {
-      const schema = tool.input.tableAndSchema?.schemaName ? tool.input.tableAndSchema.schemaName === 'public' ? '' : tool.input.tableAndSchema.schemaName : ''
-
-      return `Get columns from ${schema ? `"${schema}".` : ''}${tool.input.tableAndSchema?.tableName ? `"${tool.input.tableAndSchema.tableName}"` : '...'}`
-    }
-    return 'Get columns from ...'
-  }
-  if (tool.type === 'tool-enums') {
-    return 'Get enums'
-  }
-  if (tool.type === 'tool-select') {
-    if (tool.input) {
-      const schema = tool.input.tableAndSchema?.schemaName ? tool.input.tableAndSchema.schemaName === 'public' ? '' : tool.input.tableAndSchema.schemaName : ''
-
-      return `Select data from ${schema ? `"${schema}".` : ''}${tool.input.tableAndSchema?.tableName ? `"${tool.input.tableAndSchema.tableName}"` : '...'}`
-    }
-    return 'Select data from ...'
-  }
-  if (tool.type === 'tool-webSearch') {
-    if (tool.input && typeof tool.input === 'object' && 'query' in tool.input) {
-      const query = typeof tool.input.query === 'string' ? tool.input.query : ''
-
-      return `Searching the web for "${query}"`
-    }
-    return 'Searching the web...'
-  }
-
-  return 'Unknown tool'
+const ICONS: Record<string, ComponentType> = {
+  'tool-webSearch': RiEarthLine,
+  'tool-resolveLibrary': RiSearchLine,
+  'tool-getLibraryDocs': RiBook2Line,
 }
 
 const monacoOptions = {
@@ -48,235 +31,192 @@ const monacoOptions = {
   lineNumbers: 'off' as const,
   minimap: { enabled: false },
   folding: false,
+} as const satisfies editor.IStandaloneEditorConstructionOptions
+
+function hasErrorProperty(v: unknown): v is { error?: unknown } {
+  return typeof v === 'object' && v !== null && 'error' in v
 }
 
-function MonacoOutput({ value }: { value: string }) {
-  return (
-    <Monaco
-      value={value}
-      language="json"
-      options={monacoOptions}
-      className="h-[200px] max-h-[50vh] -mx-2"
-    />
-  )
+function stringify(v: unknown) {
+  try {
+    return JSON.stringify(v, (_, x) => (typeof x === 'bigint' ? String(x) : x), 2)
+  }
+  catch {
+    return String(v)
+  }
 }
 
-function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>> }): ReactNode {
-  if (tool.type === 'tool-columns') {
-    return (
-      <>
-        <div className="text-xs text-muted-foreground mb-4">Agent called a tool to get table columns.</div>
-        {tool.state === 'output-available' && (
-          <MonacoOutput value={JSON.stringify(tool.output)} />
-        )}
-      </>
-    )
+function preview(v: unknown): string {
+  if (v == null)
+    return '—'
+  if (typeof v === 'string')
+    return v.slice(0, 120)
+  if (Array.isArray(v))
+    return `${v.length} item${v.length !== 1 ? 's' : ''}`
+  if (typeof v === 'object') {
+    const keys = Object.keys(v)
+    return keys.length ? keys.slice(0, 4).join(', ') : 'Empty'
   }
+  return String(v).slice(0, 120)
+}
 
-  if (tool.type === 'tool-enums') {
-    return (
-      <>
-        <div className="text-xs text-muted-foreground mb-4">Agent called a tool to get database enums.</div>
-        {tool.state === 'output-available' && (
-          <MonacoOutput value={JSON.stringify(tool.output)} />
-        )}
-      </>
-    )
-  }
+function extractErrorMessage(output: unknown): string | null {
+  if (!hasErrorProperty(output))
+    return null
 
-  if (tool.type === 'tool-select') {
-    return (
-      <>
-        <div className="flex flex-col gap-2">
-          <div className="font-medium mb-1">
-            Agent called a tool to get data from the database.
-          </div>
-          {tool.input && (
-            <InfoTable
-              data={[
-                { name: 'Select', value: tool.input.select?.length
-                  ? tool.input.select.join(', ')
-                  : null },
-                { name: 'From', value: tool.input.tableAndSchema ? `${tool.input.tableAndSchema.schemaName}.${tool.input.tableAndSchema?.tableName}` : null },
-                { name: 'Where', value: (tool.state === 'input-available' || tool.state === 'output-available') && tool.input.whereFilters?.length
-                  ? tool.input.whereFilters.map(filter => `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map(value => `"${value}"`).join(', ') : ''}`).join(` ${tool.input.whereConcatOperator} `)
-                  : null },
-                { name: 'Order by', value: tool.input.orderBy && Object.keys(tool.input.orderBy).length
-                  ? Object.entries(tool.input.orderBy).map(([col, dir]) => `${col} ${dir}`).join(', ')
-                  : null },
-                { name: 'Limit', value: tool.input.limit },
-                { name: 'Offset', value: tool.input.offset || null },
-              ]}
+  const { error } = output
+
+  if (error == null)
+    return null
+  if (typeof error === 'string')
+    return error
+  if (error instanceof Error)
+    return error.message
+
+  return preview(error)
+}
+
+interface ChatMessageToolSectionProps {
+  title?: string
+  value: unknown
+  full: boolean
+}
+
+const ChatMessageToolSection = memo<ChatMessageToolSectionProps>(({ title, value, full }) => (
+  <div className="space-y-2">
+    {title && (
+      <div className={`
+        text-[11px] font-medium tracking-wider text-muted-foreground uppercase
+      `}
+      >
+        {title}
+      </div>
+    )}
+    {value == null
+      ? (
+          <div className="text-muted-foreground italic">Pending…</div>
+        )
+      : full
+        ? (
+            <Monaco
+              value={stringify(value)}
+              language="json"
+              className="-mx-2 h-[200px]"
+              options={monacoOptions}
             />
+          )
+        : (
+            <div className="break-words text-muted-foreground">{preview(value)}</div>
           )}
-        </div>
-        {tool.state === 'output-available' && (
-          <MonacoOutput value={JSON.stringify(tool.output)} />
-        )}
-      </>
-    )
-  }
+  </div>
+))
 
-  if (tool.type === 'tool-webSearch') {
-    return (
-      <>
-        <div className="text-xs text-muted-foreground mb-2">Agent searched the web for information.</div>
-        {tool.state === 'output-available' && (
-          <div className="space-y-2">
-            {!!tool.output && typeof tool.output === 'object' && 'results' in tool.output && Array.isArray(tool.output.results) && (
-              <div className="flex flex-wrap gap-2">
-                {tool.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }) => (
-                  <TooltipProvider key={`${tool.toolCallId}-${result.url}`}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <a
-                          href={result.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex flex-1 min-w-[200px] basis-1/3 max-w-full items-center gap-1 px-1.5 py-0.5 text-xs bg-accent/20 hover:bg-accent/40 rounded-md border transition-colors group"
-                        >
-                          <FaviconWithFallback url={result.url} className="size-3 shrink-0" />
-                          <span className="font-medium group-hover:text-primary overflow-hidden text-ellipsis whitespace-nowrap">
-                            {result.title}
-                          </span>
-                        </a>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="max-w-xs">
-                          <div className="font-medium">{result.title}</div>
-                          <div className="text-xs text-muted-foreground mt-1">{result.url}</div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </>
-    )
-  }
+ChatMessageToolSection.displayName = 'ChatMessageToolSection'
 
-  return null
-}
-
-const STATE_ICONS: Record<ToolUIPart['state'], (props: { className?: string, tool: ToolUIPart<InferUITools<typeof tools>> }) => React.ReactNode> = {
-  'input-streaming': ({ className }) => (
-    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
-  ),
-  'input-available': ({ className }) => (
-    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
-  ),
-  'output-available': ({ className, tool }) => {
-    if (tool.type === 'tool-webSearch') {
-      return <RiEarthLine className={cn('text-muted-foreground', className)} />
-    }
-    return <RiHammerLine className={cn('text-muted-foreground', className)} />
-  },
-  'output-error': ({ className }) => (
-    <RiErrorWarningLine className={cn(`text-red-600`, className)} />
-  ),
-  'approval-requested': ({ className }) => (
-    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
-  ),
-  'approval-responded': ({ className }) => (
-    <RiHammerLine className={cn(`text-muted-foreground`, className)} />
-  ),
-  'output-denied': ({ className }) => (
-    <RiErrorWarningLine className={cn(`text-red-600`, className)} />
-  ),
-}
-
-const STATE_LABELS: Record<ToolUIPart['state'], string> = {
-  'input-streaming': 'Waiting for tool response...',
-  'input-available': 'Tool response received',
-  'output-available': 'Tool response available',
-  'output-error': 'Tool call failed',
-  'approval-requested': 'Waiting for approval...',
-  'approval-responded': 'Approval processed',
-  'output-denied': 'Output denied',
-}
-
-export function ChatMessageTool({
-  part,
-  className,
-}: {
-  part: ToolUIPart<InferUITools<typeof tools>> | DynamicToolUIPart
+interface ChatMessageToolProps {
+  part: (ToolUIPart | DynamicToolUIPart) & { input?: unknown, output?: unknown }
   className?: string
-}) {
-  if (part.type === 'dynamic-tool') {
+}
+
+export const ChatMessageTool = memo<ChatMessageToolProps>(({ part, className }) => {
+  const loading = part.state === 'input-streaming' || part.state === 'input-available'
+  const error = part.state === 'output-error'
+  const name = part.type?.replace('tool-', '') ?? 'tool'
+
+  const errorMsg = error ? extractErrorMessage(part.output) : null
+
+  const Icon = loading ? RiLoader4Line : error ? RiErrorWarningLine : ICONS[part.type ?? ''] ?? RiHammerLine
+  const title = error ? `Failed ${name}` : loading ? `Running ${name}` : `Ran ${name}`
+  const hasDetails = part.input != null || part.output != null
+
+  const [open, setOpen] = useState(error)
+  const [full, setFull] = useState(false)
+
+  useEffect(() => {
+    if (error)
+      setOpen(true)
+  }, [error])
+
+  if (loading || !hasDetails) {
     return (
-      <SingleAccordion className={cn('my-4 first:mt-0 last:mb-0', className)}>
-        <SingleAccordionTrigger className="min-w-0 gap-2">
-          <RiLoader4Line className="size-4 shrink-0 animate-spin text-primary" />
-          <span className="min-w-0 flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">
-            {part.toolName}
-          </span>
-        </SingleAccordionTrigger>
-        <SingleAccordionContent>
-          <div className="text-xs text-muted-foreground">
-            Dynamic tool call not fully supported in this view.
-          </div>
-        </SingleAccordionContent>
-      </SingleAccordion>
+      <div className={cn('my-2 flex items-center gap-2 text-sm', className)}>
+        <Icon className={cn('size-4 shrink-0', loading && `
+          animate-spin text-primary
+        `)}
+        />
+        <span className={cn(loading && 'text-muted-foreground')}>{title}</span>
+      </div>
     )
   }
-
-  const tool = part as ToolUIPart<InferUITools<typeof tools>>
-  const label = getToolLabel(tool)
-  const Icon = STATE_ICONS[tool.state]
 
   return (
-    <SingleAccordion className={cn('my-4 first:mt-0 last:mb-0', className)}>
-      <SingleAccordionTrigger className="min-w-0 gap-2">
-        <span className="relative flex items-center justify-center size-4 shrink-0">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={tool.state}
-              initial={{ opacity: 0, scale: 0.8, rotate: 10 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              exit={{ opacity: 0, scale: 0.8, rotate: -10 }}
-              transition={{ duration: 0.15 }}
-              className="absolute inset-0 flex items-center justify-center"
-            >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Icon tool={tool} className="size-4 shrink-0" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {STATE_LABELS[tool.state]}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </motion.span>
-          </AnimatePresence>
-        </span>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-left">
-                {label}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              {label}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+    <SingleAccordion
+      className={cn('my-2', className)}
+      open={open}
+      onOpenChange={error ? undefined : setOpen}
+    >
+      <SingleAccordionTrigger className="gap-2 py-2" disabled={error}>
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <Icon className={cn('size-4 shrink-0', error && 'text-red-600')} />
+          <span className="truncate text-sm">{title}</span>
+        </div>
+        {!error && <SingleAccordionTriggerArrow />}
       </SingleAccordionTrigger>
+
       <SingleAccordionContent>
-        <ToolDescription tool={tool} />
-        {tool.state === 'input-streaming' && (
-          <div className="text-xs text-muted-foreground italic">
-            Waiting for tool response...
-          </div>
-        )}
-        {tool.state === 'output-error' && (
-          <div className="text-xs text-destructive">Tool call failed.</div>
-        )}
+        <div className="mt-2 space-y-4 text-sm">
+          {errorMsg
+            ? (
+                <div className="space-y-2">
+                  <div className={`
+                    text-[11px] font-medium tracking-wider text-muted-foreground
+                    uppercase
+                  `}
+                  >
+                    Error
+                  </div>
+                  <div
+                    className={`
+                      rounded-md border border-destructive/20 bg-destructive/10
+                      px-3 py-2 text-sm text-destructive
+                    `}
+                    role="alert"
+                  >
+                    {errorMsg}
+                  </div>
+                </div>
+              )
+            : (
+                <div className="space-y-2">
+                  <div className={`
+                    text-[11px] font-medium tracking-wider text-muted-foreground
+                    uppercase
+                  `}
+                  >
+                    Response
+                  </div>
+                  <ChatMessageToolSection value={part.output} full={full} />
+                </div>
+              )}
+
+          {part.input != null && (
+            <ChatMessageToolSection title="Parameters" value={part.input} full={full} />
+          )}
+
+          <button
+            type="button"
+            className={`
+              rounded-sm text-muted-foreground transition-colors
+              hover:text-foreground
+              focus-visible:ring-2 focus-visible:ring-ring
+              focus-visible:outline-none
+            `}
+            onClick={() => setFull(v => !v)}
+          >
+            {full ? 'Show less' : 'Show more'}
+          </button>
+        </div>
       </SingleAccordionContent>
     </SingleAccordion>
   )
-}
+})

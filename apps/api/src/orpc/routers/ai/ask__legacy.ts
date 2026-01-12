@@ -10,7 +10,7 @@ import { type } from 'arktype'
 import { consola } from 'consola'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
-import { convertToAppUIMessage, tools } from '~/ai-tools'
+import { context7ToolDescriptions, convertToAppUIMessage, createContext7Tools, getContext7SystemPrompt, tools } from '~/ai-tools'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
@@ -72,7 +72,12 @@ async function generateStream({
     partsCount: message.parts.length,
   })), null, 2))
 
+  const context7Tools = createContext7Tools()
   const modelMessages = await convertToModelMessages(messages)
+  const allTools = {
+    ...tools,
+    ...context7Tools,
+  }
 
   return streamText({
     messages: [
@@ -99,10 +104,22 @@ async function generateStream({
           'Additional information:',
           `- Current date and time: ${new Date().toISOString()}`,
           '',
-          'You can use the following tools to help you generate the SQL code:',
-          `- ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}`,
+          '## Available Tools',
           '',
-          'User provided context:',
+          '### Database Tools',
+          `${Object.entries(tools).map(([toolName, { description }]) => `- **${toolName}**: ${description}`).join('\n')}`,
+          '',
+          '### Context7 Documentation Tools',
+          'Use these tools to search for up-to-date library documentation when users ask about programming concepts, APIs, or need code examples.',
+          '',
+          `- **resolveLibrary**: ${context7ToolDescriptions.resolveLibrary}`,
+          '',
+          `- **getLibraryDocs**: ${context7ToolDescriptions.getLibraryDocs}`,
+          '',
+          '### Context7 Workflow',
+          getContext7SystemPrompt(),
+          '',
+          '## User Provided Context',
           context,
         ].join('\n'),
       },
@@ -115,7 +132,7 @@ async function generateStream({
       userId,
     }),
     experimental_transform: smoothStream(),
-    tools,
+    tools: allTools,
   })
 }
 

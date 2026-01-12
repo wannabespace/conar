@@ -26,6 +26,7 @@
     "@posthog/ai": "catalog:",
     "@react-email/components": "catalog:",
     "@toon-format/toon": "catalog:",
+    "@upstash/context7-tools-ai-sdk": "catalog:",
     "ai": "catalog:",
     "ai-retry": "catalog:",
     "arktype": "catalog:",

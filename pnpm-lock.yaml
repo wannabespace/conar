@@ -228,6 +228,9 @@ catalogs:
     '@typescript/native-preview':
       specifier: ^7.0.0-dev.20260107.1
       version: 7.0.0-dev.20260107.1
+    '@upstash/context7-tools-ai-sdk':
+      specifier: ^0.1.0
+      version: 0.1.0
     '@vitejs/plugin-react':
       specifier: ^5.1.2
       version: 5.1.2
@@ -575,6 +578,9 @@ importers:
       '@toon-format/toon':
         specifier: 'catalog:'
         version: 2.1.0
+      '@upstash/context7-tools-ai-sdk':
+        specifier: 'catalog:'
+        version: 0.1.0(@upstash/context7-sdk@0.3.0)(ai@6.0.24(zod@4.3.5))(zod@4.3.5)
       ai:
         specifier: 'catalog:'
         version: 6.0.24(zod@4.3.5)
@@ -5196,6 +5202,16 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+
+  '@upstash/context7-sdk@0.3.0':
+    resolution: {integrity: sha512-kW5UV49mG9hh30sWP7nLq0mF7YHbTtfWrnm1VsT0UFW8mR6ovlYp7anobUh5qOaewSzraq9o2QyY77KVpI1twg==}
+
+  '@upstash/context7-tools-ai-sdk@0.1.0':
+    resolution: {integrity: sha512-SxwPkwnI/+n4clwGF8M3mkplrL9Eo+/XxdyyajkvtQMc0Luh51YJWzY/zjmsr8NT3VLjcs384EhlJa2tnC+o6A==}
+    peerDependencies:
+      '@upstash/context7-sdk': '>=0.1.0'
+      ai: '>=5.0.0'
+      zod: '>=3.24.0'
 
   '@vercel/oidc@3.1.0':
     resolution: {integrity: sha512-Fw28YZpRnA3cAHHDlkt7xQHiJ0fcL+NRcIqsocZQUSmbzeIKRpwttJjik5ZGanXP+vlA4SbTg+AbA3bP363l+w==}
@@ -15120,6 +15136,14 @@ snapshots:
       - supports-color
 
   '@ungap/structured-clone@1.3.0': {}
+
+  '@upstash/context7-sdk@0.3.0': {}
+
+  '@upstash/context7-tools-ai-sdk@0.1.0(@upstash/context7-sdk@0.3.0)(ai@6.0.24(zod@4.3.5))(zod@4.3.5)':
+    dependencies:
+      '@upstash/context7-sdk': 0.3.0
+      ai: 6.0.24(zod@4.3.5)
+      zod: 4.3.5
 
   '@vercel/oidc@3.1.0': {}
 
