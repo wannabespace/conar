@@ -8,38 +8,40 @@ import {
   resolveLibrary,
 } from '@upstash/context7-tools-ai-sdk'
 import { tool } from 'ai'
-import * as z from 'zod'
+import { type } from 'arktype'
 import { env } from '~/env'
+
+const sqlFilterOperators = SQL_FILTERS_LIST.map(filter => `'${filter.operator}'`).join(' | ') as `'${typeof SQL_FILTERS_LIST[number]['operator']}'`
 
 export const tools = {
   columns: tool({
     description: 'Use this tool if you need to get the list of columns in a table.',
-    inputSchema: z.object({
-      tableAndSchema: z.object({
-        tableName: z.string(),
-        schemaName: z.string(),
-      }),
+    inputSchema: type({
+      tableAndSchema: {
+        tableName: 'string',
+        schemaName: 'string',
+      },
     }),
-    outputSchema: z.array(z.object({
-      schema: z.string(),
-      table: z.string(),
-      id: z.string(),
-      default: z.string().nullable(),
-      type: z.string(),
-      enum: z.string().optional(),
-      isArray: z.boolean().optional(),
-      isEditable: z.boolean(),
-      isNullable: z.boolean(),
-    })),
+    outputSchema: type({
+      'schema': 'string',
+      'table': 'string',
+      'id': 'string',
+      'default': 'string | null',
+      'type': 'string',
+      'enum?': 'string',
+      'isArray?': 'boolean',
+      'isEditable': 'boolean',
+      'isNullable': 'boolean',
+    }).array(),
   }),
   enums: tool({
     description: 'Use this tool if you need to get the list of enums in a database',
-    inputSchema: z.object({}),
-    outputSchema: z.array(z.object({
-      schema: z.string(),
-      name: z.string(),
-      value: z.string(),
-    })),
+    inputSchema: type({}),
+    outputSchema: type({
+      schema: 'string',
+      name: 'string',
+      value: 'string',
+    }).array(),
   }),
   select: tool({
     description: [
@@ -51,31 +53,28 @@ export const tools = {
       'tableName and schemaName will be concatenated to "schemaName.tableName".',
       'For tableName use only table without schema prefix.',
     ].join('\n'),
-    inputSchema: z.object({
-      whereConcatOperator: z.enum(['AND', 'OR']).describe('The operator to use to concatenate the where clauses'),
-      whereFilters: z.array(z.object({
-        column: z.string(),
-        operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator)).describe('The operator to use in the where clause'),
-        values: z.array(z.string()).describe('The value to use in the where clause. If the operator does not require a value, this should be empty array.'),
-      })).describe('The columns to use in the where clause'),
-      select: z.array(z.string()).optional().describe('The columns to select. If not provided, all columns will be selected'),
-      limit: z.number().describe('The number of rows to return.'),
-      offset: z.number().describe('The number of rows to skip'),
-      orderBy: z.record(z.string(), z.enum(['ASC', 'DESC'])).optional().describe('The columns to order by'),
-      tableAndSchema: z.object({
-        tableName: z.string().describe('The name of the table to query'),
-        schemaName: z.string().describe('The name of the schema to query'),
-      }).describe('The name of the table and schema to query'),
+    inputSchema: type({
+      'whereConcatOperator': `'AND' | 'OR'`,
+      'whereFilters': type({
+        column: 'string',
+        operator: sqlFilterOperators,
+        values: 'string[]',
+      }).array(),
+      'select?': 'string[]',
+      'limit': 'number',
+      'offset': 'number',
+      'orderBy?': { '[string]': `'ASC' | 'DESC'` },
+      'tableAndSchema': {
+        tableName: 'string',
+        schemaName: 'string',
+      },
     }),
-    outputSchema: z.union([
-      z.array(z.record(z.string(), z.unknown())),
-      z.object({ error: z.string() }),
-    ]),
+    outputSchema: type('Record<string, unknown>[]').or({ error: 'string' }),
   }),
   webSearch: webSearch({ apiKey: env.EXA_API_KEY }),
 }
 
-export function createContext7Tools(): Record<string, Tool> {
+function createContext7Tools(): Record<string, Tool> {
   const config = { apiKey: env.CONTEXT7_API_KEY, defaultMaxResults: 15 }
 
   return {
@@ -87,6 +86,10 @@ export function createContext7Tools(): Record<string, Tool> {
 export const context7ToolDescriptions = {
   resolveLibrary: RESOLVE_LIBRARY_DESCRIPTION,
   getLibraryDocs: GET_LIBRARY_DOCS_DESCRIPTION,
+}
+
+export function getAllTools(): Record<string, Tool> {
+  return Object.assign({}, tools, createContext7Tools())
 }
 
 export type AppUIMessage = UIMessage<
