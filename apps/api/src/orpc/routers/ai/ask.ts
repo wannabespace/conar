@@ -11,7 +11,7 @@ import { type } from 'arktype'
 import { consola } from 'consola'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
-import { context7ToolDescriptions, convertToAppUIMessage, createContext7Tools, tools } from '~/ai-tools'
+import { context7ToolDescriptions, convertToAppUIMessage, getAllTools, tools } from '~/ai-tools'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
@@ -74,12 +74,8 @@ async function generateStream({
     partsCount: message.parts.length,
   })), null, 2))
 
-  const context7Tools = createContext7Tools()
   const modelMessages = await convertToModelMessages(messages)
-  const allTools = {
-    ...tools,
-    ...context7Tools,
-  }
+  const allTools = getAllTools()
 
   return streamText({
     messages: [
