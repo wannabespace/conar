@@ -35,7 +35,7 @@ export function PasswordForm({ database }: { database: typeof databases.$inferSe
       })
       databasesCollection.update(database.id, {
         metadata: {
-          sync: false,
+          cloudSync: false,
         } satisfies DatabaseMutationMetadata,
       }, (draft) => {
         const url = new SafeURL(draft.connectionString)

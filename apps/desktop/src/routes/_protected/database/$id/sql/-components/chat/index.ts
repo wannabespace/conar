@@ -1,6 +1,7 @@
 import type { AppUIMessage, tools } from '@conar/api/src/ai-tools'
 import type { InferToolInput, InferToolOutput } from 'ai'
 import type { chatsMessages, databases } from '~/drizzle'
+import type { ChatMessagesMutationMetadata } from '~/entities/chat/sync'
 import { Chat } from '@ai-sdk/react'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { eventIteratorToStream } from '@orpc/client'
@@ -86,12 +87,18 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         }
 
         if (options.trigger === 'regenerate-message' && options.messageId && chatsMessagesCollection.has(options.messageId)) {
-          await chatsMessagesCollection.delete(options.messageId).isPersisted.promise
+          chatsMessagesCollection.delete(options.messageId, {
+            metadata: {
+              cloudSync: false,
+            } satisfies ChatMessagesMutationMetadata,
+          })
         }
 
         const store = databaseStore(database.id)
 
         return eventIteratorToStream(await orpc.ai.chat({
+          trigger: options.trigger,
+          messageId: options.messageId,
           id: options.chatId,
           createdAt: chat.createdAt,
           updatedAt: chat.updatedAt,
@@ -120,11 +127,20 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       const existingMessage = chatsMessagesCollection.get(message.id)
 
       if (existingMessage) {
-        chatsMessagesCollection.update(message.id, (draft) => {
+        chatsMessagesCollection.update(message.id, {
+          metadata: {
+            cloudSync: false,
+          } satisfies ChatMessagesMutationMetadata,
+        }, (draft) => {
           Object.assign(draft, {
-            ...message,
+            id: message.id,
+            parts: message.parts,
+            role: message.role,
+            chatId: id,
+            metadata: existingMessage.metadata,
+            createdAt: message.metadata?.createdAt || new Date(),
             updatedAt: message.metadata?.updatedAt || new Date(),
-          })
+          } satisfies typeof draft)
         })
       }
       else {
@@ -136,6 +152,10 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           metadata: null,
           parts: message.parts,
           role: message.role,
+        }, {
+          metadata: {
+            cloudSync: false,
+          } satisfies ChatMessagesMutationMetadata,
         })
       }
     },

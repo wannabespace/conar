@@ -5,7 +5,7 @@ import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 
 export const create = orpc
   .use(requireSubscriptionMiddleware)
-  .input(chatsMessagesInsertSchema.omit('updatedAt'))
+  .input(chatsMessagesInsertSchema)
   .handler(async ({ context, input }) => {
     const [chat] = await db.select({ userId: chats.userId })
       .from(chats)

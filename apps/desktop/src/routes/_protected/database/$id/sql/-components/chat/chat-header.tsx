@@ -102,7 +102,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
 
     chatsCollection.update(chat.id, {
       metadata: {
-        sync: false,
+        cloudSync: false,
       } satisfies ChatMutationMetadata,
     }, (draft) => {
       draft.title = title

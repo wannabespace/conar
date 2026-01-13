@@ -7,7 +7,7 @@ import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 export const update = orpc
   .use(requireSubscriptionMiddleware)
   .input(type.and(
-    chatsMessagesUpdateSchema.omit('id', 'createdAt', 'updatedAt'),
+    chatsMessagesUpdateSchema.omit('id'),
     chatsMessagesUpdateSchema.pick('id').required(),
   ))
   .handler(async ({ context, input }) => {

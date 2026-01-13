@@ -14,7 +14,7 @@ export function waitForChatsSync() {
 }
 
 export interface ChatMutationMetadata {
-  sync?: false
+  cloudSync?: false
 }
 
 export const chatsCollection = createCollection(drizzleCollectionOptions({
@@ -44,24 +44,36 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
     resolvers.resolve()
   },
   onInsert: async ({ transaction }) => {
-    await Promise.all(transaction.mutations
-      .filter(m => (m.metadata as ChatMutationMetadata)?.sync !== false)
-      .map(m => orpc.chats.create(m.modified)))
+    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await Promise.all(mutations.map(m => orpc.chats.create(m.modified)))
   },
   onUpdate: async ({ transaction }) => {
-    await Promise.all(transaction.mutations
-      .filter(m => (m.metadata as ChatMutationMetadata)?.sync !== false)
-      .map(m => orpc.chats.update({ id: m.key, ...m.changes })))
+    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await Promise.all(mutations.map(m => orpc.chats.update({ id: m.key, ...m.changes })))
   },
   onDelete: async ({ transaction }) => {
-    await orpc.chats.remove(transaction.mutations
-      .filter(m => (m.metadata as ChatMutationMetadata)?.sync !== false)
-      .map(m => ({ id: m.key })))
+    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await orpc.chats.remove(mutations.map(m => ({ id: m.key })))
   },
 }))
 
 export interface ChatMessagesMutationMetadata {
-  sync?: false
+  cloudSync?: false
 }
 
 export const chatsMessagesCollection = createCollection(drizzleCollectionOptions({
@@ -88,19 +100,31 @@ export const chatsMessagesCollection = createCollection(drizzleCollectionOptions
     })
   },
   onInsert: async ({ transaction }) => {
-    await Promise.all(transaction.mutations
-      .filter(m => (m.metadata as ChatMessagesMutationMetadata)?.sync !== false)
-      .map(m => orpc.chatsMessages.create(m.modified)))
+    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMessagesMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await Promise.all(mutations.map(m => orpc.chatsMessages.create(m.modified)))
   },
   onUpdate: async ({ transaction }) => {
-    await Promise.all(transaction.mutations
-      .filter(m => (m.metadata as ChatMessagesMutationMetadata)?.sync !== false)
-      .map(m => orpc.chatsMessages.update({ id: m.key, ...m.changes })))
+    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMessagesMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await Promise.all(mutations.map(m => orpc.chatsMessages.update({ id: m.key, ...m.changes })))
   },
   onDelete: async ({ transaction }) => {
-    await orpc.chatsMessages.remove(transaction.mutations
-      .filter(m => (m.metadata as ChatMessagesMutationMetadata)?.sync !== false)
-      .map(m => ({ id: m.key, chatId: m.modified.chatId })))
+    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMessagesMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await orpc.chatsMessages.remove(mutations.map(m => ({ id: m.key, chatId: m.modified.chatId })))
   },
 }))
 

@@ -7,6 +7,7 @@ import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'a
 import { createRetryable } from 'ai-retry'
 import { type } from 'arktype'
 import { consola } from 'consola'
+import { eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
 import { tools } from '~/ai-tools'
 import { chatsMessages, db } from '~/drizzle'
@@ -40,11 +41,13 @@ export const chat = orpc
     return next()
   })
   .input(type({
+    'messageId?': 'string.uuid.v7',
     'id': 'string.uuid.v7',
     'type': type.valueOf(DatabaseType),
-    'context?': 'string',
-    'createdAt?': 'Date',
-    'updatedAt?': 'Date',
+    'context': 'string',
+    'trigger': '"regenerate-message" | "submit-message"',
+    'createdAt': 'Date',
+    'updatedAt': 'Date',
     'messages': 'object[]' as type.cast<AppUIMessage[]>,
   }))
   .handler(async ({ input, context, signal }) => {
@@ -55,6 +58,12 @@ export const chat = orpc
         role: message.role,
         partsCount: message.parts.length,
       })), null, 2))
+
+      if (input.trigger === 'regenerate-message' && input.messageId) {
+        await db
+          .delete(chatsMessages)
+          .where(eq(chatsMessages.id, input.messageId))
+      }
 
       const result = streamText({
         messages: [
@@ -104,36 +113,24 @@ export const chat = orpc
         originalMessages: input.messages,
         generateMessageId: () => v7(),
         sendSources: true,
-        messageMetadata: ({ part }) => {
-          if (part.type === 'finish') {
-            return {
-              updatedAt: new Date(),
-            }
-          }
-        },
         onFinish: async (result) => {
           consola.info('stream finished', JSON.stringify({
             ...result.responseMessage,
             parts: result.responseMessage.parts.map(part => part.type),
           }, null, 2))
 
-          try {
-            await db.insert(chatsMessages).values({
+          await db.insert(chatsMessages).values({
+            ...result.responseMessage,
+            chatId: input.id,
+            createdAt: input.createdAt,
+            updatedAt: input.updatedAt,
+          }).onConflictDoUpdate({
+            target: chatsMessages.id,
+            set: {
               ...result.responseMessage,
-              updatedAt: result.responseMessage.metadata?.updatedAt,
-              chatId: input.id,
-            }).onConflictDoUpdate({
-              target: chatsMessages.id,
-              set: {
-                ...result.responseMessage,
-                updatedAt: result.responseMessage.metadata?.updatedAt,
-              },
-            })
-          }
-          catch (error) {
-            consola.error('error onFinish transaction', error)
-            throw error
-          }
+              updatedAt: input.updatedAt,
+            },
+          })
         },
         onError: (error) => {
           consola.error('error toUIMessageStream onError', error)
