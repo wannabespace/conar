@@ -9,11 +9,8 @@ export const update = orpc
     chatsUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'userId', 'activeStreamId', 'databaseId'),
     chatsUpdateSchema.pick('id').required(),
   ))
-  .output(type({}))
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
 
     await db.update(chats).set(changes).where(and(eq(chats.id, id), eq(chats.userId, context.user.id)))
-
-    return {}
   })

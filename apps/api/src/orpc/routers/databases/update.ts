@@ -13,7 +13,6 @@ export const update = orpc
     databasesUpdateSchema.omit('createdAt', 'updatedAt', 'userId', 'id'),
     databasesUpdateSchema.pick('id').required(),
   ))
-  .output(type({}))
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
     const [database] = await db.select().from(databases).where(eq(databases.id, id)).limit(1)
@@ -40,6 +39,4 @@ export const update = orpc
         connectionString: encrypt({ text: newConnectionString.toString(), secret }),
       })
       .where(and(eq(databases.id, id), eq(databases.userId, context.user.id)))
-
-    return {}
   })

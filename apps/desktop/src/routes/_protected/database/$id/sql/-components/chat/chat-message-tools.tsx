@@ -106,7 +106,7 @@ const ChatMessageToolSection = memo<ChatMessageToolSectionProps>(({ title, value
             />
           )
         : (
-            <div className="break-words text-muted-foreground">{preview(value)}</div>
+            <div className="wrap-break-word text-muted-foreground">{preview(value)}</div>
           )}
   </div>
 ))

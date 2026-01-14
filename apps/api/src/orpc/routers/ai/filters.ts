@@ -1,32 +1,41 @@
 import { google } from '@ai-sdk/google'
 import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
-import { generateObject } from 'ai'
+import { asSchema, generateText, Output } from 'ai'
 import { type } from 'arktype'
 import { consola } from 'consola'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
 
-const sqlFilterOperators = SQL_FILTERS_LIST.map(filter => `'${filter.operator}'`).join(' | ') as `'${typeof SQL_FILTERS_LIST[number]['operator']}'`
-
-const filtersSchema = type({
-  'filters': type({
-    column: 'string',
-    operator: sqlFilterOperators,
-    values: 'string[]',
-  }).array(),
-  'orderBy?': { '[string]': `'ASC' | 'DESC'` },
-})
+const sqlFilterOperatorValues = SQL_FILTERS_LIST.map(filter => filter.operator)
+const sqlFilterOperators = type.enumerated(...sqlFilterOperatorValues)
 
 export const filters = orpc
   .use(authMiddleware)
-  .input(type({
-    prompt: 'string',
-    context: 'string',
-  }))
+  .input(
+    type({
+      prompt: 'string',
+      context: 'string',
+    }),
+  )
   .handler(async ({ input, signal, context }) => {
     consola.info('[SQL FILTERS] input', input.prompt)
 
-    const { object } = await generateObject({
+    const filterSchema = type({
+      column: 'string',
+      operator: sqlFilterOperators,
+      values: 'string[]',
+    })
+
+    const schema = asSchema(
+      type({
+        'filters': filterSchema.array(),
+        'orderBy?': type({ '[string]': `'ASC' | 'DESC'` }),
+      }).describe(
+        'An object with filters array and optional orderBy object; each filter has column, operator, and values; orderBy maps column names to sort direction.',
+      ),
+    )
+
+    const { output: result } = await generateText({
       model: withPosthog(google('gemini-2.0-flash'), {
         prompt: input.prompt,
         context: input.context,
@@ -63,12 +72,14 @@ export const filters = orpc
       ].join('\n'),
       prompt: input.prompt,
       abortSignal: signal,
-      schema: filtersSchema,
-      schemaDescription: 'An object with filters (array of filter objects with column, operator, values) and optional orderBy (object with column names as keys and "ASC" or "DESC" as values)',
-      output: 'object',
+      output: Output.object({
+        schema,
+        description:
+          'An array of objects with the following properties: column, operator, values where the operator is one of the SQL operators available',
+      }),
     })
 
-    consola.info('[SQL FILTERS] response', JSON.stringify(object, null, 2))
+    consola.info('[SQL FILTERS] response', JSON.stringify(result, null, 2))
 
-    return object
+    return result
   })

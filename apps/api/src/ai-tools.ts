@@ -6,8 +6,6 @@ import { tool } from 'ai'
 import { type } from 'arktype'
 import { env } from '~/env'
 
-const sqlFilterOperators = SQL_FILTERS_LIST.map(filter => `'${filter.operator}'`).join(' | ') as `'${typeof SQL_FILTERS_LIST[number]['operator']}'`
-
 export const tools = {
   columns: tool({
     description: 'Use this tool if you need to get the list of columns in a table.',
@@ -18,15 +16,12 @@ export const tools = {
       }),
     }),
     outputSchema: type({
-      'schema': 'string',
-      'table': 'string',
-      'id': 'string',
-      'default': 'string | null',
-      'type': 'string',
-      'enum?': 'string',
-      'isArray?': 'boolean',
-      'isEditable': 'boolean',
-      'isNullable': 'boolean',
+      isEditable: 'boolean',
+      isNullable: 'boolean',
+      table: 'string',
+      id: 'string',
+      type: 'string',
+      default: 'string | null',
     }).array(),
   }),
   enums: tool({
@@ -49,22 +44,24 @@ export const tools = {
       'For tableName use only table without schema prefix.',
     ].join('\n'),
     inputSchema: type({
-      'whereConcatOperator': `'AND' | 'OR'`,
-      'whereFilters': type({
+      whereConcatOperator: '"AND" | "OR"',
+      whereFilters: type({
         column: 'string',
-        operator: sqlFilterOperators,
+        operator: type.enumerated(...SQL_FILTERS_LIST.map(filter => filter.operator)),
         values: 'string[]',
       }).array(),
-      'select?': 'string[]',
-      'limit': 'number',
-      'offset': 'number',
-      'orderBy?': { '[string]': `'ASC' | 'DESC'` },
-      'tableAndSchema': {
+      select: 'string[] | null',
+      limit: 'number',
+      offset: 'number',
+      orderBy: 'Record<string, "ASC" | "DESC"> | null',
+      tableAndSchema: {
         tableName: 'string',
         schemaName: 'string',
       },
+    }).configure({
+      description: 'Input schema for database select query with filters, ordering, and pagination',
     }),
-    outputSchema: type('Record<string, unknown>[]').or({ error: 'string' }),
+    outputSchema: type('unknown'),
   }),
   ...(env.EXA_API_KEY && { webSearch: webSearch({ apiKey: env.EXA_API_KEY }) }),
   ...(env.CONTEXT7_API_KEY && {
