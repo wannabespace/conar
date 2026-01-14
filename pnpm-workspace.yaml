@@ -8,12 +8,12 @@ packages:
   - apps/*
 
 catalog:
-  '@ai-sdk/anthropic': ^3.0.2
-  '@ai-sdk/google': ^3.0.2
-  '@ai-sdk/openai': ^3.0.2
-  '@ai-sdk/provider': ^3.0.1
-  '@ai-sdk/react': ^3.0.7
-  '@ai-sdk/xai': ^3.0.3
+  '@ai-sdk/anthropic': ^3.0.13
+  '@ai-sdk/google': ^3.0.8
+  '@ai-sdk/openai': ^3.0.10
+  '@ai-sdk/provider': ^3.0.3
+  '@ai-sdk/react': ^3.0.36
+  '@ai-sdk/xai': ^3.0.23
   '@antfu/eslint-config': ^6.7.3
   '@base-ui/react': ^1.0.0
   '@clickhouse/client': ^1.16.0
@@ -82,11 +82,11 @@ catalog:
   '@types/react': ^19.2.7
   '@types/react-dom': ^19.2.3
   '@typescript/native-preview': ^7.0.0-dev.20260107.1
-  '@upstash/context7-tools-ai-sdk': ^0.1.0
+  '@upstash/context7-tools-ai-sdk': ^0.2.1
   '@vitejs/plugin-react': ^5.1.2
   '@xyflow/react': ^12.10.0
-  ai: ^6.0.0
-  ai-retry: ^1.0.0
+  ai: ^6.0.34
+  ai-retry: ^1.0.2
   arkregex: ^0.0.5
   arktype: ^2.1.29
   babel-plugin-react-compiler: ^1.0.0

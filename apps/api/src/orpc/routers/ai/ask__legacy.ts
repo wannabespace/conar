@@ -4,14 +4,13 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
-import { AGENT_PROMPT } from '@upstash/context7-tools-ai-sdk'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryable } from 'ai-retry'
 import { type } from 'arktype'
 import { consola } from 'consola'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
-import { context7ToolDescriptions, convertToAppUIMessage, getAllTools, tools } from '~/ai-tools'
+import { convertToAppUIMessage, tools } from '~/ai-tools'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
@@ -74,7 +73,6 @@ async function generateStream({
   })), null, 2))
 
   const modelMessages = await convertToModelMessages(messages)
-  const allTools = getAllTools()
 
   return streamText({
     messages: [
@@ -101,22 +99,10 @@ async function generateStream({
           'Additional information:',
           `- Current date and time: ${new Date().toISOString()}`,
           '',
-          '## Available Tools',
+          'You can use the following tools to help you generate the SQL code:',
+          `- ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}`,
           '',
-          '### Database Tools',
-          `${Object.entries(tools).map(([toolName, { description }]) => `- **${toolName}**: ${description}`).join('\n')}`,
-          '',
-          '### Context7 Documentation Tools',
-          'Use these tools to search for up-to-date library documentation when users ask about programming concepts, APIs, or need code examples.',
-          '',
-          `- **resolveLibrary**: ${context7ToolDescriptions.resolveLibrary}`,
-          '',
-          `- **getLibraryDocs**: ${context7ToolDescriptions.getLibraryDocs}`,
-          '',
-          '### Context7 Workflow',
-          AGENT_PROMPT,
-          '',
-          '## User Provided Context',
+          'User Provided Context',
           context,
         ].join('\n'),
       },
@@ -129,7 +115,7 @@ async function generateStream({
       userId,
     }),
     experimental_transform: smoothStream(),
-    tools: allTools,
+    tools,
   })
 }
 

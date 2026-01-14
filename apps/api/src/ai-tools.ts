@@ -1,12 +1,7 @@
-import type { InferUITools, Tool, UIDataTypes, UIMessage } from 'ai'
+import type { InferUITools, UIDataTypes, UIMessage } from 'ai'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { webSearch } from '@exalabs/ai-sdk'
-import {
-  GET_LIBRARY_DOCS_DESCRIPTION,
-  getLibraryDocs,
-  RESOLVE_LIBRARY_DESCRIPTION,
-  resolveLibrary,
-} from '@upstash/context7-tools-ai-sdk'
+import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
 import { tool } from 'ai'
 import { type } from 'arktype'
 import { env } from '~/env'
@@ -17,10 +12,10 @@ export const tools = {
   columns: tool({
     description: 'Use this tool if you need to get the list of columns in a table.',
     inputSchema: type({
-      tableAndSchema: {
+      tableAndSchema: type({
         tableName: 'string',
         schemaName: 'string',
-      },
+      }),
     }),
     outputSchema: type({
       'schema': 'string',
@@ -63,33 +58,19 @@ export const tools = {
       'select?': 'string[]',
       'limit': 'number',
       'offset': 'number',
-      'orderBy?': { '[string]': `'ASC' | 'DESC'` },
-      'tableAndSchema': {
+      'orderBy?': 'Record<string, "ASC" | "DESC">',
+      'tableAndSchema': type({
         tableName: 'string',
         schemaName: 'string',
-      },
+      }),
     }),
     outputSchema: type('Record<string, unknown>[]').or({ error: 'string' }),
   }),
-  webSearch: webSearch({ apiKey: env.EXA_API_KEY }),
-}
-
-function createContext7Tools(): Record<string, Tool> {
-  const config = { apiKey: env.CONTEXT7_API_KEY, defaultMaxResults: 15 }
-
-  return {
-    resolveLibrary: resolveLibrary(config),
-    getLibraryDocs: getLibraryDocs(config),
-  }
-}
-
-export const context7ToolDescriptions = {
-  resolveLibrary: RESOLVE_LIBRARY_DESCRIPTION,
-  getLibraryDocs: GET_LIBRARY_DOCS_DESCRIPTION,
-}
-
-export function getAllTools(): Record<string, Tool> {
-  return Object.assign({}, tools, createContext7Tools())
+  ...(env.EXA_API_KEY && { webSearch: webSearch({ apiKey: env.EXA_API_KEY }) }),
+  ...(env.CONTEXT7_API_KEY && {
+    resolveLibraryId: resolveLibraryId({ apiKey: env.CONTEXT7_API_KEY }),
+    queryDocs: queryDocs({ apiKey: env.CONTEXT7_API_KEY }),
+  }),
 }
 
 export type AppUIMessage = UIMessage<
