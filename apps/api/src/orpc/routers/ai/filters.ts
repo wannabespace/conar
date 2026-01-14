@@ -1,39 +1,19 @@
 import { google } from '@ai-sdk/google'
 import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
-import { asSchema, generateText, Output } from 'ai'
+import { generateText, Output } from 'ai'
 import { type } from 'arktype'
 import { consola } from 'consola'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
 
-const sqlFilterOperatorValues = SQL_FILTERS_LIST.map(filter => filter.operator)
-const sqlFilterOperators = type.enumerated(...sqlFilterOperatorValues)
-
 export const filters = orpc
   .use(authMiddleware)
-  .input(
-    type({
-      prompt: 'string',
-      context: 'string',
-    }),
-  )
+  .input(type({
+    prompt: 'string',
+    context: 'string',
+  }))
   .handler(async ({ input, signal, context }) => {
     consola.info('[SQL FILTERS] input', input.prompt)
-
-    const filterSchema = type({
-      column: 'string',
-      operator: sqlFilterOperators,
-      values: 'string[]',
-    })
-
-    const schema = asSchema(
-      type({
-        'filters': filterSchema.array(),
-        'orderBy?': type({ '[string]': `'ASC' | 'DESC'` }),
-      }).describe(
-        'An object with filters array and optional orderBy object; each filter has column, operator, and values; orderBy maps column names to sort direction.',
-      ),
-    )
 
     const { output: result } = await generateText({
       model: withPosthog(google('gemini-2.0-flash'), {
@@ -58,12 +38,12 @@ export const filters = orpc
         '- User can paste only the value, you should try to understand to which column the value belongs',
         '- Try to generate at least one filter unless the prompt is completely unclear',
         '',
-        'Ordering:',
-        '- If the user requests sorting or ordering (e.g., "sort by date descending", "order by name ascending"), generate an orderBy object.',
-        '- Use the exact column names from the context for ordering.',
-        '- The orderBy object should have the column name as the key and the direction as the value ("ASC" for ascending, "DESC" for descending).',
-        '- If no ordering is specified in the prompt, you may omit the orderBy object.',
-        '',
+        // 'Ordering:',
+        // '- If the user requests sorting or ordering (e.g., "sort by date descending", "order by name ascending"), generate an orderBy object.',
+        // '- Use the exact column names from the context for ordering.',
+        // '- The orderBy object should have the column name as the key and the direction as the value ("ASC" for ascending, "DESC" for descending).',
+        // '- If no ordering is specified in the prompt, you may omit the orderBy object.',
+        // '',
         `Current time: ${new Date().toISOString()}`,
         `Available operators: ${JSON.stringify(SQL_FILTERS_GROUPED, null, 2)}`,
         '',
@@ -73,9 +53,15 @@ export const filters = orpc
       prompt: input.prompt,
       abortSignal: signal,
       output: Output.object({
-        schema,
-        description:
-          'An array of objects with the following properties: column, operator, values where the operator is one of the SQL operators available',
+        schema: type({
+          filters: type({
+            column: 'string',
+            operator: type.enumerated(...SQL_FILTERS_LIST.map(filter => filter.operator)),
+            values: 'string[]',
+          }).array(),
+          // 'orderBy?': type({ '[string]': `'ASC' | 'DESC'` }),
+        }).describe('An object with filters array and optional orderBy object; each filter has column, operator, and values; orderBy maps column names to sort direction.'),
+        description: 'An array of objects with the following properties: column, operator, values where the operator is one of the SQL operators available',
       }),
     })
 

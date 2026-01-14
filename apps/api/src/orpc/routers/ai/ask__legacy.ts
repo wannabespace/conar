@@ -101,7 +101,7 @@ async function generateStream({
           '',
           '## Available Tools',
           '',
-          'User Provided Context',
+          'User provided context:',
           context,
         ].join('\n'),
       },
