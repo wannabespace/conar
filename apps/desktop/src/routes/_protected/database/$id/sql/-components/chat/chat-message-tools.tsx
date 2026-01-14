@@ -16,7 +16,7 @@ import {
   RiLoader4Line,
   RiSearchLine,
 } from '@remixicon/react'
-import { memo, useEffect, useState } from 'react'
+import { memo, useState } from 'react'
 import { Monaco } from '~/components/monaco'
 
 const ICONS: Record<string, ComponentType> = {
@@ -149,10 +149,9 @@ export const ChatMessageTool = memo<ChatMessageToolProps>(({ part, className }) 
   const [open, setOpen] = useState(error)
   const [full, setFull] = useState(false)
 
-  useEffect(() => {
-    if (error)
-      setOpen(true)
-  }, [error])
+  if (error && !open) {
+    setOpen(true)
+  }
 
   if (loading || !hasDetails) {
     return (
