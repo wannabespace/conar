@@ -1,11 +1,4 @@
-import { create } from './create'
-import { list } from './list'
-import { remove } from './remove'
-import { sync } from './sync'
-
-export const queries = {
-  sync,
-  create,
-  list,
-  remove,
-}
+export { create } from './create'
+export { list } from './list'
+export { remove } from './remove'
+export { sync } from './sync'
