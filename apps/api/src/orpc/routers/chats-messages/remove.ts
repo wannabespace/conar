@@ -11,9 +11,10 @@ const input = type({
 export const remove = orpc
   .use(requireSubscriptionMiddleware)
   .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
+  .output(type({}))
   .handler(async ({ context, input }) => {
     if (input.length === 0) {
-      return
+      return {}
     }
 
     const toRemove = await db
@@ -32,4 +33,6 @@ export const remove = orpc
 
     await db.delete(chatsMessages)
       .where(inArray(chatsMessages.id, toRemove.map(item => item.id)))
+
+    return {}
   })

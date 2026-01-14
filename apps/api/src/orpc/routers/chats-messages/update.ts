@@ -10,6 +10,7 @@ export const update = orpc
     chatsMessagesUpdateSchema.omit('id'),
     chatsMessagesUpdateSchema.pick('id').required(),
   ))
+  .output(type({}))
   .handler(async ({ context, input }) => {
     const [message] = await db.select({ userId: chats.userId, chatId: chatsMessages.chatId })
       .from(chatsMessages)
@@ -26,4 +27,6 @@ export const update = orpc
       .update(chatsMessages)
       .set(input)
       .where(eq(chatsMessages.id, input.id))
+
+    return {}
   })

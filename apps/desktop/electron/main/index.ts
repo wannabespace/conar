@@ -38,6 +38,7 @@ export function createWindow() {
     // visualEffectState: 'active',
     webPreferences: {
       sandbox: false,
+      webSecurity: false,
       preload: path.join(path.dirname(fileURLToPath(import.meta.url)), '../preload/index.mjs'),
     },
   })

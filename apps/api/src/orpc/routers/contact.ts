@@ -9,10 +9,11 @@ export const contact = orpc
   .input(type({
     message: 'string',
   }))
+  .output(type({}))
   .handler(async ({ input, context }) => {
     if (!resend) {
       consola.error('Resend is not configured')
-      return
+      return {}
     }
 
     const { data, error } = await resend.batch.send([
@@ -35,4 +36,5 @@ export const contact = orpc
     }
 
     consola.log('Support message sent successfully', data.data)
+    return {}
   })
