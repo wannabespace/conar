@@ -2,7 +2,6 @@
 import '@conar/shared/arktype-config'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
-import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { routeTree } from './routeTree.gen'
 import { handleError } from './utils/error'
 
@@ -21,14 +20,11 @@ export function getRouter() {
 
   const router = createRouter({
     routeTree,
+    scrollRestoration: true,
     defaultPendingMinMs: 0,
     context: {
       queryClient,
     },
-  })
-  setupRouterSsrQueryIntegration({
-    router,
-    queryClient,
   })
 
   return router
