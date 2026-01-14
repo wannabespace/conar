@@ -1,17 +1,13 @@
 import type { AppUIMessage, tools } from '@conar/api/src/ai-tools'
 import type { InferToolInput, InferToolOutput } from 'ai'
 import type { chatsMessages, databases } from '~/drizzle'
-import type { ChatMessagesMutationMetadata } from '~/entities/chat/sync'
 import { Chat } from '@ai-sdk/react'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { eventIteratorToStream } from '@orpc/client'
 import { encode } from '@toon-format/toon'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
-import {
-  chatsCollection,
-  chatsMessagesCollection,
-} from '~/entities/chat/sync'
+import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
 import { databaseEnumsQuery, databaseTableColumnsQuery, databaseTablesAndSchemasQuery } from '~/entities/database/queries'
 import { rowsQuery } from '~/entities/database/sql/rows'
 import { databaseStore } from '~/entities/database/store'
@@ -63,18 +59,18 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         const existingMessage = chatsMessagesCollection.get(lastMessage.id)
 
         if (existingMessage) {
-          chatsMessagesCollection.update(lastMessage.id, (draft) => {
+          await chatsMessagesCollection.update(lastMessage.id, (draft) => {
             Object.assign(draft, {
               ...lastMessage,
               chatId: options.chatId,
               metadata: existingMessage.metadata,
             } satisfies typeof chatsMessages.$inferInsert)
-          })
+          }).isPersisted.promise
         }
         else {
           const updatedAt = new Date()
           const createdAt = new Date()
-          chatsMessagesCollection.insert({
+          await chatsMessagesCollection.insert({
             ...lastMessage,
             chatId: options.chatId,
             createdAt,
@@ -83,22 +79,16 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
               createdAt,
               updatedAt,
             },
-          })
+          }).isPersisted.promise
         }
 
         if (options.trigger === 'regenerate-message' && options.messageId && chatsMessagesCollection.has(options.messageId)) {
-          chatsMessagesCollection.delete(options.messageId, {
-            metadata: {
-              cloudSync: false,
-            } satisfies ChatMessagesMutationMetadata,
-          })
+          await chatsMessagesCollection.delete(options.messageId).isPersisted.promise
         }
 
         const store = databaseStore(database.id)
 
         return eventIteratorToStream(await orpc.ai.chat({
-          trigger: options.trigger,
-          messageId: options.messageId,
           id: options.chatId,
           createdAt: chat.createdAt,
           updatedAt: chat.updatedAt,
@@ -127,11 +117,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       const existingMessage = chatsMessagesCollection.get(message.id)
 
       if (existingMessage) {
-        chatsMessagesCollection.update(message.id, {
-          metadata: {
-            cloudSync: false,
-          } satisfies ChatMessagesMutationMetadata,
-        }, (draft) => {
+        chatsMessagesCollection.update(message.id, (draft) => {
           Object.assign(draft, {
             id: message.id,
             parts: message.parts,
@@ -152,10 +138,6 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           metadata: null,
           parts: message.parts,
           role: message.role,
-        }, {
-          metadata: {
-            cloudSync: false,
-          } satisfies ChatMessagesMutationMetadata,
         })
       }
     },

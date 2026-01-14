@@ -7,10 +7,8 @@ import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'a
 import { createRetryable } from 'ai-retry'
 import { type } from 'arktype'
 import { consola } from 'consola'
-import { eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
 import { tools } from '~/ai-tools'
-import { chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 
@@ -41,14 +39,12 @@ export const chat = orpc
     return next()
   })
   .input(type({
-    'messageId?': 'string.uuid.v7',
-    'id': 'string.uuid.v7',
-    'type': type.valueOf(DatabaseType),
-    'context': 'string',
-    'trigger': '"regenerate-message" | "submit-message"',
-    'createdAt': 'Date',
-    'updatedAt': 'Date',
-    'messages': 'object[]' as type.cast<AppUIMessage[]>,
+    id: 'string.uuid.v7',
+    type: type.valueOf(DatabaseType),
+    context: 'string',
+    createdAt: 'Date',
+    updatedAt: 'Date',
+    messages: 'object[]' as type.cast<AppUIMessage[]>,
   }))
   .handler(async ({ input, context, signal }) => {
     consola.info('messages', JSON.stringify(input.messages.map(message => ({
@@ -57,12 +53,6 @@ export const chat = orpc
       role: message.role,
       partsCount: message.parts.length,
     })), null, 2))
-
-    if (input.trigger === 'regenerate-message' && input.messageId) {
-      await db
-        .delete(chatsMessages)
-        .where(eq(chatsMessages.id, input.messageId))
-    }
 
     const result = streamText({
       messages: [
@@ -117,19 +107,6 @@ export const chat = orpc
           ...result.responseMessage,
           parts: result.responseMessage.parts.map(part => part.type),
         }, null, 2))
-
-        await db.insert(chatsMessages).values({
-          ...result.responseMessage,
-          chatId: input.id,
-          createdAt: input.createdAt,
-          updatedAt: input.updatedAt,
-        }).onConflictDoUpdate({
-          target: chatsMessages.id,
-          set: {
-            ...result.responseMessage,
-            updatedAt: input.updatedAt,
-          },
-        })
       },
       onError: (error) => {
         consola.error('error toUIMessageStream onError', error)
