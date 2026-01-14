@@ -144,10 +144,16 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
     onToolCall: async ({ toolCall }) => {
       if (toolCall.toolName === 'columns') {
         const input = toolCall.input as InferToolInput<typeof tools.columns>
-        const output = await queryClient.ensureQueryData(databaseTableColumnsQuery({
+        const columns = await queryClient.ensureQueryData(databaseTableColumnsQuery({
           database,
           table: input.tableAndSchema.tableName,
           schema: input.tableAndSchema.schemaName,
+        }))
+        
+        const output = columns.map(col => ({
+          ...col,
+          enum: col.enum ?? null,
+          isArray: col.isArray ?? null,
         })) satisfies InferToolOutput<typeof tools.columns>
 
         chat.addToolOutput({
@@ -176,9 +182,8 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           table: input.tableAndSchema.tableName,
           limit: input.limit,
           offset: input.offset,
-          orderBy: input.orderBy,
-          select: input.select,
-          // To save back compatibility with the old filters
+          orderBy: input.orderBy ?? undefined,
+          select: input.select ?? undefined,
           filters: input.whereFilters.map((filter) => {
             const operator = SQL_FILTERS_LIST.find(f => f.operator === filter.operator)
 

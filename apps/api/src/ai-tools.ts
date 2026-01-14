@@ -11,7 +11,8 @@ import { tool } from 'ai'
 import { type } from 'arktype'
 import { env } from '~/env'
 
-const sqlFilterOperators = SQL_FILTERS_LIST.map(filter => `'${filter.operator}'`).join(' | ') as `'${typeof SQL_FILTERS_LIST[number]['operator']}'`
+const sqlFilterOperatorValues = SQL_FILTERS_LIST.map(filter => filter.operator)
+const sqlFilterOperators = type.enumerated(...sqlFilterOperatorValues)
 
 export const tools = {
   columns: tool({
@@ -23,15 +24,15 @@ export const tools = {
       },
     }),
     outputSchema: type({
-      'schema': 'string',
-      'table': 'string',
-      'id': 'string',
-      'default': 'string | null',
-      'type': 'string',
-      'enum?': 'string',
-      'isArray?': 'boolean',
-      'isEditable': 'boolean',
-      'isNullable': 'boolean',
+      schema: 'string',
+      table: 'string',
+      id: 'string',
+      type: 'string',
+      default: 'string | null',
+      enum: 'string | null',
+      isArray: 'boolean | null',
+      isEditable: 'boolean',
+      isNullable: 'boolean',
     }).array(),
   }),
   enums: tool({
@@ -54,22 +55,24 @@ export const tools = {
       'For tableName use only table without schema prefix.',
     ].join('\n'),
     inputSchema: type({
-      'whereConcatOperator': `'AND' | 'OR'`,
-      'whereFilters': type({
+      whereConcatOperator: `'AND' | 'OR'`,
+      whereFilters: type({
         column: 'string',
         operator: sqlFilterOperators,
         values: 'string[]',
       }).array(),
-      'select?': 'string[]',
-      'limit': 'number',
-      'offset': 'number',
-      'orderBy?': { '[string]': `'ASC' | 'DESC'` },
-      'tableAndSchema': {
+      select: 'string[] | null',
+      limit: 'number',
+      offset: 'number',
+      orderBy: type({ '[string]': `'ASC' | 'DESC'` }).or('null'),
+      tableAndSchema: {
         tableName: 'string',
         schemaName: 'string',
       },
+    }).configure({
+      description: 'Input schema for database select query with filters, ordering, and pagination',
     }),
-    outputSchema: type('Record<string, unknown>[]').or({ error: 'string' }),
+    outputSchema: type('unknown'),
   }),
   webSearch: webSearch({ apiKey: env.EXA_API_KEY }),
 }
