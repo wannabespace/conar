@@ -1,5 +1,5 @@
-import type { RemixiconComponentType } from '@remixicon/react'
-import type { DynamicToolUIPart, ToolUIPart } from 'ai'
+import type { tools } from '@conar/api/src/ai-tools'
+import type { DynamicToolUIPart, InferUITools, ToolUIPart } from 'ai'
 import type { editor } from 'monaco-editor'
 import {
   SingleAccordion,
@@ -19,10 +19,39 @@ import {
 import { useState } from 'react'
 import { Monaco } from '~/components/monaco'
 
-const ICONS: Record<string, RemixiconComponentType> = {
-  'tool-webSearch': RiEarthLine,
-  'tool-resolveLibrary': RiSearchLine,
-  'tool-getLibraryDocs': RiBook2Line,
+type Part = ToolUIPart<InferUITools<typeof tools>> | DynamicToolUIPart
+
+const STATE_ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: Part }) => React.ReactNode> = {
+  'input-streaming': ({ className }) => (
+    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+  ),
+  'input-available': ({ className }) => (
+    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+  ),
+  'output-available': ({ className, part }) => {
+    if (part.type === 'tool-webSearch') {
+      return <RiEarthLine className={cn('text-muted-foreground', className)} />
+    }
+    if (part.type === 'tool-resolveLibraryId') {
+      return <RiSearchLine className={cn('text-muted-foreground', className)} />
+    }
+    if (part.type === 'tool-queryDocs') {
+      return <RiBook2Line className={cn('text-muted-foreground', className)} />
+    }
+    return <RiHammerLine className={cn('text-muted-foreground', className)} />
+  },
+  'output-error': ({ className }) => (
+    <RiErrorWarningLine className={cn(`text-red-600`, className)} />
+  ),
+  'approval-requested': ({ className }) => (
+    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+  ),
+  'approval-responded': ({ className }) => (
+    <RiHammerLine className={cn(`text-muted-foreground`, className)} />
+  ),
+  'output-denied': ({ className }) => (
+    <RiErrorWarningLine className={cn(`text-red-600`, className)} />
+  ),
 }
 
 const monacoOptions = {
@@ -94,14 +123,6 @@ function ChatMessageToolSection({ title, value, full }: {
   )
 }
 
-function getToolIcon({ loading, error, toolType }: { loading: boolean, error: boolean, toolType?: string }) {
-  if (loading)
-    return RiLoader4Line
-  if (error)
-    return RiErrorWarningLine
-  return ICONS[toolType ?? ''] ?? RiHammerLine
-}
-
 function getToolTitle({ loading, error, name }: { loading: boolean, error: boolean, name?: string }) {
   if (error)
     return `Failed ${name}`
@@ -111,7 +132,7 @@ function getToolTitle({ loading, error, name }: { loading: boolean, error: boole
 }
 
 export function ChatMessageTool({ part, className }: {
-  part: ToolUIPart | DynamicToolUIPart
+  part: Part
   className?: string
 }) {
   const loading = part.state === 'input-streaming' || part.state === 'input-available'
@@ -120,7 +141,7 @@ export function ChatMessageTool({ part, className }: {
 
   const errorMsg = error ? extractErrorMessage(part.output) : null
 
-  const Icon = getToolIcon({ loading, error, toolType: part.type })
+  const Icon = STATE_ICONS[part.state]
   const title = getToolTitle({ loading, error, name })
 
   const hasDetails = part.input != null || part.output != null
@@ -135,9 +156,11 @@ export function ChatMessageTool({ part, className }: {
   if (loading || !hasDetails) {
     return (
       <div className={cn('my-2 flex items-center gap-2 text-sm', className)}>
-        <Icon className={cn('size-4 shrink-0', loading && `
-          animate-spin text-primary
-        `)}
+        <Icon
+          className={cn('size-4 shrink-0', loading && `
+            animate-spin text-primary
+          `)}
+          part={part}
         />
         <span className={cn(loading && 'text-muted-foreground')}>{title}</span>
       </div>
@@ -152,7 +175,7 @@ export function ChatMessageTool({ part, className }: {
     >
       <SingleAccordionTrigger className="gap-2 py-2" disabled={error}>
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <Icon className={cn('size-4 shrink-0', error && 'text-red-600')} />
+          <Icon className={cn('size-4 shrink-0', error && 'text-red-600')} part={part} />
           <span className="truncate text-sm">{title}</span>
         </div>
         {!error && <SingleAccordionTriggerArrow />}
