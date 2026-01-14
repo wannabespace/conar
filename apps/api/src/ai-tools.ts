@@ -47,7 +47,9 @@ export const tools = {
       'whereConcatOperator': type('"AND" | "OR"').describe('The operator to use to concatenate the where clauses'),
       'whereFilters': type({
         column: 'string',
-        operator: type.enumerated(...SQL_FILTERS_LIST.map(filter => filter.operator)),
+        operator: type
+          .enumerated(...SQL_FILTERS_LIST.map(filter => filter.operator))
+          .describe('The operator to use in the where clause'),
         values: 'string[]',
       })
         .array()
