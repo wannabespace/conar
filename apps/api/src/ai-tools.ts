@@ -58,11 +58,11 @@ export const tools = {
       'select?': 'string[]',
       'limit': 'number',
       'offset': 'number',
-      'orderBy?': 'Record<string, "ASC" | "DESC">',
-      'tableAndSchema': type({
+      'orderBy?': { '[string]': `'ASC' | 'DESC'` },
+      'tableAndSchema': {
         tableName: 'string',
         schemaName: 'string',
-      }),
+      },
     }),
     outputSchema: type('Record<string, unknown>[]').or({ error: 'string' }),
   }),
