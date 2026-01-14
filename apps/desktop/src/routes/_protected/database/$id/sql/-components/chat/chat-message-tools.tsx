@@ -1,4 +1,4 @@
-import type { ToolUIPart } from '@conar/api/src/ai-tools'
+import type { ToolUIPart } from '@conar/api/ai/tools/helpers'
 import type { editor } from 'monaco-editor'
 import {
   SingleAccordion,
