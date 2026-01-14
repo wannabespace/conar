@@ -1,4 +1,4 @@
-import type { tools } from '@conar/api/src/ai-tools'
+import type { tools } from '@conar/api/ai-tools'
 import type { DynamicToolUIPart, InferUITools, ToolUIPart } from 'ai'
 import type { ReactNode } from 'react'
 import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
@@ -56,7 +56,7 @@ function MonacoOutput({ value }: { value: string }) {
       value={value}
       language="json"
       options={monacoOptions}
-      className="h-[200px] max-h-[50vh] -mx-2"
+      className="-mx-2 h-[200px] max-h-[50vh]"
     />
   )
 }
@@ -65,7 +65,7 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
   if (tool.type === 'tool-columns') {
     return (
       <>
-        <div className="text-xs text-muted-foreground mb-4">Agent called a tool to get table columns.</div>
+        <div className="mb-4 text-xs text-muted-foreground">Agent called a tool to get table columns.</div>
         {tool.state === 'output-available' && (
           <MonacoOutput value={JSON.stringify(tool.output)} />
         )}
@@ -76,7 +76,7 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
   if (tool.type === 'tool-enums') {
     return (
       <>
-        <div className="text-xs text-muted-foreground mb-4">Agent called a tool to get database enums.</div>
+        <div className="mb-4 text-xs text-muted-foreground">Agent called a tool to get database enums.</div>
         {tool.state === 'output-available' && (
           <MonacoOutput value={JSON.stringify(tool.output)} />
         )}
@@ -88,7 +88,7 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
     return (
       <>
         <div className="flex flex-col gap-2">
-          <div className="font-medium mb-1">
+          <div className="mb-1 font-medium">
             Agent called a tool to get data from the database.
           </div>
           {tool.input && (
@@ -120,7 +120,7 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
   if (tool.type === 'tool-webSearch') {
     return (
       <>
-        <div className="text-xs text-muted-foreground mb-2">Agent searched the web for information.</div>
+        <div className="mb-2 text-xs text-muted-foreground">Agent searched the web for information.</div>
         {tool.state === 'output-available' && (
           <div className="space-y-2">
             {!!tool.output && typeof tool.output === 'object' && 'results' in tool.output && Array.isArray(tool.output.results) && (
@@ -133,10 +133,23 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
                           href={result.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex flex-1 min-w-[200px] basis-1/3 max-w-full items-center gap-1 px-1.5 py-0.5 text-xs bg-accent/20 hover:bg-accent/40 rounded-md border transition-colors group"
+                          className={`
+                            group flex max-w-full min-w-[200px] flex-1 basis-1/3
+                            items-center gap-1 rounded-md border bg-accent/20
+                            px-1.5 py-0.5 text-xs transition-colors
+                            hover:bg-accent/40
+                          `}
                         >
-                          <FaviconWithFallback url={result.url} className="size-3 shrink-0" />
-                          <span className="font-medium group-hover:text-primary overflow-hidden text-ellipsis whitespace-nowrap">
+                          <FaviconWithFallback
+                            url={result.url}
+                            className="size-3 shrink-0"
+                          />
+                          <span className={`
+                            overflow-hidden font-medium text-ellipsis
+                            whitespace-nowrap
+                            group-hover:text-primary
+                          `}
+                          >
                             {result.title}
                           </span>
                         </a>
@@ -144,7 +157,7 @@ function ToolDescription({ tool }: { tool: ToolUIPart<InferUITools<typeof tools>
                       <TooltipContent>
                         <div className="max-w-xs">
                           <div className="font-medium">{result.title}</div>
-                          <div className="text-xs text-muted-foreground mt-1">{result.url}</div>
+                          <div className="mt-1 text-xs text-muted-foreground">{result.url}</div>
                         </div>
                       </TooltipContent>
                     </Tooltip>
@@ -207,10 +220,19 @@ export function ChatMessageTool({
 }) {
   if (part.type === 'dynamic-tool') {
     return (
-      <SingleAccordion className={cn('my-4 first:mt-0 last:mb-0', className)}>
+      <SingleAccordion className={cn(`
+        my-4
+        first:mt-0
+        last:mb-0
+      `, className)}
+      >
         <SingleAccordionTrigger className="min-w-0 gap-2">
           <RiLoader4Line className="size-4 shrink-0 animate-spin text-primary" />
-          <span className="min-w-0 flex-1 overflow-hidden text-left text-ellipsis whitespace-nowrap">
+          <span className={`
+            min-w-0 flex-1 overflow-hidden text-left text-ellipsis
+            whitespace-nowrap
+          `}
+          >
             {part.toolName}
           </span>
         </SingleAccordionTrigger>
@@ -228,9 +250,17 @@ export function ChatMessageTool({
   const Icon = STATE_ICONS[tool.state]
 
   return (
-    <SingleAccordion className={cn('my-4 first:mt-0 last:mb-0', className)}>
+    <SingleAccordion className={cn(`
+      my-4
+      first:mt-0
+      last:mb-0
+    `, className)}
+    >
       <SingleAccordionTrigger className="min-w-0 gap-2">
-        <span className="relative flex items-center justify-center size-4 shrink-0">
+        <span className={`
+          relative flex size-4 shrink-0 items-center justify-center
+        `}
+        >
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
               key={tool.state}
@@ -256,7 +286,11 @@ export function ChatMessageTool({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-left">
+              <span className={`
+                min-w-0 flex-1 overflow-hidden text-left text-ellipsis
+                whitespace-nowrap
+              `}
+              >
                 {label}
               </span>
             </TooltipTrigger>

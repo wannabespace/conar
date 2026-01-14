@@ -1,5 +1,5 @@
 import type { UIMessage } from '@ai-sdk/react'
-import type { tools } from '@conar/api/src/ai-tools'
+import type { tools } from '@conar/api/ai-tools'
 import type { ChatStatus, DynamicToolUIPart, InferUITools, ToolUIPart } from 'ai'
 import type { ComponentProps, ReactNode } from 'react'
 import { useChat } from '@ai-sdk/react'

@@ -1,4 +1,4 @@
-import type { AppUIMessage, tools } from '@conar/api/src/ai-tools'
+import type { AppUIMessage, tools } from '@conar/api/ai-tools'
 import type { InferToolInput, InferToolOutput } from 'ai'
 import type { chatsMessages, databases } from '~/drizzle'
 import { Chat } from '@ai-sdk/react'
