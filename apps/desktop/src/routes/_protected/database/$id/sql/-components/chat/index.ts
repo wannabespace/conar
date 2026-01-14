@@ -176,8 +176,8 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           table: input.tableAndSchema.tableName,
           limit: input.limit,
           offset: input.offset,
-          orderBy: input.orderBy,
-          select: input.select,
+          orderBy: input.orderBy ?? undefined,
+          select: input.select ?? undefined,
           // To save back compatibility with the old filters
           filters: input.whereFilters.map((filter) => {
             const operator = SQL_FILTERS_LIST.find(f => f.operator === filter.operator)

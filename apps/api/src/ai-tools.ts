@@ -44,8 +44,8 @@ export const tools = {
       'For tableName use only table without schema prefix.',
     ].join('\n'),
     inputSchema: type({
-      'whereConcatOperator': type('"AND" | "OR"').describe('The operator to use to concatenate the where clauses'),
-      'whereFilters': type({
+      whereConcatOperator: type('"AND" | "OR"').describe('The operator to use to concatenate the where clauses'),
+      whereFilters: type({
         column: 'string',
         operator: type
           .enumerated(...SQL_FILTERS_LIST.map(filter => filter.operator))
@@ -54,11 +54,11 @@ export const tools = {
       })
         .array()
         .describe('The columns to use in the where clause'),
-      'select?': type('string[]').describe('The columns to select. If not provided, all columns will be selected'),
-      'limit': 'number',
-      'offset': 'number',
-      'orderBy?': 'Record<string, "ASC" | "DESC">',
-      'tableAndSchema': type({
+      select: type('string[] | null').describe('The columns to select. If not provided, all columns will be selected'),
+      limit: 'number',
+      offset: 'number',
+      orderBy: 'Record<string, "ASC" | "DESC"> | null',
+      tableAndSchema: type({
         tableName: 'string',
         schemaName: 'string',
       }).describe('The name of the table and schema to query'),
