@@ -54,12 +54,13 @@ export const filters = orpc
       abortSignal: signal,
       output: Output.object({
         schema: type({
-          filters: type({
+          'orderBy?': type({ '[string]': '"ASC" | "DESC"' })
+            .describe('An optional object specifying the order of the results, where each key is a column name and the value is the order direction (ASC or DESC). The object can be empty.'),
+          'filters': type({
             column: 'string',
             operator: type.enumerated(...SQL_FILTERS_LIST.map(filter => filter.operator)),
             values: 'string[]',
           }).array(),
-          // 'orderBy?': type({ '[string]': `'ASC' | 'DESC'` }),
         }).describe('An object with filters array and optional orderBy object; each filter has column, operator, and values; orderBy maps column names to sort direction.'),
         description: 'An array of objects with the following properties: column, operator, values where the operator is one of the SQL operators available',
       }),

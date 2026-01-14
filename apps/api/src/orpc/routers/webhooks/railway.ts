@@ -6,7 +6,7 @@ import { orpc } from '~/orpc'
 export const railway = orpc.handler(async ({ context }) => {
   if (!env.ALERTS_EMAIL) {
     consola.error('ALERTS_EMAIL is not set')
-    return {}
+    return
   }
 
   await sendEmail({
