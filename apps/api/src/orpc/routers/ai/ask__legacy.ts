@@ -15,7 +15,6 @@ import { context7ToolDescriptions, convertToAppUIMessage, getAllTools, tools } f
 import { chats, chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
-import { streamContext } from './resume-stream'
 
 const chatInputType = type({
   'id': 'string.uuid.v7',
@@ -33,8 +32,8 @@ const chatInputType = type({
 const mainModel = createRetryable({
   model: anthropic('claude-sonnet-4-5'),
   retries: [
-    { model: anthropic('claude-opus-4-1') },
-    { model: google('gemini-2.5-pro') },
+    anthropic('claude-opus-4-5'),
+    google('gemini-2.5-pro'),
   ],
 })
 
@@ -270,15 +269,6 @@ export const ask = orpc
           return handleError(error)
         },
       })
-
-      try {
-        const streamId = v7()
-        await streamContext.createNewResumableStream(streamId, () => result.textStream)
-        await db.update(chats).set({ activeStreamId: streamId }).where(eq(chats.id, input.id))
-      }
-      catch (error) {
-        consola.error('error on createNewResumableStream', error)
-      }
 
       return streamToEventIterator(stream)
     }

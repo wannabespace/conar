@@ -53,15 +53,19 @@ export const optionalAuthMiddleware = orpc.middleware(async ({ context, next }) 
 })
 
 export async function getSubscription(userId: string) {
+  const userSubscriptions = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
+
+  return userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number]) && !s.cancelAt) ?? null
+}
+
+async function getSubscriptionCached(userId: string) {
   const cachedSubscription = await redis.get(`subscription:${userId}`)
 
   if (cachedSubscription) {
-    return JSON.parse(cachedSubscription) as typeof subscriptions.$inferSelect
+    return JSON.parse(cachedSubscription) as NonNullable<Awaited<ReturnType<typeof getSubscription>>>
   }
 
-  const userSubscriptions = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
-
-  const subscription = userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number]) && !s.cancelAt) ?? null
+  const subscription = await getSubscription(userId)
 
   if (subscription) {
     await redis.setex(
@@ -77,7 +81,7 @@ export async function getSubscription(userId: string) {
 export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
   const minorVersion = context.minorVersion ?? 0
-  const subscription = await getSubscription(session.user.id)
+  const subscription = await getSubscriptionCached(session.user.id)
 
   if (!subscription) {
     throw new ORPCError('FORBIDDEN', {

@@ -1,13 +1,13 @@
 import type { RouterClient } from '@orpc/server'
-import { account } from './account'
-import { ai } from './ai'
+import * as account from './account'
+import * as ai from './ai'
 import { banner } from './banner'
-import { chats } from './chats'
-import { chatsMessages } from './chats-messages'
+import * as chats from './chats'
+import * as chatsMessages from './chats-messages'
 import { contact } from './contact'
-import { databases } from './databases'
-import { queries } from './queries'
-import { webhooks } from './webhooks'
+import * as databases from './databases'
+import * as queries from './queries'
+import * as webhooks from './webhooks'
 
 export const router = {
   contact,

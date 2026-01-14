@@ -3,14 +3,14 @@ import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { databases, databasesUpdateSchema, db } from '~/drizzle'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const update = orpc
   .use(authMiddleware)
   .input(type.and(
-    databasesUpdateSchema.omit('userId', 'id'),
+    databasesUpdateSchema.omit('createdAt', 'updatedAt', 'userId', 'id'),
     databasesUpdateSchema.pick('id').required(),
   ))
   .handler(async ({ context, input }) => {
@@ -19,10 +19,6 @@ export const update = orpc
 
     if (!database) {
       throw new ORPCError('NOT_FOUND', { message: 'Database not found' })
-    }
-
-    if (database.userId !== context.user.id) {
-      throw new ORPCError('UNAUTHORIZED')
     }
 
     const secret = await context.getUserSecret()
@@ -42,5 +38,5 @@ export const update = orpc
         ...changes,
         connectionString: encrypt({ text: newConnectionString.toString(), secret }),
       })
-      .where(eq(databases.id, id))
+      .where(and(eq(databases.id, id), eq(databases.userId, context.user.id)))
   })

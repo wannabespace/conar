@@ -1,17 +1,7 @@
-import { ask } from './ask'
-import { enhancePrompt } from './enhance-prompt'
-import { filters } from './filters'
-import { fixSQL } from './fix-sql'
-import { generateTitle } from './generate-title'
-import { resumeStream } from './resume-stream'
-import { updateSQL } from './update-sql'
-
-export const ai = {
-  ask,
-  enhancePrompt,
-  filters,
-  generateTitle,
-  updateSQL,
-  fixSQL,
-  resumeStream,
-}
+export { ask } from './ask__legacy'
+export { chat } from './chat'
+export { enhancePrompt } from './enhance-prompt'
+export { filters } from './filters'
+export { fixSQL } from './fix-sql'
+export { generateTitle } from './generate-title'
+export { updateSQL } from './update-sql'

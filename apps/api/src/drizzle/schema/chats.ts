@@ -1,5 +1,5 @@
 import type { AppUIMessage } from '~/ai-tools'
-import { createSelectSchema } from 'drizzle-arktype'
+import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-arktype'
 import { relations } from 'drizzle-orm'
 import { index, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
@@ -19,6 +19,8 @@ export const chats = pgTable('chats', {
 ])
 
 export const chatsSelectSchema = createSelectSchema(chats)
+export const chatsInsertSchema = createInsertSchema(chats)
+export const chatsUpdateSchema = createUpdateSchema(chats)
 
 export const chatsMessages = pgTable('chats_messages', {
   ...baseTable,
@@ -32,6 +34,8 @@ export const chatsMessages = pgTable('chats_messages', {
 ])
 
 export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
+export const chatsMessagesInsertSchema = createInsertSchema(chatsMessages)
+export const chatsMessagesUpdateSchema = createUpdateSchema(chatsMessages)
 
 export const chatsRelations = relations(chats, ({ one, many }) => ({
   user: one(users, {

@@ -27,10 +27,13 @@ function AuthLayout() {
           lg:flex
         `}
         >
-          <div className="relative z-20 flex items-center text-lg font-medium">
+          <Link
+            to="/"
+            className="relative z-20 flex items-center text-lg font-medium"
+          >
             <AppLogo className="mr-2 size-6" />
             Conar
-          </div>
+          </Link>
           <div className="relative z-20 mt-auto">
             <blockquote className="leading-normal text-balance">
               {SEO.description}

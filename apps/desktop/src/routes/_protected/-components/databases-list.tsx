@@ -40,9 +40,9 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
     >
       <Link
         className={cn(
-          'relative flex items-center justify-between gap-4',
           `
-            group overflow-hidden rounded-lg border border-l-4 border-border/50
+            group relative flex items-center justify-between gap-4
+            overflow-hidden rounded-lg border border-l-4 border-border/50
             bg-muted/30 p-5
           `,
           database.color

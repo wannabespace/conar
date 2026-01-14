@@ -4,7 +4,7 @@ import { generateText } from 'ai'
 import { type } from 'arktype'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
-import { getMessages } from './ask'
+import { getMessages } from './ask__legacy'
 
 export const enhancePrompt = orpc
   .use(requireSubscriptionMiddleware)
