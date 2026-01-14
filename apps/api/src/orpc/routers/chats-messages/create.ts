@@ -17,11 +17,5 @@ export const create = orpc
       })
     }
 
-    await db
-      .insert(chatsMessages)
-      .values(input)
-      .onConflictDoUpdate({
-        target: chatsMessages.id,
-        set: input,
-      })
+    await db.insert(chatsMessages).values(input)
   })
