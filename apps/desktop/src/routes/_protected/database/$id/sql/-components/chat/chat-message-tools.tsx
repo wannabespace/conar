@@ -1,6 +1,6 @@
+import type { RemixiconComponentType } from '@remixicon/react'
 import type { DynamicToolUIPart, ToolUIPart } from 'ai'
 import type { editor } from 'monaco-editor'
-import type { ComponentType } from 'react'
 import {
   SingleAccordion,
   SingleAccordionContent,
@@ -16,10 +16,10 @@ import {
   RiLoader4Line,
   RiSearchLine,
 } from '@remixicon/react'
-import { memo, useState } from 'react'
+import { useState } from 'react'
 import { Monaco } from '~/components/monaco'
 
-const ICONS: Record<string, ComponentType> = {
+const ICONS: Record<string, RemixiconComponentType> = {
   'tool-webSearch': RiEarthLine,
   'tool-resolveLibrary': RiSearchLine,
   'tool-getLibraryDocs': RiBook2Line,
@@ -28,23 +28,10 @@ const ICONS: Record<string, ComponentType> = {
 const monacoOptions = {
   readOnly: true,
   scrollBeyondLastLine: false,
-  lineNumbers: 'off' as const,
+  lineNumbers: 'off',
   minimap: { enabled: false },
   folding: false,
 } as const satisfies editor.IStandaloneEditorConstructionOptions
-
-function hasErrorProperty(v: unknown): v is { error?: unknown } {
-  return typeof v === 'object' && v !== null && 'error' in v
-}
-
-function stringify(v: unknown) {
-  try {
-    return JSON.stringify(v, (_, x) => (typeof x === 'bigint' ? String(x) : x), 2)
-  }
-  catch {
-    return String(v)
-  }
-}
 
 function preview(v: unknown): string {
   if (v == null)
@@ -61,7 +48,7 @@ function preview(v: unknown): string {
 }
 
 function extractErrorMessage(output: unknown): string | null {
-  if (!hasErrorProperty(output))
+  if (typeof output !== 'object' || output === null || !('error' in output))
     return null
 
   const { error } = output
@@ -76,49 +63,38 @@ function extractErrorMessage(output: unknown): string | null {
   return preview(error)
 }
 
-interface ChatMessageToolSectionProps {
+function ChatMessageToolSection({ title, value, full }: {
   title?: string
   value: unknown
   full: boolean
+}) {
+  return (
+    <div className="space-y-2">
+      {title && (
+        <div className={`
+          text-[11px] font-medium tracking-wider text-muted-foreground uppercase
+        `}
+        >
+          {title}
+        </div>
+      )}
+      {value == null
+        ? <div className="text-muted-foreground italic">Pending…</div>
+        : full
+          ? (
+              <Monaco
+                value={JSON.stringify(value)}
+                language="json"
+                className="-mx-2 h-[200px]"
+                options={monacoOptions}
+              />
+            )
+          : <div className="wrap-break-word text-muted-foreground">{preview(value)}</div>}
+    </div>
+  )
 }
 
-const ChatMessageToolSection = memo<ChatMessageToolSectionProps>(({ title, value, full }) => (
-  <div className="space-y-2">
-    {title && (
-      <div className={`
-        text-[11px] font-medium tracking-wider text-muted-foreground uppercase
-      `}
-      >
-        {title}
-      </div>
-    )}
-    {value == null
-      ? (
-          <div className="text-muted-foreground italic">Pending…</div>
-        )
-      : full
-        ? (
-            <Monaco
-              value={stringify(value)}
-              language="json"
-              className="-mx-2 h-[200px]"
-              options={monacoOptions}
-            />
-          )
-        : (
-            <div className="wrap-break-word text-muted-foreground">{preview(value)}</div>
-          )}
-  </div>
-))
-
-ChatMessageToolSection.displayName = 'ChatMessageToolSection'
-
-interface ChatMessageToolProps {
-  part: (ToolUIPart | DynamicToolUIPart) & { input?: unknown, output?: unknown }
-  className?: string
-}
-
-function getToolIcon(loading: boolean, error: boolean, toolType?: string) {
+function getToolIcon({ loading, error, toolType }: { loading: boolean, error: boolean, toolType?: string }) {
   if (loading)
     return RiLoader4Line
   if (error)
@@ -126,7 +102,7 @@ function getToolIcon(loading: boolean, error: boolean, toolType?: string) {
   return ICONS[toolType ?? ''] ?? RiHammerLine
 }
 
-function getToolTitle(loading: boolean, error: boolean, name: string) {
+function getToolTitle({ loading, error, name }: { loading: boolean, error: boolean, name?: string }) {
   if (error)
     return `Failed ${name}`
   if (loading)
@@ -134,15 +110,18 @@ function getToolTitle(loading: boolean, error: boolean, name: string) {
   return `Ran ${name}`
 }
 
-export const ChatMessageTool = memo<ChatMessageToolProps>(({ part, className }) => {
+export function ChatMessageTool({ part, className }: {
+  part: ToolUIPart | DynamicToolUIPart
+  className?: string
+}) {
   const loading = part.state === 'input-streaming' || part.state === 'input-available'
   const error = part.state === 'output-error'
   const name = part.type?.replace('tool-', '') ?? 'tool'
 
   const errorMsg = error ? extractErrorMessage(part.output) : null
 
-  const Icon = getToolIcon(loading, error, part.type)
-  const title = getToolTitle(loading, error, name)
+  const Icon = getToolIcon({ loading, error, toolType: part.type })
+  const title = getToolTitle({ loading, error, name })
 
   const hasDetails = part.input != null || part.output != null
 
@@ -235,4 +214,4 @@ export const ChatMessageTool = memo<ChatMessageToolProps>(({ part, className }) 
       </SingleAccordionContent>
     </SingleAccordion>
   )
-})
+}
