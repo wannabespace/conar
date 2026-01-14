@@ -15,7 +15,6 @@
     "check-types": "tsgo"
   },
   "dependencies": {
-    "@base-ui/react": "catalog:",
     "@conar/configs": "workspace:*",
     "@conar/shared": "workspace:*",
     "@radix-ui/react-accordion": "catalog:",
@@ -29,6 +28,7 @@
     "@radix-ui/react-label": "catalog:",
     "@radix-ui/react-popover": "catalog:",
     "@radix-ui/react-progress": "catalog:",
+    "@radix-ui/react-scroll-area": "catalog:",
     "@radix-ui/react-select": "catalog:",
     "@radix-ui/react-separator": "catalog:",
     "@radix-ui/react-slot": "catalog:",

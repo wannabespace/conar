@@ -15,7 +15,6 @@ catalog:
   '@ai-sdk/react': ^3.0.7
   '@ai-sdk/xai': ^3.0.3
   '@antfu/eslint-config': ^6.7.3
-  '@base-ui/react': ^1.0.0
   '@clickhouse/client': ^1.16.0
   '@commitlint/cli': ^20.3.0
   '@commitlint/config-conventional': ^20.3.0
@@ -46,6 +45,7 @@ catalog:
   '@radix-ui/react-label': ^2.1.8
   '@radix-ui/react-popover': ^1.1.15
   '@radix-ui/react-progress': ^1.1.8
+  '@radix-ui/react-scroll-area': ^1.2.0
   '@radix-ui/react-select': ^2.2.6
   '@radix-ui/react-separator': ^1.1.8
   '@radix-ui/react-slot': ^1.2.4
