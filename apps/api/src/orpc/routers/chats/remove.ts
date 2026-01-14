@@ -11,5 +11,14 @@ export const remove = orpc
   .use(authMiddleware)
   .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    await db.delete(chats).where(and(inArray(chats.id, input.map(item => item.id)), eq(chats.userId, context.user.id)))
+    if (input.length === 0) {
+      return
+    }
+
+    await db
+      .delete(chats)
+      .where(and(
+        inArray(chats.id, input.map(item => item.id)),
+        eq(chats.userId, context.user.id),
+      ))
   })

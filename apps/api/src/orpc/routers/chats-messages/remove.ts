@@ -12,6 +12,10 @@ export const remove = orpc
   .use(requireSubscriptionMiddleware)
   .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
+    if (input.length === 0) {
+      return
+    }
+
     const toRemove = await db
       .select({ id: chatsMessages.id })
       .from(chatsMessages)

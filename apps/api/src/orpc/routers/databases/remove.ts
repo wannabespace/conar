@@ -11,6 +11,10 @@ export const remove = orpc
   .use(authMiddleware)
   .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
+    if (input.length === 0) {
+      return
+    }
+
     await db
       .delete(databases)
       .where(and(
