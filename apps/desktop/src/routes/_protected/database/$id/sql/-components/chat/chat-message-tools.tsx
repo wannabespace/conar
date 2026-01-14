@@ -1,5 +1,4 @@
-import type { tools } from '@conar/api/src/ai-tools'
-import type { DynamicToolUIPart, InferUITools, ToolUIPart } from 'ai'
+import type { ToolUIPart } from '@conar/api/src/ai-tools'
 import type { editor } from 'monaco-editor'
 import {
   SingleAccordion,
@@ -19,9 +18,7 @@ import {
 import { useState } from 'react'
 import { Monaco } from '~/components/monaco'
 
-type Part = ToolUIPart<InferUITools<typeof tools>> | DynamicToolUIPart
-
-const STATE_ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: Part }) => React.ReactNode> = {
+const STATE_ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: ToolUIPart }) => React.ReactNode> = {
   'input-streaming': ({ className }) => (
     <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
   ),
@@ -132,7 +129,7 @@ function getToolTitle({ loading, error, name }: { loading: boolean, error: boole
 }
 
 export function ChatMessageTool({ part, className }: {
-  part: Part
+  part: ToolUIPart
   className?: string
 }) {
   const loading = part.state === 'input-streaming' || part.state === 'input-available'

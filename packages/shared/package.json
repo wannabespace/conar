@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@conar/configs": "workspace:*",
+    "ai": "catalog:",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
     "nanoid": "catalog:"

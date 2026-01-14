@@ -1,8 +1,8 @@
-import type { InferUITools, UIDataTypes, UIMessage } from 'ai'
+import type { DynamicToolUIPart, InferUITools, ToolUIPart as ToolUIPartAi, UIDataTypes, UIMessage } from 'ai'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { webSearch } from '@exalabs/ai-sdk'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
-import { tool } from 'ai'
+import { isToolUIPart as isToolUIPartAi, tool } from 'ai'
 import { type } from 'arktype'
 import { env } from '~/env'
 
@@ -83,4 +83,10 @@ export type AppUIMessage = UIMessage<
 
 export function convertToAppUIMessage(message: UIMessage): AppUIMessage {
   return message as AppUIMessage
+}
+
+export type ToolUIPart = ToolUIPartAi<InferUITools<typeof tools>> | DynamicToolUIPart
+
+export function isToolUIPart(part: UIMessage['parts'][number]): part is ToolUIPart {
+  return isToolUIPartAi(part)
 }

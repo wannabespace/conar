@@ -1085,6 +1085,9 @@ importers:
       '@conar/configs':
         specifier: workspace:*
         version: link:../configs
+      ai:
+        specifier: 'catalog:'
+        version: 6.0.34(zod@4.3.5)
       arktype:
         specifier: 'catalog:'
         version: 2.1.29
