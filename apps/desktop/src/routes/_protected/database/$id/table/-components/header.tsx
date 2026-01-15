@@ -22,10 +22,47 @@ export function Header({ table, schema }: { table: string, schema: string }) {
     enforceExactCount,
     filters,
   })
-
   const columnsCount = columns?.length ?? 0
   const count = Number(rowCount?.count)
+  let countDisplay
+  if (isLoading || !rowCount) {
+    countDisplay = <span className="animate-pulse text-[11px] opacity-50">...</span>
+  }
+  else if (!Number.isFinite(count)) {
+    countDisplay = <span className="text-[11px] text-muted-foreground">—</span>
+  }
+  else {
+    countDisplay = (
+      <span className="inline-flex items-center gap-1 font-medium">
+        <NumberFlow
+          value={count}
+          format={{ notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 1 }}
+          className="font-semibold text-zinc-100 tabular-nums"
+        />
+        <span className="text-muted-foreground">
+          {count === 1 ? 'row' : 'rows'}
+        </span>
 
+        {rowCount.isEstimated && (
+          <span className="font-normal text-muted-foreground opacity-60">
+            (estimated)
+          </span>
+        )}
+        <button
+          type="button"
+          className={
+            'ml-2 rounded border px-1.5 py-0.5 text-[10px] '
+            + 'font-normal text-muted-foreground transition-colors '
+            + 'hover:bg-muted/30'
+          }
+          onClick={() => setEnforceExactCount(v => !v)}
+          title={enforceExactCount ? 'Show estimated count' : 'Show exact count'}
+        >
+          {enforceExactCount ? 'Show estimate' : 'Exact count'}
+        </button>
+      </span>
+    )
+  }
   return (
     <div className="flex w-full items-center justify-between gap-6">
       <div className="flex flex-1 items-center gap-4">
@@ -37,9 +74,10 @@ export function Header({ table, schema }: { table: string, schema: string }) {
             {' '}
             <span data-mask>{table}</span>
           </h2>
-          <div className={`
-            flex h-5 items-center gap-1 text-xs text-muted-foreground
-          `}
+          <div
+            className={`
+              flex h-5 items-center gap-1 text-xs text-muted-foreground
+            `}
           >
             <span className="tabular-nums">{columnsCount}</span>
             {' '}
@@ -48,47 +86,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
             {' '}
             •
             {' '}
-            {(isLoading || !rowCount)
-              ? (
-                  <span className="animate-pulse text-[11px] opacity-50">...</span>
-                )
-              : !Number.isFinite(count)
-                  ? (
-                      <span className="text-[11px] text-muted-foreground">—</span>
-                    )
-                  : (
-                      <span className={`
-                        inline-flex items-center gap-1 font-medium
-                      `}
-                      >
-                        <NumberFlow
-                          value={count}
-                          format={{ notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 1 }}
-                          className="font-semibold text-zinc-100 tabular-nums"
-                        />
-                        <span className="text-muted-foreground">records</span>
-                        {rowCount.isEstimated && (
-                          <span className={`
-                            font-normal text-muted-foreground opacity-60
-                          `}
-                          >
-                            (estimated)
-                          </span>
-                        )}
-                        <button
-                          type="button"
-                          className={`
-                            ml-2 rounded border px-1.5 py-0.5 text-[10px]
-                            font-normal text-muted-foreground transition-colors
-                            hover:bg-muted/30
-                          `}
-                          onClick={() => setEnforceExactCount(v => !v)}
-                          title={enforceExactCount ? 'Show estimated count' : 'Show exact count'}
-                        >
-                          {enforceExactCount ? 'Show estimate' : 'Exact count'}
-                        </button>
-                      </span>
-                    )}
+            {countDisplay}
           </div>
         </div>
         <Separator orientation="vertical" className="h-6!" />
