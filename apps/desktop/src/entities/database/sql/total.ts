@@ -13,10 +13,15 @@ export const totalQuery = createQuery({
     schema,
     table,
     filters,
-    enforceExactCount: _enforceExactCount = true,
-  }: { schema: string, table: string, filters?: ActiveFilter[], enforceExactCount?: boolean }) => ({
+    enforceExactCount,
+  }: {
+    schema: string
+    table: string
+    filters?: ActiveFilter[]
+    enforceExactCount?: boolean
+  }) => ({
     postgres: async (db) => {
-      if (!_enforceExactCount && !filters?.length) {
+      if (!enforceExactCount && !filters?.length) {
         const estimate = await db
           .withSchema('pg_catalog')
           .withTables<{
@@ -37,10 +42,9 @@ export const totalQuery = createQuery({
           }
         }
       }
-
       const query = await db
         .withSchema(schema)
-        .withTables<{ [table: string]: Record<string, unknown> }>()
+        .withTables<{ [table]: Record<string, unknown> }>()
         .selectFrom(table)
         .select(db.fn.countAll().as('total'))
         .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -50,7 +54,7 @@ export const totalQuery = createQuery({
     },
 
     mysql: async (db) => {
-      if (!_enforceExactCount && !filters?.length) {
+      if (!enforceExactCount && !filters?.length) {
         const estimate = await db
           .withSchema('information_schema')
           .withTables<{
@@ -62,14 +66,14 @@ export const totalQuery = createQuery({
           .where('TABLE_NAME', '=', table)
           .executeTakeFirst()
 
-        if (estimate?.count) {
+        if (estimate && Number(estimate.count) >= 0) {
           return { count: String(estimate.count), isEstimated: true }
         }
       }
 
       const query = await db
         .withSchema(schema)
-        .withTables<{ [table: string]: Record<string, unknown> }>()
+        .withTables<{ [table]: Record<string, unknown> }>()
         .selectFrom(table)
         .select(db.fn.countAll().as('total'))
         .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -79,36 +83,22 @@ export const totalQuery = createQuery({
     },
 
     mssql: async (db) => {
-      if (!_enforceExactCount && !filters?.length) {
-        const estimate = await db
-          .withSchema('information_schema')
-          .withTables<{
-          TABLES: { TABLE_SCHEMA: string, TABLE_NAME: string, TABLE_ROWS: number }
-        }>()
-          .selectFrom('TABLES')
-          .select('TABLE_ROWS as count')
-          .where('TABLE_SCHEMA', '=', schema)
-          .where('TABLE_NAME', '=', table)
-          .executeTakeFirst()
-
-        if (estimate?.count) {
-          return { count: String(estimate.count), isEstimated: true }
-        }
-      }
-
       const query = await db
         .withSchema(schema)
-        .withTables<{ [table: string]: Record<string, unknown> }>()
+        .withTables<{ [table]: Record<string, unknown> }>()
         .selectFrom(table)
         .select(db.fn.countAll().as('total'))
         .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
         .execute()
 
-      return { count: String(query[0]?.total ?? 0), isEstimated: false }
+      return {
+        count: String(query[0]?.total ?? 0),
+        isEstimated: false,
+      }
     },
 
     clickhouse: async (db) => {
-      if (!_enforceExactCount && !filters?.length) {
+      if (!enforceExactCount && !filters?.length) {
         const estimate = await db
           .withSchema('system')
           .withTables<{
@@ -121,14 +111,14 @@ export const totalQuery = createQuery({
           .where('active', '=', 1)
           .executeTakeFirst()
 
-        if (estimate?.count) {
+        if (estimate && Number(estimate.count) >= 0) {
           return { count: String(estimate.count), isEstimated: true }
         }
       }
 
       const query = await db
         .withSchema(schema)
-        .withTables<{ [table: string]: Record<string, unknown> }>()
+        .withTables<{ [table]: Record<string, unknown> }>()
         .selectFrom(table)
         .select(db.fn.countAll().as('total'))
         .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
