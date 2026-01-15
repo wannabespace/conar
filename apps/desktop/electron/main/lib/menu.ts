@@ -145,7 +145,7 @@ function buildTemplate(): MenuItemConstructorOptions[] {
 }
 
 export function buildMenu(): Menu {
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     setupDevelopmentEnvironment()
   }
 

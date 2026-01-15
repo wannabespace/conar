@@ -59,7 +59,7 @@ export function Sidebar() {
             </Tooltip>
           </TooltipProvider>
         </div>
-        {!!tablesAndSchemas && tablesAndSchemas.totalTables > 20 && (
+        {!!tablesAndSchemas && tablesAndSchemas.totalTables > 10 && (
           <div className="relative">
             <Input
               placeholder="Search tables"

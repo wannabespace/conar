@@ -1,6 +1,6 @@
-import type { AppUIMessage } from '@conar/api/src/ai-tools'
 import type { ComponentRef } from 'react'
 import type { chats } from '~/drizzle'
+import type { ChatMutationMetadata } from '~/entities/chat/sync'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -19,8 +19,12 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { getMonth, getWeek, getYear, isToday, isYesterday } from 'date-fns'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
+import {
+  chatsCollection,
+  chatsMessagesCollection,
+} from '~/entities/chat/sync'
 import { databaseStore } from '~/entities/database/store'
+import { convertToAppUIMessage } from '~/lib/ai'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
 import { RemoveChatDialog } from './remove-chat-dialog'
@@ -93,10 +97,14 @@ export function ChatHeader({ chatId }: { chatId: string }) {
 
     const title = await orpc.ai.generateTitle({
       chatId: chat.id,
-      messages: messages as AppUIMessage[],
+      messages: messages.map(convertToAppUIMessage),
     })
 
-    chatsCollection.update(chat.id, (draft) => {
+    chatsCollection.update(chat.id, {
+      metadata: {
+        cloudSync: false,
+      } satisfies ChatMutationMetadata,
+    }, (draft) => {
       draft.title = title
     })
   })
