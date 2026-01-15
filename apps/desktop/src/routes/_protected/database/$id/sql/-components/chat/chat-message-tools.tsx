@@ -1,5 +1,6 @@
 import type { ToolUIPart } from '@conar/api/ai/tools/helpers'
 import type { editor } from 'monaco-editor'
+import { Button } from '@conar/ui/components/button'
 import {
   SingleAccordion,
   SingleAccordionContent,
@@ -18,7 +19,7 @@ import {
 import { useState } from 'react'
 import { Monaco } from '~/components/monaco'
 
-const STATE_ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: ToolUIPart }) => React.ReactNode> = {
+const ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: ToolUIPart }) => React.ReactNode> = {
   'input-streaming': ({ className }) => (
     <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
   ),
@@ -51,6 +52,38 @@ const STATE_ICONS: Record<ToolUIPart['state'], (props: { className?: string, par
   ),
 }
 
+function getTitle(part: ToolUIPart): React.ReactNode {
+  if (part.type === 'tool-columns') {
+    if (part.input) {
+      const schema = part.input.tableAndSchema?.schemaName ? part.input.tableAndSchema.schemaName === 'public' ? '' : part.input.tableAndSchema.schemaName : ''
+
+      return `Get columns from ${schema ? `"${schema}".` : ''}${part.input.tableAndSchema?.tableName ? `"${part.input.tableAndSchema.tableName}"` : '...'}`
+    }
+    return 'Get columns from ...'
+  }
+  if (part.type === 'tool-enums') {
+    return 'Get enums'
+  }
+  if (part.type === 'tool-select') {
+    if (part.input) {
+      const schema = part.input.tableAndSchema?.schemaName ? part.input.tableAndSchema.schemaName === 'public' ? '' : part.input.tableAndSchema.schemaName : ''
+
+      return `Select data from ${schema ? `"${schema}".` : ''}${part.input.tableAndSchema?.tableName ? `"${part.input.tableAndSchema.tableName}"` : '...'}`
+    }
+    return 'Select data from ...'
+  }
+  if (part.type === 'tool-webSearch') {
+    if (part.input && typeof part.input === 'object' && 'query' in part.input) {
+      const query = typeof part.input.query === 'string' ? part.input.query : ''
+
+      return `Searching the web for "${query}"`
+    }
+    return 'Searching the web...'
+  }
+
+  return 'Unknown tool'
+}
+
 const monacoOptions = {
   readOnly: true,
   scrollBeyondLastLine: false,
@@ -59,34 +92,19 @@ const monacoOptions = {
   folding: false,
 } as const satisfies editor.IStandaloneEditorConstructionOptions
 
-function preview(v: unknown): string {
-  if (v == null)
-    return '—'
-  if (typeof v === 'string')
-    return v.slice(0, 120)
-  if (Array.isArray(v))
-    return `${v.length} item${v.length !== 1 ? 's' : ''}`
-  if (typeof v === 'object') {
-    const keys = Object.keys(v)
-    return keys.length ? keys.slice(0, 4).join(', ') : 'Empty'
-  }
-  return String(v).slice(0, 120)
-}
-
 function extractErrorMessage(output: unknown): string | null {
   if (typeof output !== 'object' || output === null || !('error' in output))
     return null
 
   const { error } = output
 
-  if (error == null)
-    return null
   if (typeof error === 'string')
     return error
+
   if (error instanceof Error)
     return error.message
 
-  return preview(error)
+  return JSON.stringify(error)
 }
 
 function ChatMessageToolSection({ title, value, full }: {
@@ -98,13 +116,13 @@ function ChatMessageToolSection({ title, value, full }: {
     <div className="space-y-2">
       {title && (
         <div className={`
-          text-[11px] font-medium tracking-wider text-muted-foreground uppercase
+          text-xs font-medium tracking-wider text-muted-foreground
         `}
         >
           {title}
         </div>
       )}
-      {value == null
+      {value === null
         ? <div className="text-muted-foreground italic">Pending…</div>
         : full
           ? (
@@ -115,33 +133,19 @@ function ChatMessageToolSection({ title, value, full }: {
                 options={monacoOptions}
               />
             )
-          : <div className="wrap-break-word text-muted-foreground">{preview(value)}</div>}
+          : <div className="wrap-break-word text-muted-foreground">{JSON.stringify(value)}</div>}
     </div>
   )
 }
 
-function getToolTitle({ loading, error, name }: { loading: boolean, error: boolean, name?: string }) {
-  if (error)
-    return `Failed ${name}`
-  if (loading)
-    return `Running ${name}`
-  return `Ran ${name}`
-}
-
-export function ChatMessageTool({ part, className }: {
-  part: ToolUIPart
-  className?: string
-}) {
+export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
   const loading = part.state === 'input-streaming' || part.state === 'input-available'
   const error = part.state === 'output-error'
-  const name = part.type?.replace('tool-', '') ?? 'tool'
 
   const errorMsg = error ? extractErrorMessage(part.output) : null
 
-  const Icon = STATE_ICONS[part.state]
-  const title = getToolTitle({ loading, error, name })
-
-  const hasDetails = part.input != null || part.output != null
+  const Icon = ICONS[part.state]
+  const title = getTitle(part)
 
   const [open, setOpen] = useState(error)
   const [full, setFull] = useState(false)
@@ -150,7 +154,7 @@ export function ChatMessageTool({ part, className }: {
     setOpen(true)
   }
 
-  if (loading || !hasDetails) {
+  if (loading) {
     return (
       <div className={cn('my-2 flex items-center gap-2 text-sm', className)}>
         <Icon
@@ -159,7 +163,9 @@ export function ChatMessageTool({ part, className }: {
           `)}
           part={part}
         />
-        <span className={cn(loading && 'text-muted-foreground')}>{title}</span>
+        <span className={cn(loading && 'text-muted-foreground')}>
+          {title}
+        </span>
       </div>
     )
   }
@@ -173,7 +179,9 @@ export function ChatMessageTool({ part, className }: {
       <SingleAccordionTrigger className="gap-2 py-2" disabled={error}>
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <Icon className={cn('size-4 shrink-0', error && 'text-red-600')} part={part} />
-          <span className="truncate text-sm">{title}</span>
+          <span className="truncate text-sm">
+            {title}
+          </span>
         </div>
         {!error && <SingleAccordionTriggerArrow />}
       </SingleAccordionTrigger>
@@ -183,11 +191,7 @@ export function ChatMessageTool({ part, className }: {
           {errorMsg
             ? (
                 <div className="space-y-2">
-                  <div className={`
-                    text-[11px] font-medium tracking-wider text-muted-foreground
-                    uppercase
-                  `}
-                  >
+                  <div className="text-xs text-muted-foreground uppercase">
                     Error
                   </div>
                   <div
@@ -201,35 +205,16 @@ export function ChatMessageTool({ part, className }: {
                   </div>
                 </div>
               )
-            : (
-                <div className="space-y-2">
-                  <div className={`
-                    text-[11px] font-medium tracking-wider text-muted-foreground
-                    uppercase
-                  `}
-                  >
-                    Response
-                  </div>
-                  <ChatMessageToolSection value={part.output} full={full} />
-                </div>
-              )}
+            : <ChatMessageToolSection value={part.output} full={full} />}
+          {part.input !== null && <ChatMessageToolSection title="Parameters" value={part.input} full={full} />}
 
-          {part.input != null && (
-            <ChatMessageToolSection title="Parameters" value={part.input} full={full} />
-          )}
-
-          <button
-            type="button"
-            className={`
-              rounded-sm text-muted-foreground transition-colors
-              hover:text-foreground
-              focus-visible:ring-2 focus-visible:ring-ring
-              focus-visible:outline-none
-            `}
+          <Button
+            variant="ghost"
+            size="xs"
             onClick={() => setFull(v => !v)}
           >
             {full ? 'Show less' : 'Show more'}
-          </button>
+          </Button>
         </div>
       </SingleAccordionContent>
     </SingleAccordion>
