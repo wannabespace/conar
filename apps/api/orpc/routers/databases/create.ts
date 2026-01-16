@@ -2,10 +2,10 @@ import { SyncType } from '@conar/shared/enums/sync-type'
 import { encrypt } from '@conar/shared/utils/encryption'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { databases, databasesInsertSchema, db } from '~/drizzle'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { authMiddleware, orpc } from '~/orpc'
 
 export const create = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(authMiddleware)
   .input(databasesInsertSchema.omit('userId'))
   .handler(async ({ context, input }) => {
     const newConnectionString = new SafeURL(input.connectionString)
