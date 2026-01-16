@@ -1,5 +1,6 @@
 import type { UIMessage } from '@ai-sdk/react'
-import type { ChatStatus } from 'ai'
+import type { tools } from '@conar/api/ai-tools'
+import type { ChatStatus, DynamicToolUIPart, InferUITools, ToolUIPart } from 'ai'
 import type { ComponentProps, ReactNode } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
@@ -27,6 +28,10 @@ import { ChatImages } from './chat-images'
 import { ChatMessageTool } from './chat-message-tools'
 
 const COMMENT_REGEX = regex('^(?:--.*\n)+')
+
+function isKnownToolUIPart(part: UIMessage['parts'][number]): part is ToolUIPart<InferUITools<typeof tools>> | DynamicToolUIPart {
+  return isToolUIPart(part)
+}
 
 function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   return (
@@ -246,7 +251,7 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loadi
       )
     }
 
-    if (isToolUIPart(part)) {
+    if (isKnownToolUIPart(part)) {
       return (
         <ChatMessageTool
           // eslint-disable-next-line react/no-array-index-key
@@ -427,13 +432,6 @@ function ErrorMessage({ error, className, ...props }: { error: Error } & Compone
               onClick={() => chat.regenerate()}
             >
               Retry
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => chat.regenerate({ body: { fallback: true } })}
-            >
-              Retry with fallback model
             </Button>
           </div>
         </AlertDescription>

@@ -8,12 +8,12 @@ packages:
   - apps/*
 
 catalog:
-  '@ai-sdk/anthropic': ^2.0.56
-  '@ai-sdk/google': ^2.0.51
-  '@ai-sdk/openai': ^2.0.88
-  '@ai-sdk/provider': ^2.0.0
-  '@ai-sdk/react': ^2.0.118
-  '@ai-sdk/xai': ^2.0.42
+  '@ai-sdk/anthropic': ^3.0.2
+  '@ai-sdk/google': ^3.0.2
+  '@ai-sdk/openai': ^3.0.2
+  '@ai-sdk/provider': ^3.0.1
+  '@ai-sdk/react': ^3.0.7
+  '@ai-sdk/xai': ^3.0.3
   '@antfu/eslint-config': ^6.7.3
   '@base-ui/react': ^1.0.0
   '@clickhouse/client': ^1.16.0
@@ -65,7 +65,6 @@ catalog:
   '@tanstack/react-query-devtools': ^5.91.2
   '@tanstack/react-router': ^1.145.7
   '@tanstack/react-router-devtools': ^1.145.7
-  '@tanstack/react-router-ssr-query': ^1.145.7
   '@tanstack/react-start': ^1.145.10
   '@tanstack/react-store': ^0.8.0
   '@tanstack/react-virtual': ^3.13.17
@@ -85,8 +84,8 @@ catalog:
   '@typescript/native-preview': ^7.0.0-dev.20260107.1
   '@vitejs/plugin-react': ^5.1.2
   '@xyflow/react': ^12.10.0
-  ai: ^5.0.116
-  ai-retry: ^0.12.0
+  ai: ^6.0.0
+  ai-retry: ^1.0.0
   arkregex: ^0.0.5
   arktype: ^2.1.29
   babel-plugin-react-compiler: ^1.0.0

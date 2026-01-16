@@ -78,6 +78,13 @@
       "when": 1766228230726,
       "tag": "0010_panoramic_plazm",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1768148789451,
+      "tag": "0011_round_purifiers",
+      "breakpoints": true
     }
   ]
 }
