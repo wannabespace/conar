@@ -5,3 +5,9 @@
   height: 0;
   pointer-events: none;
 }
+
+.tiptap .mention {
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  box-decoration-break: clone;
+}
