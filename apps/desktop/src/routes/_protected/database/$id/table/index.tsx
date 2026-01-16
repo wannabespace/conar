@@ -1,13 +1,13 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Store } from '@tanstack/react-store'
-import type { storeState } from './-store'
+import type { SelectionState, storeState } from './-store'
 import { SQL_FILTERS_GROUPED } from '@conar/shared/filters/sql'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
-import { useEffect, useEffectEvent } from 'react'
+import { useEffect, useEffectEvent, useRef } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { FiltersProvider } from '~/components/table'
 import { addTab, databaseStore } from '~/entities/database/store'
@@ -18,7 +18,7 @@ import { Sidebar } from './-components/sidebar'
 import { Table } from './-components/table'
 import { TablesTabs } from './-components/tabs'
 import { useTableColumns } from './-queries/use-columns-query'
-import { createPageStore, PageStoreContext } from './-store'
+import { createPageStore, LastClickedIndexContext, PageStoreContext, SelectionStateContext } from './-store'
 
 export const Route = createFileRoute(
   '/_protected/database/$id/table/',
@@ -70,6 +70,17 @@ export const Route = createFileRoute(
 function TableContent({ table, schema, store }: { table: string, schema: string, store: Store<typeof storeState.infer> }) {
   const { database } = Route.useLoaderData()
   const deps = Route.useLoaderDeps()
+  const lastClickedIndexRef = useRef<number | null>(null)
+  const selectionStateRef = useRef<SelectionState>({ anchorIndex: null, focusIndex: null, lastExpandDirection: null })
+
+  const resetSelectionStateEvent = useEffectEvent(() => {
+    lastClickedIndexRef.current = null
+    selectionStateRef.current = { anchorIndex: null, focusIndex: null, lastExpandDirection: null }
+  })
+
+  useEffect(() => {
+    resetSelectionStateEvent()
+  }, [table, schema])
 
   useEffect(() => {
     if (store && (deps.filters || deps.orderBy)) {
@@ -108,29 +119,33 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
   }, [columns, store])
 
   return (
-    <PageStoreContext value={store}>
-      <TablesTabs className="h-9" database={database} />
-      <div
-        key={table}
-        className="h-[calc(100%-(--spacing(9)))]"
-        onClick={() => addTab(database.id, schema, table)}
-      >
-        <FiltersProvider
-          columns={columns ?? []}
-          filtersGrouped={SQL_FILTERS_GROUPED}
-        >
-          <div className="flex h-full flex-col justify-between">
-            <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
-              <Header table={table} schema={schema} />
-              <Filters />
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <Table table={table} schema={schema} />
-            </div>
+    <SelectionStateContext value={selectionStateRef}>
+      <LastClickedIndexContext value={lastClickedIndexRef}>
+        <PageStoreContext value={store}>
+          <TablesTabs className="h-9" database={database} />
+          <div
+            key={table}
+            className="h-[calc(100%-(--spacing(9)))]"
+            onClick={() => addTab(database.id, schema, table)}
+          >
+            <FiltersProvider
+              columns={columns ?? []}
+              filtersGrouped={SQL_FILTERS_GROUPED}
+            >
+              <div className="flex h-full flex-col justify-between">
+                <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
+                  <Header table={table} schema={schema} />
+                  <Filters />
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <Table table={table} schema={schema} />
+                </div>
+              </div>
+            </FiltersProvider>
           </div>
-        </FiltersProvider>
-      </div>
-    </PageStoreContext>
+        </PageStoreContext>
+      </LastClickedIndexContext>
+    </SelectionStateContext>
   )
 }
 
