@@ -348,6 +348,9 @@ catalogs:
     monaco-themes:
       specifier: ^0.4.8
       version: 0.4.8
+    monacopilot:
+      specifier: ^1.2.9
+      version: 1.2.9
     motion:
       specifier: ^12.24.10
       version: 12.24.10
@@ -611,6 +614,9 @@ importers:
       ioredis-mock:
         specifier: 'catalog:'
         version: 8.13.1(@types/ioredis-mock@8.2.6(ioredis@5.9.0))(ioredis@5.9.0)
+      monacopilot:
+        specifier: 'catalog:'
+        version: 1.2.9(monaco-editor@0.54.0)
       nanoid:
         specifier: 'catalog:'
         version: 5.1.6
@@ -684,6 +690,9 @@ importers:
       electron-store:
         specifier: 'catalog:'
         version: 11.0.2
+      monacopilot:
+        specifier: 'catalog:'
+        version: 1.2.9(monaco-editor@0.54.0)
       mssql:
         specifier: 'catalog:'
         version: 12.2.0
@@ -2744,6 +2753,9 @@ packages:
 
   '@monaco-editor/loader@1.7.0':
     resolution: {integrity: sha512-gIwR1HrJrrx+vfyOhYmCZ0/JcWqG5kbfG7+d3f/C1LXk2EvzAbHSg3MQ5lO2sMlo9izoAZ04shohfKLVT6crVA==}
+
+  '@monacopilot/core@1.2.9':
+    resolution: {integrity: sha512-S6zQ1lTF7saOsENaVisovHYluSxMRQWHx6XCmlatDeRWuHknXvq/+X0Fg2ibAVqBTkJYYNMnTBrzntpE63QcnA==}
 
   '@napi-rs/wasm-runtime@1.1.0':
     resolution: {integrity: sha512-Fq6DJW+Bb5jaWE69/qOE0D1TUN9+6uWhCeZpdnSBk14pjLcCWR7Q8n49PTSPHazM37JqrsdpEthXy2xn6jWWiA==}
@@ -8452,6 +8464,11 @@ packages:
     resolution: {integrity: sha512-QEDCwl5XUMPPpsg8TVNfi1VKIDtMsMTJAhUfxHSZ6hzkEfZgfTK2hicwyzkDKhAhrpMkHkwMtG13ynvdztJesw==}
     engines: {node: '>=22.0.0'}
 
+  monacopilot@1.2.9:
+    resolution: {integrity: sha512-8dEBfiDR0wK4t7uDkHa7USfddhijWDBHA3vo7+NT2RfpPtcXlOYDHcTQrd2KdtwCzVzgxhnNAmkdIEvSXOrPwA==}
+    peerDependencies:
+      monaco-editor: '>=0.41.0'
+
   moo@0.5.2:
     resolution: {integrity: sha512-iSAJLHYKnX41mKcJKjqvnAN9sf0LMDTXDEvFv+ffuRR9a1MIuXLjMNL6EsnDHSkKLTWNqQQ5uo61P4EbU4NU+Q==}
 
@@ -12363,6 +12380,8 @@ snapshots:
   '@monaco-editor/loader@1.7.0':
     dependencies:
       state-local: 1.0.7
+
+  '@monacopilot/core@1.2.9': {}
 
   '@napi-rs/wasm-runtime@1.1.0':
     dependencies:
@@ -19000,6 +19019,11 @@ snapshots:
   monaco-themes@0.4.8:
     dependencies:
       fast-plist: 0.1.3
+
+  monacopilot@1.2.9(monaco-editor@0.54.0):
+    dependencies:
+      '@monacopilot/core': 1.2.9
+      monaco-editor: 0.54.0
 
   moo@0.5.2: {}
 

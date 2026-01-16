@@ -169,3 +169,50 @@ export function databaseCompletionService(database: typeof databases.$inferSelec
     return [...items, ...keywordItems]
   }
 }
+
+export async function databaseAICompletionContext(database: typeof databases.$inferSelect) {
+  queryClient.prefetchQuery(databaseTablesAndSchemasQuery({ database }))
+  queryClient.prefetchQuery(databaseEnumsQuery({ database }))
+
+  const buildSchemaContext = async (): Promise<string> => {
+    const [tablesAndSchemas, enums] = await Promise.all([
+      queryClient.ensureQueryData(databaseTablesAndSchemasQuery({ database })),
+      queryClient.ensureQueryData(databaseEnumsQuery({ database })),
+    ])
+
+    const contextLines: string[] = []
+
+    for (const schema of tablesAndSchemas.schemas) {
+      contextLines.push('', `Schema: ${schema.name}`, '')
+
+      for (const tableName of schema.tables) {
+        const columns = await queryClient.ensureQueryData(
+          databaseTableColumnsQuery({
+            database,
+            schema: schema.name,
+            table: tableName,
+          }),
+        )
+
+        contextLines.push(`  Table: ${tableName}`, '')
+        columns.forEach((col) => {
+          contextLines.push(`    - ${col.id}: ${col.type} ${col.isNullable ? '(nullable)' : '(not null)'}`)
+        })
+      }
+    }
+
+    if (enums?.length > 0) {
+      contextLines.push('', 'Enums:', '')
+      enums.forEach((enumItem) => {
+        contextLines.push(`  ${enumItem.schema}.${enumItem.name}: [${enumItem.values.join(', ')}]`)
+      })
+    }
+
+    return contextLines.join('\n')
+  }
+
+  return {
+    databaseType: database.type,
+    buildSchemaContext,
+  }
+}
