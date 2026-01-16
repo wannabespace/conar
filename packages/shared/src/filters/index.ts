@@ -5,10 +5,10 @@ export interface Filter {
   hasValue?: boolean
 }
 
-export interface ActiveFilter<T extends Filter = Filter> {
+export interface ActiveFilter<T extends Filter = Filter, V = unknown> {
   column: string
   ref: T
-  values: unknown[]
+  values: V[]
 }
 
 export const FILTER_GROUPS = {
