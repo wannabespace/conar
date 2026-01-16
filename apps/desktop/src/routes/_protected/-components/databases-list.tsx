@@ -7,15 +7,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
+import { RiArrowDownSLine, RiArrowUpSLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useRef, useState } from 'react'
 import { DatabaseIcon } from '~/entities/database/components'
-import { useDatabaseLinkParams } from '~/entities/database/hooks'
+import { useDatabaseLinkParams, useServerDatabases } from '~/entities/database/hooks'
 import { databasesCollection } from '~/entities/database/sync'
-import { useLastOpenedDatabases } from '~/entities/database/utils'
+import { cloneConnectionForDatabase, useLastOpenedDatabases } from '~/entities/database/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
@@ -30,6 +30,8 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
 
   const params = useDatabaseLinkParams(database.id)
 
+  const { databasesList, isLoading, isExpanded, toggleExpand } = useServerDatabases(database)
+
   return (
     <motion.div
       layout
@@ -37,6 +39,7 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.75 }}
       transition={{ duration: 0.15 }}
+      className="flex flex-col gap-1"
     >
       <Link
         className={cn(
@@ -89,49 +92,133 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
             {connectionString.replaceAll('*', '•')}
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger className={`
-            rounded-md p-2
-            hover:bg-accent-foreground/5
-          `}
-          >
-            <RiMoreLine className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
+
+        <div className="z-10 flex items-center gap-1">
+          {databasesList.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
               onClick={(e) => {
+                e.preventDefault()
                 e.stopPropagation()
-                copy(database.connectionString, 'Connection string copied to clipboard')
+                toggleExpand()
               }}
             >
-              <RiFileCopyLine className="size-4 opacity-50" />
-              Copy Connection String
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                onRename()
-              }}
+              {isExpanded
+                ? <RiArrowUpSLine className="size-4" />
+                : (
+                    <RiArrowDownSLine className="size-4" />
+                  )}
+            </Button>
+          )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger className={`
+              rounded-md p-2
+              hover:bg-accent-foreground/5
+            `}
             >
-              <RiEditLine className="size-4 opacity-50" />
-              Rename
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className={`
-                text-destructive
-                focus:text-destructive
-              `}
-              onClick={(e) => {
-                e.stopPropagation()
-                onRemove()
-              }}
-            >
-              <RiDeleteBinLine className="size-4" />
-              Remove
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <RiMoreLine className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  copy(database.connectionString, 'Connection string copied to clipboard')
+                }}
+              >
+                <RiFileCopyLine className="size-4 opacity-50" />
+                Copy Connection String
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRename()
+                }}
+              >
+                <RiEditLine className="size-4 opacity-50" />
+                Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className={`
+                  text-destructive
+                  focus:text-destructive
+                `}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRemove()
+                }}
+              >
+                <RiDeleteBinLine className="size-4" />
+                Remove
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </Link>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className={`
+              ml-4 flex max-h-60 flex-col gap-1 overflow-y-auto rounded-lg
+              border bg-muted/30 p-2
+            `}
+            >
+              {isLoading
+                ? (
+                    <div className={`
+                      flex items-center gap-2 p-2 text-sm text-muted-foreground
+                    `}
+                    >
+                      <RiLoader4Line className="size-4 animate-spin" />
+                      Loading databases...
+                    </div>
+                  )
+                : databasesList.length > 0
+                  ? (
+                      databasesList.map(dbName => (
+                        <div
+                          key={dbName}
+                          role="button"
+                          onKeyDown={() => {}}
+                          tabIndex={0}
+                          className={`
+                            flex cursor-pointer items-center gap-2 rounded-md
+                            border border-transparent p-2 text-sm
+                            hover:border-border hover:bg-muted
+                          `}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+
+                            const newConnection = cloneConnectionForDatabase(database, dbName)
+                            databasesCollection.insert(newConnection)
+                          }}
+                        >
+                          <RiDatabase2Line className={`
+                            size-4 text-muted-foreground
+                          `}
+                          />
+                          <span>{dbName}</span>
+                        </div>
+                      ))
+                    )
+                  : (
+                      <div className="p-2 text-sm text-muted-foreground">
+                        No other databases found.
+                      </div>
+                    )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
