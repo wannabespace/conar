@@ -18,7 +18,6 @@
     "@conar/configs": "workspace:*",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
-    "nanoid": "catalog:",
-    "zod": "catalog:"
+    "nanoid": "catalog:"
   }
 }

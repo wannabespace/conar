@@ -1,0 +1,72 @@
+import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
+import { webSearch } from '@exalabs/ai-sdk'
+import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
+import { tool } from 'ai'
+import { type } from 'arktype'
+import { env } from '~/env'
+
+export const tools = {
+  columns: tool({
+    description: 'Use this tool if you need to get the list of columns in a table.',
+    inputSchema: type({
+      tableAndSchema: type({
+        tableName: 'string',
+        schemaName: 'string',
+      }),
+    }),
+    outputSchema: type({
+      isEditable: 'boolean',
+      isNullable: 'boolean',
+      table: 'string',
+      id: 'string',
+      type: 'string',
+      default: 'string | null',
+    }).array(),
+  }),
+  enums: tool({
+    description: 'Use this tool if you need to get the list of enums in a database',
+    inputSchema: type({}),
+    outputSchema: type({
+      schema: 'string',
+      name: 'string',
+      value: 'string',
+    }).array(),
+  }),
+  select: tool({
+    description: [
+      'Use this tool to select data from the database to improve your response.',
+      'Do not abuse this tool, unless you are 100% sure that the data will help to answer the question.',
+      'Do not select any sensitive data, like password, token, secret, card number, etc.',
+      'Mask sensitive data with asterisks if need to select to answer the question.',
+      'Do not use any tables and schemas that are not provided in the input.',
+      'tableName and schemaName will be concatenated to "schemaName.tableName".',
+      'For tableName use only table without schema prefix.',
+    ].join('\n'),
+    inputSchema: type({
+      whereConcatOperator: type('"AND" | "OR"').describe('The operator to use to concatenate the where clauses'),
+      whereFilters: type({
+        column: 'string',
+        operator: type
+          .enumerated(...SQL_FILTERS_LIST.map(filter => filter.operator))
+          .describe('The operator to use in the where clause'),
+        values: 'string[]',
+      })
+        .array()
+        .describe('The columns to use in the where clause'),
+      select: type('string[] | null').describe('The columns to select. If not provided, all columns will be selected'),
+      limit: 'number',
+      offset: 'number',
+      orderBy: 'Record<string, "ASC" | "DESC"> | null',
+      tableAndSchema: type({
+        tableName: 'string',
+        schemaName: 'string',
+      }).describe('The name of the table and schema to query'),
+    }).describe('Input schema for database select query with filters, ordering, and pagination'),
+    outputSchema: type('unknown'),
+  }),
+  ...(env.EXA_API_KEY && { webSearch: webSearch({ apiKey: env.EXA_API_KEY }) }),
+  ...(env.CONTEXT7_API_KEY && {
+    resolveLibraryId: resolveLibraryId({ apiKey: env.CONTEXT7_API_KEY }),
+    queryDocs: queryDocs({ apiKey: env.CONTEXT7_API_KEY }),
+  }),
+}

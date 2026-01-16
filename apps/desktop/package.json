@@ -113,7 +113,6 @@
     "use-stick-to-bottom": "catalog:",
     "uuid": "catalog:",
     "vite": "catalog:",
-    "vite-tsconfig-paths": "catalog:",
-    "zod": "catalog:"
+    "vite-tsconfig-paths": "catalog:"
   }
 }

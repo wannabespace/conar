@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '~/ai-tools'
+import type { AppUIMessage } from '~/ai/tools/helpers'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { DatabaseType } from '@conar/shared/enums/database-type'
@@ -8,7 +8,7 @@ import { createRetryable } from 'ai-retry'
 import { type } from 'arktype'
 import { consola } from 'consola'
 import { v7 } from 'uuid'
-import { tools } from '~/ai-tools'
+import { tools } from '~/ai/tools'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 
@@ -75,12 +75,13 @@ export const chat = orpc
             '- Answer in the same language as the user\'s message',
             '- Use quotes for table and column names to prevent SQL errors with case sensitivity',
             '- If a user asks to change specific lines generate SQL only for the lines, not for whole SQL',
+            '- Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.',
             '',
             'Additional information:',
             `- Current date and time: ${new Date().toISOString()}`,
             '',
             'You can use the following tools to help you generate the SQL code:',
-            `- ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}`,
+            Object.entries(tools).map(([tool, { description }]) => `- ${tool}: ${description}`).join('\n'),
             '',
             'User provided context:',
             input.context,

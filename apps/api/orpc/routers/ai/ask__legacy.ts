@@ -1,5 +1,5 @@
 import type { LanguageModelV3 } from '@ai-sdk/provider'
-import type { AppUIMessage } from '~/ai-tools'
+import type { AppUIMessage } from '~/ai/tools/helpers'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { DatabaseType } from '@conar/shared/enums/database-type'
@@ -10,7 +10,8 @@ import { type } from 'arktype'
 import { consola } from 'consola'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
-import { convertToAppUIMessage, tools } from '~/ai-tools'
+import { tools } from '~/ai/tools'
+import { convertToAppUIMessage } from '~/ai/tools/helpers'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
@@ -100,7 +101,7 @@ async function generateStream({
           `- Current date and time: ${new Date().toISOString()}`,
           '',
           'You can use the following tools to help you generate the SQL code:',
-          `- ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}`,
+          Object.entries(tools).map(([tool, { description }]) => `- ${tool}: ${description}`).join('\n'),
           '',
           'User provided context:',
           context,
