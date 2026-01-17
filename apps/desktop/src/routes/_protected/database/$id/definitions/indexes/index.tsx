@@ -191,8 +191,10 @@ function DatabaseIndexesPage() {
           {schemas.length > 1 && (
             <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
               <SelectTrigger className="w-[180px]">
-                <span className="mr-2 text-muted-foreground">schema</span>
-                <SelectValue />
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">schema</span>
+                  <SelectValue />
+                </div>
               </SelectTrigger>
               <SelectContent>
                 {schemas.map(schema => (
