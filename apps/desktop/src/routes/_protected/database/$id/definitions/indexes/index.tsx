@@ -15,7 +15,7 @@ import {
 import { Input } from '@conar/ui/components/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiFileList3Line, RiFilter3Line, RiInformationLine, RiRefreshLine, RiTable2 } from '@remixicon/react'
+import { RiCloseLine, RiFileList3Line, RiFilter3Line, RiInformationLine, RiKey2Line, RiRefreshLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
@@ -139,7 +139,7 @@ function DatabaseIndexesPage() {
                   `}
                   onClick={() => setSearch('')}
                 >
-                  <RiCloseLine className="text-muted-foreground size-4" />
+                  <RiCloseLine className="size-4 text-muted-foreground" />
                 </button>
               )}
             </div>
@@ -152,7 +152,7 @@ function DatabaseIndexesPage() {
                     focus-visible:ring-0 focus-visible:ring-offset-0
                   `}
                 >
-                  <RiFilter3Line className="text-muted-foreground mr-2 size-4" />
+                  <RiFilter3Line className="mr-2 size-4 text-muted-foreground" />
                   {filterTypes.length > 0
                     ? (
                         <span>
@@ -190,7 +190,7 @@ function DatabaseIndexesPage() {
             {schemas.length > 1 && (
               <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
                 <SelectTrigger className="w-[180px]">
-                  <span className="text-muted-foreground mr-2">schema</span>
+                  <span className="mr-2 text-muted-foreground">schema</span>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -222,12 +222,12 @@ function DatabaseIndexesPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className={`
-                  border-muted-foreground/20 bg-muted/10 mt-4 w-full border
-                  border-dashed p-10 text-center
+                  mt-4 w-full border border-dashed border-muted-foreground/20
+                  bg-muted/10 p-10 text-center
                 `}
               >
                 <RiInformationLine className={`
-                  text-muted-foreground mx-auto mb-3 size-12
+                  mx-auto mb-3 size-12 text-muted-foreground
                 `}
                 />
                 <h3 className="text-lg font-medium">No indexes found</h3>
@@ -242,16 +242,25 @@ function DatabaseIndexesPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 className={`
-                  border-border/60 overflow-hidden border
+                  overflow-hidden border border-border/60
                   hover:border-border/90
                 `}
               >
                 <CardHeader className="bg-muted/30 px-4 py-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <RiFileList3Line className="text-primary size-4" />
+                      {item.isPrimary
+                        ? <RiKey2Line className="size-4 text-primary" />
+                        : <RiFileList3Line className="size-4 text-primary" />}
                       <HighlightText text={item.name} match={search} />
-                      {item.isPrimary && <Badge className="text-xs">Primary</Badge>}
+                      {item.isPrimary && (
+                        <Badge
+                          variant="secondary"
+                          className="ml-2 text-xs font-normal"
+                        >
+                          Primary Key
+                        </Badge>
+                      )}
                       {item.isUnique && !item.isPrimary && (
                         <Badge
                           variant="secondary"
