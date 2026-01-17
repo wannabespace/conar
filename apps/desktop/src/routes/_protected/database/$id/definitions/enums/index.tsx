@@ -1,6 +1,7 @@
 import { DatabaseType } from '@conar/shared/enums/database-type'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
+import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/hightlight'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiListIndefinite, RiListUnordered, RiStackLine, RiTable2 } from '@remixicon/react'
+import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiListIndefinite, RiListUnordered, RiRefreshLine, RiStackLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
@@ -17,7 +18,7 @@ import { useDatabaseEnums, useDatabaseTablesAndSchemas } from '~/entities/databa
 
 const MotionCard = motion.create(Card)
 
-export const Route = createFileRoute('/_protected/database/$id/enums/')({
+export const Route = createFileRoute('/_protected/database/$id/definitions/enums/')({
   component: DatabaseEnumsPage,
   loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({
@@ -27,7 +28,7 @@ export const Route = createFileRoute('/_protected/database/$id/enums/')({
 
 function DatabaseEnumsPage() {
   const { database } = Route.useLoaderData()
-  const { data: enums } = useDatabaseEnums({ database })
+  const { data: enums, refetch, isRefetching } = useDatabaseEnums({ database })
   const { data } = useDatabaseTablesAndSchemas({ database })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
@@ -52,54 +53,65 @@ function DatabaseEnumsPage() {
     })) ?? []
 
   return (
-    <ScrollArea className="h-full rounded-lg border bg-background">
+    <ScrollArea className="h-full">
       <div className="mx-auto flex min-h-full max-w-2xl flex-col px-4 py-6">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4">
           <h2 className="text-2xl font-bold">
             Enums
             {database.type === DatabaseType.MySQL && ' & Sets'}
           </h2>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Input
-                placeholder="Search enums"
-                className="w-[180px] pr-8"
-                value={search}
-                autoFocus
-                onChange={e => setSearch(e.target.value)}
-              />
-              {search && (
-                <button
-                  type="button"
-                  className={`
-                    absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
-                  `}
-                  onClick={() => setSearch('')}
-                >
-                  <RiCloseLine className="size-4 text-muted-foreground" />
-                </button>
-              )}
-            </div>
-            {schemas.length > 1 && (
-              <Select value={selectedSchema} onValueChange={setSelectedSchema}>
-                <SelectTrigger className="w-[180px]">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">
-                      schema
-                    </span>
-                    <SelectValue placeholder="Select schema" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {schemas.map(schema => (
-                    <SelectItem key={schema} value={schema}>
-                      {schema}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        </div>
+        <div className="mb-4 flex items-center gap-2">
+          <div className="relative">
+            <Input
+              placeholder="Search enums"
+              className="w-[180px] pr-8"
+              value={search}
+              autoFocus
+              onChange={e => setSearch(e.target.value)}
+            />
+            {search && (
+              <button
+                type="button"
+                className={`
+                  absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
+                `}
+                onClick={() => setSearch('')}
+              >
+                <RiCloseLine className="size-4 text-muted-foreground" />
+              </button>
             )}
           </div>
+          {schemas.length > 1 && (
+            <Select value={selectedSchema} onValueChange={setSelectedSchema}>
+              <SelectTrigger className="w-[180px]">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">
+                    schema
+                  </span>
+                  <SelectValue placeholder="Select schema" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {schemas.map(schema => (
+                  <SelectItem key={schema} value={schema}>
+                    {schema}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+          >
+            <RiRefreshLine className={cn('size-4', isRefetching && `
+              animate-spin
+            `)}
+            />
+          </Button>
         </div>
         <div className="mt-2 grid grid-cols-1 gap-4">
           <AnimatePresence initial={false} mode="popLayout">
