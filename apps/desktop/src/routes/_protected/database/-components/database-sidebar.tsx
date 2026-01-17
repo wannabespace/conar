@@ -34,8 +34,8 @@ const os = getOS(navigator.userAgent)
 function baseClasses(isActive = false) {
   return cn(
     `
-      flex size-9 cursor-pointer items-center justify-center rounded-md border
-      border-transparent text-foreground
+      text-foreground flex size-9 cursor-pointer items-center justify-center
+      rounded-md border border-transparent
     `,
     isActive && `
       border-primary/20 bg-primary/10 text-primary
@@ -83,7 +83,7 @@ function SupportButton() {
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
         </DialogHeader>
-        <div className="mb-2 text-muted-foreground">
+        <div className="text-muted-foreground mb-2">
           Have a question, suggestion, or need assistance?
           We're here to listen!
         </div>
@@ -156,9 +156,9 @@ function LastOpenedDatabase({ database }: { database: typeof databases.$inferSel
               <span
                 className={cn(
                   `
-                    absolute top-0 right-0 z-10 flex size-4 translate-x-1/2
-                    -translate-y-1/2 items-center justify-center rounded-full
-                    bg-background text-foreground opacity-0
+                    bg-background text-foreground absolute top-0 right-0 z-10
+                    flex size-4 translate-x-1/2 -translate-y-1/2 items-center
+                    justify-center rounded-full opacity-0
                     group-hover:opacity-100
                   `,
                 )}
@@ -232,10 +232,9 @@ function MainLinks() {
     }
   }, [store, lastOpenedTable, tableParam, schemaParam])
 
-  const isActiveConstraintsAndIndexes = match === '/_protected/database/$id/definitions'
-
   const isActiveSql = match === '/_protected/database/$id/sql/'
   const isActiveTables = match === '/_protected/database/$id/table/'
+  const isActiveDefinitions = match?.includes('/_protected/database/$id/definitions')
   const isActiveVisualizer = match === '/_protected/database/$id/visualizer/'
 
   const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
@@ -303,7 +302,7 @@ function MainLinks() {
             <Link
               to="/database/$id/definitions"
               params={{ id: database.id }}
-              className={baseClasses(isActiveConstraintsAndIndexes)}
+              className={baseClasses(isActiveDefinitions)}
             >
               <RiShieldCheckLine className="size-4" />
             </Link>
@@ -340,7 +339,7 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
                 to="/"
                 className="p-2"
               >
-                <AppLogo className="size-6 text-primary" />
+                <AppLogo className="text-primary size-6" />
               </Link>
             </TooltipTrigger>
             <TooltipContent side="right">Dashboard</TooltipContent>

@@ -119,7 +119,7 @@ function DatabaseIndexesPage() {
   }
 
   return (
-    <ScrollArea className="h-full rounded-lg border bg-background">
+    <ScrollArea className="h-full">
       <div className="mx-auto flex min-h-full max-w-3xl flex-col px-4 py-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Indexes</h2>
@@ -139,7 +139,7 @@ function DatabaseIndexesPage() {
                   `}
                   onClick={() => setSearch('')}
                 >
-                  <RiCloseLine className="size-4 text-muted-foreground" />
+                  <RiCloseLine className="text-muted-foreground size-4" />
                 </button>
               )}
             </div>
@@ -152,7 +152,7 @@ function DatabaseIndexesPage() {
                     focus-visible:ring-0 focus-visible:ring-offset-0
                   `}
                 >
-                  <RiFilter3Line className="mr-2 size-4 text-muted-foreground" />
+                  <RiFilter3Line className="text-muted-foreground mr-2 size-4" />
                   {filterTypes.length > 0
                     ? (
                         <span>
@@ -190,7 +190,7 @@ function DatabaseIndexesPage() {
             {schemas.length > 1 && (
               <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
                 <SelectTrigger className="w-[180px]">
-                  <span className="mr-2 text-muted-foreground">schema</span>
+                  <span className="text-muted-foreground mr-2">schema</span>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -222,12 +222,12 @@ function DatabaseIndexesPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className={`
-                  mt-4 w-full border border-dashed border-muted-foreground/20
-                  bg-muted/10 p-10 text-center
+                  border-muted-foreground/20 bg-muted/10 mt-4 w-full border
+                  border-dashed p-10 text-center
                 `}
               >
                 <RiInformationLine className={`
-                  mx-auto mb-3 size-12 text-muted-foreground
+                  text-muted-foreground mx-auto mb-3 size-12
                 `}
                 />
                 <h3 className="text-lg font-medium">No indexes found</h3>
@@ -242,14 +242,14 @@ function DatabaseIndexesPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 className={`
-                  overflow-hidden border border-border/60
+                  border-border/60 overflow-hidden border
                   hover:border-border/90
                 `}
               >
                 <CardHeader className="bg-muted/30 px-4 py-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <RiFileList3Line className="size-4 text-primary" />
+                      <RiFileList3Line className="text-primary size-4" />
                       <HighlightText text={item.name} match={search} />
                       {item.isPrimary && <Badge className="text-xs">Primary</Badge>}
                       {item.isUnique && !item.isPrimary && (

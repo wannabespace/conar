@@ -40,9 +40,12 @@ function SideTabsLayout() {
   const { database } = Route.useRouteContext() as { database: typeof databases.$inferSelect }
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-background">
-      <aside className="w-56 flex-none border-r bg-muted/10 p-4">
-        <h2 className="mb-4 px-2 text-sm font-semibold text-muted-foreground">
+    <div className={`
+      bg-background flex h-full w-full overflow-hidden rounded-lg border
+    `}
+    >
+      <aside className="w-56 flex-none border-r p-4">
+        <h2 className="text-muted-foreground mb-4 px-2 text-sm font-semibold">
           Tabs
         </h2>
 

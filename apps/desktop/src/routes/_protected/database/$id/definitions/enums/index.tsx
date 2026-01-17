@@ -53,7 +53,7 @@ function DatabaseEnumsPage() {
     })) ?? []
 
   return (
-    <ScrollArea className="h-full rounded-lg border bg-background">
+    <ScrollArea className="h-full">
       <div className="mx-auto flex min-h-full max-w-2xl flex-col px-4 py-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold">
@@ -77,7 +77,7 @@ function DatabaseEnumsPage() {
                   `}
                   onClick={() => setSearch('')}
                 >
-                  <RiCloseLine className="size-4 text-muted-foreground" />
+                  <RiCloseLine className="text-muted-foreground size-4" />
                 </button>
               )}
             </div>
@@ -123,8 +123,8 @@ function DatabaseEnumsPage() {
                 exit={{ opacity: 0, scale: 0.75 }}
                 transition={{ duration: 0.15 }}
                 className={`
-                  mt-4 w-full border border-dashed border-muted-foreground/20
-                  bg-muted/10
+                  border-muted-foreground/20 bg-muted/10 mt-4 w-full border
+                  border-dashed
                 `}
               >
                 <CardContent className={`
@@ -132,11 +132,11 @@ function DatabaseEnumsPage() {
                 `}
                 >
                   <RiInformationLine className={`
-                    mx-auto mb-3 size-12 text-muted-foreground
+                    text-muted-foreground mx-auto mb-3 size-12
                   `}
                   />
-                  <h3 className="text-lg font-medium text-foreground">No enums found</h3>
-                  <p className="max-w-md text-sm text-muted-foreground">
+                  <h3 className="text-foreground text-lg font-medium">No enums found</h3>
+                  <p className="text-muted-foreground max-w-md text-sm">
                     This schema doesn't have any enums defined yet.
                   </p>
                 </CardContent>
@@ -146,7 +146,7 @@ function DatabaseEnumsPage() {
               <MotionCard
                 key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
                 className={`
-                  overflow-hidden border border-border/60 transition-colors
+                  border-border/60 overflow-hidden border transition-colors
                   hover:border-border/90
                 `}
                 layout
@@ -169,13 +169,13 @@ function DatabaseEnumsPage() {
                                 {enumItem.metadata?.isSet
                                   ? (
                                       <RiListIndefinite className={`
-                                        size-4 text-primary
+                                        text-primary size-4
                                       `}
                                       />
                                     )
                                   : (
                                       <RiListUnordered className={`
-                                        size-4 text-primary
+                                        text-primary size-4
                                       `}
                                       />
                                     )}
@@ -186,7 +186,7 @@ function DatabaseEnumsPage() {
                               {enumItem.metadata?.isSet ? 'Set type' : 'Enum type'}
                               {enumItem.metadata?.table && enumItem.metadata.column && (
                                 <div className={`
-                                  mt-1 text-xs text-muted-foreground
+                                  text-muted-foreground mt-1 text-xs
                                 `}
                                 >
                                   Used in&nbsp;
