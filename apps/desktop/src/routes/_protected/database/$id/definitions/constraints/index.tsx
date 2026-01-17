@@ -102,97 +102,97 @@ function DatabaseConstraintsPage() {
   return (
     <ScrollArea className="h-full">
       <div className="mx-auto flex min-h-full max-w-3xl flex-col px-4 py-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="mr-2 text-2xl font-bold">Constraints</h2>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Input
-                placeholder="Search constraints"
-                className="w-[200px] pr-8"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-              {search && (
-                <button
-                  type="button"
-                  className={`
-                    absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
-                  `}
-                  onClick={() => setSearch('')}
-                >
-                  <RiCloseLine className="size-4 text-muted-foreground" />
-                </button>
-              )}
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={`
-                    w-[180px] justify-start
-                    focus-visible:ring-0 focus-visible:ring-offset-0
-                  `}
-                >
-                  <RiFilter3Line className="mr-2 size-4 text-muted-foreground" />
-                  {filterTypes.length > 0
-                    ? (
-                        <span>
-                          {filterTypes.length}
-                          {' '}
-                          selected
-                        </span>
-                      )
-                    : <span className="text-muted-foreground">Filter Type</span>}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[180px]">
-                <DropdownMenuCheckboxItem
-                  checked={filterTypes.length === 0}
-                  onSelect={(e) => {
-                    e.preventDefault()
-                    setFilterTypes([])
-                  }}
-                >
-                  Select All
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuSeparator />
-                {dropDownItems.map(type => (
-                  <DropdownMenuCheckboxItem
-                    key={type.value}
-                    checked={filterTypes.includes(type.value)}
-                    onSelect={e => e.preventDefault()}
-                    onCheckedChange={checked => handleCheckedChange(checked, type.value)}
-                  >
-                    {type.label}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {schemas.length > 1 && (
-              <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
-                <SelectTrigger className="w-[180px]">
-                  <span className="mr-2 text-muted-foreground">schema</span>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {schemas.map(schema => (
-                    <SelectItem key={schema} value={schema}>{schema}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <div className="mb-4">
+          <h2 className="text-2xl font-bold">Constraints</h2>
+        </div>
+        <div className="mb-4 flex items-center gap-2">
+          <div className="relative">
+            <Input
+              placeholder="Search constraints"
+              className="w-[200px] pr-8"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            {search && (
+              <button
+                type="button"
+                className={`
+                  absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
+                `}
+                onClick={() => setSearch('')}
+              >
+                <RiCloseLine className="size-4 text-muted-foreground" />
+              </button>
             )}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => refetch()}
-              disabled={isRefetching}
-            >
-              <RiRefreshLine className={cn('size-4', isRefetching && `
-                animate-spin
-              `)}
-              />
-            </Button>
           </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className={`
+                  w-[180px] justify-start
+                  focus-visible:ring-0 focus-visible:ring-offset-0
+                `}
+              >
+                <RiFilter3Line className="mr-2 size-4 text-muted-foreground" />
+                {filterTypes.length > 0
+                  ? (
+                      <span>
+                        {filterTypes.length}
+                        {' '}
+                        selected
+                      </span>
+                    )
+                  : <span className="text-muted-foreground">Filter Type</span>}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[180px]">
+              <DropdownMenuCheckboxItem
+                checked={filterTypes.length === 0}
+                onSelect={(e) => {
+                  e.preventDefault()
+                  setFilterTypes([])
+                }}
+              >
+                Select All
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuSeparator />
+              {dropDownItems.map(type => (
+                <DropdownMenuCheckboxItem
+                  key={type.value}
+                  checked={filterTypes.includes(type.value)}
+                  onSelect={e => e.preventDefault()}
+                  onCheckedChange={checked => handleCheckedChange(checked, type.value)}
+                >
+                  {type.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {schemas.length > 1 && (
+            <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
+              <SelectTrigger className="w-[180px]">
+                <span className="mr-2 text-muted-foreground">schema</span>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {schemas.map(schema => (
+                  <SelectItem key={schema} value={schema}>{schema}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+          >
+            <RiRefreshLine className={cn('size-4', isRefetching && `
+              animate-spin
+            `)}
+            />
+          </Button>
         </div>
 
         <div className="mt-2 grid grid-cols-1 gap-4">

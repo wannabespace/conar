@@ -55,63 +55,63 @@ function DatabaseEnumsPage() {
   return (
     <ScrollArea className="h-full">
       <div className="mx-auto flex min-h-full max-w-2xl flex-col px-4 py-6">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4">
           <h2 className="text-2xl font-bold">
             Enums
             {database.type === DatabaseType.MySQL && ' & Sets'}
           </h2>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Input
-                placeholder="Search enums"
-                className="w-[180px] pr-8"
-                value={search}
-                autoFocus
-                onChange={e => setSearch(e.target.value)}
-              />
-              {search && (
-                <button
-                  type="button"
-                  className={`
-                    absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
-                  `}
-                  onClick={() => setSearch('')}
-                >
-                  <RiCloseLine className="text-muted-foreground size-4" />
-                </button>
-              )}
-            </div>
-            {schemas.length > 1 && (
-              <Select value={selectedSchema} onValueChange={setSelectedSchema}>
-                <SelectTrigger className="w-[180px]">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">
-                      schema
-                    </span>
-                    <SelectValue placeholder="Select schema" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {schemas.map(schema => (
-                    <SelectItem key={schema} value={schema}>
-                      {schema}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        </div>
+        <div className="mb-4 flex items-center gap-2">
+          <div className="relative">
+            <Input
+              placeholder="Search enums"
+              className="w-[180px] pr-8"
+              value={search}
+              autoFocus
+              onChange={e => setSearch(e.target.value)}
+            />
+            {search && (
+              <button
+                type="button"
+                className={`
+                  absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
+                `}
+                onClick={() => setSearch('')}
+              >
+                <RiCloseLine className="size-4 text-muted-foreground" />
+              </button>
             )}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => refetch()}
-              disabled={isRefetching}
-            >
-              <RiRefreshLine className={cn('size-4', isRefetching && `
-                animate-spin
-              `)}
-              />
-            </Button>
           </div>
+          {schemas.length > 1 && (
+            <Select value={selectedSchema} onValueChange={setSelectedSchema}>
+              <SelectTrigger className="w-[180px]">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">
+                    schema
+                  </span>
+                  <SelectValue placeholder="Select schema" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {schemas.map(schema => (
+                  <SelectItem key={schema} value={schema}>
+                    {schema}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+          >
+            <RiRefreshLine className={cn('size-4', isRefetching && `
+              animate-spin
+            `)}
+            />
+          </Button>
         </div>
         <div className="mt-2 grid grid-cols-1 gap-4">
           <AnimatePresence initial={false} mode="popLayout">
@@ -123,8 +123,8 @@ function DatabaseEnumsPage() {
                 exit={{ opacity: 0, scale: 0.75 }}
                 transition={{ duration: 0.15 }}
                 className={`
-                  border-muted-foreground/20 bg-muted/10 mt-4 w-full border
-                  border-dashed
+                  mt-4 w-full border border-dashed border-muted-foreground/20
+                  bg-muted/10
                 `}
               >
                 <CardContent className={`
@@ -132,11 +132,11 @@ function DatabaseEnumsPage() {
                 `}
                 >
                   <RiInformationLine className={`
-                    text-muted-foreground mx-auto mb-3 size-12
+                    mx-auto mb-3 size-12 text-muted-foreground
                   `}
                   />
-                  <h3 className="text-foreground text-lg font-medium">No enums found</h3>
-                  <p className="text-muted-foreground max-w-md text-sm">
+                  <h3 className="text-lg font-medium text-foreground">No enums found</h3>
+                  <p className="max-w-md text-sm text-muted-foreground">
                     This schema doesn't have any enums defined yet.
                   </p>
                 </CardContent>
@@ -146,7 +146,7 @@ function DatabaseEnumsPage() {
               <MotionCard
                 key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
                 className={`
-                  border-border/60 overflow-hidden border transition-colors
+                  overflow-hidden border border-border/60 transition-colors
                   hover:border-border/90
                 `}
                 layout
@@ -169,13 +169,13 @@ function DatabaseEnumsPage() {
                                 {enumItem.metadata?.isSet
                                   ? (
                                       <RiListIndefinite className={`
-                                        text-primary size-4
+                                        size-4 text-primary
                                       `}
                                       />
                                     )
                                   : (
                                       <RiListUnordered className={`
-                                        text-primary size-4
+                                        size-4 text-primary
                                       `}
                                       />
                                     )}
@@ -186,7 +186,7 @@ function DatabaseEnumsPage() {
                               {enumItem.metadata?.isSet ? 'Set type' : 'Enum type'}
                               {enumItem.metadata?.table && enumItem.metadata.column && (
                                 <div className={`
-                                  text-muted-foreground mt-1 text-xs
+                                  mt-1 text-xs text-muted-foreground
                                 `}
                                 >
                                   Used in&nbsp;
