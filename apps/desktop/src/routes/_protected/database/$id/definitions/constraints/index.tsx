@@ -71,11 +71,11 @@ function DatabaseConstraintsPage() {
     switch (type) {
       case 'primaryKey':
       case 'unique':
-        return <RiKey2Line className="text-primary size-4" />
+        return <RiKey2Line className="size-4 text-primary" />
       case 'foreignKey':
-        return <RiLinksLine className="text-primary size-4" />
+        return <RiLinksLine className="size-4 text-primary" />
       default:
-        return <RiDatabase2Line className="text-primary size-4" />
+        return <RiDatabase2Line className="size-4 text-primary" />
     }
   }
 
@@ -120,7 +120,7 @@ function DatabaseConstraintsPage() {
                   `}
                   onClick={() => setSearch('')}
                 >
-                  <RiCloseLine className="text-muted-foreground size-4" />
+                  <RiCloseLine className="size-4 text-muted-foreground" />
                 </button>
               )}
             </div>
@@ -133,7 +133,7 @@ function DatabaseConstraintsPage() {
                     focus-visible:ring-0 focus-visible:ring-offset-0
                   `}
                 >
-                  <RiFilter3Line className="text-muted-foreground mr-2 size-4" />
+                  <RiFilter3Line className="mr-2 size-4 text-muted-foreground" />
                   {filterTypes.length > 0
                     ? (
                         <span>
@@ -171,7 +171,7 @@ function DatabaseConstraintsPage() {
             {schemas.length > 1 && (
               <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
                 <SelectTrigger className="w-[180px]">
-                  <span className="text-muted-foreground mr-2">schema</span>
+                  <span className="mr-2 text-muted-foreground">schema</span>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -203,16 +203,16 @@ function DatabaseConstraintsPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className={`
-                  border-muted-foreground/20 bg-muted/10 mt-4 w-full border
-                  border-dashed p-10 text-center
+                  mt-4 w-full border border-dashed border-muted-foreground/20
+                  bg-muted/10 p-10 text-center
                 `}
               >
                 <RiInformationLine className={`
-                  text-muted-foreground mx-auto mb-3 size-12
+                  mx-auto mb-3 size-12 text-muted-foreground
                 `}
                 />
                 <h3 className="text-lg font-medium">No constraints found</h3>
-                <p className="text-muted-foreground text-sm">This schema doesn't have any constraints matching your filter.</p>
+                <p className="text-sm text-muted-foreground">This schema doesn't have any constraints matching your filter.</p>
               </MotionCard>
             )}
 
@@ -224,7 +224,7 @@ function DatabaseConstraintsPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 className={`
-                  border-border/60 overflow-hidden border
+                  overflow-hidden border border-border/60
                   hover:border-border/90
                 `}
               >
@@ -242,8 +242,8 @@ function DatabaseConstraintsPage() {
                         </Badge>
                       </CardTitle>
                       <div className={`
-                        text-muted-foreground mt-2 flex items-center gap-2
-                        text-sm
+                        mt-2 flex items-center gap-2 text-sm
+                        text-muted-foreground
                       `}
                       >
                         <Badge variant="outline" className="text-xs font-normal">
@@ -251,8 +251,8 @@ function DatabaseConstraintsPage() {
                           {item.table}
                         </Badge>
                         {item.column && (
-                          <span className="flex items-center">
-                            <span className="mx-1">on</span>
+                          <span className="flex items-center gap-2">
+                            <span>on</span>
                             <Badge
                               variant="outline"
                               className="font-mono text-xs"
@@ -267,7 +267,7 @@ function DatabaseConstraintsPage() {
                 </CardHeader>
                 {item.type === 'foreignKey' && (
                   <CardContent className={`
-                    bg-muted/10 border-t px-4 py-3 text-sm
+                    border-t bg-muted/10 px-4 py-3 text-sm
                   `}
                   >
                     <div className="flex items-center gap-2">
