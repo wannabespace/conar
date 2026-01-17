@@ -9,9 +9,9 @@ export function useDatabaseLinkParams(id: string) {
 
   return useMemo((): LinkProps => {
     if (lastOpenedPage) {
-      if (lastOpenedPage === '/_protected/database/$id/enums/') {
+      if (lastOpenedPage === '/_protected/database/$id/definitions/enums/') {
         return {
-          to: '/database/$id/enums',
+          to: '/database/$id/definitions/enums',
           params: { id },
         }
       }

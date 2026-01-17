@@ -18,7 +18,7 @@ import { useDatabaseEnums, useDatabaseTablesAndSchemas } from '~/entities/databa
 
 const MotionCard = motion.create(Card)
 
-export const Route = createFileRoute('/_protected/database/$id/enums/')({
+export const Route = createFileRoute('/_protected/database/$id/definitions/enums/')({
   component: DatabaseEnumsPage,
   loader: ({ context }) => ({ database: context.database }),
   head: ({ loaderData }) => ({

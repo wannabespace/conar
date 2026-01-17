@@ -1,6 +1,5 @@
 import type { LinkProps } from '@tanstack/react-router'
 import type { databases } from '~/drizzle'
-import { DatabaseType } from '@conar/shared/enums/database-type'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -13,7 +12,7 @@ import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSettings3Line, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCloseLine, RiCommandLine, RiFileListLine, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSettings3Line, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
@@ -237,7 +236,6 @@ function MainLinks() {
 
   const isActiveSql = match === '/_protected/database/$id/sql/'
   const isActiveTables = match === '/_protected/database/$id/table/'
-  const isActiveEnums = match === '/_protected/database/$id/enums/'
   const isActiveVisualizer = match === '/_protected/database/$id/visualizer/'
 
   const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
@@ -298,23 +296,7 @@ function MainLinks() {
           <TooltipContent side="right">Tables</TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              to="/database/$id/enums"
-              params={{ id: database.id }}
-              className={baseClasses(isActiveEnums)}
-            >
-              <RiListUnordered className="size-4" />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            Enums
-            {database.type === DatabaseType.MySQL && ' & Sets'}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -326,7 +308,7 @@ function MainLinks() {
               <RiShieldCheckLine className="size-4" />
             </Link>
           </TooltipTrigger>
-          <TooltipContent side="right">Constraints & Indexes</TooltipContent>
+          <TooltipContent side="right">Definitions</TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <TooltipProvider>
