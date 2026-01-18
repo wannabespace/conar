@@ -31,11 +31,11 @@ const monacoOptions = {
   folding: false,
 } as const satisfies editor.IStandaloneEditorConstructionOptions
 
-function MonacoOutput({ value }: { value: string }) {
+function MonacoOutput({ value, language = 'json' }: { value: string, language?: string }) {
   return (
     <Monaco
       value={value}
-      language="json"
+      language={language}
       options={monacoOptions}
       className="-mx-2 h-[200px] max-h-[50vh]"
     />
@@ -236,7 +236,7 @@ const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[num
       )}
     </>
   ),
-  'tool-queryDocs': ({ part }) => <MonacoOutput value={part.output || ''} />,
+  'tool-queryDocs': ({ part }) => <MonacoOutput value={part.output || ''} language="markdown" />,
 }
 
 function ToolContent({ part }: { part: ToolUIPart }) {
