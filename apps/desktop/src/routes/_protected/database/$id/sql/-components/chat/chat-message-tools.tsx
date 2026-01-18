@@ -212,8 +212,8 @@ const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[num
                           className="size-3 shrink-0"
                         />
                         <span className={`
-                          overflow-hidden font-medium text-ellipsis
-                          whitespace-nowrap
+                          truncate font-medium
+                          
                           group-hover:text-primary
                         `}
                         >

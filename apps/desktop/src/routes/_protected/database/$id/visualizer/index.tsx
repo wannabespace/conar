@@ -44,8 +44,12 @@ function VisualizerPage() {
 
   if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
     return (
-      <div className="size-full flex items-center border rounded-lg justify-center bg-background">
-        <AppLogo className="size-40 text-muted-foreground animate-pulse" />
+      <div className="
+        flex size-full items-center justify-center rounded-lg border
+        bg-background
+      "
+      >
+        <AppLogo className="size-40 animate-pulse text-muted-foreground" />
       </div>
     )
   }
@@ -54,7 +58,11 @@ function VisualizerPage() {
 
   if (columns.length === 0 || tablesAndSchemas.length === 0) {
     return (
-      <div className="size-full flex items-center border rounded-lg justify-center bg-background">
+      <div className="
+        flex size-full items-center justify-center rounded-lg border
+        bg-background
+      "
+      >
         <p className="text-muted-foreground">No data to show</p>
       </div>
     )
@@ -143,8 +151,12 @@ function Visualizer({
   }, [schema])
 
   return (
-    <div className="relative size-full overflow-hidden rounded-lg border/10 dark:border">
-      <div className="absolute z-10 top-2 right-2">
+    <div className="
+      relative size-full overflow-hidden rounded-lg
+      dark:border
+    "
+    >
+      <div className="absolute top-2 right-2 z-10">
         <Select
           value={schema}
           onValueChange={setSchema}
