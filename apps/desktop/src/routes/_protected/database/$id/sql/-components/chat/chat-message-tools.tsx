@@ -78,12 +78,28 @@ function getTitle(part: ToolUIPart): React.ReactNode {
     return 'Select data from ...'
   }
   if (part.type === 'tool-webSearch') {
-    if (part.input && typeof part.input === 'object' && 'query' in part.input) {
-      const query = typeof part.input.query === 'string' ? part.input.query : ''
-
+    const query = typeof part.input?.query === 'string' ? part.input?.query : ''
+    if (query) {
       return `Searching the web for "${query}"`
     }
     return 'Searching the web...'
+  }
+  if (part.type === 'tool-resolveLibraryId') {
+    const libraryName = part.input && typeof part.input.libraryName === 'string' ? part.input.libraryName : ''
+
+    if (libraryName) {
+      return `Resolved library "${libraryName}"`
+    }
+
+    return 'Resolving library name...'
+  }
+  if (part.type === 'tool-queryDocs') {
+    const query = typeof part.input?.query === 'string' ? part.input?.query : ''
+
+    if (query) {
+      return `Querying docs for "${query}"`
+    }
+    return 'Querying docs...'
   }
 
   return 'Unknown tool'
@@ -96,21 +112,6 @@ const monacoOptions = {
   minimap: { enabled: false },
   folding: false,
 } as const satisfies editor.IStandaloneEditorConstructionOptions
-
-function extractErrorMessage(output: unknown): string | null {
-  if (typeof output !== 'object' || output === null || !('error' in output))
-    return null
-
-  const { error } = output
-
-  if (typeof error === 'string')
-    return error
-
-  if (error instanceof Error)
-    return error.message
-
-  return JSON.stringify(error)
-}
 
 function MonacoOutput({ value }: { value: string }) {
   return (
@@ -233,7 +234,22 @@ function ChatMessageToolContent({ part }: { part: ToolUIPart }): ReactNode {
     )
   }
 
-  return null
+  return <MonacoOutput value={JSON.stringify(part.output)} />
+}
+
+function extractErrorMessage(output: unknown): string | null {
+  if (typeof output !== 'object' || output === null || !('error' in output))
+    return null
+
+  const { error } = output
+
+  if (typeof error === 'string')
+    return error
+
+  if (error instanceof Error)
+    return error.message
+
+  return JSON.stringify(error)
 }
 
 export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
@@ -249,38 +265,25 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
     setOpen(true)
   }
 
-  if (loading) {
-    return (
-      <div className={cn('my-2 flex items-center gap-2 text-sm', className)}>
-        <Icon
-          className={cn('size-4 shrink-0', loading && `
-            animate-spin text-primary
-          `)}
-          part={part}
-        />
-        <span className={cn(loading && 'text-muted-foreground')}>
-          {title}
-        </span>
-      </div>
-    )
-  }
-
   return (
     <SingleAccordion
-      className={cn('my-2', className)}
+      className={cn('my-2 rounded-sm', className)}
       open={open}
       onOpenChange={error ? undefined : setOpen}
+      disabled={!!error || loading}
     >
-      <SingleAccordionTrigger className="gap-2 py-2" disabled={!!error}>
-        <div className="flex min-w-0 flex-1 items-center gap-2">
+      <SingleAccordionTrigger
+        className="min-w-0 gap-2 overflow-hidden py-1 text-xs"
+        disabled={!!error}
+      >
+        <div className="flex flex-1 items-center gap-2 overflow-hidden">
           <Icon className={cn('size-4 shrink-0', !!error && 'text-red-600')} part={part} />
           <span className="truncate text-sm">
             {title}
           </span>
         </div>
-        {!error && <SingleAccordionTriggerArrow />}
+        {!error && <SingleAccordionTriggerArrow className="ml-auto shrink-0" />}
       </SingleAccordionTrigger>
-
       <SingleAccordionContent>
         {error
           ? (
