@@ -27,6 +27,7 @@ export function TableProvider({
   const horizontalScroll = scrollDirection === 'left' || scrollDirection === 'right'
 
   const { getVirtualItems: getVirtualRows, getTotalSize: getTableHeight } = useVirtualizer({
+    useFlushSync: false,
     count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => estimatedRowSize,
@@ -34,6 +35,7 @@ export function TableProvider({
   })
 
   const { getVirtualItems: getVirtualColumns, getTotalSize: getTableWidth } = useVirtualizer({
+    useFlushSync: false,
     horizontal: true,
     count: columns.length,
     getScrollElement: () => scrollRef.current,

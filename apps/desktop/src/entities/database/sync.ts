@@ -9,10 +9,10 @@ import { bearerToken } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 import { router } from '~/main'
 
-const { promise, resolve } = Promise.withResolvers()
+let resolvers = Promise.withResolvers()
 
 export function waitForDatabasesSync() {
-  return promise
+  return resolvers.promise
 }
 
 function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
@@ -24,7 +24,7 @@ function prepareConnectionStringToCloud(connectionString: string, syncType: Sync
 }
 
 export interface DatabaseMutationMetadata {
-  sync?: false
+  cloudSync?: false
 }
 
 export const databasesCollection = createCollection(drizzleCollectionOptions({
@@ -37,6 +37,8 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
     if (!bearerToken.get() || !navigator.onLine) {
       return
     }
+
+    resolvers = Promise.withResolvers()
 
     const sync = await orpc.databases.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
@@ -88,35 +90,50 @@ export const databasesCollection = createCollection(drizzleCollectionOptions({
         })
       }
     }
-    resolve()
+    resolvers.resolve()
   },
   onInsert: async ({ transaction }) => {
-    await Promise.all(transaction.mutations.map(m => orpc.databases.create({
+    const mutations = transaction.mutations.filter(m => (m.metadata as DatabaseMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await Promise.all(mutations.map(m => orpc.databases.create({
       ...m.modified,
       connectionString: prepareConnectionStringToCloud(m.modified.connectionString, m.modified.syncType),
     })))
   },
   onUpdate: async ({ transaction }) => {
-    await Promise.all(transaction.mutations
-      .filter(m => (m.metadata as DatabaseMutationMetadata)?.sync !== false)
-      .map(m => orpc.databases.update({
-        id: m.key,
-        ...m.changes,
-        ...(m.changes.connectionString
-          ? { connectionString: prepareConnectionStringToCloud(m.changes.connectionString, m.modified.syncType) }
-          : {}),
-      })))
-    router.invalidate({ filter: r => r.routeId === '/(protected)/_protected/database/$id' })
+    const mutations = transaction.mutations.filter(m => (m.metadata as DatabaseMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await Promise.all(mutations.map(m => orpc.databases.update({
+      id: m.key,
+      ...m.changes,
+      ...(m.changes.connectionString
+        ? { connectionString: prepareConnectionStringToCloud(m.changes.connectionString, m.modified.syncType) }
+        : {}),
+    })))
+    router.invalidate({ filter: r => r.routeId === '/_protected/database/$id' })
   },
   onDelete: async ({ transaction }) => {
-    await orpc.databases.remove(transaction.mutations.map(m => ({ id: m.key })))
+    const mutations = transaction.mutations.filter(m => (m.metadata as DatabaseMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await orpc.databases.remove(mutations.map(m => ({ id: m.key })))
   },
 }))
 
 const syncDatabasesMutationOptions = {
   mutationKey: ['sync-databases'],
   mutationFn: databasesCollection.utils.runSync,
-  onError: () => {},
 } satisfies MutationOptions
 
 export function useDatabasesSync() {

@@ -58,6 +58,7 @@ function ResizableSeparator({
           group-aria-[orientation='vertical']:py-px
           group-data-[separator='active']:bg-primary
           group-data-[separator='hover']:bg-primary
+          group-data-[separator='hover']:text-primary-foreground
         `}
         >
           <RiDraggable className={`

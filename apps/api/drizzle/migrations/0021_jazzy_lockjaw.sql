@@ -1,0 +1,1 @@
+DROP TABLE "device_codes" CASCADE;

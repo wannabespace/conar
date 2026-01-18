@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '@conar/api/src/ai-tools'
+import type { AppUIMessage } from '@conar/api/ai-tools'
 import { relations } from 'drizzle-orm'
 import { jsonb, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
@@ -6,7 +6,7 @@ import { databases } from './databases'
 
 export const chats = pgTable('chats', {
   ...baseTable,
-  databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }),
+  databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }).notNull(),
   title: text(),
 })
 

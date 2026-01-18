@@ -5,7 +5,7 @@ import { enumsQuery } from '../sql/enums'
 export function databaseEnumsQuery({ database }: { database: typeof databases.$inferSelect }) {
   return queryOptions({
     queryKey: ['database', database.id, 'enums'],
-    queryFn: () => enumsQuery.run(database),
+    queryFn: () => enumsQuery(database),
   })
 }
 

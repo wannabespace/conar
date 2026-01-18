@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftDownLine, RiArrowRightUpLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
-import dayjs from 'dayjs'
+import { format, isValid } from 'date-fns'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -92,8 +92,8 @@ function CellPopoverContent({
       {column?.type === 'boolean'
         ? (
             <CellSwitch
-              className="py-6 w-full justify-center"
-              checked={value === 'true'}
+              className="w-full justify-center py-6"
+              checked={JSON.parse(value)}
               onChange={checked => setValue(checked.toString())}
               onSave={save}
             />
@@ -132,12 +132,14 @@ function CellPopoverContent({
                   : column?.type?.includes('xml')
                     ? 'xml'
                     : undefined}
-                className={cn('w-full h-40 transition-[height] duration-300', isBig && 'h-[min(45vh,40rem)]')}
+                className={cn('h-40 w-full transition-[height] duration-300', isBig && `
+                  h-[min(45vh,40rem)]
+                `)}
                 onChange={setValue}
                 options={monacoOptions}
               />
             )}
-      <div className="flex justify-between items-center gap-2 p-2 border-t">
+      <div className="flex items-center justify-between gap-2 border-t p-2">
         <div className="flex items-center gap-2">
           {!shouldHideToggleSize && (
             <TooltipProvider>
@@ -148,7 +150,11 @@ function CellPopoverContent({
                     size="icon-xs"
                     onClick={() => setIsBig(prev => !prev)}
                   >
-                    {isBig ? <RiCollapseDiagonal2Line className="size-3" /> : <RiExpandDiagonal2Line className="size-3" />}
+                    {isBig
+                      ? <RiCollapseDiagonal2Line className="size-3" />
+                      : (
+                          <RiExpandDiagonal2Line className="size-3" />
+                        )}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">Toggle size</TooltipContent>
@@ -250,10 +256,10 @@ function getTimestamp(value: unknown, column: Column) {
   )
   && value
   && (typeof value === 'string' || typeof value === 'number')
-    ? dayjs(value)
+    ? new Date(value)
     : null
 
-  return date?.isValid() ? date : null
+  return date && isValid(date) ? date : null
 }
 
 export function TableCell({
@@ -272,7 +278,11 @@ export function TableCell({
   className?: string
   values?: string[]
 } & TableCellProps) {
-  const displayValue = getDisplayValue(value, size)
+  const displayValue = getDisplayValue({
+    value,
+    size,
+    column,
+  })
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isForeignOpen, setIsForeignOpen] = useState(false)
@@ -293,11 +303,11 @@ export function TableCell({
   }, [status])
 
   const cellClassName = cn(
-    'ring-1 flex justify-between',
-    isPopoverOpen && 'ring-primary/30 bg-primary/10',
-    (isForeignOpen || isReferencesOpen) && 'ring-accent/60 bg-accent/30',
-    status === 'error' && 'ring-destructive/50 bg-destructive/20',
-    status === 'success' && 'ring-success/50 bg-success/10',
+    'flex justify-between ring-1',
+    isPopoverOpen && 'bg-primary/10 ring-primary/30',
+    (isForeignOpen || isReferencesOpen) && 'bg-accent/30 ring-accent/60',
+    status === 'error' && 'bg-destructive/20 ring-destructive/50',
+    status === 'success' && 'bg-success/10 ring-success/50',
     status === 'pending' && 'animate-pulse bg-primary/10',
     (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1!',
     className,
@@ -405,7 +415,7 @@ export function TableCell({
                         </Tooltip>
                       </TooltipProvider>
                       <PopoverContent
-                        className="w-[80vw] h-[45vh] p-0 overflow-hidden"
+                        className="h-[45vh] w-[80vw] overflow-hidden p-0"
                         onDoubleClick={e => e.stopPropagation()}
                         onClick={e => e.stopPropagation()}
                       >
@@ -452,7 +462,7 @@ export function TableCell({
                         </Tooltip>
                       </TooltipProvider>
                       <PopoverContent
-                        className="w-[80vw] h-[45vh] p-0 overflow-hidden"
+                        className="h-[45vh] w-[80vw] overflow-hidden p-0"
                         onDoubleClick={e => e.stopPropagation()}
                         onClick={e => e.stopPropagation()}
                       >
@@ -468,13 +478,16 @@ export function TableCell({
             </TooltipTrigger>
             {date && (
               <TooltipContent>
-                {date.format('DD MMMM YYYY, HH:mm:ss (Z)')}
+                {format(date, 'dd MMMM yyyy, HH:mm:ss (z)')}
               </TooltipContent>
             )}
           </Tooltip>
         </TooltipProvider>
         <PopoverContent
-          className={cn('p-0 w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]', isBig && 'w-[min(50vw,60rem)]')}
+          className={cn(`
+            w-80 overflow-auto p-0 duration-100
+            [transition:opacity_0.15s,transform_0.15s,width_0.3s]
+          `, isBig && `w-[min(50vw,60rem)]`)}
           onAnimationEnd={disableInteractIfPossible}
         >
           <CellPopoverContent
