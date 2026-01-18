@@ -238,16 +238,14 @@ function ChatMessageToolContent({ part }: { part: ToolUIPart }): ReactNode {
 
 export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
   const loading = part.state === 'input-streaming' || part.state === 'input-available'
-  const error = part.state === 'output-error'
-
-  const errorMsg = error ? extractErrorMessage(part.output) : null
+  const error = part.state === 'output-error' ? extractErrorMessage(part.output) : null
 
   const Icon = ICONS[part.state]
   const title = getTitle(part)
 
-  const [open, setOpen] = useState(error)
+  const [open, setOpen] = useState(!!error)
 
-  if (error && !open) {
+  if (!!error && !open) {
     setOpen(true)
   }
 
@@ -273,9 +271,9 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
       open={open}
       onOpenChange={error ? undefined : setOpen}
     >
-      <SingleAccordionTrigger className="gap-2 py-2" disabled={error}>
+      <SingleAccordionTrigger className="gap-2 py-2" disabled={!!error}>
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <Icon className={cn('size-4 shrink-0', error && 'text-red-600')} part={part} />
+          <Icon className={cn('size-4 shrink-0', !!error && 'text-red-600')} part={part} />
           <span className="truncate text-sm">
             {title}
           </span>
@@ -284,26 +282,24 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
       </SingleAccordionTrigger>
 
       <SingleAccordionContent>
-        <div className="mt-2 space-y-4 text-sm">
-          {errorMsg
-            ? (
-                <div className="space-y-2">
-                  <div className="text-xs text-muted-foreground uppercase">
-                    Error
-                  </div>
-                  <div
-                    className={`
-                      rounded-md border border-destructive/20 bg-destructive/10
-                      px-3 py-2 text-sm text-destructive
-                    `}
-                    role="alert"
-                  >
-                    {errorMsg}
-                  </div>
+        {error
+          ? (
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground uppercase">
+                  Error
                 </div>
-              )
-            : <ChatMessageToolContent part={part} />}
-        </div>
+                <div
+                  className={`
+                    rounded-md border border-destructive/20 bg-destructive/10
+                    px-3 py-2 text-sm text-destructive
+                  `}
+                  role="alert"
+                >
+                  {error}
+                </div>
+              </div>
+            )
+          : <ChatMessageToolContent part={part} />}
       </SingleAccordionContent>
     </SingleAccordion>
   )
