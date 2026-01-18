@@ -1,12 +1,13 @@
 import type { ToolUIPart } from '@conar/api/ai/tools/helpers'
 import type { editor } from 'monaco-editor'
-import { Button } from '@conar/ui/components/button'
+import type { ReactNode } from 'react'
 import {
   SingleAccordion,
   SingleAccordionContent,
   SingleAccordionTrigger,
   SingleAccordionTriggerArrow,
 } from '@conar/ui/components/custom/single-accordion'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import {
   RiBook2Line,
@@ -16,8 +17,12 @@ import {
   RiLoader4Line,
   RiSearchLine,
 } from '@remixicon/react'
-import { useState } from 'react'
+import {
+  useState,
+} from 'react'
+import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
+import { FaviconWithFallback } from './favicon-with-fallback'
 
 const ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: ToolUIPart }) => React.ReactNode> = {
   'input-streaming': ({ className }) => (
@@ -107,35 +112,128 @@ function extractErrorMessage(output: unknown): string | null {
   return JSON.stringify(error)
 }
 
-function ChatMessageToolSection({ title, value, full }: {
-  title?: string
-  value: unknown
-  full: boolean
-}) {
+function MonacoOutput({ value }: { value: string }) {
   return (
-    <div className="space-y-2">
-      {title && (
-        <div className={`
-          text-xs font-medium tracking-wider text-muted-foreground
-        `}
-        >
-          {title}
-        </div>
-      )}
-      {value === null
-        ? <div className="text-muted-foreground italic">Pending…</div>
-        : full
-          ? (
-              <Monaco
-                value={JSON.stringify(value)}
-                language="json"
-                className="-mx-2 h-[200px]"
-                options={monacoOptions}
-              />
-            )
-          : <div className="wrap-break-word text-muted-foreground">{JSON.stringify(value)}</div>}
-    </div>
+    <Monaco
+      value={value}
+      language="json"
+      options={monacoOptions}
+      className="-mx-2 h-[200px] max-h-[50vh]"
+    />
   )
+}
+
+function ChatMessageToolContent({ part }: { part: ToolUIPart }): ReactNode {
+  if (part.type === 'tool-columns') {
+    return (
+      <>
+        <div className="mb-4 text-xs text-muted-foreground">Agent called a tool to get table columns.</div>
+        {part.state === 'output-available' && (
+          <MonacoOutput value={JSON.stringify(part.output)} />
+        )}
+      </>
+    )
+  }
+
+  if (part.type === 'tool-enums') {
+    return (
+      <>
+        <div className="mb-4 text-xs text-muted-foreground">Agent called a tool to get database enums.</div>
+        {part.state === 'output-available' && (
+          <MonacoOutput value={JSON.stringify(part.output)} />
+        )}
+      </>
+    )
+  }
+
+  if (part.type === 'tool-select') {
+    return (
+      <>
+        <div className="flex flex-col gap-2">
+          <div className="mb-1 font-medium">
+            Agent called a tool to get data from the database.
+          </div>
+          {part.input && (
+            <InfoTable
+              data={[
+                { name: 'Select', value: part.input.select?.length
+                  ? part.input.select.join(', ')
+                  : null },
+                { name: 'From', value: part.input.tableAndSchema ? `${part.input.tableAndSchema.schemaName}.${part.input.tableAndSchema?.tableName}` : null },
+                { name: 'Where', value: (part.state === 'input-available' || part.state === 'output-available') && part.input.whereFilters?.length
+                  ? part.input.whereFilters.map(filter => `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map(value => `"${value}"`).join(', ') : ''}`).join(` ${part.input.whereConcatOperator} `)
+                  : null },
+                { name: 'Order by', value: part.input.orderBy && Object.keys(part.input.orderBy).length
+                  ? Object.entries(part.input.orderBy).map(([col, dir]) => `${col} ${dir}`).join(', ')
+                  : null },
+                { name: 'Limit', value: part.input.limit },
+                { name: 'Offset', value: part.input.offset || null },
+              ]}
+            />
+          )}
+        </div>
+        {part.state === 'output-available' && (
+          <MonacoOutput value={JSON.stringify(part.output)} />
+        )}
+      </>
+    )
+  }
+
+  if (part.type === 'tool-webSearch') {
+    return (
+      <>
+        <div className="mb-2 text-xs text-muted-foreground">Agent searched the web for information.</div>
+        {part.state === 'output-available' && (
+          <div className="space-y-2">
+            {!!part.output && typeof part.output === 'object' && 'results' in part.output && Array.isArray(part.output.results) && (
+              <div className="flex flex-wrap gap-2">
+                {part.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }) => (
+                  <TooltipProvider key={`${part.toolCallId}-${result.url}`}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <a
+                          href={result.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`
+                            group flex max-w-full min-w-[200px] flex-1 basis-1/3
+                            items-center gap-1 rounded-md border bg-accent/20
+                            px-1.5 py-0.5 text-xs transition-colors
+                            hover:bg-accent/40
+                          `}
+                        >
+                          <FaviconWithFallback
+                            url={result.url}
+                            className="size-3 shrink-0"
+                          />
+                          <span className={`
+                            overflow-hidden font-medium text-ellipsis
+                            whitespace-nowrap
+                            group-hover:text-primary
+                          `}
+                          >
+                            {result.title}
+                          </span>
+                        </a>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="max-w-xs">
+                          <div className="font-medium">{result.title}</div>
+                          <div className="mt-1 text-xs text-muted-foreground">{result.url}</div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </>
+    )
+  }
+
+  return null
 }
 
 export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
@@ -148,7 +246,6 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
   const title = getTitle(part)
 
   const [open, setOpen] = useState(error)
-  const [full, setFull] = useState(false)
 
   if (error && !open) {
     setOpen(true)
@@ -205,16 +302,7 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart, classNa
                   </div>
                 </div>
               )
-            : <ChatMessageToolSection value={part.output} full={full} />}
-          {part.input !== null && <ChatMessageToolSection title="Parameters" value={part.input} full={full} />}
-
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => setFull(v => !v)}
-          >
-            {full ? 'Show less' : 'Show more'}
-          </Button>
+            : <ChatMessageToolContent part={part} />}
         </div>
       </SingleAccordionContent>
     </SingleAccordion>
