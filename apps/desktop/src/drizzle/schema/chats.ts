@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '@conar/api/ai-tools'
+import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
 import { relations } from 'drizzle-orm'
 import { jsonb, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
