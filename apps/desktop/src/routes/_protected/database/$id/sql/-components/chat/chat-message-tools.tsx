@@ -45,7 +45,6 @@ function MonacoOutput({ value }: { value: string }) {
 const SKIP_CONTENT_TOOLS = [
   'dynamic-tool',
   'tool-resolveLibraryId',
-  'tool-queryDocs',
 ] satisfies ToolUIPart['type'][]
 
 function shouldSkipContent(part: ToolUIPart) {
@@ -237,6 +236,7 @@ const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[num
       )}
     </>
   ),
+  'tool-queryDocs': ({ part }) => <MonacoOutput value={part.output || ''} />,
 }
 
 function ToolContent({ part }: { part: ToolUIPart }) {
