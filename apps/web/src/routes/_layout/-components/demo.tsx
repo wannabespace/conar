@@ -94,7 +94,7 @@ function Images() {
         />
       ))}
       <div className={`
-        absolute inset-x-0 bottom-0 z-10 h-full bg-gradient-to-t from-background
+        absolute inset-x-0 bottom-0 z-10 h-full bg-linear-to-t from-background
         to-transparent
       `}
       />
@@ -111,7 +111,7 @@ export function Demo({ className }: { className?: string }) {
   const scale = useTransform(scrollY, [0, 600], [1, 0.7])
 
   return (
-    <section className={cn('perspective-[1200px]', className)}>
+    <section className={cn('perspective-distant', className)}>
       <motion.div
         style={{ rotateX, scale }}
         initial={{

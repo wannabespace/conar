@@ -174,7 +174,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
               onClick={e => e.stopPropagation()}
             >
               <div className={`
-                px-2 py-2 text-xs font-medium text-muted-foreground
+                p-2 text-xs font-medium text-muted-foreground
               `}
               >
                 Replace existing query

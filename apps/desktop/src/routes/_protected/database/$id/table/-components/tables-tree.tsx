@@ -267,7 +267,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                   text-center
                 `}
                 >
-                  <RiTableLine className="mb-2 h-10 w-10 text-muted-foreground" />
+                  <RiTableLine className="mb-2 size-10 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">No tables found</p>
                 </div>
               )

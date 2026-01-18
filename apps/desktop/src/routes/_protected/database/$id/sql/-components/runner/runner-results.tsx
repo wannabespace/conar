@@ -98,7 +98,7 @@ export function RunnerResults() {
                   >
                     Error executing query
                     <div className={`
-                      mb-2 max-h-1/2 max-w-full overflow-auto rounded bg-red-50
+                      mb-2 max-h-1/2 max-w-full overflow-auto rounded-sm bg-red-50
                       px-2 py-1 font-mono text-xs text-balance text-red-700
                       dark:bg-red-950 dark:text-red-300
                     `}
