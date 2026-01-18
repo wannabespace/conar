@@ -29,6 +29,7 @@ const envType = type({
   GITHUB_CLIENT_SECRET: 'string',
   BANNER_TEXT: 'string?',
   EXA_API_KEY: 'string',
+  CONTEXT7_API_KEY: 'string',
   GITHUB_TOKEN: 'string',
   TODESKTOP_WEBHOOK_SECRET: 'string',
 })
@@ -51,6 +52,7 @@ const devOptionalEnvs = [
   'GITHUB_CLIENT_ID',
   'GITHUB_CLIENT_SECRET',
   'EXA_API_KEY',
+  'CONTEXT7_API_KEY',
   'GITHUB_TOKEN',
   'TODESKTOP_WEBHOOK_SECRET',
 ] satisfies (keyof typeof envType.infer)[]
