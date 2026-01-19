@@ -81,7 +81,6 @@ catalog:
   '@types/pg': ^8.16.0
   '@types/react': ^19.2.8
   '@types/react-dom': ^19.2.3
-  '@typescript/native-preview': ^7.0.0-dev.20260118.1
   '@upstash/context7-tools-ai-sdk': ^0.2.1
   '@vitejs/plugin-react': ^5.1.2
   '@xyflow/react': ^12.10.0

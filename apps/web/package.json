@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "start": "bun run .output/server/index.mjs",
-    "check-types": "tsgo"
+    "check-types": "tsc"
   },
   "dependencies": {
     "@number-flow/react": "catalog:",
