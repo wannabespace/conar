@@ -173,10 +173,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
               onCloseAutoFocus={e => e.preventDefault()}
               onClick={e => e.stopPropagation()}
             >
-              <div className={`
-                p-2 text-xs font-medium text-muted-foreground
-              `}
-              >
+              <div className="p-2 text-xs font-medium text-muted-foreground">
                 Replace existing query
               </div>
               {editorQueries.length === 0 && (
@@ -312,7 +309,7 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
               </Button>
               {!isVisible && (
                 <div className={`
-                  pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-16
+                  pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16
                   bg-linear-to-t from-primary to-transparent
                 `}
                 />
