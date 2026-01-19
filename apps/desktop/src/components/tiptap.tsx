@@ -32,6 +32,7 @@ export function TipTap({
       StarterKit,
       Placeholder.configure({
         placeholder: () => placeholder || '',
+        showOnlyWhenEditable: false,
       }),
       Extension.create({
         addKeyboardShortcuts() {
