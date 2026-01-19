@@ -24,7 +24,7 @@ function MainLayout() {
         dark:bg-neutral-950
       `)}
       >
-        <div className="relative flex h-full w-full items-center">
+        <div className="relative flex size-full items-center">
           <Navbar className="w-full" />
           <div className={`
             pointer-events-none absolute top-full right-0 left-0 h-10 w-full

@@ -64,8 +64,8 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             rel="noopener noreferrer"
           >
             <RiTwitterXLine className={`
-              h-3 w-3
-              sm:h-4 sm:w-4
+              size-3
+              sm:size-4
             `}
             />
           </a>

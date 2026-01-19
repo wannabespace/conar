@@ -1,4 +1,4 @@
-import type { ORPCRouter, router } from '@conar/api/src/orpc/routers'
+import type { ORPCRouter, router } from '@conar/api/orpc/routers'
 import type { InferContractRouterInputs, InferContractRouterOutputs } from '@orpc/contract'
 import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'

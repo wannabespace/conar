@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type React from 'react'
+import type * as React from 'react'
 import { Button } from '@conar/ui/components/button'
 import {
   Field,

@@ -1,7 +1,7 @@
 {
   "name": "conar",
   "type": "module",
-  "version": "0.26.0",
+  "version": "0.26.1",
   "productName": "Conar",
   "private": true,
   "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
@@ -115,7 +115,6 @@
     "use-stick-to-bottom": "catalog:",
     "uuid": "catalog:",
     "vite": "catalog:",
-    "vite-tsconfig-paths": "catalog:",
-    "zod": "catalog:"
+    "vite-tsconfig-paths": "catalog:"
   }
 }
