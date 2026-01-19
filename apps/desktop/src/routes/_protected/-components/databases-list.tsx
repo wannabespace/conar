@@ -2,7 +2,6 @@ import type { ComponentRef } from 'react'
 import type { connections } from '~/drizzle'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
-import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { copy } from '@conar/ui/lib/copy'
@@ -149,11 +148,6 @@ export function Empty() {
       <p className="mt-1 mb-4 text-sm whitespace-pre-line text-muted-foreground">
         Create a new connection to get started.
       </p>
-      <Button asChild>
-        <Link to="/create">
-          Create a new connection
-        </Link>
-      </Button>
     </div>
   )
 }

@@ -12,7 +12,7 @@ import { useConnectionLinkParams } from '~/entities/connection/hooks'
 import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { prefetchConnectionCore } from '~/entities/connection/utils'
-import { appStore, setIsActionCenterOpen } from '~/store'
+import { appStore, setIsActionCenterOpen, setIsCreateConnectionDialogOpen } from '~/store'
 
 function ActionsConnectionTables({ connection }: { connection: typeof connections.$inferSelect }) {
   const { data: tablesAndSchemas } = useQuery({
@@ -116,7 +116,7 @@ export function ActionsCenter() {
           <CommandItem
             onSelect={() => {
               setIsActionCenterOpen(false)
-              router.navigate({ to: '/create' })
+              setIsCreateConnectionDialogOpen(true)
             }}
           >
             <RiAddLine className="size-4 shrink-0 text-muted-foreground" />

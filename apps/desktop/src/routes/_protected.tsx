@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent } from 'react'
+import { CreateConnectionDialog } from '~/components/create-connection-dialog'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { useChatsMessagesSync, useChatsSync } from '~/entities/chat/sync'
 import { useConnectionsSync } from '~/entities/connection/sync'
@@ -42,6 +43,7 @@ function ProtectedLayout() {
   return (
     <>
       <SubscriptionModal />
+      <CreateConnectionDialog />
       <ActionsCenter />
       <Outlet />
     </>

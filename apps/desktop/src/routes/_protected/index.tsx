@@ -7,9 +7,10 @@ import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useConnectionsSync } from '~/entities/connection/sync'
+import { setIsCreateConnectionDialogOpen } from '~/store'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
@@ -62,11 +63,9 @@ function DashboardPage() {
                 </ContentSwitch>
               </LoadingContent>
             </Button>
-            <Button asChild>
-              <Link to="/create">
-                <RiAddLine className="size-4" />
-                Add new
-              </Link>
+            <Button onClick={() => setIsCreateConnectionDialogOpen(true)}>
+              <RiAddLine className="size-4" />
+              Add new
             </Button>
           </div>
         </div>

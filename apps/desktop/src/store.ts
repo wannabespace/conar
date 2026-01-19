@@ -4,6 +4,7 @@ export const appStore = new Store({
   isActionCenterOpen: false,
   isSubscriptionDialogOpen: false,
   isOnline: window.navigator.onLine,
+  isCreateConnectionDialogOpen: false,
 })
 
 function updateOnline() {
@@ -19,4 +20,8 @@ export function setIsActionCenterOpen(isOpen: boolean) {
 
 export function setIsSubscriptionDialogOpen(isOpen: boolean) {
   appStore.setState(state => ({ ...state, isSubscriptionDialogOpen: isOpen } satisfies typeof state))
+}
+
+export function setIsCreateConnectionDialogOpen(isOpen: boolean) {
+  appStore.setState(state => ({ ...state, isCreateConnectionDialogOpen: isOpen } satisfies typeof state))
 }
