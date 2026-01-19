@@ -5,6 +5,7 @@ import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { databaseStore } from '~/entities/database/store'
+import { useSubscription } from '~/entities/user/hooks'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { RunnerEditorAIZone } from './runner-editor-ai-zone'
@@ -48,6 +49,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   const store = databaseStore(database.id)
   const editorQueries = useStore(store, state => state.editorQueries)
   const domElementRef = useRef<HTMLElement>(null)
+  const { subscription } = useSubscription()
 
   const [currentAIZoneLineNumber, setCurrentAIZoneLineNumber] = useState<number | null>(null)
 
@@ -129,7 +131,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
 
         zoneId = changeAccessor.addZone({
           afterLineNumber: currentAIZoneQuery.startLineNumber - 1,
-          heightInPx: 90,
+          heightInPx: subscription ? 100 : 120,
           domNode,
         })
 
@@ -143,7 +145,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
       })
       highlightCollection.clear()
     }
-  }, [monacoRef, database, currentAIZoneQuery, store])
+  }, [monacoRef, database, currentAIZoneQuery, store, subscription])
 
   const getInlineQueryEvent = useEffectEvent((position: Position) => {
     return editorQueries.find(query =>

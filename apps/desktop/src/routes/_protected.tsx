@@ -1,11 +1,12 @@
-import { useNetwork } from '@conar/ui/hookas/use-network'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent } from 'react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { useChatsMessagesSync, useChatsSync } from '~/entities/chat/sync'
 import { useDatabasesSync } from '~/entities/database/sync'
 import { useQueriesSync } from '~/entities/query/sync'
 import { authClient } from '~/lib/auth'
+import { appStore } from '~/store'
 import { ActionsCenter } from './-components/actions-center'
 
 export const Route = createFileRoute('/_protected')({
@@ -14,7 +15,7 @@ export const Route = createFileRoute('/_protected')({
 
 function ProtectedLayout() {
   const { data } = authClient.useSession()
-  const { online } = useNetwork()
+  const isOnline = useStore(appStore, state => state.isOnline)
 
   const { sync: syncDatabases } = useDatabasesSync()
   const { sync: syncQueries } = useQueriesSync()
@@ -31,12 +32,12 @@ function ProtectedLayout() {
   const hasUser = !!data?.user
 
   useEffect(() => {
-    if (!hasUser || !online) {
+    if (!hasUser || !isOnline) {
       return
     }
 
     sync()
-  }, [hasUser, online])
+  }, [hasUser, isOnline])
 
   return (
     <>
