@@ -16,9 +16,6 @@ import {
   RiLoader4Line,
   RiSearchLine,
 } from '@remixicon/react'
-import {
-  useState,
-} from 'react'
 import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
 import { FaviconWithFallback } from './favicon-with-fallback'
@@ -88,7 +85,7 @@ function ToolIcon({ part, className }: { part: ToolUIPart, className?: string })
   return ICONS[part.state]({ part, className })
 }
 
-const TITLES: { [K in ToolUIPart['type']]: (props: { part: Extract<ToolUIPart, { type: K }> }) => React.ReactNode } = {
+const TITLES: { [K in ToolUIPart['type']]: (props: { part: Extract<ToolUIPart, { type: K }> }) => string } = {
   'dynamic-tool': ({ part }) => part.title || part.toolName,
   'tool-columns': ({ part }) => {
     if (part.input) {
@@ -133,7 +130,7 @@ const TITLES: { [K in ToolUIPart['type']]: (props: { part: Extract<ToolUIPart, {
   },
 }
 
-function ToolTitle({ part }: { part: ToolUIPart }) {
+function getTitle({ part }: { part: ToolUIPart }) {
   // eslint-disable-next-line ts/no-explicit-any
   return TITLES[part.type]({ part } as any) || 'Unknown tool'
 }
@@ -213,7 +210,6 @@ const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[num
                         />
                         <span className={`
                           truncate font-medium
-                          
                           group-hover:text-primary
                         `}
                         >
@@ -241,10 +237,18 @@ const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[num
 
 function ToolContent({ part }: { part: ToolUIPart }) {
   // eslint-disable-next-line ts/no-explicit-any
-  return CONTENT[part.type as Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[number]>]?.({ part } as any) || <MonacoOutput value={JSON.stringify(part.output)} />
+  return CONTENT[part.type as Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[number]>]?.({ part } as any)
+    || (part.errorText
+      ? <div className="text-xs text-destructive">{part.errorText}</div>
+      : <MonacoOutput value={JSON.stringify(part.output)} />)
 }
 
-function extractErrorMessage(output: unknown): string | null {
+function extractErrorMessage(part: ToolUIPart): string | null {
+  if (part.errorText)
+    return part.errorText
+
+  const output = part.output
+
   if (typeof output !== 'object' || output === null || !('error' in output))
     return null
 
@@ -260,61 +264,45 @@ function extractErrorMessage(output: unknown): string | null {
 }
 
 export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
-  const loading = part.state === 'input-streaming' || part.state === 'input-available'
-  const error = part.state === 'output-error' ? extractErrorMessage(part.output) : null
-
-  const [open, setOpen] = useState(!!error)
-
-  if (!!error && !open) {
-    setOpen(true)
-  }
-
+  const error = part.state === 'output-error' ? extractErrorMessage(part) : null
   const skipContent = shouldSkipContent(part)
+
+  const title = getTitle({ part })
 
   return (
     <SingleAccordion
       className={cn('my-2 rounded-sm', className)}
-      open={open}
-      onOpenChange={error ? undefined : setOpen}
-      disabled={!!error}
+      open={error ? true : undefined}
     >
       <SingleAccordionTrigger
-        className={cn('min-w-0 gap-2 overflow-hidden py-1 text-xs', skipContent && `
+        className={cn('min-w-0 gap-2 overflow-hidden py-1 text-xs', (skipContent || error) && `
           cursor-auto
         `)}
       >
         <div className="flex flex-1 items-center gap-2 overflow-hidden">
-          <ToolIcon className={cn('size-4 shrink-0', !!error && 'text-red-600')} part={part} />
+          <ToolIcon
+            className={cn('size-4 shrink-0', error && 'text-destructive')}
+            part={part}
+          />
           <span className="truncate text-sm">
-            <ToolTitle part={part} />
+            {title}
           </span>
         </div>
-        {!error && !loading && !skipContent && (
+        {!error && !skipContent && (
           <SingleAccordionTriggerArrow className="ml-auto shrink-0" />
         )}
       </SingleAccordionTrigger>
-      {!skipContent && (
-        <SingleAccordionContent>
-          {error
-            ? (
-                <div className="space-y-2">
-                  <div className="text-xs text-muted-foreground uppercase">
-                    Error
-                  </div>
-                  <div
-                    className={`
-                      rounded-md border border-destructive/20 bg-destructive/10
-                      px-3 py-2 text-sm text-destructive
-                    `}
-                    role="alert"
-                  >
-                    {error}
-                  </div>
-                </div>
-              )
+      <SingleAccordionContent>
+        {error
+          ? (
+              <div className="text-xs text-destructive">
+                {error}
+              </div>
+            )
+          : skipContent
+            ? null
             : <ToolContent part={part} />}
-        </SingleAccordionContent>
-      )}
+      </SingleAccordionContent>
     </SingleAccordion>
   )
 }
