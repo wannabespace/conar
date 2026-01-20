@@ -1,5 +1,5 @@
-import type { constraintsType, tablesAndSchemasType } from '~/entities/database/sql'
-import type { columnType } from '~/entities/database/sql/columns'
+import type { constraintsType, tablesAndSchemasType } from '~/entities/connection/sql'
+import type { columnType } from '~/entities/connection/sql/columns'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { ReactFlowEdge } from '@conar/ui/components/react-flow/edge'
@@ -10,9 +10,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
 import { useEffect, useEffectEvent, useMemo, useState } from 'react'
 import { animationHooks } from '~/enter'
-import { ReactFlowNode } from '~/entities/database/components'
-import { databaseConstraintsQuery, databaseTableColumnsQuery, databaseTablesAndSchemasQuery } from '~/entities/database/queries'
-import { prefetchDatabaseCore } from '~/entities/database/utils'
+import { ReactFlowNode } from '~/entities/connection/components'
+import { connectionConstraintsQuery, connectionTableColumnsQuery, connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { prefetchConnectionCore } from '~/entities/connection/utils'
 import { getEdges, getLayoutElements, getNodes } from './-lib'
 
 export const Route = createFileRoute(
@@ -20,27 +20,27 @@ export const Route = createFileRoute(
 )({
   component: VisualizerPage,
   loader: ({ context }) => {
-    prefetchDatabaseCore(context.database)
+    prefetchConnectionCore(context.connection)
 
-    return { database: context.database }
+    return { connection: context.connection }
   },
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Visualizer', loaderData.database.name) }] : [],
+    meta: loaderData ? [{ title: title('Visualizer', loaderData.connection.name) }] : [],
   }),
 })
 
 function VisualizerPage() {
-  const { database } = Route.useLoaderData()
+  const { connection } = Route.useLoaderData()
   const { data: tablesAndSchemas } = useQuery({
-    ...databaseTablesAndSchemasQuery({ database }),
+    ...connectionTablesAndSchemasQuery({ connection }),
     select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))),
   })
   const columnsQueries = useQueries({
     queries: tablesAndSchemas?.flatMap(({ schema, table }) =>
-      databaseTableColumnsQuery({ database, schema, table }),
+      connectionTableColumnsQuery({ connection, schema, table }),
     ) ?? [],
   })
-  const { data: constraints } = useQuery(databaseConstraintsQuery({ database }))
+  const { data: constraints } = useQuery(connectionConstraintsQuery({ connection }))
 
   if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
     return (
@@ -70,7 +70,7 @@ function VisualizerPage() {
 
   return (
     // Need to re-render the whole visualizer when the database changes due to recalculation of sizes
-    <ReactFlowProvider key={database.id}>
+    <ReactFlowProvider key={connection.id}>
       <Visualizer
         tablesAndSchemas={tablesAndSchemas}
         columns={columns}
@@ -96,7 +96,7 @@ function Visualizer({
   columns: typeof columnType.infer[]
   constraints: typeof constraintsType.infer[]
 }) {
-  const { database } = Route.useRouteContext()
+  const { connection } = Route.useRouteContext()
   const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
   const [schema, setSchema] = useState(schemas[0]!)
   const schemaTables = tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table)
@@ -105,7 +105,7 @@ function Visualizer({
     const edges = getEdges({ constraints })
     return getLayoutElements(
       getNodes({
-        databaseId: database.id,
+        databaseId: connection.id,
         schema,
         tables: schemaTables,
         columns,
@@ -114,7 +114,7 @@ function Visualizer({
       }),
       edges,
     )
-  }, [database.id, schema, schemaTables, columns, constraints])
+  }, [connection.id, schema, schemaTables, columns, constraints])
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes)
@@ -123,7 +123,7 @@ function Visualizer({
     const edges = getEdges({ constraints })
     const { nodes: layoutNodes, edges: layoutEdges } = getLayoutElements(
       getNodes({
-        databaseId: database.id,
+        databaseId: connection.id,
         schema,
         tables: schemaTables,
         columns,

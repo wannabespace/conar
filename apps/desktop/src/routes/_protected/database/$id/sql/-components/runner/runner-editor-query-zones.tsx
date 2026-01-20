@@ -4,14 +4,14 @@ import { copy } from '@conar/ui/lib/copy'
 import { render } from '@conar/ui/lib/render'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import { databaseStore } from '~/entities/database/store'
+import { connectionStore } from '~/entities/connection/store'
 import { Route } from '../..'
 import { useRunnerContext } from './runner-context'
 import { RunnerEditorQueryZone } from './runner-editor-query-zone'
 
 export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
-  const { database } = Route.useRouteContext()
-  const store = databaseStore(database.id)
+  const { connection } = Route.useRouteContext()
+  const store = connectionStore(connection.id)
   const linesWithQueries = useStore(store, state => state.editorQueries.map(({ startLineNumber }) => startLineNumber))
 
   const getQueriesEvent = useEffectEvent((lineNumber: number) =>
@@ -38,7 +38,7 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
         linesWithQueries.forEach((lineNumber) => {
           elements[lineNumber] ||= render(
             <RunnerEditorQueryZone
-              database={database}
+              connection={connection}
               lineNumber={lineNumber}
               onRun={(index) => {
                 const editorQuery = getQueriesEvent(lineNumber)
@@ -105,5 +105,5 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
         })
       })
     }
-  }, [monacoRef, linesWithQueries, database, store])
+  }, [monacoRef, linesWithQueries, connection, store])
 }

@@ -1,7 +1,7 @@
 import type { AppUIMessage } from '~/ai/tools/helpers'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryable } from 'ai-retry'
@@ -40,7 +40,7 @@ export const chat = orpc
   })
   .input(type({
     id: 'string.uuid.v7',
-    type: type.valueOf(DatabaseType),
+    type: type.valueOf(ConnectionType),
     context: 'string',
     createdAt: 'Date',
     updatedAt: 'Date',
@@ -59,7 +59,7 @@ export const chat = orpc
         {
           role: 'system',
           content: [
-            `You are an SQL tool that generates valid SQL code for ${input.type} database.`,
+            `You are an SQL tool that generates valid SQL code for ${input.type} connection.`,
             'You can use several tools to improve response.',
             'You can generate select queries using the tools to get data directly from the database.',
             'You can also search the web for information when the user asks about external resources, provides URLs, or needs current information beyond the database schema.',

@@ -1,4 +1,4 @@
-import type { databases } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -17,19 +17,19 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
-import { renameTableQuery } from '~/entities/database/sql'
-import { renameTab } from '~/entities/database/store'
+import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { renameTableQuery } from '~/entities/connection/sql'
+import { renameTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
 
 interface RenameTableDialogProps {
   ref: React.RefObject<{
     rename: (schema: string, table: string) => void
   } | null>
-  database: typeof databases.$inferSelect
+  connection: typeof connections.$inferSelect
 }
 
-export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
+export function RenameTableDialog({ ref, connection }: RenameTableDialogProps) {
   const router = useRouter()
   const [newTableName, setNewTableName] = useState('')
   const [schema, setSchema] = useState('')
@@ -47,19 +47,19 @@ export function RenameTableDialog({ ref, database }: RenameTableDialogProps) {
 
   const { mutate: renameTable, isPending } = useMutation({
     mutationFn: async () => {
-      await renameTableQuery(database, { schema, oldTable: table, newTable: newTableName })
+      await renameTableQuery(connection, { schema, oldTable: table, newTable: newTableName })
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)
       setOpen(false)
 
-      await queryClient.invalidateQueries(databaseTablesAndSchemasQuery({ database }))
-      renameTab(database.id, schema, table, newTableName)
+      await queryClient.invalidateQueries(connectionTablesAndSchemasQuery({ connection }))
+      renameTab(connection.id, schema, table, newTableName)
 
       router.navigate({
         replace: true,
         to: '/database/$id/table',
-        params: { id: database.id },
+        params: { id: connection.id },
         search: { schema, table: newTableName },
       })
     },
