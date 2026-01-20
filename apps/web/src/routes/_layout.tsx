@@ -26,11 +26,7 @@ function MainLayout() {
       >
         <div className="relative flex size-full items-center">
           <Navbar className="w-full" />
-          <div className={`
-            pointer-events-none absolute inset-x-0 top-full h-10 w-full
-            overflow-hidden
-          `}
-          >
+          <div className="pointer-events-none absolute inset-x-0 top-full h-10 w-full overflow-hidden">
             <div className={`
               h-20 w-full rounded-3xl ring-50 ring-gray-100
               dark:ring-neutral-950

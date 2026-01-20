@@ -12,20 +12,22 @@ import { Label } from '@conar/ui/components/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { useId, useMemo, useState } from 'react'
 
-export function StepCredentials({ ref, type, connectionString, setConnectionString, onEnter }: {
+interface StepCredentialsProps {
   ref: RefObject<HTMLInputElement | null>
   type: ConnectionType
   connectionString: string
   setConnectionString: (connectionString: string) => void
   onEnter: VoidFunction
-}) {
+}
+
+export function StepCredentials({ ref, type, connectionString, setConnectionString, onEnter }: StepCredentialsProps) {
   const id = useId()
   const hostId = useId()
   const portId = useId()
   const userId = useId()
   const passwordId = useId()
   const databaseId = useId()
-  const [activeTab, setActiveTab] = useState<'string' | 'fields'>('string')
+  const [activeTab, setActiveTab] = useState<'uri' | 'fields'>('uri')
 
   const fields = useMemo(
     () => parseConnectionStringToFields(connectionString, type),
@@ -45,15 +47,15 @@ export function StepCredentials({ ref, type, connectionString, setConnectionStri
   }
 
   return (
-    <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'string' | 'fields')}>
+    <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'uri' | 'fields')}>
       <TabsList className="mb-4">
-        <TabsTrigger value="string">Connection string</TabsTrigger>
+        <TabsTrigger value="uri">URI</TabsTrigger>
         <TabsTrigger value="fields">Fields</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="string">
+      <TabsContent value="uri">
         <Label htmlFor={id} className="mb-2">
-          Connection string
+          URI
         </Label>
         <Input
           id={id}

@@ -32,6 +32,7 @@ const createConnectionType = type({
   color: 'string | null',
 })
 
+type CreateConnection = typeof createConnectionType.infer
 type Step = 'type' | 'credentials' | 'save'
 
 const stepTitles: Record<Step, string> = {
@@ -67,14 +68,14 @@ export function CreateConnectionDialog() {
       onChange: createConnectionType,
     },
     onSubmit(e) {
-      const { type: dbType, connectionString, name, saveInCloud, label, color } = e.value
+      const { type: dbType } = e.value
 
       if (!dbType) {
         toast.error('Select a database type')
         return
       }
 
-      createConnection({ type: dbType, connectionString, name, saveInCloud, label, color })
+      createConnection(e.value)
     },
   })
 
@@ -90,24 +91,17 @@ export function CreateConnectionDialog() {
     isValid,
   } = useStore(form.store, ({ values, isValid }) => ({ values, isValid }))
 
-  function createConnection(data: {
-    connectionString: string
-    name: string
-    type: DatabaseType
-    saveInCloud: boolean
-    label: string | null
-    color: string | null
-  }) {
+  function createConnection(data: CreateConnection) {
     const id = v7()
-    const password = new SafeURL(data.connectionString.trim()).password
+    const { password } = new SafeURL(data.connectionString.trim())
 
     databasesCollection.insert({
       id,
       name: data.name,
-      type: data.type,
+      type: data.type ?? DatabaseType.Postgres,
       connectionString: data.connectionString,
-      label: data.label || null,
-      color: data.color || null,
+      label: data.label ?? null,
+      color: data.color ?? null,
       isPasswordExists: !!password,
       isPasswordPopulated: !!password,
       syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
@@ -115,7 +109,7 @@ export function CreateConnectionDialog() {
       updatedAt: new Date(),
     })
 
-    toast.success('Connection created successfully 🎉')
+    toast.success('Connection created successfully')
 
     const database = databasesCollection.get(id)!
     prefetchDatabaseCore(database)
@@ -126,8 +120,8 @@ export function CreateConnectionDialog() {
   }
 
   const { mutate: test, reset: resetMutation, status } = useMutation({
-    mutationFn: ({ type: dbType, connectionString }: { type: DatabaseType, connectionString: string }) => executeSql({
-      type: dbType,
+    mutationFn: ({ type: dbType, connectionString }: Pick<CreateConnection, 'type' | 'connectionString'>) => executeSql({
+      type: dbType ?? DatabaseType.Postgres,
       connectionString,
       sql: 'SELECT 1',
     }),
