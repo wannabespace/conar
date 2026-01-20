@@ -77,15 +77,16 @@ function CellPopoverContent({
     || (!!values && values.length > 0)
 
   const monacoOptions = {
-    lineNumbers: isBig ? 'on' as const : 'off' as const,
+    lineNumbers: isBig ? 'on' : 'off',
     readOnly: !canEdit,
+    wordWrap: isBig ? 'off' : 'on',
     scrollBeyondLastLine: false,
     folding: isBig,
     scrollbar: {
       horizontalScrollbarSize: 5,
       verticalScrollbarSize: 5,
     },
-  }
+  } satisfies editor.IStandaloneEditorConstructionOptions
 
   return (
     <>

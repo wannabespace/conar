@@ -7,6 +7,8 @@ import * as chatsMessages from './chats-messages'
 import { contact } from './contact'
 import * as databases from './databases'
 import * as queries from './queries'
+import { releases } from './releases'
+import { repo } from './repo'
 import * as webhooks from './webhooks'
 
 export const router = {
@@ -19,6 +21,8 @@ export const router = {
   banner,
   account,
   webhooks,
+  repo,
+  releases,
 }
 
 export type ORPCRouter = RouterClient<typeof router>

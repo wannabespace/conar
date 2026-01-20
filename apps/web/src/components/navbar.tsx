@@ -5,13 +5,13 @@ import { Button } from '@conar/ui/components/button'
 import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiDiscordLine, RiGithubFill, RiMoonLine, RiSunLine, RiTwitterXLine } from '@remixicon/react'
+import { RiGitBranchLine, RiGithubFill, RiMoonLine, RiSunLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { NAVBAR_HEIGHT_BASE } from '~/constants'
 import { authClient } from '~/lib/auth'
-import { getRepoOptions } from '~/queries'
+import { orpcQuery } from '~/lib/orpc'
 import { NavbarTextLogo } from './navbar-text-logo'
 
 const AppLogoMotion = motion.create(AppLogo)
@@ -19,7 +19,7 @@ const AppLogoMotion = motion.create(AppLogo)
 export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   const { scrollY } = useScroll()
   const scale = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [1.8, 1])
-  const { data } = useQuery(getRepoOptions)
+  const { data } = useQuery(orpcQuery.repo.queryOptions())
   const { data: session } = authClient.useSession()
   const isSignedIn = !!session?.user
 
@@ -51,45 +51,21 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
       >
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="sm"
           className={`
             hidden gap-1
             sm:flex sm:gap-2
           `}
           asChild
         >
-          <a
-            href={SOCIAL_LINKS.TWITTER}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <RiTwitterXLine className={`
+          <Link to="/releases">
+            <RiGitBranchLine className={`
               size-3
               sm:size-4
             `}
             />
-          </a>
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className={`
-            hidden gap-1
-            sm:flex sm:gap-2
-          `}
-          asChild
-        >
-          <a
-            href={SOCIAL_LINKS.DISCORD}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <RiDiscordLine className={`
-              size-3
-              sm:size-4
-            `}
-            />
-          </a>
+            Releases
+          </Link>
         </Button>
         <Button
           variant="ghost"

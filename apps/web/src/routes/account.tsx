@@ -7,7 +7,7 @@ import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { cn } from '@conar/ui/lib/utils'
-import { RiDashboard3Line, RiFileListLine, RiLogoutCircleLine, RiMessageLine, RiMoonLine, RiSunLine } from '@remixicon/react'
+import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiLogoutCircleLine, RiMessageLine, RiMoonLine, RiSunLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link, Outlet, redirect, useMatches, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -153,6 +153,24 @@ function AccountLayout() {
           sm:gap-2
         `}
         >
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`
+              hidden gap-1
+              sm:flex sm:gap-2
+            `}
+            asChild
+          >
+            <Link to="/releases">
+              <RiGitBranchLine className={`
+                size-3
+                sm:size-4
+              `}
+              />
+              Releases
+            </Link>
+          </Button>
           <ThemeToggle side="bottom">
             <Button size="icon-sm" variant="ghost">
               <RiSunLine className={`
