@@ -68,17 +68,15 @@ export function Header({ table, schema }: { table: string, schema: string }) {
       <div className="flex flex-1 items-center gap-4">
         <div className="shrink-0">
           <h2 className="mb-0.5 space-x-1 text-sm font-medium">
-            <span className="text-muted-foreground">{schema}</span>
+            <span className="text-muted-foreground">
+              {schema}
+            </span>
             {' '}
             <span className="text-muted-foreground/20">/</span>
             {' '}
             <span data-mask>{table}</span>
           </h2>
-          <div
-            className={`
-              flex h-5 items-center gap-1 text-xs text-muted-foreground
-            `}
-          >
+          <p className="text-xs text-muted-foreground">
             <span className="tabular-nums">{columnsCount}</span>
             {' '}
             column

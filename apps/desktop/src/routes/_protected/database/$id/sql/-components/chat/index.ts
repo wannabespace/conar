@@ -1,4 +1,5 @@
-import type { AppUIMessage, tools } from '@conar/api/src/ai-tools'
+import type { tools } from '@conar/api/ai/tools'
+import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
 import type { InferToolInput, InferToolOutput } from 'ai'
 import type { chatsMessages, databases } from '~/drizzle'
 import { Chat } from '@ai-sdk/react'
@@ -17,20 +18,20 @@ import { queryClient } from '~/main'
 
 export * from './chat'
 
-function ensureChat(chatId: string, databaseId: string) {
+async function ensureChat(chatId: string, databaseId: string) {
   const existingChat = chatsCollection.get(chatId)
 
   if (existingChat) {
     return existingChat
   }
 
-  chatsCollection.insert({
+  await chatsCollection.insert({
     id: chatId,
     databaseId,
     title: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-  })
+  }).isPersisted.promise
 
   return chatsCollection.get(chatId)!
 }
@@ -54,60 +55,46 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           throw new Error('Last message not found')
         }
 
-        if (options.trigger === 'regenerate-message' && !options.messageId) {
-          options.messageId = lastMessage.id
-        }
+        const chat = await ensureChat(options.chatId, database.id)
 
-        const chat = ensureChat(options.chatId, database.id)
+        const existingMessage = chatsMessagesCollection.get(lastMessage.id)
 
-        if (options.trigger === 'submit-message') {
-          const existingMessage = chatsMessagesCollection.get(lastMessage.id)
-
-          const updatedAt = new Date()
-          if (existingMessage) {
-            chatsMessagesCollection.update(lastMessage.id, (draft) => {
-              Object.assign(draft, {
-                ...lastMessage,
-                chatId: options.chatId,
-                updatedAt,
-                metadata: {
-                  ...existingMessage.metadata,
-                  updatedAt,
-                },
-              } satisfies typeof chatsMessages.$inferInsert)
-            })
-          }
-          else {
-            const createdAt = new Date()
-            chatsMessagesCollection.insert({
+        if (existingMessage) {
+          await chatsMessagesCollection.update(lastMessage.id, (draft) => {
+            Object.assign(draft, {
               ...lastMessage,
               chatId: options.chatId,
+              metadata: existingMessage.metadata,
+            } satisfies typeof chatsMessages.$inferInsert)
+          }).isPersisted.promise
+        }
+        else {
+          const updatedAt = new Date()
+          const createdAt = new Date()
+          await chatsMessagesCollection.insert({
+            ...lastMessage,
+            chatId: options.chatId,
+            createdAt,
+            updatedAt,
+            metadata: {
               createdAt,
               updatedAt,
-              metadata: {
-                createdAt,
-                updatedAt,
-              },
-            })
-          }
+            },
+          }).isPersisted.promise
         }
 
         if (options.trigger === 'regenerate-message' && options.messageId && chatsMessagesCollection.has(options.messageId)) {
-          chatsMessagesCollection.delete(options.messageId)
+          await chatsMessagesCollection.delete(options.messageId).isPersisted.promise
         }
 
         const store = databaseStore(database.id)
 
-        return eventIteratorToStream(await orpc.ai.ask({
-          ...options.body,
+        return eventIteratorToStream(await orpc.ai.chat({
           id: options.chatId,
           createdAt: chat.createdAt,
           updatedAt: chat.updatedAt,
           type: database.type,
-          databaseId: database.id,
-          prompt: lastMessage,
-          trigger: options.trigger,
-          messageId: options.messageId,
+          messages: options.messages,
           context: [
             `Current query in the SQL runner:
             \`\`\`sql
@@ -133,19 +120,25 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       if (existingMessage) {
         chatsMessagesCollection.update(message.id, (draft) => {
           Object.assign(draft, {
-            ...message,
+            id: message.id,
+            parts: message.parts,
+            role: message.role,
+            chatId: id,
+            metadata: existingMessage.metadata,
             createdAt: message.metadata?.createdAt || new Date(),
             updatedAt: message.metadata?.updatedAt || new Date(),
-          })
+          } satisfies typeof draft)
         })
       }
       else {
         chatsMessagesCollection.insert({
-          ...message,
+          id: message.id,
           chatId: id,
           createdAt: message.metadata?.createdAt || new Date(),
           updatedAt: message.metadata?.updatedAt || new Date(),
           metadata: null,
+          parts: message.parts,
+          role: message.role,
         })
       }
     },
@@ -179,13 +172,13 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       }
       else if (toolCall.toolName === 'select') {
         const input = toolCall.input as InferToolInput<typeof tools.select>
-        const output = await rowsQuery.run(database, {
+        const output = await rowsQuery(database, {
           schema: input.tableAndSchema.schemaName,
           table: input.tableAndSchema.tableName,
           limit: input.limit,
           offset: input.offset,
-          orderBy: input.orderBy,
-          select: input.select,
+          orderBy: input.orderBy ?? undefined,
+          select: input.select ?? undefined,
           // To save back compatibility with the old filters
           filters: input.whereFilters.map((filter) => {
             const operator = SQL_FILTERS_LIST.find(f => f.operator === filter.operator)

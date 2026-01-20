@@ -1,3 +1,4 @@
+import { ACTIVE_SUBSCRIPTION_STATUSES } from '@conar/shared/constants'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { orpc, orpcQuery } from '~/lib/orpc'
@@ -7,7 +8,7 @@ export type Subscription = NonNullable<NonNullable<ReturnType<typeof useSubscrip
 export function useSubscription() {
   const { data: list, isPending } = useQuery(orpcQuery.account.subscription.list.queryOptions())
 
-  const subscription = list?.find(s => s.status === 'active' || s.status === 'trialing') ?? null
+  const subscription = list?.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number])) ?? null
 
   return { subscription, isPending }
 }

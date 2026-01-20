@@ -2,6 +2,7 @@ import type { UIMessage } from '@ai-sdk/react'
 import type { ChatStatus } from 'ai'
 import type { ComponentProps, ReactNode } from 'react'
 import { useChat } from '@ai-sdk/react'
+import { isToolUIPart } from '@conar/api/ai/tools/helpers'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -14,7 +15,6 @@ import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { isToolUIPart } from 'ai'
 import { regex } from 'arkregex'
 import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
@@ -174,7 +174,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
               onClick={e => e.stopPropagation()}
             >
               <div className={`
-                px-2 py-2 text-xs font-medium text-muted-foreground
+                p-2 text-xs font-medium text-muted-foreground
               `}
               >
                 Replace existing query
@@ -427,13 +427,6 @@ function ErrorMessage({ error, className, ...props }: { error: Error } & Compone
               onClick={() => chat.regenerate()}
             >
               Retry
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => chat.regenerate({ body: { fallback: true } })}
-            >
-              Retry with fallback model
             </Button>
           </div>
         </AlertDescription>

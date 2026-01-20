@@ -123,6 +123,7 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof LayoutIndexRoute
   '/account': typeof AccountRouteWithChildren
   '/open': typeof OpenRoute
   '/reset-password': typeof AuthResetPasswordRoute
@@ -136,10 +137,10 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
   '/account/settings': typeof AccountSettingsLazyRoute
-  '/': typeof LayoutIndexRoute
   '/account/': typeof AccountIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof LayoutIndexRoute
   '/open': typeof OpenRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
@@ -152,7 +153,6 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
   '/account/settings': typeof AccountSettingsLazyRoute
-  '/': typeof LayoutIndexRoute
   '/account': typeof AccountIndexRoute
 }
 export interface FileRoutesById {
@@ -178,6 +178,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/account'
     | '/open'
     | '/reset-password'
@@ -191,10 +192,10 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/account/billing'
     | '/account/settings'
-    | '/'
     | '/account/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/open'
     | '/reset-password'
     | '/sign-in'
@@ -207,7 +208,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/account/billing'
     | '/account/settings'
-    | '/'
     | '/account'
   id:
     | '__root__'
@@ -257,14 +257,14 @@ declare module '@tanstack/react-router' {
     '/_layout': {
       id: '/_layout'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth': {
       id: '/_auth'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }

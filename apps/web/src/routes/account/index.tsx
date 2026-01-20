@@ -23,11 +23,17 @@ function RouteComponent() {
 
   useEffect(() => {
     if (isSuccess) {
-      const timeout = setTimeout(() => {
+      const timeout1 = setTimeout(() => {
         confetti?.addConfetti()
       }, 500)
+      const timeout2 = setTimeout(() => {
+        location.assign('conar://')
+      }, 2000)
       router.navigate({ to: '/account', replace: true })
-      return () => clearTimeout(timeout)
+      return () => {
+        clearTimeout(timeout1)
+        clearTimeout(timeout2)
+      }
     }
   }, [isSuccess, router])
 

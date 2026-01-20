@@ -144,7 +144,7 @@ function Log({ query, className, database }: { query: SqlLog, className?: string
             <div className="space-y-2">
               <Label>Values</Label>
               <pre className={`
-                overflow-x-auto rounded bg-accent/50 p-2 font-mono text-xs
+                overflow-x-auto rounded-sm bg-accent/50 p-2 font-mono text-xs
               `}
               >
                 {formatValues(query.values)}
@@ -168,7 +168,7 @@ function Log({ query, className, database }: { query: SqlLog, className?: string
             <div className="space-y-2">
               <Label className="text-destructive">Error</Label>
               <pre className={`
-                overflow-x-auto rounded bg-red-50 p-2 font-mono text-xs
+                overflow-x-auto rounded-sm bg-red-50 p-2 font-mono text-xs
                 text-red-700
                 dark:bg-red-950 dark:text-red-300
               `}
