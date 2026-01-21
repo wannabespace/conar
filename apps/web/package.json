@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@number-flow/react": "catalog:",
-    "@octokit/rest": "catalog:",
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@tanstack/react-form": "catalog:",
@@ -31,6 +30,7 @@
     "react-dom": "catalog:",
     "react-markdown": "catalog:",
     "sonner": "catalog:",
+    "streamdown": "catalog:",
     "superjson": "catalog:",
     "tailwind-merge": "catalog:"
   },

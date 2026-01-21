@@ -72,7 +72,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
   const deps = Route.useLoaderDeps()
 
   useEffect(() => {
-    if (store && (deps.filters || deps.orderBy)) {
+    if (deps.filters || deps.orderBy) {
       store.setState(state => ({
         ...state,
         ...(deps.filters ? { filters: deps.filters } : {}),

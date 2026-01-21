@@ -18,8 +18,7 @@ import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as DeepSignInRouteImport } from './routes/deep.sign-in'
-import { Route as LayoutTermsOfServiceRouteImport } from './routes/_layout/terms-of-service'
-import { Route as LayoutPrivacyPolicyRouteImport } from './routes/_layout/privacy-policy'
+import { Route as LayoutReleasesRouteImport } from './routes/_layout/releases'
 import { Route as LayoutHomeRouteImport } from './routes/_layout/home'
 import { Route as LayoutDownloadRouteImport } from './routes/_layout/download'
 import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
@@ -28,6 +27,12 @@ import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-pass
 
 const AccountSettingsLazyRouteImport = createFileRoute('/account/settings')()
 const AccountBillingLazyRouteImport = createFileRoute('/account/billing')()
+const LayoutTermsOfServiceLazyRouteImport = createFileRoute(
+  '/_layout/terms-of-service',
+)()
+const LayoutPrivacyPolicyLazyRouteImport = createFileRoute(
+  '/_layout/privacy-policy',
+)()
 const AuthForgotPasswordLazyRouteImport = createFileRoute(
   '/_auth/forgot-password',
 )()
@@ -74,6 +79,21 @@ const AccountBillingLazyRoute = AccountBillingLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/account/billing.lazy').then((d) => d.Route),
 )
+const LayoutTermsOfServiceLazyRoute =
+  LayoutTermsOfServiceLazyRouteImport.update({
+    id: '/terms-of-service',
+    path: '/terms-of-service',
+    getParentRoute: () => LayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_layout/terms-of-service.lazy').then((d) => d.Route),
+  )
+const LayoutPrivacyPolicyLazyRoute = LayoutPrivacyPolicyLazyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
+  getParentRoute: () => LayoutRoute,
+} as any).lazy(() =>
+  import('./routes/_layout/privacy-policy.lazy').then((d) => d.Route),
+)
 const AuthForgotPasswordLazyRoute = AuthForgotPasswordLazyRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
@@ -86,14 +106,9 @@ const DeepSignInRoute = DeepSignInRouteImport.update({
   path: '/deep/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LayoutTermsOfServiceRoute = LayoutTermsOfServiceRouteImport.update({
-  id: '/terms-of-service',
-  path: '/terms-of-service',
-  getParentRoute: () => LayoutRoute,
-} as any)
-const LayoutPrivacyPolicyRoute = LayoutPrivacyPolicyRouteImport.update({
-  id: '/privacy-policy',
-  path: '/privacy-policy',
+const LayoutReleasesRoute = LayoutReleasesRouteImport.update({
+  id: '/releases',
+  path: '/releases',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutHomeRoute = LayoutHomeRouteImport.update({
@@ -131,10 +146,11 @@ export interface FileRoutesByFullPath {
   '/sign-up': typeof AuthSignUpRoute
   '/download': typeof LayoutDownloadRoute
   '/home': typeof LayoutHomeRoute
-  '/privacy-policy': typeof LayoutPrivacyPolicyRoute
-  '/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/releases': typeof LayoutReleasesRoute
   '/deep/sign-in': typeof DeepSignInRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
+  '/privacy-policy': typeof LayoutPrivacyPolicyLazyRoute
+  '/terms-of-service': typeof LayoutTermsOfServiceLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
   '/account/settings': typeof AccountSettingsLazyRoute
   '/account/': typeof AccountIndexRoute
@@ -147,10 +163,11 @@ export interface FileRoutesByTo {
   '/sign-up': typeof AuthSignUpRoute
   '/download': typeof LayoutDownloadRoute
   '/home': typeof LayoutHomeRoute
-  '/privacy-policy': typeof LayoutPrivacyPolicyRoute
-  '/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/releases': typeof LayoutReleasesRoute
   '/deep/sign-in': typeof DeepSignInRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
+  '/privacy-policy': typeof LayoutPrivacyPolicyLazyRoute
+  '/terms-of-service': typeof LayoutTermsOfServiceLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
   '/account/settings': typeof AccountSettingsLazyRoute
   '/account': typeof AccountIndexRoute
@@ -166,10 +183,11 @@ export interface FileRoutesById {
   '/_auth/sign-up': typeof AuthSignUpRoute
   '/_layout/download': typeof LayoutDownloadRoute
   '/_layout/home': typeof LayoutHomeRoute
-  '/_layout/privacy-policy': typeof LayoutPrivacyPolicyRoute
-  '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/_layout/releases': typeof LayoutReleasesRoute
   '/deep/sign-in': typeof DeepSignInRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordLazyRoute
+  '/_layout/privacy-policy': typeof LayoutPrivacyPolicyLazyRoute
+  '/_layout/terms-of-service': typeof LayoutTermsOfServiceLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
   '/account/settings': typeof AccountSettingsLazyRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -186,10 +204,11 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/download'
     | '/home'
-    | '/privacy-policy'
-    | '/terms-of-service'
+    | '/releases'
     | '/deep/sign-in'
     | '/forgot-password'
+    | '/privacy-policy'
+    | '/terms-of-service'
     | '/account/billing'
     | '/account/settings'
     | '/account/'
@@ -202,10 +221,11 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/download'
     | '/home'
-    | '/privacy-policy'
-    | '/terms-of-service'
+    | '/releases'
     | '/deep/sign-in'
     | '/forgot-password'
+    | '/privacy-policy'
+    | '/terms-of-service'
     | '/account/billing'
     | '/account/settings'
     | '/account'
@@ -220,10 +240,11 @@ export interface FileRouteTypes {
     | '/_auth/sign-up'
     | '/_layout/download'
     | '/_layout/home'
-    | '/_layout/privacy-policy'
-    | '/_layout/terms-of-service'
+    | '/_layout/releases'
     | '/deep/sign-in'
     | '/_auth/forgot-password'
+    | '/_layout/privacy-policy'
+    | '/_layout/terms-of-service'
     | '/account/billing'
     | '/account/settings'
     | '/_layout/'
@@ -296,6 +317,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountBillingLazyRouteImport
       parentRoute: typeof AccountRoute
     }
+    '/_layout/terms-of-service': {
+      id: '/_layout/terms-of-service'
+      path: '/terms-of-service'
+      fullPath: '/terms-of-service'
+      preLoaderRoute: typeof LayoutTermsOfServiceLazyRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/privacy-policy': {
+      id: '/_layout/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof LayoutPrivacyPolicyLazyRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_auth/forgot-password': {
       id: '/_auth/forgot-password'
       path: '/forgot-password'
@@ -310,18 +345,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeepSignInRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_layout/terms-of-service': {
-      id: '/_layout/terms-of-service'
-      path: '/terms-of-service'
-      fullPath: '/terms-of-service'
-      preLoaderRoute: typeof LayoutTermsOfServiceRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/privacy-policy': {
-      id: '/_layout/privacy-policy'
-      path: '/privacy-policy'
-      fullPath: '/privacy-policy'
-      preLoaderRoute: typeof LayoutPrivacyPolicyRouteImport
+    '/_layout/releases': {
+      id: '/_layout/releases'
+      path: '/releases'
+      fullPath: '/releases'
+      preLoaderRoute: typeof LayoutReleasesRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/home': {
@@ -381,16 +409,18 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 interface LayoutRouteChildren {
   LayoutDownloadRoute: typeof LayoutDownloadRoute
   LayoutHomeRoute: typeof LayoutHomeRoute
-  LayoutPrivacyPolicyRoute: typeof LayoutPrivacyPolicyRoute
-  LayoutTermsOfServiceRoute: typeof LayoutTermsOfServiceRoute
+  LayoutReleasesRoute: typeof LayoutReleasesRoute
+  LayoutPrivacyPolicyLazyRoute: typeof LayoutPrivacyPolicyLazyRoute
+  LayoutTermsOfServiceLazyRoute: typeof LayoutTermsOfServiceLazyRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutDownloadRoute: LayoutDownloadRoute,
   LayoutHomeRoute: LayoutHomeRoute,
-  LayoutPrivacyPolicyRoute: LayoutPrivacyPolicyRoute,
-  LayoutTermsOfServiceRoute: LayoutTermsOfServiceRoute,
+  LayoutReleasesRoute: LayoutReleasesRoute,
+  LayoutPrivacyPolicyLazyRoute: LayoutPrivacyPolicyLazyRoute,
+  LayoutTermsOfServiceLazyRoute: LayoutTermsOfServiceLazyRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 

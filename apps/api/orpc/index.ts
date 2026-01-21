@@ -4,7 +4,7 @@ import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
 import { auth } from '~/lib/auth'
-import { redis } from '~/lib/redis'
+import { redis, redisCache } from '~/lib/redis'
 
 export const orpc = os.$context<Context>()
 
@@ -58,30 +58,10 @@ export async function getSubscription(userId: string) {
   return userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number]) && !s.cancelAt) ?? null
 }
 
-async function getSubscriptionCached(userId: string) {
-  const cachedSubscription = await redis.get(`subscription:${userId}`)
-
-  if (cachedSubscription) {
-    return JSON.parse(cachedSubscription) as NonNullable<Awaited<ReturnType<typeof getSubscription>>>
-  }
-
-  const subscription = await getSubscription(userId)
-
-  if (subscription) {
-    await redis.setex(
-      `subscription:${userId}`,
-      60 * 30, // 30 minutes
-      JSON.stringify(subscription),
-    )
-  }
-
-  return subscription
-}
-
 export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
   const minorVersion = context.minorVersion ?? 0
-  const subscription = await getSubscriptionCached(session.user.id)
+  const subscription = await redisCache(() => getSubscription(session.user.id), `subscription:${session.user.id}`, 60 * 30)
 
   if (!subscription) {
     throw new ORPCError('FORBIDDEN', {
@@ -98,3 +78,19 @@ export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, n
     },
   })
 })
+
+export function cacheMiddleware(ttl: number = 60 * 60 * 24) {
+  return orpc.middleware(async ({ next, path }, input, output) => {
+    const cacheKey = path.join('/') + JSON.stringify(input)
+    const cached = await redis.get(cacheKey)
+    if (cached) {
+      return output(JSON.parse(cached))
+    }
+
+    const result = await next({})
+
+    await redis.setex(cacheKey, ttl, JSON.stringify(result.output))
+
+    return result
+  })
+}

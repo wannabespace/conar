@@ -18,7 +18,6 @@ import { Route as ProtectedDatabaseIdDefinitionsRouteImport } from './routes/_pr
 import { Route as ProtectedDatabaseIdVisualizerIndexRouteImport } from './routes/_protected/database/$id/visualizer/index'
 import { Route as ProtectedDatabaseIdTableIndexRouteImport } from './routes/_protected/database/$id/table/index'
 import { Route as ProtectedDatabaseIdSqlIndexRouteImport } from './routes/_protected/database/$id/sql/index'
-import { Route as ProtectedDatabaseIdSettingsIndexRouteImport } from './routes/_protected/database/$id/settings/index'
 import { Route as ProtectedDatabaseIdDefinitionsIndexesIndexRouteImport } from './routes/_protected/database/$id/definitions/indexes/index'
 import { Route as ProtectedDatabaseIdDefinitionsEnumsIndexRouteImport } from './routes/_protected/database/$id/definitions/enums/index'
 import { Route as ProtectedDatabaseIdDefinitionsConstraintsIndexRouteImport } from './routes/_protected/database/$id/definitions/constraints/index'
@@ -71,12 +70,6 @@ const ProtectedDatabaseIdSqlIndexRoute =
     path: '/sql/',
     getParentRoute: () => ProtectedDatabaseIdRoute,
   } as any)
-const ProtectedDatabaseIdSettingsIndexRoute =
-  ProtectedDatabaseIdSettingsIndexRouteImport.update({
-    id: '/settings/',
-    path: '/settings/',
-    getParentRoute: () => ProtectedDatabaseIdRoute,
-  } as any)
 const ProtectedDatabaseIdDefinitionsIndexesIndexRoute =
   ProtectedDatabaseIdDefinitionsIndexesIndexRouteImport.update({
     id: '/indexes/',
@@ -102,7 +95,6 @@ export interface FileRoutesByFullPath {
   '/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
   '/create/': typeof ProtectedCreateIndexRoute
   '/database/$id/definitions': typeof ProtectedDatabaseIdDefinitionsRouteWithChildren
-  '/database/$id/settings/': typeof ProtectedDatabaseIdSettingsIndexRoute
   '/database/$id/sql/': typeof ProtectedDatabaseIdSqlIndexRoute
   '/database/$id/table/': typeof ProtectedDatabaseIdTableIndexRoute
   '/database/$id/visualizer/': typeof ProtectedDatabaseIdVisualizerIndexRoute
@@ -116,7 +108,6 @@ export interface FileRoutesByTo {
   '/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
   '/create': typeof ProtectedCreateIndexRoute
   '/database/$id/definitions': typeof ProtectedDatabaseIdDefinitionsRouteWithChildren
-  '/database/$id/settings': typeof ProtectedDatabaseIdSettingsIndexRoute
   '/database/$id/sql': typeof ProtectedDatabaseIdSqlIndexRoute
   '/database/$id/table': typeof ProtectedDatabaseIdTableIndexRoute
   '/database/$id/visualizer': typeof ProtectedDatabaseIdVisualizerIndexRoute
@@ -132,7 +123,6 @@ export interface FileRoutesById {
   '/_protected/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
   '/_protected/create/': typeof ProtectedCreateIndexRoute
   '/_protected/database/$id/definitions': typeof ProtectedDatabaseIdDefinitionsRouteWithChildren
-  '/_protected/database/$id/settings/': typeof ProtectedDatabaseIdSettingsIndexRoute
   '/_protected/database/$id/sql/': typeof ProtectedDatabaseIdSqlIndexRoute
   '/_protected/database/$id/table/': typeof ProtectedDatabaseIdTableIndexRoute
   '/_protected/database/$id/visualizer/': typeof ProtectedDatabaseIdVisualizerIndexRoute
@@ -148,7 +138,6 @@ export interface FileRouteTypes {
     | '/database/$id'
     | '/create/'
     | '/database/$id/definitions'
-    | '/database/$id/settings/'
     | '/database/$id/sql/'
     | '/database/$id/table/'
     | '/database/$id/visualizer/'
@@ -162,7 +151,6 @@ export interface FileRouteTypes {
     | '/database/$id'
     | '/create'
     | '/database/$id/definitions'
-    | '/database/$id/settings'
     | '/database/$id/sql'
     | '/database/$id/table'
     | '/database/$id/visualizer'
@@ -177,7 +165,6 @@ export interface FileRouteTypes {
     | '/_protected/database/$id'
     | '/_protected/create/'
     | '/_protected/database/$id/definitions'
-    | '/_protected/database/$id/settings/'
     | '/_protected/database/$id/sql/'
     | '/_protected/database/$id/table/'
     | '/_protected/database/$id/visualizer/'
@@ -256,13 +243,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedDatabaseIdSqlIndexRouteImport
       parentRoute: typeof ProtectedDatabaseIdRoute
     }
-    '/_protected/database/$id/settings/': {
-      id: '/_protected/database/$id/settings/'
-      path: '/settings'
-      fullPath: '/database/$id/settings/'
-      preLoaderRoute: typeof ProtectedDatabaseIdSettingsIndexRouteImport
-      parentRoute: typeof ProtectedDatabaseIdRoute
-    }
     '/_protected/database/$id/definitions/indexes/': {
       id: '/_protected/database/$id/definitions/indexes/'
       path: '/indexes'
@@ -310,7 +290,6 @@ const ProtectedDatabaseIdDefinitionsRouteWithChildren =
 
 interface ProtectedDatabaseIdRouteChildren {
   ProtectedDatabaseIdDefinitionsRoute: typeof ProtectedDatabaseIdDefinitionsRouteWithChildren
-  ProtectedDatabaseIdSettingsIndexRoute: typeof ProtectedDatabaseIdSettingsIndexRoute
   ProtectedDatabaseIdSqlIndexRoute: typeof ProtectedDatabaseIdSqlIndexRoute
   ProtectedDatabaseIdTableIndexRoute: typeof ProtectedDatabaseIdTableIndexRoute
   ProtectedDatabaseIdVisualizerIndexRoute: typeof ProtectedDatabaseIdVisualizerIndexRoute
@@ -319,7 +298,6 @@ interface ProtectedDatabaseIdRouteChildren {
 const ProtectedDatabaseIdRouteChildren: ProtectedDatabaseIdRouteChildren = {
   ProtectedDatabaseIdDefinitionsRoute:
     ProtectedDatabaseIdDefinitionsRouteWithChildren,
-  ProtectedDatabaseIdSettingsIndexRoute: ProtectedDatabaseIdSettingsIndexRoute,
   ProtectedDatabaseIdSqlIndexRoute: ProtectedDatabaseIdSqlIndexRoute,
   ProtectedDatabaseIdTableIndexRoute: ProtectedDatabaseIdTableIndexRoute,
   ProtectedDatabaseIdVisualizerIndexRoute:
