@@ -1,7 +1,7 @@
 import { Separator } from '@conar/ui/components/separator'
 import NumberFlow from '@number-flow/react'
 import { useStore } from '@tanstack/react-store'
-import { useDatabaseTableTotal } from '~/entities/database/queries'
+import { useConnectionTableTotal } from '~/entities/connection/queries'
 import { Route } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
@@ -9,19 +9,19 @@ import { HeaderActions } from './header-actions'
 import { HeaderSearch } from './header-search'
 
 export function Header({ table, schema }: { table: string, schema: string }) {
-  const { database } = Route.useLoaderData()
-  const columns = useTableColumns({ database, table, schema })
+  const { connection } = Route.useLoaderData()
+  const columns = useTableColumns({ connection, table, schema })
   const store = usePageStoreContext()
   const filters = useStore(store, state => state.filters)
-  const { data: total } = useDatabaseTableTotal({ database, table, schema, query: { filters } })
+  const { data: total } = useConnectionTableTotal({ connection, table, schema, query: { filters } })
 
   const columnsCount = columns?.length ?? 0
 
   return (
-    <div className="flex gap-6 w-full items-center justify-between">
-      <div className="flex flex-1 gap-4 items-center">
+    <div className="flex w-full items-center justify-between gap-6">
+      <div className="flex flex-1 items-center gap-4">
         <div className="shrink-0">
-          <h2 className="font-medium text-sm mb-0.5 space-x-1">
+          <h2 className="mb-0.5 space-x-1 text-sm font-medium">
             <span className="text-muted-foreground">
               {schema}
             </span>
@@ -30,7 +30,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
             {' '}
             <span data-mask>{table}</span>
           </h2>
-          <p className="text-muted-foreground text-xs">
+          <p className="text-xs text-muted-foreground">
             <span className="tabular-nums">{columnsCount}</span>
             {' '}
             column
@@ -60,7 +60,6 @@ export function Header({ table, schema }: { table: string, schema: string }) {
       <HeaderActions
         table={table}
         schema={schema}
-        database={database}
       />
     </div>
   )

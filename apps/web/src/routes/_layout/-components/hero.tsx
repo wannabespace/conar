@@ -1,4 +1,4 @@
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { FlipWords } from '@conar/ui/components/aceternity/flip-words'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
@@ -8,11 +8,11 @@ import { DownloadButton } from '~/components/download-button'
 import { SEO } from '~/constants'
 
 const words = {
-  [DatabaseType.Postgres]: 'Postgres',
-  [DatabaseType.MySQL]: 'MySQL',
-  [DatabaseType.MSSQL]: 'MSSQL',
-  [DatabaseType.ClickHouse]: 'ClickHouse',
-} satisfies Record<DatabaseType, string>
+  [ConnectionType.Postgres]: 'Postgres',
+  [ConnectionType.MySQL]: 'MySQL',
+  [ConnectionType.MSSQL]: 'MSSQL',
+  [ConnectionType.ClickHouse]: 'ClickHouse',
+} satisfies Record<ConnectionType, string>
 
 export function Hero({ className }: { className?: string }) {
   const { scrollY } = useScroll()
@@ -110,7 +110,11 @@ export function Hero({ className }: { className?: string }) {
             lg:w-auto
           `}
         >
-          <DownloadButton className="w-full sm:w-auto" />
+          <DownloadButton className="
+            w-full
+            sm:w-auto
+          "
+          />
           <Button
             variant="secondary"
             asChild

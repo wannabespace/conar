@@ -1,15 +1,15 @@
-import type { DatabaseType } from '@conar/shared/enums/database-type'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { cn } from '@conar/ui/lib/utils'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useState } from 'react'
 
-export function ConnectionDetails({ className, connectionString, type }: { className?: string, connectionString: string, type: DatabaseType }) {
+export function ConnectionDetails({ className, connectionString, type }: { className?: string, connectionString: string, type: ConnectionType }) {
   const url = new SafeURL(connectionString)
   const [showPassword, setShowPassword] = useState(false)
 
   return (
-    <table className={cn('text-xs font-mono w-full border-collapse', className)}>
+    <table className={cn('w-full border-collapse font-mono text-xs', className)}>
       <tbody>
         <tr>
           <td className="py-1 pr-4 text-muted-foreground">Type</td>
@@ -25,7 +25,12 @@ export function ConnectionDetails({ className, connectionString, type }: { class
             <td data-mask>
               <button
                 type="button"
-                className="p-1 rounded-md hover:bg-accent/50 translate-y-0.4 cursor-pointer mr-2 inline-block [&_svg]:size-3"
+                className="
+                  mr-2 inline-block translate-y-0.5 cursor-pointer rounded-md
+                  p-1
+                  hover:bg-accent/50
+                  [&_svg]:size-3
+                "
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}

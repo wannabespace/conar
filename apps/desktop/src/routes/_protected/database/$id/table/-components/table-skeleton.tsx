@@ -2,7 +2,7 @@
 import { cn } from '@conar/ui/lib/utils'
 import { useMemo } from 'react'
 import { useTableContext } from '~/components/table'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database/utils'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/connection/components/table/utils'
 
 const ROWS_COUNT = 20
 
@@ -39,7 +39,7 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: {
         >
           {selectable && (
             <div className="shrink-0 p-2 pl-4">
-              <div className="size-4 animate-pulse rounded bg-muted" />
+              <div className="size-4 animate-pulse rounded-sm bg-muted" />
             </div>
           )}
           {cols.map((column, index) => {
@@ -57,7 +57,7 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: {
                 }}
               >
                 <div className={`
-                  h-4 w-3/4 shrink-0 animate-pulse rounded bg-muted
+                  h-4 w-3/4 shrink-0 animate-pulse rounded-sm bg-muted
                 `}
                 />
               </div>

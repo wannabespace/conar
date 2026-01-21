@@ -137,7 +137,7 @@ function FilterValueSelector({
             }
           }}
         />
-        <div className="flex flex-col gap-4 px-4 py-4 text-sm">
+        <div className="flex flex-col gap-4 p-4 text-sm">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">Filtering</span>
@@ -165,7 +165,7 @@ function FilterValueSelector({
               {' '}
               <span>
                 Use
-                <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">%</kbd>
+                <kbd className="rounded-sm border bg-muted px-1.5 py-0.5 text-xs">%</kbd>
                 {' '}
                 as wildcard
               </span>
@@ -182,7 +182,7 @@ function FilterValueSelector({
               <span>
                 Separate multiple values with commas
                 {' '}
-                <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">,</kbd>
+                <kbd className="rounded-sm border bg-muted px-1.5 py-0.5 text-xs">,</kbd>
               </span>
             </div>
           )}
@@ -197,7 +197,7 @@ function FilterValueSelector({
               <span>
                 Separate range values with
                 {' '}
-                <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">AND</kbd>
+                <kbd className="rounded-sm border bg-muted px-1.5 py-0.5 text-xs">AND</kbd>
               </span>
             </div>
           )}

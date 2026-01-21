@@ -10,8 +10,8 @@ import { type } from 'arktype'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { FiltersProvider } from '~/components/table'
-import { addTab, databaseStore } from '~/entities/database/store'
-import { prefetchDatabaseCore, prefetchDatabaseTableCore } from '~/entities/database/utils'
+import { addTab, connectionStore } from '~/entities/connection/store'
+import { prefetchConnectionCore, prefetchConnectionTableCore } from '~/entities/connection/utils'
 import { Filters } from './-components/filters'
 import { Header } from './-components/header'
 import { Sidebar } from './-components/sidebar'
@@ -32,13 +32,13 @@ export const Route = createFileRoute(
   component: DatabaseTablesPage,
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => {
-    const store = deps.table && deps.schema ? createPageStore({ id: context.database.id, schema: deps.schema, table: deps.table }) : null
+    const store = deps.table && deps.schema ? createPageStore({ id: context.connection.id, schema: deps.schema, table: deps.table }) : null
 
-    prefetchDatabaseCore(context.database)
+    prefetchConnectionCore(context.connection)
 
     if (store) {
-      prefetchDatabaseTableCore({
-        database: context.database,
+      prefetchConnectionTableCore({
+        connection: context.connection,
         schema: deps.schema!,
         table: deps.table!,
         query: {
@@ -49,7 +49,7 @@ export const Route = createFileRoute(
     }
 
     return {
-      database: context.database,
+      connection: context.connection,
       schema: deps.schema ?? null,
       table: deps.table ?? null,
       store,
@@ -60,7 +60,7 @@ export const Route = createFileRoute(
       ? [{
           title: title(
             loaderData.schema && loaderData.table ? `${loaderData.schema}.${loaderData.table}` : 'Tables',
-            loaderData.database.name,
+            loaderData.connection.name,
           ),
         }]
       : [],
@@ -68,7 +68,7 @@ export const Route = createFileRoute(
 })
 
 function TableContent({ table, schema, store }: { table: string, schema: string, store: Store<typeof storeState.infer> }) {
-  const { database } = Route.useLoaderData()
+  const { connection } = Route.useLoaderData()
   const deps = Route.useLoaderDeps()
   const lastClickedIndexRef = useRef<number | null>(null)
   const selectionStateRef = useRef<SelectionState>({ anchorIndex: null, focusIndex: null, lastExpandDirection: null })
@@ -83,7 +83,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
   }, [table, schema])
 
   useEffect(() => {
-    if (store && (deps.filters || deps.orderBy)) {
+    if (deps.filters || deps.orderBy) {
       store.setState(state => ({
         ...state,
         ...(deps.filters ? { filters: deps.filters } : {}),
@@ -92,7 +92,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
     }
   }, [store, deps])
 
-  const columns = useTableColumns({ database, table, schema })
+  const columns = useTableColumns({ connection, table, schema })
 
   const removeUnusedOrdersEvent = useEffectEvent(() => {
     if (!columns || columns.length === 0)
@@ -121,12 +121,13 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
   return (
     <SelectionStateContext value={selectionStateRef}>
       <LastClickedIndexContext value={lastClickedIndexRef}>
+
         <PageStoreContext value={store}>
-          <TablesTabs className="h-9" database={database} />
+          <TablesTabs className="h-9" connection={connection} />
           <div
             key={table}
             className="h-[calc(100%-(--spacing(9)))]"
-            onClick={() => addTab(database.id, schema, table)}
+            onClick={() => addTab(connection.id, schema, table)}
           >
             <FiltersProvider
               columns={columns ?? []}
@@ -150,9 +151,9 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
 }
 
 function DatabaseTablesPage() {
-  const { database, store: tableStore } = Route.useLoaderData()
+  const { connection, store: tableStore } = Route.useLoaderData()
   const { schema, table } = Route.useSearch()
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
   const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
 
   const handleLastOpenedTableEvent = useEffectEvent(() => {
@@ -177,7 +178,7 @@ function DatabaseTablesPage() {
   }, [schema, table, lastOpenedTable])
 
   const { defaultLayout, onLayoutChange } = useDefaultLayout({
-    id: `database-layout-${database.id}`,
+    id: `database-layout-${connection.id}`,
     storage: localStorage,
   })
 
@@ -194,7 +195,7 @@ function DatabaseTablesPage() {
         maxSize="50%"
         className="h-full rounded-lg border bg-background"
       >
-        <Sidebar key={database.id} />
+        <Sidebar key={connection.id} />
       </ResizablePanel>
       <ResizableSeparator className="w-1 bg-transparent" />
       <ResizablePanel

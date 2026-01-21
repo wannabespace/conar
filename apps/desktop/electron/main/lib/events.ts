@@ -1,12 +1,12 @@
-import type { DatabaseType } from '@conar/shared/enums/database-type'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { tryParseJson } from '@conar/shared/utils/helpers'
 import { app, ipcMain } from 'electron'
 import { autoUpdater, sendToast } from '..'
-import { getClient as getClickhouseClient } from '../databases/clickhouse'
-import { getPool as getMssqlPool } from '../databases/mssql'
-import { getPool as getMysqlPool } from '../databases/mysql'
-import { getPool as getPgPool } from '../databases/pg'
+import { getClient as getClickhouseClient } from '../connections/clickhouse'
+import { getPool as getMssqlPool } from '../connections/mssql'
+import { getPool as getMysqlPool } from '../connections/mysql'
+import { getPool as getPgPool } from '../connections/pg'
 
 function isConnectionError(error: unknown) {
   if (error instanceof Error) {
@@ -134,7 +134,7 @@ const queryMap = {
     return { result: result.recordset as unknown, duration: performance.now() - start! }
   },
 // eslint-disable-next-line ts/no-explicit-any
-} satisfies Record<DatabaseType, (...args: any[]) => Promise<QueryResult>>
+} satisfies Record<ConnectionType, (...args: any[]) => Promise<QueryResult>>
 
 const encryption = {
   encrypt: async (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),

@@ -6,22 +6,22 @@ import { Input } from '@conar/ui/components/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCheckLine, RiCloseLine, RiLoopLeftLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { databaseConstraintsQuery, useDatabaseTablesAndSchemas } from '~/entities/database/queries'
-import { databaseStore } from '~/entities/database/store'
+import { connectionConstraintsQuery, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { connectionStore } from '~/entities/connection/store'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { TablesTree } from './tables-tree'
 
 export function Sidebar() {
-  const { database } = Route.useLoaderData()
-  const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useDatabaseTablesAndSchemas({ database })
-  const store = databaseStore(database.id)
+  const { connection } = Route.useLoaderData()
+  const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useConnectionTablesAndSchemas({ connection })
+  const store = connectionStore(connection.id)
   const search = useStore(store, state => state.tablesSearch)
 
   async function handleRefresh() {
     await Promise.all([
       refetchTablesAndSchemas(),
-      queryClient.invalidateQueries(databaseConstraintsQuery({ database })),
+      queryClient.invalidateQueries(connectionConstraintsQuery({ connection })),
     ])
   }
 
@@ -59,7 +59,7 @@ export function Sidebar() {
             </Tooltip>
           </TooltipProvider>
         </div>
-        {!!tablesAndSchemas && tablesAndSchemas.totalTables > 20 && (
+        {!!tablesAndSchemas && tablesAndSchemas.totalTables > 10 && (
           <div className="relative">
             <Input
               placeholder="Search tables"

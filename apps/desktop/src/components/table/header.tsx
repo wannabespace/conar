@@ -67,7 +67,7 @@ export function TableHeader({
 
   return (
     <div
-      className={cn('sticky top-0 z-10 border-y bg-background h-8 has-[[data-footer]]:h-12 w-fit min-w-full', className)}
+      className={cn('sticky top-0 z-10 border-y bg-background h-8 has-data-footer:h-12 w-fit min-w-full', className)}
       style={{ width: `${tableWidth}px`, ...style }}
       {...props}
     >

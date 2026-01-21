@@ -1,4 +1,4 @@
-import type { databases } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -16,19 +16,19 @@ import { RiInformationLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseRowsQuery } from '~/entities/database/queries'
-import { databaseTableColumnsQuery } from '~/entities/database/queries/columns'
-import { renameColumnQuery } from '~/entities/database/sql/rename-columns'
+import { connectionRowsQuery } from '~/entities/connection/queries'
+import { connectionTableColumnsQuery } from '~/entities/connection/queries/columns'
+import { renameColumnQuery } from '~/entities/connection/sql/rename-columns'
 import { queryClient } from '~/main'
 
 interface RenameColumnDialogProps {
   ref: React.RefObject<{
     rename: (schema: string, table: string, column: string) => void
   } | null>
-  database: typeof databases.$inferSelect
+  connection: typeof connections.$inferSelect
 }
 
-export function RenameColumnDialog({ ref, database }: RenameColumnDialogProps) {
+export function RenameColumnDialog({ ref, connection }: RenameColumnDialogProps) {
   const [newColumnName, setNewColumnName] = useState('')
   const [schema, setSchema] = useState('')
   const [table, setTable] = useState('')
@@ -47,7 +47,7 @@ export function RenameColumnDialog({ ref, database }: RenameColumnDialogProps) {
 
   const { mutate: renameColumn, isPending } = useMutation({
     mutationFn: async () => {
-      await renameColumnQuery(database, {
+      await renameColumnQuery(connection, {
         schema,
         table,
         oldColumn: column,
@@ -58,9 +58,9 @@ export function RenameColumnDialog({ ref, database }: RenameColumnDialogProps) {
       toast.success(`Column "${column}" successfully renamed to "${newColumnName}"`)
       setOpen(false)
 
-      await queryClient.invalidateQueries(databaseTableColumnsQuery({ database, table, schema }))
+      await queryClient.invalidateQueries(connectionTableColumnsQuery({ connection, table, schema }))
       await queryClient.invalidateQueries({
-        queryKey: databaseRowsQuery({ database, table, schema, query: { filters: [], orderBy: {} } }).queryKey.slice(0, -1),
+        queryKey: connectionRowsQuery({ connection, table, schema, query: { filters: [], orderBy: {} } }).queryKey.slice(0, -1),
       })
     },
     onError: (error) => {

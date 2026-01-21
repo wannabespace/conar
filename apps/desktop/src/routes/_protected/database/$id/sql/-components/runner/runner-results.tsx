@@ -6,7 +6,7 @@ import { RiChatAiLine, RiLoader4Line, RiStopLine, RiVipCrownLine } from '@remixi
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Monaco } from '~/components/monaco'
-import { toggleChat } from '~/entities/database/store'
+import { toggleChat } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks/use-subscription'
 import { formatSql } from '~/lib/formatter'
 import { queryClient } from '~/main'
@@ -18,11 +18,11 @@ import { RunnerResultsTable } from './runner-results-table'
 export function RunnerResults() {
   const { chatId } = Route.useSearch()
   const { subscription } = useSubscription()
-  const { database } = Route.useRouteContext()
-  const { data: results, fetchStatus: queryStatus } = useQuery(runnerQueryOptions({ database }))
+  const { connection } = Route.useRouteContext()
+  const { data: results, fetchStatus: queryStatus } = useQuery(runnerQueryOptions({ connection }))
 
   function handleStop() {
-    queryClient.cancelQueries(runnerQueryOptions({ database }))
+    queryClient.cancelQueries(runnerQueryOptions({ connection }))
   }
 
   if (queryStatus === 'fetching') {
@@ -66,7 +66,7 @@ export function RunnerResults() {
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8} className="w-lg p-0 pl-2">
                   <Monaco
-                    value={formatSql(query, database.type)}
+                    value={formatSql(query, connection.type)}
                     language="sql"
                     options={{
                       scrollBeyondLastLine: false,
@@ -98,8 +98,9 @@ export function RunnerResults() {
                   >
                     Error executing query
                     <div className={`
-                      mb-2 max-h-1/2 max-w-full overflow-auto rounded bg-red-50
-                      px-2 py-1 font-mono text-xs text-balance text-red-700
+                      mb-2 max-h-1/2 max-w-full overflow-auto rounded-sm
+                      bg-red-50 px-2 py-1 font-mono text-xs text-balance
+                      text-red-700
                       dark:bg-red-950 dark:text-red-300
                     `}
                     >
@@ -114,7 +115,7 @@ export function RunnerResults() {
                           >
                             <Link
                               to="/database/$id/sql"
-                              params={{ id: database.id }}
+                              params={{ id: connection.id }}
                               search={{
                                 chatId,
                                 error: [
@@ -122,7 +123,7 @@ export function RunnerResults() {
                                   error,
                                 ].join('\n'),
                               }}
-                              onClick={() => toggleChat(database.id, true)}
+                              onClick={() => toggleChat(connection.id, true)}
                             >
                               <RiChatAiLine />
                               Fix in chat

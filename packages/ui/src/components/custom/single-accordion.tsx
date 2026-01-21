@@ -30,7 +30,7 @@ export function SingleAccordionContent({ children, className, ...props }: React.
       className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
       {...props}
     >
-      <div className={cn('px-2 py-2', className)}>{children}</div>
+      <div className={cn('p-2', className)}>{children}</div>
     </AccordionPrimitive.Content>
   )
 }

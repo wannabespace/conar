@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
-import { databasesCollection } from '~/entities/database/sync'
+import { connectionsCollection } from '~/entities/connection/sync'
 import { queriesCollection } from '~/entities/query/sync'
 import { authClient, fullSignOut } from '~/lib/auth'
 import { queryClient } from '~/main'
@@ -21,7 +21,7 @@ export function useSignOut() {
       // Timeout to wait transition to auth page
       setTimeout(() => {
         queryClient.invalidateQueries()
-        databasesCollection.cleanup()
+        connectionsCollection.cleanup()
         chatsCollection.cleanup()
         chatsMessagesCollection.cleanup()
         queriesCollection.cleanup()
