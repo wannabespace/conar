@@ -59,7 +59,7 @@ export const chat = orpc
         {
           role: 'system',
           content: [
-            `You are an SQL tool that generates valid SQL code for ${input.type} connection.`,
+            `You are an SQL tool that generates valid SQL code for ${input.type} database.`,
             'You can use several tools to improve response.',
             'You can generate select queries using the tools to get data directly from the database.',
             'You can also search the web for information when the user asks about external resources, provides URLs, or needs current information beyond the database schema.',

@@ -15,7 +15,7 @@ import { ConnectionSidebar } from './-components/connection-sidebar'
 import { PasswordForm } from './-components/password-form'
 
 export const Route = createFileRoute('/_protected/database/$id')({
-  component: ConnectionPage,
+  component: DatabasePage,
   beforeLoad: async ({ params }) => {
     const connection = connectionsCollection.get(params.id)
 
@@ -35,14 +35,14 @@ export const Route = createFileRoute('/_protected/database/$id')({
   }),
 })
 
-function getConnectionPageId(routesIds: (keyof FileRoutesById)[]) {
+function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
   return routesIds.find(route => route.includes('/_protected/database/$id/')) as typeof connectionStoreType.infer['lastOpenedPage']
 }
 
-function ConnectionPage() {
+function DatabasePage() {
   const { connection } = Route.useLoaderData()
   const currentPageId = useMatches({
-    select: matches => getConnectionPageId(matches.map(match => match.routeId)),
+    select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
   const store = connectionStore(connection.id)
   const loggerOpened = useStore(store, state => state.loggerOpened)

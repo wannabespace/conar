@@ -31,7 +31,7 @@ export const list = orpc
     }
     catch {
       throw new ORPCError('INTERNAL_SERVER_ERROR', {
-        message: 'Failed to decrypt connection connection string',
+        message: 'Failed to decrypt connection string',
       })
     }
   })

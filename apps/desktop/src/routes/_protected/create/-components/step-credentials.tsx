@@ -27,7 +27,7 @@ export function StepCredentials({ ref, type, connectionString, setConnectionStri
         </Label>
         <Input
           id={id}
-          placeholder={placeholderMap[type as ConnectionType]}
+          placeholder={placeholderMap[type]}
           ref={ref}
           autoFocus
           value={connectionString}
