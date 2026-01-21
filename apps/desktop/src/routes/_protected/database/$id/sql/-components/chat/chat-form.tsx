@@ -18,7 +18,7 @@ import { TipTap } from '~/components/tiptap'
 import { databaseStore } from '~/entities/database/store'
 import { useSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
-import { setIsSubscriptionDialogOpen } from '~/store'
+import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
 import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
@@ -50,6 +50,7 @@ function Images({ databaseId }: { databaseId: string }) {
 }
 
 export function ChatForm() {
+  const isOnline = useStore(appStore, state => state.isOnline)
   const { database, chat } = Route.useLoaderData()
   const { error } = Route.useSearch()
   const router = useRouter()
@@ -68,6 +69,10 @@ export function ChatForm() {
   }, [ref])
 
   const handleSend = async (value: string) => {
+    if (!isOnline) {
+      return
+    }
+
     if (
       value.trim() === ''
       || chat.status === 'streaming'
@@ -204,16 +209,13 @@ export function ChatForm() {
     >
       <Images databaseId={database.id} />
       <div className={`
-        relative flex flex-col gap-2 rounded-md border
+        relative flex flex-col gap-2 overflow-hidden rounded-md border
         dark:bg-input/30
       `}
       >
         {!subscription && (
           <span
-            className={`
-              absolute top-0 right-0 left-0 z-10 p-2 text-sm
-              text-muted-foreground
-            `}
+            className="z-10 bg-muted px-2 py-1 text-sm text-muted-foreground"
           >
             Please
             {' '}
@@ -239,11 +241,11 @@ export function ChatForm() {
               chatInput: value,
             } satisfies typeof state))
           }}
-          placeholder="Generate SQL queries using natural language"
+          placeholder={isOnline ? 'Generate SQL queries using natural language' : 'Check your internet connection to generate SQL queries'}
           className={`
             max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm outline-none
           `}
-          disabled={!subscription}
+          disabled={!subscription || !isOnline}
           onEnter={handleSend}
           onImageAdd={(file) => {
             store.setState(state => ({

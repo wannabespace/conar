@@ -6,13 +6,14 @@ import { Popover, PopoverAnchor, PopoverContent } from '@conar/ui/components/pop
 import { Textarea } from '@conar/ui/components/textarea'
 import { cn } from '@conar/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
+import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
 import { MonacoDiff } from '~/components/monaco'
 import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
 import { useSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
-import { setIsSubscriptionDialogOpen } from '~/store'
+import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
 export function RunnerEditorAIZone({
   database,
@@ -25,6 +26,7 @@ export function RunnerEditorAIZone({
   onUpdate: (sql: string) => void
   onClose: () => void
 }) {
+  const isOnline = useStore(appStore, state => state.isOnline)
   const { subscription } = useSubscription()
   const [prompt, setPrompt] = useState('')
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null)
@@ -83,13 +85,12 @@ export function RunnerEditorAIZone({
     <div className="flex h-full flex-col py-1 pr-6">
       <Popover open={!!aiSuggestion}>
         <PopoverAnchor asChild>
-          <div className="relative h-full w-lg">
+          <div className="relative flex h-full w-lg flex-col rounded-md border">
             {!subscription && (
-              <span
-                className={`
-                  absolute top-0 right-0 left-0 z-10 p-2 text-sm
-                  text-muted-foreground
-                `}
+              <div
+                className="
+                  w-full bg-muted px-2 py-1 text-sm text-muted-foreground
+                "
               >
                 Please
                 {' '}
@@ -103,18 +104,21 @@ export function RunnerEditorAIZone({
                 </Button>
                 {' '}
                 your subscription to generate SQL queries.
-              </span>
+              </div>
             )}
             <Textarea
               ref={ref}
               value={prompt}
-              disabled={isPending || !subscription}
+              disabled={isPending || !subscription || !isOnline}
               onChange={(e) => {
                 setPrompt(e.target.value)
                 setAiSuggestion(null)
               }}
               className={cn(
-                'field-sizing-content h-full min-h-full resize-none px-2 py-1.5',
+                `
+                  field-sizing-content flex-1 resize-none border-none px-2
+                  py-1.5 pb-8
+                `,
                 // Disable monaco default styles
                 `
                   focus:border-border!
@@ -122,7 +126,7 @@ export function RunnerEditorAIZone({
                   focus-visible:outline-none!
                 `,
               )}
-              placeholder={subscription ? 'Update selected SQL with AI' : ''}
+              placeholder={isOnline ? 'Update selected SQL with AI' : 'Check your internet connection to update selected SQL'}
               onKeyDown={(e) => {
                 e.stopPropagation()
 
@@ -138,7 +142,7 @@ export function RunnerEditorAIZone({
             <Button
               size="xs"
               className="absolute right-2 bottom-2"
-              disabled={isPending || !prompt.trim()}
+              disabled={isPending || !prompt.trim() || !isOnline}
               onClick={handleSubmit}
             >
               <LoadingContent loading={isPending} loaderClassName="size-4">

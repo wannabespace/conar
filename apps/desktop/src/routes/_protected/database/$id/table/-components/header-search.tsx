@@ -11,11 +11,13 @@ import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { useDatabaseEnums } from '~/entities/database/queries'
 import { orpcQuery } from '~/lib/orpc'
+import { appStore } from '~/store'
 import { Route } from '..'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
 
 export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
+  const isOnline = useStore(appStore, state => state.isOnline)
   const { database } = Route.useLoaderData()
   const store = usePageStoreContext()
   const prompt = useStore(store, state => state.prompt)
@@ -53,17 +55,26 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
 
   return (
     <form
-      className="relative max-w-full w-80 has-focus-visible:w-full transition-all duration-300 ease-in-out"
+      className="
+        relative w-full max-w-full transition-all duration-300 ease-in-out
+      "
       onSubmit={(e) => {
         e.preventDefault()
         generateFilter({ prompt, context })
       }}
     >
-      <RiBardLine className="size-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+      <RiBardLine className="
+        pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2
+        text-muted-foreground
+      "
+      />
       <Input
-        className="pl-8 pr-10 w-full focus-visible:ring-0 focus-visible:border-border"
-        placeholder="Ask AI to filter data..."
-        disabled={isPending}
+        className="
+          w-full pr-10 pl-8
+          focus-visible:border-border focus-visible:ring-0
+        "
+        placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
+        disabled={isPending || !isOnline}
         value={prompt}
         onChange={e => store.setState(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
       />
@@ -72,7 +83,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         variant="secondary"
         size="icon-xs"
         disabled={isPending}
-        className="absolute right-2 top-1/2 -translate-y-1/2"
+        className="absolute top-1/2 right-2 -translate-y-1/2"
       >
         <LoadingContent loading={isPending} loaderClassName="size-3">
           <ContentSwitch

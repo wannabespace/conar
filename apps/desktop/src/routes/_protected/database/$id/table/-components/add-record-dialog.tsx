@@ -245,7 +245,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
                           type="button"
                         >
                           {formattedDateDisplay}
-                          <RiArrowDownSLine className="ml-2 h-4 w-4" />
+                          <RiArrowDownSLine className="ml-2 size-4" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
@@ -302,7 +302,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
                       type="button"
                     >
                       {formattedDateDisplay}
-                      <RiArrowDownSLine className="ml-2 h-4 w-4" />
+                      <RiArrowDownSLine className="ml-2 size-4" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">

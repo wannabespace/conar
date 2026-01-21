@@ -39,7 +39,7 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: {
         >
           {selectable && (
             <div className="shrink-0 p-2 pl-4">
-              <div className="size-4 animate-pulse rounded bg-muted" />
+              <div className="size-4 animate-pulse rounded-sm bg-muted" />
             </div>
           )}
           {cols.map((column, index) => {
@@ -57,7 +57,7 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: {
                 }}
               >
                 <div className={`
-                  h-4 w-3/4 shrink-0 animate-pulse rounded bg-muted
+                  h-4 w-3/4 shrink-0 animate-pulse rounded-sm bg-muted
                 `}
                 />
               </div>

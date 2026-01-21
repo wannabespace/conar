@@ -5,15 +5,15 @@ import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
 import { Label } from '@conar/ui/components/label'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSettings3Line, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
@@ -115,25 +115,6 @@ function SupportButton() {
         </form>
       </DialogContent>
     </Dialog>
-  )
-}
-
-function SettingsButton() {
-  const { database } = Route.useLoaderData()
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Link to="/database/$id/settings" params={{ id: database.id }}>
-            <Button size="icon" variant="ghost">
-              <RiSettings3Line className="size-4" />
-            </Button>
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent side="right">Settings</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
   )
 }
 
@@ -413,7 +394,6 @@ export function DatabaseSidebar({ className, ...props }: React.ComponentProps<'d
             />
           </Button>
         </ThemeToggle>
-        {false && <SettingsButton />}
         <div className="mt-2">
           <UserButton />
         </div>
