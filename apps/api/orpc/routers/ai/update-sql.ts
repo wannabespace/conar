@@ -1,5 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { withPosthog } from '~/lib/posthog'
@@ -10,7 +10,7 @@ export const updateSQL = orpc
   .input(type({
     sql: 'string',
     prompt: 'string',
-    type: type.valueOf(DatabaseType),
+    type: type.valueOf(ConnectionType),
     context: 'string',
   }))
   .handler(async ({ input, signal, context }) => {
@@ -29,7 +29,6 @@ export const updateSQL = orpc
             'If the input SQL is correct and only minor changes are needed (such as adding a WHERE clause, changing a column or value, etc.), update just that part.',
             'User\'s prompt can contain several SQL queries, you should update all of them.',
             'Always return a valid SQL query as output, without any explanations or markdown.',
-
             'This SQL will paste directly into a SQL editor.',
             '',
             'Database context:',

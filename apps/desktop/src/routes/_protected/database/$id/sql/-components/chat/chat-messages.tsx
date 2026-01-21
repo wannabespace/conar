@@ -19,7 +19,7 @@ import { regex } from 'arkregex'
 import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
-import { databaseStore } from '~/entities/database/store'
+import { connectionStore } from '~/entities/connection/store'
 import { UserAvatar } from '~/entities/user/components'
 import { Route } from '../..'
 import { chatHooks, runnerHooks } from '../../-page'
@@ -57,8 +57,8 @@ function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick
 }
 
 function ChatMessageCodeActions({ content, lang }: { content: string, lang: string }) {
-  const { database } = Route.useRouteContext()
-  const store = databaseStore(database.id)
+  const { connection } = Route.useRouteContext()
+  const store = connectionStore(connection.id)
   const editorQueries = useStore(store, state => state.editorQueries)
 
   const [isCopying, setIsCopying] = useState(false)
@@ -173,10 +173,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
               onCloseAutoFocus={e => e.preventDefault()}
               onClick={e => e.stopPropagation()}
             >
-              <div className={`
-                p-2 text-xs font-medium text-muted-foreground
-              `}
-              >
+              <div className="p-2 text-xs font-medium text-muted-foreground">
                 Replace existing query
               </div>
               {editorQueries.length === 0 && (
@@ -312,7 +309,7 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
               </Button>
               {!isVisible && (
                 <div className={`
-                  pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-16
+                  pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16
                   bg-linear-to-t from-primary to-transparent
                 `}
                 />

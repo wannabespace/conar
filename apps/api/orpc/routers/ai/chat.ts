@@ -1,7 +1,7 @@
 import type { AppUIMessage } from '~/ai/tools/helpers'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryable } from 'ai-retry'
@@ -40,7 +40,7 @@ export const chat = orpc
   })
   .input(type({
     id: 'string.uuid.v7',
-    type: type.valueOf(DatabaseType),
+    type: type.valueOf(ConnectionType),
     context: 'string',
     createdAt: 'Date',
     updatedAt: 'Date',

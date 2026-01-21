@@ -2,7 +2,7 @@ import type { LanguageModelV3 } from '@ai-sdk/provider'
 import type { AppUIMessage } from '~/ai/tools/helpers'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryable } from 'ai-retry'
@@ -18,7 +18,7 @@ import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 
 const chatInputType = type({
   'id': 'string.uuid.v7',
-  'type': type.valueOf(DatabaseType),
+  'type': type.valueOf(ConnectionType),
   'context?': 'string',
   'createdAt?': 'Date',
   'updatedAt?': 'Date',
@@ -151,7 +151,7 @@ async function ensureChat({
   const [newChat] = await db.insert(chats).values({
     id: chatId,
     userId,
-    databaseId,
+    connectionId: databaseId,
     createdAt,
     updatedAt,
   }).returning()

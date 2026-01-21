@@ -4,7 +4,7 @@ import { render } from '@conar/ui/lib/render'
 import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
-import { databaseStore } from '~/entities/database/store'
+import { connectionStore } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
@@ -45,8 +45,8 @@ function useTrackLineNumberChange(monacoRef: RefObject<editor.IStandaloneCodeEdi
 }
 
 export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
-  const { database } = Route.useRouteContext()
-  const store = databaseStore(database.id)
+  const { connection } = Route.useRouteContext()
+  const store = connectionStore(connection.id)
   const editorQueries = useStore(store, state => state.editorQueries)
   const domElementRef = useRef<HTMLElement>(null)
   const { subscription } = useSubscription()
@@ -103,7 +103,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
       editor.changeViewZones((changeAccessor) => {
         const domNode = domElementRef.current || render(
           <RunnerEditorAIZone
-            database={database}
+            connection={connection}
             getSql={() => store
               .state
               .sql
@@ -145,7 +145,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
       })
       highlightCollection.clear()
     }
-  }, [monacoRef, database, currentAIZoneQuery, store, subscription])
+  }, [monacoRef, connection, currentAIZoneQuery, store, subscription])
 
   const getInlineQueryEvent = useEffectEvent((position: Position) => {
     return editorQueries.find(query =>

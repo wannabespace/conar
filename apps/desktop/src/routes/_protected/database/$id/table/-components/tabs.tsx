@@ -1,6 +1,6 @@
 import type { ComponentProps, RefObject } from 'react'
-import type { databases } from '~/drizzle'
-import type { databaseStoreType } from '~/entities/database/store'
+import type { connections } from '~/drizzle'
+import type { connectionStoreType } from '~/entities/connection/store'
 import { getOS, isCtrlAndKey } from '@conar/shared/utils/os'
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -12,8 +12,8 @@ import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { motion, Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import { addTab, databaseStore, removeTab, updateTabs } from '~/entities/database/store'
-import { prefetchDatabaseTableCore } from '~/entities/database/utils'
+import { addTab, connectionStore, removeTab, updateTabs } from '~/entities/connection/store'
+import { prefetchConnectionTableCore } from '~/entities/connection/utils'
 import { getPageStoreState } from '../-store'
 
 const MotionScrollViewport = motion.create(ScrollViewport)
@@ -102,7 +102,7 @@ function SortableTab({
   onFocus,
 }: {
   id: string
-  item: { id: string, tab: typeof databaseStoreType.infer['tabs'][number] }
+  item: { id: string, tab: typeof connectionStoreType.infer['tabs'][number] }
   showSchema: boolean
   onClose: () => void
   onDoubleClick: () => void
@@ -159,15 +159,15 @@ function SortableTab({
 }
 
 export function TablesTabs({
-  database,
+  connection,
   className,
 }: {
-  database: typeof databases.$inferSelect
+  connection: typeof connections.$inferSelect
   className?: string
 }) {
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const router = useRouter()
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
   const tabs = useStore(store, state => state.tabs)
 
   const addNewTab = useEffectEvent((schema: string, table: string) => {
@@ -177,7 +177,7 @@ export function TablesTabs({
       return
     }
 
-    addTab(database.id, schema, table, true)
+    addTab(connection.id, schema, table, true)
   })
 
   useEffect(() => {
@@ -189,7 +189,7 @@ export function TablesTabs({
   }, [schemaParam, tableParam])
 
   function getQueryOpts(tableName: string) {
-    const state = schemaParam ? getPageStoreState(database.id, schemaParam, tableName) : null
+    const state = schemaParam ? getPageStoreState(connection.id, schemaParam, tableName) : null
 
     if (state) {
       return {
@@ -219,21 +219,21 @@ export function TablesTabs({
     if (newTab) {
       await router.navigate({
         to: '/database/$id/table',
-        params: { id: database.id },
+        params: { id: connection.id },
         search: { schema: newTab.schema, table: newTab.table },
       })
     }
     else {
       await router.navigate({
         to: '/database/$id/table',
-        params: { id: database.id },
+        params: { id: connection.id },
       })
     }
   }
 
   async function closeTab(schema: string, table: string) {
     await navigateToDifferentTabIfThisActive(schema, table)
-    removeTab(database.id, schema, table)
+    removeTab(connection.id, schema, table)
   }
 
   useKeyboardEvent(e => isCtrlAndKey(e, 'w'), (e) => {
@@ -263,19 +263,19 @@ export function TablesTabs({
           axis="x"
           values={tabItems}
           onReorder={(newItems) => {
-            updateTabs(database.id, newItems.map(item => item.tab))
+            updateTabs(connection.id, newItems.map(item => item.tab))
           }}
           className="flex gap-1"
         >
           {tabItems.map(item => (
             <SortableTab
               key={item.id}
-              id={database.id}
+              id={connection.id}
               item={item}
               showSchema={!isOneSchema}
               onClose={() => closeTab(item.tab.schema, item.tab.table)}
-              onDoubleClick={() => addTab(database.id, item.tab.schema, item.tab.table, false)}
-              onMouseOver={() => prefetchDatabaseTableCore({ database, schema: item.tab.schema, table: item.tab.table, query: getQueryOpts(item.tab.table) })}
+              onDoubleClick={() => addTab(connection.id, item.tab.schema, item.tab.table, false)}
+              onMouseOver={() => prefetchConnectionTableCore({ connection, schema: item.tab.schema, table: item.tab.table, query: getQueryOpts(item.tab.table) })}
               onFocus={(ref) => {
                 ref.current?.scrollIntoView({
                   block: 'nearest',

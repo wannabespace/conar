@@ -1,4 +1,4 @@
-import type { databases, databases as databasesTable } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
@@ -7,16 +7,16 @@ import { useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { DatabaseIcon } from '~/entities/database/components'
-import { useDatabaseLinkParams } from '~/entities/database/hooks'
-import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
-import { databasesCollection } from '~/entities/database/sync'
-import { prefetchDatabaseCore } from '~/entities/database/utils'
+import { ConnectionIcon } from '~/entities/connection/components'
+import { useConnectionLinkParams } from '~/entities/connection/hooks'
+import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { connectionsCollection } from '~/entities/connection/sync'
+import { prefetchConnectionCore } from '~/entities/connection/utils'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
-function ActionsDatabaseTables({ database }: { database: typeof databases.$inferSelect }) {
+function ActionsConnectionTables({ connection }: { connection: typeof connections.$inferSelect }) {
   const { data: tablesAndSchemas } = useQuery({
-    ...databaseTablesAndSchemasQuery({ database }),
+    ...connectionTablesAndSchemasQuery({ connection }),
     throwOnError: false,
   })
   const router = useRouter()
@@ -26,11 +26,11 @@ function ActionsDatabaseTables({ database }: { database: typeof databases.$infer
 
   function onTableSelect(schema: string, table: string) {
     setIsActionCenterOpen(false)
-    router.navigate({ to: '/database/$id/table', params: { id: database.id }, search: { schema, table } })
+    router.navigate({ to: '/database/$id/table', params: { id: connection.id }, search: { schema, table } })
   }
 
   return (
-    <CommandGroup heading={`${database.name} Tables`} value={database.name}>
+    <CommandGroup heading={`${connection.name} Tables`} value={connection.name}>
       {tablesAndSchemas.schemas.map(schema => schema.tables.map(table => (
         <CommandItem
           key={table}
@@ -48,32 +48,32 @@ function ActionsDatabaseTables({ database }: { database: typeof databases.$infer
   )
 }
 
-function ActionsDatabase({ database }: { database: typeof databases.$inferSelect }) {
+function ActionsConnection({ connection }: { connection: typeof connections.$inferSelect }) {
   const router = useRouter()
-  const params = useDatabaseLinkParams(database.id)
+  const params = useConnectionLinkParams(connection.id)
 
-  function onDatabaseSelect(database: typeof databasesTable.$inferSelect) {
+  function onConnectionSelect(connection: typeof connections.$inferSelect) {
     setIsActionCenterOpen(false)
 
-    prefetchDatabaseCore(database)
+    prefetchConnectionCore(connection)
     router.navigate(params)
   }
 
   return (
     <CommandItem
-      key={database.id}
-      onSelect={() => onDatabaseSelect(database)}
+      key={connection.id}
+      onSelect={() => onConnectionSelect(connection)}
     >
-      <DatabaseIcon type={database.type} className="size-4 shrink-0" />
+      <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
       <div className="flex items-center gap-2">
-        {database.name}
-        {database.label && (
+        {connection.name}
+        {connection.label && (
           <span className={`
             rounded-full bg-muted-foreground/10 px-2 py-0.5 text-xs
             whitespace-nowrap text-muted-foreground
           `}
           >
-            {database.label}
+            {connection.label}
           </span>
         )}
       </div>
@@ -82,21 +82,21 @@ function ActionsDatabase({ database }: { database: typeof databases.$inferSelect
 }
 
 export function ActionsCenter() {
-  const { data: databases } = useLiveQuery(q => q
-    .from({ databases: databasesCollection })
-    .orderBy(({ databases }) => databases.createdAt, 'desc'))
+  const { data: connections } = useLiveQuery(q => q
+    .from({ connections: connectionsCollection })
+    .orderBy(({ connections }) => connections.createdAt, 'desc'))
   const isOpen = useStore(appStore, state => state.isActionCenterOpen)
   const router = useRouter()
   const { id } = useParams({ strict: false })
 
   useKeyboardEvent(e => isCtrlAndKey(e, 'p'), () => {
-    if (!databases || databases.length === 0)
+    if (!connections || connections.length === 0)
       return
 
     setIsActionCenterOpen(!isOpen)
   })
 
-  const currentConnection = databases?.find(database => database.id === id)
+  const currentConnection = connections?.find(connection => connection.id === id)
 
   return (
     <CommandDialog open={isOpen} onOpenChange={setIsActionCenterOpen}>
@@ -123,12 +123,12 @@ export function ActionsCenter() {
             Add new connection...
           </CommandItem>
         </CommandGroup>
-        {!!databases?.length && (
+        {!!connections?.length && (
           <CommandGroup heading="Databases">
-            {databases.map(database => <ActionsDatabase key={database.id} database={database} />)}
+            {connections.map(connection => <ActionsConnection key={connection.id} connection={connection} />)}
           </CommandGroup>
         )}
-        {currentConnection && <ActionsDatabaseTables database={currentConnection} />}
+        {currentConnection && <ActionsConnectionTables connection={currentConnection} />}
       </CommandList>
     </CommandDialog>
   )
