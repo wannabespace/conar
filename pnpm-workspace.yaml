@@ -167,6 +167,5 @@ ignoredBuiltDependencies:
   - esbuild
   - protobufjs
 onlyBuiltDependencies:
-  - lefthook
   - electron
   - electron-winstaller

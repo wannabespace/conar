@@ -2,6 +2,14 @@ import type { ComponentProps, RefObject } from 'react'
 import type { connections } from '~/drizzle'
 import type { connectionStoreType } from '~/entities/connection/store'
 import { getOS, isCtrlAndKey } from '@conar/shared/utils/os'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from '@conar/ui/components/context-menu'
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
@@ -92,23 +100,35 @@ function TabButton({
   )
 }
 
+interface SortableTabProps {
+  id: string
+  item: { id: string, tab: typeof connectionStoreType.infer['tabs'][number] }
+  showSchema: boolean
+  onClose: VoidFunction
+  onCloseAll: VoidFunction
+  onCloseToTheRight: VoidFunction
+  onCloseOthers: VoidFunction
+  onDoubleClick: VoidFunction
+  onMouseOver: VoidFunction
+  onFocus: (ref: RefObject<HTMLDivElement | null>) => void
+  currentTabIndex: number
+  totalTabs: number
+}
+
 function SortableTab({
   id,
   item,
   showSchema,
   onClose,
+  onCloseAll,
+  onCloseToTheRight,
+  onCloseOthers,
   onDoubleClick,
   onMouseOver,
   onFocus,
-}: {
-  id: string
-  item: { id: string, tab: typeof connectionStoreType.infer['tabs'][number] }
-  showSchema: boolean
-  onClose: () => void
-  onDoubleClick: () => void
-  onMouseOver: () => void
-  onFocus: (ref: RefObject<HTMLDivElement | null>) => void
-}) {
+  currentTabIndex,
+  totalTabs,
+}: SortableTabProps) {
   const router = useRouter()
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const ref = useRef<HTMLDivElement>(null)
@@ -135,25 +155,49 @@ function SortableTab({
         item.tab.preview && 'italic',
       )}
     >
-      <TabButton
-        active={schemaParam === item.tab.schema && tableParam === item.tab.table}
-        onClose={onClose}
-        onDoubleClick={onDoubleClick}
-        onMouseOver={onMouseOver}
-        onClick={() => router.navigate({
-          to: '/database/$id/table',
-          params: { id },
-          search: { schema: item.tab.schema, table: item.tab.table },
-        })}
-      >
-        {showSchema && (
-          <span className="text-muted-foreground">
-            {item.tab.schema}
-            .
-          </span>
-        )}
-        {item.tab.table}
-      </TabButton>
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <TabButton
+            active={schemaParam === item.tab.schema && tableParam === item.tab.table}
+            onClose={onClose}
+            onDoubleClick={onDoubleClick}
+            onMouseOver={onMouseOver}
+            onClick={() => router.navigate({
+              to: '/database/$id/table',
+              params: { id },
+              search: { schema: item.tab.schema, table: item.tab.table },
+            })}
+          >
+            {showSchema && (
+              <span className="text-muted-foreground">
+                {item.tab.schema}
+                .
+              </span>
+            )}
+            {item.tab.table}
+          </TabButton>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem onClick={onClose}>
+            Close
+            <ContextMenuShortcut>
+              {os.type === 'macos' ? '⌘' : 'Ctrl'}
+              + W
+            </ContextMenuShortcut>
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={onCloseOthers} disabled={totalTabs <= 1}>
+            Close Others
+          </ContextMenuItem>
+          <ContextMenuItem onClick={onCloseToTheRight} disabled={currentTabIndex >= totalTabs - 1}>
+            Close to the Right
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={onCloseAll} disabled={totalTabs === 0}>
+            Close All
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
     </Reorder.Item>
   )
 }
@@ -179,6 +223,67 @@ export function TablesTabs({
 
     addTab(connection.id, schema, table, true)
   })
+
+  async function closeAllTabs() {
+    if (tabs.length === 0) {
+      return
+    }
+
+    if (schemaParam && tableParam) {
+      await router.navigate({
+        to: '/database/$id/table',
+        params: { id: connection.id },
+      })
+    }
+
+    tabs.forEach((tab) => {
+      removeTab(connection.id, tab.schema, tab.table)
+    })
+  }
+
+  async function closeTabsToTheRight(currentSchema: string, currentTable: string) {
+    const currentIndex = tabs.findIndex(tab => tab.schema === currentSchema && tab.table === currentTable)
+
+    if (currentIndex === -1 || currentIndex >= tabs.length - 1) {
+      return
+    }
+
+    const tabsToClose = tabs.slice(currentIndex + 1)
+    const isCurrentTabActive = schemaParam === currentSchema && tableParam === currentTable
+
+    if (isCurrentTabActive) {
+      tabsToClose.forEach((tab) => {
+        removeTab(connection.id, tab.schema, tab.table)
+      })
+    }
+    else {
+      tabsToClose.forEach((tab) => {
+        removeTab(connection.id, tab.schema, tab.table)
+      })
+    }
+  }
+
+  async function closeOtherTabs(currentSchema: string, currentTable: string) {
+    const tabsToClose = tabs.filter(tab => tab.schema !== currentSchema || tab.table !== currentTable)
+
+    if (tabsToClose.length === 0) {
+      return
+    }
+
+    const isCurrentTabActive = schemaParam === currentSchema && tableParam === currentTable
+
+    if (!isCurrentTabActive) {
+      await router.navigate({
+        to: '/database/$id/table',
+        params: { id: connection.id },
+        search: { schema: currentSchema, table: currentTable },
+      })
+    }
+
+    tabsToClose.forEach((tab) => {
+      removeTab(connection.id, tab.schema, tab.table)
+    })
+  }
 
   useEffect(() => {
     if (!schemaParam || !tableParam) {
@@ -267,13 +372,16 @@ export function TablesTabs({
           }}
           className="flex gap-1"
         >
-          {tabItems.map(item => (
+          {tabItems.map((item, index) => (
             <SortableTab
               key={item.id}
               id={connection.id}
               item={item}
               showSchema={!isOneSchema}
               onClose={() => closeTab(item.tab.schema, item.tab.table)}
+              onCloseAll={closeAllTabs}
+              onCloseToTheRight={() => closeTabsToTheRight(item.tab.schema, item.tab.table)}
+              onCloseOthers={() => closeOtherTabs(item.tab.schema, item.tab.table)}
               onDoubleClick={() => addTab(connection.id, item.tab.schema, item.tab.table, false)}
               onMouseOver={() => prefetchConnectionTableCore({ connection, schema: item.tab.schema, table: item.tab.table, query: getQueryOpts(item.tab.table) })}
               onFocus={(ref) => {
@@ -282,6 +390,8 @@ export function TablesTabs({
                   inline: 'nearest',
                 })
               }}
+              currentTabIndex={index}
+              totalTabs={tabItems.length}
             />
           ))}
         </Reorder.Group>
