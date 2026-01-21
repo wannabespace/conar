@@ -18,10 +18,10 @@ export function StepType({ type, setType }: StepTypeProps) {
           className="flex items-center gap-2 px-4 py-2"
         >
           <ConnectionIcon
-                type={connectionType}
-                className="size-4 shrink-0 text-primary"
+            type={connectionType}
+            className="size-4 shrink-0 text-primary"
           />
-              {connectionLabels[connectionType]}
+          {connectionLabels[connectionType]}
         </Button>
       ))}
       <Button

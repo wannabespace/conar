@@ -1,4 +1,4 @@
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
@@ -14,9 +14,9 @@ import { type } from 'arktype'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
-import { executeSql } from '~/entities/database/sql'
-import { databasesCollection } from '~/entities/database/sync'
-import { prefetchDatabaseCore } from '~/entities/database/utils'
+import { executeSql } from '~/entities/connection/sql'
+import { connectionsCollection } from '~/entities/connection/sync'
+import { prefetchConnectionCore } from '~/entities/connection/utils'
 import { generateRandomName } from '~/lib/utils'
 import { StepCredentials } from '~/routes/_protected/create/-components/step-credentials'
 import { StepSave } from '~/routes/_protected/create/-components/step-save'
@@ -25,7 +25,7 @@ import { appStore, setIsCreateConnectionDialogOpen } from '~/store'
 
 const createConnectionType = type({
   name: 'string > 1',
-  type: type.valueOf(DatabaseType).or('null'),
+  type: type.valueOf(ConnectionType).or('null'),
   connectionString: 'string > 1',
   saveInCloud: 'boolean',
   label: 'string | null',
@@ -95,10 +95,10 @@ export function CreateConnectionDialog() {
     const id = v7()
     const { password } = new SafeURL(data.connectionString.trim())
 
-    databasesCollection.insert({
+    connectionsCollection.insert({
       id,
       name: data.name,
-      type: data.type ?? DatabaseType.Postgres,
+      type: data.type ?? ConnectionType.Postgres,
       connectionString: data.connectionString,
       label: data.label ?? null,
       color: data.color ?? null,
@@ -111,8 +111,8 @@ export function CreateConnectionDialog() {
 
     toast.success('Connection created successfully')
 
-    const database = databasesCollection.get(id)!
-    prefetchDatabaseCore(database)
+    const connection = connectionsCollection.get(id)!
+    prefetchConnectionCore(connection)
 
     setIsCreateConnectionDialogOpen(false)
     resetDialog()
@@ -121,7 +121,7 @@ export function CreateConnectionDialog() {
 
   const { mutate: test, reset: resetMutation, status } = useMutation({
     mutationFn: ({ type: dbType, connectionString }: Pick<CreateConnection, 'type' | 'connectionString'>) => executeSql({
-      type: dbType ?? DatabaseType.Postgres,
+      type: dbType ?? ConnectionType.Postgres,
       connectionString,
       sql: 'SELECT 1',
     }),

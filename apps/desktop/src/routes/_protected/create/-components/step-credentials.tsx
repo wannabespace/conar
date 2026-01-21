@@ -1,9 +1,9 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { ConnectionFields } from '@conar/shared/utils/connections'
 import type { DOMAttributes, RefObject } from 'react'
-import { DATABASE_CONNECTION_CONFIG } from '@conar/shared/enums/database-type'
 import {
   buildConnectionStringFromFields,
+  DATABASE_CONNECTION_CONFIG,
   parseConnectionStringToFields,
   placeholderMap,
 } from '@conar/shared/utils/connections'

@@ -1,6 +1,4 @@
-import type { DatabaseType } from '../enums/database-type'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { DATABASE_CONNECTION_CONFIG } from '../enums/database-type'
 import { SafeURL } from './safe-url'
 
 export const placeholderMap: Record<ConnectionType, string> = {
@@ -9,6 +7,13 @@ export const placeholderMap: Record<ConnectionType, string> = {
   [ConnectionType.MSSQL]: 'sqlserver://user:password@host:port/database?options',
   [ConnectionType.ClickHouse]: 'https://user:password@host:port',
 }
+
+export const DATABASE_CONNECTION_CONFIG = {
+  [ConnectionType.Postgres]: { protocol: 'postgresql', defaultPort: '5432' },
+  [ConnectionType.MySQL]: { protocol: 'mysql', defaultPort: '3306' },
+  [ConnectionType.MSSQL]: { protocol: 'sqlserver', defaultPort: '1433' },
+  [ConnectionType.ClickHouse]: { protocol: 'https', defaultPort: '8123' },
+} as const satisfies Record<ConnectionType, { protocol: string, defaultPort: string }>
 
 export interface ConnectionFields {
   host: string
@@ -20,7 +25,7 @@ export interface ConnectionFields {
 
 export function parseConnectionStringToFields(
   connectionString: string,
-  type: DatabaseType,
+  type: ConnectionType,
 ): ConnectionFields {
   const { defaultPort } = DATABASE_CONNECTION_CONFIG[type]
 
@@ -57,7 +62,7 @@ export function parseConnectionStringToFields(
 
 export function buildConnectionStringFromFields(
   fields: ConnectionFields,
-  type: DatabaseType,
+  type: ConnectionType,
 ): string {
   const { protocol, defaultPort } = DATABASE_CONNECTION_CONFIG[type]
   if (!fields.host)
