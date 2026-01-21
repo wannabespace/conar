@@ -27,7 +27,7 @@ function Images({ connectionId }: { connectionId: string }) {
   const store = connectionStore(connectionId)
   const files = useStore(store, state => state.files)
 
-  if (connectionId.length === 0) {
+  if (files.length === 0) {
     return null
   }
 
