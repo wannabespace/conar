@@ -6,7 +6,6 @@ import { createRoot } from 'react-dom/client'
 import { runMigrations } from './drizzle'
 import { chatsCollection } from './entities/chat/sync'
 import { connectionsCollection } from './entities/connection/sync'
-import { handleError } from './lib/error'
 import { initEvents } from './lib/events-utils'
 import { routeTree } from './routeTree.gen'
 import './monaco-worker'
@@ -41,9 +40,6 @@ export const queryClient = new QueryClient({
       staleTime: Number.POSITIVE_INFINITY,
       placeholderData: keepPreviousData,
     },
-    mutations: {
-      onError: handleError,
-    },
   },
 })
 
@@ -52,9 +48,6 @@ export const subscriptionQueryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: 'always',
       placeholderData: keepPreviousData,
-    },
-    mutations: {
-      onError: handleError,
     },
   },
 })

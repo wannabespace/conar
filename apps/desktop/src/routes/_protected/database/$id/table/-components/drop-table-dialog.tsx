@@ -81,6 +81,9 @@ export function DropTableDialog({ ref, connection }: DropTableDialogProps) {
       }
       removeTab(connection.id, schema, table)
     },
+    onError: (error) => {
+      toast.error(`Failed to drop table "${error.message}".`)
+    },
   })
 
   const canConfirm = confirmationText === table

@@ -4,6 +4,7 @@ import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { queriesCollection } from '~/entities/query/sync'
 import { authClient, fullSignOut } from '~/lib/auth'
+import { handleError } from '~/lib/error'
 import { queryClient } from '~/main'
 
 export function useSignOut() {
@@ -27,6 +28,7 @@ export function useSignOut() {
         queriesCollection.cleanup()
       }, 1000)
     },
+    onError: handleError,
   })
 
   return {
