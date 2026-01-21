@@ -1,8 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router'
 import ReactMarkdown from 'react-markdown'
 import privacyPolicyContent from '~/content/privacy-policy.md?raw'
 
-export const Route = createFileRoute('/_layout/privacy-policy')({
+export const Route = createLazyFileRoute('/_layout/privacy-policy')({
   component: PrivacyPolicy,
 })
 
@@ -14,7 +14,13 @@ function PrivacyPolicy() {
         dark:prose-invert
       `}
       >
-        <h1 className="text-5xl leading-0 font-bold">Privacy Policy</h1>
+        <h1 className="
+          text-2xl leading-none font-bold mb-6
+          lg:text-4xl
+        "
+        >
+          Privacy Policy
+        </h1>
         <p className="text-sm text-muted-foreground">Last updated: July 1st, 2025</p>
         <ReactMarkdown>{privacyPolicyContent}</ReactMarkdown>
       </div>

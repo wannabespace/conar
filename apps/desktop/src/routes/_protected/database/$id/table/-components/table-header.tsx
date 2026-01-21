@@ -145,7 +145,7 @@ function Header() {
                 <RiArrowLeftSLine className="relative z-10 size-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="start" className="min-w-[12rem]">
+            <DropdownMenuContent side="bottom" align="start" className="min-w-48">
               <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {left.map(column => (
@@ -176,7 +176,7 @@ function Header() {
                 <RiArrowRightSLine className="relative z-10 size-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="end" className="min-w-[12rem]">
+            <DropdownMenuContent side="bottom" align="end" className="min-w-48">
               <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {right.map(column => (

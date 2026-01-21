@@ -1,7 +1,7 @@
 {
   "name": "conar",
   "type": "module",
-  "version": "0.26.0",
+  "version": "0.26.1",
   "productName": "Conar",
   "private": true,
   "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
@@ -20,7 +20,7 @@
     "build:vite": "electron-vite -c vite.electron.config.ts build",
     "build:electron": "electron-builder -p always",
     "build:todesktop": "todesktop build",
-    "check-types": "tsgo",
+    "check-types": "tsc",
     "test:start": "vite -c vite.test.config.ts build --mode test && vite -c vite.test.config.ts preview --mode test",
     "test:unit": "bun test ./src",
     "test:e2e": "playwright test --headed",
@@ -114,7 +114,6 @@
     "use-stick-to-bottom": "catalog:",
     "uuid": "catalog:",
     "vite": "catalog:",
-    "vite-tsconfig-paths": "catalog:",
-    "zod": "catalog:"
+    "vite-tsconfig-paths": "catalog:"
   }
 }

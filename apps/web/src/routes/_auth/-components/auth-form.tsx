@@ -278,7 +278,7 @@ export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: st
       <div className="relative">
         <Separator />
         <span className={`
-          absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+          absolute top-1/2 left-1/2 -translate-1/2
           bg-background px-4 text-sm text-muted-foreground
         `}
         >

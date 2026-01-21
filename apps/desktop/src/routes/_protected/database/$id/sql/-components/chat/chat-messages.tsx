@@ -1,8 +1,8 @@
 import type { UIMessage } from '@ai-sdk/react'
-import type { tools } from '@conar/api/ai-tools'
-import type { ChatStatus, DynamicToolUIPart, InferUITools, ToolUIPart } from 'ai'
+import type { ChatStatus } from 'ai'
 import type { ComponentProps, ReactNode } from 'react'
 import { useChat } from '@ai-sdk/react'
+import { isToolUIPart } from '@conar/api/ai/tools/helpers'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -15,7 +15,6 @@ import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { isToolUIPart } from 'ai'
 import { regex } from 'arkregex'
 import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
@@ -28,10 +27,6 @@ import { ChatImages } from './chat-images'
 import { ChatMessageTool } from './chat-message-tools'
 
 const COMMENT_REGEX = regex('^(?:--.*\n)+')
-
-function isKnownToolUIPart(part: UIMessage['parts'][number]): part is ToolUIPart<InferUITools<typeof tools>> | DynamicToolUIPart {
-  return isToolUIPart(part)
-}
 
 function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   return (
@@ -179,7 +174,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
               onClick={e => e.stopPropagation()}
             >
               <div className={`
-                px-2 py-2 text-xs font-medium text-muted-foreground
+                p-2 text-xs font-medium text-muted-foreground
               `}
               >
                 Replace existing query
@@ -251,7 +246,7 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loadi
       )
     }
 
-    if (isKnownToolUIPart(part)) {
+    if (isToolUIPart(part)) {
       return (
         <ChatMessageTool
           // eslint-disable-next-line react/no-array-index-key

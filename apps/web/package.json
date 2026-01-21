@@ -6,11 +6,10 @@
     "dev": "vite dev",
     "build": "vite build",
     "start": "bun run .output/server/index.mjs",
-    "check-types": "tsgo"
+    "check-types": "tsc"
   },
   "dependencies": {
     "@number-flow/react": "catalog:",
-    "@octokit/rest": "catalog:",
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@tanstack/react-form": "catalog:",
@@ -31,6 +30,7 @@
     "react-dom": "catalog:",
     "react-markdown": "catalog:",
     "sonner": "catalog:",
+    "streamdown": "catalog:",
     "superjson": "catalog:",
     "tailwind-merge": "catalog:"
   },

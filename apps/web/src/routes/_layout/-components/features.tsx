@@ -39,7 +39,7 @@ function FeatureCardTitle({ title, description, icon, className }: FeatureCardTi
         {icon}
         {title}
       </h3>
-      <p className="text-xl leading-7 font-semibold text-foreground">{description}</p>
+      <p className="text-xl/7 font-semibold text-foreground">{description}</p>
     </header>
   )
 }
@@ -345,7 +345,7 @@ function ChatWithDB() {
           Here's a query that might help you:
           <br />
           <code className={`
-            mt-2 inline-block rounded bg-primary-foreground/20 px-2 py-1
+            mt-2 inline-block rounded-sm bg-primary-foreground/20 px-2 py-1
             font-mono text-xs break-all
           `}
           >
@@ -519,7 +519,7 @@ function DataActionCard({ icon, title, description, color }: DataActionCardProps
         </div>
         <span className="text-sm font-semibold">{title}</span>
       </div>
-      <div className="text-xs leading-relaxed text-muted-foreground">{description}</div>
+      <div className="text-xs/relaxed text-muted-foreground">{description}</div>
     </div>
   )
 }
@@ -608,7 +608,7 @@ export function Features() {
           Features
         </h2>
         <p className={`
-          mx-auto max-w-3xl text-center text-2xl leading-tight font-bold
+          mx-auto max-w-3xl text-center text-2xl/tight font-bold
           text-balance
           sm:text-3xl
         `}
