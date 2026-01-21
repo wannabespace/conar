@@ -1,6 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router'
-import type { databases } from '~/drizzle'
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import type { connections } from '~/drizzle'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { Button } from '@conar/ui/components/button'
 import { RiFileList3Line, RiKey2Line, RiListUnordered } from '@remixicon/react'
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
@@ -37,7 +37,7 @@ function SidebarLink(props: LinkProps) {
 
 function SideTabsLayout() {
   const { id } = Route.useParams()
-  const { database } = Route.useRouteContext() as { database: typeof databases.$inferSelect }
+  const { connection } = Route.useRouteContext() as { connection: typeof connections.$inferSelect }
 
   return (
     <div className={`
@@ -70,7 +70,7 @@ function SideTabsLayout() {
           >
             <RiListUnordered className="size-4" />
             Enums
-            {database.type === DatabaseType.MySQL && ' & Sets'}
+            {connection.type === ConnectionType.MySQL && ' & Sets'}
           </SidebarLink>
         </nav>
       </aside>

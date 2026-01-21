@@ -1,4 +1,4 @@
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
@@ -14,22 +14,22 @@ import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiListIndefinite, RiLi
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
-import { useDatabaseEnums, useDatabaseTablesAndSchemas } from '~/entities/database/queries'
+import { useConnectionEnums, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 
 const MotionCard = motion.create(Card)
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/enums/')({
   component: DatabaseEnumsPage,
-  loader: ({ context }) => ({ database: context.database }),
+  loader: ({ context }) => ({ connection: context.connection }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title(`Enums - ${loaderData.database.name}`) }] : [],
+    meta: loaderData ? [{ title: title(`Enums - ${loaderData.connection.name}`) }] : [],
   }),
 })
 
 function DatabaseEnumsPage() {
-  const { database } = Route.useLoaderData()
-  const { data: enums, refetch, isRefetching } = useDatabaseEnums({ database })
-  const { data } = useDatabaseTablesAndSchemas({ database })
+  const { connection } = Route.useLoaderData()
+  const { data: enums, refetch, isRefetching } = useConnectionEnums({ connection })
+  const { data } = useConnectionTablesAndSchemas({ connection })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
@@ -58,7 +58,7 @@ function DatabaseEnumsPage() {
         <div className="mb-4">
           <h2 className="text-2xl font-bold">
             Enums
-            {database.type === DatabaseType.MySQL && ' & Sets'}
+            {connection.type === ConnectionType.MySQL && ' & Sets'}
           </h2>
         </div>
         <div className="mb-4 flex items-center gap-2">

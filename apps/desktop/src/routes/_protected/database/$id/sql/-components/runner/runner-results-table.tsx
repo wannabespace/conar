@@ -1,5 +1,5 @@
 import type { ColumnRenderer } from '~/components/table'
-import type { Column } from '~/entities/database/utils'
+import type { Column } from '~/entities/connection/components/table/utils'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
@@ -11,8 +11,8 @@ import { RiCloseLine, RiExportLine, RiSearchLine } from '@remixicon/react'
 import { useMemo, useState } from 'react'
 import { ExportData } from '~/components/export-data'
 import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
-import { TableCell } from '~/entities/database/components'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database/utils'
+import { TableCell } from '~/entities/connection/components'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/connection/components/table/utils'
 
 export function RunnerResultsTable({
   data,

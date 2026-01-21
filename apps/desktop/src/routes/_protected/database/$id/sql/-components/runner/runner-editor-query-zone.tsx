@@ -1,4 +1,4 @@
-import type { databases } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
@@ -9,27 +9,27 @@ import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
 import { useIsFetching } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
-import { databaseStore } from '~/entities/database/store'
+import { connectionStore } from '~/entities/connection/store'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 
 export function RunnerEditorQueryZone({
-  database,
+  connection,
   onRun,
   onSave,
   onCopy,
   lineNumber,
 }: {
-  database: typeof databases.$inferSelect
+  connection: typeof connections.$inferSelect
   onRun: (index: number) => void
   onSave: () => void
   onCopy: () => void
   lineNumber: number
 }) {
   const [isCopying, setIsCopying] = useState(false)
-  const isFetching = useIsFetching(runnerQueryOptions({ database }), queryClient) > 0
+  const isFetching = useIsFetching(runnerQueryOptions({ connection }), queryClient) > 0
 
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
   const isChecked = useStore(store, state => state.selectedLines.includes(lineNumber))
 
   const index = useStore(store, state => state.editorQueries.findIndex(query => query.startLineNumber === lineNumber))
@@ -117,7 +117,7 @@ export function RunnerEditorQueryZone({
           </TooltipProvider>
           <Separator orientation="vertical" className="h-4! mx-1" />
           {Array.from({ length: queriesLength }).map((_, idx) => {
-            const buttonKey = `query-run-${database.id}-${lineNumber}-${idx}`
+            const buttonKey = `query-run-${connection.id}-${lineNumber}-${idx}`
             return (
               <Button
                 key={buttonKey}

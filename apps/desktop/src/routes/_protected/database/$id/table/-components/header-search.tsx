@@ -9,7 +9,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
-import { useDatabaseEnums } from '~/entities/database/queries'
+import { useConnectionEnums } from '~/entities/connection/queries'
 import { orpcQuery } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '..'
@@ -18,7 +18,7 @@ import { usePageStoreContext } from '../-store'
 
 export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
   const isOnline = useStore(appStore, state => state.isOnline)
-  const { database } = Route.useLoaderData()
+  const { connection } = Route.useLoaderData()
   const store = usePageStoreContext()
   const prompt = useStore(store, state => state.prompt)
   const { mutate: generateFilter, isPending } = useMutation(orpcQuery.ai.filters.mutationOptions({
@@ -38,8 +38,8 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       }
     },
   }))
-  const columns = useTableColumns({ database, table, schema })
-  const { data: enums } = useDatabaseEnums({ database })
+  const columns = useTableColumns({ connection, table, schema })
+  const { data: enums } = useConnectionEnums({ connection })
   const context = useMemo(() => `
     Filters working with AND operator.
     Table name: ${table}

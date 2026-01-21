@@ -16,10 +16,10 @@ import { runnerHooks } from '../../-page'
 import { RemoveQueryDialog } from './remove-query-dialog'
 
 export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
-  const { database } = Route.useRouteContext()
+  const { connection } = Route.useRouteContext()
   const { data } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
-    .where(({ queries }) => eq(queries.databaseId, database.id))
+    .where(({ queries }) => eq(queries.connectionId, connection.id))
     .orderBy(({ queries }) => queries.createdAt, 'desc'))
   const [movedId, setMovedId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)

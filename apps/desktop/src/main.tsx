@@ -5,7 +5,7 @@ import { createBrowserHistory, createHashHistory, createRouter, RouterProvider }
 import { createRoot } from 'react-dom/client'
 import { runMigrations } from './drizzle'
 import { chatsCollection } from './entities/chat/sync'
-import { databasesCollection } from './entities/database/sync'
+import { connectionsCollection } from './entities/connection/sync'
 import { handleError } from './lib/error'
 import { initEvents } from './lib/events'
 import { routeTree } from './routeTree.gen'
@@ -82,7 +82,7 @@ const root = createRoot(document.getElementById('root')!)
 
 runMigrations().then(async () => {
   await Promise.all([
-    databasesCollection.stateWhenReady(),
+    connectionsCollection.stateWhenReady(),
     chatsCollection.stateWhenReady(),
   ])
   root.render(<RouterProvider router={router} />)

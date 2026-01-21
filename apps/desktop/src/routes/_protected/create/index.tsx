@@ -1,4 +1,4 @@
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { title } from '@conar/shared/utils/title'
@@ -15,9 +15,9 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { executeSql } from '~/entities/database/sql'
-import { databasesCollection } from '~/entities/database/sync'
-import { prefetchDatabaseCore } from '~/entities/database/utils'
+import { executeSql } from '~/entities/connection/sql'
+import { connectionsCollection } from '~/entities/connection/sync'
+import { prefetchConnectionCore } from '~/entities/connection/utils'
 import { generateRandomName } from '~/lib/utils'
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -34,7 +34,7 @@ export const Route = createFileRoute(
 
 const createConnectionType = type({
   name: 'string > 1',
-  type: type.valueOf(DatabaseType).or('null'),
+  type: type.valueOf(ConnectionType).or('null'),
   connectionString: 'string > 1',
   saveInCloud: 'boolean',
   label: 'string | null',
@@ -49,7 +49,7 @@ function CreateConnectionPage() {
   function createConnection(data: {
     connectionString: string
     name: string
-    type: DatabaseType
+    type: ConnectionType
     saveInCloud: boolean
     label: string | null
     color: string | null
@@ -58,7 +58,7 @@ function CreateConnectionPage() {
 
     const password = new SafeURL(data.connectionString.trim()).password
 
-    databasesCollection.insert({
+    connectionsCollection.insert({
       id,
       name: data.name,
       type: data.type,
@@ -74,9 +74,9 @@ function CreateConnectionPage() {
 
     toast.success('Connection created successfully 🎉')
 
-    const database = databasesCollection.get(id)!
+    const connection = connectionsCollection.get(id)!
 
-    prefetchDatabaseCore(database)
+    prefetchConnectionCore(connection)
 
     router.navigate({ to: '/database/$id/table', params: { id } })
   }
@@ -108,7 +108,7 @@ function CreateConnectionPage() {
   })
 
   const { mutate: test, reset, status } = useMutation({
-    mutationFn: ({ type, connectionString }: { type: DatabaseType, connectionString: string }) => executeSql({
+    mutationFn: ({ type, connectionString }: { type: ConnectionType, connectionString: string }) => executeSql({
       type,
       connectionString,
       sql: 'SELECT 1',
@@ -209,7 +209,7 @@ function CreateConnectionPage() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    form.setFieldValue('type', null as unknown as DatabaseType)
+                    form.setFieldValue('type', null as unknown as ConnectionType)
                     setStep('type')
                   }}
                 >

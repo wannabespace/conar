@@ -1,4 +1,4 @@
-import type { constraintsType } from '~/entities/database/sql/constraints'
+import type { constraintsType } from '~/entities/connection/sql/constraints'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
@@ -20,15 +20,15 @@ import { RiCloseLine, RiDatabase2Line, RiFilter3Line, RiInformationLine, RiKey2L
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
-import { useDatabaseConstraints, useDatabaseTablesAndSchemas } from '~/entities/database/queries'
+import { useConnectionConstraints, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 
 const MotionCard = motion.create(Card)
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/constraints/')({
   component: DatabaseConstraintsPage,
-  loader: ({ context }) => ({ database: context.database }),
+  loader: ({ context }) => ({ connection: context.connection }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title(`Constraints - ${loaderData.database.name}`) }] : [],
+    meta: loaderData ? [{ title: title(`Constraints - ${loaderData.connection.name}`) }] : [],
   }),
 })
 
@@ -41,9 +41,9 @@ const dropDownItems: { label: string, value: ConstraintItem['type'] }[] = [
 ]
 
 function DatabaseConstraintsPage() {
-  const { database } = Route.useLoaderData()
-  const { data: constraints, refetch, isRefetching } = useDatabaseConstraints({ database })
-  const { data } = useDatabaseTablesAndSchemas({ database })
+  const { connection } = Route.useLoaderData()
+  const { data: constraints, refetch, isRefetching } = useConnectionConstraints({ connection })
+  const { data } = useConnectionTablesAndSchemas({ connection })
   const schemas = useMemo(() => data?.schemas.map(({ name }) => name) ?? [], [data])
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')

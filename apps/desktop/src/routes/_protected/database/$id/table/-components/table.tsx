@@ -1,16 +1,17 @@
 import type { ColumnRenderer } from '~/components/table'
-import type { Column } from '~/entities/database/utils'
+import type { Column } from '~/entities/connection/components/table/utils'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableProvider } from '~/components/table'
-import { TableCell } from '~/entities/database/components'
-import { databaseRowsQuery } from '~/entities/database/queries'
-import { useDatabaseEnums } from '~/entities/database/queries/enums'
-import { selectQuery, setQuery } from '~/entities/database/sql'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database/utils'
+import { TableCell } from '~/entities/connection/components'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/connection/components/table/utils'
+import { connectionRowsQuery } from '~/entities/connection/queries'
+import { useConnectionEnums } from '~/entities/connection/queries/enums'
+import { selectQuery, setQuery } from '~/entities/connection/sql'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { getColumnSize, selectSymbol } from '../-lib'
@@ -57,13 +58,13 @@ export function TableError({ error }: { error: Error }) {
 }
 
 function TableComponent({ table, schema }: { table: string, schema: string }) {
-  const { database } = Route.useLoaderData()
-  const { data: enums } = useDatabaseEnums({ database })
-  const columns = useTableColumns({ database, table, schema })
+  const { connection } = Route.useLoaderData()
+  const { data: enums } = useConnectionEnums({ connection })
+  const columns = useTableColumns({ connection, table, schema })
   const store = usePageStoreContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
-  const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }))
+  const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(connectionRowsQuery({ connection, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
   const { onOrder } = useHeaderActionsOrder()
   const renameColumnRef = useRef<{ rename: (schema: string, table: string, column: string) => void }>(null)
@@ -83,8 +84,8 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   }, [store, rows, primaryColumns])
 
   const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
-    const rowsQueryOpts = databaseRowsQuery({
-      database,
+    const rowsQueryOpts = connectionRowsQuery({
+      connection,
       table,
       schema,
       query: {
@@ -107,11 +108,11 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           })),
         })
       : data)
-  }, [database, table, schema, store])
+  }, [connection, table, schema, store])
 
   const saveValue = useCallback(async (rowIndex: number, columnId: string, newValue: unknown) => {
-    const rowsQueryOpts = databaseRowsQuery({
-      database,
+    const rowsQueryOpts = connectionRowsQuery({
+      connection,
       table,
       schema,
       query: {
@@ -144,7 +145,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     const setValues = { [columnId]: preparedValue }
 
     try {
-      await setQuery(database, {
+      await setQuery(connection, {
         schema,
         table,
         values: setValues,
@@ -168,7 +169,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       : filter)
 
     try {
-      const [result] = await selectQuery(database, {
+      const [result] = await selectQuery(connection, {
         schema,
         table,
         select: modifiedColumns,
@@ -188,7 +189,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         description: e instanceof Error ? e.message : String(e),
       })
     }
-  }, [database, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
+  }, [connection, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
 
   const tableColumns = useMemo(() => {
     if (!columns)
@@ -208,7 +209,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
           if (
             !column.primaryKey
-            && database.type !== 'clickhouse'
+            && connection.type !== ConnectionType.ClickHouse
           ) {
             onRename = () => renameColumnRef.current?.rename(schema, table, column.id)
           }
@@ -249,7 +250,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     }
 
     return sortedColumns
-  }, [database, table, schema, columns, hiddenColumns, primaryColumns, saveValue, onOrder, enums])
+  }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, onOrder, enums])
 
   return (
     <TableProvider
@@ -275,7 +276,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
                         <TableInfiniteLoader
                           table={table}
                           schema={schema}
-                          database={database}
+                          connection={connection}
                           filters={filters}
                           orderBy={orderBy}
                         />
@@ -283,7 +284,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
                     )}
         </Table>
       </div>
-      <RenameColumnDialog ref={renameColumnRef} database={database} />
+      <RenameColumnDialog ref={renameColumnRef} connection={connection} />
     </TableProvider>
   )
 }

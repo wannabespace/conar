@@ -1,5 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { withPosthog } from '~/lib/posthog'
@@ -10,7 +10,7 @@ export const fixSQL = orpc
   .input(type({
     sql: 'string',
     error: 'string',
-    type: type.valueOf(DatabaseType),
+    type: type.valueOf(ConnectionType),
   }))
   .handler(async ({ input, signal, context }) => {
     const { text } = await generateText({

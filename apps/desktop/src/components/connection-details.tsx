@@ -1,10 +1,10 @@
-import type { DatabaseType } from '@conar/shared/enums/database-type'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { cn } from '@conar/ui/lib/utils'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useState } from 'react'
 
-export function ConnectionDetails({ className, connectionString, type }: { className?: string, connectionString: string, type: DatabaseType }) {
+export function ConnectionDetails({ className, connectionString, type }: { className?: string, connectionString: string, type: ConnectionType }) {
   const url = new SafeURL(connectionString)
   const [showPassword, setShowPassword] = useState(false)
 

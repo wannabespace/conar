@@ -1,4 +1,4 @@
-import type { databases } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -9,24 +9,24 @@ import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { databaseRowsQuery, databaseTableTotalQuery } from '~/entities/database/queries'
-import { deleteRowsQuery } from '~/entities/database/sql/delete-rows'
+import { connectionRowsQuery, connectionTableTotalQuery } from '~/entities/connection/queries'
+import { deleteRowsQuery } from '~/entities/connection/sql/delete-rows'
 import { queryClient } from '~/main'
 import { usePageStoreContext } from '../-store'
 
-export function HeaderActionsDelete({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
+export function HeaderActionsDelete({ table, schema, connection }: { table: string, schema: string, connection: typeof connections.$inferSelect }) {
   const [isOpened, setIsOpened] = useState(false)
   const store = usePageStoreContext()
   const selected = useStore(store, state => state.selected)
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      await deleteRowsQuery(database, { table, schema, primaryKeys: selected })
+      await deleteRowsQuery(connection, { table, schema, primaryKeys: selected })
     },
     onSuccess: () => {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
-      queryClient.invalidateQueries(databaseRowsQuery({ database, table, schema, query: { filters: store.state.filters, orderBy: store.state.orderBy } }))
-      queryClient.invalidateQueries(databaseTableTotalQuery({ database, table, schema, query: { filters: store.state.filters } }))
+      queryClient.invalidateQueries(connectionRowsQuery({ connection, table, schema, query: { filters: store.state.filters, orderBy: store.state.orderBy } }))
+      queryClient.invalidateQueries(connectionTableTotalQuery({ connection, table, schema, query: { filters: store.state.filters } }))
       store.setState(state => ({
         ...state,
         selected: [],

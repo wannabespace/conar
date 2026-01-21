@@ -1,4 +1,4 @@
-import type { indexesType } from '~/entities/database/sql/indexes'
+import type { indexesType } from '~/entities/connection/sql/indexes'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
@@ -19,15 +19,15 @@ import { RiCloseLine, RiFileList3Line, RiFilter3Line, RiInformationLine, RiKey2L
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
-import { useDatabaseIndexes, useDatabaseTablesAndSchemas } from '~/entities/database/queries'
+import { useConnectionIndexes, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 
 const MotionCard = motion.create(Card)
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/indexes/')({
   component: DatabaseIndexesPage,
-  loader: ({ context }) => ({ database: context.database }),
+  loader: ({ context }) => ({ connection: context.connection }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title(`Indexes - ${loaderData.database.name}`) }] : [],
+    meta: loaderData ? [{ title: title(`Indexes - ${loaderData.connection.name}`) }] : [],
   }),
 })
 
@@ -46,9 +46,9 @@ const dropDownItems: { label: string, value: IndexType }[] = [
 ]
 
 function DatabaseIndexesPage() {
-  const { database } = Route.useLoaderData()
-  const { data: indexes, refetch, isRefetching } = useDatabaseIndexes({ database })
-  const { data } = useDatabaseTablesAndSchemas({ database })
+  const { connection } = Route.useLoaderData()
+  const { data: indexes, refetch, isRefetching } = useConnectionIndexes({ connection })
+  const { data } = useConnectionTablesAndSchemas({ connection })
   const schemas = useMemo(() => data?.schemas.map(({ name }) => name) ?? [], [data])
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')

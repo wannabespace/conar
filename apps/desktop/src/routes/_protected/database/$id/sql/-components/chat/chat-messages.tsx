@@ -19,7 +19,7 @@ import { regex } from 'arkregex'
 import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
-import { databaseStore } from '~/entities/database/store'
+import { connectionStore } from '~/entities/connection/store'
 import { UserAvatar } from '~/entities/user/components'
 import { Route } from '../..'
 import { chatHooks, runnerHooks } from '../../-page'
@@ -57,8 +57,8 @@ function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick
 }
 
 function ChatMessageCodeActions({ content, lang }: { content: string, lang: string }) {
-  const { database } = Route.useRouteContext()
-  const store = databaseStore(database.id)
+  const { connection } = Route.useRouteContext()
+  const store = connectionStore(connection.id)
   const editorQueries = useStore(store, state => state.editorQueries)
 
   const [isCopying, setIsCopying] = useState(false)
