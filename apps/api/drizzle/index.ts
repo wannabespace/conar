@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import { env, nodeEnv } from '~/env'
 import * as auth from './schema/auth'
 import * as chats from './schema/chats'
-import * as databases from './schema/connections'
+import * as connections from './schema/connections'
 import * as queries from './schema/queries'
 import * as subscriptions from './schema/subscriptions'
 import '@electric-sql/pglite'
@@ -18,7 +18,7 @@ const config = {
   logger: true,
   schema: {
     ...auth,
-    ...databases,
+    ...connections,
     ...chats,
     ...queries,
     ...subscriptions,
