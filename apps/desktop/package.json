@@ -1,7 +1,7 @@
 {
   "name": "conar",
   "type": "module",
-  "version": "0.25.4",
+  "version": "0.26.1",
   "productName": "Conar",
   "private": true,
   "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
@@ -37,7 +37,6 @@
   },
   "devDependencies": {
     "@ai-sdk/react": "catalog:",
-    "@better-auth/stripe": "catalog:",
     "@conar/api": "workspace:*",
     "@conar/configs": "workspace:*",
     "@conar/connection": "workspace:*",
@@ -82,7 +81,7 @@
     "arktype": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "better-auth": "catalog:",
-    "dayjs": "catalog:",
+    "date-fns": "catalog:",
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
     "electron": "catalog:",
@@ -100,7 +99,9 @@
     "posthog-js": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-grab": "catalog:",
     "react-markdown": "catalog:",
+    "react-resizable-panels": "catalog:",
     "react-scan": "catalog:",
     "remark-gfm": "catalog:",
     "sonner": "catalog:",
@@ -112,7 +113,6 @@
     "use-stick-to-bottom": "catalog:",
     "uuid": "catalog:",
     "vite": "catalog:",
-    "vite-tsconfig-paths": "catalog:",
-    "zod": "catalog:"
+    "vite-tsconfig-paths": "catalog:"
   }
 }

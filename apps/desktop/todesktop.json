@@ -7,20 +7,26 @@
   "schemaVersion": 1,
   "nodeVersion": "24.6.0",
   "packageManager": "pnpm",
-  "pnpmVersion": "10.25.0",
+  "pnpmVersion": "10.28.0",
   "asar": true,
   "copyright": "Copyright © 2024 Wannabe Space, LLC",
-  "appFiles": ["out/**", "index.html"],
+  "appFiles": [
+    "out/**",
+    "index.html"
+  ],
   "uploadSizeLimit": 80,
   "bundleWorkspacePackages": {
     "enabled": true
   },
   "appProtocolScheme": "conar",
   "mac": {
-    "category": "public.app-category.developer-tools"
+    "category": "public.app-category.developer-tools",
+    "icon": "./resources/macos-icon-1024x1024.png"
   },
   "windows": {
-    "publisherName": ["Wannabe Space, LLC"]
+    "publisherName": [
+      "Wannabe Space, LLC"
+    ]
   },
   "linux": {
     "category": "Development"

@@ -11,8 +11,12 @@
     @apply scroll-m-20 text-base font-semibold tracking-tight;
   }
 
+  .typography:not(.typography-disabled) hr {
+    @apply my-4;
+  }
+
   .typography:not(.typography-disabled) p {
-    @apply leading-[1.5] [&:not(:first-child)]:mt-4 [&:not(:last-child)]:mb-4;
+    @apply leading-normal not-first:mt-4 not-last:mb-4;
   }
 
   .typography:not(.typography-disabled) blockquote {
@@ -28,7 +32,7 @@
   }
 
   .typography:not(.typography-disabled) code {
-    @apply relative rounded bg-muted px-[0.2rem] py-[0.1rem] font-mono [font-size:90%] font-semibold;
+    @apply relative rounded bg-muted px-[0.2rem] py-[0.1rem] font-mono text-[90%] font-semibold;
   }
 
   .typography:not(.typography-disabled) pre {
@@ -36,7 +40,7 @@
   }
 
   .typography:not(.typography-disabled) pre > code {
-    @apply relative block bg-transparent p-0 [font-size:90%] font-normal;
+    @apply relative block bg-transparent p-0 text-[90%] font-normal;
   }
 
   .typography:not(.typography-disabled) a {
@@ -44,6 +48,6 @@
   }
 
   .typography:not(.typography-disabled) small {
-    @apply [font-size:90%] font-medium leading-none;
+    @apply text-[90%] font-medium leading-none;
   }
 }

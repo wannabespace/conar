@@ -1,0 +1,308 @@
+import type { ToolUIPart } from '@conar/api/ai/tools/helpers'
+import type { editor } from 'monaco-editor'
+import {
+  SingleAccordion,
+  SingleAccordionContent,
+  SingleAccordionTrigger,
+  SingleAccordionTriggerArrow,
+} from '@conar/ui/components/custom/single-accordion'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { cn } from '@conar/ui/lib/utils'
+import {
+  RiBook2Line,
+  RiEarthLine,
+  RiErrorWarningLine,
+  RiHammerLine,
+  RiLoader4Line,
+  RiSearchLine,
+} from '@remixicon/react'
+import { InfoTable } from '~/components/info-table'
+import { Monaco } from '~/components/monaco'
+import { FaviconWithFallback } from './favicon-with-fallback'
+
+const monacoOptions = {
+  readOnly: true,
+  scrollBeyondLastLine: false,
+  lineNumbers: 'off',
+  minimap: { enabled: false },
+  folding: false,
+} as const satisfies editor.IStandaloneEditorConstructionOptions
+
+function MonacoOutput({ value, language = 'json' }: { value: string, language?: string }) {
+  return (
+    <Monaco
+      value={value}
+      language={language}
+      options={monacoOptions}
+      className="-mx-2 h-[200px] max-h-[50vh]"
+    />
+  )
+}
+
+const SKIP_CONTENT_TOOLS = [
+  'dynamic-tool',
+  'tool-resolveLibraryId',
+] satisfies ToolUIPart['type'][]
+
+function shouldSkipContent(part: ToolUIPart) {
+  return SKIP_CONTENT_TOOLS.includes(part.type as typeof SKIP_CONTENT_TOOLS[number])
+}
+
+const ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: ToolUIPart }) => React.ReactNode> = {
+  'input-streaming': ({ className }) => (
+    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+  ),
+  'input-available': ({ className }) => (
+    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+  ),
+  'output-available': ({ className, part }) => {
+    if (part.type === 'tool-webSearch') {
+      return <RiEarthLine className={cn('text-muted-foreground', className)} />
+    }
+    if (part.type === 'tool-resolveLibraryId') {
+      return <RiSearchLine className={cn('text-muted-foreground', className)} />
+    }
+    if (part.type === 'tool-queryDocs') {
+      return <RiBook2Line className={cn('text-muted-foreground', className)} />
+    }
+    return <RiHammerLine className={cn('text-muted-foreground', className)} />
+  },
+  'output-error': ({ className }) => (
+    <RiErrorWarningLine className={cn(`text-red-600`, className)} />
+  ),
+  'approval-requested': ({ className }) => (
+    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+  ),
+  'approval-responded': ({ className }) => (
+    <RiHammerLine className={cn(`text-muted-foreground`, className)} />
+  ),
+  'output-denied': ({ className }) => (
+    <RiErrorWarningLine className={cn(`text-red-600`, className)} />
+  ),
+}
+
+function ToolIcon({ part, className }: { part: ToolUIPart, className?: string }) {
+  return ICONS[part.state]({ part, className })
+}
+
+const TITLES: { [K in ToolUIPart['type']]: (props: { part: Extract<ToolUIPart, { type: K }> }) => string } = {
+  'dynamic-tool': ({ part }) => part.title || part.toolName,
+  'tool-columns': ({ part }) => {
+    if (part.input) {
+      const schema = part.input.tableAndSchema?.schemaName ? part.input.tableAndSchema.schemaName === 'public' ? '' : part.input.tableAndSchema.schemaName : ''
+
+      return `Get columns from ${schema ? `"${schema}".` : ''}${part.input.tableAndSchema?.tableName ? `"${part.input.tableAndSchema.tableName}"` : '...'}`
+    }
+    return 'Get columns from ...'
+  },
+  'tool-enums': () => 'Get enums',
+  'tool-select': ({ part }) => {
+    if (part.input) {
+      const schema = part.input.tableAndSchema?.schemaName ? part.input.tableAndSchema.schemaName === 'public' ? '' : part.input.tableAndSchema.schemaName : ''
+
+      return `Select data from ${schema ? `"${schema}".` : ''}${part.input.tableAndSchema?.tableName ? `"${part.input.tableAndSchema.tableName}"` : '...'}`
+    }
+    return 'Select data from ...'
+  },
+  'tool-webSearch': ({ part }) => {
+    const query = typeof part.input?.query === 'string' ? part.input?.query : ''
+    if (query) {
+      return `Searching the web for "${query}"`
+    }
+    return 'Searching the web...'
+  },
+  'tool-resolveLibraryId': ({ part }) => {
+    const libraryName = part.input && typeof part.input.libraryName === 'string' ? part.input.libraryName : ''
+
+    if (libraryName) {
+      return `Resolved library "${libraryName}"`
+    }
+
+    return 'Resolving library name...'
+  },
+  'tool-queryDocs': ({ part }) => {
+    const query = typeof part.input?.query === 'string' ? part.input?.query : ''
+
+    if (query) {
+      return `Querying docs for "${query}"`
+    }
+    return 'Querying docs...'
+  },
+}
+
+function getTitle({ part }: { part: ToolUIPart }) {
+  // eslint-disable-next-line ts/no-explicit-any
+  return TITLES[part.type]({ part } as any) || 'Unknown tool'
+}
+
+const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[number]>]: (props: { part: Extract<ToolUIPart, { type: K }> }) => React.ReactNode } = {
+  'tool-columns': ({ part }) => (
+    <>
+      <div className="mb-4 text-xs text-muted-foreground">Agent called a tool to get table columns.</div>
+      {part.state === 'output-available' && (
+        <MonacoOutput value={JSON.stringify(part.output)} />
+      )}
+    </>
+  ),
+  'tool-enums': ({ part }) => (
+    <>
+      <div className="mb-4 text-xs text-muted-foreground">Agent called a tool to get database enums.</div>
+      {part.state === 'output-available' && (
+        <MonacoOutput value={JSON.stringify(part.output)} />
+      )}
+    </>
+  ),
+  'tool-select': ({ part }) => (
+    <>
+      <div className="flex flex-col gap-2">
+        <div className="mb-1 font-medium">
+          Agent called a tool to get data from the database.
+        </div>
+        {part.input && (
+          <InfoTable
+            data={[
+              { name: 'Select', value: part.input.select?.length
+                ? part.input.select.join(', ')
+                : null },
+              { name: 'From', value: part.input.tableAndSchema ? `${part.input.tableAndSchema.schemaName}.${part.input.tableAndSchema?.tableName}` : null },
+              { name: 'Where', value: (part.state === 'input-available' || part.state === 'output-available') && part.input.whereFilters?.length
+                ? part.input.whereFilters.map(filter => `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map(value => `"${value}"`).join(', ') : ''}`).join(` ${part.input.whereConcatOperator} `)
+                : null },
+              { name: 'Order by', value: part.input.orderBy && Object.keys(part.input.orderBy).length
+                ? Object.entries(part.input.orderBy).map(([col, dir]) => `${col} ${dir}`).join(', ')
+                : null },
+              { name: 'Limit', value: part.input.limit },
+              { name: 'Offset', value: part.input.offset || null },
+            ]}
+          />
+        )}
+      </div>
+      {part.state === 'output-available' && (
+        <MonacoOutput value={JSON.stringify(part.output)} />
+      )}
+    </>
+  ),
+  'tool-webSearch': ({ part }) => (
+    <>
+      <div className="mb-2 text-xs text-muted-foreground">Agent searched the web for information.</div>
+      {part.state === 'output-available' && (
+        <div className="space-y-2">
+          {!!part.output && typeof part.output === 'object' && 'results' in part.output && Array.isArray(part.output.results) && (
+            <div className="flex flex-wrap gap-2">
+              {part.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }) => (
+                <TooltipProvider key={`${part.toolCallId}-${result.url}`}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <a
+                        href={result.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`
+                          group flex max-w-full min-w-[200px] flex-1 basis-1/3
+                          items-center gap-1 rounded-md border bg-accent/20
+                          px-1.5 py-0.5 text-xs transition-colors
+                          hover:bg-accent/40
+                        `}
+                      >
+                        <FaviconWithFallback
+                          url={result.url}
+                          className="size-3 shrink-0"
+                        />
+                        <span className={`
+                          truncate font-medium
+                          group-hover:text-primary
+                        `}
+                        >
+                          {result.title}
+                        </span>
+                      </a>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="max-w-xs">
+                        <div className="font-medium">{result.title}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{result.url}</div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  ),
+  'tool-queryDocs': ({ part }) => <MonacoOutput value={part.output || ''} language="markdown" />,
+}
+
+function ToolContent({ part }: { part: ToolUIPart }) {
+  // eslint-disable-next-line ts/no-explicit-any
+  return CONTENT[part.type as Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[number]>]?.({ part } as any)
+    || (part.errorText
+      ? <div className="text-xs text-destructive">{part.errorText}</div>
+      : <MonacoOutput value={JSON.stringify(part.output)} />)
+}
+
+function extractErrorMessage(part: ToolUIPart): string | null {
+  if (part.errorText)
+    return part.errorText
+
+  const output = part.output
+
+  if (typeof output !== 'object' || output === null || !('error' in output))
+    return null
+
+  const { error } = output
+
+  if (typeof error === 'string')
+    return error
+
+  if (error instanceof Error)
+    return error.message
+
+  return JSON.stringify(error)
+}
+
+export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
+  const error = part.state === 'output-error' ? extractErrorMessage(part) : null
+  const skipContent = shouldSkipContent(part)
+
+  const title = getTitle({ part })
+
+  return (
+    <SingleAccordion
+      className={cn('my-2 rounded-sm', className)}
+      open={error ? true : undefined}
+    >
+      <SingleAccordionTrigger
+        className={cn('min-w-0 gap-2 overflow-hidden py-1 text-xs', (skipContent || error) && `
+          cursor-auto
+        `)}
+      >
+        <div className="flex flex-1 items-center gap-2 overflow-hidden">
+          <ToolIcon
+            className={cn('size-4 shrink-0', error && 'text-destructive')}
+            part={part}
+          />
+          <span className="truncate text-sm">
+            {title}
+          </span>
+        </div>
+        {!error && !skipContent && (
+          <SingleAccordionTriggerArrow className="ml-auto shrink-0" />
+        )}
+      </SingleAccordionTrigger>
+      <SingleAccordionContent>
+        {error
+          ? (
+              <div className="text-xs text-destructive">
+                {error}
+              </div>
+            )
+          : skipContent
+            ? null
+            : <ToolContent part={part} />}
+      </SingleAccordionContent>
+    </SingleAccordion>
+  )
+}

@@ -1,17 +1,17 @@
 import type { SqlLanguage } from 'sql-formatter'
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { format } from 'sql-formatter'
 
 export function formatSql(
   sql: string,
-  type: DatabaseType,
+  type: ConnectionType,
 ) {
-  const langMap: Record<DatabaseType, SqlLanguage> = {
-    [DatabaseType.Postgres]: 'postgresql',
-    [DatabaseType.MySQL]: 'mysql',
-    [DatabaseType.MSSQL]: 'tsql',
-    [DatabaseType.ClickHouse]: 'mysql',
-    [DatabaseType.SQLite]: 'sqlite',
+  const langMap: Record<ConnectionType, SqlLanguage> = {
+    [ConnectionType.Postgres]: 'postgresql',
+    [ConnectionType.MySQL]: 'mysql',
+    [ConnectionType.MSSQL]: 'tsql',
+    [ConnectionType.ClickHouse]: 'mysql',
+    [ConnectionType.SQLite]: 'sqlite',
   }
 
   try {

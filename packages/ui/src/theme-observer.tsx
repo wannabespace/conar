@@ -1,71 +1,18 @@
-import { Store, useStore } from '@tanstack/react-store'
 import { FunctionOnce } from './lib/function-once'
+import { initThemeStore } from './theme-store'
 
-export type ResolvedTheme = 'dark' | 'light'
-export type Theme = ResolvedTheme | 'system'
+export type { ResolvedTheme, Theme } from './theme-store'
 
 interface ThemeObserverProps {
-  defaultTheme?: Theme
+  defaultTheme?: 'dark' | 'light' | 'system'
   storageKey?: string
-}
-
-const isBrowser = typeof window !== 'undefined'
-
-interface ThemeStoreState {
-  theme: Theme
-  resolvedTheme: ResolvedTheme
-  storageKey: string
-}
-
-let themeStore: Store<ThemeStoreState>
-
-const mediaQuery = isBrowser ? window.matchMedia('(prefers-color-scheme: dark)') : null
-
-function updateTheme() {
-  if (!mediaQuery)
-    return
-
-  const { theme } = themeStore.state
-
-  const root = window.document.documentElement
-
-  root.classList.remove('light', 'dark')
-
-  if (theme === 'system') {
-    const systemTheme = mediaQuery.matches ? 'dark' : 'light'
-    themeStore.setState(state => ({ ...state, resolvedTheme: systemTheme } satisfies typeof state))
-    root.classList.add(systemTheme)
-    return
-  }
-
-  themeStore.setState(state => ({ ...state, resolvedTheme: theme as ResolvedTheme } satisfies typeof state))
-  root.classList.add(theme)
-}
-
-if (mediaQuery) {
-  mediaQuery.addEventListener('change', updateTheme)
 }
 
 export function ThemeObserver({
   defaultTheme = 'system',
   storageKey = 'conar.theme',
 }: ThemeObserverProps) {
-  if (!themeStore) {
-    themeStore = new Store<ThemeStoreState>({
-      theme: (isBrowser && (localStorage.getItem(storageKey) as Theme)) || defaultTheme,
-      resolvedTheme: 'light',
-      storageKey,
-    })
-
-    if (isBrowser) {
-      themeStore.subscribe(({ prevVal, currentVal }) => {
-        if (prevVal.theme !== currentVal.theme) {
-          updateTheme()
-        }
-      })
-    }
-    updateTheme()
-  }
+  initThemeStore(defaultTheme, storageKey)
 
   return (
     <FunctionOnce param={storageKey}>
@@ -84,19 +31,4 @@ export function ThemeObserver({
       }}
     </FunctionOnce>
   )
-}
-
-function setTheme(newTheme: Theme) {
-  localStorage.setItem(themeStore.state.storageKey, newTheme)
-  themeStore.setState(state => ({ ...state, theme: newTheme } satisfies typeof state))
-}
-
-export function useTheme() {
-  const store = useStore(themeStore)
-
-  return {
-    theme: store.theme,
-    resolvedTheme: store.resolvedTheme,
-    setTheme,
-  }
 }

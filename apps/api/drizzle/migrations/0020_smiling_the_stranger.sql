@@ -1,0 +1,1 @@
+ALTER TABLE "subscriptions" ADD COLUMN "price" integer NOT NULL;

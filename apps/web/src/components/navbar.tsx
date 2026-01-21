@@ -1,75 +1,79 @@
 import type { ComponentProps } from 'react'
 import { SOCIAL_LINKS } from '@conar/shared/constants'
-import { Badge } from '@conar/ui/components/badge'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
+import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiDiscordLine, RiGithubFill, RiTwitterXLine } from '@remixicon/react'
+import { RiGitBranchLine, RiGithubFill, RiMoonLine, RiSunLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
-import { getRepoOptions } from '~/queries'
-import { NAVBAR_HEIGHT_BASE } from '~/routes/_layout'
+import { NAVBAR_HEIGHT_BASE } from '~/constants'
+import { authClient } from '~/lib/auth'
+import { orpcQuery } from '~/lib/orpc'
+import { NavbarTextLogo } from './navbar-text-logo'
 
 const AppLogoMotion = motion.create(AppLogo)
 
 export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   const { scrollY } = useScroll()
   const scale = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [1.8, 1])
-  const { data } = useQuery(getRepoOptions)
+  const { data } = useQuery(orpcQuery.repo.queryOptions())
+  const { data: session } = authClient.useSession()
+  const isSignedIn = !!session?.user
 
   return (
-    <header className={cn('flex items-center justify-between px-4 sm:px-0', className)} {...props}>
-      <div className="flex-1 flex items-center gap-2">
-        <Link to="/" className="text-foreground font-medium text-base sm:text-lg lg:text-xl tracking-tighter">
-          Conar
-        </Link>
-        <Badge variant="default" className="bg-warning/20 text-warning">
-          Beta
-        </Badge>
-      </div>
-      <div className="flex-1 flex justify-center">
-        <Link to="/" className="text-primary">
+    <header
+      className={cn(`
+        flex items-center justify-between px-4
+        sm:px-0
+      `, className)}
+      {...props}
+    >
+      <NavbarTextLogo to={isSignedIn ? '/home' : '/'} />
+      <div className="flex flex-1 justify-center">
+        <Link to={isSignedIn ? '/home' : '/'} className="text-primary">
           <AppLogoMotion
-            className="size-5 sm:size-6 lg:size-8"
+            className={`
+              size-5
+              sm:size-6
+              lg:size-8
+            `}
             style={{ scale }}
           />
         </Link>
       </div>
-      <div className="flex-1 flex items-center justify-end gap-1 sm:gap-2">
+      <div className={`
+        flex flex-1 items-center justify-end gap-1
+        sm:gap-2
+      `}
+      >
         <Button
           variant="ghost"
-          size="icon-sm"
-          className="gap-1 sm:gap-2 hidden sm:flex"
+          size="sm"
+          className={`
+            hidden gap-1
+            sm:flex sm:gap-2
+          `}
           asChild
         >
-          <a
-            href={SOCIAL_LINKS.TWITTER}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <RiTwitterXLine className="h-3 w-3 sm:h-4 sm:w-4" />
-          </a>
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="gap-1 sm:gap-2 hidden sm:flex"
-          asChild
-        >
-          <a
-            href={SOCIAL_LINKS.DISCORD}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <RiDiscordLine className="size-3 sm:size-4" />
-          </a>
+          <Link to="/releases">
+            <RiGitBranchLine className={`
+              size-3
+              sm:size-4
+            `}
+            />
+            Releases
+          </Link>
         </Button>
         <Button
           variant="ghost"
           size="sm"
-          className="gap-1 sm:gap-2 hidden sm:flex"
+          className={`
+            hidden gap-1
+            sm:flex sm:gap-2
+          `}
           asChild
         >
           <a
@@ -77,20 +81,71 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <RiGithubFill className="size-3 sm:size-4" />
+            <RiGithubFill className={`
+              size-3
+              sm:size-4
+            `}
+            />
             <NumberFlow
               value={data?.stargazers_count || 0}
-              className={cn('tabular-nums duration-200 text-xs sm:text-sm', !data && 'animate-pulse text-muted-foreground')}
+              className={cn(`
+                text-xs tabular-nums duration-200
+                sm:text-sm
+              `, !data && `animate-pulse text-muted-foreground`)}
             />
           </a>
         </Button>
+        <ThemeToggle side="bottom">
+          <Button size="icon-sm" variant="ghost">
+            <RiSunLine className={`
+              size-4
+              dark:hidden
+            `}
+            />
+            <RiMoonLine className={`
+              hidden size-4
+              dark:block
+            `}
+            />
+          </Button>
+        </ThemeToggle>
+        <Button
+          variant="outline"
+          size="sm"
+          className={`
+            hidden gap-1
+            sm:flex sm:gap-2
+          `}
+          asChild
+        >
+          {isSignedIn
+            ? (
+                <Link to="/account">
+                  Account
+                </Link>
+              )
+            : (
+                <Link to="/sign-in">
+                  Sign in
+                </Link>
+              )}
+        </Button>
         <Button
           size="sm"
-          className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3"
+          className={`
+            gap-1 px-2 text-xs
+            sm:gap-2 sm:px-3 sm:text-sm
+          `}
           asChild
         >
           <Link to="/download">
-            <span className="hidden sm:inline">Get Started</span>
+            <span className={`
+              hidden
+              sm:inline
+            `}
+            >
+              Get Started
+            </span>
             <span className="sm:hidden">Download</span>
           </Link>
         </Button>

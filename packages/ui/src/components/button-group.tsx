@@ -2,24 +2,7 @@ import type { VariantProps } from 'class-variance-authority'
 import { Separator } from '@conar/ui/components/separator'
 import { cn } from '@conar/ui/lib/utils'
 import { Slot } from '@radix-ui/react-slot'
-import { cva } from 'class-variance-authority'
-
-const buttonGroupVariants = cva(
-  'flex w-fit items-stretch [&>*]:focus-visible:z-10 [&>*]:focus-visible:relative [&>[data-slot=select-trigger]:not([class*=\'w-\'])]:w-fit [&>input]:flex-1 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-md has-[>[data-slot=button-group]]:gap-2',
-  {
-    variants: {
-      orientation: {
-        horizontal:
-          '[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none',
-        vertical:
-          'flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none',
-      },
-    },
-    defaultVariants: {
-      orientation: 'horizontal',
-    },
-  },
-)
+import { buttonGroupVariants } from './button-group.variants'
 
 function ButtonGroup({
   className,
@@ -67,7 +50,7 @@ function ButtonGroupSeparator({
       data-slot="button-group-separator"
       orientation={orientation}
       className={cn(
-        'bg-input relative !m-0 self-stretch data-[orientation=vertical]:h-auto',
+        'bg-input relative m-0! self-stretch data-[orientation=vertical]:h-auto',
         className,
       )}
       {...props}
@@ -79,5 +62,4 @@ export {
   ButtonGroup,
   ButtonGroupSeparator,
   ButtonGroupText,
-  buttonGroupVariants,
 }

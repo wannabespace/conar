@@ -1,12 +1,13 @@
-import type { DatabaseType } from '@conar/shared/enums/database-type'
-import { decrypt, encrypt } from '@conar/shared/encryption'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import { decrypt, encrypt } from '@conar/shared/utils/encryption'
+import { tryParseJson } from '@conar/shared/utils/helpers'
 import { app, ipcMain } from 'electron'
 import { autoUpdater, sendToast } from '..'
-import { getClient as getClickhouseClient } from '../databases/clickhouse'
-import { getPool as getMssqlPool } from '../databases/mssql'
-import { getPool as getMysqlPool } from '../databases/mysql'
-import { getPool as getPgPool } from '../databases/pg'
-import { getDatabase as getSqliteDatabase } from '../databases/sqlite'
+import { getClient as getClickhouseClient } from '../connections/clickhouse'
+import { getPool as getMssqlPool } from '../connections/mssql'
+import { getPool as getMysqlPool } from '../connections/mysql'
+import { getPool as getPgPool } from '../connections/pg'
+import { getDatabase as getSqliteDatabase } from '../connections/sqlite'
 
 function isConnectionError(error: unknown) {
   if (error instanceof Error) {
@@ -78,31 +79,43 @@ const queryMap = {
     return { result: result as unknown, duration: performance.now() - start! }
   },
   clickhouse: async ({ connectionString, sql }: { sql: string, connectionString: string, insertValues?: unknown[] }) => {
-    const client = getClickhouseClient(connectionString)
-    const isSelect = [
-      'SELECT',
-      'SHOW',
-      'DESCRIBE',
-      'EXPLAIN',
-      'WITH',
-      'CHECK',
-    ].some(keyword => sql.trim().toUpperCase().startsWith(keyword))
-    let start = 0
+    try {
+      const client = getClickhouseClient(connectionString)
+      const isSelect = [
+        'SELECT',
+        'SHOW',
+        'DESCRIBE',
+        'EXPLAIN',
+        'WITH',
+        'CHECK',
+      ].some(keyword => sql.trim().toUpperCase().startsWith(keyword))
+      let start = 0
 
-    if (isSelect) {
-      const result = await retryIfConnectionError(() => {
+      if (isSelect) {
+        const result = await retryIfConnectionError(() => {
+          start = performance.now()
+          return client.query({ query: sql, format: 'JSONEachRow' }).then(result => result.json())
+        })
+        return { result, duration: performance.now() - start }
+      }
+
+      await retryIfConnectionError(() => {
         start = performance.now()
-        return client.query({ query: sql, format: 'JSONEachRow' }).then(result => result.json())
+        return client.exec({ query: sql })
       })
-      return { result, duration: performance.now() - start }
+
+      return { result: [], duration: performance.now() - start }
     }
+    catch (error) {
+      if (error instanceof Error) {
+        const parsed = tryParseJson<Partial<{ message: string, status: string, code: number, request_id: string }>>(error.message)
 
-    await retryIfConnectionError(() => {
-      start = performance.now()
-      return client.exec({ query: sql })
-    })
-
-    return { result: [], duration: performance.now() - start }
+        if (parsed?.message) {
+          throw new Error(parsed.message)
+        }
+      }
+      throw error
+    }
   },
   sqlite: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
     const db = getSqliteDatabase(connectionString)
@@ -142,7 +155,7 @@ const queryMap = {
     return { result: result.recordset as unknown, duration: performance.now() - start! }
   },
 // eslint-disable-next-line ts/no-explicit-any
-} satisfies Record<DatabaseType, (...args: any[]) => Promise<QueryResult>>
+} satisfies Record<ConnectionType, (...args: any[]) => Promise<QueryResult>>
 
 const encryption = {
   encrypt: async (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),

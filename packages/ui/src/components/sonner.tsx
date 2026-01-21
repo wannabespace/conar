@@ -1,10 +1,17 @@
+import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
-import { useTheme } from '../theme-observer'
+import { useIsMounted } from '../hookas/use-is-mounted'
+import { useTheme } from '../use-theme'
 
 function Toaster() {
   const { resolvedTheme } = useTheme()
+  const isMounted = useIsMounted()
 
-  return (
+  if (!isMounted) {
+    return null
+  }
+
+  return createPortal(
     <Sonner
       theme={resolvedTheme}
       className="toaster group"
@@ -22,7 +29,8 @@ function Toaster() {
         '--normal-text': 'var(--popover-foreground)',
         '--normal-border': 'var(--border)',
       }}
-    />
+    />,
+    document.body,
   )
 }
 

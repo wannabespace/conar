@@ -3,7 +3,7 @@ import { createCollection } from '@tanstack/react-db'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
 import { db, queries, waitForMigrations } from '~/drizzle'
-import { waitForDatabasesSync } from '~/entities/database'
+import { waitForConnectionsSync } from '~/entities/connection/sync'
 import { bearerToken } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
@@ -18,7 +18,7 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
       return
     }
 
-    await waitForDatabasesSync()
+    await waitForConnectionsSync()
     const sync = await orpc.queries.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
     sync.forEach((item) => {
@@ -41,7 +41,6 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
 const syncQueriesMutationOptions = {
   mutationKey: ['sync-queries'],
   mutationFn: queriesCollection.utils.runSync,
-  onError: () => {},
 } satisfies MutationOptions
 
 export function useQueriesSync() {
