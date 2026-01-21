@@ -3,7 +3,7 @@ import { createCollection } from '@tanstack/react-db'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
 import { chats, chatsMessages, db, waitForMigrations } from '~/drizzle'
-import { waitForDatabasesSync } from '~/entities/database/sync'
+import { waitForConnectionsSync } from '~/entities/connection/sync'
 import { bearerToken } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
@@ -30,7 +30,7 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
 
     resolvers = Promise.withResolvers()
 
-    await waitForDatabasesSync()
+    await waitForConnectionsSync()
     const sync = await orpc.chats.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
     sync.forEach((item) => {

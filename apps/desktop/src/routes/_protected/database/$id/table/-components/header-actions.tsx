@@ -1,4 +1,3 @@
-import type { databases } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -8,27 +7,29 @@ import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { ExportData } from '~/components/export-data'
-import { databaseConstraintsQuery, databaseRowsQuery, databaseTableColumnsQuery, databaseTableTotalQuery } from '~/entities/database/queries'
-import { rowsQuery } from '~/entities/database/sql/rows'
+import { connectionConstraintsQuery, connectionRowsQuery, connectionTableColumnsQuery, connectionTableTotalQuery } from '~/entities/connection/queries'
+import { rowsQuery } from '~/entities/connection/sql/rows'
 import { queryClient } from '~/main'
+import { Route } from '..'
 import { usePageStoreContext } from '../-store'
 import { HeaderActionsColumns } from './header-actions-columns'
 import { HeaderActionsDelete } from './header-actions-delete'
 import { HeaderActionsFilters } from './header-actions-filters'
 import { HeaderActionsOrder } from './header-actions-order'
 
-export function HeaderActions({ table, schema, database }: { table: string, schema: string, database: typeof databases.$inferSelect }) {
+export function HeaderActions({ table, schema }: { table: string, schema: string }) {
+  const { connection } = Route.useLoaderData()
   const store = usePageStoreContext()
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const { isFetching, dataUpdatedAt, refetch, data: rows, isPending } = useInfiniteQuery(
-    databaseRowsQuery({ database, table, schema, query: { filters, orderBy } }),
+    connectionRowsQuery({ connection, table, schema, query: { filters, orderBy } }),
   )
 
   async function handleRefresh() {
     refetch()
-    queryClient.invalidateQueries(databaseTableColumnsQuery({ database, table, schema }))
-    queryClient.invalidateQueries(databaseTableTotalQuery({ database, table, schema, query: { filters } }))
-    queryClient.invalidateQueries(databaseConstraintsQuery({ database }))
+    queryClient.invalidateQueries(connectionTableColumnsQuery({ connection, table, schema }))
+    queryClient.invalidateQueries(connectionTableTotalQuery({ connection, table, schema, query: { filters } }))
+    queryClient.invalidateQueries(connectionConstraintsQuery({ connection }))
   }
 
   const getAllData = async () => {
@@ -37,7 +38,7 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
     let offset = 0
 
     while (true) {
-      const batch = await rowsQuery(database, {
+      const batch = await rowsQuery(connection, {
         schema,
         table,
         limit,
@@ -58,7 +59,7 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
     return data
   }
 
-  const getLimitedData = async (limit: number) => rowsQuery(database, {
+  const getLimitedData = async (limit: number) => rowsQuery(connection, {
     schema,
     table,
     limit,
@@ -76,16 +77,16 @@ export function HeaderActions({ table, schema, database }: { table: string, sche
       <HeaderActionsDelete
         table={table}
         schema={schema}
-        database={database}
+        connection={connection}
       />
       <HeaderActionsColumns
-        database={database}
+        connection={connection}
         table={table}
         schema={schema}
       />
       <HeaderActionsFilters />
       <HeaderActionsOrder
-        database={database}
+        connection={connection}
         table={table}
         schema={schema}
       />

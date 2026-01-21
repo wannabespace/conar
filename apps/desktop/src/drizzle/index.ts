@@ -3,11 +3,11 @@ import { PGlite } from '@electric-sql/pglite'
 import { drizzle } from 'drizzle-orm/pglite'
 import migrations from './migrations.json'
 import * as chats from './schema/chats'
-import * as databases from './schema/databases'
+import * as connections from './schema/connections'
 import * as queries from './schema/queries'
 
 export * from './schema/chats'
-export * from './schema/databases'
+export * from './schema/connections'
 export * from './schema/queries'
 
 export const pg = new PGlite('idb://conar')
@@ -27,7 +27,7 @@ export const db = drizzle({
   casing: 'snake_case',
   logger: import.meta.env.DEV,
   schema: {
-    ...databases,
+    ...connections,
     ...chats,
     ...queries,
   },
@@ -35,7 +35,7 @@ export const db = drizzle({
 
 export async function clearDb() {
   // We can remove just databases because other tables are related to databases
-  await db.delete(databases.databases)
+  await db.delete(connections.connections)
 }
 
 async function ensureMigrationsTable() {

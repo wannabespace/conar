@@ -5,17 +5,17 @@ import { index, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedJson } from '../utils'
 import { users } from './auth'
-import { databases } from './databases'
+import { connections } from './connections'
 
 export const chats = pgTable('chats', {
   ...baseTable,
   userId: uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }).notNull(),
+  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
   title: text(),
   activeStreamId: uuid(),
 }, t => [
   index().on(t.userId),
-  index().on(t.databaseId),
+  index().on(t.connectionId),
 ])
 
 export const chatsSelectSchema = createSelectSchema(chats)
@@ -42,9 +42,9 @@ export const chatsRelations = relations(chats, ({ one, many }) => ({
     fields: [chats.userId],
     references: [users.id],
   }),
-  database: one(databases, {
-    fields: [chats.databaseId],
-    references: [databases.id],
+  connection: one(connections, {
+    fields: [chats.connectionId],
+    references: [connections.id],
   }),
   messages: many(chatsMessages),
 }))

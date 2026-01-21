@@ -3,7 +3,7 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent } from 'react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { useChatsMessagesSync, useChatsSync } from '~/entities/chat/sync'
-import { useDatabasesSync } from '~/entities/database/sync'
+import { useConnectionsSync } from '~/entities/connection/sync'
 import { useQueriesSync } from '~/entities/query/sync'
 import { authClient } from '~/lib/auth'
 import { appStore } from '~/store'
@@ -17,13 +17,13 @@ function ProtectedLayout() {
   const { data } = authClient.useSession()
   const isOnline = useStore(appStore, state => state.isOnline)
 
-  const { sync: syncDatabases } = useDatabasesSync()
+  const { sync: syncConnections } = useConnectionsSync()
   const { sync: syncQueries } = useQueriesSync()
   const { sync: syncChats } = useChatsSync()
   const { sync: syncChatsMessages } = useChatsMessagesSync()
 
   const sync = useEffectEvent(() => {
-    syncDatabases()
+    syncConnections()
     syncChats()
     syncChatsMessages()
     syncQueries()

@@ -1,10 +1,10 @@
-import { databaseLabels, DatabaseType } from '@conar/shared/enums/database-type'
+import { connectionLabels, ConnectionType } from '@conar/shared/enums/connection-type'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
-import { DatabaseIcon } from '~/entities/database/components'
+import { ConnectionIcon } from '~/entities/connection/components'
 import { MongoIcon } from '~/icons/mongo'
 
-export function StepType({ type, setType }: { type: DatabaseType | null, setType: (type: DatabaseType) => void }) {
+export function StepType({ type, setType }: { type: ConnectionType | null, setType: (type: ConnectionType) => void }) {
   return (
     <Card className="w-full">
       <CardHeader>
@@ -13,18 +13,25 @@ export function StepType({ type, setType }: { type: DatabaseType | null, setType
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-2">
-          {Object.values(DatabaseType).map(dbType => (
+          {Object.values(ConnectionType).map(connectionType => (
             <Button
-              key={dbType}
-              variant={type === dbType ? 'default' : 'outline'}
-              onClick={() => setType(dbType)}
+              key={connectionType}
+              variant={type === connectionType ? 'default' : 'outline'}
+              onClick={() => setType(connectionType)}
               className="flex items-center gap-2 px-4 py-2"
             >
-              <DatabaseIcon type={dbType} className="size-4 shrink-0 text-primary" />
-              {databaseLabels[dbType]}
+              <ConnectionIcon
+                type={connectionType}
+                className="size-4 shrink-0 text-primary"
+              />
+              {connectionLabels[connectionType]}
             </Button>
           ))}
-          <Button variant="outline" disabled className="flex items-center gap-2 px-4 py-2 opacity-60">
+          <Button
+            variant="outline"
+            disabled
+            className="flex items-center gap-2 px-4 py-2 opacity-60"
+          >
             <MongoIcon />
             MongoDB (soon)
           </Button>

@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useDatabasesSync } from '~/entities/database/sync'
+import { useConnectionsSync } from '~/entities/connection/sync'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 import { DatabasesList } from './-components/databases-list'
 import { Profile } from './-components/profile'
@@ -22,7 +22,7 @@ export const Route = createFileRoute('/_protected/')({
 })
 
 function DashboardPage() {
-  const { sync, isSyncing } = useDatabasesSync()
+  const { sync, isSyncing } = useConnectionsSync()
   const [version, versionStatus] = useStore(updatesStore, state => [state.version, state.status])
 
   return (

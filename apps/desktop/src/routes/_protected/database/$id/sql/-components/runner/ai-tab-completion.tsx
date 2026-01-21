@@ -1,4 +1,4 @@
-import type { DatabaseType } from '@conar/shared/enums/database-type'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { editor } from 'monaco-editor'
 import type { CompletionRegistration } from 'monacopilot'
 import type { RefObject } from 'react'
@@ -6,7 +6,7 @@ import * as monaco from 'monaco-editor'
 import { LanguageIdEnum } from 'monaco-sql-languages'
 import { registerCompletion } from 'monacopilot'
 import { useCallback, useEffect, useRef } from 'react'
-import { databaseAICompletionContext } from '~/entities/database/utils/monaco'
+import { connectionAICompletionContext } from '~/entities/connection/utils/monaco'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
 
@@ -15,7 +15,7 @@ const dialectsMap = {
   mysql: LanguageIdEnum.MYSQL,
   mssql: LanguageIdEnum.PG,
   clickhouse: LanguageIdEnum.MYSQL,
-} satisfies Record<DatabaseType, LanguageIdEnum>
+} satisfies Record<ConnectionType, LanguageIdEnum>
 
 interface Cache {
   before: string
@@ -48,7 +48,7 @@ function getCache(
 async function fetchCompletion(
   model: editor.ITextModel,
   position: monaco.Position,
-  aiConfig: Awaited<ReturnType<typeof databaseAICompletionContext>>,
+  aiConfig: Awaited<ReturnType<typeof connectionAICompletionContext>>,
   signal: AbortSignal,
 ): Promise<{ result: { completion: string }, context: string } | null> {
   const offset = model.getOffsetAt(position)
@@ -64,7 +64,7 @@ async function fetchCompletion(
     suffix,
     instruction: 'Complete the SQL query with secure and safe optimised version',
     fileContent: model.getValue(),
-    databaseType: aiConfig.databaseType,
+    type: aiConfig.type,
     schemaContext,
   }, { signal })
 
@@ -72,13 +72,13 @@ async function fetchCompletion(
 }
 
 export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
-  const { database } = Route.useRouteContext()
+  const { connection } = Route.useRouteContext()
 
   const completionRef = useRef<CompletionRegistration | null>(null)
   const completionCacheRef = useRef<Cache | null>(null)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingResolveRef = useRef<((value: { completion: string }) => void) | null>(null)
-  const aiConfigRef = useRef<Awaited<ReturnType<typeof databaseAICompletionContext>> | null>(null)
+  const aiConfigRef = useRef<Awaited<ReturnType<typeof connectionAICompletionContext>> | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const clearPending = useCallback(() => {
@@ -181,7 +181,7 @@ export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStan
       if (!monacoRef.current)
         return
 
-      const config = await databaseAICompletionContext(database)
+      const config = await connectionAICompletionContext(connection)
       if (!isMounted)
         return
       aiConfigRef.current = config
@@ -211,7 +211,7 @@ export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStan
         monacoRef.current,
         {
           trigger: 'onTyping',
-          language: dialectsMap[database.type],
+          language: dialectsMap[connection.type],
           requestHandler,
         },
       )
@@ -227,5 +227,5 @@ export function useRunnerEditorAiTabCompletion(monacoRef: RefObject<editor.IStan
         completionRef.current = null
       }
     }
-  }, [clearPending, database, monacoRef, requestHandler])
+  }, [clearPending, connection, monacoRef, requestHandler])
 }

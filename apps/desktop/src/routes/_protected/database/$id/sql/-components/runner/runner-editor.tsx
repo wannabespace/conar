@@ -1,4 +1,4 @@
-import type { DatabaseType } from '@conar/shared/enums/database-type'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { editor, Position } from 'monaco-editor'
 import type { RefObject } from 'react'
 import { useStore } from '@tanstack/react-store'
@@ -6,8 +6,8 @@ import { KeyCode, KeyMod } from 'monaco-editor'
 import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { Monaco } from '~/components/monaco'
-import { databaseStore } from '~/entities/database/store'
-import { databaseCompletionService } from '~/entities/database/utils/monaco'
+import { connectionStore } from '~/entities/connection/store'
+import { connectionCompletionService } from '~/entities/connection/utils/monaco'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { useRunnerEditorAiTabCompletion } from './ai-tab-completion'
@@ -20,11 +20,11 @@ const dialectsMap = {
   mysql: LanguageIdEnum.MYSQL,
   mssql: LanguageIdEnum.PG,
   clickhouse: LanguageIdEnum.MYSQL,
-} satisfies Record<DatabaseType, LanguageIdEnum>
+} satisfies Record<ConnectionType, LanguageIdEnum>
 
 function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
-  const { database } = Route.useRouteContext()
-  const store = databaseStore(database.id)
+  const { connection } = Route.useRouteContext()
+  const store = connectionStore(connection.id)
 
   const replace = ({
     query,
@@ -117,8 +117,8 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
 }
 
 export function RunnerEditor() {
-  const { database } = Route.useRouteContext()
-  const store = databaseStore(database.id)
+  const { connection } = Route.useRouteContext()
+  const store = connectionStore(connection.id)
   const sql = useStore(store, state => state.sql)
   const editorQueries = useStore(store, state => state.editorQueries)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
@@ -133,13 +133,13 @@ export function RunnerEditor() {
   useRunnerEditorAiTabCompletion(monacoRef)
 
   useEffect(() => {
-    setupLanguageFeatures(dialectsMap[database.type], {
+    setupLanguageFeatures(dialectsMap[connection.type], {
       completionItems: {
         enable: true,
-        completionService: databaseCompletionService(database),
+        completionService: connectionCompletionService(connection),
       },
     })
-  }, [database])
+  }, [connection])
 
   const getEditorQueriesEvent = useEffectEvent((position: Position) => {
     return editorQueries.find(query =>
@@ -187,7 +187,7 @@ export function RunnerEditor() {
     <Monaco
       data-mask
       ref={monacoRef}
-      language={dialectsMap[database.type]}
+      language={dialectsMap[connection.type]}
       value={sql}
       onChange={q => store.setState(state => ({
         ...state,

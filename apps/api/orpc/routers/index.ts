@@ -4,8 +4,8 @@ import * as ai from './ai'
 import { banner } from './banner'
 import * as chats from './chats'
 import * as chatsMessages from './chats-messages'
+import * as connections from './connections'
 import { contact } from './contact'
-import * as databases from './databases'
 import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
@@ -17,7 +17,9 @@ export const router = {
   chats,
   chatsMessages,
   queries,
-  databases,
+  connections,
+  // TODO: remove this in the future
+  databases: connections,
   banner,
   account,
   webhooks,

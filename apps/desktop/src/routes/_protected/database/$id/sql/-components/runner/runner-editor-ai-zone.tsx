@@ -1,4 +1,4 @@
-import type { databases } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Enter } from '@conar/ui/components/custom/shortcuts'
@@ -9,19 +9,19 @@ import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
 import { MonacoDiff } from '~/components/monaco'
-import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
+import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { useSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
 export function RunnerEditorAIZone({
-  database,
+  connection,
   getSql,
   onUpdate,
   onClose,
 }: {
-  database: typeof databases.$inferSelect
+  connection: typeof connections.$inferSelect
   getSql: () => string
   onUpdate: (sql: string) => void
   onClose: () => void
@@ -72,10 +72,10 @@ export function RunnerEditorAIZone({
       updateSQL({
         sql,
         prompt,
-        type: database.type,
+        type: connection.type,
         context: [
           'Database schemas and tables:',
-          JSON.stringify(await queryClient.ensureQueryData(databaseTablesAndSchemasQuery({ database })), null, 2),
+          JSON.stringify(await queryClient.ensureQueryData(connectionTablesAndSchemasQuery({ connection })), null, 2),
         ].join('\n'),
       })
     }

@@ -1,34 +1,31 @@
 import { google } from '@ai-sdk/google'
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { generateText } from 'ai'
-import { z } from 'zod'
+import { type } from 'arktype'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 
 export const codeCompletion = orpc
   .use(requireSubscriptionMiddleware)
-  .input(z.object({
-    context: z.string(),
-    suffix: z.string().optional(),
-    instruction: z.string().optional(),
-    fileContent: z.string(),
-    databaseType: z.enum(DatabaseType),
-    schemaContext: z.string().optional(),
+  .input(type({
+    context: 'string',
+    suffix: 'string?',
+    instruction: 'string?',
+    fileContent: 'string',
+    type: type.valueOf(ConnectionType),
+    schemaContext: 'string?',
   }))
-  .output(z.object({
-    completion: z.string(),
+  .output(type({
+    completion: 'string',
   }))
   .handler(async ({ input }) => {
     try {
-      const databaseType = input.databaseType || DatabaseType.Postgres
-      const schemaContext = input.schemaContext || ''
-
       const enhancedPrompt = [
         'You are an expert SQL code completion assistant.',
         '',
-        `Database Type: ${databaseType}`,
+        `Database Type: ${input.type}`,
         '',
         'Database Schema:',
-        schemaContext,
+        input.schemaContext || '',
         '',
         'Current Code BEFORE Cursor:',
         input.context || '',
