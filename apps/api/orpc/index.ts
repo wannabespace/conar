@@ -45,10 +45,13 @@ export const authMiddleware = orpc.middleware(async ({ context, next }) => {
 })
 
 export const optionalAuthMiddleware = orpc.middleware(async ({ context, next }) => {
-  const session = await getSession(context.headers)
+  const session = await getSession(context.headers).catch(() => null)
 
   return next({
-    context: session,
+    context: {
+      session: session?.session ?? null,
+      user: session?.user ?? null,
+    },
   })
 })
 
