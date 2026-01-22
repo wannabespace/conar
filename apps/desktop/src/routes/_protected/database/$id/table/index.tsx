@@ -162,7 +162,7 @@ function DatabaseTablesPage() {
   }, [schema, table, lastOpenedTable])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: `database-layout-${connection.id}`,
+    id: `database-table-layout-${connection.id}`,
     storage: localStorage,
   })
 
