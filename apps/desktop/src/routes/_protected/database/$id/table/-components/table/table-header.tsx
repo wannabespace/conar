@@ -8,7 +8,7 @@ import { RiArrowLeftSLine, RiArrowRightSLine, RiDatabase2Line } from '@remixicon
 import { animate } from 'motion'
 import { useEffect, useState } from 'react'
 import { TableHeader, useTableContext } from '~/components/table'
-import { selectSymbol } from '../-lib'
+import { selectSymbol } from '../../-lib'
 
 interface HeaderColumn {
   id: string

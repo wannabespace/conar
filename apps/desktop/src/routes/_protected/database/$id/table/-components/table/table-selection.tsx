@@ -4,7 +4,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useTableContext } from '~/components/table'
-import { usePageStoreContext } from '../-store'
+import { usePageStoreContext } from '../../-store'
 
 function IndeterminateCheckbox({
   indeterminate,

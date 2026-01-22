@@ -8,8 +8,8 @@ import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEr
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { connectionEnumsQuery } from '~/entities/connection/queries'
-import { Route } from '..'
-import { usePageStoreContext } from '../-store'
+import { Route } from '../..'
+import { usePageStoreContext } from '../../-store'
 
 const CANNOT_SORT_TYPES = ['json']
 
