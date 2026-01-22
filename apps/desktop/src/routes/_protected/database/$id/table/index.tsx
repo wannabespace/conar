@@ -161,7 +161,7 @@ function DatabaseTablesPage() {
     handleLastOpenedTableEvent()
   }, [schema, table, lastOpenedTable])
 
-  const { defaultLayout, onLayoutChange } = useDefaultLayout({
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: `database-layout-${connection.id}`,
     storage: localStorage,
   })
@@ -169,7 +169,7 @@ function DatabaseTablesPage() {
   return (
     <ResizablePanelGroup
       defaultLayout={defaultLayout}
-      onLayoutChange={onLayoutChange}
+      onLayoutChanged={onLayoutChanged}
       orientation="horizontal"
       className="flex"
     >
