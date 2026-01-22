@@ -9,7 +9,7 @@ export {
 export * from './header'
 export * from './provider'
 export * from './table'
-export * from './use-table-context'
+export * from './table-context'
 
 export interface TableCellProps extends Pick<ColumnRenderer, 'size' | 'id'> {
   style: CSSProperties

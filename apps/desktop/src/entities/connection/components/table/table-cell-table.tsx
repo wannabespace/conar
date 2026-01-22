@@ -8,7 +8,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, getDisplayValue } from '~/entities/connection/components/table/utils'
+import { getDisplayValue } from '~/entities/connection/components/table/utils'
 import { connectionRowsQuery } from '~/entities/connection/queries'
 import { TableError } from '~/routes/_protected/database/$id/table/-components/table/table'
 import { TableEmpty } from '~/routes/_protected/database/$id/table/-components/table/table-empty'
@@ -78,8 +78,6 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
     <TableProvider
       rows={rows ?? []}
       columns={tableColumns}
-      estimatedRowSize={DEFAULT_ROW_HEIGHT}
-      estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
     >
       <div className="relative size-full">
         <div className={`

@@ -3,7 +3,7 @@ import type { ComponentProps, CSSProperties, ReactNode } from 'react'
 import type { ColumnRenderer } from '.'
 import { cn } from '@conar/ui/lib/utils'
 import { memo } from 'react'
-import { useTableContext } from '.'
+import { useTableContext } from './table-context'
 
 const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   virtualColumn,
@@ -67,15 +67,20 @@ export function TableHeader({
 
   return (
     <div
-      className={cn('sticky top-0 z-10 border-y bg-background h-8 has-data-footer:h-12 w-fit min-w-full', className)}
+      className={cn(`
+        sticky top-0 z-10 h-8 w-fit min-w-full border-y bg-background
+        has-data-footer:h-12
+      `, className)}
       style={{ width: `${tableWidth}px`, ...style }}
       {...props}
     >
       {before}
-      <div className="flex bg-card h-full w-fit min-w-full items-center">
+      <div className="flex h-full w-fit min-w-full items-center bg-card">
         <div
           aria-hidden="true"
-          className="shrink-0 w-(--table-scroll-left-offset) will-change-[height]"
+          className="
+            w-(--table-scroll-left-offset) shrink-0 will-change-[height]
+          "
           style={spacerStyle}
         />
         {virtualColumns.map(virtualColumn => (
@@ -87,7 +92,9 @@ export function TableHeader({
         ))}
         <div
           aria-hidden="true"
-          className="shrink-0 w-(--table-scroll-right-offset) will-change-[height]"
+          className="
+            w-(--table-scroll-right-offset) shrink-0 will-change-[height]
+          "
           style={spacerStyle}
         />
       </div>

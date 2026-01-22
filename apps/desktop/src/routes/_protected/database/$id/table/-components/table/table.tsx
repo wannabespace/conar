@@ -8,7 +8,6 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableProvider } from '~/components/table'
 import { TableCell } from '~/entities/connection/components'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/connection/components/table/utils'
 import { connectionRowsQuery } from '~/entities/connection/queries'
 import { useConnectionEnums } from '~/entities/connection/queries/enums'
 import { selectQuery, setQuery } from '~/entities/connection/sql'
@@ -256,8 +255,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     <TableProvider
       rows={rows ?? []}
       columns={tableColumns}
-      estimatedRowSize={DEFAULT_ROW_HEIGHT}
-      estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
     >
       <div className="relative size-full">
         <Table>

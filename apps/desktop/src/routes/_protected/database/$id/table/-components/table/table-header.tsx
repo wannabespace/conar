@@ -129,23 +129,34 @@ function Header() {
 
   return (
     <TableHeader
-      className={cn('flex transition-shadow duration-300', isScrolled && 'shadow-lg shadow-black/3')}
+      className={cn('flex transition-shadow duration-300', isScrolled && `
+        shadow-lg shadow-black/3
+      `)}
       before={(
-        <div className="sticky z-20 left-0 inset-y-0 w-0 flex items-center">
+        <div className="sticky inset-y-0 left-0 z-20 flex w-0 items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
                 size="icon-sm"
                 className={cn(
-                  'group absolute top-1/2 -translate-y-1/2 duration-150 transition-[left,opacity] shadow-none',
-                  left.length > 0 ? 'opacity-100 left-2' : 'opacity-0 left-0 pointer-events-none',
+                  `
+                    group absolute top-1/2 -translate-y-1/2 shadow-none
+                    transition-[left,opacity] duration-150
+                  `,
+                  left.length > 0
+                    ? 'left-2 opacity-100'
+                    : `pointer-events-none left-0 opacity-0`,
                 )}
               >
                 <RiArrowLeftSLine className="relative z-10 size-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="start" className="min-w-48">
+            <DropdownMenuContent
+              side="bottom"
+              align="start"
+              className="min-w-48"
+            >
               <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {left.map(column => (
@@ -162,15 +173,20 @@ function Header() {
         </div>
       )}
       after={(
-        <div className="sticky z-20 right-0 inset-y-0 w-0 flex items-center">
+        <div className="sticky inset-y-0 right-0 z-20 flex w-0 items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
                 size="icon-sm"
                 className={cn(
-                  'group absolute top-1/2 -translate-y-1/2 duration-150 transition-[right,opacity] shadow-none',
-                  right.length > 0 ? 'opacity-100 right-2' : 'opacity-0 right-0 pointer-events-none',
+                  `
+                    group absolute top-1/2 -translate-y-1/2 shadow-none
+                    transition-[right,opacity] duration-150
+                  `,
+                  right.length > 0
+                    ? 'right-2 opacity-100'
+                    : `pointer-events-none right-0 opacity-0`,
                 )}
               >
                 <RiArrowRightSLine className="relative z-10 size-4" />

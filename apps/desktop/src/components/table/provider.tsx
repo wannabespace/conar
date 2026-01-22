@@ -3,6 +3,7 @@ import type { ColumnRenderer } from '.'
 import { useScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useRef } from 'react'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/connection/components/table/utils'
 import { TableContext } from './table-context'
 
 export type { TableContextType } from './table-context'
@@ -11,14 +12,14 @@ export function TableProvider({
   rows,
   columns,
   children,
-  estimatedRowSize,
-  estimatedColumnSize,
+  estimatedRowSize = DEFAULT_ROW_HEIGHT,
+  estimatedColumnSize = DEFAULT_COLUMN_WIDTH,
 }: {
   rows: Record<string, unknown>[]
   columns: ColumnRenderer[]
   children: ReactNode
-  estimatedRowSize: number
-  estimatedColumnSize: number
+  estimatedRowSize?: number
+  estimatedColumnSize?: number
 }) {
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollDirection = useScrollDirection(scrollRef)
