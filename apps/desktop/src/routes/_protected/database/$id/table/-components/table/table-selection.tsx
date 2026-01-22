@@ -19,13 +19,9 @@ function IndeterminateCheckbox({
           `
             peer size-4 appearance-none rounded-[4px] border border-border
             transition-colors duration-100 outline-none
-          `,
-          `
+            checked:border-primary checked:bg-primary
             focus-visible:border-ring focus-visible:ring-[3px]
             focus-visible:ring-ring/50
-          `,
-          `
-            checked:border-primary checked:bg-primary
             disabled:cursor-not-allowed disabled:opacity-50
           `,
           !props.checked && indeterminate && 'border-primary bg-primary',
@@ -53,7 +49,7 @@ function IndeterminateCheckbox({
   )
 }
 
-export function SelectionHeaderCell({ columnIndex, className, size, keys }: TableHeaderCellProps & {
+export function SelectionHeaderCell({ columnIndex, className, style, keys }: TableHeaderCellProps & {
   keys: string[]
   className?: string
 }) {
@@ -66,10 +62,10 @@ export function SelectionHeaderCell({ columnIndex, className, size, keys }: Tabl
 
   return (
     <div
-      className={cn('flex w-fit shrink-0 items-center', columnIndex === 0 && `
+      className={cn('flex shrink-0 items-center px-2', columnIndex === 0 && `
         pl-4
       `, className)}
-      style={{ width: `${size}px` }}
+      style={style}
     >
       <IndeterminateCheckbox
         disabled={!rows || rows.length === 0}
@@ -94,7 +90,7 @@ export function SelectionHeaderCell({ columnIndex, className, size, keys }: Tabl
   )
 }
 
-export function SelectionCell({ rowIndex, columnIndex, className, size, keys }: TableCellProps & {
+export function SelectionCell({ rowIndex, columnIndex, className, style, keys }: TableCellProps & {
   keys: string[]
   className?: string
 }) {
@@ -103,7 +99,10 @@ export function SelectionCell({ rowIndex, columnIndex, className, size, keys }: 
   const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])))
 
   return (
-    <div className={cn('flex w-fit items-center', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
+    <div
+      className={cn('flex items-center px-2', columnIndex === 0 && 'pl-4', className)}
+      style={style}
+    >
       <IndeterminateCheckbox
         checked={isSelected}
         onChange={() => {

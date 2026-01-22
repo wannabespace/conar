@@ -13,7 +13,7 @@ import { useConnectionEnums } from '~/entities/connection/queries/enums'
 import { selectQuery, setQuery } from '~/entities/connection/sql'
 import { queryClient } from '~/main'
 import { Route } from '../..'
-import { getColumnSize, selectSymbol } from '../../-lib'
+import { getColumnSize, INTERNAL_COLUMN_IDS } from '../../-lib'
 import { useTableColumns } from '../../-queries/use-columns-query'
 import { usePageStoreContext } from '../../-store'
 import { useColumnsOrder } from '../use-columns-order'
@@ -242,12 +242,19 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     if (primaryColumns.length > 0 && hiddenColumns.length !== columns.length) {
       sortedColumns.unshift({
-        id: String(selectSymbol),
+        id: INTERNAL_COLUMN_IDS.SELECT,
         cell: props => <SelectionCell keys={primaryColumns} {...props} />,
         header: props => <SelectionHeaderCell keys={primaryColumns} {...props} />,
         size: 40,
       } satisfies ColumnRenderer)
     }
+
+    sortedColumns.push({
+      id: INTERNAL_COLUMN_IDS.ACTIONS,
+      size: 100,
+      cell: () => <div />,
+      header: () => <div />,
+    })
 
     return sortedColumns
   }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, enums])

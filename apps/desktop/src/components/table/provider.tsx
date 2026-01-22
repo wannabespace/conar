@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { ColumnRenderer } from '.'
+import { useDebouncedCallback } from '@conar/ui/hookas/use-debounced-callback'
 import { useScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useRef } from 'react'
@@ -33,15 +34,15 @@ export function TableProvider({
     count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => estimatedRowSize,
-    overscan: verticalScroll || scrollDirection === null ? 10 : 0,
+    overscan: (verticalScroll || scrollDirection === null) ? 10 : 0,
   })
 
-  const { getVirtualItems: getVirtualColumns, getTotalSize: getTableWidth } = useVirtualizer({
+  const { getVirtualItems: getVirtualColumns, getTotalSize: getTableWidth, measure } = useVirtualizer({
     horizontal: true,
     count: columns.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: index => customColumnSizes?.[columns[index]!.id] ?? columns[index]!.size ?? estimatedColumnSize,
-    overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
+    overscan: (horizontalScroll || scrollDirection === null) ? 3 : 0,
   })
 
   const virtualRows = getVirtualRows()
@@ -60,19 +61,29 @@ export function TableProvider({
     scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0)}px`)
   }, [scrollRef, virtualColumns, virtualRows, tableWidth, tableHeight])
 
+  const measureDebounced = useDebouncedCallback(measure, [], 100)
+
   useEffect(() => {
     if (!scrollRef.current || !customColumnSizes)
       return
 
-    const customColumnSizesEntries = Object.entries(customColumnSizes)
-    const toRemove = columns.filter(column => !customColumnSizesEntries.some(([id]) => id === column.id))
-    toRemove.forEach((column) => {
-      scrollRef.current!.style.removeProperty(`--table-column-width-${column.id}`)
+    const customColumnsSizesMap = new Map(Object.entries(customColumnSizes))
+    const columnsToRemove = columns.filter(column => !customColumnsSizesMap.has(column.id))
+
+    requestAnimationFrame(() => {
+      columnsToRemove.forEach((column) => {
+        const id = `--table-column-width-${column.id}`
+
+        if (scrollRef.current!.style.getPropertyValue(id)) {
+          scrollRef.current!.style.removeProperty(id)
+        }
+      })
+      customColumnsSizesMap.forEach((size, id) => {
+        scrollRef.current!.style.setProperty(`--table-column-width-${id}`, `${size}px`)
+      })
+      measureDebounced()
     })
-    customColumnSizesEntries.forEach(([id, size]) => {
-      scrollRef.current!.style.setProperty(`--table-column-width-${id}`, `${size}px`)
-    })
-  }, [scrollRef, customColumnSizes, columns])
+  }, [scrollRef, customColumnSizes, columns, measureDebounced])
 
   return (
     <TableContext.Provider
