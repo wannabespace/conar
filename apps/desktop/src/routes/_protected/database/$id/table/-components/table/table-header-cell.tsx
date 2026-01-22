@@ -187,6 +187,7 @@ function EnumBadge({ values, children }: { values: string[], children: ReactNode
 }
 
 export function TableHeaderCell({
+  resize,
   onSort,
   onRename,
   column,
@@ -195,6 +196,7 @@ export function TableHeaderCell({
   className,
   style,
 }: {
+  resize?: boolean
   column: Column
   onSort?: () => void
   onRename?: () => void
@@ -327,16 +329,18 @@ export function TableHeaderCell({
         {onSort && column.type && !CANNOT_SORT_TYPES.includes(column.type) && (
           <SortButton order={order} onClick={onSort} />
         )}
-        <div
-          className={cn(`
-            h-full w-1 cursor-col-resize rounded-xs bg-foreground/30 opacity-0
-            transition-opacity select-none
-            group-hover/header-cell:opacity-100
-            hover:bg-primary
-          `, isResizing && `bg-primary! opacity-100!`)}
-          onDoubleClick={removeSize}
-          onMouseDown={handleResize}
-        />
+        {resize !== false && (
+          <div
+            className={cn(`
+              h-full w-1 cursor-col-resize rounded-xs bg-foreground/30 opacity-0
+              transition-opacity select-none
+              group-hover/header-cell:opacity-100
+              hover:bg-primary
+            `, isResizing && `bg-primary! opacity-100!`)}
+            onDoubleClick={removeSize}
+            onMouseDown={handleResize}
+          />
+        )}
       </div>
     </div>
   )
