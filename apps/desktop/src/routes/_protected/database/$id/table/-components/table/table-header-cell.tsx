@@ -1,3 +1,5 @@
+import type { MouseEvent as ReactMouseEvent } from 'react'
+import type { storeState } from '../../-store'
 import type { TableHeaderCellProps } from '~/components/table'
 import type { Column } from '~/entities/connection/components/table/utils'
 import { Badge } from '@conar/ui/components/badge'
@@ -7,6 +9,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiPencilLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
+import { useTableContext } from '~/components/table'
 import { connectionEnumsQuery } from '~/entities/connection/queries'
 import { Route } from '../..'
 import { usePageStoreContext } from '../../-store'
@@ -62,17 +65,58 @@ export function TableHeaderCell({
   const { connection } = Route.useLoaderData()
   const store = usePageStoreContext()
   const order = useStore(store, state => state.orderBy?.[column.id] ?? null)
-  const { data: enumData } = useQuery({
+  const { data: enumsData } = useQuery({
     ...connectionEnumsQuery({ connection }),
     select: data => data?.find(e => e.name === column.enum),
   })
+  const scrollRef = useTableContext(state => state.scrollRef)
+
+  const handleResize = (e: ReactMouseEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = e.currentTarget.parentElement?.getBoundingClientRect().width ?? 0
+    const originalCursor = document.body.style.cursor
+
+    document.body.style.cursor = 'col-resize'
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (scrollRef?.current) {
+        const newWidth = Math.max(40, startWidth + (moveEvent.clientX - startX))
+        store.setState(state => ({
+          ...state,
+          columnSizes: {
+            ...state.columnSizes,
+            [column.id]: newWidth,
+          },
+        } satisfies typeof storeState.infer))
+      }
+    }
+
+    const handleMouseUp = () => {
+      document.body.style.cursor = originalCursor
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  const removeSize = () => {
+    const newColumnSizes = { ...store.state.columnSizes }
+    delete newColumnSizes[column.id]
+    store.setState(state => ({
+      ...state,
+      columnSizes: newColumnSizes,
+    } satisfies typeof storeState.infer))
+  }
 
   return (
     <div
       className={cn(
         `
-          group/header-cell flex w-full shrink-0 items-center justify-between
-          p-2
+          group/header-cell relative flex w-full shrink-0 items-center
+          justify-between p-2
         `,
         position === 'first' && 'pl-4',
         position === 'last' && 'pr-4',
@@ -205,7 +249,7 @@ export function TableHeaderCell({
                 </Tooltip>
               </TooltipProvider>
             )}
-            {enumData
+            {enumsData
               ? (
                   <TooltipProvider>
                     <Tooltip>
@@ -223,7 +267,7 @@ export function TableHeaderCell({
                           Available values:
                         </div>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {enumData.values.map((val: string) => (
+                          {enumsData.values.map((val: string) => (
                             <Badge
                               key={val}
                               variant="secondary"
@@ -248,6 +292,16 @@ export function TableHeaderCell({
       {onSort && column.type && !CANNOT_SORT_TYPES.includes(column.type) && (
         <SortButton order={order} onClick={onSort} />
       )}
+      <div
+        className="
+          absolute top-0 right-0 z-20 h-full w-1 cursor-col-resize opacity-0
+          transition-opacity select-none
+          group-hover/header-cell:opacity-100
+          hover:bg-primary
+        "
+        onDoubleClick={removeSize}
+        onMouseDown={handleResize}
+      />
     </div>
   )
 }

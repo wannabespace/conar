@@ -31,3 +31,12 @@ export interface ColumnRenderer {
   cell?: ComponentType<TableCellProps>
   header?: ComponentType<TableHeaderCellProps>
 }
+
+export function getBaseColumnStyle({ id, size }: { id: string, size: number }): CSSProperties {
+  return {
+    width: `var(--table-column-width-${id}, ${size}px)`,
+    height: '100%',
+    flexShrink: 0,
+    willChange: 'width',
+  }
+}

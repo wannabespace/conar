@@ -1,3 +1,4 @@
+'use no memo'
 import type { connectionStoreType } from '~/entities/connection/store'
 import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@conar/shared/utils/title'
@@ -63,7 +64,7 @@ function DatabasePage() {
   }, [connection.id])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: `logger-layout-${connection.id}`,
+    id: `database-layout-${connection.id}`,
     storage: localStorage,
   })
 

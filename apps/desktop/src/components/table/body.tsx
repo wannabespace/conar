@@ -3,7 +3,7 @@ import type { ComponentProps, CSSProperties } from 'react'
 import type { ColumnRenderer } from '.'
 import { cn } from '@conar/ui/lib/utils'
 import { memo } from 'react'
-import { useTableContext } from '.'
+import { getBaseColumnStyle, useTableContext } from '.'
 
 const VirtualColumn = memo(function VirtualColumn({
   virtualColumn,
@@ -20,13 +20,7 @@ const VirtualColumn = memo(function VirtualColumn({
 
   if (!column.cell) {
     return (
-      <div
-        style={{
-          width: `${virtualColumn.size}px`,
-          height: '100%',
-          flexShrink: 0,
-        }}
-      >
+      <div style={getBaseColumnStyle({ id: column.id, size: virtualColumn.size })}>
         {String(value)}
       </div>
     )
@@ -44,11 +38,7 @@ const VirtualColumn = memo(function VirtualColumn({
         : virtualColumn.index === columnsLength - 1
           ? 'last'
           : 'middle'}
-      style={{
-        width: `${virtualColumn.size}px`,
-        height: '100%',
-        flexShrink: 0,
-      }}
+      style={getBaseColumnStyle({ id: column.id, size: virtualColumn.size })}
     />
   )
 })

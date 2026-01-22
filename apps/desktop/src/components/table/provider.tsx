@@ -14,12 +14,14 @@ export function TableProvider({
   children,
   estimatedRowSize = DEFAULT_ROW_HEIGHT,
   estimatedColumnSize = DEFAULT_COLUMN_WIDTH,
+  customColumnSizes,
 }: {
   rows: Record<string, unknown>[]
   columns: ColumnRenderer[]
   children: ReactNode
   estimatedRowSize?: number
   estimatedColumnSize?: number
+  customColumnSizes?: Record<string, number>
 }) {
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollDirection = useScrollDirection(scrollRef)
@@ -28,7 +30,6 @@ export function TableProvider({
   const horizontalScroll = scrollDirection === 'left' || scrollDirection === 'right'
 
   const { getVirtualItems: getVirtualRows, getTotalSize: getTableHeight } = useVirtualizer({
-    useFlushSync: false,
     count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => estimatedRowSize,
@@ -36,11 +37,10 @@ export function TableProvider({
   })
 
   const { getVirtualItems: getVirtualColumns, getTotalSize: getTableWidth } = useVirtualizer({
-    useFlushSync: false,
     horizontal: true,
     count: columns.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: index => columns[index]!.size ?? estimatedColumnSize,
+    estimateSize: index => customColumnSizes?.[columns[index]!.id] ?? columns[index]!.size ?? estimatedColumnSize,
     overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
   })
 
@@ -50,13 +50,29 @@ export function TableProvider({
   const tableWidth = getTableWidth()
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.style.setProperty('--table-scroll-left-offset', `${virtualColumns[0]?.start ?? 0}px`)
-      scrollRef.current.style.setProperty('--table-scroll-right-offset', `${tableWidth - (virtualColumns[virtualColumns.length - 1]?.end ?? 0)}px`)
-      scrollRef.current.style.setProperty('--table-scroll-top-offset', `${virtualRows[0]?.start ?? 0}px`)
-      scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0)}px`)
+    if (!scrollRef.current) {
+      return
     }
+
+    scrollRef.current.style.setProperty('--table-scroll-left-offset', `${virtualColumns[0]?.start ?? 0}px`)
+    scrollRef.current.style.setProperty('--table-scroll-right-offset', `${tableWidth - (virtualColumns[virtualColumns.length - 1]?.end ?? 0)}px`)
+    scrollRef.current.style.setProperty('--table-scroll-top-offset', `${virtualRows[0]?.start ?? 0}px`)
+    scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0)}px`)
   }, [scrollRef, virtualColumns, virtualRows, tableWidth, tableHeight])
+
+  useEffect(() => {
+    if (!scrollRef.current || !customColumnSizes)
+      return
+
+    const customColumnSizesEntries = Object.entries(customColumnSizes)
+    const toRemove = columns.filter(column => !customColumnSizesEntries.some(([id]) => id === column.id))
+    toRemove.forEach((column) => {
+      scrollRef.current!.style.removeProperty(`--table-column-width-${column.id}`)
+    })
+    customColumnSizesEntries.forEach(([id, size]) => {
+      scrollRef.current!.style.setProperty(`--table-column-width-${id}`, `${size}px`)
+    })
+  }, [scrollRef, customColumnSizes, columns])
 
   return (
     <TableContext.Provider

@@ -62,6 +62,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const columns = useTableColumns({ connection, table, schema })
   const store = usePageStoreContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
+  const columnSizes = useStore(store, state => state.columnSizes)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(connectionRowsQuery({ connection, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
@@ -255,6 +256,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     <TableProvider
       rows={rows ?? []}
       columns={tableColumns}
+      customColumnSizes={columnSizes}
     >
       <div className="relative size-full">
         <Table>

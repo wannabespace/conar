@@ -15,8 +15,7 @@ export function TableCellContent({
       className={cn(
         `
           flex h-full cursor-default items-center gap-1 truncate rounded-md p-2
-          font-mono text-xs ring-2 ring-transparent duration-100 select-none
-          ring-inset
+          font-mono text-xs ring-2 ring-transparent select-none ring-inset
         `,
         (value === null || value === '') && 'text-muted-foreground/50',
         position === 'first' && 'pl-4',

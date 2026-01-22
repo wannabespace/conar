@@ -3,6 +3,7 @@ import type { ComponentProps, CSSProperties, ReactNode } from 'react'
 import type { ColumnRenderer } from '.'
 import { cn } from '@conar/ui/lib/utils'
 import { memo } from 'react'
+import { getBaseColumnStyle } from '.'
 import { useTableContext } from './table-context'
 
 const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
@@ -16,13 +17,7 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
 
   if (!column.header) {
     return (
-      <div
-        style={{
-          width: `${virtualColumn.size}px`,
-          height: '100%',
-          flexShrink: 0,
-        }}
-      >
+      <div style={getBaseColumnStyle({ id: column.id, size: virtualColumn.size })}>
         {column.id}
       </div>
     )
@@ -39,14 +34,14 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
           ? 'last'
           : 'middle'}
       size={virtualColumn.size}
-      style={{
-        width: `${virtualColumn.size}px`,
-        height: '100%',
-        flexShrink: 0,
-      }}
+      style={getBaseColumnStyle({ id: column.id, size: virtualColumn.size })}
     />
   )
 })
+
+const spacerStyle: CSSProperties = {
+  contain: 'layout style size',
+}
 
 export function TableHeader({
   className,
@@ -61,9 +56,6 @@ export function TableHeader({
   const virtualColumns = useTableContext(context => context.virtualColumns)
   const tableWidth = useTableContext(context => context.tableWidth)
   const columns = useTableContext(context => context.columns)
-  const spacerStyle: CSSProperties = {
-    contain: 'layout style size',
-  }
 
   return (
     <div

@@ -16,21 +16,37 @@ function IndeterminateCheckbox({
       <input
         type="checkbox"
         className={cn(
-          'peer appearance-none size-4 rounded-[4px] border border-border transition-colors outline-none duration-100',
-          'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-          'checked:bg-primary checked:border-primary disabled:opacity-50 disabled:cursor-not-allowed',
-          !props.checked && indeterminate && 'bg-primary border-primary',
+          `
+            peer size-4 appearance-none rounded-[4px] border border-border
+            transition-colors duration-100 outline-none
+          `,
+          `
+            focus-visible:border-ring focus-visible:ring-[3px]
+            focus-visible:ring-ring/50
+          `,
+          `
+            checked:border-primary checked:bg-primary
+            disabled:cursor-not-allowed disabled:opacity-50
+          `,
+          !props.checked && indeterminate && 'border-primary bg-primary',
           className,
         )}
         {...props}
       />
       <RiCheckLine
         className={cn(
-          'absolute size-3 text-primary-foreground opacity-0 pointer-events-none peer-checked:opacity-100 transition-opacity duration-100',
+          `
+            pointer-events-none absolute size-3 text-primary-foreground
+            opacity-0 transition-opacity duration-100
+            peer-checked:opacity-100
+          `,
         )}
       />
       <RiSubtractLine
-        className="absolute size-3 text-primary-foreground opacity-0 pointer-events-none transition-opacity duration-100"
+        className="
+          pointer-events-none absolute size-3 text-primary-foreground opacity-0
+          transition-opacity duration-100
+        "
         style={{ opacity: !props.checked && indeterminate ? 1 : 0 }}
       />
     </div>
@@ -49,7 +65,12 @@ export function SelectionHeaderCell({ columnIndex, className, size, keys }: Tabl
   ])
 
   return (
-    <div className={cn('flex items-center w-fit', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
+    <div
+      className={cn('flex w-fit shrink-0 items-center', columnIndex === 0 && `
+        pl-4
+      `, className)}
+      style={{ width: `${size}px` }}
+    >
       <IndeterminateCheckbox
         disabled={!rows || rows.length === 0}
         checked={checked}
@@ -82,7 +103,7 @@ export function SelectionCell({ rowIndex, columnIndex, className, size, keys }: 
   const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])))
 
   return (
-    <div className={cn('flex items-center w-fit', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
+    <div className={cn('flex w-fit items-center', columnIndex === 0 && 'pl-4', className)} style={{ width: `${size}px` }}>
       <IndeterminateCheckbox
         checked={isSelected}
         onChange={() => {
