@@ -4,8 +4,6 @@ import { cn } from '@conar/ui/lib/utils'
 import * as TogglePrimitive from '@radix-ui/react-toggle'
 import { toggleVariants } from './toggle.variants'
 
-export { toggleVariants } from './toggle.variants'
-
 function Toggle({
   className,
   variant,

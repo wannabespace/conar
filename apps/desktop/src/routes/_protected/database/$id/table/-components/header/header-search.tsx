@@ -12,9 +12,9 @@ import { toast } from 'sonner'
 import { useConnectionEnums } from '~/entities/connection/queries'
 import { orpcQuery } from '~/lib/orpc'
 import { appStore } from '~/store'
-import { Route } from '..'
-import { useTableColumns } from '../-queries/use-columns-query'
-import { usePageStoreContext } from '../-store'
+import { Route } from '../../'
+import { useTableColumns } from '../../-queries/use-columns-query'
+import { usePageStoreContext } from '../../-store'
 
 export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
   const isOnline = useStore(appStore, state => state.isOnline)

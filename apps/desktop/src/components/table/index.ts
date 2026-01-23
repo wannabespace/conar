@@ -9,7 +9,7 @@ export {
 export * from './header'
 export * from './provider'
 export * from './table'
-export * from './use-table-context'
+export * from './table-context'
 
 export interface TableCellProps extends Pick<ColumnRenderer, 'size' | 'id'> {
   style: CSSProperties
@@ -30,4 +30,13 @@ export interface ColumnRenderer {
   size: number
   cell?: ComponentType<TableCellProps>
   header?: ComponentType<TableHeaderCellProps>
+}
+
+export function getBaseColumnStyle({ id, size }: { id: string, size: number }): CSSProperties {
+  return {
+    width: `var(--table-column-width-${id}, ${size}px)`,
+    height: '100%',
+    flexShrink: 0,
+    willChange: 'width',
+  }
 }

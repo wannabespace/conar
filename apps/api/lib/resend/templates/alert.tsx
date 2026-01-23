@@ -11,7 +11,7 @@ export function Alert({ text, service }: { text: string, service: string }) {
       title={`Alert from ${service}`}
     >
       <Section>
-        <Text>{text}</Text>
+        <Text><pre>{text}</pre></Text>
       </Section>
     </Base>
   )

@@ -1,3 +1,4 @@
+import type { storeState } from '../../-store'
 import type { ColumnRenderer } from '~/components/table'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
@@ -8,7 +9,8 @@ import { RiArrowLeftSLine, RiArrowRightSLine, RiDatabase2Line } from '@remixicon
 import { animate } from 'motion'
 import { useEffect, useState } from 'react'
 import { TableHeader, useTableContext } from '~/components/table'
-import { selectSymbol } from '../-lib'
+import { INTERNAL_COLUMN_IDS } from '../../-lib'
+import { usePageStoreContext } from '../../-store'
 
 interface HeaderColumn {
   id: string
@@ -38,7 +40,7 @@ function getVisibleColumns(element: HTMLElement) {
   }, [])
 }
 
-function getNotVisibleColumns(element: HTMLElement, allColumns: ColumnRenderer[]): {
+function getNotVisibleColumns(element: HTMLElement, allColumns: ColumnRenderer[], store: typeof storeState.infer): {
   left: HeaderColumn[]
   right: HeaderColumn[]
 } {
@@ -47,20 +49,21 @@ function getNotVisibleColumns(element: HTMLElement, allColumns: ColumnRenderer[]
 
   let accumulatedLeft = 0
   for (const column of allColumns) {
-    const isVisible = visibleColumns.some(v => v.id === column.id)
+    const isVisible = visibleColumns.find(v => v.id === column.id)
     const scrollLeft = accumulatedLeft
+    const size = store.columnSizes[column.id] || column.size
 
-    accumulatedLeft += column.size
+    accumulatedLeft += size
 
-    if (column.id === String(selectSymbol))
+    if (Object.values(INTERNAL_COLUMN_IDS).includes(column.id))
       continue
 
     if (!isVisible) {
       if (scrollLeft < element.scrollLeft) {
-        notVisibleColumns.left.push({ id: column.id, size: column.size, scrollLeft })
+        notVisibleColumns.left.push({ id: column.id, size, scrollLeft })
       }
       else {
-        notVisibleColumns.right.push({ id: column.id, size: column.size, scrollLeft })
+        notVisibleColumns.right.push({ id: column.id, size, scrollLeft })
       }
     }
   }
@@ -69,6 +72,7 @@ function getNotVisibleColumns(element: HTMLElement, allColumns: ColumnRenderer[]
 }
 
 function Header() {
+  const store = usePageStoreContext()
   const scrollRef = useTableContext(state => state.scrollRef)
   const direction = useTableContext(state => state.scrollDirection)
   const columns = useTableContext(state => state.columns)
@@ -102,8 +106,8 @@ function Header() {
     if (!el || direction === 'up' || direction === 'down')
       return
 
-    setNotVisibleColumns(getNotVisibleColumns(el, columns))
-  }, [direction, columns], 200)
+    setNotVisibleColumns(getNotVisibleColumns(el, columns, store.state))
+  }, [direction, columns, store], 200)
 
   useEffect(() => {
     const el = scrollRef.current
@@ -129,23 +133,34 @@ function Header() {
 
   return (
     <TableHeader
-      className={cn('flex transition-shadow duration-300', isScrolled && 'shadow-lg shadow-black/3')}
+      className={cn('flex transition-shadow duration-300', isScrolled && `
+        shadow-lg shadow-black/3
+      `)}
       before={(
-        <div className="sticky z-20 left-0 inset-y-0 w-0 flex items-center">
+        <div className="sticky inset-y-0 left-0 z-20 flex w-0 items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
                 size="icon-sm"
                 className={cn(
-                  'group absolute top-1/2 -translate-y-1/2 duration-150 transition-[left,opacity] shadow-none',
-                  left.length > 0 ? 'opacity-100 left-2' : 'opacity-0 left-0 pointer-events-none',
+                  `
+                    group absolute top-1/2 -translate-y-1/2 shadow-none
+                    transition-[left,opacity] duration-150
+                  `,
+                  left.length > 0
+                    ? 'left-2 opacity-100'
+                    : 'pointer-events-none left-0 opacity-0',
                 )}
               >
                 <RiArrowLeftSLine className="relative z-10 size-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="start" className="min-w-48">
+            <DropdownMenuContent
+              side="bottom"
+              align="start"
+              className="min-w-48"
+            >
               <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {left.map(column => (
@@ -162,15 +177,20 @@ function Header() {
         </div>
       )}
       after={(
-        <div className="sticky z-20 right-0 inset-y-0 w-0 flex items-center">
+        <div className="sticky inset-y-0 right-0 z-20 flex w-0 items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
                 size="icon-sm"
                 className={cn(
-                  'group absolute top-1/2 -translate-y-1/2 duration-150 transition-[right,opacity] shadow-none',
-                  right.length > 0 ? 'opacity-100 right-2' : 'opacity-0 right-0 pointer-events-none',
+                  `
+                    group absolute top-1/2 -translate-y-1/2 shadow-none
+                    transition-[right,opacity] duration-150
+                  `,
+                  right.length > 0
+                    ? 'right-2 opacity-100'
+                    : `pointer-events-none right-0 opacity-0`,
                 )}
               >
                 <RiArrowRightSLine className="relative z-10 size-4" />
