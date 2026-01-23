@@ -186,6 +186,9 @@ function EnumBadge({ values, children }: { values: string[], children: ReactNode
   )
 }
 
+const resizeOverlay = document.createElement('div')
+resizeOverlay.className = 'cursor-col-resize size-full fixed top-0 left-0 z-1000'
+
 export function TableHeaderCell({
   resize,
   onSort,
@@ -217,28 +220,31 @@ export function TableHeaderCell({
     e.preventDefault()
     setIsResizing(true)
     const startWidth = ref.current?.getBoundingClientRect().width ?? 0
-    const div = document.createElement('div')
-    div.className = 'cursor-col-resize size-full fixed top-0 left-0 z-1000'
-    document.body.appendChild(div)
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      if (scrollRef?.current) {
-        const newWidth = Math.max(100, startWidth + (moveEvent.clientX - e.clientX))
-        store.setState(state => ({
-          ...state,
-          columnSizes: {
-            ...state.columnSizes,
-            [column.id]: newWidth,
-          },
-        } satisfies typeof storeState.infer))
+      if (!scrollRef?.current) {
+        return
       }
+      if (!resizeOverlay.parentElement) {
+        document.body.appendChild(resizeOverlay)
+      }
+      const newWidth = Math.max(100, startWidth + (moveEvent.clientX - e.clientX))
+      store.setState(state => ({
+        ...state,
+        columnSizes: {
+          ...state.columnSizes,
+          [column.id]: newWidth,
+        },
+      } satisfies typeof storeState.infer))
     }
 
     const handleMouseUp = () => {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
       setIsResizing(false)
-      div.remove()
+      if (resizeOverlay.parentElement) {
+        document.body.removeChild(resizeOverlay)
+      }
     }
 
     document.addEventListener('mousemove', handleMouseMove)
