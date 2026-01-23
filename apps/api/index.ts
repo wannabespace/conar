@@ -44,10 +44,20 @@ app.use(cors({
   credentials: true,
 }))
 
+const IGNORE_ROUTES: { path: string, method: string, status?: number }[] = [
+  { path: '/', method: 'POST', status: 404 },
+  { path: '/.env', method: 'GET', status: 404 },
+]
+
 app.use('*', async (c, next) => {
   await next()
 
-  if (c.res.status >= 400 && c.res.status !== 401 && env.ALERTS_EMAIL) {
+  if (
+    c.res.status >= 400
+    && c.res.status !== 401
+    && env.ALERTS_EMAIL
+    && !IGNORE_ROUTES.some(route => route.path === c.req.path && route.method === c.req.method && (route.status ? c.res.status === route.status : true))
+  ) {
     sendEmail({
       to: env.ALERTS_EMAIL,
       subject: `Alert from API: ${c.res.status} ${c.req.method} ${c.req.url}`,
@@ -55,7 +65,6 @@ app.use('*', async (c, next) => {
       props: {
         text: JSON.stringify({
           status: c.res.status,
-          path: c.req.path,
           method: c.req.method,
           url: c.req.url,
         }, null, 2),
