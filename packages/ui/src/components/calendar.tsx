@@ -1,14 +1,15 @@
 import type { DayButton } from 'react-day-picker'
-import { Button, buttonVariants } from '@conar/ui/components/button'
+import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
-
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from 'lucide-react'
+
 import * as React from 'react'
 import { DayPicker, getDefaultClassNames } from 'react-day-picker'
+import { buttonVariants } from './button.variants'
 
 type CalendarRootProps = React.ComponentPropsWithoutRef<'div'> & {
   rootRef?: React.Ref<HTMLDivElement>

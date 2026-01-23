@@ -1,4 +1,4 @@
-import { DEFAULT_COLUMN_WIDTH } from '~/entities/database/utils'
+import { DEFAULT_COLUMN_WIDTH } from '~/entities/connection/components/table/utils'
 
 export const selectSymbol = Symbol('table-selection')
 

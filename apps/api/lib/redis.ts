@@ -22,12 +22,12 @@ export const redis: Redis = env.REDIS_URL
   ? new Redis(`${env.REDIS_URL}?family=0`)
   : new RedisMock()
 
-export async function redisCache<T>(fn: () => MaybePromise<T>, key: string, ttl: number = 60 * 60 * 24) {
+export async function redisMemoize<T>(fn: () => MaybePromise<T>, key: string, ttl: number = 60 * 60 * 24) {
   const cached = await redis.get(key)
   if (cached)
     return JSON.parse(cached) as T
 
   const data = await fn()
-  await redis.setex(key, ttl, JSON.stringify(data))
+  await redis.setex(key, ttl, JSON.stringify(data === undefined ? null : data))
   return data
 }

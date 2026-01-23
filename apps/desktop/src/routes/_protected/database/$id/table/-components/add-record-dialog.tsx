@@ -1,6 +1,6 @@
-import type { databases } from '~/drizzle'
-import type { ExtendedColumn } from '~/entities/database/sql/record'
-import type { Column } from '~/entities/database/utils/table'
+import type { connections } from '~/drizzle'
+import type { Column } from '~/entities/connection/components/table/utils'
+import type { ExtendedColumn } from '~/entities/connection/sql/record'
 import { Button } from '@conar/ui/components/button'
 import { Calendar } from '@conar/ui/components/calendar'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
@@ -14,23 +14,22 @@ import { useMutation } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseRowsQuery } from '~/entities/database/queries'
-import { useDatabaseEnums } from '~/entities/database/queries/enums'
-import { columnsQuery } from '~/entities/database/sql/columns'
-import { buildInitialValues, buildInsertPayload, getPrimaryKeyColumns, insertRecordQuery } from '~/entities/database/sql/record'
+import { connectionRowsQuery, useConnectionEnums } from '~/entities/connection/queries'
+import { columnsQuery } from '~/entities/connection/sql/columns'
+import { buildInitialValues, buildInsertPayload, getPrimaryKeyColumns, insertRecordQuery } from '~/entities/connection/sql/record'
 import { queryClient } from '~/main'
 import { Route } from '..'
 
 interface AddRecordDialogProps {
   ref?: React.RefObject<{
-    open: (database: typeof databases.$inferSelect, schema: string, table: string) => void
+    open: (database: typeof connections.$inferSelect, schema: string, table: string) => void
   } | null>
 }
 
 export function AddRecordDialog({ ref }: AddRecordDialogProps) {
   const [open, setOpen] = useState(false)
-  const { database } = Route.useRouteContext()
-  const { data: enums } = useDatabaseEnums({ database })
+  const { connection } = Route.useRouteContext()
+  const { data: enums } = useConnectionEnums({ connection })
   const [schema, setSchema] = useState('')
   const [table, setTable] = useState('')
   const [columns, setColumns] = useState<ExtendedColumn[]>([])
@@ -45,18 +44,18 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
   }
 
   useImperativeHandle(ref, () => ({
-    open: async (dbOverride: typeof databases.$inferSelect, sch: string, tbl: string) => {
-      if (!database)
+    open: async (connOverride: typeof connections.$inferSelect, sch: string, tbl: string) => {
+      if (!connection)
         return
-      const db = dbOverride ?? database
+      const conn = connOverride ?? connection
       setSchema(sch)
       setTable(tbl)
       setValues({})
 
       try {
-        const primaryKeyColumns = await getPrimaryKeyColumns(db, sch, tbl)
+        const primaryKeyColumns = await getPrimaryKeyColumns(conn, sch, tbl)
 
-        const tableColumns = await columnsQuery(db, { schema: sch, table: tbl })
+        const tableColumns = await columnsQuery(conn, { schema: sch, table: tbl })
 
         const columnsWithPrimary = tableColumns.map(col => ({
           ...col,
@@ -67,7 +66,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
 
         setColumns(columnsWithPrimary)
 
-        const initialValues = buildInitialValues(database, primaryKeyColumns, table, columnsWithPrimary)
+        const initialValues = buildInitialValues(conn, primaryKeyColumns, tbl, columnsWithPrimary)
         setValues(initialValues)
         setOpen(true)
       }
@@ -84,15 +83,15 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
       values,
       schema,
       table,
-      database,
+      connection,
     }: {
       columns: string[]
       values: unknown[]
       schema: string
       table: string
-      database: typeof databases.$inferSelect
+      connection: typeof connections.$inferSelect
     }) => {
-      return insertRecordQuery(database, {
+      return insertRecordQuery(connection, {
         schema,
         table,
         columns,
@@ -102,8 +101,8 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
     onSuccess: () => {
       toast.success('Record added successfully')
       queryClient.invalidateQueries({
-        queryKey: databaseRowsQuery({
-          database,
+        queryKey: connectionRowsQuery({
+          connection,
           table,
           schema,
           query: { filters: [], orderBy: {} },
@@ -120,10 +119,10 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
   const isSubmitting = insertRecordMutation.isPending
 
   const handleSubmit = async () => {
-    if (!database || !table || !schema)
+    if (!connection || !table || !schema)
       return
 
-    const payload = buildInsertPayload(database, columns, values)
+    const payload = buildInsertPayload(connection, columns, values)
 
     if (!payload) {
       toast.error('No valid columns to insert')
@@ -136,7 +135,7 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
         values: payload.values,
         schema,
         table,
-        database,
+        connection,
       })
     }
     catch (error) {

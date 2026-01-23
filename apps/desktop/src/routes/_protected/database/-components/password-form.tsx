@@ -1,5 +1,5 @@
-import type { databases } from '~/drizzle'
-import type { DatabaseMutationMetadata } from '~/entities/database/sync'
+import type { connections } from '~/drizzle'
+import type { ConnectionMutationMetadata } from '~/entities/connection/sync'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
@@ -10,33 +10,31 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { executeSql } from '~/entities/database/sql'
-import {
-  databasesCollection,
-} from '~/entities/database/sync'
+import { executeSql } from '~/entities/connection/sql'
+import { connectionsCollection } from '~/entities/connection/sync'
 
-export function PasswordForm({ database }: { database: typeof databases.$inferSelect }) {
+export function PasswordForm({ connection }: { connection: typeof connections.$inferSelect }) {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
   const newConnectionString = useMemo(() => {
-    const url = new SafeURL(database.connectionString)
+    const url = new SafeURL(connection.connectionString)
     url.password = password
     return url.toString()
-  }, [database.connectionString, password])
+  }, [connection.connectionString, password])
 
   const { mutate: savePassword, status } = useMutation({
     mutationFn: async (password: string) => {
       await executeSql({
-        type: database.type,
+        type: connection.type,
         connectionString: newConnectionString,
         sql: 'SELECT 1',
       })
-      databasesCollection.update(database.id, {
+      connectionsCollection.update(connection.id, {
         metadata: {
           cloudSync: false,
-        } satisfies DatabaseMutationMetadata,
+        } satisfies ConnectionMutationMetadata,
       }, (draft) => {
         const url = new SafeURL(draft.connectionString)
 

@@ -23,7 +23,7 @@ import {
   chatsCollection,
   chatsMessagesCollection,
 } from '~/entities/chat/sync'
-import { databaseStore } from '~/entities/database/store'
+import { connectionStore } from '~/entities/connection/store'
 import { convertToAppUIMessage } from '~/lib/ai'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
@@ -81,7 +81,7 @@ function groupChats(data: typeof chats.$inferSelect[]) {
 export function ChatHeader({ chatId }: { chatId: string }) {
   const { id } = Route.useParams()
   const navigate = useNavigate()
-  const store = databaseStore(id)
+  const store = connectionStore(id)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveChatDialog>>(null)
   const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'))
   const chat = allChats.find(chat => chat.id === chatId)
@@ -125,7 +125,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
         store.setState(state => ({
           ...state,
           lastOpenedChatId: null,
-        }))
+        } satisfies typeof state))
         navigate({
           to: '/database/$id/sql',
           params: { id },

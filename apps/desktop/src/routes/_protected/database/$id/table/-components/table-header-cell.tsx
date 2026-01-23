@@ -1,5 +1,5 @@
 import type { TableHeaderCellProps } from '~/components/table'
-import type { Column } from '~/entities/database/utils'
+import type { Column } from '~/entities/connection/components/table/utils'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -7,7 +7,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiPencilLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { databaseEnumsQuery } from '~/entities/database/queries'
+import { connectionEnumsQuery } from '~/entities/connection/queries'
 import { Route } from '..'
 import { usePageStoreContext } from '../-store'
 
@@ -59,11 +59,11 @@ export function TableHeaderCell({
   onRename?: () => void
   className?: string
 } & TableHeaderCellProps) {
-  const { database } = Route.useLoaderData()
+  const { connection } = Route.useLoaderData()
   const store = usePageStoreContext()
   const order = useStore(store, state => state.orderBy?.[column.id] ?? null)
   const { data: enumData } = useQuery({
-    ...databaseEnumsQuery({ database }),
+    ...connectionEnumsQuery({ connection }),
     select: data => data?.find(e => e.name === column.enum),
   })
 

@@ -1,12 +1,12 @@
-import type { databases } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { useQueries } from '@tanstack/react-query'
-import { databaseConstraintsQuery, databaseTableColumnsQuery } from '~/entities/database/queries'
+import { connectionConstraintsQuery, connectionTableColumnsQuery } from '~/entities/connection/queries'
 
-export function useTableColumns({ database, table, schema }: { database: typeof databases.$inferSelect, table: string, schema: string }) {
+export function useTableColumns({ connection, table, schema }: { connection: typeof connections.$inferSelect, table: string, schema: string }) {
   const [columns, constraints] = useQueries({
     queries: [
-      databaseTableColumnsQuery({ database, table, schema }),
-      databaseConstraintsQuery({ database }),
+      connectionTableColumnsQuery({ connection, table, schema }),
+      connectionConstraintsQuery({ connection }),
     ],
     combine: ([columns, constraints]) => [columns.data ?? [], constraints.data ?? []],
   })
