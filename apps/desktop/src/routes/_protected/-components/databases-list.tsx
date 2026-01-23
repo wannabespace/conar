@@ -103,7 +103,6 @@ function ConnectionCard({ connection, onRemove, onRename }: { connection: typeof
                 e.preventDefault()
                 e.stopPropagation()
                 toggleExpand()
-                copy(connection.connectionString, 'Connection string copied to clipboard')
               }}
             >
               {isExpanded
