@@ -70,7 +70,7 @@ export function TableProvider({
     const customColumnsSizesMap = new Map(Object.entries(customColumnSizes))
     const columnsToRemove = columns.filter(column => !customColumnsSizesMap.has(column.id))
 
-    const id = requestAnimationFrame(() => {
+    const rafId = requestAnimationFrame(() => {
       columnsToRemove.forEach((column) => {
         const id = `--table-column-width-${column.id}`
 
@@ -84,7 +84,7 @@ export function TableProvider({
       measureDebounced()
     })
 
-    return () => cancelAnimationFrame(id)
+    return () => cancelAnimationFrame(rafId)
   }, [scrollRef, customColumnSizes, columns, measureDebounced])
 
   return (
