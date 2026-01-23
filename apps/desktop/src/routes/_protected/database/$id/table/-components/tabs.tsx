@@ -156,7 +156,7 @@ function SortableTab({
       )}
     >
       <ContextMenu>
-        <ContextMenuTrigger>
+        <ContextMenuTrigger className="h-full">
           <TabButton
             active={schemaParam === item.tab.schema && tableParam === item.tab.table}
             onClose={onClose}
@@ -370,7 +370,7 @@ export function TablesTabs({
           onReorder={(newItems) => {
             updateTabs(connection.id, newItems.map(item => item.tab))
           }}
-          className="flex items-center gap-1"
+          className="flex gap-1"
         >
           {tabItems.map((item, index) => (
             <SortableTab
