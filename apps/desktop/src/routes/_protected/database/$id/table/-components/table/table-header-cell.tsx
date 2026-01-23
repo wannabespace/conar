@@ -217,9 +217,9 @@ export function TableHeaderCell({
     e.preventDefault()
     setIsResizing(true)
     const startWidth = ref.current?.getBoundingClientRect().width ?? 0
-    const originalCursor = document.body.style.cursor
-
-    document.body.style.cursor = 'col-resize'
+    const div = document.createElement('div')
+    div.className = 'cursor-col-resize size-full fixed top-0 left-0 z-1000'
+    document.body.appendChild(div)
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       if (scrollRef?.current) {
@@ -235,10 +235,10 @@ export function TableHeaderCell({
     }
 
     const handleMouseUp = () => {
-      document.body.style.cursor = originalCursor
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
       setIsResizing(false)
+      div.remove()
     }
 
     document.addEventListener('mousemove', handleMouseMove)
@@ -332,7 +332,7 @@ export function TableHeaderCell({
         {resize !== false && (
           <div
             className={cn(`
-              h-full w-1 cursor-col-resize rounded-xs bg-foreground/30 opacity-0
+              h-full w-1 cursor-col-resize rounded-xs bg-foreground/20 opacity-0
               transition-opacity select-none
               group-hover/header-cell:opacity-100
               hover:bg-primary

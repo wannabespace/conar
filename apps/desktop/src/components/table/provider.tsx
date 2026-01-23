@@ -61,7 +61,7 @@ export function TableProvider({
     scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0)}px`)
   }, [scrollRef, virtualColumns, virtualRows, tableWidth, tableHeight])
 
-  const measureDebounced = useDebouncedCallback(measure, [], 100)
+  const measureDebounced = useDebouncedCallback(measure, [], 1000)
 
   useEffect(() => {
     if (!scrollRef.current || !customColumnSizes)
