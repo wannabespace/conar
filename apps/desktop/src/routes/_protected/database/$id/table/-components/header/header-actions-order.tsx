@@ -10,9 +10,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { RiAddLine, RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiCloseLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
-import { useTableColumns } from '../-queries/use-columns-query'
-import { usePageStoreContext } from '../-store'
-import { useHeaderActionsOrder } from './use-header-actions-order'
+import { useTableColumns } from '../../-queries/use-columns-query'
+import { usePageStoreContext } from '../../-store'
+import { useColumnsOrder } from '../use-columns-order'
 
 export function HeaderActionsOrder({ table, schema, connection }: { table: string, schema: string, connection: typeof connections.$inferSelect }) {
   const store = usePageStoreContext()
@@ -20,7 +20,7 @@ export function HeaderActionsOrder({ table, schema, connection }: { table: strin
   const columns = useTableColumns({ connection, table, schema })
   const [open, setOpen] = useState(false)
   const [showAddColumn, setShowAddColumn] = useState(false)
-  const { setOrder, removeOrder } = useHeaderActionsOrder()
+  const { setOrder, removeOrder } = useColumnsOrder()
 
   const addColumn = (columnId: string) => {
     setOrder(columnId, 'ASC')

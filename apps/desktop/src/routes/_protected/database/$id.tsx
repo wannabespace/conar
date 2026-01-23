@@ -1,3 +1,4 @@
+'use no memo'
 import type { connectionStoreType } from '~/entities/connection/store'
 import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@conar/shared/utils/title'
@@ -62,8 +63,8 @@ function DatabasePage() {
       lastOpenedConnections.set([connection.id, ...last.filter(connId => connId !== connection.id)].slice(0, 3))
   }, [connection.id])
 
-  const { defaultLayout, onLayoutChange } = useDefaultLayout({
-    id: `logger-layout-${connection.id}`,
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: `database-layout-${connection.id}`,
     storage: localStorage,
   })
 
@@ -90,7 +91,7 @@ function DatabasePage() {
           orientation="vertical"
           className="min-h-0 flex-1"
           defaultLayout={defaultLayout}
-          onLayoutChange={onLayoutChange}
+          onLayoutChanged={onLayoutChanged}
         >
           <ResizablePanel defaultSize="70%" minSize="50%">
             <Outlet />
