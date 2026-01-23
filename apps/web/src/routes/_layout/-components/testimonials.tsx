@@ -87,7 +87,7 @@ function Testimonial({ name, login, avatar, link, children, className }: Testimo
           aria-hidden="true"
         />
         <blockquote className={`
-          pl-3 text-sm leading-relaxed text-foreground
+          pl-3 text-sm/relaxed text-foreground
           sm:pl-4 sm:text-base
         `}
         >
@@ -259,7 +259,7 @@ export function Testimonials() {
           Testimonials
         </h2>
         <p className={`
-          mx-auto max-w-3xl text-center text-2xl leading-tight font-bold
+          mx-auto max-w-3xl text-center text-2xl/tight font-bold
           text-balance
           sm:text-3xl
         `}

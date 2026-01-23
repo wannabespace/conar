@@ -15,16 +15,16 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
-import { databaseStore } from '~/entities/database/store'
+import { connectionStore } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
-import { setIsSubscriptionDialogOpen } from '~/store'
+import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
 import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
 
-function Images({ databaseId }: { databaseId: string }) {
-  const store = databaseStore(databaseId)
+function Images({ connectionId }: { connectionId: string }) {
+  const store = connectionStore(connectionId)
   const files = useStore(store, state => state.files)
 
   if (files.length === 0) {
@@ -50,14 +50,15 @@ function Images({ databaseId }: { databaseId: string }) {
 }
 
 export function ChatForm() {
-  const { database, chat } = Route.useLoaderData()
+  const isOnline = useStore(appStore, state => state.isOnline)
+  const { connection, chat } = Route.useLoaderData()
   const { error } = Route.useSearch()
   const router = useRouter()
   const location = useLocation()
   const { status, stop } = useChat({ chat })
   const elementRef = useRef<HTMLDivElement>(null)
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
   const input = useStore(store, state => state.chatInput)
   const { subscription } = useSubscription()
 
@@ -68,6 +69,10 @@ export function ChatForm() {
   }, [ref])
 
   const handleSend = async (value: string) => {
+    if (!isOnline) {
+      return
+    }
+
     if (
       value.trim() === ''
       || chat.status === 'streaming'
@@ -93,7 +98,7 @@ export function ChatForm() {
       if (location.search.chatId !== chat.id) {
         router.navigate({
           to: '/database/$id/sql',
-          params: { id: database.id },
+          params: { id: connection.id },
           search: { chatId: chat.id },
           replace: true,
         })
@@ -189,7 +194,7 @@ export function ChatForm() {
   useKeyboardEvent(e => isCtrlAndKey(e, 'n'), () => {
     router.navigate({
       to: '/database/$id/sql',
-      params: { id: database.id },
+      params: { id: connection.id },
       search: { chatId: undefined },
     })
   }, {
@@ -202,18 +207,15 @@ export function ChatForm() {
       ref={elementRef}
       className="flex flex-col gap-1"
     >
-      <Images databaseId={database.id} />
+      <Images connectionId={connection.id} />
       <div className={`
-        relative flex flex-col gap-2 rounded-md border
+        relative flex flex-col gap-2 overflow-hidden rounded-md border
         dark:bg-input/30
       `}
       >
         {!subscription && (
           <span
-            className={`
-              absolute top-0 right-0 left-0 z-10 p-2 text-sm
-              text-muted-foreground
-            `}
+            className="z-10 bg-muted px-2 py-1 text-sm text-muted-foreground"
           >
             Please
             {' '}
@@ -239,11 +241,11 @@ export function ChatForm() {
               chatInput: value,
             } satisfies typeof state))
           }}
-          placeholder="Generate SQL queries using natural language"
+          placeholder={isOnline ? 'Generate SQL queries using natural language' : 'Check your internet connection to generate SQL queries'}
           className={`
             max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm outline-none
           `}
-          disabled={!subscription}
+          disabled={!subscription || !isOnline}
           onEnter={handleSend}
           onImageAdd={(file) => {
             store.setState(state => ({

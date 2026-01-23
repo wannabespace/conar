@@ -13,8 +13,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
-import { databaseStore } from '~/entities/database/store'
-import { hasDangerousSqlKeywords } from '~/entities/database/utils'
+import { connectionStore } from '~/entities/connection/store'
+import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 import { queriesCollection } from '~/entities/query/sync'
 import { formatSql } from '~/lib/formatter'
 import { runnerQueryOptions } from '.'
@@ -28,8 +28,8 @@ import { RunnerSaveDialog } from './runner-save-dialog'
 import { RunnerSettings } from './runner-settings'
 
 function useTrackSelectedLinesChange() {
-  const { database } = Route.useRouteContext()
-  const store = databaseStore(database.id)
+  const { connection } = Route.useRouteContext()
+  const store = connectionStore(connection.id)
   const currentLineNumbers = useStore(store, state => state.editorQueries.map(q => q.startLineNumber))
 
   useEffect(() => {
@@ -49,17 +49,17 @@ function useTrackSelectedLinesChange() {
 }
 
 export function Runner() {
-  const { database } = Route.useRouteContext()
+  const { connection } = Route.useRouteContext()
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
   const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
-    .where(({ queries }) => eq(queries.databaseId, database.id))
+    .where(({ queries }) => eq(queries.connectionId, connection.id))
     .select(({ queries }) => ({ queriesCount: count(queries.id) }))
     .findOne(),
   )
   const [isFormatting, setIsFormatting] = useState(false)
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
   const { selectedLines, editorQueries, sql, resultsVisible } = useStore(store, state => ({
     selectedLines: state.selectedLines,
     editorQueries: state.editorQueries,
@@ -70,7 +70,7 @@ export function Runner() {
   useTrackSelectedLinesChange()
 
   function format() {
-    const formatted = formatSql(sql, database.type)
+    const formatted = formatSql(sql, connection.type)
 
     store.setState(state => ({
       ...state,
@@ -90,7 +90,7 @@ export function Runner() {
     })))
   }, [selectedLines, editorQueries])
 
-  const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions({ database }))
+  const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions({ connection }))
 
   const runQueries = (queries: typeof queriesToRun) => {
     store.setState(state => ({
@@ -114,8 +114,8 @@ export function Runner() {
     }
   }
 
-  const { defaultLayout, onLayoutChange } = useDefaultLayout({
-    id: `sql-layout-${database.id}`,
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: `sql-layout-${connection.id}`,
     storage: localStorage,
   })
 
@@ -128,7 +128,7 @@ export function Runner() {
     >
       <ResizablePanelGroup
         defaultLayout={defaultLayout}
-        onLayoutChange={onLayoutChange}
+        onLayoutChanged={onLayoutChanged}
         orientation="vertical"
         className="h-full"
       >

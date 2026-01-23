@@ -24,19 +24,9 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.27.0
-
-      - name: Restore cached dependencies
-        id: cache-restore
-        uses: actions/cache@v3
-        with:
-          path: |
-            node_modules
-            ~/.pnpm-store
-          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          version: 10.28.1
 
       - name: Install dependencies
-        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Lint

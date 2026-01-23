@@ -1,14 +1,14 @@
-import type { databases } from '~/drizzle'
-import type { databaseStoreType } from '~/entities/database/store'
+import type { connections } from '~/drizzle'
+import type { connectionStoreType } from '~/entities/connection/store'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { executeAndLogSql } from '~/entities/database/sql'
-import { databaseStore } from '~/entities/database/store'
-import { hasDangerousSqlKeywords } from '~/entities/database/utils'
+import { executeAndLogSql } from '~/entities/connection/sql'
+import { connectionStore } from '~/entities/connection/store'
+import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 
 export * from './runner'
 
-function transformResult({ rows, query, startLineNumber, endLineNumber }: { rows: unknown[] } & Pick<typeof databaseStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
+function transformResult({ rows, query, startLineNumber, endLineNumber }: { rows: unknown[] } & Pick<typeof connectionStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: rows as Record<string, unknown>[],
     error: null,
@@ -18,7 +18,7 @@ function transformResult({ rows, query, startLineNumber, endLineNumber }: { rows
   }
 }
 
-function transformError({ error, query, startLineNumber, endLineNumber }: { error: unknown } & Pick<typeof databaseStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
+function transformError({ error, query, startLineNumber, endLineNumber }: { error: unknown } & Pick<typeof connectionStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: null,
     error: error instanceof Error ? error.message : String(error),
@@ -28,11 +28,11 @@ function transformError({ error, query, startLineNumber, endLineNumber }: { erro
   }
 }
 
-export function runnerQueryOptions({ database }: { database: typeof databases.$inferSelect }) {
-  const store = databaseStore(database.id)
+export function runnerQueryOptions({ connection }: { connection: typeof connections.$inferSelect }) {
+  const store = connectionStore(connection.id)
 
   return queryOptions({
-    queryKey: ['sql', database.id],
+    queryKey: ['sql', connection.id],
     queryFn: async ({ signal }) => {
       const queries = store.state.queriesToRun
 
@@ -44,7 +44,7 @@ export function runnerQueryOptions({ database }: { database: typeof databases.$i
         }
 
         try {
-          const { result } = await executeAndLogSql({ database, sql: query })
+          const { result } = await executeAndLogSql({ connection, sql: query })
           results.push(transformResult({ rows: result as unknown[], query, startLineNumber, endLineNumber }))
         }
         catch (error) {

@@ -22,7 +22,7 @@ interface RunnerSaveDialogProps {
 }
 
 export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
-  const { database } = Route.useRouteContext()
+  const { connection } = Route.useRouteContext()
   const [name, setName] = useState('')
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
@@ -40,7 +40,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
       id: v7(),
       createdAt: new Date(),
       updatedAt: new Date(),
-      databaseId: database.id,
+      connectionId: connection.id,
       name,
       query,
     })

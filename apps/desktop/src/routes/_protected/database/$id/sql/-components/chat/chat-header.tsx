@@ -1,6 +1,6 @@
-import type { AppUIMessage } from '@conar/api/src/ai-tools'
 import type { ComponentRef } from 'react'
 import type { chats } from '~/drizzle'
+import type { ChatMutationMetadata } from '~/entities/chat/sync'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -19,8 +19,12 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { getMonth, getWeek, getYear, isToday, isYesterday } from 'date-fns'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
-import { databaseStore } from '~/entities/database/store'
+import {
+  chatsCollection,
+  chatsMessagesCollection,
+} from '~/entities/chat/sync'
+import { connectionStore } from '~/entities/connection/store'
+import { convertToAppUIMessage } from '~/lib/ai'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
 import { RemoveChatDialog } from './remove-chat-dialog'
@@ -77,7 +81,7 @@ function groupChats(data: typeof chats.$inferSelect[]) {
 export function ChatHeader({ chatId }: { chatId: string }) {
   const { id } = Route.useParams()
   const navigate = useNavigate()
-  const store = databaseStore(id)
+  const store = connectionStore(id)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveChatDialog>>(null)
   const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'))
   const chat = allChats.find(chat => chat.id === chatId)
@@ -93,10 +97,14 @@ export function ChatHeader({ chatId }: { chatId: string }) {
 
     const title = await orpc.ai.generateTitle({
       chatId: chat.id,
-      messages: messages as AppUIMessage[],
+      messages: messages.map(convertToAppUIMessage),
     })
 
-    chatsCollection.update(chat.id, (draft) => {
+    chatsCollection.update(chat.id, {
+      metadata: {
+        cloudSync: false,
+      } satisfies ChatMutationMetadata,
+    }, (draft) => {
       draft.title = title
     })
   })
@@ -117,7 +125,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
         store.setState(state => ({
           ...state,
           lastOpenedChatId: null,
-        }))
+        } satisfies typeof state))
         navigate({
           to: '/database/$id/sql',
           params: { id },

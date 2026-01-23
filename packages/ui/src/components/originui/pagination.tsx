@@ -1,7 +1,6 @@
 import type { Button } from '@conar/ui/components/button'
 import type * as React from 'react'
-import { buttonVariants } from '@conar/ui/components/button'
-
+import { buttonVariants } from '@conar/ui/components/button.variants'
 import { cn } from '@conar/ui/lib/utils'
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from 'lucide-react'
 
@@ -61,7 +60,10 @@ function PaginationPrevious({ className, ...props }: React.ComponentProps<typeof
     <PaginationButton
       aria-label="Go to previous page"
       size="default"
-      className={cn('gap-1 px-2.5 sm:pe-4', className)}
+      className={cn(`
+        gap-1 px-2.5
+        sm:pe-4
+      `, className)}
       {...props}
     >
       <ChevronLeftIcon size={16} />
@@ -75,7 +77,10 @@ function PaginationNext({ className, ...props }: React.ComponentProps<typeof Pag
     <PaginationButton
       aria-label="Go to next page"
       size="default"
-      className={cn('gap-1 px-2.5 sm:ps-4', className)}
+      className={cn(`
+        gap-1 px-2.5
+        sm:ps-4
+      `, className)}
       {...props}
     >
       <span>Next</span>

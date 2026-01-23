@@ -1,6 +1,12 @@
-import { DEFAULT_COLUMN_WIDTH } from '~/entities/database/utils'
+import { DEFAULT_COLUMN_WIDTH } from '~/entities/connection/components/table/utils'
 
-export const selectSymbol = Symbol('table-selection')
+const SELECT_COLUMN_ID = '!__selection_column__!'
+const ACTIONS_COLUMN_ID = '!__actions_column__!'
+
+export const INTERNAL_COLUMN_IDS = {
+  SELECT: SELECT_COLUMN_ID,
+  ACTIONS: ACTIONS_COLUMN_ID,
+}
 
 const columnsSizeMap: Record<string, number> = {
   boolean: 160,
