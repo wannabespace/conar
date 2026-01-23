@@ -8,15 +8,15 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { Table, TableBody, TableProvider } from '~/components/table'
 import { TableCell } from '~/entities/connection/components'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/connection/components/table/utils'
 import { connectionRowsQuery } from '~/entities/connection/queries'
 import { useConnectionEnums } from '~/entities/connection/queries/enums'
 import { selectQuery, setQuery } from '~/entities/connection/sql'
 import { queryClient } from '~/main'
-import { Route } from '..'
-import { getColumnSize, selectSymbol } from '../-lib'
-import { useTableColumns } from '../-queries/use-columns-query'
-import { usePageStoreContext } from '../-store'
+import { Route } from '../..'
+import { getColumnSize, INTERNAL_COLUMN_IDS } from '../../-lib'
+import { useTableColumns } from '../../-queries/use-columns-query'
+import { usePageStoreContext } from '../../-store'
+import { useColumnsOrder } from '../use-columns-order'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
@@ -24,7 +24,6 @@ import { TableHeaderCell } from './table-header-cell'
 import { TableInfiniteLoader } from './table-infinite-loader'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
 import { TableBodySkeleton } from './table-skeleton'
-import { useHeaderActionsOrder } from './use-header-actions-order'
 
 function prepareValue(value: unknown, column?: Column): unknown {
   if (!column)
@@ -63,10 +62,11 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const columns = useTableColumns({ connection, table, schema })
   const store = usePageStoreContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
+  const columnSizes = useStore(store, state => state.columnSizes)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(connectionRowsQuery({ connection, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
-  const { onOrder } = useHeaderActionsOrder()
+  const { toggleOrder } = useColumnsOrder()
   const renameColumnRef = useRef<{ rename: (schema: string, table: string, column: string) => void }>(null)
 
   useEffect(() => {
@@ -217,7 +217,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           return (
             <TableHeaderCell
               column={column}
-              onSort={() => onOrder(column.id)}
+              onSort={() => toggleOrder(column.id)}
               onRename={onRename}
               {...props}
             />
@@ -242,22 +242,28 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     if (primaryColumns.length > 0 && hiddenColumns.length !== columns.length) {
       sortedColumns.unshift({
-        id: String(selectSymbol),
+        id: INTERNAL_COLUMN_IDS.SELECT,
         cell: props => <SelectionCell keys={primaryColumns} {...props} />,
         header: props => <SelectionHeaderCell keys={primaryColumns} {...props} />,
         size: 40,
       } satisfies ColumnRenderer)
     }
 
+    sortedColumns.push({
+      id: INTERNAL_COLUMN_IDS.ACTIONS,
+      size: 100,
+      cell: () => <div />,
+      header: () => <div />,
+    })
+
     return sortedColumns
-  }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, onOrder, enums])
+  }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, enums])
 
   return (
     <TableProvider
       rows={rows ?? []}
       columns={tableColumns}
-      estimatedRowSize={DEFAULT_ROW_HEIGHT}
-      estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
+      customColumnSizes={columnSizes}
     >
       <div className="relative size-full">
         <Table>
