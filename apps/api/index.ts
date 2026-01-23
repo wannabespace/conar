@@ -18,6 +18,7 @@ import { env, nodeEnv } from './env'
 import { auth } from './lib/auth'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
+import { sendEmail } from './lib/resend'
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -46,12 +47,20 @@ app.use(cors({
 app.use('*', async (c, next) => {
   await next()
 
-  if (c.res.status >= 400 && c.res.status !== 401) {
-    consola.error('Alerting response status', {
-      status: c.res.status,
-      path: c.req.path,
-      method: c.req.method,
-      url: c.req.url,
+  if (c.res.status >= 400 && c.res.status !== 401 && env.ALERTS_EMAIL) {
+    sendEmail({
+      to: env.ALERTS_EMAIL,
+      subject: `Alert from API: ${c.res.status} ${c.req.method} ${c.req.url}`,
+      template: 'Alert',
+      props: {
+        text: JSON.stringify({
+          status: c.res.status,
+          path: c.req.path,
+          method: c.req.method,
+          url: c.req.url,
+        }, null, 2),
+        service: 'API',
+      },
     })
   }
 })

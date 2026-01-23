@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { databases } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
@@ -12,23 +12,23 @@ import { useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useRef, useState } from 'react'
-import { DatabaseIcon } from '~/entities/database/components'
-import { useDatabaseLinkParams } from '~/entities/database/hooks'
-import { databasesCollection } from '~/entities/database/sync'
-import { useLastOpenedDatabases } from '~/entities/database/utils'
+import { ConnectionIcon } from '~/entities/connection/components'
+import { useConnectionLinkParams } from '~/entities/connection/hooks'
+import { connectionsCollection } from '~/entities/connection/sync'
+import { useLastOpenedConnections } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
-function DatabaseCard({ database, onRemove, onRename }: { database: typeof databases.$inferSelect, onRemove: () => void, onRename: () => void }) {
-  const url = new SafeURL(database.connectionString)
+function ConnectionCard({ connection, onRemove, onRename }: { connection: typeof connections.$inferSelect, onRemove: () => void, onRename: () => void }) {
+  const url = new SafeURL(connection.connectionString)
 
-  if (database.isPasswordExists || url.password) {
+  if (connection.isPasswordExists || url.password) {
     url.password = '*'.repeat(url.password.length || 6)
   }
 
   const connectionString = url.toString()
 
-  const params = useDatabaseLinkParams(database.id)
+  const params = useConnectionLinkParams(connection.id)
 
   return (
     <motion.div
@@ -45,20 +45,20 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
             overflow-hidden rounded-lg border border-l-4 border-border/50
             bg-muted/30 p-5
           `,
-          database.color
+          connection.color
             ? `
               border-l-(--color)/60
               hover:border-(--color)/60
             `
             : 'hover:border-primary/60',
         )}
-        style={database.color ? { '--color': database.color } : {}}
+        style={connection.color ? { '--color': connection.color } : {}}
         preload={false}
         {...params}
       >
         <div className="size-12 shrink-0 rounded-lg bg-muted/70 p-3">
-          <DatabaseIcon
-            type={database.type}
+          <ConnectionIcon
+            type={connection.type}
             className="size-full"
           />
         </div>
@@ -67,18 +67,18 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
             flex items-center gap-2 truncate font-medium tracking-tight
           `}
           >
-            <span className={database.color
+            <span className={connection.color
               ? `
                 text-(--color)
                 group-hover:text-(--color)/80
               `
               : ''}
             >
-              {database.name}
+              {connection.name}
             </span>
-            {database.label && (
+            {connection.label && (
               <Badge variant="secondary">
-                {database.label}
+                {connection.label}
               </Badge>
             )}
           </div>
@@ -101,7 +101,7 @@ function DatabaseCard({ database, onRemove, onRename }: { database: typeof datab
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
-                copy(database.connectionString, 'Connection string copied to clipboard')
+                copy(connection.connectionString, 'Connection string copied to clipboard')
               }}
             >
               <RiFileCopyLine className="size-4 opacity-50" />
@@ -158,15 +158,15 @@ export function Empty() {
   )
 }
 
-function LastOpenedDatabases({ onRemove, onRename }: { onRemove: (database: typeof databases.$inferSelect) => void, onRename: (database: typeof databases.$inferSelect) => void }) {
-  const { data: databases } = useLiveQuery(q => q
-    .from({ databases: databasesCollection })
-    .orderBy(({ databases }) => databases.createdAt, 'desc'))
-  const [lastOpenedDatabases] = useLastOpenedDatabases()
-  const filteredDatabases = (databases?.filter(database => lastOpenedDatabases.includes(database.id)) ?? [])
-    .toSorted((a, b) => lastOpenedDatabases.indexOf(a.id) - lastOpenedDatabases.indexOf(b.id))
+function LastOpenedConnections({ onRemove, onRename }: { onRemove: (connection: typeof connections.$inferSelect) => void, onRename: (connection: typeof connections.$inferSelect) => void }) {
+  const { data: connections } = useLiveQuery(q => q
+    .from({ connections: connectionsCollection })
+    .orderBy(({ connections }) => connections.createdAt, 'desc'))
+  const [lastOpenedConnections] = useLastOpenedConnections()
+  const filteredConnections = (connections?.filter(connection => lastOpenedConnections.includes(connection.id)) ?? [])
+    .toSorted((a, b) => lastOpenedConnections.indexOf(a.id) - lastOpenedConnections.indexOf(b.id))
 
-  if (filteredDatabases.length === 0) {
+  if (filteredConnections.length === 0) {
     return null
   }
 
@@ -174,12 +174,12 @@ function LastOpenedDatabases({ onRemove, onRename }: { onRemove: (database: type
     <div className="flex flex-col gap-2">
       <h3 className="text-sm font-medium text-muted-foreground">Last Opened</h3>
       <AnimatePresence initial={false} mode="popLayout">
-        {filteredDatabases.map(database => (
-          <DatabaseCard
-            key={database.id}
-            database={database}
-            onRemove={() => onRemove(database)}
-            onRename={() => onRename(database)}
+        {filteredConnections.map(connection => (
+          <ConnectionCard
+            key={connection.id}
+            connection={connection}
+            onRemove={() => onRemove(connection)}
+            onRename={() => onRename(connection)}
           />
         ))}
       </AnimatePresence>
@@ -188,33 +188,33 @@ function LastOpenedDatabases({ onRemove, onRename }: { onRemove: (database: type
 }
 
 export function DatabasesList() {
-  const { data: databases } = useLiveQuery(q => q
-    .from({ databases: databasesCollection })
-    .orderBy(({ databases }) => databases.createdAt, 'desc'))
+  const { data: connections } = useLiveQuery(q => q
+    .from({ connections: connectionsCollection })
+    .orderBy(({ connections }) => connections.createdAt, 'desc'))
   const renameDialogRef = useRef<ComponentRef<typeof RenameConnectionDialog>>(null)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
-  const [lastOpenedDatabases] = useLastOpenedDatabases()
+  const [lastOpenedConnections] = useLastOpenedConnections()
 
-  const availableLabels = Array.from(new Set(databases.map(db => db.label).filter(Boolean) as string[])).sort()
+  const availableLabels = Array.from(new Set(connections.map(connection => connection.label).filter(Boolean) as string[])).sort()
 
-  const filteredDatabases = selectedLabel
-    ? databases.filter(db => db.label === selectedLabel)
-    : databases
+  const filteredConnections = selectedLabel
+    ? connections.filter(connection => connection.label === selectedLabel)
+    : connections
 
-  const hasLastOpened = lastOpenedDatabases.length > 0
+  const hasLastOpened = lastOpenedConnections.length > 0
 
   return (
     <div className="flex flex-col gap-6">
       <RemoveConnectionDialog ref={removeDialogRef} />
       <RenameConnectionDialog ref={renameDialogRef} />
       {hasLastOpened && (
-        <LastOpenedDatabases
-          onRemove={(database) => {
-            removeDialogRef.current?.remove(database)
+        <LastOpenedConnections
+          onRemove={(connection) => {
+            removeDialogRef.current?.remove(connection)
           }}
-          onRename={(database) => {
-            renameDialogRef.current?.rename(database)
+          onRename={(connection) => {
+            renameDialogRef.current?.rename(connection)
           }}
         />
       )}
@@ -239,18 +239,18 @@ export function DatabasesList() {
         </Tabs>
       )}
       <div className="flex flex-col gap-2">
-        {filteredDatabases.length > 0
+        {filteredConnections.length > 0
           ? (
               <AnimatePresence initial={false} mode="popLayout">
-                {filteredDatabases.map(database => (
-                  <DatabaseCard
-                    key={database.id}
-                    database={database}
+                {filteredConnections.map(connection => (
+                  <ConnectionCard
+                    key={connection.id}
+                    connection={connection}
                     onRemove={() => {
-                      removeDialogRef.current?.remove(database)
+                      removeDialogRef.current?.remove(connection)
                     }}
                     onRename={() => {
-                      renameDialogRef.current?.rename(database)
+                      renameDialogRef.current?.rename(connection)
                     }}
                   />
                 ))}

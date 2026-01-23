@@ -17,7 +17,6 @@ import { Route as ProtectedDatabaseIdRouteImport } from './routes/_protected/dat
 import { Route as ProtectedDatabaseIdVisualizerIndexRouteImport } from './routes/_protected/database/$id/visualizer/index'
 import { Route as ProtectedDatabaseIdTableIndexRouteImport } from './routes/_protected/database/$id/table/index'
 import { Route as ProtectedDatabaseIdSqlIndexRouteImport } from './routes/_protected/database/$id/sql/index'
-import { Route as ProtectedDatabaseIdSettingsIndexRouteImport } from './routes/_protected/database/$id/settings/index'
 import { Route as ProtectedDatabaseIdEnumsIndexRouteImport } from './routes/_protected/database/$id/enums/index'
 
 const AuthRoute = AuthRouteImport.update({
@@ -62,12 +61,6 @@ const ProtectedDatabaseIdSqlIndexRoute =
     path: '/sql/',
     getParentRoute: () => ProtectedDatabaseIdRoute,
   } as any)
-const ProtectedDatabaseIdSettingsIndexRoute =
-  ProtectedDatabaseIdSettingsIndexRouteImport.update({
-    id: '/settings/',
-    path: '/settings/',
-    getParentRoute: () => ProtectedDatabaseIdRoute,
-  } as any)
 const ProtectedDatabaseIdEnumsIndexRoute =
   ProtectedDatabaseIdEnumsIndexRouteImport.update({
     id: '/enums/',
@@ -81,7 +74,6 @@ export interface FileRoutesByFullPath {
   '/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
   '/create/': typeof ProtectedCreateIndexRoute
   '/database/$id/enums/': typeof ProtectedDatabaseIdEnumsIndexRoute
-  '/database/$id/settings/': typeof ProtectedDatabaseIdSettingsIndexRoute
   '/database/$id/sql/': typeof ProtectedDatabaseIdSqlIndexRoute
   '/database/$id/table/': typeof ProtectedDatabaseIdTableIndexRoute
   '/database/$id/visualizer/': typeof ProtectedDatabaseIdVisualizerIndexRoute
@@ -92,7 +84,6 @@ export interface FileRoutesByTo {
   '/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
   '/create': typeof ProtectedCreateIndexRoute
   '/database/$id/enums': typeof ProtectedDatabaseIdEnumsIndexRoute
-  '/database/$id/settings': typeof ProtectedDatabaseIdSettingsIndexRoute
   '/database/$id/sql': typeof ProtectedDatabaseIdSqlIndexRoute
   '/database/$id/table': typeof ProtectedDatabaseIdTableIndexRoute
   '/database/$id/visualizer': typeof ProtectedDatabaseIdVisualizerIndexRoute
@@ -105,7 +96,6 @@ export interface FileRoutesById {
   '/_protected/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
   '/_protected/create/': typeof ProtectedCreateIndexRoute
   '/_protected/database/$id/enums/': typeof ProtectedDatabaseIdEnumsIndexRoute
-  '/_protected/database/$id/settings/': typeof ProtectedDatabaseIdSettingsIndexRoute
   '/_protected/database/$id/sql/': typeof ProtectedDatabaseIdSqlIndexRoute
   '/_protected/database/$id/table/': typeof ProtectedDatabaseIdTableIndexRoute
   '/_protected/database/$id/visualizer/': typeof ProtectedDatabaseIdVisualizerIndexRoute
@@ -118,7 +108,6 @@ export interface FileRouteTypes {
     | '/database/$id'
     | '/create/'
     | '/database/$id/enums/'
-    | '/database/$id/settings/'
     | '/database/$id/sql/'
     | '/database/$id/table/'
     | '/database/$id/visualizer/'
@@ -129,7 +118,6 @@ export interface FileRouteTypes {
     | '/database/$id'
     | '/create'
     | '/database/$id/enums'
-    | '/database/$id/settings'
     | '/database/$id/sql'
     | '/database/$id/table'
     | '/database/$id/visualizer'
@@ -141,7 +129,6 @@ export interface FileRouteTypes {
     | '/_protected/database/$id'
     | '/_protected/create/'
     | '/_protected/database/$id/enums/'
-    | '/_protected/database/$id/settings/'
     | '/_protected/database/$id/sql/'
     | '/_protected/database/$id/table/'
     | '/_protected/database/$id/visualizer/'
@@ -210,13 +197,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedDatabaseIdSqlIndexRouteImport
       parentRoute: typeof ProtectedDatabaseIdRoute
     }
-    '/_protected/database/$id/settings/': {
-      id: '/_protected/database/$id/settings/'
-      path: '/settings'
-      fullPath: '/database/$id/settings/'
-      preLoaderRoute: typeof ProtectedDatabaseIdSettingsIndexRouteImport
-      parentRoute: typeof ProtectedDatabaseIdRoute
-    }
     '/_protected/database/$id/enums/': {
       id: '/_protected/database/$id/enums/'
       path: '/enums'
@@ -229,7 +209,6 @@ declare module '@tanstack/react-router' {
 
 interface ProtectedDatabaseIdRouteChildren {
   ProtectedDatabaseIdEnumsIndexRoute: typeof ProtectedDatabaseIdEnumsIndexRoute
-  ProtectedDatabaseIdSettingsIndexRoute: typeof ProtectedDatabaseIdSettingsIndexRoute
   ProtectedDatabaseIdSqlIndexRoute: typeof ProtectedDatabaseIdSqlIndexRoute
   ProtectedDatabaseIdTableIndexRoute: typeof ProtectedDatabaseIdTableIndexRoute
   ProtectedDatabaseIdVisualizerIndexRoute: typeof ProtectedDatabaseIdVisualizerIndexRoute
@@ -237,7 +216,6 @@ interface ProtectedDatabaseIdRouteChildren {
 
 const ProtectedDatabaseIdRouteChildren: ProtectedDatabaseIdRouteChildren = {
   ProtectedDatabaseIdEnumsIndexRoute: ProtectedDatabaseIdEnumsIndexRoute,
-  ProtectedDatabaseIdSettingsIndexRoute: ProtectedDatabaseIdSettingsIndexRoute,
   ProtectedDatabaseIdSqlIndexRoute: ProtectedDatabaseIdSqlIndexRoute,
   ProtectedDatabaseIdTableIndexRoute: ProtectedDatabaseIdTableIndexRoute,
   ProtectedDatabaseIdVisualizerIndexRoute:

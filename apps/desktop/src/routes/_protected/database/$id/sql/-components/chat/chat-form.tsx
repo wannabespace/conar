@@ -19,8 +19,8 @@ import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { MentionList } from '~/components/tiptap-mention-list'
-import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
-import { databaseStore } from '~/entities/database/store'
+import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { connectionStore } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
@@ -28,8 +28,8 @@ import { Route } from '../..'
 import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
 
-function Images({ databaseId }: { databaseId: string }) {
-  const store = databaseStore(databaseId)
+function Images({ connectionId }: { connectionId: string }) {
+  const store = connectionStore(connectionId)
   const files = useStore(store, state => state.files)
 
   if (files.length === 0) {
@@ -56,17 +56,17 @@ function Images({ databaseId }: { databaseId: string }) {
 
 export function ChatForm() {
   const isOnline = useStore(appStore, state => state.isOnline)
-  const { database, chat } = Route.useLoaderData()
+  const { connection, chat } = Route.useLoaderData()
   const { error } = Route.useSearch()
   const router = useRouter()
   const location = useLocation()
   const { status, stop } = useChat({ chat })
   const elementRef = useRef<HTMLDivElement>(null)
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
   const input = useStore(store, state => state.chatInput)
   const { subscription } = useSubscription()
-  const { data: tablesAndSchemas } = useQuery(databaseTablesAndSchemasQuery({ database }))
+  const { data: tablesAndSchemas } = useQuery(connectionTablesAndSchemasQuery({ connection }))
 
   useEffect(() => {
     if (ref.current) {
@@ -104,7 +104,7 @@ export function ChatForm() {
       if (location.search.chatId !== chat.id) {
         router.navigate({
           to: '/database/$id/sql',
-          params: { id: database.id },
+          params: { id: connection.id },
           search: { chatId: chat.id },
           replace: true,
         })
@@ -199,7 +199,7 @@ export function ChatForm() {
   useKeyboardEvent(e => isCtrlAndKey(e, 'n'), () => {
     router.navigate({
       to: '/database/$id/sql',
-      params: { id: database.id },
+      params: { id: connection.id },
       search: { chatId: undefined },
     })
   }, {
@@ -305,7 +305,7 @@ export function ChatForm() {
       ref={elementRef}
       className="flex flex-col gap-1"
     >
-      <Images databaseId={database.id} />
+      <Images connectionId={connection.id} />
       <div className={`
         relative flex flex-col gap-2 overflow-hidden rounded-md border
         dark:bg-input/30
