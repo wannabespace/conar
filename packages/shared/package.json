@@ -12,13 +12,12 @@
     "./arktype-config": "./src/arktype-config.ts"
   },
   "scripts": {
-    "check-types": "tsgo"
+    "check-types": "tsc"
   },
   "dependencies": {
     "@conar/configs": "workspace:*",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
-    "nanoid": "catalog:",
-    "zod": "catalog:"
+    "nanoid": "catalog:"
   }
 }

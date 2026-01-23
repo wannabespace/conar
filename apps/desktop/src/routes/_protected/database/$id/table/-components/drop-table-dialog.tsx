@@ -1,5 +1,5 @@
-import type { databases } from '~/drizzle'
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import type { connections } from '~/drizzle'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
@@ -19,9 +19,9 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databaseTablesAndSchemasQuery } from '~/entities/database/queries'
-import { dropTableQuery } from '~/entities/database/sql'
-import { databaseStore, removeTab } from '~/entities/database/store'
+import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { dropTableQuery } from '~/entities/connection/sql'
+import { connectionStore, removeTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
 import { Route } from '..'
 
@@ -29,10 +29,10 @@ interface DropTableDialogProps {
   ref: React.RefObject<{
     drop: (schema: string, table: string) => void
   } | null>
-  database: typeof databases.$inferSelect
+  connection: typeof connections.$inferSelect
 }
 
-export function DropTableDialog({ ref, database }: DropTableDialogProps) {
+export function DropTableDialog({ ref, connection }: DropTableDialogProps) {
   const { schema: schemaFromSearch, table: tableFromSearch } = Route.useSearch()
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')
@@ -49,7 +49,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
       setConfirmationText('')
       setCascade(false)
       setOpen(true)
-      const store = databaseStore(database.id)
+      const store = connectionStore(connection.id)
       const lastOpenedTable = store.state.lastOpenedTable
 
       if (lastOpenedTable?.schema === schema && lastOpenedTable?.table === table) {
@@ -63,7 +63,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
 
   const { mutate: dropTable, isPending } = useMutation({
     mutationFn: async () => {
-      await dropTableQuery(database, { table, schema, cascade })
+      await dropTableQuery(connection, { table, schema, cascade })
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully dropped`)
@@ -71,15 +71,18 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
       setConfirmationText('')
       setCascade(false)
 
-      queryClient.invalidateQueries(databaseTablesAndSchemasQuery({ database }))
+      queryClient.invalidateQueries(connectionTablesAndSchemasQuery({ connection }))
 
       if (isCurrentTable) {
         await router.navigate({
           to: '/database/$id/table',
-          params: { id: database.id },
+          params: { id: connection.id },
         })
       }
-      removeTab(database.id, schema, table)
+      removeTab(connection.id, schema, table)
+    },
+    onError: (error) => {
+      toast.error(`Failed to drop table "${error.message}".`)
     },
   })
 
@@ -121,7 +124,7 @@ export function DropTableDialog({ ref, database }: DropTableDialogProps) {
                 autoComplete="off"
               />
             </div>
-            {database.type !== DatabaseType.ClickHouse && (
+            {connection.type !== ConnectionType.ClickHouse && (
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="cascade"

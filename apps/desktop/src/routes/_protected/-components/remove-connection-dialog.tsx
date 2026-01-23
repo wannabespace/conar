@@ -1,32 +1,32 @@
-import type { databases } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { databasesCollection } from '~/entities/database/sync'
+import { connectionsCollection } from '~/entities/connection/sync'
 
 interface RemoveConnectionDialogProps {
   ref?: React.RefObject<{
-    remove: (database: typeof databases.$inferSelect) => void
+    remove: (connection: typeof connections.$inferSelect) => void
   } | null>
 }
 
 export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
   const [open, setOpen] = useState(false)
-  const [database, setDatabase] = useState<typeof databases.$inferSelect | null>(null)
+  const [connection, setConnection] = useState<typeof connections.$inferSelect | null>(null)
 
   useImperativeHandle(ref, () => ({
-    remove: (db: typeof databases.$inferSelect) => {
-      setDatabase(db)
+    remove: (connection: typeof connections.$inferSelect) => {
+      setConnection(connection)
       setOpen(true)
     },
   }), [])
 
   function remove(e: React.MouseEvent<HTMLButtonElement>) {
-    if (!database)
+    if (!connection)
       return
 
     e.preventDefault()
-    databasesCollection.delete(database.id)
+    connectionsCollection.delete(connection.id)
     toast.success('Connection removed successfully')
     setOpen(false)
   }

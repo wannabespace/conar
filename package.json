@@ -1,14 +1,14 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.28.1",
   "engines": {
     "bun": ">=1.3.0"
   },
   "scripts": {
     "prepare": "husky && bun scripts/sync-pnpm-versions.ts && bun scripts/setup-dev.ts",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint . --quiet",
+    "lint:fix": "eslint . --quiet --fix",
     "test:unit": "turbo run test:unit",
     "test:e2e": "turbo run test:e2e",
     "test:start": "turbo run test:start",
@@ -30,7 +30,6 @@
     "@commitlint/config-conventional": "catalog:",
     "@eslint-react/eslint-plugin": "catalog:",
     "@types/bun": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "cross-env": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-better-tailwindcss": "catalog:",

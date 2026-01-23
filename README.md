@@ -44,11 +44,11 @@ Conar is an AI-powered open-source project that simplifies database interactions
 - Drizzle ORM
 - Better Auth
 - AI SDK with Anthropic, OpenAI, Gemini and XAI
-- Supabase
 - Railway
 - PostHog
 - Resend
 - ToDesktop
+- Stripe
 
 ## Development Setup
 

@@ -13,8 +13,8 @@ import { Link, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useRef } from 'react'
-import { useDatabaseTablesAndSchemas } from '~/entities/database/queries'
-import { addTab, cleanupPinnedTables, databaseStore, togglePinTable } from '~/entities/database/store'
+import { useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { addTab, cleanupPinnedTables, connectionStore, togglePinTable } from '~/entities/connection/store'
 import { Route } from '..'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
@@ -58,18 +58,18 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
   onDrop: () => void
 }) {
   const { table: tableParam, schema: schemaParam } = Route.useSearch()
-  const { database } = Route.useRouteContext()
+  const { connection } = Route.useRouteContext()
 
   return (
     <Link
       to="/database/$id/table"
-      params={{ id: database.id }}
+      params={{ id: connection.id }}
       search={{
         schema,
         table,
       }}
       preloadDelay={200}
-      onDoubleClick={() => addTab(database.id, schema, table)}
+      onDoubleClick={() => addTab(connection.id, schema, table)}
       className={cn(
         `
           group flex w-full items-center gap-2 rounded-md border
@@ -105,7 +105,7 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
-          togglePinTable(database.id, schema, table)
+          togglePinTable(connection.id, schema, table)
         }}
       >
         {pinned
@@ -168,10 +168,10 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
 }
 
 export function TablesTree({ className, search }: { className?: string, search?: string }) {
-  const { database } = Route.useRouteContext()
-  const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas({ database })
+  const { connection } = Route.useRouteContext()
+  const { data: tablesAndSchemas, isPending } = useConnectionTablesAndSchemas({ connection })
   const { schema: schemaParam } = useSearch({ from: '/_protected/database/$id/table/' })
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
   const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const pinnedTables = useStore(store, state => state.pinnedTables)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
@@ -181,8 +181,8 @@ export function TablesTree({ className, search }: { className?: string, search?:
     if (!tablesAndSchemas)
       return
 
-    cleanupPinnedTables(database.id, tablesAndSchemas.schemas.flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
-  }, [database, tablesAndSchemas])
+    cleanupPinnedTables(connection.id, tablesAndSchemas.schemas.flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
+  }, [connection, tablesAndSchemas])
 
   const filteredTablesAndSchemas = useMemo(() => {
     if (!tablesAndSchemas)
@@ -230,11 +230,11 @@ export function TablesTree({ className, search }: { className?: string, search?:
     <ScrollArea className={cn('h-full overflow-y-auto p-2', className)}>
       <DropTableDialog
         ref={dropTableDialogRef}
-        database={database}
+        connection={connection}
       />
       <RenameTableDialog
         ref={renameTableDialogRef}
-        database={database}
+        connection={connection}
       />
       <Accordion
         value={searchAccordionValue}
@@ -267,7 +267,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                   text-center
                 `}
                 >
-                  <RiTableLine className="mb-2 h-10 w-10 text-muted-foreground" />
+                  <RiTableLine className="mb-2 size-10 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">No tables found</p>
                 </div>
               )

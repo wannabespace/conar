@@ -1,6 +1,7 @@
-import type { AppUIMessage, tools } from '@conar/api/src/ai-tools'
+import type { tools } from '@conar/api/ai/tools'
+import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
 import type { InferToolInput, InferToolOutput } from 'ai'
-import type { chatsMessages, databases } from '~/drizzle'
+import type { chatsMessages, connections } from '~/drizzle'
 import { Chat } from '@ai-sdk/react'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { eventIteratorToStream } from '@orpc/client'
@@ -8,36 +9,36 @@ import { encode } from '@toon-format/toon'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
-import { databaseEnumsQuery, databaseTableColumnsQuery, databaseTablesAndSchemasQuery } from '~/entities/database/queries'
-import { rowsQuery } from '~/entities/database/sql/rows'
-import { databaseStore } from '~/entities/database/store'
+import { connectionEnumsQuery, connectionTableColumnsQuery, connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { rowsQuery } from '~/entities/connection/sql/rows'
+import { connectionStore } from '~/entities/connection/store'
 import { convertToAppUIMessage } from '~/lib/ai'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
 
 export * from './chat'
 
-function ensureChat(chatId: string, databaseId: string) {
+async function ensureChat(chatId: string, connectionId: string) {
   const existingChat = chatsCollection.get(chatId)
 
   if (existingChat) {
     return existingChat
   }
 
-  chatsCollection.insert({
+  await chatsCollection.insert({
     id: chatId,
-    databaseId,
+    connectionId,
     title: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-  })
+  }).isPersisted.promise
 
   return chatsCollection.get(chatId)!
 }
 
 const chatsMap = new Map<string, Chat<AppUIMessage>>()
 
-export async function createChat({ id = uuid(), database }: { id?: string, database: typeof databases.$inferSelect }) {
+export async function createChat({ id = uuid(), connection }: { id?: string, connection: typeof connections.$inferSelect }) {
   if (chatsMap.has(id)) {
     return chatsMap.get(id)!
   }
@@ -54,60 +55,46 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
           throw new Error('Last message not found')
         }
 
-        if (options.trigger === 'regenerate-message' && !options.messageId) {
-          options.messageId = lastMessage.id
-        }
+        const chat = await ensureChat(options.chatId, connection.id)
 
-        const chat = ensureChat(options.chatId, database.id)
+        const existingMessage = chatsMessagesCollection.get(lastMessage.id)
 
-        if (options.trigger === 'submit-message') {
-          const existingMessage = chatsMessagesCollection.get(lastMessage.id)
-
-          const updatedAt = new Date()
-          if (existingMessage) {
-            chatsMessagesCollection.update(lastMessage.id, (draft) => {
-              Object.assign(draft, {
-                ...lastMessage,
-                chatId: options.chatId,
-                updatedAt,
-                metadata: {
-                  ...existingMessage.metadata,
-                  updatedAt,
-                },
-              } satisfies typeof chatsMessages.$inferInsert)
-            })
-          }
-          else {
-            const createdAt = new Date()
-            chatsMessagesCollection.insert({
+        if (existingMessage) {
+          await chatsMessagesCollection.update(lastMessage.id, (draft) => {
+            Object.assign(draft, {
               ...lastMessage,
               chatId: options.chatId,
+              metadata: existingMessage.metadata,
+            } satisfies typeof chatsMessages.$inferInsert)
+          }).isPersisted.promise
+        }
+        else {
+          const updatedAt = new Date()
+          const createdAt = new Date()
+          await chatsMessagesCollection.insert({
+            ...lastMessage,
+            chatId: options.chatId,
+            createdAt,
+            updatedAt,
+            metadata: {
               createdAt,
               updatedAt,
-              metadata: {
-                createdAt,
-                updatedAt,
-              },
-            })
-          }
+            },
+          }).isPersisted.promise
         }
 
         if (options.trigger === 'regenerate-message' && options.messageId && chatsMessagesCollection.has(options.messageId)) {
-          chatsMessagesCollection.delete(options.messageId)
+          await chatsMessagesCollection.delete(options.messageId).isPersisted.promise
         }
 
-        const store = databaseStore(database.id)
+        const store = connectionStore(connection.id)
 
-        return eventIteratorToStream(await orpc.ai.ask({
-          ...options.body,
+        return eventIteratorToStream(await orpc.ai.chat({
           id: options.chatId,
           createdAt: chat.createdAt,
           updatedAt: chat.updatedAt,
-          type: database.type,
-          databaseId: database.id,
-          prompt: lastMessage,
-          trigger: options.trigger,
-          messageId: options.messageId,
+          type: connection.type,
+          messages: options.messages,
           context: [
             `Current query in the SQL runner:
             \`\`\`sql
@@ -115,7 +102,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
             \`\`\`
             `,
             'Database schemas and tables:',
-            encode(await queryClient.ensureQueryData(databaseTablesAndSchemasQuery({ database }))),
+            encode(await queryClient.ensureQueryData(connectionTablesAndSchemasQuery({ connection }))),
           ].join('\n'),
         }, { signal: options.abortSignal }))
       },
@@ -133,27 +120,33 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       if (existingMessage) {
         chatsMessagesCollection.update(message.id, (draft) => {
           Object.assign(draft, {
-            ...message,
+            id: message.id,
+            parts: message.parts,
+            role: message.role,
+            chatId: id,
+            metadata: existingMessage.metadata,
             createdAt: message.metadata?.createdAt || new Date(),
             updatedAt: message.metadata?.updatedAt || new Date(),
-          })
+          } satisfies typeof draft)
         })
       }
       else {
         chatsMessagesCollection.insert({
-          ...message,
+          id: message.id,
           chatId: id,
           createdAt: message.metadata?.createdAt || new Date(),
           updatedAt: message.metadata?.updatedAt || new Date(),
           metadata: null,
+          parts: message.parts,
+          role: message.role,
         })
       }
     },
     onToolCall: async ({ toolCall }) => {
       if (toolCall.toolName === 'columns') {
         const input = toolCall.input as InferToolInput<typeof tools.columns>
-        const output = await queryClient.ensureQueryData(databaseTableColumnsQuery({
-          database,
+        const output = await queryClient.ensureQueryData(connectionTableColumnsQuery({
+          connection,
           table: input.tableAndSchema.tableName,
           schema: input.tableAndSchema.schemaName,
         })) satisfies InferToolOutput<typeof tools.columns>
@@ -165,7 +158,7 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
         })
       }
       else if (toolCall.toolName === 'enums') {
-        const output = await queryClient.ensureQueryData(databaseEnumsQuery({ database })).then(results => results.flatMap(r => r.values.map(v => ({
+        const output = await queryClient.ensureQueryData(connectionEnumsQuery({ connection })).then(results => results.flatMap(r => r.values.map(v => ({
           schema: r.schema,
           name: r.name,
           value: v,
@@ -179,13 +172,13 @@ export async function createChat({ id = uuid(), database }: { id?: string, datab
       }
       else if (toolCall.toolName === 'select') {
         const input = toolCall.input as InferToolInput<typeof tools.select>
-        const output = await rowsQuery(database, {
+        const output = await rowsQuery(connection, {
           schema: input.tableAndSchema.schemaName,
           table: input.tableAndSchema.tableName,
           limit: input.limit,
           offset: input.offset,
-          orderBy: input.orderBy,
-          select: input.select,
+          orderBy: input.orderBy ?? undefined,
+          select: input.select ?? undefined,
           // To save back compatibility with the old filters
           filters: input.whereFilters.map((filter) => {
             const operator = SQL_FILTERS_LIST.find(f => f.operator === filter.operator)
