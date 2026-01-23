@@ -148,3 +148,40 @@ export function setChatPosition(id: string, position: typeof connectionStoreType
     },
   } satisfies typeof state))
 }
+
+export type Definitions = 'indexes' | 'constraints' | 'enums' | null
+
+export function addDefinitionTab(id: string, type: Definitions) {
+  if (!type)
+    return
+
+  const store = connectionStore(id)
+
+  store.setState(prev => ({ ...prev, lastOpenedDefinition: type }))
+
+  if (!store.state.definitionTabs?.some(t => t.type === type)) {
+    store.setState(prev => ({
+      ...prev,
+      definitionTabs: [...(prev.definitionTabs ?? []), { type }],
+    } satisfies typeof prev))
+  }
+}
+
+export function removeDefinitionTab(id: string, type: Definitions) {
+  if (!type)
+    return
+
+  const store = connectionStore(id)
+  store.setState(prev => ({
+    ...prev,
+    definitionTabs: prev.definitionTabs?.filter(t => t.type !== type) ?? [],
+  } satisfies typeof prev))
+}
+
+export function updateDefinitionTabs(id: string, newTabs: { type: Definitions }[]) {
+  const store = connectionStore(id)
+  store.setState(prev => ({
+    ...prev,
+    definitionTabs: newTabs.filter((t): t is { type: NonNullable<Definitions> } => t.type !== null),
+  } satisfies typeof prev))
+}
