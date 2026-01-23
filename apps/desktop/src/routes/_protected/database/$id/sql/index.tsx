@@ -76,7 +76,7 @@ function DatabaseSqlPage() {
     } satisfies typeof state))
   }, [chatId, store])
 
-  const { defaultLayout, onLayoutChange } = useDefaultLayout({
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: `sql-layout-${connection.id}`,
     storage: localStorage,
   })
@@ -84,7 +84,7 @@ function DatabaseSqlPage() {
   return (
     <ResizablePanelGroup
       defaultLayout={defaultLayout}
-      onLayoutChange={onLayoutChange}
+      onLayoutChanged={onLayoutChanged}
       orientation="horizontal"
       className="flex h-full"
     >

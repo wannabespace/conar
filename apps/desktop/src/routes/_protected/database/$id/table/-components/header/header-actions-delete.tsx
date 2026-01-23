@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import { connectionRowsQuery, connectionTableTotalQuery } from '~/entities/connection/queries'
 import { deleteRowsQuery } from '~/entities/connection/sql/delete-rows'
 import { queryClient } from '~/main'
-import { usePageStoreContext } from '../-store'
+import { usePageStoreContext } from '../../-store'
 
 export function HeaderActionsDelete({ table, schema, connection }: { table: string, schema: string, connection: typeof connections.$inferSelect }) {
   const [isOpened, setIsOpened] = useState(false)
