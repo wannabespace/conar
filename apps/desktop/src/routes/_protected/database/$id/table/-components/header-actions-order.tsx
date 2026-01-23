@@ -14,8 +14,6 @@ import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
 import { useHeaderActionsOrder } from './use-header-actions-order'
 
-export { useHeaderActionsOrder } from './use-header-actions-order'
-
 export function HeaderActionsOrder({ table, schema, connection }: { table: string, schema: string, connection: typeof connections.$inferSelect }) {
   const store = usePageStoreContext()
   const orderEntries = useStore(store, state => Object.entries(state.orderBy || {}))

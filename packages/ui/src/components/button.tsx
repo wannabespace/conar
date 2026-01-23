@@ -4,8 +4,6 @@ import { cn } from '@conar/ui/lib/utils'
 import { Slot } from '@radix-ui/react-slot'
 import { buttonVariants } from './button.variants'
 
-export { buttonVariants } from './button.variants'
-
 export function Button({
   className,
   variant,

@@ -17,7 +17,6 @@ import { Route } from '..'
 import { getColumnSize, selectSymbol } from '../-lib'
 import { useTableColumns } from '../-queries/use-columns-query'
 import { usePageStoreContext } from '../-store'
-import { useHeaderActionsOrder } from './header-actions-order'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
@@ -25,6 +24,7 @@ import { TableHeaderCell } from './table-header-cell'
 import { TableInfiniteLoader } from './table-infinite-loader'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
 import { TableBodySkeleton } from './table-skeleton'
+import { useHeaderActionsOrder } from './use-header-actions-order'
 
 function prepareValue(value: unknown, column?: Column): unknown {
   if (!column)

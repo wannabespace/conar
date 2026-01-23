@@ -64,7 +64,7 @@ export function RenameColumnDialog({ ref, connection }: RenameColumnDialogProps)
       })
     },
     onError: (error) => {
-      toast.error(`Failed to rename column: ${error.message}`)
+      toast.error(`Failed to rename column "${error.message}".`)
     },
   })
 

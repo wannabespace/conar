@@ -3,8 +3,20 @@ import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@conar/shared/filters/sql
 import { generateText, Output } from 'ai'
 import { type } from 'arktype'
 import { consola } from 'consola'
+import * as z from 'zod/mini'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
+
+// Arktype doesn't work here, so we use Zod
+const schema = z.object({
+  // 'orderBy?': type('Record<string, "ASC" | "DESC">')
+  //   .describe('An optional object specifying the order of the results, where each key is a column name and the value is the order direction (ASC or DESC). The object can be empty.'),
+  filters: z.array(z.object({
+    column: z.string(),
+    operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator)),
+    values: z.array(z.string()),
+  })),
+})
 
 export const filters = orpc
   .use(authMiddleware)
@@ -53,18 +65,8 @@ export const filters = orpc
       prompt: input.prompt,
       abortSignal: signal,
       output: Output.object({
-        schema: type({
-          'orderBy?': type('Record<string, "ASC" | "DESC">')
-            .describe('An optional object specifying the order of the results, where each key is a column name and the value is the order direction (ASC or DESC). The object can be empty.'),
-          'filters': type({
-            column: 'string',
-            operator: type
-              .enumerated(...SQL_FILTERS_LIST.map(filter => filter.operator))
-              .describe('The operator to use for the filter, must be one of the available SQL operators'),
-            values: 'string[]',
-          }).array(),
-        }).describe('An object with filters array and optional orderBy object; each filter has column, operator, and values; orderBy maps column names to sort direction.'),
-        description: 'An array of objects with the following properties: column, operator, values where the operator is one of the SQL operators available',
+        schema,
+        description: 'An object with filters array and optional orderBy object; each filter has column, operator, and values; orderBy maps column names to sort direction.',
       }),
     })
 

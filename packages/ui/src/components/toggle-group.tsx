@@ -1,8 +1,8 @@
 import type { VariantProps } from 'class-variance-authority'
-import { toggleVariants } from '@conar/ui/components/toggle'
 import { cn } from '@conar/ui/lib/utils'
 import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group'
 import * as React from 'react'
+import { toggleVariants } from './toggle.variants'
 
 const ToggleGroupContext = React.createContext<
   VariantProps<typeof toggleVariants> & {
@@ -77,7 +77,8 @@ function ToggleGroupItem({
         `,
         `
           data-[spacing=0]:rounded-none data-[spacing=0]:shadow-none
-          data-[spacing=0]:first:rounded-l-md data-[spacing=0]:last:rounded-r-md
+          data-[spacing=0]:first:rounded-l-md
+          data-[spacing=0]:last:rounded-r-md
           data-[spacing=0]:data-[variant=outline]:border-l-0
           data-[spacing=0]:data-[variant=outline]:first:border-l
         `,

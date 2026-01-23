@@ -2,7 +2,7 @@ import { useMatches, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
-import { identifyUser } from '~/lib/events'
+import { identifyUser } from '~/lib/events-utils'
 import { authClient, bearerToken } from './lib/auth'
 import { appStore } from './store'
 

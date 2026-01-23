@@ -2,7 +2,7 @@ import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { toast } from 'sonner'
 import { clearDb } from '~/drizzle'
-import { identifyUser } from './events'
+import { identifyUser } from './events-utils'
 import { apiUrl } from './utils'
 
 const BEARER_TOKEN_KEY = 'conar.bearer_token'
