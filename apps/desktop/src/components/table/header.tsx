@@ -17,7 +17,7 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
 
   if (!column.header) {
     return (
-      <div style={getBaseColumnStyle({ id: column.id, size: virtualColumn.size })}>
+      <div style={getBaseColumnStyle({ id: column.id, defaultSize: column.size })}>
         {column.id}
       </div>
     )
@@ -34,7 +34,7 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
           ? 'last'
           : 'middle'}
       size={virtualColumn.size}
-      style={getBaseColumnStyle({ id: column.id, size: virtualColumn.size })}
+      style={getBaseColumnStyle({ id: column.id, defaultSize: column.size })}
     />
   )
 })
