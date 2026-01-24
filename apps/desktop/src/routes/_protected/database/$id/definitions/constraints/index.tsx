@@ -11,7 +11,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiKey2Line, RiLinksLine, RiRefreshLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useConnectionConstraints, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 
 const MotionCard = motion.create(Card)
@@ -57,28 +57,24 @@ function DatabaseConstraintsPage() {
   const { connection } = Route.useLoaderData()
   const { data: constraints, refetch, isRefetching } = useConnectionConstraints({ connection })
   const { data } = useConnectionTablesAndSchemas({ connection })
-  const schemas = useMemo(() => data?.schemas.map(({ name }) => name) ?? [], [data])
+  const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<ConstraintItem['type'] | 'all'>('all')
 
-  useEffect(() => {
-    if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
-      setSelectedSchema(schemas[0])
-  }, [schemas, selectedSchema])
+  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
+    setSelectedSchema(schemas[0])
 
-  const filteredConstraints = useMemo(() => {
-    return constraints?.filter(item =>
-      item.schema === selectedSchema
-      && (filterType === 'all' || filterType === item.type)
-      && (!search
-        || item.name.toLowerCase().includes(search.toLowerCase())
-        || item.table.toLowerCase().includes(search.toLowerCase())
-        || (item.column && item.column.toLowerCase().includes(search.toLowerCase()))
-        || (item.type && item.type.toLowerCase().includes(search.toLowerCase()))
-      ),
-    ) ?? []
-  }, [constraints, selectedSchema, search, filterType])
+  const filteredConstraints = constraints?.filter(item =>
+    item.schema === selectedSchema
+    && (filterType === 'all' || filterType === item.type)
+    && (!search
+      || item.name.toLowerCase().includes(search.toLowerCase())
+      || item.table.toLowerCase().includes(search.toLowerCase())
+      || (item.column && item.column.toLowerCase().includes(search.toLowerCase()))
+      || (item.type && item.type.toLowerCase().includes(search.toLowerCase()))
+    ),
+  ) ?? []
 
   return (
     <>
