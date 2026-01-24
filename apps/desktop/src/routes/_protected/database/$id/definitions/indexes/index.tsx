@@ -12,6 +12,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence } from 'motion/react'
 import { useState } from 'react'
 import { useConnectionIndexes, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { DefinitionsSkeleton } from '../-components/skeleton'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/indexes/')({
@@ -46,7 +47,7 @@ function getIndexType(indexItem: IndexItem): IndexType {
 
 function DatabaseIndexesPage() {
   const { connection } = Route.useLoaderData()
-  const { data: indexes, refetch, isRefetching } = useConnectionIndexes({ connection })
+  const { data: indexes, refetch, isRefetching, isPending } = useConnectionIndexes({ connection })
   const { data } = useConnectionTablesAndSchemas({ connection })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
@@ -155,69 +156,73 @@ function DatabaseIndexesPage() {
       </div>
 
       <div className="mt-2 grid grid-cols-1 gap-4">
-        <AnimatePresence initial={false} mode="popLayout">
-          {indexList.length === 0 && (
-            <MotionCard
-              layout
-              {...MOTION_BLOCK_PROPS}
-            >
-              <RiInformationLine className={`
-                mx-auto mb-3 size-12 text-muted-foreground
-              `}
-              />
-              <h3 className="text-lg font-medium">No indexes found</h3>
-            </MotionCard>
-          )}
-          {indexList.map(item => (
-            <MotionCard
-              key={`${item.schema}-${item.table}-${item.name}`}
-              layout
-              {...MOTION_BLOCK_PROPS}
-            >
-              <CardHeader className="bg-muted/30 px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    {item.isPrimary
-                      ? <RiKey2Line className="size-4 text-primary" />
-                      : <RiFileList3Line className="size-4 text-primary" />}
-                    <HighlightText text={item.name} match={search} />
-                    {item.isPrimary && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 text-xs font-normal"
-                      >
-                        Primary Key
-                      </Badge>
-                    )}
-                    {item.isUnique && !item.isPrimary && (
-                      <Badge
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        Unique
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  <Badge variant="outline" className="text-xs font-normal">
-                    <RiTable2 className="mr-1 size-3" />
-                    {item.table}
-                  </Badge>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {item.columns.map((col: string) => (
-                    <Badge
-                      key={col}
-                      variant="secondary"
-                      className="font-mono text-xs"
-                    >
-                      {col}
-                    </Badge>
-                  ))}
-                </div>
-              </CardHeader>
-            </MotionCard>
-          ))}
-        </AnimatePresence>
+        {isPending || isRefetching
+          ? <DefinitionsSkeleton />
+          : (
+              <AnimatePresence initial={false} mode="popLayout">
+                {indexList.length === 0 && (
+                  <MotionCard
+                    layout
+                    {...MOTION_BLOCK_PROPS}
+                  >
+                    <RiInformationLine className={`
+                      mx-auto mb-3 size-12 text-muted-foreground
+                    `}
+                    />
+                    <h3 className="text-lg font-medium">No indexes found</h3>
+                  </MotionCard>
+                )}
+                {indexList.map(item => (
+                  <MotionCard
+                    key={`${item.schema}-${item.table}-${item.name}`}
+                    layout
+                    {...MOTION_BLOCK_PROPS}
+                  >
+                    <CardHeader className="bg-muted/30 px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          {item.isPrimary
+                            ? <RiKey2Line className="size-4 text-primary" />
+                            : <RiFileList3Line className="size-4 text-primary" />}
+                          <HighlightText text={item.name} match={search} />
+                          {item.isPrimary && (
+                            <Badge
+                              variant="secondary"
+                              className="ml-2 text-xs font-normal"
+                            >
+                              Primary Key
+                            </Badge>
+                          )}
+                          {item.isUnique && !item.isPrimary && (
+                            <Badge
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              Unique
+                            </Badge>
+                          )}
+                        </CardTitle>
+                        <Badge variant="outline" className="text-xs font-normal">
+                          <RiTable2 className="mr-1 size-3" />
+                          {item.table}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {item.columns.map((col: string) => (
+                          <Badge
+                            key={col}
+                            variant="secondary"
+                            className="font-mono text-xs"
+                          >
+                            {col}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardHeader>
+                  </MotionCard>
+                ))}
+              </AnimatePresence>
+            )}
       </div>
     </>
   )

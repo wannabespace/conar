@@ -13,25 +13,24 @@ import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence } from 'motion/react'
 import { useState } from 'react'
 import { useConnectionConstraints, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { DefinitionsSkeleton } from '../-components/skeleton'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/constraints/')({
   component: DatabaseConstraintsPage,
   loader: ({ context }) => ({ connection: context.connection }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title(`Constraints - ${loaderData.connection.name}`) }] : [],
+    meta: loaderData ? [{ title: title('Constraints', loaderData.connection.name) }] : [],
   }),
 })
 
-type ConstraintItem = typeof constraintsType.infer
-
-const dropDownItems: { label: string, value: ConstraintItem['type'] }[] = [
+const dropDownItems: { label: string, value: typeof constraintsType.infer['type'] }[] = [
   { label: 'Primary Key', value: 'primaryKey' },
   { label: 'Foreign Key', value: 'foreignKey' },
   { label: 'Unique', value: 'unique' },
 ]
 
-function formatType(type: ConstraintItem['type']) {
+function formatType(type: typeof constraintsType.infer['type']) {
   switch (type) {
     case 'primaryKey': return 'Primary Key'
     case 'foreignKey': return 'Foreign Key'
@@ -40,7 +39,7 @@ function formatType(type: ConstraintItem['type']) {
   }
 }
 
-function getIcon(type: ConstraintItem['type']) {
+function getIcon(type: typeof constraintsType.infer['type']) {
   switch (type) {
     case 'primaryKey':
     case 'unique':
@@ -54,12 +53,12 @@ function getIcon(type: ConstraintItem['type']) {
 
 function DatabaseConstraintsPage() {
   const { connection } = Route.useLoaderData()
-  const { data: constraints, refetch, isRefetching } = useConnectionConstraints({ connection })
+  const { data: constraints, refetch, isRefetching, isPending } = useConnectionConstraints({ connection })
   const { data } = useConnectionTablesAndSchemas({ connection })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
-  const [filterType, setFilterType] = useState<ConstraintItem['type'] | 'all'>('all')
+  const [filterType, setFilterType] = useState<typeof constraintsType.infer['type'] | 'all'>('all')
 
   if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
     setSelectedSchema(schemas[0])
@@ -101,7 +100,7 @@ function DatabaseConstraintsPage() {
             </button>
           )}
         </div>
-        <Select value={filterType} onValueChange={value => setFilterType(value as ConstraintItem['type'] | 'all')}>
+        <Select value={filterType} onValueChange={value => setFilterType(value as typeof constraintsType.infer['type'] | 'all')}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter Type" />
           </SelectTrigger>
@@ -140,77 +139,91 @@ function DatabaseConstraintsPage() {
       </div>
 
       <div className="mt-2 grid grid-cols-1 gap-4">
-        <AnimatePresence initial={false} mode="popLayout">
-          {filteredConstraints.length === 0 && (
-            <MotionCard layout {...MOTION_BLOCK_PROPS}>
-              <RiInformationLine className={`
-                mx-auto mb-3 size-12 text-muted-foreground
-              `}
-              />
-              <h3 className="text-lg font-medium">No constraints found</h3>
-              <p className="text-sm text-muted-foreground">This schema doesn't have any constraints matching your filter.</p>
-            </MotionCard>
-          )}
-
-          {filteredConstraints.map(item => (
-            <MotionCard
-              key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
-              layout
-              {...MOTION_BLOCK_PROPS}
-            >
-              <CardHeader className="bg-muted/30 px-4 py-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      {getIcon(item.type)}
-                      <HighlightText text={item.name} match={search} />
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 text-xs font-normal"
-                      >
-                        {formatType(item.type)}
-                      </Badge>
-                    </CardTitle>
-                    <div className={`
-                      mt-2 flex items-center gap-2 text-sm text-muted-foreground
+        {isPending || isRefetching
+          ? <DefinitionsSkeleton />
+          : (
+              <AnimatePresence initial={false} mode="popLayout">
+                {filteredConstraints.length === 0 && (
+                  <MotionCard layout {...MOTION_BLOCK_PROPS}>
+                    <RiInformationLine className={`
+                      mx-auto mb-3 size-12 text-muted-foreground
                     `}
-                    >
-                      <Badge variant="outline" className="text-xs font-normal">
-                        <RiTable2 className="mr-1 size-3" />
-                        {item.table}
-                      </Badge>
-                      {item.column && (
-                        <span className="flex items-center gap-2">
-                          <span>on</span>
-                          <Badge
-                            variant="outline"
-                            className="font-mono text-xs"
+                    />
+                    <h3 className="text-lg font-medium">No constraints found</h3>
+                    <p className="text-sm text-muted-foreground">This schema doesn't have any constraints matching your filter.</p>
+                  </MotionCard>
+                )}
+
+                {filteredConstraints.map(item => (
+                  <MotionCard
+                    key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
+                    layout
+                    {...MOTION_BLOCK_PROPS}
+                  >
+                    <CardHeader className="bg-muted/30 px-4 py-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="
+                            flex items-center gap-2 text-base
+                          "
                           >
-                            {item.column}
+                            {getIcon(item.type)}
+                            <HighlightText text={item.name} match={search} />
+                            <Badge
+                              variant="secondary"
+                              className="ml-2 text-xs font-normal"
+                            >
+                              {formatType(item.type)}
+                            </Badge>
+                          </CardTitle>
+                          <div className={`
+                            mt-2 flex items-center gap-2 text-sm
+                            text-muted-foreground
+                          `}
+                          >
+                            <Badge
+                              variant="outline"
+                              className="text-xs font-normal"
+                            >
+                              <RiTable2 className="mr-1 size-3" />
+                              {item.table}
+                            </Badge>
+                            {item.column && (
+                              <span className="flex items-center gap-2">
+                                <span>on</span>
+                                <Badge
+                                  variant="outline"
+                                  className="font-mono text-xs"
+                                >
+                                  {item.column}
+                                </Badge>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    {item.type === 'foreignKey' && (
+                      <CardContent className="
+                        border-t bg-muted/10 px-4 py-3 text-sm
+                      "
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">References:</span>
+                          <Badge variant="outline">
+                            {item.foreignSchema}
+                            .
+                            {item.foreignTable}
                           </Badge>
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              {item.type === 'foreignKey' && (
-                <CardContent className="border-t bg-muted/10 px-4 py-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">References:</span>
-                    <Badge variant="outline">
-                      {item.foreignSchema}
-                      .
-                      {item.foreignTable}
-                    </Badge>
-                    <span>column</span>
-                    <Badge variant="outline" className="font-mono">{item.foreignColumn}</Badge>
-                  </div>
-                </CardContent>
-              )}
-            </MotionCard>
-          ))}
-        </AnimatePresence>
+                          <span>column</span>
+                          <Badge variant="outline" className="font-mono">{item.foreignColumn}</Badge>
+                        </div>
+                      </CardContent>
+                    )}
+                  </MotionCard>
+                ))}
+              </AnimatePresence>
+            )}
       </div>
     </>
   )
