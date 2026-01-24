@@ -3,18 +3,17 @@ import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
+import { CardContent, CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/hightlight'
 import { Input } from '@conar/ui/components/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiKey2Line, RiLinksLine, RiRefreshLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
 import { useState } from 'react'
 import { useConnectionConstraints, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
-
-const MotionCard = motion.create(Card)
+import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/constraints/')({
   component: DatabaseConstraintsPage,
@@ -143,17 +142,7 @@ function DatabaseConstraintsPage() {
       <div className="mt-2 grid grid-cols-1 gap-4">
         <AnimatePresence initial={false} mode="popLayout">
           {filteredConstraints.length === 0 && (
-            <MotionCard
-              layout
-              initial={{ opacity: 0, scale: 0.75 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.75 }}
-              transition={{ duration: 0.15 }}
-              className={`
-                mt-4 w-full border border-dashed border-muted-foreground/20
-                bg-muted/10 p-10 text-center
-              `}
-            >
+            <MotionCard layout {...MOTION_BLOCK_PROPS}>
               <RiInformationLine className={`
                 mx-auto mb-3 size-12 text-muted-foreground
               `}
@@ -167,13 +156,7 @@ function DatabaseConstraintsPage() {
             <MotionCard
               key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
               layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className={`
-                overflow-hidden border border-border/60
-                hover:border-border/90
-              `}
+              {...MOTION_BLOCK_PROPS}
             >
               <CardHeader className="bg-muted/30 px-4 py-3">
                 <div className="flex items-start justify-between">

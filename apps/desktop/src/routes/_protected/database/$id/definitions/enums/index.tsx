@@ -2,7 +2,7 @@ import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
+import { CardContent, CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/hightlight'
 import { Input } from '@conar/ui/components/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -14,8 +14,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useConnectionEnums, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
-
-const MotionCard = motion.create(Card)
+import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/enums/')({
   component: DatabaseEnumsPage,
@@ -113,14 +112,7 @@ function DatabaseEnumsPage() {
           {filteredEnums.length === 0 && (
             <MotionCard
               layout
-              initial={{ opacity: 0, scale: 0.75 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.75 }}
-              transition={{ duration: 0.15 }}
-              className={`
-                mt-4 w-full border border-dashed border-muted-foreground/20
-                bg-muted/10
-              `}
+              {...MOTION_BLOCK_PROPS}
             >
               <CardContent className={`
                 flex flex-col items-center justify-center p-10 text-center
@@ -140,15 +132,8 @@ function DatabaseEnumsPage() {
           {filteredEnums.map(enumItem => (
             <MotionCard
               key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
-              className={`
-                overflow-hidden border border-border/60 transition-colors
-                hover:border-border/90
-              `}
               layout
-              initial={{ opacity: 0, scale: 0.75 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.75 }}
-              transition={{ duration: 0.15 }}
+              {...MOTION_BLOCK_PROPS}
             >
               <CardHeader className="bg-muted/50 px-4 py-3">
                 <div className="flex items-center justify-between">
@@ -265,10 +250,7 @@ function DatabaseEnumsPage() {
                   {enumItem.values.length === 0 && (
                     <motion.div
                       layout
-                      initial={{ opacity: 0, scale: 0.75 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.75 }}
-                      transition={{ duration: 0.15 }}
+                      {...MOTION_BLOCK_PROPS}
                     >
                       <Badge variant="outline">
                         No values found
@@ -283,10 +265,7 @@ function DatabaseEnumsPage() {
                       render={({ html, matched }) => (
                         <motion.div
                           layout
-                          initial={{ opacity: 0, scale: 0.75 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.75 }}
-                          transition={{ duration: 0.15 }}
+                          {...MOTION_BLOCK_PROPS}
                         >
                           <Badge
                             variant="outline"

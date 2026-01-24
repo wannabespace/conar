@@ -2,18 +2,17 @@ import type { indexesType } from '~/entities/connection/sql/indexes'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
-import { Card, CardHeader, CardTitle } from '@conar/ui/components/card'
+import { CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/hightlight'
 import { Input } from '@conar/ui/components/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiFileList3Line, RiInformationLine, RiKey2Line, RiRefreshLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
 import { useState } from 'react'
 import { useConnectionIndexes, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
-
-const MotionCard = motion.create(Card)
+import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/indexes/')({
   component: DatabaseIndexesPage,
@@ -160,14 +159,7 @@ function DatabaseIndexesPage() {
           {indexList.length === 0 && (
             <MotionCard
               layout
-              initial={{ opacity: 0, scale: 0.75 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.75 }}
-              transition={{ duration: 0.15 }}
-              className={`
-                w-full border border-dashed border-muted-foreground/20
-                bg-muted/10 p-10 text-center
-              `}
+              {...MOTION_BLOCK_PROPS}
             >
               <RiInformationLine className={`
                 mx-auto mb-3 size-12 text-muted-foreground
@@ -180,14 +172,7 @@ function DatabaseIndexesPage() {
             <MotionCard
               key={`${item.schema}-${item.table}-${item.name}`}
               layout
-              initial={{ opacity: 0, scale: 0.75 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.75 }}
-              transition={{ duration: 0.15 }}
-              className={`
-                overflow-hidden border border-border/60
-                hover:border-border/90
-              `}
+              {...MOTION_BLOCK_PROPS}
             >
               <CardHeader className="bg-muted/30 px-4 py-3">
                 <div className="flex items-center justify-between">
