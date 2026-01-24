@@ -110,7 +110,7 @@ function DatabaseEnumsPage() {
         </Button>
       </div>
       <div className="mt-2 grid grid-cols-1 gap-4">
-        {isPending
+        {isPending || isRefetching
           ? (
               <DefinitionsSkeleton />
             )
