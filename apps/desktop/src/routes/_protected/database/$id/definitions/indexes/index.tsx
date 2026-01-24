@@ -10,7 +10,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiFileList3Line, RiInformationLine, RiKey2Line, RiRefreshLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useConnectionIndexes, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { DefinitionsSkeleton } from '../-components/skeleton'
 
@@ -32,17 +32,25 @@ interface GroupedIndex extends IndexItem {
 
 type IndexType = 'primary' | 'unique' | 'regular'
 
-const dropDownItems: { label: string, value: IndexType }[] = [
+const dropdownItems: { label: string, value: IndexType }[] = [
   { label: 'Primary Key', value: 'primary' },
   { label: 'Unique Index', value: 'unique' },
   { label: 'Regular Index', value: 'regular' },
 ]
 
+function getIndexType(indexItem: IndexItem): IndexType {
+  if (indexItem.isPrimary)
+    return 'primary'
+  if (indexItem.isUnique)
+    return 'unique'
+  return 'regular'
+}
+
 function DatabaseIndexesPage() {
   const { connection } = Route.useLoaderData()
   const { data: indexes, refetch, isRefetching, isPending } = useConnectionIndexes({ connection })
   const { data } = useConnectionTablesAndSchemas({ connection })
-  const schemas = useMemo(() => data?.schemas.map(({ name }) => name) ?? [], [data])
+  const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<IndexType | 'all'>('all')
@@ -50,50 +58,37 @@ function DatabaseIndexesPage() {
   if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
     setSelectedSchema(schemas[0])
 
-  const groupedIndexes = useMemo(() => {
-    return indexes?.reduce<Record<string, GroupedIndex>>((acc: Record<string, GroupedIndex>, item: IndexItem) => {
-      const indexItem = item
-
-      if (indexItem.schema !== selectedSchema)
-        return acc
-
-      const isPrimary = indexItem.isPrimary
-      const isUnique = indexItem.isUnique && !indexItem.isPrimary
-
-      let type: IndexType = 'regular'
-      if (isPrimary)
-        type = 'primary'
-      else if (isUnique)
-        type = 'unique'
-
-      const matchesFilter = filterType === 'all' || filterType === type
-
-      if (!matchesFilter)
-        return acc
-
-      const matchesSearch = !search
-        || indexItem.name.toLowerCase().includes(search.toLowerCase())
-        || indexItem.table.toLowerCase().includes(search.toLowerCase())
-        || indexItem.column.toLowerCase().includes(search.toLowerCase())
-
-      if (!matchesSearch)
-        return acc
-
-      const key = `${indexItem.schema}-${indexItem.table}-${indexItem.name}`
-      if (!acc[key]) {
-        acc[key] = {
-          ...indexItem,
-          columns: [indexItem.column],
-        }
-      }
-      else {
-        if (!acc[key].columns.includes(indexItem.column)) {
-          acc[key].columns.push(indexItem.column)
-        }
-      }
+  const groupedIndexes = indexes?.reduce<Record<string, GroupedIndex>>((acc, indexItem) => {
+    if (indexItem.schema !== selectedSchema)
       return acc
-    }, {})
-  }, [indexes, selectedSchema, search, filterType])
+
+    const matchesFilter = filterType === 'all' || filterType === getIndexType(indexItem)
+
+    if (!matchesFilter)
+      return acc
+
+    const matchesSearch = !search
+      || indexItem.name.toLowerCase().includes(search.toLowerCase())
+      || indexItem.table.toLowerCase().includes(search.toLowerCase())
+      || indexItem.column.toLowerCase().includes(search.toLowerCase())
+
+    if (!matchesSearch)
+      return acc
+
+    const key = `${indexItem.schema}-${indexItem.table}-${indexItem.name}`
+
+    return {
+      ...acc,
+      [key]: acc[key]
+        ? {
+            ...acc[key],
+            columns: acc[key].columns.includes(indexItem.column)
+              ? acc[key].columns
+              : [...acc[key].columns, indexItem.column],
+          }
+        : { ...indexItem, columns: [indexItem.column] },
+    }
+  }, {})
 
   const indexList = Object.values(groupedIndexes ?? {})
 
@@ -129,7 +124,7 @@ function DatabaseIndexesPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            {dropDownItems.map(type => (
+            {dropdownItems.map(type => (
               <SelectItem key={type.value} value={type.value}>
                 {type.label}
               </SelectItem>
@@ -169,11 +164,13 @@ function DatabaseIndexesPage() {
                 {indexList.length === 0 && (
                   <MotionCard
                     layout
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    initial={{ opacity: 0, scale: 0.75 }}
                     animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.75 }}
+                    transition={{ duration: 0.15 }}
                     className={`
-                      mt-4 w-full border border-dashed
-                      border-muted-foreground/20 bg-muted/10 p-10 text-center
+                      w-full border border-dashed border-muted-foreground/20
+                      bg-muted/10 p-10 text-center
                     `}
                   >
                     <RiInformationLine className={`
@@ -183,7 +180,6 @@ function DatabaseIndexesPage() {
                     <h3 className="text-lg font-medium">No indexes found</h3>
                   </MotionCard>
                 )}
-
                 {indexList.map(item => (
                   <MotionCard
                     key={`${item.schema}-${item.table}-${item.name}`}

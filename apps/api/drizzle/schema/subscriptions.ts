@@ -11,7 +11,7 @@ import {
 import { baseTable } from '../base-table'
 import { users } from './auth'
 
-export const subscriptionPeriod = pgEnum('subscription_period', ['monthly', 'yearly'] as const)
+export const subscriptionPeriod = pgEnum('subscription_period', ['monthly', 'yearly'])
 
 export const subscriptions = pgTable('subscriptions', {
   ...baseTable,
