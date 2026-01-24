@@ -46,6 +46,14 @@ function getIndexType(indexItem: IndexItem): IndexType {
   return 'regular'
 }
 
+function getIndexTypeLabel(type: IndexType) {
+  if (type === 'primary')
+    return 'Primary Key'
+  if (type === 'unique')
+    return 'Unique Index'
+  return 'Regular Index'
+}
+
 function DatabaseIndexesPage() {
   const { connection } = Route.useLoaderData()
   const { data: indexes, refetch, isRefetching, isPending } = useConnectionIndexes({ connection })
@@ -200,22 +208,12 @@ function DatabaseIndexesPage() {
                             ? <RiKey2Line className="size-4 text-primary" />
                             : <RiFileList3Line className="size-4 text-primary" />}
                           <HighlightText text={item.name} match={search} />
-                          {item.isPrimary && (
-                            <Badge
-                              variant="secondary"
-                              className="ml-2 text-xs font-normal"
-                            >
-                              Primary Key
-                            </Badge>
-                          )}
-                          {item.isUnique && !item.isPrimary && (
-                            <Badge
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              Unique
-                            </Badge>
-                          )}
+                          <Badge
+                            variant="secondary"
+                            className="ml-2 text-xs font-normal"
+                          >
+                            {getIndexTypeLabel(getIndexType(item))}
+                          </Badge>
                         </CardTitle>
                         <Badge variant="outline" className="text-xs font-normal">
                           <RiTable2 className="mr-1 size-3" />

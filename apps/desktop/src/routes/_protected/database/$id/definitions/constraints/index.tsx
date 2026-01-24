@@ -30,7 +30,7 @@ type ConstraintItem = typeof constraintsType.infer
 const dropDownItems: { label: string, value: ConstraintItem['type'] }[] = [
   { label: 'Primary Key', value: 'primaryKey' },
   { label: 'Foreign Key', value: 'foreignKey' },
-  { label: 'Unique', value: 'unique' },
+  { label: 'Unique Key', value: 'unique' },
 ]
 
 function formatType(type: ConstraintItem['type']) {
