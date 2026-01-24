@@ -14,6 +14,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useConnectionEnums, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { DefinitionsSkeleton } from '../-components/skeleton'
 
 const MotionCard = motion.create(Card)
 
@@ -27,7 +28,7 @@ export const Route = createFileRoute('/_protected/database/$id/definitions/enums
 
 function DatabaseEnumsPage() {
   const { connection } = Route.useLoaderData()
-  const { data: enums, refetch, isRefetching } = useConnectionEnums({ connection })
+  const { data: enums, refetch, isRefetching, isPending } = useConnectionEnums({ connection })
   const { data } = useConnectionTablesAndSchemas({ connection })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
@@ -109,203 +110,213 @@ function DatabaseEnumsPage() {
         </Button>
       </div>
       <div className="mt-2 grid grid-cols-1 gap-4">
-        <AnimatePresence initial={false} mode="popLayout">
-          {filteredEnums.length === 0 && (
-            <MotionCard
-              layout
-              initial={{ opacity: 0, scale: 0.75 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.75 }}
-              transition={{ duration: 0.15 }}
-              className={`
-                mt-4 w-full border border-dashed border-muted-foreground/20
-                bg-muted/10
-              `}
-            >
-              <CardContent className={`
-                flex flex-col items-center justify-center p-10 text-center
-              `}
-              >
-                <RiInformationLine className={`
-                  mx-auto mb-3 size-12 text-muted-foreground
-                `}
-                />
-                <h3 className="text-lg font-medium text-foreground">No enums found</h3>
-                <p className="max-w-md text-sm text-muted-foreground">
-                  This schema doesn't have any enums defined yet.
-                </p>
-              </CardContent>
-            </MotionCard>
-          )}
-          {filteredEnums.map(enumItem => (
-            <MotionCard
-              key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
-              className={`
-                overflow-hidden border border-border/60 transition-colors
-                hover:border-border/90
-              `}
-              layout
-              initial={{ opacity: 0, scale: 0.75 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.75 }}
-              transition={{ duration: 0.15 }}
-            >
-              <CardHeader className="bg-muted/50 px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <CardTitle>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className={`
-                              flex items-center gap-2 text-base font-medium
-                            `}
-                            >
-                              {enumItem.metadata?.isSet
-                                ? (
-                                    <RiListIndefinite className={`
-                                      size-4 text-primary
-                                    `}
-                                    />
-                                  )
-                                : (
-                                    <RiListUnordered className={`
-                                      size-4 text-primary
-                                    `}
-                                    />
-                                  )}
-                              <HighlightText text={enumItem.name} match={search} />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {enumItem.metadata?.isSet ? 'Set type' : 'Enum type'}
-                            {enumItem.metadata?.table && enumItem.metadata.column && (
-                              <div className={`
-                                mt-1 text-xs text-muted-foreground
-                              `}
-                              >
-                                Used in&nbsp;
-                                <Badge
-                                  variant="outline"
-                                  className="mr-1 px-1 py-0.5 font-mono"
-                                >
-                                  {enumItem.metadata.table}
-                                </Badge>
-                                table
-                                and
-                                <Badge
-                                  variant="outline"
-                                  className="ml-1 px-1 py-0.5"
-                                >
-                                  {enumItem.metadata.column}
-                                </Badge>
-                                {' '}
-                                column
-                              </div>
-                            )}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </CardTitle>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Badge variant="outline" className="text-xs">
-                            <RiStackLine className="mr-0.5 inline size-3" />
-                            {enumItem.schema}
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          Schema name
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    {enumItem.metadata?.table && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge variant="outline" className="text-xs">
-                              <RiTable2 className="mr-0.5 inline size-3" />
-                              {enumItem.metadata.table}
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            Table name
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                    {enumItem.metadata?.column && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge variant="outline" className="text-xs">
-                              <RiDatabase2Line className="mr-0.5 inline size-3" />
-                              {enumItem.metadata.column}
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            Column name
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                  </div>
-                  <Badge variant="secondary" className="text-xs">
-                    <NumberFlow
-                      className="tabular-nums"
-                      value={enumItem.values.length}
-                      suffix={` value${enumItem.values.length === 1 ? '' : 's'}`}
-                    />
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-2 px-4 py-3">
-                <AnimatePresence initial={false} mode="popLayout">
-                  {enumItem.values.length === 0 && (
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, scale: 0.75 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.75 }}
-                      transition={{ duration: 0.15 }}
+        {isPending
+          ? (
+              <DefinitionsSkeleton />
+            )
+          : (
+              <AnimatePresence initial={false} mode="popLayout">
+                {filteredEnums.length === 0 && (
+                  <MotionCard
+                    layout
+                    initial={{ opacity: 0, scale: 0.75 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.75 }}
+                    transition={{ duration: 0.15 }}
+                    className={`
+                      mt-4 w-full border border-dashed
+                      border-muted-foreground/20 bg-muted/10
+                    `}
+                  >
+                    <CardContent className={`
+                      flex flex-col items-center justify-center p-10 text-center
+                    `}
                     >
-                      <Badge variant="outline">
-                        No values found
-                      </Badge>
-                    </motion.div>
-                  )}
-                  {enumItem.values.map(value => (
-                    <HighlightText
-                      key={value}
-                      text={value}
-                      match={search}
-                      render={({ html, matched }) => (
-                        <motion.div
-                          layout
-                          initial={{ opacity: 0, scale: 0.75 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.75 }}
-                          transition={{ duration: 0.15 }}
-                        >
-                          <Badge
-                            variant="outline"
-                            className={cn(matched && `
-                              border-primary/30 bg-primary/10
-                            `)}
+                      <RiInformationLine className={`
+                        mx-auto mb-3 size-12 text-muted-foreground
+                      `}
+                      />
+                      <h3 className="text-lg font-medium text-foreground">No enums found</h3>
+                      <p className="max-w-md text-sm text-muted-foreground">
+                        This schema doesn't have any enums defined yet.
+                      </p>
+                    </CardContent>
+                  </MotionCard>
+                )}
+                {filteredEnums.map(enumItem => (
+                  <MotionCard
+                    key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
+                    className={`
+                      overflow-hidden border border-border/60 transition-colors
+                      hover:border-border/90
+                    `}
+                    layout
+                    initial={{ opacity: 0, scale: 0.75 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.75 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <CardHeader className="bg-muted/50 px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <CardTitle>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className={`
+                                    flex items-center gap-2 text-base
+                                    font-medium
+                                  `}
+                                  >
+                                    {enumItem.metadata?.isSet
+                                      ? (
+                                          <RiListIndefinite className={`
+                                            size-4 text-primary
+                                          `}
+                                          />
+                                        )
+                                      : (
+                                          <RiListUnordered className={`
+                                            size-4 text-primary
+                                          `}
+                                          />
+                                        )}
+                                    <HighlightText text={enumItem.name} match={search} />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {enumItem.metadata?.isSet ? 'Set type' : 'Enum type'}
+                                  {enumItem.metadata?.table && enumItem.metadata.column && (
+                                    <div className={`
+                                      mt-1 text-xs text-muted-foreground
+                                    `}
+                                    >
+                                      Used in&nbsp;
+                                      <Badge
+                                        variant="outline"
+                                        className="mr-1 px-1 py-0.5 font-mono"
+                                      >
+                                        {enumItem.metadata.table}
+                                      </Badge>
+                                      table
+                                      and
+                                      <Badge
+                                        variant="outline"
+                                        className="ml-1 px-1 py-0.5"
+                                      >
+                                        {enumItem.metadata.column}
+                                      </Badge>
+                                      {' '}
+                                      column
+                                    </div>
+                                  )}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </CardTitle>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge variant="outline" className="text-xs">
+                                  <RiStackLine className="mr-0.5 inline size-3" />
+                                  {enumItem.schema}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                Schema name
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          {enumItem.metadata?.table && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="outline" className="text-xs">
+                                    <RiTable2 className="mr-0.5 inline size-3" />
+                                    {enumItem.metadata.table}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Table name
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          {enumItem.metadata?.column && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="outline" className="text-xs">
+                                    <RiDatabase2Line className="
+                                      mr-0.5 inline size-3
+                                    "
+                                    />
+                                    {enumItem.metadata.column}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Column name
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
+                        <Badge variant="secondary" className="text-xs">
+                          <NumberFlow
+                            className="tabular-nums"
+                            value={enumItem.values.length}
+                            suffix={` value${enumItem.values.length === 1 ? '' : 's'}`}
+                          />
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex flex-wrap gap-2 px-4 py-3">
+                      <AnimatePresence initial={false} mode="popLayout">
+                        {enumItem.values.length === 0 && (
+                          <motion.div
+                            layout
+                            initial={{ opacity: 0, scale: 0.75 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.75 }}
+                            transition={{ duration: 0.15 }}
                           >
-                            {/* eslint-disable-next-line react-dom/no-dangerously-set-innerhtml */}
-                            <span dangerouslySetInnerHTML={{ __html: html }} />
-                          </Badge>
-                        </motion.div>
-                      )}
-                    />
-                  ))}
-                </AnimatePresence>
-              </CardContent>
-            </MotionCard>
-          ))}
-        </AnimatePresence>
+                            <Badge variant="outline">
+                              No values found
+                            </Badge>
+                          </motion.div>
+                        )}
+                        {enumItem.values.map(value => (
+                          <HighlightText
+                            key={value}
+                            text={value}
+                            match={search}
+                            render={({ html, matched }) => (
+                              <motion.div
+                                layout
+                                initial={{ opacity: 0, scale: 0.75 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.75 }}
+                                transition={{ duration: 0.15 }}
+                              >
+                                <Badge
+                                  variant="outline"
+                                  className={cn(matched && `
+                                    border-primary/30 bg-primary/10
+                                  `)}
+                                >
+                                  {/* eslint-disable-next-line react-dom/no-dangerously-set-innerhtml */}
+                                  <span dangerouslySetInnerHTML={{ __html: html }} />
+                                </Badge>
+                              </motion.div>
+                            )}
+                          />
+                        ))}
+                      </AnimatePresence>
+                    </CardContent>
+                  </MotionCard>
+                ))}
+              </AnimatePresence>
+            )}
       </div>
     </>
   )

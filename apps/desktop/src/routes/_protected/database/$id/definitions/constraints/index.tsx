@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
 import { useConnectionConstraints, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { DefinitionsSkeleton } from '../-components/skeleton'
 
 const MotionCard = motion.create(Card)
 
@@ -55,7 +56,7 @@ function getIcon(type: ConstraintItem['type']) {
 
 function DatabaseConstraintsPage() {
   const { connection } = Route.useLoaderData()
-  const { data: constraints, refetch, isRefetching } = useConnectionConstraints({ connection })
+  const { data: constraints, refetch, isRefetching, isPending } = useConnectionConstraints({ connection })
   const { data } = useConnectionTablesAndSchemas({ connection })
   const schemas = useMemo(() => data?.schemas.map(({ name }) => name) ?? [], [data])
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
@@ -145,93 +146,107 @@ function DatabaseConstraintsPage() {
       </div>
 
       <div className="mt-2 grid grid-cols-1 gap-4">
-        <AnimatePresence initial={false} mode="popLayout">
-          {filteredConstraints.length === 0 && (
-            <MotionCard
-              layout
-              initial={{ opacity: 0, scale: 0.75 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.75 }}
-              transition={{ duration: 0.15 }}
-              className={`
-                mt-4 w-full border border-dashed border-muted-foreground/20
-                bg-muted/10 p-10 text-center
-              `}
-            >
-              <RiInformationLine className={`
-                mx-auto mb-3 size-12 text-muted-foreground
-              `}
-              />
-              <h3 className="text-lg font-medium">No constraints found</h3>
-              <p className="text-sm text-muted-foreground">This schema doesn't have any constraints matching your filter.</p>
-            </MotionCard>
-          )}
-
-          {filteredConstraints.map(item => (
-            <MotionCard
-              key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className={`
-                overflow-hidden border border-border/60
-                hover:border-border/90
-              `}
-            >
-              <CardHeader className="bg-muted/30 px-4 py-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      {getIcon(item.type)}
-                      <HighlightText text={item.name} match={search} />
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 text-xs font-normal"
-                      >
-                        {formatType(item.type)}
-                      </Badge>
-                    </CardTitle>
-                    <div className={`
-                      mt-2 flex items-center gap-2 text-sm text-muted-foreground
+        {isPending
+          ? <DefinitionsSkeleton />
+          : (
+              <AnimatePresence initial={false} mode="popLayout">
+                {filteredConstraints.length === 0 && (
+                  <MotionCard
+                    layout
+                    initial={{ opacity: 0, scale: 0.75 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.75 }}
+                    transition={{ duration: 0.15 }}
+                    className={`
+                      mt-4 w-full border border-dashed
+                      border-muted-foreground/20 bg-muted/10 p-10 text-center
                     `}
-                    >
-                      <Badge variant="outline" className="text-xs font-normal">
-                        <RiTable2 className="mr-1 size-3" />
-                        {item.table}
-                      </Badge>
-                      {item.column && (
-                        <span className="flex items-center gap-2">
-                          <span>on</span>
-                          <Badge
-                            variant="outline"
-                            className="font-mono text-xs"
+                  >
+                    <RiInformationLine className={`
+                      mx-auto mb-3 size-12 text-muted-foreground
+                    `}
+                    />
+                    <h3 className="text-lg font-medium">No constraints found</h3>
+                    <p className="text-sm text-muted-foreground">This schema doesn't have any constraints matching your filter.</p>
+                  </MotionCard>
+                )}
+
+                {filteredConstraints.map(item => (
+                  <MotionCard
+                    key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className={`
+                      overflow-hidden border border-border/60
+                      hover:border-border/90
+                    `}
+                  >
+                    <CardHeader className="bg-muted/30 px-4 py-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="
+                            flex items-center gap-2 text-base
+                          "
                           >
-                            {item.column}
+                            {getIcon(item.type)}
+                            <HighlightText text={item.name} match={search} />
+                            <Badge
+                              variant="secondary"
+                              className="ml-2 text-xs font-normal"
+                            >
+                              {formatType(item.type)}
+                            </Badge>
+                          </CardTitle>
+                          <div className={`
+                            mt-2 flex items-center gap-2 text-sm
+                            text-muted-foreground
+                          `}
+                          >
+                            <Badge
+                              variant="outline"
+                              className="text-xs font-normal"
+                            >
+                              <RiTable2 className="mr-1 size-3" />
+                              {item.table}
+                            </Badge>
+                            {item.column && (
+                              <span className="flex items-center gap-2">
+                                <span>on</span>
+                                <Badge
+                                  variant="outline"
+                                  className="font-mono text-xs"
+                                >
+                                  {item.column}
+                                </Badge>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    {item.type === 'foreignKey' && (
+                      <CardContent className="
+                        border-t bg-muted/10 px-4 py-3 text-sm
+                      "
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">References:</span>
+                          <Badge variant="outline">
+                            {item.foreignSchema}
+                            .
+                            {item.foreignTable}
                           </Badge>
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              {item.type === 'foreignKey' && (
-                <CardContent className="border-t bg-muted/10 px-4 py-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">References:</span>
-                    <Badge variant="outline">
-                      {item.foreignSchema}
-                      .
-                      {item.foreignTable}
-                    </Badge>
-                    <span>column</span>
-                    <Badge variant="outline" className="font-mono">{item.foreignColumn}</Badge>
-                  </div>
-                </CardContent>
-              )}
-            </MotionCard>
-          ))}
-        </AnimatePresence>
+                          <span>column</span>
+                          <Badge variant="outline" className="font-mono">{item.foreignColumn}</Badge>
+                        </div>
+                      </CardContent>
+                    )}
+                  </MotionCard>
+                ))}
+              </AnimatePresence>
+            )}
       </div>
     </>
   )

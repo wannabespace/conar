@@ -1,11 +1,20 @@
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { Sidebar } from './definitions/-components/sidebar'
 
 export const Route = createFileRoute(
   '/_protected/database/$id/definitions',
 )({
   component: DefinitionsSideTabsLayout,
+  beforeLoad: ({ location, params }) => {
+    if (location.pathname.endsWith('/definitions') || location.pathname.endsWith('/definitions/')) {
+      throw redirect({
+        to: '/database/$id/definitions/indexes',
+        params: { id: params.id },
+        replace: true,
+      })
+    }
+  },
 })
 
 function DefinitionsSideTabsLayout() {
