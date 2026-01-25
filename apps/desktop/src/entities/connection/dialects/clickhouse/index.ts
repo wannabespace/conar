@@ -15,8 +15,16 @@ function prepareQuery(compiledQuery: CompiledQuery) {
   const compiledSql = compiledQuery.sql.replace(/\?/g, () => {
     const param = compiledQuery.parameters[i++]
 
+    if (param === null || param === undefined) {
+      return 'NULL'
+    }
+
     if (typeof param === 'number') {
       return `${param}`
+    }
+
+    if (param instanceof Date) {
+      return `parseDateTime64BestEffort('${escapeSqlString(param.toISOString())}')`
     }
 
     if (typeof param !== 'string') {
@@ -24,7 +32,7 @@ function prepareQuery(compiledQuery: CompiledQuery) {
     }
 
     if (isIsoDate(param)) {
-      return `parseDateTime64BestEffortOrNull('${escapeSqlString(param)}')`
+      return `parseDateTime64BestEffort('${escapeSqlString(param)}')`
     }
 
     return `'${escapeSqlString(param)}'`
