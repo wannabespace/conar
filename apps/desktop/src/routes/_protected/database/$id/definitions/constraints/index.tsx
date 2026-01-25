@@ -154,14 +154,14 @@ function DatabaseConstraintsPage() {
                   >
                     <Badge variant="outline" className="text-xs font-normal">
                       <RiTable2 className="mr-1 size-3" />
-                      {item.table}
+                      <HighlightText text={item.table} match={search} />
                     </Badge>
                     {item.column && (
                       <>
                         <span>on</span>
                         <Badge variant="outline" className="font-mono text-xs">
                           <RiLayoutColumnLine className="mr-1 size-3" />
-                          {item.column}
+                          <HighlightText text={item.column} match={search} />
                         </Badge>
                       </>
                     )}

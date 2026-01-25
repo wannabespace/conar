@@ -181,7 +181,7 @@ function DatabaseIndexesPage() {
                   >
                     <Badge variant="outline" className="text-xs font-normal">
                       <RiTable2 className="mr-1 size-3" />
-                      {item.table}
+                      <HighlightText text={item.table} match={search} />
                     </Badge>
                     <span>on</span>
                     {item.columns.map((col: string) => (
@@ -191,7 +191,7 @@ function DatabaseIndexesPage() {
                         className="font-mono text-xs"
                       >
                         <RiLayoutColumnLine className="mr-1 size-3" />
-                        {col}
+                        <HighlightText text={col} match={search} />
                       </Badge>
                     ))}
                   </div>
