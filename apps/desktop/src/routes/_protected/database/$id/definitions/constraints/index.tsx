@@ -6,7 +6,7 @@ import { CardContent, CardHeader, CardTitle, MotionCard } from '@conar/ui/compon
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { RiDatabase2Line, RiKey2Line, RiLinksLine, RiTable2 } from '@remixicon/react'
+import { RiDatabase2Line, RiKey2Line, RiLayoutColumnLine, RiLinksLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useConnectionConstraints, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
@@ -157,12 +157,13 @@ function DatabaseConstraintsPage() {
                       {item.table}
                     </Badge>
                     {item.column && (
-                      <span className="flex items-center gap-2">
+                      <>
                         <span>on</span>
                         <Badge variant="outline" className="font-mono text-xs">
+                          <RiLayoutColumnLine className="mr-1 size-3" />
                           {item.column}
                         </Badge>
-                      </span>
+                      </>
                     )}
                   </div>
                 </div>

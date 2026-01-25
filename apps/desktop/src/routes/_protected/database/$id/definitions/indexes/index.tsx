@@ -5,7 +5,7 @@ import { CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { RiFileList3Line, RiKey2Line, RiTable2 } from '@remixicon/react'
+import { RiFileList3Line, RiKey2Line, RiLayoutColumnLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useConnectionIndexes, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
@@ -154,41 +154,48 @@ function DatabaseIndexesPage() {
             {...MOTION_BLOCK_PROPS}
           >
             <CardHeader className="bg-muted/30 px-4 py-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  {item.isPrimary
-                    ? <RiKey2Line className="size-4 text-primary" />
-                    : <RiFileList3Line className="size-4 text-primary" />}
-                  <HighlightText text={item.name} match={search} />
-                  {item.isPrimary && (
-                    <Badge
-                      variant="secondary"
-                      className="ml-2 text-xs font-normal"
-                    >
-                      Primary Key
-                    </Badge>
-                  )}
-                  {item.isUnique && !item.isPrimary && (
-                    <Badge variant="secondary" className="text-xs">
-                      Unique
-                    </Badge>
-                  )}
-                </CardTitle>
-                <Badge variant="outline" className="text-xs font-normal">
-                  <RiTable2 className="mr-1 size-3" />
-                  {item.table}
-                </Badge>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {item.columns.map((col: string) => (
-                  <Badge
-                    key={col}
-                    variant="secondary"
-                    className="font-mono text-xs"
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    {item.isPrimary
+                      ? <RiKey2Line className="size-4 text-primary" />
+                      : <RiFileList3Line className="size-4 text-primary" />}
+                    <HighlightText text={item.name} match={search} />
+                    {item.isPrimary && (
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 text-xs font-normal"
+                      >
+                        Primary Key
+                      </Badge>
+                    )}
+                    {item.isUnique && !item.isPrimary && (
+                      <Badge variant="secondary" className="text-xs">
+                        Unique
+                      </Badge>
+                    )}
+                  </CardTitle>
+                  <div className={`
+                    mt-2 flex items-center gap-2 text-sm text-muted-foreground
+                  `}
                   >
-                    {col}
-                  </Badge>
-                ))}
+                    <Badge variant="outline" className="text-xs font-normal">
+                      <RiTable2 className="mr-1 size-3" />
+                      {item.table}
+                    </Badge>
+                    <span>on</span>
+                    {item.columns.map((col: string) => (
+                      <Badge
+                        key={col}
+                        variant="outline"
+                        className="font-mono text-xs"
+                      >
+                        <RiLayoutColumnLine className="mr-1 size-3" />
+                        {col}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               </div>
             </CardHeader>
           </MotionCard>
