@@ -13,6 +13,11 @@ import { Route } from '../../definitions'
 function sidebarItems(connection: typeof connections.$inferSelect) {
   return [
     {
+      to: '/database/$id/definitions/enums',
+      Icon: RiListUnordered,
+      label: connection.type === ConnectionType.MySQL ? 'Enums & Sets' : 'Enums',
+    },
+    {
       to: '/database/$id/definitions/indexes',
       Icon: RiFileList3Line,
       label: 'Indexes',
@@ -21,11 +26,6 @@ function sidebarItems(connection: typeof connections.$inferSelect) {
       to: '/database/$id/definitions/constraints',
       Icon: RiKey2Line,
       label: 'Constraints',
-    },
-    {
-      to: '/database/$id/definitions/enums',
-      Icon: RiListUnordered,
-      label: connection.type === ConnectionType.MySQL ? 'Enums & Sets' : 'Enums',
     },
   ] satisfies { Icon: RemixiconComponentType, label: string, to: keyof FileRoutesByTo }[]
 }

@@ -84,7 +84,7 @@ function DatabaseConstraintsPage() {
       >
         Constraints
       </DefinitionsHeader>
-      <div className="flex items-center gap-2">
+      <div className="mb-4 flex items-center gap-2">
         <SearchInput
           placeholder="Search constraints"
           autoFocus

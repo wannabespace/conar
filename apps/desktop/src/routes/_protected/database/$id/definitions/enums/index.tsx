@@ -62,7 +62,7 @@ function DatabaseEnumsPage() {
         Enums
         {connection.type === ConnectionType.MySQL && ' & Sets'}
       </DefinitionsHeader>
-      <div className="flex items-center gap-2">
+      <div className="mb-4 flex items-center gap-2">
         <SearchInput
           placeholder="Search enums"
           autoFocus

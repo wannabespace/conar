@@ -99,7 +99,7 @@ function DatabaseIndexesPage() {
       >
         Indexes
       </DefinitionsHeader>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 mb-4">
         <SearchInput
           placeholder="Search indexes"
           autoFocus

@@ -70,6 +70,7 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
       }}
       preloadDelay={200}
       onDoubleClick={() => addTab(connection.id, schema, table)}
+      className="group"
     >
       {({ isActive }) => (
         <>

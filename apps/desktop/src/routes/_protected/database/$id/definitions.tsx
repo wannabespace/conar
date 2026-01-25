@@ -9,7 +9,7 @@ export const Route = createFileRoute(
   beforeLoad: ({ location, params }) => {
     if (location.pathname.endsWith('/definitions') || location.pathname.endsWith('/definitions/')) {
       throw redirect({
-        to: '/database/$id/definitions/indexes',
+        to: '/database/$id/definitions/enums',
         params: { id: params.id },
         replace: true,
       })
