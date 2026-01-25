@@ -1,7 +1,12 @@
 import type { CompiledQuery, Dialect, Driver, QueryResult } from 'kysely'
 import type { connections } from '~/drizzle'
+import { isValid, parseISO } from 'date-fns'
 import { MysqlQueryCompiler } from 'kysely'
 import { logSql } from '../../sql'
+
+function escapeSqlString(v: string) {
+  return v.replace(/[\\']/g, '\\$&')
+}
 
 function prepareQuery(compiledQuery: CompiledQuery) {
   let i = 0
@@ -13,10 +18,14 @@ function prepareQuery(compiledQuery: CompiledQuery) {
     }
 
     if (typeof param !== 'string') {
-      return `'${JSON.stringify(param)}'`
+      return `'${escapeSqlString(JSON.stringify(param))}'`
     }
 
-    return `'${param.replace(/'/g, `\\'`).replace(/\\"/g, '\\\\"')}'`
+    if (isValid(parseISO(param))) {
+      return `parseDateTime64BestEffort('${escapeSqlString(param)}')`
+    }
+
+    return `'${escapeSqlString(param)}'`
   })
 
   return compiledSql.replace(
