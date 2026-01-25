@@ -3,7 +3,7 @@ import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { CardContent, CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
-import { RefreshButton } from '@conar/ui/components/custom/refresh-button'
+import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
@@ -16,7 +16,6 @@ import { useConnectionEnums, useConnectionTablesAndSchemas } from '~/entities/co
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
-import { DefinitionsSearchInput } from '../-components/search-input'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/enums/')({
@@ -29,7 +28,7 @@ export const Route = createFileRoute('/_protected/database/$id/definitions/enums
 
 function DatabaseEnumsPage() {
   const { connection } = Route.useLoaderData()
-  const { data: enums, refetch, isFetching, isPending } = useConnectionEnums({ connection })
+  const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useConnectionEnums({ connection })
   const { data } = useConnectionTablesAndSchemas({ connection })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
@@ -56,14 +55,20 @@ function DatabaseEnumsPage() {
   return (
     <>
       <DefinitionsHeader
-        title="Enums"
-        suffix={connection.type === ConnectionType.MySQL && ' & Sets'}
+        onRefresh={() => refetch()}
+        isRefreshing={isFetching}
+        dataUpdatedAt={dataUpdatedAt}
       >
-        <DefinitionsSearchInput
-          value={search}
-          onChange={setSearch}
+        Enums
+        {connection.type === ConnectionType.MySQL && ' & Sets'}
+      </DefinitionsHeader>
+      <div className="flex items-center gap-2">
+        <SearchInput
           placeholder="Search enums"
-          className="w-[180px]"
+          autoFocus
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
         />
         {schemas.length > 1 && (
           <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
@@ -80,14 +85,7 @@ function DatabaseEnumsPage() {
             </SelectContent>
           </Select>
         )}
-        <RefreshButton
-          variant="outline"
-          size="icon"
-          onClick={() => refetch()}
-          loading={isFetching}
-        />
-      </DefinitionsHeader>
-
+      </div>
       <DefinitionsGrid loading={isPending}>
         {filteredEnums.length === 0 && (
           <DefinitionsEmptyState

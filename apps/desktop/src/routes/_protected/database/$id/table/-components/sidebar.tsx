@@ -35,7 +35,7 @@ export function Sidebar() {
                   variant="outline"
                   size="icon-sm"
                   onClick={handleRefresh}
-                  loading={isRefreshingTablesAndSchemas}
+                  refreshing={isRefreshingTablesAndSchemas}
                 />
               </TooltipTrigger>
               <TooltipContent side="right">
