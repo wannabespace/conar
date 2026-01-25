@@ -2,18 +2,18 @@ import type { constraintsType } from '~/entities/connection/sql/constraints'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { Button } from '@conar/ui/components/button'
 import { CardContent, CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
-import { HighlightText } from '@conar/ui/components/custom/hightlight'
-import { Input } from '@conar/ui/components/input'
+import { HighlightText } from '@conar/ui/components/custom/highlight'
+import { RefreshButton } from '@conar/ui/components/custom/refresh-button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiDatabase2Line, RiInformationLine, RiKey2Line, RiLinksLine, RiRefreshLine, RiTable2 } from '@remixicon/react'
+import { RiDatabase2Line, RiKey2Line, RiLinksLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
-import { AnimatePresence } from 'motion/react'
 import { useState } from 'react'
 import { useConnectionConstraints, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
-import { DefinitionsSkeleton } from '../-components/skeleton'
+import { DefinitionsEmptyState } from '../-components/empty-state'
+import { DefinitionsGrid } from '../-components/grid'
+import { DefinitionsHeader } from '../-components/header'
+import { DefinitionsSearchInput } from '../-components/search-input'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/constraints/')({
@@ -24,13 +24,15 @@ export const Route = createFileRoute('/_protected/database/$id/definitions/const
   }),
 })
 
-const dropDownItems: { label: string, value: typeof constraintsType.infer['type'] }[] = [
+type ConstraintType = typeof constraintsType.infer['type']
+
+const filterOptions: { label: string, value: ConstraintType }[] = [
   { label: 'Primary Key', value: 'primaryKey' },
   { label: 'Foreign Key', value: 'foreignKey' },
   { label: 'Unique', value: 'unique' },
 ]
 
-function formatType(type: typeof constraintsType.infer['type']) {
+function formatType(type: ConstraintType) {
   switch (type) {
     case 'primaryKey': return 'Primary Key'
     case 'foreignKey': return 'Foreign Key'
@@ -39,7 +41,7 @@ function formatType(type: typeof constraintsType.infer['type']) {
   }
 }
 
-function getIcon(type: typeof constraintsType.infer['type']) {
+function getIcon(type: ConstraintType) {
   switch (type) {
     case 'primaryKey':
     case 'unique':
@@ -53,12 +55,12 @@ function getIcon(type: typeof constraintsType.infer['type']) {
 
 function DatabaseConstraintsPage() {
   const { connection } = Route.useLoaderData()
-  const { data: constraints, refetch, isRefetching, isPending } = useConnectionConstraints({ connection })
+  const { data: constraints, refetch, isFetching, isPending } = useConnectionConstraints({ connection })
   const { data } = useConnectionTablesAndSchemas({ connection })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
-  const [filterType, setFilterType] = useState<typeof constraintsType.infer['type'] | 'all'>('all')
+  const [filterType, setFilterType] = useState<ConstraintType | 'all'>('all')
 
   if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
     setSelectedSchema(schemas[0])
@@ -76,39 +78,21 @@ function DatabaseConstraintsPage() {
 
   return (
     <>
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold">Constraints</h2>
-      </div>
-      <div className="mb-4 flex items-center gap-2">
-        <div className="relative">
-          <Input
-            placeholder="Search constraints"
-            className="w-[200px] pr-8"
-            value={search}
-            autoFocus
-            onChange={e => setSearch(e.target.value)}
-          />
-          {search && (
-            <button
-              type="button"
-              className={`
-                absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
-              `}
-              onClick={() => setSearch('')}
-            >
-              <RiCloseLine className="size-4 text-muted-foreground" />
-            </button>
-          )}
-        </div>
-        <Select value={filterType} onValueChange={value => setFilterType(value as typeof constraintsType.infer['type'] | 'all')}>
+      <DefinitionsHeader title="Constraints">
+        <DefinitionsSearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search constraints"
+        />
+        <Select value={filterType} onValueChange={v => setFilterType(v as ConstraintType | 'all')}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter Type" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            {dropDownItems.map(type => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
+            {filterOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -128,103 +112,78 @@ function DatabaseConstraintsPage() {
             </SelectContent>
           </Select>
         )}
-        <Button
+        <RefreshButton
           variant="outline"
           size="icon"
           onClick={() => refetch()}
-          disabled={isRefetching}
-        >
-          <RiRefreshLine className={cn('size-4', isRefetching && `animate-spin`)} />
-        </Button>
-      </div>
+          loading={isFetching}
+        />
+      </DefinitionsHeader>
 
-      <div className="mt-2 grid grid-cols-1 gap-4">
-        {isPending || isRefetching
-          ? <DefinitionsSkeleton />
-          : (
-              <AnimatePresence initial={false} mode="popLayout">
-                {filteredConstraints.length === 0 && (
-                  <MotionCard layout {...MOTION_BLOCK_PROPS}>
-                    <RiInformationLine className={`
-                      mx-auto mb-3 size-12 text-muted-foreground
-                    `}
-                    />
-                    <h3 className="text-lg font-medium">No constraints found</h3>
-                    <p className="text-sm text-muted-foreground">This schema doesn't have any constraints matching your filter.</p>
-                  </MotionCard>
-                )}
+      <DefinitionsGrid loading={isPending}>
+        {filteredConstraints.length === 0 && (
+          <DefinitionsEmptyState
+            title="No constraints found"
+            description="This schema doesn't have any constraints matching your filter."
+          />
+        )}
 
-                {filteredConstraints.map(item => (
-                  <MotionCard
-                    key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
-                    layout
-                    {...MOTION_BLOCK_PROPS}
+        {filteredConstraints.map(item => (
+          <MotionCard
+            key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
+            layout
+            {...MOTION_BLOCK_PROPS}
+          >
+            <CardHeader className="bg-muted/30 px-4 py-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    {getIcon(item.type)}
+                    <HighlightText text={item.name} match={search} />
+                    <Badge
+                      variant="secondary"
+                      className="ml-2 text-xs font-normal"
+                    >
+                      {formatType(item.type)}
+                    </Badge>
+                  </CardTitle>
+                  <div className={`
+                    mt-2 flex items-center gap-2 text-sm text-muted-foreground
+                  `}
                   >
-                    <CardHeader className="bg-muted/30 px-4 py-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="
-                            flex items-center gap-2 text-base
-                          "
-                          >
-                            {getIcon(item.type)}
-                            <HighlightText text={item.name} match={search} />
-                            <Badge
-                              variant="secondary"
-                              className="ml-2 text-xs font-normal"
-                            >
-                              {formatType(item.type)}
-                            </Badge>
-                          </CardTitle>
-                          <div className={`
-                            mt-2 flex items-center gap-2 text-sm
-                            text-muted-foreground
-                          `}
-                          >
-                            <Badge
-                              variant="outline"
-                              className="text-xs font-normal"
-                            >
-                              <RiTable2 className="mr-1 size-3" />
-                              {item.table}
-                            </Badge>
-                            {item.column && (
-                              <span className="flex items-center gap-2">
-                                <span>on</span>
-                                <Badge
-                                  variant="outline"
-                                  className="font-mono text-xs"
-                                >
-                                  {item.column}
-                                </Badge>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    {item.type === 'foreignKey' && (
-                      <CardContent className="
-                        border-t bg-muted/10 px-4 py-3 text-sm
-                      "
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">References:</span>
-                          <Badge variant="outline">
-                            {item.foreignSchema}
-                            .
-                            {item.foreignTable}
-                          </Badge>
-                          <span>column</span>
-                          <Badge variant="outline" className="font-mono">{item.foreignColumn}</Badge>
-                        </div>
-                      </CardContent>
+                    <Badge variant="outline" className="text-xs font-normal">
+                      <RiTable2 className="mr-1 size-3" />
+                      {item.table}
+                    </Badge>
+                    {item.column && (
+                      <span className="flex items-center gap-2">
+                        <span>on</span>
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {item.column}
+                        </Badge>
+                      </span>
                     )}
-                  </MotionCard>
-                ))}
-              </AnimatePresence>
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            {item.type === 'foreignKey' && (
+              <CardContent className="border-t bg-muted/10 px-4 py-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">References:</span>
+                  <Badge variant="outline">
+                    {item.foreignSchema}
+                    .
+                    {item.foreignTable}
+                  </Badge>
+                  <span>column</span>
+                  <Badge variant="outline" className="font-mono">{item.foreignColumn}</Badge>
+                </div>
+              </CardContent>
             )}
-      </div>
+          </MotionCard>
+        ))}
+      </DefinitionsGrid>
     </>
   )
 }

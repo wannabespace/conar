@@ -1,10 +1,8 @@
-import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
-import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { RefreshButton } from '@conar/ui/components/custom/refresh-button'
 import { Input } from '@conar/ui/components/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiCheckLine, RiCloseLine, RiLoopLeftLine } from '@remixicon/react'
+import { RiCloseLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { connectionConstraintsQuery, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { connectionStore } from '~/entities/connection/store'
@@ -33,20 +31,12 @@ export function Sidebar() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
+                <RefreshButton
                   variant="outline"
                   size="icon-sm"
                   onClick={handleRefresh}
-                >
-                  <LoadingContent loading={isRefreshingTablesAndSchemas}>
-                    <ContentSwitch
-                      activeContent={<RiCheckLine className="text-success" />}
-                      active={isRefreshingTablesAndSchemas}
-                    >
-                      <RiLoopLeftLine />
-                    </ContentSwitch>
-                  </LoadingContent>
-                </Button>
+                  loading={isRefreshingTablesAndSchemas}
+                />
               </TooltipTrigger>
               <TooltipContent side="right">
                 Refresh tables and schemas list

@@ -5,7 +5,7 @@ import { Sidebar } from './definitions/-components/sidebar'
 export const Route = createFileRoute(
   '/_protected/database/$id/definitions',
 )({
-  component: DefinitionsSideTabsLayout,
+  component: DefinitionsLayout,
   beforeLoad: ({ location, params }) => {
     if (location.pathname.endsWith('/definitions') || location.pathname.endsWith('/definitions/')) {
       throw redirect({
@@ -17,19 +17,15 @@ export const Route = createFileRoute(
   },
 })
 
-function DefinitionsSideTabsLayout() {
-  const { id } = Route.useParams()
-  const { connection } = Route.useRouteContext()
-
+function DefinitionsLayout() {
   return (
     <div className="flex size-full gap-1">
-      <Sidebar connection={connection} id={id} />
+      <Sidebar />
       <ScrollArea className="h-full flex-1 rounded-lg border bg-background">
-        <ScrollViewport className="
-          mx-auto flex min-h-full max-w-3xl flex-col px-4 py-6
-        "
-        >
-          <Outlet />
+        <ScrollViewport>
+          <div className="mx-auto flex max-w-3xl flex-col px-4 py-6">
+            <Outlet />
+          </div>
           <ScrollBar />
         </ScrollViewport>
       </ScrollArea>

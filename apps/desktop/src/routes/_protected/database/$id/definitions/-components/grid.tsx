@@ -1,13 +1,16 @@
-export function DefinitionsSkeleton() {
+import type { ReactNode } from 'react'
+import { AnimatePresence } from 'motion/react'
+
+function Skeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className="
+          className={`
             flex w-full flex-col gap-3 rounded-xl border border-border/40
             bg-muted/10 p-4
-          "
+          `}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -25,6 +28,23 @@ export function DefinitionsSkeleton() {
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+export function DefinitionsGrid({ loading, children }: {
+  loading: boolean
+  children: ReactNode
+}) {
+  return (
+    <div className="mt-2 grid grid-cols-1 gap-4">
+      {loading
+        ? <Skeleton />
+        : (
+            <AnimatePresence initial={false} mode="popLayout">
+              {children}
+            </AnimatePresence>
+          )}
     </div>
   )
 }

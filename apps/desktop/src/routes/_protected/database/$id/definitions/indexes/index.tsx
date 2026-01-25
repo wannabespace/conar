@@ -1,18 +1,18 @@
 import type { indexesType } from '~/entities/connection/sql/indexes'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { Button } from '@conar/ui/components/button'
 import { CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
-import { HighlightText } from '@conar/ui/components/custom/hightlight'
-import { Input } from '@conar/ui/components/input'
+import { HighlightText } from '@conar/ui/components/custom/highlight'
+import { RefreshButton } from '@conar/ui/components/custom/refresh-button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiFileList3Line, RiInformationLine, RiKey2Line, RiRefreshLine, RiTable2 } from '@remixicon/react'
+import { RiFileList3Line, RiKey2Line, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
-import { AnimatePresence } from 'motion/react'
 import { useState } from 'react'
 import { useConnectionIndexes, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
-import { DefinitionsSkeleton } from '../-components/skeleton'
+import { DefinitionsEmptyState } from '../-components/empty-state'
+import { DefinitionsGrid } from '../-components/grid'
+import { DefinitionsHeader } from '../-components/header'
+import { DefinitionsSearchInput } from '../-components/search-input'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/indexes/')({
@@ -31,7 +31,7 @@ interface GroupedIndex extends IndexItem {
 
 type IndexType = 'primary' | 'unique' | 'regular'
 
-const dropdownItems: { label: string, value: IndexType }[] = [
+const filterOptions: { label: string, value: IndexType }[] = [
   { label: 'Primary Key', value: 'primary' },
   { label: 'Unique Index', value: 'unique' },
   { label: 'Regular Index', value: 'regular' },
@@ -47,7 +47,7 @@ function getIndexType(indexItem: IndexItem): IndexType {
 
 function DatabaseIndexesPage() {
   const { connection } = Route.useLoaderData()
-  const { data: indexes, refetch, isRefetching, isPending } = useConnectionIndexes({ connection })
+  const { data: indexes, refetch, isFetching, isPending } = useConnectionIndexes({ connection })
   const { data } = useConnectionTablesAndSchemas({ connection })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
@@ -93,39 +93,21 @@ function DatabaseIndexesPage() {
 
   return (
     <>
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold">Indexes</h2>
-      </div>
-      <div className="mb-4 flex items-center gap-2">
-        <div className="relative">
-          <Input
-            placeholder="Search indexes"
-            className="w-[200px] pr-8"
-            value={search}
-            autoFocus
-            onChange={e => setSearch(e.target.value)}
-          />
-          {search && (
-            <button
-              type="button"
-              className={`
-                absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
-              `}
-              onClick={() => setSearch('')}
-            >
-              <RiCloseLine className="size-4 text-muted-foreground" />
-            </button>
-          )}
-        </div>
-        <Select value={filterType} onValueChange={value => setFilterType(value as IndexType | 'all')}>
+      <DefinitionsHeader title="Indexes">
+        <DefinitionsSearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search indexes"
+        />
+        <Select value={filterType} onValueChange={v => setFilterType(v as IndexType | 'all')}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter Type" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            {dropdownItems.map(type => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
+            {filterOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -145,85 +127,69 @@ function DatabaseIndexesPage() {
             </SelectContent>
           </Select>
         )}
-        <Button
+        <RefreshButton
           variant="outline"
           size="icon"
           onClick={() => refetch()}
-          disabled={isRefetching}
-        >
-          <RiRefreshLine className={cn('size-4', isRefetching && `animate-spin`)} />
-        </Button>
-      </div>
+          loading={isFetching}
+        />
+      </DefinitionsHeader>
 
-      <div className="mt-2 grid grid-cols-1 gap-4">
-        {isPending || isRefetching
-          ? <DefinitionsSkeleton />
-          : (
-              <AnimatePresence initial={false} mode="popLayout">
-                {indexList.length === 0 && (
-                  <MotionCard
-                    layout
-                    {...MOTION_BLOCK_PROPS}
+      <DefinitionsGrid loading={isPending}>
+        {indexList.length === 0 && (
+          <DefinitionsEmptyState
+            title="No indexes found"
+            description="This schema doesn't have any indexes matching your filter."
+          />
+        )}
+
+        {indexList.map(item => (
+          <MotionCard
+            key={`${item.schema}-${item.table}-${item.name}`}
+            layout
+            {...MOTION_BLOCK_PROPS}
+          >
+            <CardHeader className="bg-muted/30 px-4 py-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  {item.isPrimary
+                    ? <RiKey2Line className="size-4 text-primary" />
+                    : <RiFileList3Line className="size-4 text-primary" />}
+                  <HighlightText text={item.name} match={search} />
+                  {item.isPrimary && (
+                    <Badge
+                      variant="secondary"
+                      className="ml-2 text-xs font-normal"
+                    >
+                      Primary Key
+                    </Badge>
+                  )}
+                  {item.isUnique && !item.isPrimary && (
+                    <Badge variant="secondary" className="text-xs">
+                      Unique
+                    </Badge>
+                  )}
+                </CardTitle>
+                <Badge variant="outline" className="text-xs font-normal">
+                  <RiTable2 className="mr-1 size-3" />
+                  {item.table}
+                </Badge>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {item.columns.map((col: string) => (
+                  <Badge
+                    key={col}
+                    variant="secondary"
+                    className="font-mono text-xs"
                   >
-                    <RiInformationLine className={`
-                      mx-auto mb-3 size-12 text-muted-foreground
-                    `}
-                    />
-                    <h3 className="text-lg font-medium">No indexes found</h3>
-                  </MotionCard>
-                )}
-                {indexList.map(item => (
-                  <MotionCard
-                    key={`${item.schema}-${item.table}-${item.name}`}
-                    layout
-                    {...MOTION_BLOCK_PROPS}
-                  >
-                    <CardHeader className="bg-muted/30 px-4 py-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          {item.isPrimary
-                            ? <RiKey2Line className="size-4 text-primary" />
-                            : <RiFileList3Line className="size-4 text-primary" />}
-                          <HighlightText text={item.name} match={search} />
-                          {item.isPrimary && (
-                            <Badge
-                              variant="secondary"
-                              className="ml-2 text-xs font-normal"
-                            >
-                              Primary Key
-                            </Badge>
-                          )}
-                          {item.isUnique && !item.isPrimary && (
-                            <Badge
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              Unique
-                            </Badge>
-                          )}
-                        </CardTitle>
-                        <Badge variant="outline" className="text-xs font-normal">
-                          <RiTable2 className="mr-1 size-3" />
-                          {item.table}
-                        </Badge>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {item.columns.map((col: string) => (
-                          <Badge
-                            key={col}
-                            variant="secondary"
-                            className="font-mono text-xs"
-                          >
-                            {col}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardHeader>
-                  </MotionCard>
+                    {col}
+                  </Badge>
                 ))}
-              </AnimatePresence>
-            )}
-      </div>
+              </div>
+            </CardHeader>
+          </MotionCard>
+        ))}
+      </DefinitionsGrid>
     </>
   )
 }

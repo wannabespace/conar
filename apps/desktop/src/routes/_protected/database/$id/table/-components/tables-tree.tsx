@@ -1,7 +1,7 @@
 import type { ComponentRef } from 'react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
-import { HighlightText } from '@conar/ui/components/custom/hightlight'
+import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Separator } from '@conar/ui/components/separator'
@@ -9,10 +9,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiStackLine, RiTableLine } from '@remixicon/react'
-import { Link, useSearch } from '@tanstack/react-router'
+import { useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useRef } from 'react'
+import { SidebarLink } from '~/components/sidebar-link'
 import { useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { addTab, cleanupPinnedTables, connectionStore, togglePinTable } from '~/entities/connection/store'
 import { Route } from '..'
@@ -57,11 +58,10 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
   onRename: () => void
   onDrop: () => void
 }) {
-  const { table: tableParam, schema: schemaParam } = Route.useSearch()
   const { connection } = Route.useRouteContext()
 
   return (
-    <Link
+    <SidebarLink
       to="/database/$id/table"
       params={{ id: connection.id }}
       search={{
@@ -70,100 +70,93 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
       }}
       preloadDelay={200}
       onDoubleClick={() => addTab(connection.id, schema, table)}
-      className={cn(
-        `
-          group flex w-full items-center gap-2 rounded-md border
-          border-transparent px-2 py-1 text-sm text-foreground
-          hover:bg-accent/30
-        `,
-        tableParam === table && schemaParam === schema && `
-          border-primary/20 bg-primary/10
-          hover:bg-primary/20
-        `,
-      )}
     >
-      <RiTableLine
-        className={cn(
-          'size-4 shrink-0 text-muted-foreground opacity-50',
-          tableParam === table && 'text-primary opacity-100',
-        )}
-      />
-      <span className="truncate">
-        <HighlightText text={table} match={search} />
-      </span>
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        className={cn(
-          `
-            -mr-1 ml-auto opacity-0 transition-opacity
-            group-hover:opacity-100
-            focus-visible:opacity-100
-          `,
-          tableParam === table && 'hover:bg-primary/10',
-        )}
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          togglePinTable(connection.id, schema, table)
-        }}
-      >
-        {pinned
-          ? <RiPushpinFill className="size-3 text-primary" />
-          : (
-              <RiPushpinLine className="size-3" />
+      {({ isActive }) => (
+        <>
+          <RiTableLine
+            className={cn(
+              'size-4 shrink-0 text-muted-foreground opacity-50',
+              isActive && 'text-primary opacity-100',
             )}
-      </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+          />
+          <span className="truncate">
+            <HighlightText text={table} match={search} />
+          </span>
           <Button
             variant="ghost"
             size="icon-xs"
             className={cn(
               `
-                opacity-0 transition-opacity
+                -mr-1 ml-auto opacity-0 transition-opacity
                 group-hover:opacity-100
                 focus-visible:opacity-100
               `,
-              tableParam === table && 'hover:bg-primary/10',
+              isActive && 'hover:bg-primary/10',
             )}
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              togglePinTable(connection.id, schema, table)
+            }}
           >
-            <RiMoreLine className="size-3" />
+            {pinned
+              ? <RiPushpinFill className="size-3 text-primary" />
+              : (
+                  <RiPushpinLine className="size-3" />
+                )}
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-48">
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              copyToClipboard(table, 'Table name copied')
-            }}
-          >
-            <RiFileCopyLine className="size-4" />
-            Copy Name
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              onRename()
-            }}
-          >
-            <RiEditLine className="size-4" />
-            Rename
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDrop()
-            }}
-          >
-            <RiDeleteBin7Line className="size-4" />
-            Drop
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className={cn(
+                  `
+                    opacity-0 transition-opacity
+                    group-hover:opacity-100
+                    focus-visible:opacity-100
+                  `,
+                  isActive && 'hover:bg-primary/10',
+                )}
+                onClick={e => e.stopPropagation()}
+              >
+                <RiMoreLine className="size-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-48">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  copyToClipboard(table, 'Table name copied')
+                }}
+              >
+                <RiFileCopyLine className="size-4" />
+                Copy Name
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRename()
+                }}
+              >
+                <RiEditLine className="size-4" />
+                Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDrop()
+                }}
+              >
+                <RiDeleteBin7Line className="size-4" />
+                Drop
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      )}
+    </SidebarLink>
   )
 }
 
