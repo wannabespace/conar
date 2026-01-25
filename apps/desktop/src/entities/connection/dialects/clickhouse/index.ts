@@ -8,7 +8,7 @@ function escapeSqlString(v: string) {
   return v.replace(/[\\']/g, '\\$&')
 }
 
-const isIsoDate = type('string.date')
+const dateStringType = type('string.date')
 
 function prepareQuery(compiledQuery: CompiledQuery) {
   let i = 0
@@ -31,7 +31,7 @@ function prepareQuery(compiledQuery: CompiledQuery) {
       return `'${escapeSqlString(JSON.stringify(param))}'`
     }
 
-    if (isIsoDate(param)) {
+    if (dateStringType.allows(param)) {
       return `parseDateTime64BestEffort('${escapeSqlString(param)}')`
     }
 
