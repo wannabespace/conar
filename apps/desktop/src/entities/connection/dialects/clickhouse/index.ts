@@ -1,12 +1,14 @@
 import type { CompiledQuery, Dialect, Driver, QueryResult } from 'kysely'
 import type { connections } from '~/drizzle'
-import { isValid, parseISO } from 'date-fns'
+import { type } from 'arktype'
 import { MysqlQueryCompiler } from 'kysely'
 import { logSql } from '../../sql'
 
 function escapeSqlString(v: string) {
   return v.replace(/[\\']/g, '\\$&')
 }
+
+const isIsoDate = type('string.date')
 
 function prepareQuery(compiledQuery: CompiledQuery) {
   let i = 0
@@ -21,8 +23,8 @@ function prepareQuery(compiledQuery: CompiledQuery) {
       return `'${escapeSqlString(JSON.stringify(param))}'`
     }
 
-    if (isValid(parseISO(param))) {
-      return `parseDateTime64BestEffort('${escapeSqlString(param)}')`
+    if (isIsoDate(param)) {
+      return `parseDateTime64BestEffortOrNull('${escapeSqlString(param)}')`
     }
 
     return `'${escapeSqlString(param)}'`
