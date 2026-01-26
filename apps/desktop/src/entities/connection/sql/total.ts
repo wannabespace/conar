@@ -31,7 +31,7 @@ export const totalQuery = createQuery({
           .where('pg_catalog.pg_class.relname', '=', table)
           .executeTakeFirst()
 
-        if (estimate && estimate.count >= 0) {
+        if (estimate && estimate.count !== null && estimate.count >= 0) {
           return {
             count: Math.round(estimate.count),
             isEstimated: true,
@@ -59,7 +59,7 @@ export const totalQuery = createQuery({
           .where('TABLE_NAME', '=', table)
           .executeTakeFirst()
 
-        if (estimate && estimate.count >= 0) {
+        if (estimate && estimate.count !== null && estimate.count >= 0) {
           return { count: estimate.count, isEstimated: true }
         }
       }
