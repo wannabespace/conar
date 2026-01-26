@@ -44,6 +44,7 @@ export const Route = createFileRoute(
         query: {
           filters: store.state.filters,
           orderBy: store.state.orderBy,
+          exact: store.state.exact,
         },
       })
     }
