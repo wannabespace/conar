@@ -30,7 +30,6 @@ const layoutSettingsType = type({
 export const connectionStoreType = type({
   lastOpenedPage: 'string | null' as type.cast<(Extract<keyof FileRoutesById, `/_protected/database/$id/${string}`> | null)>,
   lastOpenedChatId: 'string | null',
-  lastOpenedDefinition: '"enums" | "constraints" | "indexes" | null',
   definitionTabs: definitionTabType.array(),
   lastOpenedTable: type({
     schema: 'string',
@@ -61,7 +60,6 @@ export const connectionStoreType = type({
 const defaultState: typeof connectionStoreType.infer = {
   lastOpenedPage: null,
   lastOpenedChatId: null,
-  lastOpenedDefinition: null,
   definitionTabs: [],
   lastOpenedTable: null,
   sql: [
@@ -140,7 +138,6 @@ export function connectionStore(id: string) {
     localStorage.setItem(`database-store-${id}`, JSON.stringify({
       lastOpenedPage: currentVal.lastOpenedPage,
       lastOpenedChatId: currentVal.lastOpenedChatId,
-      lastOpenedDefinition: currentVal.lastOpenedDefinition,
       lastOpenedTable: currentVal.lastOpenedTable,
       definitionTabs: currentVal.definitionTabs,
       sql: currentVal.sql,

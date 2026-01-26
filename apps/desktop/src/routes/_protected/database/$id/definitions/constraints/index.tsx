@@ -143,7 +143,7 @@ function DatabaseConstraintsPage() {
                     <HighlightText text={item.name} match={search} />
                     <Badge
                       variant="secondary"
-                      className="ml-2 text-xs font-normal"
+                      className="text-xs"
                     >
                       {formatType(item.type)}
                     </Badge>
@@ -152,14 +152,14 @@ function DatabaseConstraintsPage() {
                     mt-2 flex items-center gap-2 text-sm text-muted-foreground
                   `}
                   >
-                    <Badge variant="outline" className="text-xs font-normal">
+                    <Badge variant="outline" className="text-xs">
                       <RiTable2 className="mr-1 size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
                     {item.column && (
                       <>
                         <span>on</span>
-                        <Badge variant="outline" className="font-mono text-xs">
+                        <Badge variant="outline" className="text-xs">
                           <RiLayoutColumnLine className="mr-1 size-3" />
                           <HighlightText text={item.column} match={search} />
                         </Badge>
@@ -178,8 +178,8 @@ function DatabaseConstraintsPage() {
                     .
                     {item.foreignTable}
                   </Badge>
-                  <span>column</span>
-                  <Badge variant="outline" className="font-mono">{item.foreignColumn}</Badge>
+                  column
+                  <Badge variant="outline">{item.foreignColumn}</Badge>
                 </div>
               </CardContent>
             )}

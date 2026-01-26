@@ -108,7 +108,7 @@ function DatabaseEnumsPage() {
                     <HighlightText text={enumItem.name} match={search} />
                     <Badge
                       variant="secondary"
-                      className="ml-2 text-xs font-normal"
+                      className="text-xs"
                     >
                       {enumItem.metadata?.isSet ? 'Set' : 'Enum'}
                     </Badge>
@@ -120,7 +120,7 @@ function DatabaseEnumsPage() {
                   >
                     {enumItem.metadata?.table && (
                       <>
-                        <Badge variant="outline" className="text-xs font-normal">
+                        <Badge variant="outline" className="text-xs">
                           <RiTable2 className="mr-1 size-3" />
                           {enumItem.metadata.table}
                         </Badge>
@@ -149,7 +149,7 @@ function DatabaseEnumsPage() {
                               <Badge
                                 variant="outline"
                                 className={cn(
-                                  'font-mono text-xs',
+                                  'text-xs',
                                   matched && 'border-primary/30 bg-primary/10',
                                 )}
                               >

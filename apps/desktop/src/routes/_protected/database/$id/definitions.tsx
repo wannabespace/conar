@@ -26,8 +26,8 @@ function DefinitionsLayout() {
           <div className="mx-auto flex max-w-3xl flex-col px-4 py-6">
             <Outlet />
           </div>
-          <ScrollBar />
         </ScrollViewport>
+        <ScrollBar />
       </ScrollArea>
     </div>
   )
