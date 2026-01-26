@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import type { connections } from '~/drizzle'
 import type { connectionStoreType } from '~/entities/connection/store'
 import { getOS, isCtrlAndKey } from '@conar/shared/utils/os'
@@ -18,7 +19,7 @@ import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { motion, Reorder } from 'motion/react'
-import { useEffect, useEffectEvent, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { addTab, connectionStore, removeTab, updateTabs } from '~/entities/connection/store'
 import { prefetchConnectionTableCore } from '~/entities/connection/utils'
 import { getPageStoreState } from '../-store'
@@ -27,7 +28,7 @@ const MotionScrollViewport = motion.create(ScrollViewport)
 
 const os = getOS(navigator.userAgent)
 
-function CloseButton({ onClick }: { onClick: (e: React.MouseEvent<SVGSVGElement>) => void }) {
+function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] }) {
   return (
     <TooltipProvider>
       <Tooltip>
@@ -49,6 +50,53 @@ function CloseButton({ onClick }: { onClick: (e: React.MouseEvent<SVGSVGElement>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
+  )
+}
+
+function TabButton({
+  className,
+  children,
+  active,
+  onClose,
+  ...props
+}: ComponentProps<'button'> & {
+  active: boolean
+  onClose: VoidFunction
+}) {
+  return (
+    <button
+      data-mask
+      type="button"
+      className={cn(
+        `
+          group flex h-full items-center gap-1 rounded-sm border
+          border-transparent pr-1.5 pl-2 text-sm text-foreground
+        `,
+        'hover:border-accent hover:bg-muted/70',
+        active && `
+          border-primary/50 bg-primary/10
+          hover:border-primary/50 hover:bg-primary/10
+        `,
+        className,
+      )}
+      {...props}
+    >
+      <RiTableLine
+        className={cn(
+          'size-4 shrink-0 text-muted-foreground opacity-50',
+          active && 'text-primary opacity-100',
+        )}
+      />
+      <span>
+        {children}
+      </span>
+      <CloseButton
+        onClick={(e) => {
+          e.stopPropagation()
+          onClose()
+        }}
+      />
+    </button>
   )
 }
 
@@ -78,6 +126,8 @@ function SortableTab({
   onCloseOthers,
   currentTabIndex,
   totalTabs,
+  onDoubleClick,
+  onMouseOver,
 }: {
   item: { id: string, tab: typeof connectionStoreType.infer['tabs'][number] }
   showSchema: boolean
@@ -86,6 +136,8 @@ function SortableTab({
   onCloseAll: VoidFunction
   onCloseToTheRight: VoidFunction
   onCloseOthers: VoidFunction
+  onDoubleClick: VoidFunction
+  onMouseOver: VoidFunction
   currentTabIndex: number
   totalTabs: number
 }) {
@@ -93,6 +145,7 @@ function SortableTab({
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const ref = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(ref, 'full')
+  const [contextMenuOpen, setContextMenuOpen] = useState(false)
 
   const isActive = schemaParam === item.tab.schema && tableParam === item.tab.table
 
@@ -104,8 +157,6 @@ function SortableTab({
       })
     }
   }, [isActive, isVisible])
-
-  const active = schemaParam === item.tab.schema && tableParam === item.tab.table
 
   return (
     <Reorder.Item
@@ -120,41 +171,23 @@ function SortableTab({
         item.tab.preview && 'italic',
       )}
     >
-      <ContextMenu>
+      <ContextMenu open={contextMenuOpen} onOpenChange={setContextMenuOpen}>
         <ContextMenuTrigger className="h-full">
-          <button
-            data-mask
-            type="button"
-            className={cn(
-              `
-                group flex h-full items-center gap-1 rounded-sm border
-                border-transparent pr-1.5 pl-2 text-sm text-foreground
-                hover:border-accent hover:bg-muted/70
-              `,
-              active && `
-                border-primary/50 bg-primary/10
-                hover:border-primary/50 hover:bg-primary/10
-              `,
-            )}
-            onDoubleClick={() => addTab(connection.id, item.tab.schema, item.tab.table, false)}
-            onMouseOver={() => prefetchConnectionTableCore({
-              connection,
-              schema: item.tab.schema,
-              table: item.tab.table,
-              query: getQueryOpts(connection, item.tab.schema, item.tab.table),
-            })}
+          <TabButton
+            active={isActive}
+            onClose={onClose}
+            onDoubleClick={onDoubleClick}
+            onMouseOver={onMouseOver}
             onClick={() => router.navigate({
               to: '/database/$id/table',
               params: { id: connection.id },
               search: { schema: item.tab.schema, table: item.tab.table },
             })}
+            onContextMenu={(e) => {
+              e.preventDefault()
+              setContextMenuOpen(true)
+            }}
           >
-            <RiTableLine
-              className={cn(
-                'size-4 shrink-0 text-muted-foreground opacity-50',
-                active && 'text-primary opacity-100',
-              )}
-            />
             {showSchema && (
               <span className="text-muted-foreground">
                 {item.tab.schema}
@@ -162,13 +195,7 @@ function SortableTab({
               </span>
             )}
             {item.tab.table}
-            <CloseButton
-              onClick={(e) => {
-                e.stopPropagation()
-                onClose()
-              }}
-            />
-          </button>
+          </TabButton>
         </ContextMenuTrigger>
         <ContextMenuContent>
           <ContextMenuItem onClick={onClose}>
@@ -362,6 +389,13 @@ export function TablesTabs({
               onCloseAll={closeAllTabs}
               onCloseToTheRight={() => closeTabsToTheRight(item.tab.schema, item.tab.table)}
               onCloseOthers={() => closeOtherTabs(item.tab.schema, item.tab.table)}
+              onDoubleClick={() => addTab(connection.id, item.tab.schema, item.tab.table, false)}
+              onMouseOver={() => prefetchConnectionTableCore({
+                connection,
+                schema: item.tab.schema,
+                table: item.tab.table,
+                query: getQueryOpts(connection, item.tab.schema, item.tab.table),
+              })}
               currentTabIndex={index}
               totalTabs={tabItems.length}
             />
