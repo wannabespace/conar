@@ -1,10 +1,11 @@
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
-import type { ConnectionDialect, Index } from '../types'
+import type { Index } from '../types'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { findEnum, getColumnType } from '../helpers'
 import * as templates from '../templates'
 
-export function generateSchemaTypeScript(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres', _indexes: Index[] = []) {
+export function generateSchemaTypeScript(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionType = ConnectionType.Postgres, _indexes: Index[] = []) {
   const cols = columns.map((c) => {
     const safeId = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
     let typeScriptType = getColumnType(c.type, 'ts', dialect)

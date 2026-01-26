@@ -1,7 +1,8 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
-import type { ConnectionDialect, Index } from '../types'
+import type { Index } from '../types'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { findEnum, formatValue, getColumnType } from '../helpers'
 import * as templates from '../templates'
 
@@ -24,7 +25,7 @@ export function generateQueryKysely(table: string, filters: ActiveFilter[]) {
   return templates.kyselyQueryTemplate(table, conditions)
 }
 
-export function generateSchemaKysely(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres', _indexes: Index[] = []) {
+export function generateSchemaKysely(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionType = ConnectionType.Postgres, _indexes: Index[] = []) {
   const body = columns.map((c) => {
     let tsType = getColumnType(c.type, 'ts', dialect)
 

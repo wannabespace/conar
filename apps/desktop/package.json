@@ -81,6 +81,7 @@
     "arktype": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "better-auth": "catalog:",
+    "change-case": "catalog:",
     "date-fns": "catalog:",
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",

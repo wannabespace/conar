@@ -1,7 +1,8 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
-import type { ConnectionDialect, Index, PrismaFilterValue } from '../types'
+import type { Index, PrismaFilterValue } from '../types'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { findEnum, getColumnType, groupIndexes, isPrismaFilterValue, sanitize, toPascalCase } from '../helpers'
 import * as templates from '../templates'
 
@@ -60,7 +61,7 @@ export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
   return templates.prismaQueryTemplate(table, jsonWhere)
 }
 
-export function generateSchemaPrisma(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres', indexes: Index[] = []) {
+export function generateSchemaPrisma(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionType = ConnectionType.Postgres, indexes: Index[] = []) {
   const extraBlocks: string[] = []
   const relations: string[] = []
 

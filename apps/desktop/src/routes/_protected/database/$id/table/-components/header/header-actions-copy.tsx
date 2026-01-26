@@ -1,7 +1,7 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { RemixiconComponentType } from '@remixicon/react'
 import type { connections } from '~/drizzle'
-import type { ConnectionDialect, GeneratorFormat } from '~/entities/connection/utils/types'
+import type { GeneratorFormat } from '~/entities/connection/utils/types'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { Button } from '@conar/ui/components/button'
 import {
@@ -38,6 +38,7 @@ import { useStore } from '@tanstack/react-store'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
+import { SidebarButton } from '~/components/sidebar-link'
 import { useConnectionEnums, useConnectionIndexes } from '~/entities/connection/queries'
 import * as generators from '~/entities/connection/utils/generators'
 import { useTableColumns } from '../../-queries/use-columns-query'
@@ -113,30 +114,16 @@ function DialogSidebar({ activeCategory, activeFormat, onFormatChange, onCategor
       >
         {activeCategory === 'schema' ? 'Schema Formats' : 'Query Formats'}
       </div>
-      {FORMATS[activeCategory].map((fmt) => {
-        const isActive = fmt.type === activeFormat.type
-        const Icon = fmt.icon
-        return (
-          <button
-            key={fmt.type}
-            type="button"
-            onClick={() => onFormatChange(fmt.type)}
-            className={`
-              flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left
-              text-sm transition-colors
-              ${isActive
-            ? `bg-primary font-medium text-primary-foreground`
-            : `
-              text-muted-foreground
-              hover:bg-muted hover:text-foreground
-            `}
-            `}
-          >
-            <Icon className="size-4" />
-            {fmt.label}
-          </button>
-        )
-      })}
+      {FORMATS[activeCategory].map(fmt => (
+        <SidebarButton
+          key={fmt.type}
+          onClick={() => onFormatChange(fmt.type)}
+          active={fmt.type === activeFormat.type}
+        >
+          <fmt.icon className="size-4" />
+          {fmt.label}
+        </SidebarButton>
+      ))}
     </div>
   )
 }
@@ -232,7 +219,7 @@ export function HeaderActionsCopy({ connection, table, schema }: { connection: t
 
     if (activeCategory === 'schema') {
       const format = activeFormat as SchemaFormat
-      return format.generator(table, columns, enums ?? [], connection.type as ConnectionDialect, indexes ?? [])
+      return format.generator(table, columns, enums ?? [], connection.type, indexes ?? [])
     }
     const format = activeFormat as QueryFormat
     return format.generator(table, filters)

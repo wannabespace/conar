@@ -1,7 +1,8 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
-import type { ConnectionDialect, Index } from '../types'
+import type { Index } from '../types'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { findEnum, formatValue, getColumnType, groupIndexes, quoteIdentifier } from '../helpers'
 import * as templates from '../templates'
 
@@ -24,7 +25,7 @@ export function generateQuerySQL(table: string, filters: ActiveFilter[]) {
   return templates.sqlQueryTemplate(table, whereClauses)
 }
 
-export function generateSchemaSQL(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres', indexes: Index[] = []) {
+export function generateSchemaSQL(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionType = ConnectionType.Postgres, indexes: Index[] = []) {
   const foreignKeys: string[] = []
   const usedEnums = new Map<string, typeof enumType.infer>()
   const isMysql = dialect === 'mysql'

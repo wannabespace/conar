@@ -1,6 +1,7 @@
 import type { Column } from '../components/table/utils'
 import type { enumType } from '../sql/enums'
-import type { ConnectionDialect, GeneratorFormat, Index, PrismaFilterValue } from './types'
+import type { GeneratorFormat, Index, PrismaFilterValue } from './types'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 
 export const DEFAULT_PAGE_LIMIT = 100
 
@@ -257,7 +258,7 @@ function zodMapper(t: string) {
 const sqlDefault = (t: string) => t
 const kyselyDefault = (t: string) => t
 
-export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionDialect, (type: string) => string>> = {
+export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type: string) => string>> = {
   ts: {
     postgres: tsMapper,
     mysql: tsMapper,
@@ -436,7 +437,7 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionDialect, (t
   },
 }
 
-export function getColumnType(type: string | undefined, format: GeneratorFormat, dialect: ConnectionDialect = 'postgres'): string {
+export function getColumnType(type: string | undefined, format: GeneratorFormat, dialect: ConnectionType = ConnectionType.Postgres): string {
   if (!type)
     return 'any'
 
@@ -458,7 +459,7 @@ export function formatValue(value: unknown): string {
   return `'${String(value)}'`
 }
 
-export function quoteIdentifier(name: string, dialect: ConnectionDialect) {
+export function quoteIdentifier(name: string, dialect: ConnectionType) {
   if (dialect === 'mysql' || dialect === 'clickhouse')
     return `\`${name}\``
   if (dialect === 'mssql')

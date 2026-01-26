@@ -1,7 +1,8 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
-import type { ConnectionDialect, Index } from '../types'
+import type { Index } from '../types'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { findEnum, getColumnType, groupIndexes, toPascalCase } from '../helpers'
 import * as templates from '../templates'
 
@@ -32,7 +33,7 @@ export function generateQueryDrizzle(table: string, filters: ActiveFilter[]) {
   return templates.drizzleQueryTemplate(table, conditions)
 }
 
-export function generateSchemaDrizzle(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres', indexes: Index[] = []) {
+export function generateSchemaDrizzle(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionType = ConnectionType.Postgres, indexes: Index[] = []) {
   let tableFunc = 'pgTable'
   let importPath = 'drizzle-orm/pg-core'
   let enumFunc = 'pgEnum'
