@@ -1,5 +1,8 @@
 import type * as React from 'react'
 import { cn } from '@conar/ui/lib/utils'
+import { motion } from 'motion/react'
+
+export const MotionCard = motion.create(Card)
 
 function Card({ className, ...props }: React.ComponentProps<'div'>) {
   return (
