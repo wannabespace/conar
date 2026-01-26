@@ -10,6 +10,7 @@ export const storeState = type({
     ref: type('object') as type.cast<Filter>,
     values: 'string[]',
   }).array() as type.cast<ActiveFilter[]>,
+  exact: 'boolean',
   hiddenColumns: 'string[]',
   orderBy: {
     '[string]': '"ASC" | "DESC"',
@@ -45,6 +46,7 @@ export function createPageStore({ id, schema, table }: { id: string, schema: str
     ?? {
       selected: [],
       filters: [],
+      exact: false,
       prompt: '',
       hiddenColumns: [],
       orderBy: {},
