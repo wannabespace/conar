@@ -367,6 +367,9 @@ export function generateSchemaDrizzle(table: string, columns: Column[], enums: t
   const foreignKeyImports = new Set<string>()
   const extras: string[] = []
 
+  const isValidId = /^[a-z_$][\w$]*$/i.test(table)
+  const varName = isValidId ? table : toPascalCase(table)
+
   const cols = columns.map((c) => {
     let typeFunc = getColumnType(c.type, 'drizzle', dialect)
     imports.add(typeFunc)
@@ -410,7 +413,8 @@ export function generateSchemaDrizzle(table: string, columns: Column[], enums: t
       chain += '.unique()'
 
     if (c.foreign && dialect !== 'clickhouse') {
-      const refTable = toPascalCase(c.foreign.table)
+      const isValidRef = /^[a-z_$][\w$]*$/i.test(c.foreign.table)
+      const refTable = isValidRef ? c.foreign.table : toPascalCase(c.foreign.table)
       chain += `.references(() => ${refTable}.${c.foreign.column})`
 
       foreignKeyImports.add(`import { ${refTable} } from './${c.foreign.table}';`)
@@ -419,11 +423,41 @@ export function generateSchemaDrizzle(table: string, columns: Column[], enums: t
     return `  ${safeKey}: ${chain},`
   }).join('\n')
 
+  const relationships: string[] = []
+
+  columns.forEach((c) => {
+    if (c.foreign && dialect !== 'clickhouse') {
+      const isValidRef = /^[a-z_$][\w$]*$/i.test(c.foreign.table)
+      const refTable = isValidRef ? c.foreign.table : toPascalCase(c.foreign.table)
+      const fieldName = c.id
+      relationships.push(`    ${fieldName}: one(${refTable}, {\n      fields: [${varName}.${c.id}],\n      references: [${refTable}.${c.foreign.column}],\n    }),`)
+    }
+
+    if (c.references?.length) {
+      c.references.forEach((ref) => {
+        const isValidRef = /^[a-z_$][\w$]*$/i.test(ref.table)
+        const refTable = isValidRef ? ref.table : toPascalCase(ref.table)
+        const fieldName = ref.table
+
+        relationships.push(`    ${fieldName}: many(${refTable}),`)
+
+        foreignKeyImports.add(`import { ${refTable} } from './${ref.table}';`)
+      })
+    }
+  })
+
   if (foreignKeyImports.size > 0) {
     extras.push(...Array.from(foreignKeyImports))
   }
 
   const base = templates.drizzleSchemaTemplate(table, Array.from(imports), cols, tableFunc, importPath)
+
+  if (relationships.length > 0) {
+    const relName = `${varName}Relations`
+    const relBlock = `export const ${relName} = relations(${varName}, ({ one, many }) => ({\n${relationships.join('\n')}\n}));`
+    return `import { relations } from 'drizzle-orm';\n${extras.length ? `${extras.join('\n')}\n\n` : ''}${base}\n\n${relBlock}`
+  }
+
   return (extras.length ? `${extras.join('\n')}\n\n` : '') + base
 }
 
