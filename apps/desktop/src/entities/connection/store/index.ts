@@ -11,6 +11,10 @@ const tabType = type({
   preview: 'boolean',
 })
 
+const definitionTabType = type({
+  type: '"enums" | "constraints" | "indexes"',
+})
+
 const queryToRunType = type({
   startLineNumber: 'number',
   endLineNumber: 'number',
@@ -26,6 +30,7 @@ const layoutSettingsType = type({
 export const connectionStoreType = type({
   lastOpenedPage: 'string | null' as type.cast<(Extract<keyof FileRoutesById, `/_protected/database/$id/${string}`> | null)>,
   lastOpenedChatId: 'string | null',
+  definitionTabs: definitionTabType.array(),
   lastOpenedTable: type({
     schema: 'string',
     table: 'string',
@@ -43,6 +48,7 @@ export const connectionStoreType = type({
   chatInput: 'string',
   tabs: tabType.array(),
   tablesSearch: 'string',
+  definitionsSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
   pinnedTables: type({
     schema: 'string',
@@ -54,6 +60,7 @@ export const connectionStoreType = type({
 const defaultState: typeof connectionStoreType.infer = {
   lastOpenedPage: null,
   lastOpenedChatId: null,
+  definitionTabs: [],
   lastOpenedTable: null,
   sql: [
     '-- Write your SQL query here based on your database schema',
@@ -79,6 +86,7 @@ const defaultState: typeof connectionStoreType.infer = {
   chatInput: '',
   tabs: [],
   tablesSearch: '',
+  definitionsSearch: '',
   tablesTreeOpenedSchemas: null,
   pinnedTables: [],
   layout: {
@@ -131,12 +139,14 @@ export function connectionStore(id: string) {
       lastOpenedPage: currentVal.lastOpenedPage,
       lastOpenedChatId: currentVal.lastOpenedChatId,
       lastOpenedTable: currentVal.lastOpenedTable,
+      definitionTabs: currentVal.definitionTabs,
       sql: currentVal.sql,
       selectedLines: currentVal.selectedLines,
       loggerOpened: currentVal.loggerOpened,
       chatInput: currentVal.chatInput,
       tabs: currentVal.tabs,
       tablesSearch: currentVal.tablesSearch,
+      definitionsSearch: currentVal.definitionsSearch,
       tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
       pinnedTables: currentVal.pinnedTables,
       layout: currentVal.layout,
