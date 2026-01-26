@@ -11,10 +11,6 @@ const tabType = type({
   preview: 'boolean',
 })
 
-const definitionTabType = type({
-  type: '"enums" | "constraints" | "indexes"',
-})
-
 const queryToRunType = type({
   startLineNumber: 'number',
   endLineNumber: 'number',
@@ -30,7 +26,6 @@ const layoutSettingsType = type({
 export const connectionStoreType = type({
   lastOpenedPage: 'string | null' as type.cast<(Extract<keyof FileRoutesById, `/_protected/database/$id/${string}`> | null)>,
   lastOpenedChatId: 'string | null',
-  definitionTabs: definitionTabType.array(),
   lastOpenedTable: type({
     schema: 'string',
     table: 'string',
@@ -60,7 +55,6 @@ export const connectionStoreType = type({
 const defaultState: typeof connectionStoreType.infer = {
   lastOpenedPage: null,
   lastOpenedChatId: null,
-  definitionTabs: [],
   lastOpenedTable: null,
   sql: [
     '-- Write your SQL query here based on your database schema',
@@ -139,7 +133,6 @@ export function connectionStore(id: string) {
       lastOpenedPage: currentVal.lastOpenedPage,
       lastOpenedChatId: currentVal.lastOpenedChatId,
       lastOpenedTable: currentVal.lastOpenedTable,
-      definitionTabs: currentVal.definitionTabs,
       sql: currentVal.sql,
       selectedLines: currentVal.selectedLines,
       loggerOpened: currentVal.loggerOpened,

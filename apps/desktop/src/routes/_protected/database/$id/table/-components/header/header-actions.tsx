@@ -20,7 +20,7 @@ import { HeaderActionsOrder } from './header-actions-order'
 export function HeaderActions({ table, schema }: { table: string, schema: string }) {
   const { connection } = Route.useLoaderData()
   const store = usePageStoreContext()
-  const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
+  const [filters, orderBy, exact] = useStore(store, state => [state.filters, state.orderBy, state.exact])
   const { isFetching, dataUpdatedAt, refetch, data: rows, isPending } = useInfiniteQuery(
     connectionRowsQuery({ connection, table, schema, query: { filters, orderBy } }),
   )
@@ -28,7 +28,7 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
   async function handleRefresh() {
     refetch()
     queryClient.invalidateQueries(connectionTableColumnsQuery({ connection, table, schema }))
-    queryClient.invalidateQueries(connectionTableTotalQuery({ connection, table, schema, query: { filters } }))
+    queryClient.invalidateQueries(connectionTableTotalQuery({ connection, table, schema, query: { filters, exact } }))
     queryClient.invalidateQueries(connectionConstraintsQuery({ connection }))
   }
 

@@ -29,6 +29,7 @@ interface PgClass {
   relname: string
   relnamespace: number
   relkind: string
+  reltuples: number
 }
 
 /**

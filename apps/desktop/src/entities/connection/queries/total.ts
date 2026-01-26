@@ -12,7 +12,10 @@ export function connectionTableTotalQuery({
   connection: typeof connections.$inferSelect
   table: string
   schema: string
-  query: { filters: ActiveFilter[] }
+  query: {
+    filters: ActiveFilter[]
+    exact: boolean
+  }
 }) {
   return queryOptions({
     queryKey: [
@@ -25,9 +28,10 @@ export function connectionTableTotalQuery({
       'total',
       {
         filters: query.filters,
+        exact: query.exact,
       },
     ],
-    queryFn: () => totalQuery(connection, { schema, table, filters: query.filters }),
+    queryFn: () => totalQuery(connection, { schema, table, filters: query.filters, exact: query.exact }),
     throwOnError: false,
   })
 }

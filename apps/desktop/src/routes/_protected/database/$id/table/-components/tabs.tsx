@@ -60,12 +60,14 @@ function getQueryOpts(connection: typeof connections.$inferSelect, schema: strin
     return {
       filters: state.filters,
       orderBy: state.orderBy,
+      exact: state.exact,
     }
   }
 
   return {
     filters: [],
     orderBy: {},
+    exact: false,
   }
 }
 
