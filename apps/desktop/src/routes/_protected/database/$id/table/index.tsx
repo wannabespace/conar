@@ -13,9 +13,9 @@ import { FiltersProvider } from '~/components/table'
 import { addTab, connectionStore } from '~/entities/connection/store'
 import { prefetchConnectionCore, prefetchConnectionTableCore } from '~/entities/connection/utils'
 import { Filters } from './-components/filters'
-import { Header } from './-components/header'
+import { Header } from './-components/header/header'
 import { Sidebar } from './-components/sidebar'
-import { Table } from './-components/table'
+import { Table } from './-components/table/table'
 import { TablesTabs } from './-components/tabs'
 import { useTableColumns } from './-queries/use-columns-query'
 import { createPageStore, LastClickedIndexContext, PageStoreContext, SelectionStateContext } from './-store'
@@ -44,6 +44,7 @@ export const Route = createFileRoute(
         query: {
           filters: store.state.filters,
           orderBy: store.state.orderBy,
+          exact: store.state.exact,
         },
       })
     }
@@ -177,15 +178,15 @@ function DatabaseTablesPage() {
     handleLastOpenedTableEvent()
   }, [schema, table, lastOpenedTable])
 
-  const { defaultLayout, onLayoutChange } = useDefaultLayout({
-    id: `database-layout-${connection.id}`,
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: `database-table-layout-${connection.id}`,
     storage: localStorage,
   })
 
   return (
     <ResizablePanelGroup
       defaultLayout={defaultLayout}
-      onLayoutChange={onLayoutChange}
+      onLayoutChanged={onLayoutChanged}
       orientation="horizontal"
       className="flex"
     >

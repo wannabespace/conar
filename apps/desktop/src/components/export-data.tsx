@@ -16,6 +16,7 @@ import {
 } from '@conar/ui/components/tooltip'
 import { RiBracesLine, RiTableLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
+import { handleError } from '~/lib/error'
 
 function contentGenerators(data: Record<string, unknown>[]) {
   return {
@@ -72,6 +73,7 @@ export function ExportData({
     onSuccess: ({ content, fileName, mimeType }) => {
       downloadFile(content, fileName, mimeType)
     },
+    onError: handleError,
   })
 
   return (

@@ -50,7 +50,8 @@
     "stripe": "catalog:",
     "superjson": "catalog:",
     "ua-parser-js": "catalog:",
-    "uuid": "catalog:"
+    "uuid": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",

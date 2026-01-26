@@ -63,6 +63,9 @@ export function RenameTableDialog({ ref, connection }: RenameTableDialogProps) {
         search: { schema, table: newTableName },
       })
     },
+    onError: (error) => {
+      toast.error(`Failed to rename table "${error.message}".`)
+    },
   })
 
   const canConfirm = newTableName.trim() !== '' && newTableName.trim() !== table && !isPending

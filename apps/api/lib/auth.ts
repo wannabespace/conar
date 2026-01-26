@@ -3,12 +3,14 @@ import { PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { consola } from 'consola'
+import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
-import { db } from '~/drizzle'
+import { db, users } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
+import { redisMemoize } from './redis'
 
 export const auth: Auth = betterAuth({
   appName: 'Conar',
@@ -53,13 +55,36 @@ export const auth: Auth = betterAuth({
         defaultValue: () => nanoid(),
         required: true,
       },
-      stripe_customer_id: {
+      stripeCustomerId: {
         type: 'string',
         returned: false,
         input: false,
         required: false,
+        fieldName: 'stripe_customer_id',
+      },
+      desktopVersion: {
+        fieldName: 'desktop_version',
+        type: 'string',
+        returned: true,
+        input: false,
+        required: false,
       },
     },
+  },
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      const desktopVersion = ctx.headers?.get('x-desktop-version')
+
+      if (!ctx.context.session || !desktopVersion) {
+        return
+      }
+
+      await redisMemoize(async () => {
+        await db.update(users).set({
+          desktopVersion,
+        }).where(eq(users.id, ctx.context.session!.user.id))
+      }, `desktop-version:${ctx.context.session.user.id}`)
+    }),
   },
   databaseHooks: {
     user: {

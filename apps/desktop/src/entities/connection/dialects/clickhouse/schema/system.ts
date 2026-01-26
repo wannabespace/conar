@@ -4,6 +4,7 @@
  */
 export interface System {
   columns: Columns
+  parts: Parts
 }
 
 /**
@@ -15,4 +16,15 @@ interface Columns {
   table: string
   name: string
   is_in_primary_key: number
+}
+
+/**
+ * @name parts
+ * @type table
+ */
+interface Parts {
+  database: string
+  table: string
+  rows: number
+  active: number
 }

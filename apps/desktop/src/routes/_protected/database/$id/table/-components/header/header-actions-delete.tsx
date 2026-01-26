@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import { connectionRowsQuery, connectionTableTotalQuery } from '~/entities/connection/queries'
 import { deleteRowsQuery } from '~/entities/connection/sql/delete-rows'
 import { queryClient } from '~/main'
-import { usePageStoreContext } from '../-store'
+import { usePageStoreContext } from '../../-store'
 
 export function HeaderActionsDelete({ table, schema, connection }: { table: string, schema: string, connection: typeof connections.$inferSelect }) {
   const [isOpened, setIsOpened] = useState(false)
@@ -26,7 +26,7 @@ export function HeaderActionsDelete({ table, schema, connection }: { table: stri
     onSuccess: () => {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
       queryClient.invalidateQueries(connectionRowsQuery({ connection, table, schema, query: { filters: store.state.filters, orderBy: store.state.orderBy } }))
-      queryClient.invalidateQueries(connectionTableTotalQuery({ connection, table, schema, query: { filters: store.state.filters } }))
+      queryClient.invalidateQueries(connectionTableTotalQuery({ connection, table, schema, query: { filters: store.state.filters, exact: store.state.exact } }))
       store.setState(state => ({
         ...state,
         selected: [],
