@@ -31,7 +31,7 @@ export async function prefetchConnectionTableCore({ connection, schema, table, q
 }) {
   await Promise.all([
     queryClient.prefetchInfiniteQuery(connectionRowsQuery({ connection, table, schema, query })),
-    queryClient.prefetchQuery(connectionTableTotalQuery({ connection, table, schema, query })),
+    queryClient.prefetchQuery(connectionTableTotalQuery({ connection, table, schema, query: { filters: query.filters, exact: false } })),
     queryClient.prefetchQuery(connectionTableColumnsQuery({ connection, table, schema })),
   ])
 }
