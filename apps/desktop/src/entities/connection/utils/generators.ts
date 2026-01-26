@@ -271,6 +271,15 @@ export function generateSchemaZod(table: string, columns: Column[], enums: typeo
 
     if (c.isNullable)
       t += '.nullable()'
+
+    if (c.maxLength && c.maxLength > 0 && t.includes('z.string')) {
+      t = t.replace('z.string()', `z.string().max(${c.maxLength})`)
+    }
+
+    if (t.includes('z.number()') && /int/i.test(c.type || '')) {
+      t = t.replace('z.number()', 'z.int()')
+    }
+
     return `  ${safeId}: ${t},`
   }).join('\n')
 
@@ -310,6 +319,14 @@ export function generateSchemaPrisma(table: string, columns: Column[], enums: ty
     }
     else if (c.unique) {
       parts.push('@unique')
+    }
+
+    if (prismaType === 'String' && c.maxLength && c.maxLength > 0) {
+      parts.push(`@db.VarChar(${c.maxLength})`)
+    }
+
+    if (prismaType === 'Decimal' && c.precision) {
+      parts.push(`@db.Decimal(${c.precision}, ${c.scale || 0})`)
     }
 
     if (needsMap) {
