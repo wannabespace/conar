@@ -5,7 +5,7 @@ import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useRef } from 'react'
 import { useTableContext } from '~/components/table'
-import { useLastClickedIndexRef, usePageStoreContext, useSelectionStateRef } from '../../-store'
+import { usePageStoreContext } from '../../-store'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -97,8 +97,6 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
 }) {
   const store = usePageStoreContext()
   const rows = useTableContext(state => state.rows)
-  const lastClickedIndexRef = useLastClickedIndexRef()
-  const selectionStateRef = useSelectionStateRef()
   const shiftKeyRef = useRef(false)
   const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])))
 
@@ -113,7 +111,7 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
   }
 
   const handleChange = () => {
-    const lastIndex = lastClickedIndexRef.current
+    const lastIndex = store.state.lastClickedIndex
     const isShiftHeld = shiftKeyRef.current
 
     if (isShiftHeld && lastIndex !== null && lastIndex !== rowIndex) {
@@ -128,34 +126,34 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
       store.setState(state => ({
         ...state,
         selected: rangeKeys,
+        selectionState: {
+          anchorIndex: lastIndex,
+          focusIndex: rowIndex,
+          lastExpandDirection: rowIndex > lastIndex ? 'down' : 'up',
+        },
       } satisfies typeof state))
-
-      selectionStateRef.current = {
-        anchorIndex: lastIndex,
-        focusIndex: rowIndex,
-        lastExpandDirection: rowIndex > lastIndex ? 'down' : 'up',
-      }
     }
     else {
       if (isSelected) {
         store.setState(state => ({
           ...state,
           selected: store.state.selected.filter(row => !keys.every(key => row[key] === rows[rowIndex]![key])),
+          selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
         } satisfies typeof state))
-
-        selectionStateRef.current = { anchorIndex: null, focusIndex: null, lastExpandDirection: null }
       }
       else {
         store.setState(state => ({
           ...state,
           selected: [...state.selected, keys.reduce((acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] }), {})],
+          selectionState: { anchorIndex: rowIndex, focusIndex: rowIndex, lastExpandDirection: null },
         } satisfies typeof state))
-
-        selectionStateRef.current = { anchorIndex: rowIndex, focusIndex: rowIndex, lastExpandDirection: null }
       }
     }
 
-    lastClickedIndexRef.current = rowIndex
+    store.setState(state => ({
+      ...state,
+      lastClickedIndex: rowIndex,
+    } satisfies typeof state))
     shiftKeyRef.current = false
   }
 

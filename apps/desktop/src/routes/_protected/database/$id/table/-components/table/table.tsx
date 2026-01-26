@@ -16,7 +16,7 @@ import { queryClient } from '~/main'
 import { Route } from '../..'
 import { getColumnSize, INTERNAL_COLUMN_IDS } from '../../-lib'
 import { useTableColumns } from '../../-queries/use-columns-query'
-import { usePageStoreContext, useSelectionStateRef } from '../../-store'
+import { usePageStoreContext } from '../../-store'
 import { useColumnsOrder } from '../use-columns-order'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
@@ -62,7 +62,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { data: enums } = useConnectionEnums({ connection })
   const columns = useTableColumns({ connection, table, schema })
   const store = usePageStoreContext()
-  const selectionStateRef = useSelectionStateRef()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const columnSizes = useStore(store, state => state.columnSizes)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
@@ -273,13 +272,11 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
     event.preventDefault()
 
-    const { anchorIndex, focusIndex } = selectionStateRef.current
+    const { anchorIndex, focusIndex } = store.state.selectionState
     const currentDirection = isArrowDown ? 'down' : 'up'
 
     if (anchorIndex === null || focusIndex === null) {
       const startIndex = isArrowDown ? 0 : rows.length - 1
-      selectionStateRef.current = { anchorIndex: startIndex, focusIndex: startIndex, lastExpandDirection: null }
-
       const rowKeys = primaryColumns.reduce<Record<string, string>>(
         (acc, key) => ({ ...acc, [key]: rows[startIndex]![key] as string }),
         {},
@@ -288,6 +285,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       store.setState(state => ({
         ...state,
         selected: [rowKeys],
+        selectionState: { anchorIndex: startIndex, focusIndex: startIndex, lastExpandDirection: null },
       } satisfies typeof state))
       return
     }
@@ -302,8 +300,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       if (atBoundary)
         return
 
-      selectionStateRef.current = { anchorIndex, focusIndex: newFocusIndex, lastExpandDirection: currentDirection }
-
       const start = Math.min(anchorIndex, newFocusIndex)
       const end = Math.max(anchorIndex, newFocusIndex)
       const rangeRows = rows.slice(start, end + 1)
@@ -317,6 +313,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       store.setState(state => ({
         ...state,
         selected: rangeKeys,
+        selectionState: { anchorIndex, focusIndex: newFocusIndex, lastExpandDirection: currentDirection },
       } satisfies typeof state))
       return
     }
@@ -328,9 +325,10 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     const wasExpandedUp = focusIndex < anchorIndex
     const isShrinking = (wasExpandedDown && isArrowUp) || (wasExpandedUp && isArrowDown)
 
-    selectionStateRef.current.focusIndex = newFocusIndex
-    if (!isShrinking) {
-      selectionStateRef.current.lastExpandDirection = currentDirection
+    const updatedSelectionState = {
+      ...store.state.selectionState,
+      focusIndex: newFocusIndex,
+      lastExpandDirection: isShrinking ? store.state.selectionState.lastExpandDirection : currentDirection,
     }
 
     const start = Math.min(anchorIndex, newFocusIndex)
@@ -347,8 +345,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     store.setState(state => ({
       ...state,
       selected: rangeKeys,
+      selectionState: updatedSelectionState,
     } satisfies typeof state))
-  }, [rows, primaryColumns, store, selectionStateRef])
+  }, [rows, primaryColumns, store])
 
   return (
     <TableProvider

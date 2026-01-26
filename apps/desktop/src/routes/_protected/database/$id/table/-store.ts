@@ -1,8 +1,13 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
-import type { RefObject } from 'react'
 import { Store } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
+
+export interface SelectionState {
+  anchorIndex: number | null
+  focusIndex: number | null
+  lastExpandDirection: 'up' | 'down' | null
+}
 
 export const storeState = type({
   selected: 'Record<string, string>[]',
@@ -18,44 +23,68 @@ export const storeState = type({
   },
   prompt: 'string',
   columnSizes: 'Record<string, number>',
+  lastClickedIndex: 'number | null',
+  selectionState: type({
+    anchorIndex: 'number | null',
+    focusIndex: 'number | null',
+    lastExpandDirection: '"up" | "down" | null',
+  }) as type.cast<SelectionState>,
 })
+
+const defaultState: typeof storeState.infer = {
+  selected: [],
+  filters: [],
+  exact: false,
+  prompt: '',
+  hiddenColumns: [],
+  orderBy: {},
+  columnSizes: {},
+  lastClickedIndex: null,
+  selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
+}
 
 function getPageStoreKey(id: string, schema: string, table: string) {
   return `${id}.${schema}-${table}.store`
 }
 
-export function getPageStoreState(id: string, schema: string, table: string) {
-  const parsed = storeState(JSON.parse(sessionStorage.getItem(getPageStoreKey(id, schema, table)) ?? 'null'))
-
-  if (parsed instanceof type.errors) {
-    return null
-  }
-
-  return parsed
-}
-
 const storesMap = new Map<string, Store<typeof storeState.infer>>()
 
-export function createPageStore({ id, schema, table }: { id: string, schema: string, table: string }) {
+export function tablePageStore({ id, schema, table }: { id: string, schema: string, table: string }) {
   const key = `${id}.${schema}.${table}`
 
   if (storesMap.has(key)) {
     return storesMap.get(key)!
   }
 
-  const store = new Store<typeof storeState.infer>(getPageStoreState(id, schema, table)
-    ?? {
-      selected: [],
-      filters: [],
-      exact: false,
-      prompt: '',
-      hiddenColumns: [],
-      orderBy: {},
-      columnSizes: {},
-    })
+  const persistedState = JSON.parse(
+    sessionStorage.getItem(getPageStoreKey(id, schema, table))
+    || '{}',
+  ) as typeof defaultState
 
-  store.subscribe((state) => {
-    sessionStorage.setItem(getPageStoreKey(id, schema, table), JSON.stringify(state.currentVal))
+  const state = storeState(Object.assign(
+    {},
+    defaultState,
+    persistedState,
+  ))
+
+  if (import.meta.env.DEV && state instanceof type.errors) {
+    console.error('Invalid page store state', state.summary)
+  }
+
+  const store = new Store<typeof storeState.infer>(
+    state instanceof type.errors ? defaultState : state,
+  )
+
+  store.subscribe(({ currentVal }) => {
+    sessionStorage.setItem(getPageStoreKey(id, schema, table), JSON.stringify({
+      selected: currentVal.selected,
+      filters: currentVal.filters,
+      exact: currentVal.exact,
+      hiddenColumns: currentVal.hiddenColumns,
+      orderBy: currentVal.orderBy,
+      prompt: currentVal.prompt,
+      columnSizes: currentVal.columnSizes,
+    } satisfies Omit<typeof currentVal, 'lastClickedIndex' | 'selectionState'>))
   })
 
   storesMap.set(key, store)
@@ -67,22 +96,4 @@ export const PageStoreContext = createContext<Store<typeof storeState.infer>>(nu
 
 export function usePageStoreContext() {
   return use(PageStoreContext)
-}
-
-export const LastClickedIndexContext = createContext<RefObject<number | null>>(null!)
-
-export function useLastClickedIndexRef() {
-  return use(LastClickedIndexContext)
-}
-
-export interface SelectionState {
-  anchorIndex: number | null
-  focusIndex: number | null
-  lastExpandDirection: 'up' | 'down' | null
-}
-
-export const SelectionStateContext = createContext<RefObject<SelectionState>>(null!)
-
-export function useSelectionStateRef() {
-  return use(SelectionStateContext)
 }
