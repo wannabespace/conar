@@ -1,8 +1,8 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from '../components/table/utils'
 import type { enumType } from '../sql/enums'
-import type { ConnectionDialect, PrismaFilterValue } from './types'
-import { findEnum, formatValue, getColumnType, isPrismaFilterValue, quoteIdentifier, sanitize, toPascalCase } from './helpers'
+import type { ConnectionDialect, Index, PrismaFilterValue } from './types'
+import { findEnum, formatValue, getColumnType, groupIndexes, isPrismaFilterValue, quoteIdentifier, sanitize, toPascalCase } from './helpers'
 import * as templates from './templates'
 
 export function generateQuerySQL(table: string, filters: ActiveFilter[]) {
@@ -125,7 +125,7 @@ export function generateQueryKysely(table: string, filters: ActiveFilter[]) {
   return templates.kyselyQueryTemplate(table, conditions)
 }
 
-export function generateSchemaSQL(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres') {
+export function generateSchemaSQL(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres', indexes: Index[] = []) {
   const foreignKeys: string[] = []
   const usedEnums = new Map<string, typeof enumType.infer>()
   const isMysql = dialect === 'mysql'
@@ -135,6 +135,7 @@ export function generateSchemaSQL(table: string, columns: Column[], enums: typeo
 
   const cols = columns.map((c) => {
     let typeDef = c.type ?? ''
+
     const lowerType = typeDef.toLowerCase()
 
     const match = findEnum(c, table, enums)
@@ -235,10 +236,21 @@ export function generateSchemaSQL(table: string, columns: Column[], enums: typeo
     schema = schema.replace(/\);\s*$/, `) ENGINE = MergeTree() ORDER BY ${orderBy};`)
   }
 
+  const explicitIndexes = groupIndexes(indexes, table).filter(idx => !idx.isPrimary && dialect !== 'clickhouse' && !(idx.isUnique && idx.columns.length === 1 && columns.find(c => c.id === idx.columns[0] && c.unique)))
+
+  if (explicitIndexes.length > 0) {
+    const indexStmts = explicitIndexes.map((idx) => {
+      const cols = idx.columns.map(c => quoteIdentifier(c, dialect)).join(', ')
+      const unique = idx.isUnique ? 'UNIQUE ' : ''
+      return `CREATE ${unique}INDEX ${quoteIdentifier(idx.name, dialect)} ON ${quoteIdentifier(table, dialect)} (${cols});`
+    })
+    schema += `\n\n${indexStmts.join('\n')}`
+  }
+
   return definitions.length > 0 ? `${definitions.join('\n')}\n\n${schema}` : schema
 }
 
-export function generateSchemaTypeScript(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres') {
+export function generateSchemaTypeScript(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres', _indexes: Index[] = []) {
   const cols = columns.map((c) => {
     const safeId = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
     let typeScriptType = getColumnType(c.type, 'ts', dialect)
@@ -256,7 +268,7 @@ export function generateSchemaTypeScript(table: string, columns: Column[], enums
   return templates.typeScriptSchemaTemplate(table, cols)
 }
 
-export function generateSchemaZod(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres') {
+export function generateSchemaZod(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres', _indexes: Index[] = []) {
   const cols = columns.map((c) => {
     const safeId = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
     let t = getColumnType(c.type, 'zod', dialect)
@@ -286,7 +298,7 @@ export function generateSchemaZod(table: string, columns: Column[], enums: typeo
   return templates.zodSchemaTemplate(table, cols)
 }
 
-export function generateSchemaPrisma(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres') {
+export function generateSchemaPrisma(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres', indexes: Index[] = []) {
   const extraBlocks: string[] = []
   const relations: string[] = []
 
@@ -352,14 +364,34 @@ export function generateSchemaPrisma(table: string, columns: Column[], enums: ty
     return `  ${parts.join(' ')}`
   })
 
-  const body = cols.join('\n') + (relations.length ? `\n\n${relations.join('\n')}` : '')
+  const explicitIndexes = groupIndexes(indexes, table).filter(idx => !idx.isPrimary && !(idx.isUnique && idx.columns.length === 1 && columns.find(c => c.id === idx.columns[0] && c.unique)))
+
+  const indexBlocks: string[] = []
+  explicitIndexes.forEach((idx) => {
+    const fieldNames = idx.columns.map((col) => {
+      const c = columns.find(c => c.id === col)
+      if (!c)
+        return col
+      const isValidId = /^[a-z][\w$]*$/i.test(c.id)
+      return isValidId ? c.id : sanitize(c.id)
+    })
+
+    const type = idx.isUnique ? '@@unique' : '@@index'
+    const cols = fieldNames.join(', ')
+
+    indexBlocks.push(`  ${type}([${cols}], map: "${idx.name}")`)
+  })
+
+  const body = cols.join('\n')
+    + (relations.length ? `\n\n${relations.join('\n')}` : '')
+    + (indexBlocks.length ? `\n\n${indexBlocks.join('\n')}` : '')
 
   const uniqueExtras = Array.from(new Set(extraBlocks))
 
   return templates.prismaSchemaTemplate(table, body) + (uniqueExtras.length ? `\n\n${uniqueExtras.join('\n\n')}` : '')
 }
 
-export function generateSchemaDrizzle(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres') {
+export function generateSchemaDrizzle(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres', indexes: Index[] = []) {
   let tableFunc = 'pgTable'
   let importPath = 'drizzle-orm/pg-core'
   let enumFunc = 'pgEnum'
@@ -463,11 +495,45 @@ export function generateSchemaDrizzle(table: string, columns: Column[], enums: t
     }
   })
 
+  const explicitIndexes = groupIndexes(indexes, table).filter(idx => !idx.isPrimary && dialect !== 'clickhouse' && !(idx.isUnique && idx.columns.length === 1 && columns.find(c => c.id === idx.columns[0] && c.unique)))
+
+  let extraConfig = ''
+  if (explicitIndexes.length > 0) {
+    const idxDecls: string[] = []
+    let usedIndex = false
+    let usedUnique = false
+
+    explicitIndexes.forEach((idx) => {
+      const func = idx.isUnique ? 'uniqueIndex' : 'index'
+      if (idx.isUnique)
+        usedUnique = true
+      else
+        usedIndex = true
+
+      const onCols = idx.columns.map((col) => {
+        const isSafe = /^[a-z_$][\w$]*$/i.test(col)
+        return isSafe ? `t.${col}` : `t['${col}']`
+      }).join(', ')
+
+      const keySafe = /^[a-z_$][\w$]*$/i.test(idx.name)
+      const objKey = keySafe ? idx.name : `'${idx.name}'`
+
+      idxDecls.push(`    ${objKey}: ${func}('${idx.name}').on(${onCols}),`)
+    })
+
+    if (usedIndex)
+      imports.add('index')
+    if (usedUnique)
+      imports.add('uniqueIndex')
+
+    extraConfig = idxDecls.join('\n')
+  }
+
   if (foreignKeyImports.size > 0) {
     extras.push(...Array.from(foreignKeyImports))
   }
 
-  const base = templates.drizzleSchemaTemplate(table, Array.from(imports), cols, tableFunc, importPath)
+  const base = templates.drizzleSchemaTemplate(table, Array.from(imports), cols, tableFunc, importPath, extraConfig)
 
   if (relationships.length > 0) {
     const relName = `${varName}Relations`
@@ -478,7 +544,7 @@ export function generateSchemaDrizzle(table: string, columns: Column[], enums: t
   return (extras.length ? `${extras.join('\n')}\n\n` : '') + base
 }
 
-export function generateSchemaKysely(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres') {
+export function generateSchemaKysely(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionDialect = 'postgres', _indexes: Index[] = []) {
   const body = columns.map((c) => {
     let tsType = getColumnType(c.type, 'ts', dialect)
 

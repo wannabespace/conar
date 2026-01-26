@@ -38,7 +38,7 @@ import { useStore } from '@tanstack/react-store'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
-import { useConnectionEnums } from '~/entities/connection/queries'
+import { useConnectionEnums, useConnectionIndexes } from '~/entities/connection/queries'
 import * as generators from '~/entities/connection/utils/generators'
 import { useTableColumns } from '../../-queries/use-columns-query'
 import { usePageStoreContext } from '../../-store'
@@ -214,6 +214,7 @@ export function HeaderActionsCopy({ connection, table, schema }: { connection: t
   const filters = useStore(store, state => state.filters)
   const columns = useTableColumns({ connection, table, schema })
   const { data: enums } = useConnectionEnums({ connection })
+  const { data: indexes } = useConnectionIndexes({ connection })
   const [dialogOpen, setDialogOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<'schema' | 'query'>('schema')
   const [activeFormatType, setActiveFormatType] = useState<GeneratorFormat>('sql')
@@ -231,11 +232,11 @@ export function HeaderActionsCopy({ connection, table, schema }: { connection: t
 
     if (activeCategory === 'schema') {
       const format = activeFormat as SchemaFormat
-      return format.generator(table, columns, enums, connection.type as ConnectionDialect)
+      return format.generator(table, columns, enums ?? [], connection.type as ConnectionDialect, indexes ?? [])
     }
     const format = activeFormat as QueryFormat
     return format.generator(table, filters)
-  }, [activeCategory, activeFormat, dialogOpen, table, columns, filters, enums, activeFormatType, connection.type])
+  }, [activeCategory, activeFormat, dialogOpen, table, columns, filters, enums, indexes, activeFormatType, connection.type])
 
   const handleDialogCopy = () => {
     navigator.clipboard.writeText(codeContent)

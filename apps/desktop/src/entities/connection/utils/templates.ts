@@ -34,7 +34,7 @@ ${columns}${mapAttribute}
 }`
 }
 
-export function drizzleSchemaTemplate(table: string, imports: string[], columns: string, tableFunc: string = 'pgTable', importPath: string = 'drizzle-orm/pg-core') {
+export function drizzleSchemaTemplate(table: string, imports: string[], columns: string, tableFunc: string = 'pgTable', importPath: string = 'drizzle-orm/pg-core', extraConfig?: string) {
   const escapedTable = table.replace(/'/g, '\\\'')
   const isValidId = /^[a-z_$][\w$]*$/i.test(table)
   const varName = isValidId ? table : toPascalCase(table)
@@ -42,7 +42,7 @@ export function drizzleSchemaTemplate(table: string, imports: string[], columns:
 
 export const ${varName} = ${tableFunc}('${escapedTable}', {
 ${columns}
-});`
+}${extraConfig ? `, (t) => ({\n${extraConfig}\n})` : ''});`
 }
 
 export function kyselySchemaTemplate(table: string, body: string) {

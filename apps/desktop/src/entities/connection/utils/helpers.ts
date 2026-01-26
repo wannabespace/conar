@@ -1,6 +1,6 @@
 import type { Column } from '../components/table/utils'
 import type { enumType } from '../sql/enums'
-import type { ConnectionDialect, GeneratorFormat, PrismaFilterValue } from './types'
+import type { ConnectionDialect, GeneratorFormat, Index, PrismaFilterValue } from './types'
 
 export const DEFAULT_PAGE_LIMIT = 100
 
@@ -476,4 +476,25 @@ export function findEnum(c: Column, table: string, enums: typeof enumType.infer[
 
 export function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
   return v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
+}
+
+export function groupIndexes(indexes: Index[] = [], table: string) {
+  const grouped = new Map<string, { name: string, isUnique: boolean, isPrimary: boolean, columns: string[] }>()
+
+  indexes.forEach((idx) => {
+    if (idx.table !== table)
+      return
+
+    if (!grouped.has(idx.name)) {
+      grouped.set(idx.name, {
+        name: idx.name,
+        isUnique: idx.isUnique,
+        isPrimary: idx.isPrimary,
+        columns: [],
+      })
+    }
+    grouped.get(idx.name)!.columns.push(idx.column)
+  })
+
+  return Array.from(grouped.values())
 }

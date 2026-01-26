@@ -5,3 +5,12 @@ export type WithSchema<T, Prefix extends string> = {
 export type GeneratorFormat = 'ts' | 'zod' | 'prisma' | 'sql' | 'drizzle' | 'kysely'
 export type ConnectionDialect = 'postgres' | 'mysql' | 'mssql' | 'clickhouse'
 export type PrismaFilterValue = string | number | boolean | Date | null | { [key: string]: PrismaFilterValue } | PrismaFilterValue[]
+
+export interface Index {
+  schema: string
+  table: string
+  name: string
+  column: string
+  isUnique: boolean
+  isPrimary: boolean
+}
