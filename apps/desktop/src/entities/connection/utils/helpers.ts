@@ -459,12 +459,15 @@ export function formatValue(value: unknown): string {
   return `'${String(value)}'`
 }
 
+const QUOTE_IDENTIFIER_MAP: Record<ConnectionType, (name: string) => string> = {
+  mysql: (name: string) => `\`${name}\``,
+  clickhouse: (name: string) => `\`${name}\``,
+  mssql: (name: string) => `[${name}]`,
+  postgres: (name: string) => `"${name}"`,
+}
+
 export function quoteIdentifier(name: string, dialect: ConnectionType) {
-  if (dialect === 'mysql' || dialect === 'clickhouse')
-    return `\`${name}\``
-  if (dialect === 'mssql')
-    return `[${name}]`
-  return `"${name}"`
+  return QUOTE_IDENTIFIER_MAP[dialect](name)
 }
 
 export function findEnum(c: Column, table: string, enums: typeof enumType.infer[]) {

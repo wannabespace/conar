@@ -61,7 +61,7 @@ export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
   return templates.prismaQueryTemplate(table, jsonWhere)
 }
 
-export function generateSchemaPrisma(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionType = ConnectionType.Postgres, indexes: Index[] = []) {
+export function generateSchemaPrisma({ table, columns, enums = [], dialect = ConnectionType.Postgres, indexes = [] }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType, indexes?: Index[] }) {
   const extraBlocks: string[] = []
   const relations: string[] = []
 

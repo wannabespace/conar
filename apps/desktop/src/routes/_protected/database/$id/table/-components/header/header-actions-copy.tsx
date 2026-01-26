@@ -49,7 +49,7 @@ interface SchemaFormat {
   label: string
   lang: string
   icon: RemixiconComponentType
-  generator: typeof generators.generateSchemaTypeScript
+  generator: typeof generators.generateSchemaDrizzle
 }
 
 interface QueryFormat {
@@ -219,7 +219,7 @@ export function HeaderActionsCopy({ connection, table, schema }: { connection: t
 
     if (activeCategory === 'schema') {
       const format = activeFormat as SchemaFormat
-      return format.generator(table, columns, enums ?? [], connection.type, indexes ?? [])
+      return format.generator({ table, columns, enums: enums ?? [], dialect: connection.type, indexes: indexes ?? [] })
     }
     const format = activeFormat as QueryFormat
     return format.generator(table, filters)

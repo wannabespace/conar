@@ -33,26 +33,16 @@ export function generateQueryDrizzle(table: string, filters: ActiveFilter[]) {
   return templates.drizzleQueryTemplate(table, conditions)
 }
 
-export function generateSchemaDrizzle(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionType = ConnectionType.Postgres, indexes: Index[] = []) {
-  let tableFunc = 'pgTable'
-  let importPath = 'drizzle-orm/pg-core'
-  let enumFunc = 'pgEnum'
+const dialectConfig: Record<ConnectionType, { tableFunc: string, importPath: string, enumFunc: string }> = {
+  postgres: { tableFunc: 'pgTable', importPath: 'drizzle-orm/pg-core', enumFunc: 'pgEnum' },
+  mysql: { tableFunc: 'mysqlTable', importPath: 'drizzle-orm/mysql-core', enumFunc: 'mysqlEnum' },
+  mssql: { tableFunc: 'mssqlTable', importPath: 'drizzle-orm/mssql-core', enumFunc: '' },
+  clickhouse: { tableFunc: 'clickhouseTable', importPath: 'drizzle-orm/clickhouse-core', enumFunc: 'enum' },
+}
 
-  if (dialect === 'mysql') {
-    tableFunc = 'mysqlTable'
-    importPath = 'drizzle-orm/mysql-core'
-    enumFunc = 'mysqlEnum'
-  }
-  else if (dialect === 'mssql') {
-    tableFunc = 'mssqlTable'
-    importPath = 'drizzle-orm/mssql-core'
-    enumFunc = ''
-  }
-  else if (dialect === 'clickhouse') {
-    tableFunc = 'clickhouseTable'
-    importPath = 'drizzle-orm/clickhouse-core'
-    enumFunc = 'enum'
-  }
+export function generateSchemaDrizzle({ table, columns, enums = [], dialect = ConnectionType.Postgres, indexes = [] }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType, indexes?: Index[] }) {
+  const config = dialectConfig[dialect]
+  const { tableFunc, importPath, enumFunc } = config
 
   const imports = new Set<string>()
   const foreignKeyImports = new Set<string>()

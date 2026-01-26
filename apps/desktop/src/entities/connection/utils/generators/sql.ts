@@ -25,7 +25,7 @@ export function generateQuerySQL(table: string, filters: ActiveFilter[]) {
   return templates.sqlQueryTemplate(table, whereClauses)
 }
 
-export function generateSchemaSQL(table: string, columns: Column[], enums: typeof enumType.infer[] = [], dialect: ConnectionType = ConnectionType.Postgres, indexes: Index[] = []) {
+export function generateSchemaSQL({ table, columns, enums = [], dialect = ConnectionType.Postgres, indexes = [] }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType, indexes?: Index[] }) {
   const foreignKeys: string[] = []
   const usedEnums = new Map<string, typeof enumType.infer>()
   const isMysql = dialect === 'mysql'
