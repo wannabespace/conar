@@ -322,6 +322,16 @@ export function generateSchemaPrisma(table: string, columns: Column[], enums: ty
       relations.push(`  ${relName} ${relType} @relation(fields: [${fieldName}], references: [${c.foreign.column}])`)
     }
 
+    if (c.references?.length) {
+      c.references.forEach((ref) => {
+        const isValidRef = /^[a-z]\w*$/i.test(ref.table)
+        const refType = isValidRef ? ref.table : toPascalCase(ref.table)
+        const fieldName = ref.table.toLowerCase()
+
+        relations.push(`  ${fieldName} ${refType}[]`)
+      })
+    }
+
     return `  ${parts.join(' ')}`
   })
 
