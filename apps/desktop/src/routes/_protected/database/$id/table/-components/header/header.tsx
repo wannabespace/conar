@@ -1,4 +1,5 @@
 import { Separator } from '@conar/ui/components/separator'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { useStore } from '@tanstack/react-store'
@@ -20,45 +21,6 @@ export function Header({ table, schema }: { table: string, schema: string }) {
 
   const columnsCount = columns?.length ?? 0
   const count = Number(total?.count)
-  let countDisplay
-  if (isLoading || !total) {
-    countDisplay = <span className="animate-pulse text-[11px] opacity-50">...</span>
-  }
-  else if (!Number.isFinite(count)) {
-    countDisplay = <span className="text-[11px] text-muted-foreground">—</span>
-  }
-  else {
-    countDisplay = (
-      <span className="inline-flex items-center gap-1 font-medium">
-        <NumberFlow
-          value={count}
-          format={{ notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 1 }}
-          className="font-semibold text-muted-foreground tabular-nums"
-        />
-        <span className="text-muted-foreground">
-          {count === 1 ? 'row' : 'rows'}
-        </span>
-
-        {total.isEstimated && (
-          <span className="font-normal text-muted-foreground opacity-60">
-            (estimated)
-          </span>
-        )}
-        <button
-          type="button"
-          className={cn(`
-            ml-2 rounded-sm border px-1.5 py-0.5 text-[10px] font-normal
-            text-muted-foreground transition-colors
-            hover:bg-muted/30
-          `)}
-          onClick={() => setExact(v => !v)}
-          title={exact ? 'Show estimated count' : 'Show exact count'}
-        >
-          {exact ? 'Show estimate' : 'Exact count'}
-        </button>
-      </span>
-    )
-  }
 
   return (
     <div className="flex w-full items-center justify-between gap-6">
@@ -73,16 +35,40 @@ export function Header({ table, schema }: { table: string, schema: string }) {
             {' '}
             <span data-mask>{table}</span>
           </h2>
-          <p className="text-xs text-muted-foreground">
-            <span className="tabular-nums">{columnsCount}</span>
-            {' '}
-            column
-            {columnsCount === 1 ? '' : 's'}
-            {' '}
-            •
-            {' '}
-            {countDisplay}
-          </p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span>
+              <span className="tabular-nums">{columnsCount}</span>
+              {' '}
+              column
+              {columnsCount === 1 ? '' : 's'}
+            </span>
+            <Separator orientation="vertical" className="h-3!" />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger
+                  className={cn('inline-flex items-center gap-1', !exact && total?.isEstimated && `
+                    cursor-pointer
+                  `)}
+                  onClick={() => setExact(true)}
+                >
+                  <NumberFlow
+                    value={count}
+                    format={{ notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 1 }}
+                    className={cn('text-muted-foreground tabular-nums', isLoading && `
+                      animate-pulse
+                    `)}
+                    prefix={total?.isEstimated ? '~' : ''}
+                    suffix={count === 1 ? ' row' : ' rows'}
+                  />
+                </TooltipTrigger>
+                {!exact && total?.isEstimated && (
+                  <TooltipContent side="bottom">
+                    Click to get the exact count.
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
         <Separator orientation="vertical" className="h-6!" />
         <HeaderSearch table={table} schema={schema} />

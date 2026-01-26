@@ -6,7 +6,7 @@ import { buildWhere } from './rows'
 
 export const totalQuery = createQuery({
   type: type({
-    count: 'string',
+    count: 'number',
     isEstimated: 'boolean',
   }),
   query: ({
@@ -24,50 +24,43 @@ export const totalQuery = createQuery({
       if (!exact && !filters?.length) {
         const estimate = await db
           .withSchema('pg_catalog')
-          .withTables<{
-          pg_class: { reltuples: number, relname: string, relnamespace: number }
-          pg_namespace: { oid: number, nspname: string }
-        }>()
-          .selectFrom('pg_class')
-          .innerJoin('pg_namespace', 'pg_namespace.oid', 'pg_class.relnamespace')
-          .select('pg_class.reltuples as count')
-          .where('pg_namespace.nspname', '=', schema)
-          .where('pg_class.relname', '=', table)
+          .selectFrom('pg_catalog.pg_class')
+          .innerJoin('pg_catalog.pg_namespace', 'pg_catalog.pg_namespace.oid', 'pg_catalog.pg_class.relnamespace')
+          .select('pg_catalog.pg_class.reltuples as count')
+          .where('pg_catalog.pg_namespace.nspname', '=', schema)
+          .where('pg_catalog.pg_class.relname', '=', table)
           .executeTakeFirst()
 
-        if (estimate && Number(estimate.count) >= 0) {
+        if (estimate && estimate.count >= 0) {
           return {
-            count: String(Math.round(Number(estimate.count))),
+            count: Math.round(estimate.count),
             isEstimated: true,
           }
         }
       }
+
       const query = await db
         .withSchema(schema)
         .withTables<{ [table]: Record<string, unknown> }>()
         .selectFrom(table)
         .select(db.fn.countAll().as('total'))
         .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-        .execute()
+        .executeTakeFirst()
 
-      return { count: String(query[0]?.total ?? 0), isEstimated: false }
+      return { count: Number(query?.total ?? 0), isEstimated: false }
     },
-
     mysql: async (db) => {
       if (!exact && !filters?.length) {
         const estimate = await db
           .withSchema('information_schema')
-          .withTables<{
-          TABLES: { TABLE_SCHEMA: string, TABLE_NAME: string, TABLE_ROWS: number }
-        }>()
-          .selectFrom('TABLES')
+          .selectFrom('information_schema.TABLES')
           .select('TABLE_ROWS as count')
           .where('TABLE_SCHEMA', '=', schema)
           .where('TABLE_NAME', '=', table)
           .executeTakeFirst()
 
-        if (estimate && Number(estimate.count) >= 0) {
-          return { count: String(estimate.count), isEstimated: true }
+        if (estimate && estimate.count >= 0) {
+          return { count: estimate.count, isEstimated: true }
         }
       }
 
@@ -77,9 +70,9 @@ export const totalQuery = createQuery({
         .selectFrom(table)
         .select(db.fn.countAll().as('total'))
         .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-        .execute()
+        .executeTakeFirst()
 
-      return { count: String(query[0]?.total ?? 0), isEstimated: false }
+      return { count: Number(query?.total ?? 0), isEstimated: false }
     },
 
     mssql: async (db) => {
@@ -89,10 +82,10 @@ export const totalQuery = createQuery({
         .selectFrom(table)
         .select(db.fn.countAll().as('total'))
         .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-        .execute()
+        .executeTakeFirst()
 
       return {
-        count: String(query[0]?.total ?? 0),
+        count: Number(query?.total ?? 0),
         isEstimated: false,
       }
     },
@@ -101,10 +94,7 @@ export const totalQuery = createQuery({
       if (!exact && !filters?.length) {
         const estimate = await db
           .withSchema('system')
-          .withTables<{
-          parts: { database: string, table: string, rows: number, active: number }
-        }>()
-          .selectFrom('parts')
+          .selectFrom('system.parts')
           .select(db.fn.sum(sql.ref('rows')).as('count'))
           .where('database', '=', schema)
           .where('table', '=', table)
@@ -112,7 +102,7 @@ export const totalQuery = createQuery({
           .executeTakeFirst()
 
         if (estimate && Number(estimate.count) >= 0) {
-          return { count: String(estimate.count), isEstimated: true }
+          return { count: Number(estimate.count), isEstimated: true }
         }
       }
 
@@ -122,9 +112,9 @@ export const totalQuery = createQuery({
         .selectFrom(table)
         .select(db.fn.countAll().as('total'))
         .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-        .execute()
+        .executeTakeFirst()
 
-      return { count: String(query[0]?.total ?? 0), isEstimated: false }
+      return { count: Number(query?.total ?? 0), isEstimated: false }
     },
   }),
 })
