@@ -24,11 +24,7 @@ export const storeState = type({
   prompt: 'string',
   columnSizes: 'Record<string, number>',
   lastClickedIndex: 'number | null',
-  selectionState: type({
-    anchorIndex: 'number | null',
-    focusIndex: 'number | null',
-    lastExpandDirection: '"up" | "down" | null',
-  }) as type.cast<SelectionState>,
+  selectionState: 'object' as type.cast<SelectionState>,
 })
 
 const defaultState: typeof storeState.infer = {
