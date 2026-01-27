@@ -63,7 +63,7 @@ function ConnectionCard({
         className={cn(
           `
             group relative flex items-center justify-between gap-4
-            overflow-visible rounded-lg border border-l-4 border-border/50
+            overflow-hidden rounded-lg border border-l-4 border-border/50
             bg-muted/30 p-5
           `,
           connection.color
