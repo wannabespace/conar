@@ -4,6 +4,7 @@ import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import { Separator } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -47,13 +48,17 @@ function ConnectionCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.75 }}
       transition={{ duration: 0.15 }}
-      className="relative"
+      className="group relative"
     >
       {onClose && (
         <Button
           variant="outline"
           size="icon-xs"
-          className="absolute -top-1.5 -right-1.5 z-10 rounded-full bg-card!"
+          className="
+            absolute -top-1.5 -right-1.5 z-10 rounded-full bg-card! opacity-0
+            duration-75
+            group-hover:opacity-100
+          "
           onClick={() => onClose()}
         >
           <RiCloseLine className="size-3.5" />
@@ -217,7 +222,7 @@ function LastOpenedConnections({
   )
 }
 
-export function DatabasesList() {
+export function ConnectionsList() {
   const { data: connections } = useLiveQuery(q => q
     .from({ connections: connectionsCollection })
     .orderBy(({ connections }) => connections.createdAt, 'desc'))
@@ -252,7 +257,7 @@ export function DatabasesList() {
         />
       )}
       {hasLastOpened && (
-        <div className="border-t border-border/50" />
+        <Separator />
       )}
       {availableLabels.length > 0 && (
         <Tabs
