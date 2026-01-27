@@ -55,7 +55,6 @@ function ConnectionCard({
           size="icon-xs"
           className="absolute -top-1.5 -right-1.5 z-10 rounded-full bg-card!"
           onClick={() => onClose()}
-          aria-label="Remove from recent"
         >
           <RiCloseLine className="size-3.5" />
         </Button>
