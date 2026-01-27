@@ -114,7 +114,7 @@ export function Runner() {
     }
   }
 
-  const { defaultLayout, onLayoutChange } = useDefaultLayout({
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: `sql-layout-${connection.id}`,
     storage: localStorage,
   })
@@ -128,7 +128,7 @@ export function Runner() {
     >
       <ResizablePanelGroup
         defaultLayout={defaultLayout}
-        onLayoutChange={onLayoutChange}
+        onLayoutChanged={onLayoutChanged}
         orientation="vertical"
         className="h-full"
       >

@@ -1,6 +1,5 @@
 import type { LinkProps } from '@tanstack/react-router'
 import type { connections } from '~/drizzle'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -13,7 +12,7 @@ import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiFileListLine, RiListUnordered, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCloseLine, RiCommandLine, RiFileListLine, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
@@ -216,7 +215,7 @@ function MainLinks() {
 
   const isActiveSql = match === '/_protected/database/$id/sql/'
   const isActiveTables = match === '/_protected/database/$id/table/'
-  const isActiveEnums = match === '/_protected/database/$id/enums/'
+  const isActiveDefinitions = match?.includes('/_protected/database/$id/definitions')
   const isActiveVisualizer = match === '/_protected/database/$id/visualizer/'
 
   const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
@@ -277,21 +276,19 @@ function MainLinks() {
           <TooltipContent side="right">Tables</TooltipContent>
         </Tooltip>
       </TooltipProvider>
+
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              to="/database/$id/enums"
+              to="/database/$id/definitions"
               params={{ id: connection.id }}
-              className={baseClasses(isActiveEnums)}
+              className={baseClasses(isActiveDefinitions)}
             >
-              <RiListUnordered className="size-4" />
+              <RiShieldCheckLine className="size-4" />
             </Link>
           </TooltipTrigger>
-          <TooltipContent side="right">
-            Enums
-            {connection.type === ConnectionType.MySQL && ' & Sets'}
-          </TooltipContent>
+          <TooltipContent side="right">Definitions</TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <TooltipProvider>

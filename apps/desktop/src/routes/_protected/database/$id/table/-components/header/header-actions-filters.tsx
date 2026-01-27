@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { RiFilterLine } from '@remixicon/react'
 import { useState } from 'react'
 import { FilterForm } from '~/components/table'
-import { usePageStoreContext } from '../-store'
+import { usePageStoreContext } from '../../-store'
 
 export function HeaderActionsFilters() {
   const [isFiltersOpened, setIsFiltersOpened] = useState(false)
@@ -26,7 +26,7 @@ export function HeaderActionsFilters() {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <PopoverContent className="p-0 w-2xs" side="bottom" align="end">
+      <PopoverContent className="w-2xs p-0" side="bottom" align="end">
         <FilterForm
           onAdd={(filter) => {
             setIsFiltersOpened(false)
