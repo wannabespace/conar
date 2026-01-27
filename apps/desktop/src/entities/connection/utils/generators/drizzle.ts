@@ -110,8 +110,8 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
     if (c.foreign && dialect !== 'clickhouse') {
       const isValidRef = /^[a-z_$][\w$]*$/i.test(c.foreign.table)
       const refTable = isValidRef ? c.foreign.table : toPascalCase(c.foreign.table)
-      const fieldName = c.id
-      relationships.push(`    ${fieldName}: one(${refTable}, {\n      fields: [${varName}.${c.id}],\n      references: [${refTable}.${c.foreign.column}],\n    }),`)
+      const fieldName = c.id.replace(/(_id|Id)$/, '')
+      relationships.push(`  ${fieldName}: one(${refTable}, {\n    fields: [${varName}.${c.id}],\n    references: [${refTable}.${c.foreign.column}],\n  }),`)
     }
 
     if (c.references?.length) {
@@ -120,7 +120,7 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
         const refTable = isValidRef ? ref.table : toPascalCase(ref.table)
         const fieldName = ref.table
 
-        relationships.push(`    ${fieldName}: many(${refTable}),`)
+        relationships.push(`  ${fieldName}: many(${refTable}),`)
 
         foreignKeyImports.add(`import { ${refTable} } from './${ref.table}';`)
       })
@@ -147,10 +147,7 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
         return isSafe ? `t.${col}` : `t['${col}']`
       }).join(', ')
 
-      const keySafe = /^[a-z_$][\w$]*$/i.test(idx.name)
-      const objKey = keySafe ? idx.name : `'${idx.name}'`
-
-      idxDecls.push(`    ${objKey}: ${func}('${idx.name}').on(${onCols}),`)
+      idxDecls.push(`  ${func}('${idx.name}').on(${onCols}),`)
     })
 
     if (usedIndex)
@@ -161,17 +158,27 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
     extraConfig = idxDecls.join('\n')
   }
 
-  if (foreignKeyImports.size > 0) {
-    extras.push(...Array.from(foreignKeyImports))
-  }
-
   const base = templates.drizzleSchemaTemplate(table, Array.from(imports), cols, tableFunc, importPath, extraConfig)
+
+  const splitIdx = base.indexOf('\n\nexport')
+  const baseImports = splitIdx !== -1 ? base.slice(0, splitIdx) : ''
+  const baseBody = splitIdx !== -1 ? base.slice(splitIdx).trim() : base
+
+  const allImports = [
+    relationships.length > 0 ? 'import { relations } from \'drizzle-orm\';' : null,
+    ...foreignKeyImports,
+    baseImports,
+  ].filter(Boolean).join('\n')
+
+  const definitions = [
+    extras.join('\n\n'),
+    baseBody,
+  ]
 
   if (relationships.length > 0) {
     const relName = `${varName}Relations`
-    const relBlock = `export const ${relName} = relations(${varName}, ({ one, many }) => ({\n${relationships.join('\n')}\n}));`
-    return `import { relations } from 'drizzle-orm';\n${extras.length ? `${extras.join('\n')}\n\n` : ''}${base}\n\n${relBlock}`
+    definitions.push(`export const ${relName} = relations(${varName}, ({ one, many }) => ({\n${relationships.join('\n')}\n}));`)
   }
 
-  return (extras.length ? `${extras.join('\n')}\n\n` : '') + base
+  return `${allImports}\n\n${definitions.filter(Boolean).join('\n\n')}`
 }

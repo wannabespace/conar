@@ -16,6 +16,9 @@ export function generateSchemaTypeScript({ table, columns, enums = [], dialect =
         typeScriptType = `(${typeScriptType})[]`
     }
 
+    if (c.isNullable)
+      typeScriptType += ' | null'
+
     return `  ${safeId}${c.isNullable ? '?' : ''}: ${typeScriptType};`
   }).join('\n')
 

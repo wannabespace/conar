@@ -42,7 +42,7 @@ export function drizzleSchemaTemplate(table: string, imports: string[], columns:
 
 export const ${varName} = ${tableFunc}('${escapedTable}', {
 ${columns}
-}${extraConfig ? `, (t) => ({\n${extraConfig}\n})` : ''});`
+}${extraConfig ? `,(t) => [\n${extraConfig}\n]` : ''});`
 }
 
 export function kyselySchemaTemplate(table: string, body: string) {
