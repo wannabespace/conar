@@ -12,7 +12,7 @@ import { useMemo, useState } from 'react'
 import { ExportData } from '~/components/export-data'
 import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
 import { TableCell } from '~/entities/connection/components'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/connection/components/table/utils'
+import { DEFAULT_COLUMN_WIDTH } from '~/entities/connection/components/table/utils'
 
 export function RunnerResultsTable({
   data,
@@ -120,8 +120,6 @@ export function RunnerResultsTable({
       <TableProvider
         rows={filteredData}
         columns={tableColumns}
-        estimatedRowSize={DEFAULT_ROW_HEIGHT}
-        estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
       >
         <Table className="h-[calc(100%-(--spacing(10)))]">
           <TableHeader />

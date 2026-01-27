@@ -58,7 +58,9 @@ export function GlobalBanner() {
           `}
           >
             {typeConfig.info.icon}
-            <span className="flex-1 leading-none">You are offline. Please check your internet connection.</span>
+            <span className="flex-1 leading-none">
+              You are currently offline. Some features may be unavailable until your internet connection is restored.
+            </span>
           </div>
         </motion.div>
       )}
