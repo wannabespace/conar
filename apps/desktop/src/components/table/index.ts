@@ -10,6 +10,11 @@ export * from './header'
 export * from './provider'
 export * from './table'
 export * from './table-context'
+export {
+  type SelectionState,
+  useShiftSelectionKeyDown,
+  type UseShiftSelectionKeyDownOptions,
+} from './use-shift-selection-key-down'
 
 export interface TableCellProps extends Pick<ColumnRenderer, 'size' | 'id'> {
   style: CSSProperties
