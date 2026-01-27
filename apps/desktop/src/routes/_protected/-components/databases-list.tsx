@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
+import { RiCloseLine, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
@@ -19,7 +19,14 @@ import { useLastOpenedConnections } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
-function ConnectionCard({ connection, onRemove, onRename }: { connection: typeof connections.$inferSelect, onRemove: () => void, onRename: () => void }) {
+interface ConnectionCardProps {
+  connection: typeof connections.$inferSelect
+  onRemove: VoidFunction
+  onRename: VoidFunction
+  onRemoveFromRecent?: VoidFunction
+}
+
+function ConnectionCard({ connection, onRemove, onRename, onRemoveFromRecent }: ConnectionCardProps) {
   const url = new SafeURL(connection.connectionString)
 
   if (connection.isPasswordExists || url.password) {
@@ -89,48 +96,64 @@ function ConnectionCard({ connection, onRemove, onRename }: { connection: typeof
             {connectionString.replaceAll('*', '•')}
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger className={`
-            rounded-md p-2
-            hover:bg-accent-foreground/5
-          `}
-          >
-            <RiMoreLine className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
+        <div className="flex items-center gap-1">
+          {onRemoveFromRecent && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="opacity-0 transition-opacity group-hover:opacity-100"
               onClick={(e) => {
+                e.preventDefault()
                 e.stopPropagation()
-                copy(connection.connectionString, 'Connection string copied to clipboard')
+                onRemoveFromRecent?.()
               }}
             >
-              <RiFileCopyLine className="size-4 opacity-50" />
-              Copy Connection String
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                onRename()
-              }}
+              <RiCloseLine className="size-4" />
+            </Button>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger className={`
+              rounded-md p-2
+              hover:bg-accent-foreground/5
+            `}
             >
-              <RiEditLine className="size-4 opacity-50" />
-              Rename
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className={`
-                text-destructive
-                focus:text-destructive
-              `}
-              onClick={(e) => {
-                e.stopPropagation()
-                onRemove()
-              }}
-            >
-              <RiDeleteBinLine className="size-4" />
-              Remove
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <RiMoreLine className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  copy(connection.connectionString, 'Connection string copied to clipboard')
+                }}
+              >
+                <RiFileCopyLine className="size-4 opacity-50" />
+                Copy Connection String
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRename()
+                }}
+              >
+                <RiEditLine className="size-4 opacity-50" />
+                Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className={`
+                  text-destructive
+                  focus:text-destructive
+                `}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRemove()
+                }}
+              >
+                <RiDeleteBinLine className="size-4" />
+                Remove
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </Link>
     </motion.div>
   )
@@ -158,7 +181,13 @@ export function Empty() {
   )
 }
 
-function LastOpenedConnections({ onRemove, onRename }: { onRemove: (connection: typeof connections.$inferSelect) => void, onRename: (connection: typeof connections.$inferSelect) => void }) {
+interface LastOpenedConnectionsProps {
+  onRemove: (connection: typeof connections.$inferSelect) => void
+  onRename: (connection: typeof connections.$inferSelect) => void
+  onRemoveFromRecent: (connection: typeof connections.$inferSelect) => void
+}
+
+function LastOpenedConnections({ onRemove, onRename, onRemoveFromRecent }: LastOpenedConnectionsProps) {
   const { data: connections } = useLiveQuery(q => q
     .from({ connections: connectionsCollection })
     .orderBy(({ connections }) => connections.createdAt, 'desc'))
@@ -180,6 +209,7 @@ function LastOpenedConnections({ onRemove, onRename }: { onRemove: (connection: 
             connection={connection}
             onRemove={() => onRemove(connection)}
             onRename={() => onRename(connection)}
+            onRemoveFromRecent={() => onRemoveFromRecent(connection)}
           />
         ))}
       </AnimatePresence>
@@ -194,7 +224,7 @@ export function DatabasesList() {
   const renameDialogRef = useRef<ComponentRef<typeof RenameConnectionDialog>>(null)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
-  const [lastOpenedConnections] = useLastOpenedConnections()
+  const [lastOpenedConnections, setLastOpenedConnections] = useLastOpenedConnections()
 
   const availableLabels = Array.from(new Set(connections.map(connection => connection.label).filter(Boolean) as string[])).sort()
 
@@ -215,6 +245,9 @@ export function DatabasesList() {
           }}
           onRename={(connection) => {
             renameDialogRef.current?.rename(connection)
+          }}
+          onRemoveFromRecent={(connection) => {
+            setLastOpenedConnections(prev => prev.filter(id => id !== connection.id))
           }}
         />
       )}
