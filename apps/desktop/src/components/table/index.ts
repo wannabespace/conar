@@ -32,9 +32,9 @@ export interface ColumnRenderer {
   header?: ComponentType<TableHeaderCellProps>
 }
 
-export function getBaseColumnStyle({ id, size }: { id: string, size: number }): CSSProperties {
+export function getBaseColumnStyle({ id, defaultSize }: { id: string, defaultSize: number }): CSSProperties {
   return {
-    width: `var(--table-column-width-${id}, ${size}px)`,
+    width: `var(--table-column-width-${id}, ${defaultSize}px)`,
     height: '100%',
     flexShrink: 0,
     willChange: 'width',

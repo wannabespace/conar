@@ -8,6 +8,7 @@ export interface InformationSchema {
   VIEWS: Views
   TABLE_CONSTRAINTS: TableConstraints
   KEY_COLUMN_USAGE: KeyColumnUsage
+  STATISTICS: Statistics
   SCHEMATA: Schemata
 }
 
@@ -128,4 +129,16 @@ interface KeyColumnUsage {
   REFERENCED_TABLE_SCHEMA: string | null
   REFERENCED_TABLE_NAME: string | null
   REFERENCED_COLUMN_NAME: string | null
+}
+
+/**
+ * @name STATISTICS
+ * @type table
+ */
+interface Statistics {
+  TABLE_SCHEMA: string
+  TABLE_NAME: string
+  INDEX_NAME: string
+  COLUMN_NAME: string
+  NON_UNIQUE: number
 }

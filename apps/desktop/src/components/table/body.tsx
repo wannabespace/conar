@@ -20,7 +20,7 @@ const VirtualColumn = memo(function VirtualColumn({
 
   if (!column.cell) {
     return (
-      <div style={getBaseColumnStyle({ id: column.id, size: virtualColumn.size })}>
+      <div style={getBaseColumnStyle({ id: column.id, defaultSize: column.size })}>
         {String(value)}
       </div>
     )
@@ -38,7 +38,7 @@ const VirtualColumn = memo(function VirtualColumn({
         : virtualColumn.index === columnsLength - 1
           ? 'last'
           : 'middle'}
-      style={getBaseColumnStyle({ id: column.id, size: virtualColumn.size })}
+      style={getBaseColumnStyle({ id: column.id, defaultSize: column.size })}
     />
   )
 })

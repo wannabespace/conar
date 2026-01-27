@@ -1,7 +1,7 @@
 import type { Stripe } from 'stripe'
 import {
   boolean,
-  integer,
+  numeric,
   pgEnum,
   pgTable,
   text,
@@ -11,7 +11,7 @@ import {
 import { baseTable } from '../base-table'
 import { users } from './auth'
 
-export const subscriptionPeriod = pgEnum('subscription_period', ['monthly', 'yearly'] as const)
+export const subscriptionPeriod = pgEnum('subscription_period', ['monthly', 'yearly'])
 
 export const subscriptions = pgTable('subscriptions', {
   ...baseTable,
@@ -22,7 +22,7 @@ export const subscriptions = pgTable('subscriptions', {
   stripeSubscriptionId: text(),
   status: text().$type<Stripe.Subscription.Status>().default('incomplete'),
   period: subscriptionPeriod().notNull(),
-  price: integer().notNull(),
+  price: numeric({ mode: 'number' }).notNull(),
   periodStart: timestamp({ withTimezone: true }),
   periodEnd: timestamp({ withTimezone: true }),
   trialStart: timestamp({ withTimezone: true }),
