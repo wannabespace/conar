@@ -49,7 +49,7 @@ function ConnectionCard({ connection, onRemove, onRename, onRemoveFromRecent }: 
         className={cn(
           `
             group relative flex items-center justify-between gap-4
-            overflow-hidden rounded-lg border border-l-4 border-border/50
+            overflow-visible rounded-lg border border-l-4 border-border/50
             bg-muted/30 p-5
           `,
           connection.color
@@ -63,6 +63,30 @@ function ConnectionCard({ connection, onRemove, onRename, onRemoveFromRecent }: 
         preload={false}
         {...params}
       >
+        {onRemoveFromRecent && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="
+              absolute -top-1.5 -right-1.5 z-10 rounded-full
+              bg-muted/80 backdrop-blur-sm shadow-sm
+              opacity-0 scale-90 transition-all duration-200 ease-out
+              group-hover:opacity-100 group-hover:scale-100
+              hover:bg-muted hover:shadow-md hover:scale-105
+              active:scale-95 active:shadow-sm
+              focus-visible:opacity-100 focus-visible:scale-100
+              focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
+            "
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onRemoveFromRecent?.()
+            }}
+            aria-label="Remove from recent"
+          >
+            <RiCloseLine className="size-3.5 transition-transform duration-150 group-hover:rotate-90" />
+          </Button>
+        )}
         <div className="size-12 shrink-0 rounded-lg bg-muted/70 p-3">
           <ConnectionIcon
             type={connection.type}
@@ -96,64 +120,48 @@ function ConnectionCard({ connection, onRemove, onRename, onRemoveFromRecent }: 
             {connectionString.replaceAll('*', '•')}
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          {onRemoveFromRecent && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="opacity-0 transition-opacity group-hover:opacity-100"
+        <DropdownMenu>
+          <DropdownMenuTrigger className={`
+            rounded-md p-2
+            hover:bg-accent-foreground/5
+          `}
+          >
+            <RiMoreLine className="size-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
               onClick={(e) => {
-                e.preventDefault()
                 e.stopPropagation()
-                onRemoveFromRecent?.()
+                copy(connection.connectionString, 'Connection string copied to clipboard')
               }}
             >
-              <RiCloseLine className="size-4" />
-            </Button>
-          )}
-          <DropdownMenu>
-            <DropdownMenuTrigger className={`
-              rounded-md p-2
-              hover:bg-accent-foreground/5
-            `}
+              <RiFileCopyLine className="size-4 opacity-50" />
+              Copy Connection String
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                onRename()
+              }}
             >
-              <RiMoreLine className="size-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  copy(connection.connectionString, 'Connection string copied to clipboard')
-                }}
-              >
-                <RiFileCopyLine className="size-4 opacity-50" />
-                Copy Connection String
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onRename()
-                }}
-              >
-                <RiEditLine className="size-4 opacity-50" />
-                Rename
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className={`
-                  text-destructive
-                  focus:text-destructive
-                `}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onRemove()
-                }}
-              >
-                <RiDeleteBinLine className="size-4" />
-                Remove
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+              <RiEditLine className="size-4 opacity-50" />
+              Rename
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className={`
+                text-destructive
+                focus:text-destructive
+              `}
+              onClick={(e) => {
+                e.stopPropagation()
+                onRemove()
+              }}
+            >
+              <RiDeleteBinLine className="size-4" />
+              Remove
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </Link>
     </motion.div>
   )
