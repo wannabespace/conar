@@ -19,14 +19,17 @@ import { useLastOpenedConnections } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
-interface ConnectionCardProps {
+function ConnectionCard({
+  connection,
+  onRemove,
+  onRename,
+  onClose,
+}: {
   connection: typeof connections.$inferSelect
   onRemove: VoidFunction
   onRename: VoidFunction
-  onRemoveFromRecent?: VoidFunction
-}
-
-function ConnectionCard({ connection, onRemove, onRename, onRemoveFromRecent }: ConnectionCardProps) {
+  onClose?: VoidFunction
+}) {
   const url = new SafeURL(connection.connectionString)
 
   if (connection.isPasswordExists || url.password) {
@@ -44,7 +47,19 @@ function ConnectionCard({ connection, onRemove, onRename, onRemoveFromRecent }: 
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.75 }}
       transition={{ duration: 0.15 }}
+      className="relative"
     >
+      {onClose && (
+        <Button
+          variant="outline"
+          size="icon-xs"
+          className="absolute -top-1.5 -right-1.5 z-10 rounded-full bg-card!"
+          onClick={() => onClose()}
+          aria-label="Remove from recent"
+        >
+          <RiCloseLine className="size-3.5" />
+        </Button>
+      )}
       <Link
         className={cn(
           `
@@ -63,30 +78,6 @@ function ConnectionCard({ connection, onRemove, onRename, onRemoveFromRecent }: 
         preload={false}
         {...params}
       >
-        {onRemoveFromRecent && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="
-              absolute -top-1.5 -right-1.5 z-10 rounded-full
-              bg-muted/80 backdrop-blur-sm shadow-sm
-              opacity-0 scale-90 transition-all duration-200 ease-out
-              group-hover:opacity-100 group-hover:scale-100
-              hover:bg-muted hover:shadow-md hover:scale-105
-              active:scale-95 active:shadow-sm
-              focus-visible:opacity-100 focus-visible:scale-100
-              focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
-            "
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              onRemoveFromRecent?.()
-            }}
-            aria-label="Remove from recent"
-          >
-            <RiCloseLine className="size-3.5 transition-transform duration-150 group-hover:rotate-90" />
-          </Button>
-        )}
         <div className="size-12 shrink-0 rounded-lg bg-muted/70 p-3">
           <ConnectionIcon
             type={connection.type}
@@ -189,13 +180,15 @@ export function Empty() {
   )
 }
 
-interface LastOpenedConnectionsProps {
+function LastOpenedConnections({
+  onRemove,
+  onRename,
+  onClose,
+}: {
   onRemove: (connection: typeof connections.$inferSelect) => void
   onRename: (connection: typeof connections.$inferSelect) => void
-  onRemoveFromRecent: (connection: typeof connections.$inferSelect) => void
-}
-
-function LastOpenedConnections({ onRemove, onRename, onRemoveFromRecent }: LastOpenedConnectionsProps) {
+  onClose: (connection: typeof connections.$inferSelect) => void
+}) {
   const { data: connections } = useLiveQuery(q => q
     .from({ connections: connectionsCollection })
     .orderBy(({ connections }) => connections.createdAt, 'desc'))
@@ -217,7 +210,7 @@ function LastOpenedConnections({ onRemove, onRename, onRemoveFromRecent }: LastO
             connection={connection}
             onRemove={() => onRemove(connection)}
             onRename={() => onRename(connection)}
-            onRemoveFromRecent={() => onRemoveFromRecent(connection)}
+            onClose={() => onClose(connection)}
           />
         ))}
       </AnimatePresence>
@@ -254,7 +247,7 @@ export function DatabasesList() {
           onRename={(connection) => {
             renameDialogRef.current?.rename(connection)
           }}
-          onRemoveFromRecent={(connection) => {
+          onClose={(connection) => {
             setLastOpenedConnections(prev => prev.filter(id => id !== connection.id))
           }}
         />
