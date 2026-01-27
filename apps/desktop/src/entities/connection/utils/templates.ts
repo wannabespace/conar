@@ -1,4 +1,4 @@
-import { toPascalCase } from './helpers'
+import { pascalCase } from 'change-case'
 
 export function sqlSchemaTemplate(table: string, columns: string) {
   return `CREATE TABLE ${table} (
@@ -7,14 +7,14 @@ ${columns}
 }
 
 export function typeScriptSchemaTemplate(table: string, columns: string) {
-  const pascalName = toPascalCase(table)
+  const pascalName = pascalCase(table)
   return `export interface ${pascalName} {
 ${columns}
 }`
 }
 
 export function zodSchemaTemplate(table: string, columns: string) {
-  const pascalName = toPascalCase(table)
+  const pascalName = pascalCase(table)
   const camelName = pascalName.charAt(0).toLowerCase() + pascalName.slice(1)
   return `import { z } from 'zod';
 
@@ -27,7 +27,7 @@ export type ${pascalName} = z.infer<typeof ${camelName}Schema>;`
 
 export function prismaSchemaTemplate(table: string, columns: string) {
   const isValidId = /^[a-z]\w*$/i.test(table)
-  const modelName = isValidId ? table : toPascalCase(table)
+  const modelName = isValidId ? table : pascalCase(table)
   const mapAttribute = modelName !== table ? `\n  @@map("${table}")` : ''
   return `model ${modelName} {
 ${columns}${mapAttribute}
@@ -37,7 +37,7 @@ ${columns}${mapAttribute}
 export function drizzleSchemaTemplate(table: string, imports: string[], columns: string, tableFunc: string = 'pgTable', importPath: string = 'drizzle-orm/pg-core', extraConfig?: string) {
   const escapedTable = table.replace(/'/g, '\\\'')
   const isValidId = /^[a-z_$][\w$]*$/i.test(table)
-  const varName = isValidId ? table : toPascalCase(table)
+  const varName = isValidId ? table : pascalCase(table)
   return `import { ${imports.join(', ')}, ${tableFunc} } from '${importPath}';
 
 export const ${varName} = ${tableFunc}('${escapedTable}', {
@@ -46,7 +46,7 @@ ${columns}
 }
 
 export function kyselySchemaTemplate(table: string, body: string) {
-  const pascalTable = toPascalCase(table)
+  const pascalTable = pascalCase(table)
   const safeTableKey = /^[a-z_$][\w$]*$/i.test(table) ? table : `'${table}'`
   return `import { Generated } from 'kysely';
 

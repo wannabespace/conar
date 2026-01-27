@@ -211,22 +211,6 @@ export function getEditorQueries(sql: string) {
   return queries
 }
 
-export function toPascalCase(name: string): string {
-  const alphanumeric = name.replace(/[^a-z0-9]+/gi, ' ')
-  const words = alphanumeric.trim().split(/\s+/).filter(Boolean)
-  let pascal = words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')
-
-  if (!pascal) {
-    pascal = 'Table'
-  }
-
-  if (/^[^A-Z_]/i.test(pascal)) {
-    pascal = `_${pascal}`
-  }
-
-  return pascal
-}
-
 export function sanitize(name: string) {
   return name.replace(/\W/g, '_')
 }

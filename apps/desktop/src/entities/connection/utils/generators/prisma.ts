@@ -3,7 +3,8 @@ import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
 import type { Index, PrismaFilterValue } from '../types'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { findEnum, getColumnType, groupIndexes, isPrismaFilterValue, sanitize, toPascalCase } from '../helpers'
+import { pascalCase } from 'change-case'
+import { findEnum, getColumnType, groupIndexes, isPrismaFilterValue, sanitize } from '../helpers'
 import * as templates from '../templates'
 
 export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
@@ -70,7 +71,7 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
 
     const match = findEnum(c, table, enums)
     if (match?.values.length) {
-      const enumName = toPascalCase(match.name || `${table}_${c.id}`)
+      const enumName = pascalCase(match.name || `${table}_${c.id}`)
       prismaType = enumName
 
       const enumValues = match.values.map((v) => {
@@ -110,14 +111,14 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
 
     if (c.foreign) {
       const relName = c.foreign.table.toLowerCase()
-      const relType = toPascalCase(c.foreign.table)
+      const relType = pascalCase(c.foreign.table)
       relations.push(`  ${relName} ${relType} @relation(fields: [${fieldName}], references: [${c.foreign.column}])`)
     }
 
     if (c.references?.length) {
       c.references.forEach((ref) => {
         const isValidRef = /^[a-z]\w*$/i.test(ref.table)
-        const refType = isValidRef ? ref.table : toPascalCase(ref.table)
+        const refType = isValidRef ? ref.table : pascalCase(ref.table)
         const fieldName = ref.table.toLowerCase()
 
         relations.push(`  ${fieldName} ${refType}[]`)

@@ -3,8 +3,8 @@ import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
 import type { Index } from '../types'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { camelCase } from 'change-case'
-import { findEnum, getColumnType, groupIndexes, toPascalCase } from '../helpers'
+import { camelCase, pascalCase } from 'change-case'
+import { findEnum, getColumnType, groupIndexes } from '../helpers'
 import * as templates from '../templates'
 
 export function generateQueryDrizzle(table: string, filters: ActiveFilter[]) {
@@ -50,7 +50,7 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
   const extras: string[] = []
 
   const isValidId = /^[a-z_$][\w$]*$/i.test(table)
-  const varName = isValidId ? table : toPascalCase(table)
+  const varName = isValidId ? table : pascalCase(table)
 
   const cols = columns.map((c) => {
     let typeFunc = getColumnType(c.type, 'drizzle', dialect)
@@ -97,7 +97,7 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
 
     if (c.foreign && dialect !== 'clickhouse') {
       const isValidRef = /^[a-z_$][\w$]*$/i.test(c.foreign.table)
-      const refTable = isValidRef ? c.foreign.table : toPascalCase(c.foreign.table)
+      const refTable = isValidRef ? c.foreign.table : pascalCase(c.foreign.table)
       chain += `.references(() => ${refTable}.${camelCase(c.foreign.column)})`
 
       foreignKeyImports.add(`import { ${refTable} } from './${c.foreign.table}';`)
@@ -111,7 +111,7 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
   columns.forEach((c) => {
     if (c.foreign && dialect !== 'clickhouse') {
       const isValidRef = /^[a-z_$][\w$]*$/i.test(c.foreign.table)
-      const refTable = isValidRef ? c.foreign.table : toPascalCase(c.foreign.table)
+      const refTable = isValidRef ? c.foreign.table : pascalCase(c.foreign.table)
       const fieldName = camelCase(c.id.replace(/(_id|Id)$/, ''))
       relationships.push(`  ${fieldName}: one(${refTable}, {\n    fields: [${varName}.${camelCase(c.id)}],\n    references: [${refTable}.${camelCase(c.foreign.column)}],\n  }),`)
     }
@@ -119,7 +119,7 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
     if (c.references?.length) {
       c.references.forEach((ref) => {
         const isValidRef = /^[a-z_$][\w$]*$/i.test(ref.table)
-        const refTable = isValidRef ? ref.table : toPascalCase(ref.table)
+        const refTable = isValidRef ? ref.table : pascalCase(ref.table)
         const fieldName = camelCase(ref.table)
 
         relationships.push(`  ${fieldName}: many(${refTable}),`)
