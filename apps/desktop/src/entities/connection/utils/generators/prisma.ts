@@ -147,8 +147,8 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
   })
 
   const body = cols.join('\n')
-    + (relations.length ? `\n\n${relations.join('\n')}` : '')
-    + (indexBlocks.length ? `\n\n${indexBlocks.join('\n')}` : '')
+    + (relations.length ? `\n${relations.join('\n')}` : '')
+    + (indexBlocks.length ? `\n${indexBlocks.join('\n')}` : '')
 
   const uniqueExtras = Array.from(new Set(extraBlocks))
 

@@ -28,7 +28,7 @@ export type ${pascalName} = z.infer<typeof ${camelName}Schema>;`
 
 export function prismaSchemaTemplate(table: string, columns: string) {
   const modelName = safePascalCase(table)
-  const mapAttribute = modelName !== table ? `\n  @@map("${table}")` : ''
+  const mapAttribute = modelName !== table ? `\n\n  @@map("${table}")` : ''
   return `model ${modelName} {
 ${columns}${mapAttribute}
 }`
