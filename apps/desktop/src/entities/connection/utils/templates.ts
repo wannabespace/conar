@@ -17,7 +17,7 @@ ${columns}
 export function zodSchemaTemplate(table: string, columns: string) {
   const pascalName = safePascalCase(table)
   const camelName = pascalName.charAt(0).toLowerCase() + pascalName.slice(1)
-  return `import { z } from 'zod';
+  return `import * as z from 'zod';
 
 export const ${camelName}Schema = z.object({
 ${columns}
