@@ -2,6 +2,7 @@ import type { Column } from '../components/table/utils'
 import type { enumType } from '../sql/enums'
 import type { GeneratorFormat, Index, PrismaFilterValue } from './types'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
+import { pascalCase } from 'change-case'
 
 export const DEFAULT_PAGE_LIMIT = 100
 
@@ -213,6 +214,50 @@ export function getEditorQueries(sql: string) {
 
 export function sanitize(name: string) {
   return name.replace(/\W/g, '_')
+}
+
+export function safePascalCase(name: string) {
+  const replaced = name
+    .replace(/ /g, '_Space_')
+    .replace(/-/g, '_Minus_')
+    .replace(/\./g, '_Dot_')
+    .replace(/@/g, '_At_')
+    .replace(/\$/g, '_Dollar_')
+    .replace(/%/g, '_Percent_')
+    .replace(/&/g, '_Ampersand_')
+    .replace(/\*/g, '_Asterisk_')
+    .replace(/#/g, '_Hash_')
+    .replace(/!/g, '_Exclamation_')
+    .replace(/\^/g, '_Caret_')
+    .replace(/\(/g, '_OpenParen_')
+    .replace(/\)/g, '_CloseParen_')
+    .replace(/\+/g, '_Plus_')
+    .replace(/=/g, '_Equal_')
+    .replace(/\{/g, '_OpenBrace_')
+    .replace(/\}/g, '_CloseBrace_')
+    .replace(/\[/g, '_OpenBracket_')
+    .replace(/\]/g, '_CloseBracket_')
+    .replace(/\|/g, '_Pipe_')
+    .replace(/\\/g, '_Backslash_')
+    .replace(/\//g, '_Slash_')
+    .replace(/:/g, '_Colon_')
+    .replace(/;/g, '_Semicolon_')
+    .replace(/"/g, '_Quote_')
+    .replace(/'/g, '_SingleQuote_')
+    .replace(/</g, '_LessThan_')
+    .replace(/>/g, '_GreaterThan_')
+    .replace(/,/g, '_Comma_')
+    .replace(/\?/g, '_Question_')
+    .replace(/~/g, '_Tilde_')
+    .replace(/`/g, '_Backtick_')
+
+  const pascal = pascalCase(replaced)
+
+  if (/^\d/.test(pascal)) {
+    return name.startsWith('_') ? `_${pascal}` : `Num${pascal}`
+  }
+
+  return pascal
 }
 
 function tsMapper(t: string) {

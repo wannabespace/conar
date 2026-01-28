@@ -1,4 +1,5 @@
 import { pascalCase } from 'change-case'
+import { safePascalCase } from './helpers'
 
 export function sqlSchemaTemplate(table: string, columns: string) {
   return `CREATE TABLE ${table} (
@@ -26,8 +27,7 @@ export type ${pascalName} = z.infer<typeof ${camelName}Schema>;`
 }
 
 export function prismaSchemaTemplate(table: string, columns: string) {
-  const isValidId = /^[a-z]\w*$/i.test(table)
-  const modelName = isValidId ? table : pascalCase(table)
+  const modelName = safePascalCase(table)
   const mapAttribute = modelName !== table ? `\n  @@map("${table}")` : ''
   return `model ${modelName} {
 ${columns}${mapAttribute}

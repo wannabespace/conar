@@ -3,11 +3,13 @@ import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
 import type { Index, PrismaFilterValue } from '../types'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { pascalCase } from 'change-case'
-import { findEnum, getColumnType, groupIndexes, isPrismaFilterValue, sanitize } from '../helpers'
+import { camelCase, pascalCase } from 'change-case'
+import { findEnum, getColumnType, groupIndexes, isPrismaFilterValue, safePascalCase, sanitize } from '../helpers'
 import * as templates from '../templates'
 
 export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
+  const tableName = camelCase(safePascalCase(table))
+
   const where = filters.reduce<Record<string, PrismaFilterValue>>((acc: Record<string, PrismaFilterValue>, f) => {
     const value = f.values[0]
     let finalValue: PrismaFilterValue
@@ -49,7 +51,7 @@ export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
         return acc
     }
 
-    const colName = f.column.match(/^[a-z_$][\w$]*$/i) ? f.column : `"${f.column}"`
+    const colName = camelCase(f.column)
 
     const existing = acc[colName]
     return { ...acc, [colName]: existing && typeof existing === 'object' && typeof finalValue === 'object' && finalValue !== null && existing !== null ? { ...existing, ...finalValue } : finalValue }
@@ -59,7 +61,7 @@ export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
     ? JSON.stringify(where, null, 2).replace(/"([^"]+)":/g, '$1:')
     : '{}'
 
-  return templates.prismaQueryTemplate(table, jsonWhere)
+  return templates.prismaQueryTemplate(tableName, jsonWhere)
 }
 
 export function generateSchemaPrisma({ table, columns, enums = [], dialect = ConnectionType.Postgres, indexes = [] }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType, indexes?: Index[] }) {
@@ -83,9 +85,8 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
       extraBlocks.push(`enum ${enumName} {\n${enumValues}\n}`)
     }
 
-    const isValidId = /^[a-z][\w$]*$/i.test(c.id)
-    const fieldName = isValidId ? c.id : sanitize(c.id)
-    const needsMap = !isValidId
+    const fieldName = camelCase(safePascalCase(c.id))
+    const needsMap = fieldName !== c.id
 
     const parts = [fieldName, prismaType + (c.isNullable ? '?' : '')]
     if (c.primaryKey) {
@@ -110,16 +111,16 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
     }
 
     if (c.foreign) {
-      const relName = c.foreign.table.toLowerCase()
+      const relName = camelCase(c.foreign.table)
       const relType = pascalCase(c.foreign.table)
-      relations.push(`  ${relName} ${relType} @relation(fields: [${fieldName}], references: [${c.foreign.column}])`)
+      relations.push(`  ${relName} ${relType} @relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}])`)
     }
 
     if (c.references?.length) {
       c.references.forEach((ref) => {
         const isValidRef = /^[a-z]\w*$/i.test(ref.table)
         const refType = isValidRef ? ref.table : pascalCase(ref.table)
-        const fieldName = ref.table.toLowerCase()
+        const fieldName = camelCase(ref.table)
 
         relations.push(`  ${fieldName} ${refType}[]`)
       })
@@ -136,8 +137,7 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
       const c = columns.find(c => c.id === col)
       if (!c)
         return col
-      const isValidId = /^[a-z][\w$]*$/i.test(c.id)
-      return isValidId ? c.id : sanitize(c.id)
+      return camelCase(c.id)
     })
 
     const type = idx.isUnique ? '@@unique' : '@@index'
