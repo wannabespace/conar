@@ -268,7 +268,7 @@ function tsMapper(t: string) {
   if (/date|time/i.test(t))
     return 'Date'
   if (/json/i.test(t))
-    return 'any'
+    return 'unknown'
   return 'string'
 }
 
@@ -280,7 +280,7 @@ function zodMapper(t: string) {
   if (/date|time/i.test(t))
     return 'z.date()'
   if (/json/i.test(t))
-    return 'z.any()'
+    return 'z.unknown()'
   return 'z.string()'
 }
 
