@@ -1,11 +1,11 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
-import type { Index } from '../types'
+import type { Index } from '../utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { camelCase, pascalCase } from 'change-case'
-import { findEnum, getColumnType, groupIndexes, safePascalCase } from '../helpers'
 import * as templates from '../templates'
+import { findEnum, getColumnType, groupIndexes, safePascalCase } from '../utils'
 
 export function generateQueryDrizzle(table: string, filters: ActiveFilter[]) {
   const varName = camelCase(safePascalCase(table))

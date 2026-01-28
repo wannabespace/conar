@@ -1,10 +1,10 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
-import type { Index } from '../types'
+import type { Index } from '../utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { findEnum, formatValue, getColumnType, groupIndexes, quoteIdentifier } from '../helpers'
 import * as templates from '../templates'
+import { findEnum, formatValue, getColumnType, groupIndexes, quoteIdentifier } from '../utils'
 
 export function generateQuerySQL(table: string, filters: ActiveFilter[]) {
   // TODO: use kysely to generate the query

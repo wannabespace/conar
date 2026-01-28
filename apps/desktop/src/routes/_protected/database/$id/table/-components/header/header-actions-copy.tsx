@@ -1,8 +1,7 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { RemixiconComponentType } from '@remixicon/react'
 import type { connections } from '~/drizzle'
-import type { GeneratorFormat } from '~/entities/connection/utils/types'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { GeneratorFormat } from '~/entities/connection/generators/utils'
 import { Button } from '@conar/ui/components/button'
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import {
@@ -10,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@conar/ui/components/dialog'
 import {
   Tabs,
@@ -24,12 +24,10 @@ import {
 } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import {
-  RiCloseLine,
   RiCodeSSlashLine,
   RiDatabase2Line,
   RiDropLine,
   RiFileCodeLine,
-  RiFileCopyLine,
   RiShieldCheckLine,
   RiTerminalBoxLine,
   RiTriangleLine,
@@ -38,8 +36,9 @@ import { useStore } from '@tanstack/react-store'
 import { useMemo, useState } from 'react'
 import { Monaco } from '~/components/monaco'
 import { SidebarButton } from '~/components/sidebar-link'
+import * as generators from '~/entities/connection/generators'
+import { GENERATOR_COMPATIBILITY } from '~/entities/connection/generators/compatibility'
 import { useConnectionEnums, useConnectionIndexes } from '~/entities/connection/queries'
-import * as generators from '~/entities/connection/utils/generators'
 import { useTableColumns } from '../../-queries/use-columns-query'
 import { usePageStoreContext } from '../../-store'
 
@@ -56,7 +55,7 @@ type Format = {
   generator: (table: string, filters: ActiveFilter[]) => string
 })
 
-const FORMATS: { schema: Format[], query: Format[] } = {
+const FORMATS = {
   schema: [
     { kind: 'schema', type: 'sql', label: 'SQL', lang: 'sql', icon: RiDatabase2Line, generator: generators.generateSchemaSQL },
     { kind: 'schema', type: 'ts', label: 'TypeScript', lang: 'typescript', icon: RiFileCodeLine, generator: generators.generateSchemaTypeScript },
@@ -71,7 +70,7 @@ const FORMATS: { schema: Format[], query: Format[] } = {
     { kind: 'query', type: 'drizzle', label: 'Drizzle', lang: 'typescript', icon: RiDropLine, generator: generators.generateQueryDrizzle },
     { kind: 'query', type: 'kysely', label: 'Kysely', lang: 'typescript', icon: RiTerminalBoxLine, generator: generators.generateQueryKysely },
   ],
-}
+} satisfies { schema: Format[], query: Format[] }
 
 function DialogSidebar({ activeCategory, activeFormat, onFormatChange, onCategoryChange }: {
   activeCategory: keyof typeof FORMATS
@@ -94,12 +93,6 @@ function DialogSidebar({ activeCategory, activeFormat, onFormatChange, onCategor
           <TabsTrigger value="query" className="flex-1">Query</TabsTrigger>
         </TabsList>
       </Tabs>
-      <div className={`
-        mb-1 px-2 py-1.5 text-xs font-medium text-muted-foreground
-      `}
-      >
-        {activeCategory === 'schema' ? 'Schema Formats' : 'Query Formats'}
-      </div>
       {FORMATS[activeCategory].map(fmt => (
         <SidebarButton
           key={fmt.type}
@@ -114,45 +107,28 @@ function DialogSidebar({ activeCategory, activeFormat, onFormatChange, onCategor
   )
 }
 
-function CopyDialogEditor({ activeFormat, activeCategory, codeContent, onClose }: {
+function CopyDialogEditor({ activeFormat, activeCategory, codeContent }: {
   activeFormat: Format
   activeCategory: keyof typeof FORMATS
   codeContent: string
-  onClose: () => void
 }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <DialogHeader className="border-b p-4 pr-4">
-        <DialogTitle className="flex items-center justify-between">
-          <span>
-            {activeFormat.label}
-            {' '}
-            {activeCategory === 'schema' ? 'Schema' : 'Query'}
-          </span>
-          <div className="flex items-center gap-2">
-            <CopyButton
-              text={codeContent}
-              variant="outline"
-              size="sm"
-            >
-              <span className="flex items-center gap-2">
-                <RiFileCopyLine className="size-4" />
-                Copy
-              </span>
-            </CopyButton>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-8"
-              onClick={onClose}
-            >
-              <RiCloseLine className="size-4" />
-            </Button>
-          </div>
+        <DialogTitle>
+          {activeFormat.label}
+          {' '}
+          {activeCategory === 'schema' ? 'Schema' : 'Query'}
         </DialogTitle>
       </DialogHeader>
 
       <div className="relative min-h-0 flex-1">
+        <CopyButton
+          className="absolute top-2 right-6 z-10"
+          text={codeContent}
+          variant="outline"
+          size="icon-sm"
+        />
         <Monaco
           value={codeContent}
           language={activeFormat.lang}
@@ -171,29 +147,19 @@ function CopyDialogEditor({ activeFormat, activeCategory, codeContent, onClose }
   )
 }
 
-const COMPATIBILITY: Partial<Record<GeneratorFormat, ConnectionType[]>> = {
-  prisma: [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL],
-  drizzle: [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL, ConnectionType.ClickHouse],
-  kysely: [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL, ConnectionType.ClickHouse],
-}
-
 export function HeaderActionsCopy({ connection, table, schema }: { connection: typeof connections.$inferSelect, table: string, schema: string }) {
   const store = usePageStoreContext()
   const filters = useStore(store, state => state.filters)
   const columns = useTableColumns({ connection, table, schema })
   const { data: enums } = useConnectionEnums({ connection })
   const { data: indexes } = useConnectionIndexes({ connection })
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<'schema' | 'query'>('schema')
   const [activeFormatType, setActiveFormatType] = useState<GeneratorFormat>('sql')
 
   const activeFormat = FORMATS[activeCategory].find(f => f.type === activeFormatType) ?? FORMATS[activeCategory][0]!
 
   const codeContent = useMemo(() => {
-    if (!dialogOpen)
-      return ''
-
-    if (COMPATIBILITY[activeFormatType] && !COMPATIBILITY[activeFormatType].includes(connection.type)) {
+    if (GENERATOR_COMPATIBILITY[activeFormatType] && !GENERATOR_COMPATIBILITY[activeFormatType].includes(connection.type)) {
       return `Not supported for ${connection.type}`
     }
 
@@ -202,49 +168,43 @@ export function HeaderActionsCopy({ connection, table, schema }: { connection: t
     }
 
     return activeFormat.generator(table, filters)
-  }, [activeFormat, dialogOpen, table, columns, filters, enums, indexes, activeFormatType, connection.type])
+  }, [activeFormat, table, columns, filters, enums, indexes, activeFormatType, connection.type])
 
   return (
-    <>
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className={cn(
-          `
-            flex h-[600px] w-[60vw] flex-row gap-0 overflow-hidden p-0
-            sm:max-w-[60vw]
-            [&>button]:hidden
-          `,
-        )}
-        >
-          <DialogSidebar
-            activeCategory={activeCategory}
-            activeFormat={activeFormat}
-            onFormatChange={setActiveFormatType}
-            onCategoryChange={setActiveCategory}
-          />
-          <CopyDialogEditor
-            activeFormat={activeFormat}
-            activeCategory={activeCategory}
-            codeContent={codeContent}
-            onClose={() => setDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
+    <Dialog>
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setDialogOpen(true)}
-            >
-              <RiCodeSSlashLine />
-            </Button>
-          </TooltipTrigger>
+          <DialogTrigger asChild>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon">
+                <RiCodeSSlashLine />
+              </Button>
+            </TooltipTrigger>
+          </DialogTrigger>
           <TooltipContent side="top">
             Copy schema / query
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-    </>
+      <DialogContent className={cn(
+        `
+          flex h-[600px] w-[60vw] flex-row gap-0 overflow-hidden p-0
+          sm:max-w-[60vw]
+        `,
+      )}
+      >
+        <DialogSidebar
+          activeCategory={activeCategory}
+          activeFormat={activeFormat}
+          onFormatChange={setActiveFormatType}
+          onCategoryChange={setActiveCategory}
+        />
+        <CopyDialogEditor
+          activeFormat={activeFormat}
+          activeCategory={activeCategory}
+          codeContent={codeContent}
+        />
+      </DialogContent>
+    </Dialog>
   )
 }

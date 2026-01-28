@@ -1,5 +1,5 @@
 import { camelCase } from 'change-case'
-import { safePascalCase } from './helpers'
+import { safePascalCase } from './utils'
 
 export function sqlSchemaTemplate(table: string, columns: string) {
   return `CREATE TABLE ${table} (

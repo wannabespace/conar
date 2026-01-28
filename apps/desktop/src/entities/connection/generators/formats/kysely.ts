@@ -2,8 +2,8 @@ import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { findEnum, formatValue, getColumnType } from '../helpers'
 import * as templates from '../templates'
+import { findEnum, formatValue, getColumnType } from '../utils'
 
 export function generateQueryKysely(table: string, filters: ActiveFilter[]) {
   const conditions = filters.map((f) => {

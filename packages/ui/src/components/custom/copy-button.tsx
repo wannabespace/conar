@@ -10,14 +10,12 @@ export function CopyButton({
   text,
   variant = 'ghost',
   size = 'icon-sm',
-  children = <RiFileCopyLine className="size-4" />,
   ...props
 }: {
   text: string
   className?: string
   variant?: VariantProps<typeof buttonVariants>['variant']
   size?: VariantProps<typeof buttonVariants>['size']
-  children?: React.ReactNode
 }) {
   const [copied, setCopied] = useState(false)
 
@@ -38,7 +36,7 @@ export function CopyButton({
         onSwitchEnd={() => setCopied(false)}
         activeContent={<RiCheckLine className="size-4 text-success" />}
       >
-        {children}
+        <RiFileCopyLine className="size-4" />
       </ContentSwitch>
     </Button>
   )

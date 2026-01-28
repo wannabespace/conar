@@ -2,8 +2,8 @@ import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { camelCase } from 'change-case'
-import { findEnum, getColumnType } from '../helpers'
 import * as templates from '../templates'
+import { findEnum, getColumnType } from '../utils'
 
 export function generateSchemaTypeScript({ table, columns, enums = [], dialect = ConnectionType.Postgres }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType }) {
   const cols = columns.map((c) => {
