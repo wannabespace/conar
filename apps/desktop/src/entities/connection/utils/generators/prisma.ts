@@ -67,8 +67,9 @@ export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
 export function generateSchemaPrisma({ table, columns, enums = [], dialect = ConnectionType.Postgres, indexes = [] }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType, indexes?: Index[] }) {
   const extraBlocks: string[] = []
   const relations: string[] = []
+  const fields: { name: string, type: string, attributes: string[] }[] = []
 
-  const cols = columns.map((c) => {
+  columns.forEach((c) => {
     let prismaType = getColumnType(c.type, 'prisma', dialect)
 
     const match = findEnum(c, table, enums)
@@ -88,32 +89,42 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
     const fieldName = camelCase(safePascalCase(c.id))
     const needsMap = fieldName !== c.id
 
-    const parts = [fieldName, prismaType + (c.isNullable ? '?' : '')]
+    const attributes: string[] = []
     if (c.primaryKey) {
-      parts.push('@id')
+      attributes.push('@id')
       if (prismaType === 'Int')
-        parts.push('@default(autoincrement())')
+        attributes.push('@default(autoincrement())')
     }
     else if (c.unique) {
-      parts.push('@unique')
+      attributes.push('@unique')
     }
 
     if (prismaType === 'String' && c.maxLength && c.maxLength > 0) {
-      parts.push(`@db.VarChar(${c.maxLength})`)
+      attributes.push(`@db.VarChar(${c.maxLength})`)
     }
 
     if (prismaType === 'Decimal' && c.precision) {
-      parts.push(`@db.Decimal(${c.precision}, ${c.scale || 0})`)
+      attributes.push(`@db.Decimal(${c.precision}, ${c.scale || 0})`)
     }
 
     if (needsMap) {
-      parts.push(`@map("${c.id}")`)
+      attributes.push(`@map("${c.id}")`)
     }
+
+    fields.push({
+      name: fieldName,
+      type: prismaType + (c.isNullable ? '?' : ''),
+      attributes,
+    })
 
     if (c.foreign) {
       const relName = camelCase(c.foreign.table)
       const relType = pascalCase(c.foreign.table)
-      relations.push(`  ${relName} ${relType} @relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}])`)
+      fields.push({
+        name: relName,
+        type: relType,
+        attributes: [`@relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}])`],
+      })
     }
 
     if (c.references?.length) {
@@ -122,11 +133,30 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
         const refType = isValidRef ? ref.table : pascalCase(ref.table)
         const fieldName = camelCase(ref.table)
 
-        relations.push(`  ${fieldName} ${refType}[]`)
+        fields.push({
+          name: fieldName,
+          type: `${refType}[]`,
+          attributes: [],
+        })
       })
     }
+  })
 
-    return `  ${parts.join(' ')}`
+  const columnFields = fields.filter(f => !f.attributes.some(a => a.startsWith('@relation')) && !f.type.endsWith('[]'))
+  const relationFields = fields.filter(f => f.attributes.some(a => a.startsWith('@relation')) || f.type.endsWith('[]'))
+
+  const allFields = [...columnFields, ...relationFields]
+
+  const maxNameLen = Math.max(...allFields.map(f => f.name.length))
+  const maxTypeLen = Math.max(...allFields.map(f => f.type.length))
+
+  const cols = allFields.map((f) => {
+    const parts = [
+      f.name.padEnd(maxNameLen),
+      f.type.padEnd(maxTypeLen),
+      ...f.attributes,
+    ]
+    return `  ${parts.join(' ').trimEnd()}`
   })
 
   const explicitIndexes = groupIndexes(indexes, table).filter(idx => !idx.isPrimary && !(idx.isUnique && idx.columns.length === 1 && columns.find(c => c.id === idx.columns[0] && c.unique)))
