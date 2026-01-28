@@ -195,7 +195,6 @@ export function ConnectionCard({ connection, onRemove, onRename, onClose }: { co
                         <div
                           key={connectionName}
                           role="button"
-                          onKeyDown={() => { }}
                           tabIndex={0}
                           className={`
                             flex cursor-pointer items-center gap-2 rounded-md
@@ -205,9 +204,13 @@ export function ConnectionCard({ connection, onRemove, onRename, onClose }: { co
                           onClick={(e) => {
                             e.preventDefault()
                             e.stopPropagation()
-
-                            const newConnection = cloneConnectionForConnection(connection, connectionName)
-                            connectionsCollection.insert(newConnection)
+                            try {
+                              const newConnection = cloneConnectionForConnection(connection, connectionName)
+                              connectionsCollection.insert(newConnection)
+                            }
+                            catch (error) {
+                              console.error(`Failed to open server connection ${connectionName} for this connection ${connection.name} with error ${error instanceof Error ? error.message : error}`)
+                            }
                           }}
                         >
                           <RiDatabase2Line className={`
