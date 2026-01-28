@@ -1,4 +1,4 @@
-import { pascalCase } from 'change-case'
+import { camelCase, pascalCase } from 'change-case'
 import { safePascalCase } from './helpers'
 
 export function sqlSchemaTemplate(table: string, columns: string) {
@@ -36,8 +36,7 @@ ${columns}${mapAttribute}
 
 export function drizzleSchemaTemplate(table: string, imports: string[], columns: string, tableFunc: string = 'pgTable', importPath: string = 'drizzle-orm/pg-core', extraConfig?: string) {
   const escapedTable = table.replace(/'/g, '\\\'')
-  const isValidId = /^[a-z_$][\w$]*$/i.test(table)
-  const varName = isValidId ? table : pascalCase(table)
+  const varName = camelCase(safePascalCase(table))
   return `import { ${imports.join(', ')}, ${tableFunc} } from '${importPath}';
 
 export const ${varName} = ${tableFunc}('${escapedTable}', {

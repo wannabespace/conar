@@ -4,13 +4,15 @@ import type { enumType } from '../../sql/enums'
 import type { Index } from '../types'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { camelCase, pascalCase } from 'change-case'
-import { findEnum, getColumnType, groupIndexes } from '../helpers'
+import { findEnum, getColumnType, groupIndexes, safePascalCase } from '../helpers'
 import * as templates from '../templates'
 
 export function generateQueryDrizzle(table: string, filters: ActiveFilter[]) {
+  const varName = camelCase(safePascalCase(table))
+
   const conditions = filters.map((f) => {
     const op = f.ref.operator.toUpperCase()
-    const col = `${table}.${f.column}`
+    const col = `${varName}.${camelCase(f.column)}`
     const val = JSON.stringify(f.values[0])
     const arrVal = JSON.stringify(f.values)
 
@@ -31,7 +33,7 @@ export function generateQueryDrizzle(table: string, filters: ActiveFilter[]) {
     }
   }).filter(Boolean).join(',\n    ')
 
-  return templates.drizzleQueryTemplate(table, conditions)
+  return templates.drizzleQueryTemplate(varName, conditions)
 }
 
 const dialectConfig: Record<ConnectionType, { tableFunc: string, importPath: string, enumFunc: string }> = {
@@ -49,8 +51,7 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
   const foreignKeyImports = new Set<string>()
   const extras: string[] = []
 
-  const isValidId = /^[a-z_$][\w$]*$/i.test(table)
-  const varName = isValidId ? table : pascalCase(table)
+  const varName = camelCase(safePascalCase(table))
 
   const cols = columns.map((c) => {
     let typeFunc = getColumnType(c.type, 'drizzle', dialect)
