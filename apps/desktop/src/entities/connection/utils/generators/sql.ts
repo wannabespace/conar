@@ -147,5 +147,5 @@ export function generateSchemaSQL({ table, columns, enums = [], dialect = Connec
     schema += `\n\n${indexStmts.join('\n')}`
   }
 
-  return definitions.length > 0 ? `${definitions.join('\n')}\n\n${schema}` : schema
+  return definitions.length > 0 ? `${schema}\n\n${definitions.join('\n')}` : schema
 }
