@@ -5,7 +5,15 @@ import { connectionsCollection } from '~/entities/connection/sync'
 import { useLastOpenedConnections } from '~/entities/connection/utils'
 import { ConnectionCard } from './connection-card'
 
-export function LastOpenedConnections({ onRemove, onRename }: { onRemove: (connection: typeof connections.$inferSelect) => void, onRename: (connection: typeof connections.$inferSelect) => void }) {
+export function LastOpenedConnections({
+  onRemove,
+  onRename,
+  onClose,
+}: {
+  onRemove: (connection: typeof connections.$inferSelect) => void
+  onRename: (connection: typeof connections.$inferSelect) => void
+  onClose: (connection: typeof connections.$inferSelect) => void
+}) {
   const { data: connections } = useLiveQuery(q => q
     .from({ connections: connectionsCollection })
     .orderBy(({ connections }) => connections.createdAt, 'desc'))
@@ -27,6 +35,7 @@ export function LastOpenedConnections({ onRemove, onRename }: { onRemove: (conne
             connection={connection}
             onRemove={() => onRemove(connection)}
             onRename={() => onRename(connection)}
+            onClose={() => onClose(connection)}
           />
         ))}
       </AnimatePresence>

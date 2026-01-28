@@ -3,7 +3,7 @@ import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { listDatabasesQuery } from '../sql/list-databases'
+import { listServerConnectionsQuery } from '../sql/list-server-connections'
 
 const connectionSystemNames = {
   [ConnectionType.Postgres]: 'postgres',
@@ -14,8 +14,8 @@ const connectionSystemNames = {
 
 export function useServerConnections(connection: typeof connections.$inferSelect) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const { data: databasesList = [], isLoading } = useQuery({
-    queryKey: ['server-databases', connection.id],
+  const { data: connectionNamesList = [], isLoading } = useQuery({
+    queryKey: ['server-connections', connection.id],
     throwOnError: false,
     retry: 5,
     queryFn: async () => {
@@ -27,9 +27,9 @@ export function useServerConnections(connection: typeof connections.$inferSelect
         connectionString: url.toString(),
       }
 
-      const dbNames = await listDatabasesQuery(systemConnection)
-      const currentDbName = new SafeURL(connection.connectionString).pathname.replace(/^\//, '')
-      return dbNames.filter(name => name !== currentDbName)
+      const connectionNames = await listServerConnectionsQuery(systemConnection)
+      const currentConnectionName = new SafeURL(connection.connectionString).pathname.replace(/^\//, '')
+      return connectionNames.filter(name => name !== currentConnectionName)
     },
   })
 
@@ -38,7 +38,7 @@ export function useServerConnections(connection: typeof connections.$inferSelect
   return {
     isExpanded,
     isLoading,
-    databasesList,
+    connectionNamesList,
     toggleExpand,
     setIsExpanded,
   }

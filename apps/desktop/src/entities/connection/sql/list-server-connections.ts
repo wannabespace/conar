@@ -1,10 +1,10 @@
 import { type } from 'arktype'
 import { createQuery } from '../query'
 
-export const listDatabasesType = type('string[]')
+export const listServerConnectionsType = type('string[]')
 
-export const listDatabasesQuery = createQuery({
-  type: listDatabasesType,
+export const listServerConnectionsQuery = createQuery({
+  type: listServerConnectionsType,
   query: () => ({
     postgres: db => db
       .selectFrom('pg_catalog.pg_database')

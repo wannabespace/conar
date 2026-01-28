@@ -1,4 +1,5 @@
 import type { ComponentRef } from 'react'
+import { Separator } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { useLiveQuery } from '@tanstack/react-db'
 import { AnimatePresence } from 'motion/react'
@@ -11,14 +12,14 @@ import { LastOpenedConnections } from './last-opened-connections'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
-export function DatabasesList() {
+export function ConnectionsList() {
   const { data: connections } = useLiveQuery(q => q
     .from({ connections: connectionsCollection })
     .orderBy(({ connections }) => connections.createdAt, 'desc'))
   const renameDialogRef = useRef<ComponentRef<typeof RenameConnectionDialog>>(null)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
-  const [lastOpenedConnections] = useLastOpenedConnections()
+  const [lastOpenedConnections, setLastOpenedConnections] = useLastOpenedConnections()
 
   const availableLabels = Array.from(new Set(connections.map(connection => connection.label).filter(Boolean) as string[])).sort()
 
@@ -40,10 +41,13 @@ export function DatabasesList() {
           onRename={(connection) => {
             renameDialogRef.current?.rename(connection)
           }}
+          onClose={(connection) => {
+            setLastOpenedConnections(prev => prev.filter(id => id !== connection.id))
+          }}
         />
       )}
       {hasLastOpened && (
-        <div className="border-t border-border/50" />
+        <Separator />
       )}
       {availableLabels.length > 0 && (
         <Tabs

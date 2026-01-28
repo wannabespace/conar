@@ -5,7 +5,7 @@ import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownSLine, RiArrowUpSLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
+import { RiArrowDownSLine, RiArrowUpSLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { ConnectionIcon } from '~/entities/connection/components'
@@ -13,7 +13,7 @@ import { useConnectionLinkParams, useServerConnections } from '~/entities/connec
 import { connectionsCollection } from '~/entities/connection/sync'
 import { cloneConnectionForConnection } from '~/entities/connection/utils'
 
-export function ConnectionCard({ connection, onRemove, onRename }: { connection: typeof connections.$inferSelect, onRemove: () => void, onRename: () => void }) {
+export function ConnectionCard({ connection, onRemove, onRename, onClose }: { connection: typeof connections.$inferSelect, onRemove: VoidFunction, onRename: VoidFunction, onClose?: VoidFunction }) {
   const url = new SafeURL(connection.connectionString)
 
   if (connection.isPasswordExists || url.password) {
@@ -24,7 +24,7 @@ export function ConnectionCard({ connection, onRemove, onRename }: { connection:
 
   const params = useConnectionLinkParams(connection.id)
 
-  const { databasesList, isLoading, isExpanded, toggleExpand } = useServerConnections(connection)
+  const { connectionNamesList, isLoading, isExpanded, toggleExpand } = useServerConnections(connection)
 
   return (
     <motion.div
@@ -33,8 +33,22 @@ export function ConnectionCard({ connection, onRemove, onRename }: { connection:
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.75 }}
       transition={{ duration: 0.15 }}
-      className="flex flex-col gap-1"
+      className="group relative"
     >
+      {onClose && (
+        <Button
+          variant="outline"
+          size="icon-xs"
+          className="
+            absolute -top-1.5 -right-1.5 z-10 rounded-full bg-card! opacity-0
+            duration-75
+            group-hover:opacity-100
+          "
+          onClick={() => onClose()}
+        >
+          <RiCloseLine className="size-3.5" />
+        </Button>
+      )}
       <Link
         className={cn(
           `
@@ -88,7 +102,7 @@ export function ConnectionCard({ connection, onRemove, onRename }: { connection:
         </div>
 
         <div className="z-10 flex items-center gap-1">
-          {databasesList.length > 0 && (
+          {connectionNamesList.length > 0 && (
             <Button
               variant="ghost"
               size="icon"
@@ -161,7 +175,7 @@ export function ConnectionCard({ connection, onRemove, onRename }: { connection:
             className="overflow-hidden"
           >
             <div className={`
-              ml-4 flex max-h-60 flex-col gap-1 overflow-y-auto rounded-lg
+              mx-4 flex max-h-60 flex-col gap-1 overflow-y-auto rounded-lg
               border bg-muted/30 p-2
             `}
             >
@@ -175,13 +189,13 @@ export function ConnectionCard({ connection, onRemove, onRename }: { connection:
                       Loading databases...
                     </div>
                   )
-                : databasesList.length > 0
+                : connectionNamesList.length > 0
                   ? (
-                      databasesList.map(dbName => (
+                      connectionNamesList.map(connectionName => (
                         <div
-                          key={dbName}
+                          key={connectionName}
                           role="button"
-                          onKeyDown={() => {}}
+                          onKeyDown={() => { }}
                           tabIndex={0}
                           className={`
                             flex cursor-pointer items-center gap-2 rounded-md
@@ -192,7 +206,7 @@ export function ConnectionCard({ connection, onRemove, onRename }: { connection:
                             e.preventDefault()
                             e.stopPropagation()
 
-                            const newConnection = cloneConnectionForConnection(connection, dbName)
+                            const newConnection = cloneConnectionForConnection(connection, connectionName)
                             connectionsCollection.insert(newConnection)
                           }}
                         >
@@ -200,7 +214,7 @@ export function ConnectionCard({ connection, onRemove, onRename }: { connection:
                             size-4 text-muted-foreground
                           `}
                           />
-                          <span>{dbName}</span>
+                          <span>{connectionName}</span>
                         </div>
                       ))
                     )
