@@ -1,10 +1,9 @@
-import type { ComponentProps, KeyboardEvent, MouseEvent } from 'react'
+import type { ComponentProps } from 'react'
 import type { TableCellProps, TableHeaderCellProps } from '~/components/table'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { useRef } from 'react'
-import { useTableContext } from '~/components/table'
+import { useShiftSelectionClick, useTableContext } from '~/components/table'
 import { usePageStoreContext } from '../../-store'
 
 function IndeterminateCheckbox({
@@ -97,65 +96,40 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
 }) {
   const store = usePageStoreContext()
   const rows = useTableContext(state => state.rows)
-  const shiftKeyRef = useRef(false)
   const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])))
+  const [currentSelected, lastClickedIndex] = useStore(store, state => [
+    state.selected,
+    state.lastClickedIndex,
+  ])
 
-  const handleMouseDown = (event: MouseEvent<HTMLInputElement>) => {
-    shiftKeyRef.current = event.shiftKey
-  }
+  const rowKey = keys.reduce<Record<string, string>>(
+    (acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] as string }),
+    {},
+  )
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === ' ' || event.key === 'Enter') {
-      shiftKeyRef.current = event.shiftKey
-    }
-  }
-
-  const handleChange = () => {
-    const lastIndex = store.state.lastClickedIndex
-    const isShiftHeld = shiftKeyRef.current
-
-    if (isShiftHeld && lastIndex !== null && lastIndex !== rowIndex) {
-      const start = Math.min(lastIndex, rowIndex)
-      const end = Math.max(lastIndex, rowIndex)
-
+  const { handleMouseDown, handleKeyDown, handleChange } = useShiftSelectionClick({
+    rowKey,
+    rowIndex,
+    currentSelected,
+    lastClickedIndex,
+    getRangeKeys: (start, end) => {
       const rangeRows = rows.slice(start, end + 1)
-      const rangeKeys = rangeRows.map(row =>
-        keys.reduce<Record<string, string>>((acc, key) => ({ ...acc, [key]: row[key] as string }), {}),
+      return rangeRows.map(row =>
+        keys.reduce<Record<string, string>>(
+          (acc, key) => ({ ...acc, [key]: row[key] as string }),
+          {},
+        ),
       )
-
+    },
+    onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
       store.setState(state => ({
         ...state,
-        selected: rangeKeys,
-        selectionState: {
-          anchorIndex: lastIndex,
-          focusIndex: rowIndex,
-          lastExpandDirection: rowIndex > lastIndex ? 'down' : 'up',
-        },
+        selected,
+        selectionState,
+        lastClickedIndex: newLastClickedIndex,
       } satisfies typeof state))
-    }
-    else {
-      if (isSelected) {
-        store.setState(state => ({
-          ...state,
-          selected: store.state.selected.filter(row => !keys.every(key => row[key] === rows[rowIndex]![key])),
-          selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
-        } satisfies typeof state))
-      }
-      else {
-        store.setState(state => ({
-          ...state,
-          selected: [...state.selected, keys.reduce((acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] }), {})],
-          selectionState: { anchorIndex: rowIndex, focusIndex: rowIndex, lastExpandDirection: null },
-        } satisfies typeof state))
-      }
-    }
-
-    store.setState(state => ({
-      ...state,
-      lastClickedIndex: rowIndex,
-    } satisfies typeof state))
-    shiftKeyRef.current = false
-  }
+    },
+  })
 
   return (
     <div
