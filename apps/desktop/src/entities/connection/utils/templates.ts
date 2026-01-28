@@ -1,4 +1,4 @@
-import { camelCase, pascalCase } from 'change-case'
+import { camelCase } from 'change-case'
 import { safePascalCase } from './helpers'
 
 export function sqlSchemaTemplate(table: string, columns: string) {
@@ -8,14 +8,14 @@ ${columns}
 }
 
 export function typeScriptSchemaTemplate(table: string, columns: string) {
-  const pascalName = pascalCase(table)
+  const pascalName = safePascalCase(table)
   return `export interface ${pascalName} {
 ${columns}
 }`
 }
 
 export function zodSchemaTemplate(table: string, columns: string) {
-  const pascalName = pascalCase(table)
+  const pascalName = safePascalCase(table)
   const camelName = pascalName.charAt(0).toLowerCase() + pascalName.slice(1)
   return `import { z } from 'zod';
 
@@ -45,7 +45,7 @@ ${columns}
 }
 
 export function kyselySchemaTemplate(table: string, body: string) {
-  const pascalTable = pascalCase(table)
+  const pascalTable = safePascalCase(table)
   const safeTableKey = /^[a-z_$][\w$]*$/i.test(table) ? table : `'${table}'`
   return `import { Generated } from 'kysely';
 
