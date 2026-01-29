@@ -86,7 +86,7 @@ interface Columns {
 }
 
 /**
- * @name table_constraints
+ * @name TABLE_CONSTRAINTS
  * @type table
  */
 interface TableConstraints {
