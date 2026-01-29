@@ -40,7 +40,7 @@ interface Tables {
 }
 
 /**
- * @name views
+ * @name VIEWS
  * @type table
  */
 interface Views {
