@@ -97,7 +97,7 @@ interface KeyColumnUsage {
 }
 
 /**
- * @name constraint_column_usage
+ * @name CONSTRAINT_COLUMN_USAGE
  * @type table
  */
 interface ConstraintColumnUsage {
