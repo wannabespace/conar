@@ -50,7 +50,7 @@ function ConnectionCard({
     onSuccess: (data) => {
       const version = data[0]?.version
 
-      if (version) {
+      if (version && version !== connection.version) {
         connectionsCollection.update([connection.id], (drafts) => {
           const draft = drafts[0]
 
@@ -59,6 +59,9 @@ function ConnectionCard({
           }
         })
         toast.success('Database version updated')
+      }
+      else if (version === connection.version) {
+        toast.success('Database version is already up to date')
       }
     },
     onError: () => {
