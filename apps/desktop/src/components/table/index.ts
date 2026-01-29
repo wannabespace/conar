@@ -11,6 +11,10 @@ export * from './provider'
 export * from './table'
 export * from './table-context'
 export {
+  useShiftSelectionClick,
+  type UseShiftSelectionClickOptions,
+} from './use-shift-selection-click'
+export {
   type SelectionState,
   useShiftSelectionKeyDown,
   type UseShiftSelectionKeyDownOptions,

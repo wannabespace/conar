@@ -21,6 +21,7 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { connectionStore } from '~/entities/connection/store'
 import { UserAvatar } from '~/entities/user/components'
+import { useSubscription } from '~/entities/user/hooks'
 import { Route } from '../..'
 import { chatHooks, runnerHooks } from '../../-page'
 import { ChatImages } from './chat-images'
@@ -349,6 +350,7 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
   const { chat } = Route.useLoaderData()
   const ref = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(ref)
+  const { subscription } = useSubscription()
 
   const isLoading = isLast ? status === 'streaming' || status === 'submitted' : false
 
@@ -387,7 +389,7 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
             <ChatMessageFooterButton
               icon={<RiRestartLine className="size-4 text-muted-foreground" />}
               tooltip="Regenerate message"
-              disabled={status === 'streaming' || status === 'submitted'}
+              disabled={status === 'streaming' || status === 'submitted' || !subscription}
               onClick={() => chat.regenerate({ messageId: message.id })}
             />
           )}
