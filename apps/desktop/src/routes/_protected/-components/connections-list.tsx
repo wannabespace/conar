@@ -8,16 +8,14 @@ import { Separator } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine, RiRefreshLine } from '@remixicon/react'
+import { RiCloseLine, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
-import { useMutation } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useRef, useState } from 'react'
-import { toast } from 'sonner'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionLinkParams } from '~/entities/connection/hooks'
-import { connectionVersionQuery } from '~/entities/connection/sql'
+import { useConnectionVersion } from '~/entities/connection/queries/connection-version'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { useLastOpenedConnections } from '~/entities/connection/utils'
 import { ConnectionVersion } from './connection-version'
@@ -45,29 +43,7 @@ function ConnectionCard({
 
   const params = useConnectionLinkParams(connection.id)
 
-  const { mutate: updateVersion } = useMutation({
-    mutationFn: () => connectionVersionQuery(connection),
-    onSuccess: (data) => {
-      const version = data[0]?.version
-
-      if (version && version !== connection.version) {
-        connectionsCollection.update([connection.id], (drafts) => {
-          const draft = drafts[0]
-
-          if (draft) {
-            draft.version = version
-          }
-        })
-        toast.success('Database version updated')
-      }
-      else if (version === connection.version) {
-        toast.success('Database version is already up to date')
-      }
-    },
-    onError: () => {
-      toast.error('Failed to update database version')
-    },
-  })
+  const { data: versionData } = useConnectionVersion({ connection })
 
   return (
     <motion.div
@@ -135,7 +111,7 @@ function ConnectionCard({
                 {connection.label}
               </Badge>
             )}
-            <ConnectionVersion connection={connection} />
+            <ConnectionVersion connectionVersion={versionData?.[0]?.version ?? null} />
           </div>
           <div
             data-mask
@@ -162,15 +138,7 @@ function ConnectionCard({
               <RiFileCopyLine className="size-4 opacity-50" />
               Copy Connection String
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                updateVersion()
-              }}
-            >
-              <RiRefreshLine className="size-4 opacity-50" />
-              Update DB Version
-            </DropdownMenuItem>
+
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()

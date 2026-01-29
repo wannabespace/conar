@@ -1,4 +1,3 @@
-import type { connections } from '~/drizzle'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
@@ -16,7 +15,7 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { connectionVersionQuery, executeSql } from '~/entities/connection/sql'
+import { executeSql } from '~/entities/connection/sql'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { prefetchConnectionCore } from '~/entities/connection/utils'
 import { generateRandomName } from '~/lib/utils'
@@ -59,22 +58,6 @@ function CreateConnectionPage() {
 
     const password = new SafeURL(data.connectionString.trim()).password
 
-    let version: string | null = null
-
-    try {
-      const result = await connectionVersionQuery({
-        id,
-        name: data.name,
-        type: data.type,
-        connectionString: data.connectionString,
-      } as typeof connections.$inferSelect)
-
-      version = result[0]?.version ?? null
-    }
-    catch (error) {
-      console.error('Failed to fetch database version', error)
-    }
-
     connectionsCollection.insert({
       id,
       name: data.name,
@@ -87,7 +70,6 @@ function CreateConnectionPage() {
       syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
       createdAt: new Date(),
       updatedAt: new Date(),
-      version,
     })
 
     toast.success('Connection created successfully 🎉')

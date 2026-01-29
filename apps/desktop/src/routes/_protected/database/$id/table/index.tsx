@@ -61,7 +61,7 @@ export const Route = createFileRoute(
       ? [{
           title: title(
             loaderData.schema && loaderData.table ? `${loaderData.schema}.${loaderData.table}` : 'Tables',
-            `${loaderData.connection.name}${loaderData.connection.version ? ` v${loaderData.connection.version}` : ''}`,
+            loaderData.connection.name,
           ),
         }]
       : [],

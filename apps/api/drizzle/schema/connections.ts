@@ -22,7 +22,6 @@ export const connections = pgTable('connections', ({ uuid, text, boolean }) => (
   color: text(),
   isPasswordExists: boolean('password_exists').notNull(),
   syncType: syncType().notNull(),
-  version: text(),
 }))
 
 export const connectionsSelectSchema = createSelectSchema(connections)

@@ -25,7 +25,7 @@ export const Route = createFileRoute(
     return { connection: context.connection }
   },
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Visualizer', loaderData.connection.name, loaderData.connection.version ? ` v${loaderData.connection.version}` : '') }] : [],
+    meta: loaderData ? [{ title: title('Visualizer', loaderData.connection.name) }] : [],
   }),
 })
 

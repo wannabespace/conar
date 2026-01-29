@@ -28,7 +28,7 @@ export const Route = createFileRoute(
     }
   },
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('SQL Runner', `${loaderData.connection.name}${loaderData.connection.version ? ` v${loaderData.connection.version}` : ''}`) }] : [],
+    meta: loaderData ? [{ title: title('SQL Runner', loaderData.connection.name) }] : [],
   }),
 })
 

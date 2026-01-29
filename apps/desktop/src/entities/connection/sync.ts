@@ -49,7 +49,6 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
           value: {
             ...item.value,
             isPasswordPopulated: !!new SafeURL(item.value.connectionString).password,
-            version: (item.value).version ?? null,
           },
         })
       }
@@ -75,7 +74,7 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
             connectionString: newConnectionString.toString(),
             isPasswordPopulated: !!newConnectionString.password,
             syncType: item.value.syncType ?? SyncType.CloudWithoutPassword,
-            version: item.value.version ?? null,
+
           },
         })
       }

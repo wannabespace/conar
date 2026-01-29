@@ -4,13 +4,11 @@ import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { cn } from '@conar/ui/lib/utils'
-import { useMutation } from '@tanstack/react-query'
-import { createFileRoute, Outlet, redirect, useMatches, useRouter } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { QueryLogger } from '~/entities/connection/components'
-import { connectionVersionQuery } from '~/entities/connection/sql'
 import { connectionStore } from '~/entities/connection/store'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { lastOpenedConnections, prefetchConnectionCore } from '~/entities/connection/utils'
@@ -35,7 +33,7 @@ export const Route = createFileRoute('/_protected/database/$id')({
   },
   head: ({ loaderData }) => ({
     meta: loaderData
-      ? [{ title: title(`${loaderData.connection.name} v-${loaderData.connection.version ? ` v${loaderData.connection.version}` : ''}`) }]
+      ? [{ title: title(loaderData.connection.name) }]
       : [],
   }),
 })
@@ -45,7 +43,6 @@ function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
 }
 
 function DatabasePage() {
-  const router = useRouter()
   const { connection } = Route.useLoaderData()
   const currentPageId = useMatches({
     select: matches => getDatabasePageId(matches.map(match => match.routeId)),
@@ -67,30 +64,6 @@ function DatabasePage() {
     if (!last.includes(connection.id))
       lastOpenedConnections.set([connection.id, ...last.filter(connId => connId !== connection.id)].slice(0, 3))
   }, [connection.id])
-
-  const { mutate: checkVersion } = useMutation({
-    mutationFn: () => connectionVersionQuery(connection),
-    onSuccess: (data) => {
-      const version = data[0]?.version
-      if (version) {
-        connectionsCollection.update([connection.id], (drafts) => {
-          const draft = drafts[0]
-          if (draft)
-            draft.version = version
-        })
-        router.invalidate()
-      }
-    },
-    onError: (error) => {
-      console.warn('Failed to auto-fetch DB version', error)
-    },
-  })
-
-  useEffect(() => {
-    if (!connection.version) {
-      checkVersion()
-    }
-  }, [connection.version, checkVersion])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: `database-layout-${connection.id}`,
