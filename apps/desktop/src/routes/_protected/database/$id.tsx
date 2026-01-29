@@ -35,7 +35,7 @@ export const Route = createFileRoute('/_protected/database/$id')({
   },
   head: ({ loaderData }) => ({
     meta: loaderData
-      ? [{ title: title(`${loaderData.connection.name} v-${loaderData.connection.version ? ` v${loaderData.connection.version}` : ''}`) }]
+      ? [{ title: title(`${loaderData.connection.name}${loaderData.connection.version ? ` v${loaderData.connection.version}` : ''}`) }]
       : [],
   }),
 })
