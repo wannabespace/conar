@@ -18,4 +18,5 @@ export const connections = pgTable('connections', ({ text, boolean }) => ({
   isPasswordExists: boolean('password_exists').notNull(),
   isPasswordPopulated: boolean('password_populated').notNull(),
   syncType: syncType().notNull(),
+  version: text(),
 }))

@@ -19,7 +19,7 @@ export const Route = createFileRoute('/_protected/database/$id/definitions/const
   component: DatabaseConstraintsPage,
   loader: ({ context }) => ({ connection: context.connection }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Constraints', loaderData.connection.name) }] : [],
+    meta: loaderData ? [{ title: title('Constraints', loaderData.connection.name, loaderData.connection.version ? ` v${loaderData.connection.version}` : '') }] : [],
   }),
 })
 
