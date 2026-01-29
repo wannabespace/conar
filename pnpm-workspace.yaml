@@ -53,6 +53,7 @@ catalog:
   '@radix-ui/react-tooltip': ^1.2.8
   '@react-email/components': ^1.0.6
   '@remixicon/react': ^4.8.0
+  '@streamdown/code': ^1.0.1
   '@tailwindcss/typography': ^0.5.19
   '@tailwindcss/vite': ^4.1.18
   '@tanstack/react-db': ^0.1.66
@@ -132,11 +133,9 @@ catalog:
   posthog-node: ^5.24.1
   react: ^19.2.3
   react-dom: ^19.2.3
-  react-markdown: ^10.1.0
   react-resizable-panels: ^4.4.1
   react-scan: ^0.4.3
   redis: ^5.10.0
-  remark-gfm: ^4.0.1
   resend: ^6.8.0
   resumable-stream: ^2.2.10
   sonner: ^2.0.7

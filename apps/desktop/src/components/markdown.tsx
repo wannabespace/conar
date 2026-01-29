@@ -15,8 +15,7 @@ import NumberFlow from '@number-flow/react'
 import { RiCodeLine, RiText } from '@remixicon/react'
 import { marked } from 'marked'
 import { useState } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import { Streamdown } from 'streamdown'
 import { Monaco } from './monaco'
 
 const langsMap = {
@@ -151,10 +150,10 @@ function MarkdownBase({ content }: { content: string }) {
   const processedContent = content.replace(/\n/g, '  \n')
 
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
+    <Streamdown
+      mode="static"
       components={{
-        pre: ({ children }) => <Pre children={children} />,
+        pre: ({ children }: { children?: ReactNode }) => <Pre children={children} />,
         table: MarkdownTable,
         thead: TableHeader,
         tbody: TableBody,
@@ -164,8 +163,9 @@ function MarkdownBase({ content }: { content: string }) {
         td: TableCell,
         a: A,
       }}
-      children={processedContent}
-    />
+    >
+      {processedContent}
+    </Streamdown>
   )
 }
 

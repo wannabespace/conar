@@ -1,12 +1,12 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Badge } from '@conar/ui/components/badge'
 import { Card, CardContent } from '@conar/ui/components/card'
+import { MarkdownContent } from '@conar/ui/components/markdown-content'
 import { Separator } from '@conar/ui/components/separator'
 import { cn } from '@conar/ui/lib/utils'
 import { createFileRoute } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { useState } from 'react'
-import { Streamdown } from 'streamdown'
 import { orpc } from '~/lib/orpc'
 
 export const Route = createFileRoute('/_layout/releases')({
@@ -75,10 +75,9 @@ function RouteComponent() {
               <AccordionContent>
                 <Card>
                   <CardContent className="p-4">
-                    <Streamdown
-                      mode="static"
+                    <MarkdownContent
+                      trustedContent
                       className="text-sm"
-                      linkSafety={{ enabled: false }}
                       components={{
                         h2: ({ children }) => (
                           <h2 className="
@@ -102,7 +101,7 @@ function RouteComponent() {
                       }}
                     >
                       {release.body || ''}
-                    </Streamdown>
+                    </MarkdownContent>
                   </CardContent>
                 </Card>
               </AccordionContent>

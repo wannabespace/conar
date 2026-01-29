@@ -28,9 +28,7 @@
     "postgres": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-markdown": "catalog:",
     "sonner": "catalog:",
-    "streamdown": "catalog:",
     "superjson": "catalog:",
     "tailwind-merge": "catalog:"
   },
