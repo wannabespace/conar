@@ -71,7 +71,7 @@ export const columnsQuery = createQuery({
           'column_default as default',
           'data_type',
           'udt_name',
-          'character_maximum_length as maxLength',
+          'character_maximum_length as max_length',
           'numeric_precision as precision',
           'numeric_scale as scale',
           eb.case('is_nullable')
@@ -100,6 +100,7 @@ export const columnsQuery = createQuery({
         // TODO: handle enum name if data_type is ARRAY
         enum: data_type === 'USER-DEFINED' ? udt_name : undefined,
         isArray: data_type === 'ARRAY',
+        maxLength: row.max_length,
       } satisfies typeof columnType.inferIn))
     },
     mysql: async (db) => {
@@ -110,7 +111,7 @@ export const columnsQuery = createQuery({
           'TABLE_NAME as table',
           'COLUMN_NAME as id',
           'COLUMN_DEFAULT as default',
-          'CHARACTER_MAXIMUM_LENGTH as maxLength',
+          'CHARACTER_MAXIMUM_LENGTH as max_length',
           'NUMERIC_PRECISION as precision',
           'NUMERIC_SCALE as scale',
           eb.fn.coalesce('DATA_TYPE', 'COLUMN_TYPE').as('type'),
@@ -134,6 +135,7 @@ export const columnsQuery = createQuery({
         label: column.type,
         enum: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
         isArray: column.type === 'set',
+        maxLength: column.max_length,
       } satisfies typeof columnType.inferIn))
     },
     mssql: async (db) => {
@@ -144,7 +146,7 @@ export const columnsQuery = createQuery({
           'TABLE_NAME as table',
           'COLUMN_NAME as name',
           'COLUMN_DEFAULT as default',
-          'CHARACTER_MAXIMUM_LENGTH as maxLength',
+          'CHARACTER_MAXIMUM_LENGTH as max_length',
           'NUMERIC_PRECISION as precision',
           'NUMERIC_SCALE as scale',
           'DATA_TYPE as type',
@@ -169,6 +171,7 @@ export const columnsQuery = createQuery({
         label: column.type,
         enum: column.type === 'set' || column.type === 'enum' ? name : undefined,
         isArray: column.type === 'set',
+        maxLength: column.max_length,
       } satisfies typeof columnType.inferIn))
     },
     clickhouse: async (db) => {

@@ -1,11 +1,17 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
-import type { Index, PrismaFilterValue } from '../utils'
+import type { Index } from '../utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { camelCase, pascalCase } from 'change-case'
 import * as templates from '../templates'
-import { findEnum, getColumnType, groupIndexes, isPrismaFilterValue, safePascalCase, sanitize } from '../utils'
+import { findEnum, getColumnType, groupIndexes, safePascalCase, sanitize } from '../utils'
+
+export type PrismaFilterValue = string | number | boolean | Date | null | { [key: string]: PrismaFilterValue } | PrismaFilterValue[]
+
+export function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
+  return v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
+}
 
 export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
   const tableName = camelCase(safePascalCase(table))

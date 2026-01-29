@@ -4,7 +4,6 @@ import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { pascalCase } from 'change-case'
 
 export type GeneratorFormat = 'ts' | 'zod' | 'prisma' | 'sql' | 'drizzle' | 'kysely'
-export type PrismaFilterValue = string | number | boolean | Date | null | { [key: string]: PrismaFilterValue } | PrismaFilterValue[]
 
 export interface Index {
   schema: string
@@ -308,10 +307,6 @@ export function findEnum(c: Column, table: string, enums: typeof enumType.infer[
     || (c.enum && e.name === c.enum)
     || (c.type && e.name === c.type),
   )
-}
-
-export function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
-  return v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
 }
 
 export function groupIndexes(indexes: Index[] = [], table: string) {
