@@ -13,7 +13,7 @@ export interface InformationSchema {
 }
 
 /**
- * @name tables
+ * @name TABLES
  * @type table
  */
 interface Tables {
@@ -24,7 +24,7 @@ interface Tables {
 }
 
 /**
- * @name views
+ * @name VIEWS
  * @type table
  */
 interface Views {
@@ -37,7 +37,7 @@ interface Views {
 }
 
 /**
- * @name columns
+ * @name COLUMNS
  * @type table
  */
 interface Columns {
@@ -67,7 +67,7 @@ interface Columns {
 }
 
 /**
- * @name table_constraints
+ * @name TABLE_CONSTRAINTS
  * @type table
  */
 interface TableConstraints {
@@ -82,7 +82,7 @@ interface TableConstraints {
 }
 
 /**
- * @name key_column_usage
+ * @name KEY_COLUMN_USAGE
  * @type table
  */
 interface KeyColumnUsage {
@@ -97,7 +97,7 @@ interface KeyColumnUsage {
 }
 
 /**
- * @name constraint_column_usage
+ * @name CONSTRAINT_COLUMN_USAGE
  * @type table
  */
 interface ConstraintColumnUsage {
@@ -111,7 +111,7 @@ interface ConstraintColumnUsage {
 }
 
 /**
- * @name referential_constraints
+ * @name REFERENTIAL_CONSTRAINTS
  * @type table
  */
 interface ReferentialConstraints {
