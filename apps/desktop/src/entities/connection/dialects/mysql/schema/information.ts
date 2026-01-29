@@ -100,7 +100,7 @@ interface TableConstraints {
 }
 
 /**
- * @name key_column_usage
+ * @name KEY_COLUMN_USAGE
  * @type table
  */
 interface KeyColumnUsage {
