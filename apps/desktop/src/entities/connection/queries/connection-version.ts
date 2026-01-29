@@ -6,8 +6,9 @@ export function connectionVersionQueryOptions({ connection }: { connection: type
   return queryOptions({
     queryKey: ['connection', connection.id, 'version'],
     queryFn: () => connectionVersionQuery(connection),
-    retry: 5,
     throwOnError: false,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
   })
 }
 

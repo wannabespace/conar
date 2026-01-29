@@ -138,7 +138,6 @@ function ConnectionCard({
               <RiFileCopyLine className="size-4 opacity-50" />
               Copy Connection String
             </DropdownMenuItem>
-
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
