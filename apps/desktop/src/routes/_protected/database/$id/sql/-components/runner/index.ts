@@ -8,23 +8,25 @@ import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 
 export * from './runner'
 
-function transformResult({ rows, query, startLineNumber, endLineNumber }: { rows: unknown[] } & Pick<typeof connectionStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
+function transformResult({ rows, query, startLineNumber, endLineNumber, executionTime }: { rows: unknown[], executionTime: number } & Pick<typeof connectionStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: rows as Record<string, unknown>[],
     error: null,
     query,
     startLineNumber,
     endLineNumber,
+    executionTime,
   }
 }
 
-function transformError({ error, query, startLineNumber, endLineNumber }: { error: unknown } & Pick<typeof connectionStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
+function transformError({ error, query, startLineNumber, endLineNumber, executionTime }: { error: unknown, executionTime: number } & Pick<typeof connectionStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: null,
     error: error instanceof Error ? error.message : String(error),
     query,
     startLineNumber,
     endLineNumber,
+    executionTime,
   }
 }
 
@@ -43,12 +45,15 @@ export function runnerQueryOptions({ connection }: { connection: typeof connecti
           return []
         }
 
+        const startTime = performance.now()
         try {
           const { result } = await executeAndLogSql({ connection, sql: query })
-          results.push(transformResult({ rows: result as unknown[], query, startLineNumber, endLineNumber }))
+          const executionTime = performance.now() - startTime
+          results.push(transformResult({ rows: result as unknown[], query, startLineNumber, endLineNumber, executionTime }))
         }
         catch (error) {
-          results.push(transformError({ error, query, startLineNumber, endLineNumber }))
+          const executionTime = performance.now() - startTime
+          results.push(transformError({ error, query, startLineNumber, endLineNumber, executionTime }))
         }
       }
 
