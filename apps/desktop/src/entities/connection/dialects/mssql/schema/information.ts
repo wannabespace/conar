@@ -111,7 +111,7 @@ interface ConstraintColumnUsage {
 }
 
 /**
- * @name referential_constraints
+ * @name REFERENTIAL_CONSTRAINTS
  * @type table
  */
 interface ReferentialConstraints {
