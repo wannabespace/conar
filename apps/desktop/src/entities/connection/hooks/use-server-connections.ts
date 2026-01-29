@@ -17,7 +17,6 @@ export function useServerConnections(connection: typeof connections.$inferSelect
   const { data: connectionNamesList = [], isLoading } = useQuery({
     queryKey: ['server-connections', connection.id],
     throwOnError: false,
-    retry: 5,
     queryFn: async () => {
       const url = new SafeURL(connection.connectionString)
       url.pathname = connectionSystemNames[connection.type]
