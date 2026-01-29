@@ -46,7 +46,7 @@ function CreateConnectionPage() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  async function createConnection(data: {
+  function createConnection(data: {
     connectionString: string
     name: string
     type: ConnectionType
