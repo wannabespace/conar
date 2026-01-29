@@ -9,8 +9,7 @@ export function ConnectionVersion({ connection }: { connection: typeof connectio
 
   return (
     <Badge variant="outline" className="font-mono text-[10px]">
-      v-
-      {version}
+      {`v${version}`}
     </Badge>
   )
 }
