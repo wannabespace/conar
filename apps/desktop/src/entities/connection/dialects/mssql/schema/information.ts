@@ -13,7 +13,7 @@ export interface InformationSchema {
 }
 
 /**
- * @name tables
+ * @name TABLES
  * @type table
  */
 interface Tables {
