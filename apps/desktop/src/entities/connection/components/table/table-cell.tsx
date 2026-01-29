@@ -1,7 +1,8 @@
 import type { editor } from 'monaco-editor'
-import type { ComponentProps, Dispatch, SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import type { TableCellProps } from '~/components/table'
 import type { Column } from '~/entities/connection/components/table/utils'
+import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
@@ -11,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowLeftDownLine, RiArrowRightUpLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import { getRouteApi, useNavigate } from '@tanstack/react-router'
 import { format, isValid } from 'date-fns'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
@@ -22,8 +24,11 @@ import { useCellContext } from './cell-context'
 import { TableCellContent } from './table-cell-content'
 import { TableCellProvider } from './table-cell-provider'
 import { TableCellReferences } from './table-cell-references'
+import { ForeignButton, ReferenceButton, RelationshipPopover } from './table-cell-relationship'
 import { TableCellTable } from './table-cell-table'
 import { getDisplayValue } from './utils'
+
+const { useLoaderData } = getRouteApi('/_protected/database/$id')
 
 function CellPopoverContent({
   rowIndex,
@@ -222,34 +227,6 @@ function CellPopoverContent({
   )
 }
 
-function ForeignButton(props: ComponentProps<'button'>) {
-  return (
-    <Button
-      variant="outline"
-      size="icon-xs"
-      {...props}
-    >
-      <RiArrowRightUpLine className="size-3 text-muted-foreground" />
-    </Button>
-  )
-}
-
-function ReferenceButton({ children, className, ...props }: ComponentProps<'button'>) {
-  return (
-    <Button
-      variant="outline"
-      size="xs"
-      className={cn('px-1.5!', className)}
-      {...props}
-    >
-      <RiArrowLeftDownLine className="size-3 text-muted-foreground" />
-      <span className="text-xs text-muted-foreground">
-        {children}
-      </span>
-    </Button>
-  )
-}
-
 function getTimestamp(value: unknown, column: Column) {
   const date = (
     column?.type?.includes('timestamp')
@@ -279,6 +256,8 @@ export function TableCell({
   className?: string
   values?: string[]
 } & TableCellProps) {
+  const { connection } = useLoaderData()
+  const navigate = useNavigate()
   const displayValue = getDisplayValue({
     value,
     size,
@@ -390,89 +369,92 @@ export function TableCell({
                 >
                   <span className="truncate">{displayValue}</span>
                   {!!value && column.foreign && (
-                    <Popover
+                    <RelationshipPopover
                       open={isForeignOpen}
                       onOpenChange={setIsForeignOpen}
-                    >
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <PopoverTrigger asChild>
-                              <ForeignButton
-                                onDoubleClick={e => e.stopPropagation()}
-                                onClick={(e) => {
-                                  e.stopPropagation()
+                      tooltip={(
+                        <>
+                          See foreign record
+                          {' '}
+                          <span className="text-xs text-muted-foreground">(Cmd + click to open)</span>
+                        </>
+                      )}
+                      trigger={(
+                        <ForeignButton
+                          onDoubleClick={e => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation()
 
-                                  setIsForeignOpen(true)
-                                  setIsPopoverOpen(false)
-                                  setIsReferencesOpen(false)
-                                }}
-                              />
-                            </PopoverTrigger>
-                          </TooltipTrigger>
-                          <TooltipContent className="text-sm">
-                            See foreign record
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <PopoverContent
-                        className="h-[45vh] w-[80vw] overflow-hidden p-0"
-                        onDoubleClick={e => e.stopPropagation()}
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <TableCellTable
-                          schema={column.foreign.schema}
-                          table={column.foreign.table}
-                          column={column.foreign.column}
-                          value={value}
+                            if (e.metaKey || e.ctrlKey) {
+                              if (!column.foreign)
+                                return
+
+                              navigate({
+                                to: '/database/$id/table',
+                                params: { id: connection.id },
+                                search: {
+                                  schema: column.foreign.schema,
+                                  table: column.foreign.table,
+                                  filters: [{
+                                    column: column.foreign.column,
+                                    ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
+                                    values: [value],
+                                  }],
+                                  orderBy: {},
+                                },
+                              })
+                              return
+                            }
+
+                            setIsForeignOpen(true)
+                            setIsPopoverOpen(false)
+                            setIsReferencesOpen(false)
+                          }}
                         />
-                      </PopoverContent>
-                    </Popover>
+                      )}
+                    >
+                      <TableCellTable
+                        schema={column.foreign.schema}
+                        table={column.foreign.table}
+                        column={column.foreign.column}
+                        value={value}
+                      />
+                    </RelationshipPopover>
                   )}
                   {!!value && column.references && column.references.length > 0 && (
-                    <Popover
+                    <RelationshipPopover
                       open={isReferencesOpen}
                       onOpenChange={setIsReferencesOpen}
-                    >
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <PopoverTrigger asChild>
-                              <ReferenceButton
-                                onDoubleClick={e => e.stopPropagation()}
-                                onClick={(e) => {
-                                  e.stopPropagation()
+                      tooltip={(
+                        <>
+                          See referenced records from
+                          {' '}
+                          {column.references.length}
+                          {' '}
+                          table
+                          {column.references.length === 1 ? '' : 's'}
+                        </>
+                      )}
+                      trigger={(
+                        <ReferenceButton
+                          onDoubleClick={e => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation()
 
-                                  setIsReferencesOpen(true)
-                                  setIsPopoverOpen(false)
-                                  setIsForeignOpen(false)
-                                }}
-                              >
-                                {column.references.length}
-                              </ReferenceButton>
-                            </PopoverTrigger>
-                          </TooltipTrigger>
-                          <TooltipContent className="text-sm">
-                            See referenced records from
-                            {' '}
-                            {column.references.length}
-                            {' '}
-                            table
-                            {column.references.length === 1 ? '' : 's'}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <PopoverContent
-                        className="h-[45vh] w-[80vw] overflow-hidden p-0"
-                        onDoubleClick={e => e.stopPropagation()}
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <TableCellReferences
-                          references={column.references}
-                          value={value}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                            setIsReferencesOpen(true)
+                            setIsPopoverOpen(false)
+                            setIsForeignOpen(false)
+                          }}
+                        >
+                          {column.references.length}
+                        </ReferenceButton>
+                      )}
+                    >
+                      <TableCellReferences
+                        references={column.references}
+                        value={value}
+                      />
+                    </RelationshipPopover>
                   )}
                 </TableCellContent>
               </PopoverTrigger>
