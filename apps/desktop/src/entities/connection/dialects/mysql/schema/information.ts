@@ -57,7 +57,7 @@ interface Views {
 }
 
 /**
- * @name columns
+ * @name COLUMNS
  * @type table
  */
 interface Columns {
