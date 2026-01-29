@@ -3,7 +3,7 @@ import type { TableCellProps, TableHeaderCellProps } from '~/components/table'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { useTableContext } from '~/components/table'
+import { useShiftSelectionClick, useTableContext } from '~/components/table'
 import { usePageStoreContext } from '../../-store'
 
 function IndeterminateCheckbox({
@@ -97,6 +97,39 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
   const store = usePageStoreContext()
   const rows = useTableContext(state => state.rows)
   const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])))
+  const [currentSelected, lastClickedIndex] = useStore(store, state => [
+    state.selected,
+    state.lastClickedIndex,
+  ])
+
+  const rowKey = keys.reduce<Record<string, string>>(
+    (acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] as string }),
+    {},
+  )
+
+  const { handleMouseDown, handleKeyDown, handleChange } = useShiftSelectionClick({
+    rowKey,
+    rowIndex,
+    currentSelected,
+    lastClickedIndex,
+    getRangeKeys: (start, end) => {
+      const rangeRows = rows.slice(start, end + 1)
+      return rangeRows.map(row =>
+        keys.reduce<Record<string, string>>(
+          (acc, key) => ({ ...acc, [key]: row[key] as string }),
+          {},
+        ),
+      )
+    },
+    onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
+      store.setState(state => ({
+        ...state,
+        selected,
+        selectionState,
+        lastClickedIndex: newLastClickedIndex,
+      } satisfies typeof state))
+    },
+  })
 
   return (
     <div
@@ -105,20 +138,9 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
     >
       <IndeterminateCheckbox
         checked={isSelected}
-        onChange={() => {
-          if (isSelected) {
-            store.setState(state => ({
-              ...state,
-              selected: store.state.selected.filter(row => !keys.every(key => row[key] === rows[rowIndex]![key])),
-            } satisfies typeof state))
-          }
-          else {
-            store.setState(state => ({
-              ...state,
-              selected: [...state.selected, keys.reduce((acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] }), {})],
-            } satisfies typeof state))
-          }
-        }}
+        onMouseDown={handleMouseDown}
+        onKeyDown={handleKeyDown}
+        onChange={handleChange}
       />
     </div>
   )

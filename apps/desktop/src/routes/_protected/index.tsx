@@ -12,7 +12,7 @@ import { useStore } from '@tanstack/react-store'
 import { useConnectionsSync } from '~/entities/connection/sync'
 import { setIsCreateConnectionDialogOpen } from '~/store'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
-import { DatabasesList } from './-components/databases-list'
+import { ConnectionsList } from './-components/connections-list'
 import { Profile } from './-components/profile'
 
 export const Route = createFileRoute('/_protected/')({
@@ -69,7 +69,7 @@ function DashboardPage() {
             </Button>
           </div>
         </div>
-        <DatabasesList />
+        <ConnectionsList />
         <div className="mt-auto py-6">
           <Separator />
           <div className="mt-3 flex items-center gap-2">

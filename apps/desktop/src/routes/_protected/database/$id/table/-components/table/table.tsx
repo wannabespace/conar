@@ -6,7 +6,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
-import { Table, TableBody, TableProvider } from '~/components/table'
+import { Table, TableBody, TableProvider, useShiftSelectionKeyDown } from '~/components/table'
 import { TableCell } from '~/entities/connection/components'
 import { connectionRowsQuery } from '~/entities/connection/queries'
 import { useConnectionEnums } from '~/entities/connection/queries/enums'
@@ -64,7 +64,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const columnSizes = useStore(store, state => state.columnSizes)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
-  const { data: rows, error, isPending: isRowsPending } = useInfiniteQuery(connectionRowsQuery({ connection, table, schema, query: { filters, orderBy } }))
+  const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(connectionRowsQuery({ connection, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
   const { toggleOrder } = useColumnsOrder()
   const renameColumnRef = useRef<{ rename: (schema: string, table: string, column: string) => void }>(null)
@@ -259,13 +259,42 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     return sortedColumns
   }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, enums])
 
+  const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
+    rowCount: rows.length,
+    getRowKey: index => primaryColumns.reduce<Record<string, string>>(
+      (acc, key) => ({ ...acc, [key]: rows[index]![key] as string }),
+      {},
+    ),
+    getRangeKeys: (start, end) => {
+      const rangeRows = rows.slice(start, end + 1)
+      return rangeRows.map(row =>
+        primaryColumns.reduce<Record<string, string>>(
+          (acc, key) => ({ ...acc, [key]: row[key] as string }),
+          {},
+        ),
+      )
+    },
+    getSelectionState: () => store.state.selectionState,
+    onSelectionChange: (selected, selectionState) => {
+      store.setState(state => ({
+        ...state,
+        selected,
+        selectionState,
+      } satisfies typeof state))
+    },
+  })
+
   return (
     <TableProvider
-      rows={rows ?? []}
+      rows={rows}
       columns={tableColumns}
       customColumnSizes={columnSizes}
     >
-      <div className="relative size-full">
+      <div
+        className="relative size-full bg-background outline-none"
+        tabIndex={0}
+        onKeyDown={handleShiftSelectionKeyDown}
+      >
         <Table>
           <TableHeader />
           {isRowsPending
