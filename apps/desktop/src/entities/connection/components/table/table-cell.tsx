@@ -2,7 +2,6 @@ import type { editor } from 'monaco-editor'
 import type { Dispatch, SetStateAction } from 'react'
 import type { TableCellProps } from '~/components/table'
 import type { Column } from '~/entities/connection/components/table/utils'
-import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
@@ -13,7 +12,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
-import { getRouteApi, useNavigate } from '@tanstack/react-router'
 import { format, isValid } from 'date-fns'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
@@ -27,8 +25,6 @@ import { TableCellReferences } from './table-cell-references'
 import { ForeignButton, ReferenceButton, RelationshipPopover } from './table-cell-relationship'
 import { TableCellTable } from './table-cell-table'
 import { getDisplayValue } from './utils'
-
-const { useLoaderData } = getRouteApi('/_protected/database/$id')
 
 function CellPopoverContent({
   rowIndex,
@@ -256,8 +252,6 @@ export function TableCell({
   className?: string
   values?: string[]
 } & TableCellProps) {
-  const { connection } = useLoaderData()
-  const navigate = useNavigate()
   const displayValue = getDisplayValue({
     value,
     size,
@@ -372,39 +366,12 @@ export function TableCell({
                     <RelationshipPopover
                       open={isForeignOpen}
                       onOpenChange={setIsForeignOpen}
-                      tooltip={(
-                        <>
-                          See foreign record
-                          {' '}
-                          <span className="text-xs text-muted-foreground">(Cmd + click to open)</span>
-                        </>
-                      )}
+                      tooltip="See foreign record"
                       trigger={(
                         <ForeignButton
                           onDoubleClick={e => e.stopPropagation()}
                           onClick={(e) => {
                             e.stopPropagation()
-
-                            if (e.metaKey || e.ctrlKey) {
-                              if (!column.foreign)
-                                return
-
-                              navigate({
-                                to: '/database/$id/table',
-                                params: { id: connection.id },
-                                search: {
-                                  schema: column.foreign.schema,
-                                  table: column.foreign.table,
-                                  filters: [{
-                                    column: column.foreign.column,
-                                    ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
-                                    values: [value],
-                                  }],
-                                  orderBy: {},
-                                },
-                              })
-                              return
-                            }
 
                             setIsForeignOpen(true)
                             setIsPopoverOpen(false)
