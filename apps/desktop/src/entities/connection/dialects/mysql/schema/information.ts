@@ -119,7 +119,7 @@ interface KeyColumnUsage {
 }
 
 /**
- * @name statistics
+ * @name STATISTICS
  * @type table
  */
 interface Statistics {
