@@ -18,7 +18,6 @@ import { useConnectionLinkParams } from '~/entities/connection/hooks'
 import { useConnectionVersion } from '~/entities/connection/queries/connection-version'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { useLastOpenedConnections } from '~/entities/connection/utils'
-import { ConnectionVersion } from './connection-version'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
@@ -34,16 +33,14 @@ function ConnectionCard({
   onClose?: VoidFunction
 }) {
   const url = new SafeURL(connection.connectionString)
-
   if (connection.isPasswordExists || url.password) {
     url.password = '*'.repeat(url.password.length || 6)
   }
-
   const connectionString = url.toString()
 
   const params = useConnectionLinkParams(connection.id)
 
-  const { data: versionData } = useConnectionVersion({ connection })
+  const { data: version } = useConnectionVersion({ connection })
 
   return (
     <motion.div
@@ -73,7 +70,7 @@ function ConnectionCard({
           `
             group relative flex items-center justify-between gap-4
             overflow-hidden rounded-lg border border-l-4 border-border/50
-            bg-muted/30 p-5
+            bg-muted/30 p-4
           `,
           connection.color
             ? `
@@ -94,7 +91,7 @@ function ConnectionCard({
         </div>
         <div className="flex min-w-0 flex-1 flex-col">
           <div className={`
-            flex items-center gap-2 truncate font-medium tracking-tight
+            flex shrink-0 items-center gap-2 truncate font-medium tracking-tight
           `}
           >
             <span className={connection.color
@@ -111,14 +108,24 @@ function ConnectionCard({
                 {connection.label}
               </Badge>
             )}
-            <ConnectionVersion connectionVersion={versionData?.[0]?.version ?? null} />
           </div>
           <div
             data-mask
-            className="truncate font-mono text-xs text-muted-foreground"
+            className="
+              shrink-0 truncate font-mono text-xs text-muted-foreground
+            "
           >
             {connectionString.replaceAll('*', '•')}
           </div>
+          {version && (
+            <span className="
+              absolute right-4 bottom-0.5 font-mono text-[.6rem]
+              text-muted-foreground/50
+            "
+            >
+              {version}
+            </span>
+          )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger className={`
