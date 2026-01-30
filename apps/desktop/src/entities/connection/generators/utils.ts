@@ -1,5 +1,3 @@
-import type { Column } from '../components/table/utils'
-import type { enumType } from '../sql'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { pascalCase } from 'change-case'
 
@@ -299,14 +297,6 @@ const QUOTE_IDENTIFIER_MAP: Record<ConnectionType, (name: string) => string> = {
 
 export function quoteIdentifier(name: string, dialect: ConnectionType) {
   return QUOTE_IDENTIFIER_MAP[dialect](name)
-}
-
-export function findEnum(c: Column, table: string, enums: typeof enumType.infer[]) {
-  return enums.find(e =>
-    (e.metadata?.table === table && e.metadata?.column === c.id)
-    || (c.enum && e.name === c.enum)
-    || (c.type && e.name === c.type),
-  )
 }
 
 export function groupIndexes(indexes: Index[] = [], table: string) {

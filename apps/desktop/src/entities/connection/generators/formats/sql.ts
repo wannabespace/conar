@@ -3,26 +3,24 @@ import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
 import type { Index } from '../utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
+import { formatSql } from '~/lib/formatter'
+import { getColdKysely } from '../../dialects'
+import { findEnum } from '../../sql/enums'
+import { buildWhere } from '../../sql/rows'
 import * as templates from '../templates'
-import { findEnum, formatValue, getColumnType, groupIndexes, quoteIdentifier } from '../utils'
+import { formatValue, getColumnType, groupIndexes, quoteIdentifier } from '../utils'
 
-export function generateQuerySQL({ table, filters }: { table: string, filters: ActiveFilter[] }) {
-  // TODO: use kysely to generate the query
-  const whereClauses = filters.map((f) => {
-    const col = `"${f.column}"`
-    const op = f.ref.operator
+function inlineParameters(sql: string, parameters: readonly unknown[]): string {
+  let i = 0
+  return sql.replace(/\$\d+|\?/g, () => formatValue(parameters[i++]))
+}
 
-    if (f.ref.hasValue === false)
-      return `${col} ${op}`
-
-    const val = f.ref.isArray
-      ? `(${f.values.map(formatValue).join(', ')})`
-      : formatValue(f.values[0])
-
-    return `${col} ${op} ${val}`
-  }).join('\n  AND ')
-
-  return templates.sqlQueryTemplate(table, whereClauses)
+export function generateQuerySQL({ table, filters, dialect = ConnectionType.Postgres }: { table: string, filters: ActiveFilter[], dialect?: ConnectionType }) {
+  const db = getColdKysely(dialect)
+  const base = db.withTables<{ [table]: Record<string, unknown> }>().selectFrom(table).selectAll()
+  const query = filters.length > 0 ? base.where(eb => buildWhere(eb, filters)) : base
+  const compiled = query.compile()
+  return formatSql(inlineParameters(compiled.sql, compiled.parameters), dialect)
 }
 
 export function generateSchemaSQL({ table, columns, enums = [], dialect = ConnectionType.Postgres, indexes = [] }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType, indexes?: Index[] }) {
@@ -38,7 +36,7 @@ export function generateSchemaSQL({ table, columns, enums = [], dialect = Connec
 
     const lowerType = typeDef.toLowerCase()
 
-    const match = findEnum(c, table, enums)
+    const match = findEnum(enums, c, table)
 
     if (match || lowerType === 'enum' || lowerType === 'set' || (isClickhouse && lowerType.startsWith('enum'))) {
       if (match && match.values.length > 0) {

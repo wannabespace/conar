@@ -4,8 +4,9 @@ import type { enumType } from '../../sql/enums'
 import type { Index } from '../utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { camelCase, pascalCase } from 'change-case'
+import { findEnum } from '../../sql/enums'
 import * as templates from '../templates'
-import { findEnum, getColumnType, groupIndexes, safePascalCase } from '../utils'
+import { getColumnType, groupIndexes, safePascalCase } from '../utils'
 
 export function generateQueryDrizzle({ table, filters }: { table: string, filters: ActiveFilter[] }) {
   const varName = camelCase(safePascalCase(table))
@@ -59,7 +60,7 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
 
     let enumVarName = ''
 
-    const match = findEnum(c, table, enums)
+    const match = findEnum(enums, c, table)
     if (enumFunc && match?.values.length) {
       const eName = match.name || `${table}_${c.id}`
       enumVarName = `${eName}Enum`

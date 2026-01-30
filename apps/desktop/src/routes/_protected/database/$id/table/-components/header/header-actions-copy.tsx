@@ -167,7 +167,7 @@ export function HeaderActionsCopy({ connection, table, schema }: { connection: t
     }
 
     if (activeFormat.kind === 'query') {
-      return activeFormat.generator({ table, filters })
+      return activeFormat.generator({ table, filters, dialect: connection.type })
     }
 
     return ''

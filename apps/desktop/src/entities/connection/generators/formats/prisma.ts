@@ -4,8 +4,9 @@ import type { enumType } from '../../sql/enums'
 import type { Index } from '../utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { camelCase, pascalCase } from 'change-case'
+import { findEnum } from '../../sql/enums'
 import * as templates from '../templates'
-import { findEnum, getColumnType, groupIndexes, safePascalCase, sanitize } from '../utils'
+import { getColumnType, groupIndexes, safePascalCase, sanitize } from '../utils'
 
 export type PrismaFilterValue = string | number | boolean | Date | null | { [key: string]: PrismaFilterValue } | PrismaFilterValue[]
 
@@ -78,7 +79,7 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
   columns.forEach((c) => {
     let prismaType = getColumnType(c.type, 'prisma', dialect)
 
-    const match = findEnum(c, table, enums)
+    const match = findEnum(enums, c, table)
     if (match?.values.length) {
       const enumName = pascalCase(match.name || `${table}_${c.id}`)
       prismaType = enumName

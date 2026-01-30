@@ -10,7 +10,7 @@ import { Table, TableBody, TableProvider, useShiftSelectionKeyDown } from '~/com
 import { TableCell } from '~/entities/connection/components'
 import { connectionRowsQuery } from '~/entities/connection/queries'
 import { useConnectionEnums } from '~/entities/connection/queries/enums'
-import { selectQuery, setQuery } from '~/entities/connection/sql'
+import { findEnum, selectQuery, setQuery } from '~/entities/connection/sql'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { getColumnSize, INTERNAL_COLUMN_IDS } from '../../-lib'
@@ -224,10 +224,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           )
         },
         cell: (props) => {
-          const values = enums?.find(e => e.name === column.enum
-            && (e.metadata?.column ? e.metadata.column === column.id : true)
-            && (e.metadata?.table ? e.metadata.table === table : true),
-          )?.values
+          const values = enums ? findEnum(enums, column, table)?.values : undefined
 
           return (
             <TableCell

@@ -2,8 +2,9 @@ import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { camelCase } from 'change-case'
+import { findEnum } from '../../sql/enums'
 import * as templates from '../templates'
-import { findEnum, getColumnType } from '../utils'
+import { getColumnType } from '../utils'
 
 export function generateSchemaZod({ table, columns, enums = [], dialect = ConnectionType.Postgres }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType }) {
   const cols = columns.map((c) => {
@@ -11,7 +12,7 @@ export function generateSchemaZod({ table, columns, enums = [], dialect = Connec
     const safeId = /^[a-z_$][\w$]*$/i.test(key) ? key : `'${key}'`
     let t = getColumnType(c.type, 'zod', dialect)
 
-    const match = findEnum(c, table, enums)
+    const match = findEnum(enums, c, table)
     if (match?.values.length) {
       const valuesArr = match.values.map(v => `'${v}'`).join(', ')
       t = `z.enum([${valuesArr}])`

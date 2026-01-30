@@ -1,7 +1,7 @@
 import type { CompiledQuery, Dialect, Driver, QueryResult } from 'kysely'
 import type { connections } from '~/drizzle'
 import { type } from 'arktype'
-import { MysqlQueryCompiler } from 'kysely'
+import { DummyDriver, MysqlQueryCompiler } from 'kysely'
 import { logSql } from '../../sql'
 
 function escapeSqlString(v: string) {
@@ -86,16 +86,31 @@ function createDriver(connection: typeof connections.$inferSelect) {
   } satisfies Driver
 }
 
+function clickhouseAdapter() {
+  return {
+    supportsCreateIfNotExists: false,
+    supportsTransactionalDdl: false,
+    supportsReturning: false,
+    acquireMigrationLock: async () => {},
+    releaseMigrationLock: async () => {},
+  }
+}
+
 export function clickhouseDialect(connection: typeof connections.$inferSelect) {
   return {
-    createAdapter: () => ({
-      supportsCreateIfNotExists: false,
-      supportsTransactionalDdl: false,
-      supportsReturning: false,
-      acquireMigrationLock: async () => {},
-      releaseMigrationLock: async () => {},
-    }),
+    createAdapter: clickhouseAdapter,
     createDriver: () => createDriver(connection),
+    createQueryCompiler: () => new MysqlQueryCompiler(),
+    createIntrospector: () => {
+      throw new Error('Not implemented')
+    },
+  } satisfies Dialect
+}
+
+export function clickhouseColdDialect() {
+  return {
+    createAdapter: clickhouseAdapter,
+    createDriver: () => new DummyDriver(),
     createQueryCompiler: () => new MysqlQueryCompiler(),
     createIntrospector: () => {
       throw new Error('Not implemented')
