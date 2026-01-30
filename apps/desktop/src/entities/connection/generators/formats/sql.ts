@@ -1,4 +1,4 @@
-import type { ActiveFilter } from '@conar/shared/filters'
+import type { QueryParams, SchemaParams } from '..'
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '../../sql/enums'
 import type { Index } from '../utils'
@@ -15,7 +15,11 @@ function inlineParameters(sql: string, parameters: readonly unknown[]): string {
   return sql.replace(/\$\d+|\?/g, () => formatValue(parameters[i++]))
 }
 
-export function generateQuerySQL({ table, filters, dialect = ConnectionType.Postgres }: { table: string, filters: ActiveFilter[], dialect?: ConnectionType }) {
+export function generateQuerySQL({
+  table,
+  filters,
+  dialect = ConnectionType.Postgres,
+}: QueryParams) {
   const db = getColdKysely(dialect)
   const base = db.withTables<{ [table]: Record<string, unknown> }>().selectFrom(table).selectAll()
   const query = filters.length > 0 ? base.where(eb => buildWhere(eb, filters)) : base
@@ -23,127 +27,216 @@ export function generateQuerySQL({ table, filters, dialect = ConnectionType.Post
   return formatSql(inlineParameters(compiled.sql, compiled.parameters), dialect)
 }
 
-export function generateSchemaSQL({ table, columns, enums = [], dialect = ConnectionType.Postgres, indexes = [] }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType, indexes?: Index[] }) {
-  const foreignKeys: string[] = []
-  const usedEnums = new Map<string, typeof enumType.infer>()
-  const isMysql = dialect === 'mysql'
-  const isMssql = dialect === 'mssql'
-  const isClickhouse = dialect === 'clickhouse'
-  const pkColumns: string[] = []
+function escapeSqlString(s: string): string {
+  return s.replace(/'/g, '\'\'')
+}
 
-  const cols = columns.map((c) => {
-    let typeDef = c.type ?? ''
+function formatEnumType(
+  match: typeof enumType.infer,
+  dialect: ConnectionType,
+): string {
+  const valuesList = match.values.map(v => `'${escapeSqlString(v)}'`).join(', ')
 
-    const lowerType = typeDef.toLowerCase()
+  if (dialect === ConnectionType.ClickHouse) {
+    const prefix = match.values.length > 255 ? 'Enum16' : 'Enum8'
+    const pairs = match.values.map((v, i) => `'${escapeSqlString(v)}' = ${i + 1}`).join(', ')
+    return `${prefix}(${pairs})`
+  }
 
-    const match = findEnum(enums, c, table)
+  if (dialect === ConnectionType.MySQL) {
+    return `ENUM(${valuesList})`
+  }
 
-    if (match || lowerType === 'enum' || lowerType === 'set' || (isClickhouse && lowerType.startsWith('enum'))) {
-      if (match && match.values.length > 0) {
-        if (isClickhouse) {
-          const prefix = match.values.length > 255 ? 'Enum16' : 'Enum8'
-          const valuesList = match.values.map((v, i) => `'${v.replace(/'/g, '\'\'')}' = ${i + 1}`).join(', ')
-          typeDef = `${prefix}(${valuesList})`
-        }
-        else if (isMysql) {
-          const valuesList = match.values.map(v => `'${v.replace(/'/g, '\'\'')}'`).join(', ')
-          typeDef = `${lowerType.toUpperCase()}(${valuesList})`
-        }
-        else {
-          if (!isMssql) {
-            usedEnums.set(match.name, match)
-            typeDef = `"${match.name}"`
-          }
-          else {
-            typeDef = match.name
-          }
-        }
-      }
-      else if (c.enum) {
-        if (isMysql && c.enum.includes('\'')) {
-          typeDef = `ENUM(${c.enum})`
-        }
-        else {
-          typeDef = c.enum
-        }
-      }
+  if (dialect === ConnectionType.MSSQL) {
+    return match.name
+  }
+
+  return `"${match.name}"`
+}
+
+function formatScalarType(c: Column, dialect: ConnectionType): string {
+  let typeDef = getColumnType(c.type, 'sql', dialect)
+
+  if (c.maxLength != null && c.maxLength) {
+    const len = c.maxLength === -1 ? 'MAX' : c.maxLength
+    if (/(?:var)?char|binary/i.test(typeDef) && !/text/i.test(typeDef)) {
+      typeDef += `(${len})`
     }
-    else {
-      typeDef = getColumnType(c.type, 'sql', dialect)
+  }
 
-      if (c.maxLength) {
-        const len = c.maxLength === -1 ? 'MAX' : c.maxLength
-        if (/(?:var)?char|binary/i.test(typeDef) && !/text/i.test(typeDef))
-          typeDef += `(${len})`
-      }
+  if (c.precision !== undefined && /decimal|numeric/i.test(typeDef)) {
+    typeDef += `(${c.precision}${c.scale ? `, ${c.scale}` : ''})`
+  }
 
-      if (c.precision && /decimal|numeric/i.test(typeDef)) {
-        typeDef += `(${c.precision}${c.scale ? `, ${c.scale}` : ''})`
-      }
+  if (dialect !== ConnectionType.ClickHouse) {
+    typeDef = typeDef.toUpperCase()
+  }
 
-      if (!isClickhouse) {
-        typeDef = typeDef.toUpperCase()
-      }
+  if (dialect === ConnectionType.ClickHouse && c.isNullable) {
+    typeDef = `Nullable(${typeDef})`
+  }
 
-      if (isClickhouse && c.isNullable) {
-        typeDef = `Nullable(${typeDef})`
-      }
+  return typeDef
+}
+
+function getTypeDef(
+  c: Column,
+  table: string,
+  enums: typeof enumType.infer[],
+  dialect: ConnectionType,
+  usedEnums: Map<string, typeof enumType.infer>,
+): string {
+  const lowerType = (c.type ?? '').toLowerCase()
+  const foundEnum = findEnum(enums, c, table)
+  const isList = foundEnum
+    || lowerType === 'enum'
+    || lowerType === 'set'
+    || (dialect === ConnectionType.ClickHouse && lowerType.startsWith('enum'))
+
+  if (isList && foundEnum?.values.length) {
+    if (dialect === ConnectionType.Postgres) {
+      usedEnums.set(foundEnum.name, foundEnum)
     }
-    const parts = [quoteIdentifier(c.id, dialect), typeDef]
-    if (!c.isNullable)
-      parts.push('NOT NULL')
+    return formatEnumType(foundEnum, dialect)
+  }
 
-    if (c.primaryKey) {
-      pkColumns.push(quoteIdentifier(c.id, dialect))
-      if (isMysql && /int|serial/i.test(c.type || ''))
-        parts.push('AUTO_INCREMENT')
-      if (isMssql && /int/i.test(c.type || ''))
-        parts.push('IDENTITY(1,1)')
+  if (isList && c.enum) {
+    if (dialect === ConnectionType.MySQL && c.enum.includes('\'')) {
+      return `ENUM(${c.enum})`
     }
+    return c.enum
+  }
 
-    if (c.primaryKey && !isClickhouse)
-      parts.push('PRIMARY KEY')
-    else if (c.unique)
-      parts.push('UNIQUE')
+  return formatScalarType(c, dialect)
+}
 
-    if (c.foreign && !isClickhouse) {
-      foreignKeys.push(`FOREIGN KEY (${quoteIdentifier(c.id, dialect)}) REFERENCES ${quoteIdentifier(c.foreign.table, dialect)}(${quoteIdentifier(c.foreign.column, dialect)})`)
+function buildColumnParts(
+  c: Column,
+  typeDef: string,
+  dialect: ConnectionType,
+  pkColumns: string[],
+): { parts: string[], foreignKey: string | null } {
+  const quoted = quoteIdentifier(c.id, dialect)
+  const parts = [quoted, typeDef]
+
+  if (!c.isNullable) {
+    parts.push('NOT NULL')
+  }
+
+  if (c.primaryKey) {
+    pkColumns.push(quoted)
+    if (dialect === ConnectionType.MySQL && /int|serial/i.test(c.type ?? '')) {
+      parts.push('AUTO_INCREMENT')
     }
+    if (dialect === ConnectionType.MSSQL && /int/i.test(c.type ?? '')) {
+      parts.push('IDENTITY(1,1)')
+    }
+  }
 
-    return `  ${parts.join(' ')}`
+  if (c.primaryKey && dialect !== ConnectionType.ClickHouse) {
+    parts.push('PRIMARY KEY')
+  }
+  else if (c.unique) {
+    parts.push('UNIQUE')
+  }
+
+  let foreignKey: string | null = null
+  if (c.foreign && dialect !== ConnectionType.ClickHouse) {
+    const ref = quoteIdentifier(c.foreign.table, dialect)
+    const col = quoteIdentifier(c.foreign.column, dialect)
+    foreignKey = `FOREIGN KEY (${quoted}) REFERENCES ${ref}(${col})`
+  }
+
+  return { parts, foreignKey }
+}
+
+function buildPostgresEnumStatements(
+  usedEnums: Map<string, typeof enumType.infer>,
+): string[] {
+  const statements: string[] = []
+  usedEnums.forEach((e) => {
+    const vals = e.values.map(v => `'${escapeSqlString(v)}'`).join(', ')
+    statements.push(`CREATE TYPE "${e.name}" AS ENUM (${vals});`)
+  })
+  return statements
+}
+
+function appendIndexStatements(
+  schema: string,
+  table: string,
+  columns: Column[],
+  indexes: Index[],
+  dialect: ConnectionType,
+): string {
+  const grouped = groupIndexes(indexes, table)
+  const filtered = grouped.filter(
+    idx =>
+      !idx.isPrimary
+      && dialect !== ConnectionType.ClickHouse
+      && !(
+        idx.isUnique
+        && idx.columns.length === 1
+        && columns.some(c => c.id === idx.columns[0] && c.unique)
+      ),
+  )
+
+  if (filtered.length === 0)
+    return schema
+
+  const lines = filtered.map((idx) => {
+    const cols = idx.columns.map(c => quoteIdentifier(c, dialect)).join(', ')
+    const unique = idx.isUnique ? 'UNIQUE ' : ''
+    return `CREATE ${unique}INDEX ${quoteIdentifier(idx.name, dialect)} ON ${quoteIdentifier(table, dialect)} (${cols});`
   })
 
+  return `${schema}\n\n${lines.join('\n')}`
+}
+
+export function generateSchemaSQL({
+  table,
+  columns,
+  dialect,
+  enums = [],
+  indexes = [],
+}: SchemaParams) {
+  const usedEnums = new Map<string, typeof enumType.infer>()
+  const pkColumns: string[] = []
+  const foreignKeys: string[] = []
+  const columnLines: string[] = []
+
+  for (const c of columns) {
+    const typeDef = getTypeDef(c, table, enums, dialect, usedEnums)
+    const { parts, foreignKey } = buildColumnParts(c, typeDef, dialect, pkColumns)
+    columnLines.push(`  ${parts.join(' ')}`)
+    if (foreignKey)
+      foreignKeys.push(`  ${foreignKey}`)
+  }
+
+  let columnBlock = columnLines.join(',\n')
   if (foreignKeys.length > 0) {
-    cols.push(...foreignKeys.map(fk => `  ${fk}`))
+    columnBlock += `,\n${foreignKeys.join(',\n')}`
   }
 
-  const definitions: string[] = []
+  let schema = templates.sqlSchemaTemplate(quoteIdentifier(table, dialect), columnBlock)
 
-  if (usedEnums.size > 0 && !isMysql && !isMssql && !isClickhouse) {
-    usedEnums.forEach((e) => {
-      const vals = e.values.map(v => `'${v.replace(/'/g, '\'\'')}'`).join(', ')
-      definitions.push(`CREATE TYPE "${e.name}" AS ENUM (${vals});`)
-    })
-  }
-
-  const columnsString = cols.join(',\n')
-  let schema = templates.sqlSchemaTemplate(quoteIdentifier(table, dialect), columnsString)
-
-  if (isClickhouse) {
-    const orderBy = pkColumns.length > 0 ? (pkColumns.length > 1 ? `(${pkColumns.join(', ')})` : pkColumns[0]) : 'tuple()'
+  if (dialect === ConnectionType.ClickHouse) {
+    const orderBy
+      = pkColumns.length > 0
+        ? pkColumns.length > 1
+          ? `(${pkColumns.join(', ')})`
+          : pkColumns[0]
+        : 'tuple()'
     schema = schema.replace(/\);\s*$/, `) ENGINE = MergeTree() ORDER BY ${orderBy};`)
   }
 
-  const explicitIndexes = groupIndexes(indexes, table).filter(idx => !idx.isPrimary && dialect !== 'clickhouse' && !(idx.isUnique && idx.columns.length === 1 && columns.find(c => c.id === idx.columns[0] && c.unique)))
+  schema = appendIndexStatements(schema, table, columns, indexes, dialect)
 
-  if (explicitIndexes.length > 0) {
-    const indexStmts = explicitIndexes.map((idx) => {
-      const cols = idx.columns.map(c => quoteIdentifier(c, dialect)).join(', ')
-      const unique = idx.isUnique ? 'UNIQUE ' : ''
-      return `CREATE ${unique}INDEX ${quoteIdentifier(idx.name, dialect)} ON ${quoteIdentifier(table, dialect)} (${cols});`
-    })
-    schema += `\n\n${indexStmts.join('\n')}`
-  }
+  const enumStatements = usedEnums.size > 0
+    && dialect !== ConnectionType.MySQL
+    && dialect !== ConnectionType.MSSQL
+    && dialect !== ConnectionType.ClickHouse
+    ? `${buildPostgresEnumStatements(usedEnums).join('\n')}\n\n`
+    : ''
 
-  return definitions.length > 0 ? `${definitions.join('\n')}\n\n${schema}` : schema
+  return `${enumStatements}${schema}`
 }
