@@ -5,7 +5,7 @@ import { ConnectionType } from '@conar/shared/enums/connection-type'
 import * as templates from '../templates'
 import { findEnum, formatValue, getColumnType } from '../utils'
 
-export function generateQueryKysely(table: string, filters: ActiveFilter[]) {
+export function generateQueryKysely({ table, filters }: { table: string, filters: ActiveFilter[] }) {
   const conditions = filters.map((f) => {
     const op = f.ref.operator.toUpperCase()
     const col = f.column

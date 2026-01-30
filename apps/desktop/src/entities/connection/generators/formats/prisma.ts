@@ -13,7 +13,7 @@ export function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
   return v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
 }
 
-export function generateQueryPrisma(table: string, filters: ActiveFilter[]) {
+export function generateQueryPrisma({ table, filters }: { table: string, filters: ActiveFilter[] }) {
   const tableName = camelCase(safePascalCase(table))
 
   const where = filters.reduce<Record<string, PrismaFilterValue>>((acc: Record<string, PrismaFilterValue>, f) => {

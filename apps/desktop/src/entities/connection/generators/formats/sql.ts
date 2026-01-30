@@ -6,7 +6,7 @@ import { ConnectionType } from '@conar/shared/enums/connection-type'
 import * as templates from '../templates'
 import { findEnum, formatValue, getColumnType, groupIndexes, quoteIdentifier } from '../utils'
 
-export function generateQuerySQL(table: string, filters: ActiveFilter[]) {
+export function generateQuerySQL({ table, filters }: { table: string, filters: ActiveFilter[] }) {
   // TODO: use kysely to generate the query
   const whereClauses = filters.map((f) => {
     const col = `"${f.column}"`

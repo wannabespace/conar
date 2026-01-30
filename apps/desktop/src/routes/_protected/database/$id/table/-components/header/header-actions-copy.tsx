@@ -1,4 +1,3 @@
-import type { ActiveFilter } from '@conar/shared/filters'
 import type { RemixiconComponentType } from '@remixicon/react'
 import type { connections } from '~/drizzle'
 import type { GeneratorFormat } from '~/entities/connection/generators/utils'
@@ -52,7 +51,7 @@ type Format = {
   generator: typeof generators.generateSchemaDrizzle
 } | {
   kind: 'query'
-  generator: (table: string, filters: ActiveFilter[]) => string
+  generator: typeof generators.generateQueryDrizzle
 })
 
 const FORMATS = {
@@ -167,7 +166,11 @@ export function HeaderActionsCopy({ connection, table, schema }: { connection: t
       return activeFormat.generator({ table, columns, enums: enums ?? [], dialect: connection.type, indexes: indexes ?? [] })
     }
 
-    return activeFormat.generator(table, filters)
+    if (activeFormat.kind === 'query') {
+      return activeFormat.generator({ table, filters })
+    }
+
+    return ''
   }, [activeFormat, table, columns, filters, enums, indexes, activeFormatType, connection.type])
 
   return (

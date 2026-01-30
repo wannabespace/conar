@@ -7,7 +7,7 @@ import { camelCase, pascalCase } from 'change-case'
 import * as templates from '../templates'
 import { findEnum, getColumnType, groupIndexes, safePascalCase } from '../utils'
 
-export function generateQueryDrizzle(table: string, filters: ActiveFilter[]) {
+export function generateQueryDrizzle({ table, filters }: { table: string, filters: ActiveFilter[] }) {
   const varName = camelCase(safePascalCase(table))
 
   const conditions = filters.map((f) => {
