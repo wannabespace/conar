@@ -48,7 +48,7 @@ function CreateConnectionPage() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  async function createConnection(data: {
+  function createConnection(data: {
     connectionString: string
     name: string
     type: ConnectionType
@@ -80,7 +80,7 @@ function CreateConnectionPage() {
 
     prefetchConnectionCore(connection)
 
-    await queryClient.prefetchQuery(connectionVersionQueryOptions({ connection }))
+    queryClient.prefetchQuery(connectionVersionQueryOptions({ connection }))
 
     router.navigate({ to: '/database/$id/table', params: { id } })
   }

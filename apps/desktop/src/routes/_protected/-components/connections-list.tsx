@@ -91,7 +91,7 @@ function ConnectionCard({
         </div>
         <div className="flex min-w-0 flex-1 flex-col">
           <div className={`
-            flex shrink-0 items-center gap-2 truncate font-medium tracking-tight
+            flex items-center gap-2 truncate font-medium tracking-tight
           `}
           >
             <span className={connection.color
@@ -111,9 +111,7 @@ function ConnectionCard({
           </div>
           <div
             data-mask
-            className="
-              shrink-0 truncate font-mono text-xs text-muted-foreground
-            "
+            className="truncate font-mono text-xs text-muted-foreground"
           >
             {connectionString.replaceAll('*', '•')}
           </div>
