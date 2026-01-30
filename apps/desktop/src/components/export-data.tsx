@@ -84,7 +84,7 @@ export function ExportData({
       return { content, count: data.length, format }
     },
     onSuccess: ({ content, count, format }) => {
-      const successText = `Copied ${count} rows to clipboard on ${format} format`
+      const successText = `Copied ${count} ${count === 1 ? 'row' : 'rows'} to clipboard on ${format} format`
       copy(content, successText)
     },
     onError: handleError,
