@@ -16,12 +16,15 @@ export interface Column {
     schema: string
     table: string
     column: string
+    onDelete?: string
+    onUpdate?: string
   }
   references?: {
     name: string
     schema: string
     table: string
     column: string
+    isUnique?: boolean
   }[]
 }
 

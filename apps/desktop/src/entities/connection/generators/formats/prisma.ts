@@ -74,7 +74,8 @@ export function generateQueryPrisma({ table, filters }: { table: string, filters
 export function generateSchemaPrisma({ table, columns, enums = [], dialect = ConnectionType.Postgres, indexes = [] }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType, indexes?: Index[] }) {
   const extraBlocks: string[] = []
   const relations: string[] = []
-  const fields: { name: string, type: string, attributes: string[] }[] = []
+  const fields: { name: string, type: string, attributes: string[], isRelation: boolean }[] = []
+  const usedNames = new Set<string>()
 
   columns.forEach((c) => {
     let prismaType = getColumnType(c.type, 'prisma', dialect)
@@ -95,6 +96,7 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
 
     const fieldName = camelCase(safePascalCase(c.id))
     const needsMap = fieldName !== c.id
+    usedNames.add(fieldName)
 
     const attributes: string[] = []
     if (c.primaryKey) {
@@ -122,15 +124,65 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
       name: fieldName,
       type: prismaType + (c.isNullable ? '?' : ''),
       attributes,
+      isRelation: false,
     })
 
     if (c.foreign) {
-      const relName = camelCase(c.foreign.table)
+      let relName = camelCase(c.foreign.table)
+      if (usedNames.has(relName)) {
+        relName = camelCase(`${c.foreign.table}_${c.foreign.column}`)
+      }
+      usedNames.add(relName)
+
       const relType = pascalCase(c.foreign.table)
+
+      let onDelete = ''
+      if (c.foreign.onDelete) {
+        switch (c.foreign.onDelete.toUpperCase()) {
+          case 'CASCADE':
+            onDelete = ', onDelete: Cascade'
+            break
+          case 'SET NULL':
+            onDelete = ', onDelete: SetNull'
+            break
+          case 'SET DEFAULT':
+            onDelete = ', onDelete: SetDefault'
+            break
+          case 'RESTRICT':
+            onDelete = ', onDelete: Restrict'
+            break
+          case 'NO ACTION':
+            onDelete = ', onDelete: NoAction'
+            break
+        }
+      }
+
+      let onUpdate = ''
+      if (c.foreign.onUpdate) {
+        switch (c.foreign.onUpdate.toUpperCase()) {
+          case 'CASCADE':
+            onUpdate = ', onUpdate: Cascade'
+            break
+          case 'SET NULL':
+            onUpdate = ', onUpdate: SetNull'
+            break
+          case 'SET DEFAULT':
+            onUpdate = ', onUpdate: SetDefault'
+            break
+          case 'RESTRICT':
+            onUpdate = ', onUpdate: Restrict'
+            break
+          case 'NO ACTION':
+            onUpdate = ', onUpdate: NoAction'
+            break
+        }
+      }
+
       fields.push({
         name: relName,
         type: relType,
-        attributes: [`@relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}])`],
+        attributes: [`@relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}]${onDelete}${onUpdate})`],
+        isRelation: true,
       })
     }
 
@@ -138,19 +190,26 @@ export function generateSchemaPrisma({ table, columns, enums = [], dialect = Con
       c.references.forEach((ref) => {
         const isValidRef = /^[a-z]\w*$/i.test(ref.table)
         const refType = isValidRef ? ref.table : pascalCase(ref.table)
-        const fieldName = camelCase(ref.table)
+        let fieldName = camelCase(ref.table)
+        if (usedNames.has(fieldName)) {
+          fieldName = camelCase(`${ref.table}_${ref.column}`)
+        }
+        usedNames.add(fieldName)
+
+        const isOneToOne = ref.isUnique
 
         fields.push({
           name: fieldName,
-          type: `${refType}[]`,
+          type: isOneToOne ? `${refType}?` : `${refType}[]`,
           attributes: [],
+          isRelation: true,
         })
       })
     }
   })
 
-  const columnFields = fields.filter(f => !f.attributes.some(a => a.startsWith('@relation')) && !f.type.endsWith('[]'))
-  const relationFields = fields.filter(f => f.attributes.some(a => a.startsWith('@relation')) || f.type.endsWith('[]'))
+  const columnFields = fields.filter(f => !f.isRelation)
+  const relationFields = fields.filter(f => f.isRelation)
 
   const allFields = [...columnFields, ...relationFields]
 

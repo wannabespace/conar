@@ -100,7 +100,14 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
     if (c.foreign && dialect !== 'clickhouse') {
       const isValidRef = /^[a-z_$][\w$]*$/i.test(c.foreign.table)
       const refTable = isValidRef ? c.foreign.table : pascalCase(c.foreign.table)
-      chain += `.references(() => ${refTable}.${camelCase(c.foreign.column)})`
+      const fkOptions = []
+      if (c.foreign.onDelete)
+        fkOptions.push(`onDelete: '${c.foreign.onDelete.toLowerCase()}'`)
+      if (c.foreign.onUpdate)
+        fkOptions.push(`onUpdate: '${c.foreign.onUpdate.toLowerCase()}'`)
+
+      const optionStr = fkOptions.length ? `, { ${fkOptions.join(', ')} }` : ''
+      chain += `.references(() => ${refTable}.${camelCase(c.foreign.column)}${optionStr})`
 
       foreignKeyImports.add(`import { ${refTable} } from './${c.foreign.table}';`)
     }
@@ -109,12 +116,15 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
   }).join('\n')
 
   const relationships: string[] = []
+  const usedNames = new Set<string>()
 
   columns.forEach((c) => {
     if (c.foreign && dialect !== 'clickhouse') {
       const isValidRef = /^[a-z_$][\w$]*$/i.test(c.foreign.table)
       const refTable = isValidRef ? c.foreign.table : pascalCase(c.foreign.table)
       const fieldName = camelCase(c.id.replace(/(_id|Id)$/, ''))
+      usedNames.add(fieldName)
+
       relationships.push(`  ${fieldName}: one(${refTable}, {\n    fields: [${varName}.${camelCase(c.id)}],\n    references: [${refTable}.${camelCase(c.foreign.column)}],\n  }),`)
     }
 
@@ -122,9 +132,16 @@ export function generateSchemaDrizzle({ table, columns, enums = [], dialect = Co
       c.references.forEach((ref) => {
         const isValidRef = /^[a-z_$][\w$]*$/i.test(ref.table)
         const refTable = isValidRef ? ref.table : pascalCase(ref.table)
-        const fieldName = camelCase(ref.table)
+        let fieldName = camelCase(ref.table)
+        if (usedNames.has(fieldName)) {
+          fieldName = camelCase(`${ref.table}_${ref.column}`)
+        }
+        usedNames.add(fieldName)
 
-        relationships.push(`  ${fieldName}: many(${refTable}),`)
+        if (ref.isUnique)
+          relationships.push(`  ${fieldName}: one(${refTable}),`)
+        else
+          relationships.push(`  ${fieldName}: many(${refTable}),`)
 
         foreignKeyImports.add(`import { ${refTable} } from './${ref.table}';`)
       })

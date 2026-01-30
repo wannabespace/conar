@@ -107,7 +107,12 @@ export function generateSchemaSQL({ table, columns, enums = [], dialect = Connec
       parts.push('UNIQUE')
 
     if (c.foreign && !isClickhouse) {
-      foreignKeys.push(`FOREIGN KEY (${quoteIdentifier(c.id, dialect)}) REFERENCES ${quoteIdentifier(c.foreign.table, dialect)}(${quoteIdentifier(c.foreign.column, dialect)})`)
+      let fk = `FOREIGN KEY (${quoteIdentifier(c.id, dialect)}) REFERENCES ${quoteIdentifier(c.foreign.table, dialect)}(${quoteIdentifier(c.foreign.column, dialect)})`
+      if (c.foreign.onDelete)
+        fk += ` ON DELETE ${c.foreign.onDelete}`
+      if (c.foreign.onUpdate)
+        fk += ` ON UPDATE ${c.foreign.onUpdate}`
+      foreignKeys.push(fk)
     }
 
     return `  ${parts.join(' ')}`
