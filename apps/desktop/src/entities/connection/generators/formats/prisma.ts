@@ -1,8 +1,4 @@
-import type { ActiveFilter } from '@conar/shared/filters'
-import type { Column } from '../../components/table/utils'
-import type { enumType } from '../../sql/enums'
-import type { Index } from '../utils'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
 import { findEnum } from '../../sql/enums'
 import * as templates from '../templates'
@@ -14,7 +10,10 @@ export function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
   return v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
 }
 
-export function generateQueryPrisma({ table, filters }: { table: string, filters: ActiveFilter[] }) {
+export function generateQueryPrisma({
+  table,
+  filters,
+}: QueryParams) {
   const tableName = camelCase(safePascalCase(table))
 
   const where = filters.reduce<Record<string, PrismaFilterValue>>((acc: Record<string, PrismaFilterValue>, f) => {
@@ -71,7 +70,13 @@ export function generateQueryPrisma({ table, filters }: { table: string, filters
   return templates.prismaQueryTemplate(tableName, jsonWhere)
 }
 
-export function generateSchemaPrisma({ table, columns, enums = [], dialect = ConnectionType.Postgres, indexes = [] }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType, indexes?: Index[] }) {
+export function generateSchemaPrisma({
+  table,
+  columns,
+  dialect,
+  enums = [],
+  indexes = [],
+}: SchemaParams) {
   const extraBlocks: string[] = []
   const relations: string[] = []
   const fields: { name: string, type: string, attributes: string[], isRelation: boolean }[] = []

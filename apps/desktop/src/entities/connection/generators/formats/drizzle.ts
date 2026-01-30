@@ -1,14 +1,14 @@
-import type { ActiveFilter } from '@conar/shared/filters'
-import type { Column } from '../../components/table/utils'
-import type { enumType } from '../../sql/enums'
-import type { Index } from '../utils'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
 import { findEnum } from '../../sql/enums'
 import * as templates from '../templates'
 import { getColumnType, groupIndexes, safePascalCase } from '../utils'
 
-export function generateQueryDrizzle({ table, filters }: { table: string, filters: ActiveFilter[] }) {
+export function generateQueryDrizzle({
+  table,
+  filters,
+}: QueryParams) {
   const varName = camelCase(safePascalCase(table))
 
   const conditions = filters.map((f) => {
@@ -44,7 +44,13 @@ const dialectConfig: Record<ConnectionType, { tableFunc: string, importPath: str
   clickhouse: { tableFunc: 'clickhouseTable', importPath: 'drizzle-orm/clickhouse-core', enumFunc: 'enum' },
 }
 
-export function generateSchemaDrizzle({ table, columns, enums = [], dialect = ConnectionType.Postgres, indexes = [] }: { table: string, columns: Column[], enums?: typeof enumType.infer[], dialect?: ConnectionType, indexes?: Index[] }) {
+export function generateSchemaDrizzle({
+  table,
+  columns,
+  dialect,
+  enums = [],
+  indexes = [],
+}: SchemaParams) {
   const config = dialectConfig[dialect]
   const { tableFunc, importPath, enumFunc } = config
 
