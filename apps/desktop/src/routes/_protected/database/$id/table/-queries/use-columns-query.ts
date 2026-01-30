@@ -21,6 +21,7 @@ export function useTableColumns({ connection, table, schema }: { connection: typ
       return {
         ...column,
         primaryKey: primaryConstraint?.name,
+        defaultValue: column.default,
         unique: uniqueConstraint?.name,
         foreign: foreignConstraint && foreignConstraint.foreignSchema && foreignConstraint.foreignTable && foreignConstraint.foreignColumn
           ? {

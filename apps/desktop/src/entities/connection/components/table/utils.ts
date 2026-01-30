@@ -11,6 +11,7 @@ export interface Column {
   scale?: number | null
   unique?: string
   primaryKey?: string
+  defaultValue?: string | null
   foreign?: {
     name: string
     schema: string

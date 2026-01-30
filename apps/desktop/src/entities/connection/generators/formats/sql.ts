@@ -115,13 +115,10 @@ function buildColumnParts(
   typeDef: string,
   dialect: ConnectionType,
   pkColumns: string[],
+  defaultValue?: string | null,
 ): { parts: string[], foreignKey: string | null } {
   const quoted = quoteIdentifier(c.id, dialect)
   const parts = [quoted, typeDef]
-
-  if (!c.isNullable) {
-    parts.push('NOT NULL')
-  }
 
   if (c.primaryKey) {
     pkColumns.push(quoted)
@@ -131,6 +128,14 @@ function buildColumnParts(
     if (dialect === ConnectionType.MSSQL && /int/i.test(c.type ?? '')) {
       parts.push('IDENTITY(1,1)')
     }
+  }
+
+  if (defaultValue !== undefined && defaultValue !== null) {
+    parts.push(`DEFAULT ${defaultValue}`)
+  }
+
+  if (!c.isNullable) {
+    parts.push('NOT NULL')
   }
 
   if (c.primaryKey && dialect !== ConnectionType.ClickHouse) {
@@ -212,8 +217,21 @@ export function generateSchemaSQL({
   const columnLines: string[] = []
 
   for (const c of columns) {
-    const typeDef = getTypeDef(c, table, enums, dialect, usedEnums)
-    const { parts, foreignKey } = buildColumnParts(c, typeDef, dialect, pkColumns)
+    let typeDef = getTypeDef(c, table, enums, dialect, usedEnums)
+    let defaultValue = c.defaultValue
+
+    if (dialect === ConnectionType.Postgres && defaultValue?.toLowerCase().startsWith('nextval')) {
+      if (typeDef === 'INTEGER') {
+        typeDef = 'SERIAL'
+        defaultValue = null
+      }
+      else if (typeDef === 'BIGINT') {
+        typeDef = 'BIGSERIAL'
+        defaultValue = null
+      }
+    }
+
+    const { parts, foreignKey } = buildColumnParts(c, typeDef, dialect, pkColumns, defaultValue)
     columnLines.push(`  ${parts.join(' ')}`)
     if (foreignKey)
       foreignKeys.push(`  ${foreignKey}`)
