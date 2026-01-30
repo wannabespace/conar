@@ -8,11 +8,8 @@ export const connectionVersionType = type({
 
 export const connectionVersionQuery = createQuery({
   type: connectionVersionType,
+  // Each query has a fallback to get a version in older versions
   query: () => ({
-    // Note: Postgres and MySQL store version in system tables, allowing direct column selection.
-    // MSSQL and ClickHouse expose version via functions, requiring expression builder calls.
-
-    // Reliable for all PostgreSQL versions
     postgres: async (db) => {
       try {
         return await db
@@ -22,11 +19,9 @@ export const connectionVersionQuery = createQuery({
           .executeTakeFirstOrThrow()
       }
       catch {
-        // fallback to raw sql that works with all versions
         return (await sql<{ version: string }>`SELECT current_setting('server_version') as version`.execute(db)).rows[0]!
       }
     },
-
     mysql: async (db) => {
       try {
         // for mysql >= v8.0
@@ -37,12 +32,9 @@ export const connectionVersionQuery = createQuery({
           .executeTakeFirstOrThrow()
       }
       catch {
-        // Fallback using raw SQL which works on all versions
         return (await sql<{ version: string }>`SELECT VERSION() as version`.execute(db)).rows[0]!
       }
     },
-
-    // MSSQL requires function call via builder (no system table column available)
     mssql: async (db) => {
       try {
         return await db
@@ -53,12 +45,9 @@ export const connectionVersionQuery = createQuery({
           .executeTakeFirstOrThrow()
       }
       catch {
-        // fallback to raw sql that works with all versions
         return (await sql<{ version: string }>`SELECT SERVERPROPERTY('ProductVersion') as version`.execute(db)).rows[0]!
       }
     },
-
-    // ClickHouse requires function call via builder (system table unreliable)
     clickhouse: async (db) => {
       try {
         return await db
@@ -67,7 +56,6 @@ export const connectionVersionQuery = createQuery({
           .executeTakeFirstOrThrow()
       }
       catch {
-        // fallback to raw sql that works with all versions
         return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
       }
     },
