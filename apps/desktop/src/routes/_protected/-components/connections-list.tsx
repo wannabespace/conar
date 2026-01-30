@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useRef, useState } from 'react'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionLinkParams } from '~/entities/connection/hooks'
+import { useConnectionVersion } from '~/entities/connection/queries/connection-version'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { useLastOpenedConnections } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
@@ -32,14 +33,14 @@ function ConnectionCard({
   onClose?: VoidFunction
 }) {
   const url = new SafeURL(connection.connectionString)
-
   if (connection.isPasswordExists || url.password) {
     url.password = '*'.repeat(url.password.length || 6)
   }
-
   const connectionString = url.toString()
 
   const params = useConnectionLinkParams(connection.id)
+
+  const { data: version } = useConnectionVersion({ connection })
 
   return (
     <motion.div
@@ -69,7 +70,7 @@ function ConnectionCard({
           `
             group relative flex items-center justify-between gap-4
             overflow-hidden rounded-lg border border-l-4 border-border/50
-            bg-muted/30 p-5
+            bg-muted/30 p-4
           `,
           connection.color
             ? `
@@ -114,6 +115,15 @@ function ConnectionCard({
           >
             {connectionString.replaceAll('*', '•')}
           </div>
+          {version && (
+            <span className="
+              absolute right-4 bottom-0.5 font-mono text-[.6rem]
+              text-muted-foreground/50
+            "
+            >
+              {version}
+            </span>
+          )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger className={`
