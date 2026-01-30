@@ -14,9 +14,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@conar/ui/components/tooltip'
+import { copy } from '@conar/ui/lib/copy'
 import { RiBracesLine, RiDownloadLine, RiFileCopyLine, RiTableLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import { handleError } from '~/lib/error'
 
 function contentGenerators(data: Record<string, unknown>[]) {
@@ -84,8 +84,8 @@ export function ExportData({
       return { content, count: data.length, format }
     },
     onSuccess: ({ content, count, format }) => {
-      navigator.clipboard.writeText(content)
-      toast.success(`Copied ${count} rows to clipboard on ${format} format`)
+      const successText = `Copied ${count} rows to clipboard on ${format} format`
+      copy(content, successText)
     },
     onError: handleError,
   })
