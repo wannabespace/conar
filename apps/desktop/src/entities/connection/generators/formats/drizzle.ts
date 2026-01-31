@@ -37,10 +37,10 @@ export function generateQueryDrizzle({
   return templates.drizzleQueryTemplate(varName, conditions)
 }
 
-const dialectConfig: Record<ConnectionType, { tableFunc: string, importPath: string, enumFunc: string }> = {
+const dialectConfig: Record<ConnectionType, { tableFunc: string, importPath: string, enumFunc?: string }> = {
   postgres: { tableFunc: 'pgTable', importPath: 'drizzle-orm/pg-core', enumFunc: 'pgEnum' },
   mysql: { tableFunc: 'mysqlTable', importPath: 'drizzle-orm/mysql-core', enumFunc: 'mysqlEnum' },
-  mssql: { tableFunc: 'mssqlTable', importPath: 'drizzle-orm/mssql-core', enumFunc: '' },
+  mssql: { tableFunc: 'mssqlTable', importPath: 'drizzle-orm/mssql-core' },
   clickhouse: { tableFunc: 'clickhouseTable', importPath: 'drizzle-orm/clickhouse-core', enumFunc: 'enum' },
 }
 
@@ -62,39 +62,36 @@ export function generateSchemaDrizzle({
 
   const cols = columns.map((c) => {
     let typeFunc = getColumnType(c.type, 'drizzle', dialect)
+
     imports.add(typeFunc)
 
-    let enumVarName = ''
-
-    const match = findEnum(enums, c, table)
-    if (enumFunc && match?.values.length) {
-      const eName = match.name || `${table}_${c.id}`
-      enumVarName = `${eName}Enum`
-      const valuesList = match.values.map(v => `'${v}'`).join(', ')
+    const foundEnum = findEnum(enums, c, table)
+    if (enumFunc && foundEnum?.values.length) {
+      const eName = foundEnum.name || `${table}_${c.id}`
+      const enumTypeName = `${camelCase(eName)}Enum`
+      const valuesList = foundEnum.values.map(v => `'${v}'`).join(', ')
 
       imports.add(enumFunc)
-      extras.push(`export const ${enumVarName} = ${enumFunc}('${eName}', [${valuesList}]);`)
+      extras.push(`export const ${enumTypeName} = ${enumFunc}('${eName}', [${valuesList}]);`)
 
-      typeFunc = enumVarName
+      typeFunc = enumTypeName
     }
 
     const key = camelCase(c.id)
     const safeKey = /^[a-z_$][\w$]*$/i.test(key) ? key : `'${key}'`
+    const sameCase = key === c.id
 
-    let chain = ''
-    if (enumVarName) {
-      chain = `${enumVarName}('${c.id}')`
-    }
-    else {
-      let options = ''
+    let options = ''
+    if (!(enumFunc && foundEnum?.values.length)) {
       if (c.maxLength && c.maxLength !== -1 && ['varchar', 'char', 'nvarchar'].includes(typeFunc)) {
         options = `, { length: ${c.maxLength} }`
       }
       else if (typeFunc === 'decimal' && c.precision) {
         options = `, { precision: ${c.precision}${c.scale ? `, scale: ${c.scale}` : ''} }`
       }
-      chain = `${typeFunc}('${c.id}'${options})`
     }
+
+    let chain = sameCase ? `${typeFunc}(${options ? options.slice(2).trim() : ''})` : `${typeFunc}('${c.id}'${options})`
 
     if (!c.isNullable)
       chain += '.notNull()'

@@ -15,9 +15,9 @@ export function generateSchemaZod({
     const safeId = /^[a-z_$][\w$]*$/i.test(key) ? key : `'${key}'`
     let t = getColumnType(c.type, 'zod', dialect)
 
-    const match = findEnum(enums, c, table)
-    if (match?.values.length) {
-      const valuesArr = match.values.map(v => `'${v}'`).join(', ')
+    const foundEnum = findEnum(enums, c, table)
+    if (foundEnum?.values.length) {
+      const valuesArr = foundEnum.values.map(v => `'${v}'`).join(', ')
       t = `z.enum([${valuesArr}])`
       if (c.type === 'set')
         t = `${t}.array()`

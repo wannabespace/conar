@@ -85,12 +85,12 @@ export function generateSchemaPrisma({
   columns.forEach((c) => {
     let prismaType = getColumnType(c.type, 'prisma', dialect)
 
-    const match = findEnum(enums, c, table)
-    if (match?.values.length) {
-      const enumName = pascalCase(match.name || `${table}_${c.id}`)
+    const foundEnum = findEnum(enums, c, table)
+    if (foundEnum?.values.length) {
+      const enumName = pascalCase(foundEnum.name || `${table}_${c.id}`)
       prismaType = enumName
 
-      const enumValues = match.values.map((v) => {
+      const enumValues = foundEnum.values.map((v) => {
         if (/^[a-z]\w*$/i.test(v))
           return `  ${v}`
         return `  ${sanitize(v)} @map("${v}")`

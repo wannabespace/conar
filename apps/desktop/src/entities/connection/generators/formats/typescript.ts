@@ -15,9 +15,9 @@ export function generateSchemaTypeScript({
     const safeId = /^[a-z_$][\w$]*$/i.test(key) ? key : `'${key}'`
     let typeScriptType = getColumnType(c.type, 'ts', dialect)
 
-    const match = findEnum(enums, c, table)
-    if (match?.values.length) {
-      typeScriptType = match.values.map(v => `'${v}'`).join(' | ')
+    const foundEnum = findEnum(enums, c, table)
+    if (foundEnum?.values.length) {
+      typeScriptType = foundEnum.values.map(v => `'${v}'`).join(' | ')
       if (c.type === 'set')
         typeScriptType = `(${typeScriptType})[]`
     }
