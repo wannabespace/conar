@@ -1,13 +1,14 @@
 import { cn } from '@conar/ui/lib/utils'
 import { useStore } from '@tanstack/react-store'
-import React, { useState } from 'react'
+import * as React from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
-import { clearTableSelection, databaseStore, removeTableFromFolder } from '~/entities/database/store'
+import { clearTableSelection, connectionStore, removeTableFromFolder } from '~/entities/connection/store'
 import { Route } from '..'
 
 export function UnpinnedTablesDropZone({ schema, children }: { schema: string, children: React.ReactNode }) {
-  const { database } = Route.useRouteContext()
-  const store = databaseStore(database.id)
+  const { connection } = Route.useRouteContext()
+  const store = connectionStore(connection.id)
   const selectedTables = useStore(store, state => state.selectedTables)
   const [isDragOver, setIsDragOver] = useState(false)
 
@@ -45,13 +46,13 @@ export function UnpinnedTablesDropZone({ schema, children }: { schema: string, c
         tablesToMove.forEach((table) => {
           tableFolders.forEach((folder) => {
             if (folder.tables.includes(table)) {
-              removeTableFromFolder(database.id, schema, folder.folder, table)
+              removeTableFromFolder(connection.id, schema, folder.folder, table)
             }
           })
         })
 
         if (selectedTables.length > 0) {
-          clearTableSelection(database.id)
+          clearTableSelection(connection.id)
         }
 
         toast.success(

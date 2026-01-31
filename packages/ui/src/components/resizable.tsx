@@ -2,7 +2,7 @@ import { RiDraggable } from '@remixicon/react'
 import * as ResizablePrimitive from 'react-resizable-panels'
 import { cn } from '../lib/utils'
 
-function ResizablePanelGroup({
+export function ResizablePanelGroup({
   className,
   ...props
 }: ResizablePrimitive.GroupProps) {
@@ -18,13 +18,13 @@ function ResizablePanelGroup({
   )
 }
 
-function ResizablePanel({
+export function ResizablePanel({
   ...props
 }: ResizablePrimitive.PanelProps) {
   return <ResizablePrimitive.Panel data-slot="resizable-panel" {...props} />
 }
 
-function ResizableSeparator({
+export function ResizableSeparator({
   withHandle,
   className,
   ...props
@@ -41,8 +41,6 @@ function ResizableSeparator({
           focus-visible:bg-primary/40
           data-[separator='active']:bg-primary/30
           data-[separator='hover']:bg-primary/50
-          data-[separator='hover']:aria-[orientation='horizontal']:cursor-row-resize
-          data-[separator='hover']:aria-[orientation='vertical']:cursor-col-resize
         `,
         className,
       )}
@@ -71,5 +69,3 @@ function ResizableSeparator({
     </ResizablePrimitive.Separator>
   )
 }
-
-export { ResizablePanel, ResizablePanelGroup, ResizableSeparator }

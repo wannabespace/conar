@@ -1,8 +1,8 @@
 import type { LanguageModelV3 } from '@ai-sdk/provider'
-import type { AppUIMessage } from '~/ai-tools'
+import type { AppUIMessage } from '~/ai/tools/helpers'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
-import { DatabaseType } from '@conar/shared/enums/database-type'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryable } from 'ai-retry'
@@ -10,14 +10,15 @@ import { type } from 'arktype'
 import { consola } from 'consola'
 import { asc, eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
-import { convertToAppUIMessage, tools } from '~/ai-tools'
+import { tools } from '~/ai/tools'
+import { convertToAppUIMessage } from '~/ai/tools/helpers'
 import { chats, chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 
 const chatInputType = type({
   'id': 'string.uuid.v7',
-  'type': type.valueOf(DatabaseType),
+  'type': type.valueOf(ConnectionType),
   'context?': 'string',
   'createdAt?': 'Date',
   'updatedAt?': 'Date',
@@ -100,7 +101,7 @@ async function generateStream({
           `- Current date and time: ${new Date().toISOString()}`,
           '',
           'You can use the following tools to help you generate the SQL code:',
-          `- ${Object.entries(tools).map(([tool, { description }]) => `${tool}: ${description}`).join('\n')}`,
+          Object.entries(tools).map(([tool, { description }]) => `- ${tool}: ${description}`).join('\n'),
           '',
           'User provided context:',
           context,
@@ -150,7 +151,7 @@ async function ensureChat({
   const [newChat] = await db.insert(chats).values({
     id: chatId,
     userId,
-    databaseId,
+    connectionId: databaseId,
     createdAt,
     updatedAt,
   }).returning()

@@ -1,5 +1,5 @@
 import type { ColumnRenderer } from '~/components/table'
-import type { Column } from '~/entities/database/utils'
+import type { Column } from '~/entities/connection/components/table/utils'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
@@ -11,15 +11,17 @@ import { RiCloseLine, RiExportLine, RiSearchLine } from '@remixicon/react'
 import { useMemo, useState } from 'react'
 import { ExportData } from '~/components/export-data'
 import { Table, TableBody, TableHeader, TableProvider } from '~/components/table'
-import { TableCell } from '~/entities/database/components'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/database/utils'
+import { TableCell } from '~/entities/connection/components'
+import { DEFAULT_COLUMN_WIDTH } from '~/entities/connection/components/table/utils'
 
 export function RunnerResultsTable({
   data,
   columns,
+  executionTime,
 }: {
   data: Record<string, unknown>[]
-  columns: Column[]
+  columns: Pick<Column, 'id'>[]
+  executionTime: number
 }) {
   const [search, setSearch] = useState('')
 
@@ -54,13 +56,28 @@ export function RunnerResultsTable({
           </div>
         </div>
       ),
-      cell: props => <TableCell column={column} {...props} />,
+      cell: props => (
+        <TableCell
+          column={{ id: column.id, type: 'text' }}
+          {...props}
+        />
+      ),
       size: DEFAULT_COLUMN_WIDTH,
     } satisfies ColumnRenderer))
   }, [columns])
 
   const getData = async (limit?: number) => {
     return limit ? filteredData.slice(0, limit) : filteredData
+  }
+
+  const formatExecutionTime = (ms: number) => {
+    if (ms < 1) {
+      return `${(ms * 1000).toFixed(0)}μs`
+    }
+    if (ms < 1000) {
+      return `${ms.toFixed(2)}ms`
+    }
+    return `${(ms / 1000).toFixed(2)}s`
   }
 
   return (
@@ -73,6 +90,10 @@ export function RunnerResultsTable({
             {' '}
             {filteredData.length === 1 ? 'row' : 'rows'}
             {search && filteredData.length !== data.length && ` (filtered from ${data.length})`}
+          </span>
+          <Separator orientation="vertical" className="h-4!" />
+          <span className="text-xs text-muted-foreground">
+            {formatExecutionTime(executionTime)}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -120,8 +141,6 @@ export function RunnerResultsTable({
       <TableProvider
         rows={filteredData}
         columns={tableColumns}
-        estimatedRowSize={DEFAULT_ROW_HEIGHT}
-        estimatedColumnSize={DEFAULT_COLUMN_WIDTH}
       >
         <Table className="h-[calc(100%-(--spacing(10)))]">
           <TableHeader />

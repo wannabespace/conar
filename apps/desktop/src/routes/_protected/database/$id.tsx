@@ -1,4 +1,5 @@
-import type { databaseStoreType } from '~/entities/database/store'
+'use no memo'
+import type { connectionStoreType } from '~/entities/connection/store'
 import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
@@ -7,44 +8,46 @@ import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-r
 import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
-import { QueryLogger } from '~/entities/database/components'
-import { databaseStore } from '~/entities/database/store'
-import { databasesCollection } from '~/entities/database/sync'
-import { lastOpenedDatabases, prefetchDatabaseCore } from '~/entities/database/utils'
-import { DatabaseSidebar } from './-components/database-sidebar'
+import { QueryLogger } from '~/entities/connection/components'
+import { connectionStore } from '~/entities/connection/store'
+import { connectionsCollection } from '~/entities/connection/sync'
+import { lastOpenedConnections, prefetchConnectionCore } from '~/entities/connection/utils'
+import { ConnectionSidebar } from './-components/connection-sidebar'
 import { PasswordForm } from './-components/password-form'
 
 export const Route = createFileRoute('/_protected/database/$id')({
   component: DatabasePage,
   beforeLoad: async ({ params }) => {
-    const database = databasesCollection.get(params.id)
+    const connection = connectionsCollection.get(params.id)
 
-    if (!database) {
+    if (!connection) {
       throw redirect({ to: '/' })
     }
 
-    return { database }
+    return { connection }
   },
   loader: async ({ context }) => {
-    prefetchDatabaseCore(context.database)
+    prefetchConnectionCore(context.connection)
 
-    return { database: context.database }
+    return { connection: context.connection }
   },
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title(loaderData.database.name) }] : [],
+    meta: loaderData
+      ? [{ title: title(loaderData.connection.name) }]
+      : [],
   }),
 })
 
 function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
-  return routesIds.find(route => route.includes('/_protected/database/$id/')) as typeof databaseStoreType.infer['lastOpenedPage']
+  return routesIds.find(route => route.includes('/_protected/database/$id/')) as typeof connectionStoreType.infer['lastOpenedPage']
 }
 
 function DatabasePage() {
-  const { database } = Route.useLoaderData()
+  const { connection } = Route.useLoaderData()
   const currentPageId = useMatches({
     select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
   const loggerOpened = useStore(store, state => state.loggerOpened)
 
   useEffect(() => {
@@ -57,18 +60,18 @@ function DatabasePage() {
   }, [currentPageId, store])
 
   useEffect(() => {
-    const last = lastOpenedDatabases.get()
-    if (!last.includes(database.id))
-      lastOpenedDatabases.set([database.id, ...last.filter(dbId => dbId !== database.id)].slice(0, 3))
-  }, [database.id])
+    const last = lastOpenedConnections.get()
+    if (!last.includes(connection.id))
+      lastOpenedConnections.set([connection.id, ...last.filter(connId => connId !== connection.id)].slice(0, 3))
+  }, [connection.id])
 
-  const { defaultLayout, onLayoutChange } = useDefaultLayout({
-    id: `logger-layout-${database.id}`,
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: `database-layout-${connection.id}`,
     storage: localStorage,
   })
 
-  if (database.isPasswordExists && !database.isPasswordPopulated) {
-    return <PasswordForm database={database} />
+  if (connection.isPasswordExists && !connection.isPasswordPopulated) {
+    return <PasswordForm connection={connection} />
   }
 
   return (
@@ -77,7 +80,7 @@ function DatabasePage() {
       dark:bg-neutral-950/60
     `}
     >
-      <DatabaseSidebar className="w-16" />
+      <ConnectionSidebar className="w-16" />
       <div
         className={cn(
           `
@@ -90,7 +93,7 @@ function DatabasePage() {
           orientation="vertical"
           className="min-h-0 flex-1"
           defaultLayout={defaultLayout}
-          onLayoutChange={onLayoutChange}
+          onLayoutChanged={onLayoutChanged}
         >
           <ResizablePanel defaultSize="70%" minSize="50%">
             <Outlet />
@@ -104,7 +107,7 @@ function DatabasePage() {
                 maxSize="50%"
                 className="overflow-auto rounded-lg border bg-background"
               >
-                <QueryLogger database={database} />
+                <QueryLogger connection={connection} />
               </ResizablePanel>
             </>
           )}

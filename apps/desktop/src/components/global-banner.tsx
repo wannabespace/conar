@@ -6,8 +6,10 @@ import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiCheckboxCircleLine, RiCloseLine, RiErrorWarningLine, RiInformationLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
+import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { orpcQuery } from '~/lib/orpc'
+import { appStore } from '~/store'
 
 type BannerItem = NonNullable<ORPCOutputs['banner']>[number]
 
@@ -31,6 +33,7 @@ const typeConfig = {
 } satisfies Record<BannerItem['type'], { icon: ReactNode, className: string }>
 
 export function GlobalBanner() {
+  const isOnline = useStore(appStore, state => state.isOnline)
   const [dismissed, setDismissed] = useSessionStorage<string[]>('banner-dismissed', [])
 
   const { data } = useQuery(orpcQuery.banner.queryOptions({
@@ -41,7 +44,26 @@ export function GlobalBanner() {
   }))
 
   return (
-    <AnimatePresence initial={false}>
+    <AnimatePresence initial={false} mode="popLayout">
+      {!isOnline && (
+        <motion.div
+          key="offline"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: '2rem' }}
+          exit={{ opacity: 0, height: 0 }}
+          className={cn('relative shrink-0 border-b text-sm', typeConfig.info.className)}
+        >
+          <div className={`
+            absolute inset-0 flex h-full items-center gap-2 px-4 py-1
+          `}
+          >
+            {typeConfig.info.icon}
+            <span className="flex-1 leading-none">
+              You are currently offline. Some features may be unavailable until your internet connection is restored.
+            </span>
+          </div>
+        </motion.div>
+      )}
       {data?.map(item => (
         <motion.div
           key={item.text}
@@ -56,20 +78,16 @@ export function GlobalBanner() {
           >
             {typeConfig[item.type].icon}
             <span className="flex-1 leading-none">{item.text}</span>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              aria-label="Dismiss banner"
-              onClick={() => {
-                if (item.text === SUBSCRIPTION_PAST_DUE_MESSAGE) {
-                  return
-                }
-
-                setDismissed(prev => [...prev, item.text])
-              }}
-            >
-              <RiCloseLine className="size-3.5" />
-            </Button>
+            {SUBSCRIPTION_PAST_DUE_MESSAGE !== item.text && (
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                aria-label="Dismiss banner"
+                onClick={() => setDismissed(prev => [...prev, item.text])}
+              >
+                <RiCloseLine className="size-3.5" />
+              </Button>
+            )}
           </div>
         </motion.div>
       ))}

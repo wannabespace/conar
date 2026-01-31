@@ -1,4 +1,4 @@
-import type { DatabaseType } from '@conar/shared/enums/database-type'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { COLOR_OPTIONS, LABEL_OPTIONS } from '@conar/shared/constants'
 import { Button } from '@conar/ui/components/button'
 import { ButtonGroup } from '@conar/ui/components/button-group'
@@ -12,10 +12,10 @@ import { RiLoopLeftLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useId } from 'react'
 import { ConnectionDetails } from '~/components/connection-details'
-import { databasesCollection } from '~/entities/database/sync'
+import { connectionsCollection } from '~/entities/connection/sync'
 
 export function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel, color, setColor }: {
-  type: DatabaseType
+  type: ConnectionType
   name: string
   connectionString: string
   setName: (name: string) => void
@@ -27,8 +27,8 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
   color: string | null
   setColor: (color: string | null) => void
 }) {
-  const { data: databases } = useLiveQuery(q => q.from({ databases: databasesCollection }).orderBy(({ databases }) => databases.createdAt, 'desc'))
-  const existingLabels = databases.map(db => db.label).filter((label): label is string => label !== null)
+  const { data: connections } = useLiveQuery(q => q.from({ connections: connectionsCollection }).orderBy(({ connections }) => connections.createdAt, 'desc'))
+  const existingLabels = connections.map(connection => connection.label).filter((label): label is string => label !== null)
   const labels = Array.from(new Set(LABEL_OPTIONS.concat(existingLabels))).toSorted()
   const nameId = useId()
   const labelId = useId()

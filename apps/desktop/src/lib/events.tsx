@@ -1,7 +1,5 @@
 import { PostHogProvider } from 'posthog-js/react'
 
-export { identifyUser, initEvents } from './events-utils'
-
 export function EventsProvider({ children }: { children: React.ReactNode }) {
   if (import.meta.env.DEV)
     return children

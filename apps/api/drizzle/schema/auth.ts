@@ -21,6 +21,7 @@ export const users = pgTable('users', {
   isAnonymous: boolean('is_anonymous').default(false),
   secret: text('secret').notNull(),
   stripeCustomerId: text('stripe_customer_id'),
+  desktopVersion: text('desktop_version'),
 })
 
 export const sessions = pgTable(

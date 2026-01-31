@@ -5,7 +5,7 @@ import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
-import { databaseStore } from '~/entities/database/store'
+import { connectionStore } from '~/entities/connection/store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
@@ -20,15 +20,15 @@ export const Route = createFileRoute(
   loaderDeps: ({ search }) => search,
   loader: async ({ context, deps }) => {
     return {
-      database: context.database,
+      connection: context.connection,
       chat: await createChat({
         id: deps.chatId,
-        database: context.database,
+        connection: context.connection,
       }),
     }
   },
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('SQL Runner', loaderData.database.name) }] : [],
+    meta: loaderData ? [{ title: title('SQL Runner', loaderData.connection.name) }] : [],
   }),
 })
 
@@ -60,9 +60,9 @@ function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
 }
 
 function DatabaseSqlPage() {
-  const { database } = Route.useLoaderData()
+  const { connection } = Route.useLoaderData()
   const { chatId } = Route.useSearch()
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
 
   const { chatVisible, chatPosition } = useStore(store, s => ({
     chatVisible: s.layout.chatVisible,
@@ -76,15 +76,15 @@ function DatabaseSqlPage() {
     } satisfies typeof state))
   }, [chatId, store])
 
-  const { defaultLayout, onLayoutChange } = useDefaultLayout({
-    id: `sql-layout-${database.id}`,
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: `sql-layout-${connection.id}`,
     storage: localStorage,
   })
 
   return (
     <ResizablePanelGroup
       defaultLayout={defaultLayout}
-      onLayoutChange={onLayoutChange}
+      onLayoutChanged={onLayoutChanged}
       orientation="horizontal"
       className="flex h-full"
     >

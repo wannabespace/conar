@@ -1,4 +1,4 @@
-import type { databases } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import {
@@ -14,23 +14,23 @@ import { RiAddLine, RiFolderLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { addTableToFolder, databaseStore } from '~/entities/database/store'
+import { addTableToFolder, connectionStore } from '~/entities/connection/store'
 
 interface AddToFolderDialogProps {
   ref: React.RefObject<{
     addToFolder: (schema: string, table: string) => void
   } | null>
-  database: typeof databases.$inferSelect
+  connection: typeof connections.$inferSelect
 }
 
-export function AddToFolderDialog({ ref, database }: AddToFolderDialogProps) {
+export function AddToFolderDialog({ ref, connection }: AddToFolderDialogProps) {
   const [schema, setSchema] = useState('')
   const [table, setTable] = useState('')
   const [open, setOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
   const [showNewFolder, setShowNewFolder] = useState(false)
 
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
   const tableFolders = useStore(store, state => state.tableFolders)
 
   useImperativeHandle(ref, () => ({
@@ -48,7 +48,7 @@ export function AddToFolderDialog({ ref, database }: AddToFolderDialogProps) {
     .map(g => g.folder)
 
   const handleAddToExistingFolder = (folder: string) => {
-    addTableToFolder(database.id, schema, folder, table)
+    addTableToFolder(connection.id, schema, folder, table)
     toast.success(`Table "${table}" added to folder "${folder}"`)
     setOpen(false)
   }
@@ -64,7 +64,7 @@ export function AddToFolderDialog({ ref, database }: AddToFolderDialogProps) {
       return
     }
 
-    addTableToFolder(database.id, schema, newFolderName.trim(), table)
+    addTableToFolder(connection.id, schema, newFolderName.trim(), table)
     toast.success(`Table "${table}" added to new folder "${newFolderName.trim()}"`)
     setOpen(false)
   }

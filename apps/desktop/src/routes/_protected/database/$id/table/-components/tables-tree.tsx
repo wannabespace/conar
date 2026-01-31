@@ -1,17 +1,22 @@
 import type { ComponentRef } from 'react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
+import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiStackLine, RiTableLine } from '@remixicon/react'
+import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiFolderAddLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiStackLine, RiTableLine } from '@remixicon/react'
 import { useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
+import * as React from 'react'
 import { useEffect, useMemo, useRef } from 'react'
-import { useDatabaseTablesAndSchemas } from '~/entities/database/queries'
-import { cleanupPinnedTables, clearTableSelection, databaseStore, removeTableFromFolder } from '~/entities/database/store'
+import { SidebarLink } from '~/components/sidebar-link'
+import { useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { addTab, cleanupPinnedTables, clearTableSelection, connectionStore, removeTableFromFolder, togglePinTable, toggleTableSelection } from '~/entities/connection/store'
 import { Route } from '..'
 import { AddToFolderDialog } from './add-to-folder-dialog'
 import { DeleteFolderDialog } from './delete-folder-dialog'
@@ -19,8 +24,6 @@ import { DropTableDialog } from './drop-table-dialog'
 import { FolderItem } from './folder-item'
 import { RenameFolderDialog } from './rename-folder-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
-import { TableItem } from './table-item'
-import { TablesTreeSkeleton as Skeleton } from './tables-tree-skeleton'
 import { UnpinnedTablesDropZone } from './unpinned-tables-dropzone'
 
 const treeVariants = {
@@ -36,11 +39,188 @@ const treeTransition = {
 
 const MotionSeparator = motion.create(Separator)
 
+function Skeleton() {
+  return (
+    <div className="w-full space-y-3">
+      {Array.from({ length: 10 }, (_, i) => (
+        <div key={`skeleton-${i}`} className="flex h-5 items-center gap-2 px-2">
+          <div className="h-full w-5 shrink-0 animate-pulse rounded-md bg-muted" />
+          <div
+            className="h-full animate-pulse rounded-md bg-muted"
+            style={{ width: `${Math.random() * 40 + 60 - 30}%` }}
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function TableItem({ schema, table, pinned = false, search, onRename, onDrop, onAddToFolder }: {
+  schema: string
+  table: string
+  pinned?: boolean
+  search?: string
+  onRename: () => void
+  onDrop: () => void
+  onAddToFolder: () => void
+}) {
+  const { table: tableParam, schema: schemaParam } = Route.useSearch()
+  const { connection } = Route.useRouteContext()
+  const store = connectionStore(connection.id)
+  const selectedTables = useStore(store, state => state.selectedTables)
+  const isSelected = selectedTables.some(t => t.schema === schema && t.table === table)
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault()
+      toggleTableSelection(connection.id, schema, table)
+    }
+  }
+
+  const handleDragStart = (e: React.DragEvent) => {
+    const tablesToDrag = isSelected && selectedTables.length > 0
+      ? selectedTables.filter(t => t.schema === schema).map(t => t.table)
+      : [table]
+
+    const dragData = {
+      type: 'table',
+      schema,
+      tables: tablesToDrag,
+    }
+
+    e.dataTransfer.setData('application/json', JSON.stringify(dragData))
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  return (
+    <SidebarLink
+      to="/database/$id/table"
+      params={{ id: connection.id }}
+      search={{
+        schema,
+        table,
+      }}
+      preloadDelay={200}
+      onClick={handleClick}
+      onDoubleClick={() => addTab(connection.id, schema, table)}
+      draggable={true}
+      onDragStart={handleDragStart}
+      className={cn(
+        `
+                  group flex w-full items-center gap-2 rounded-md border
+                  border-transparent px-2 py-1 text-sm text-foreground
+                  hover:bg-accent/30
+                `,
+        tableParam === table && schemaParam === schema && `
+                  border-primary/20 bg-primary/10
+                  hover:bg-primary/20
+                `,
+        isSelected && `border-accent-foreground/20 bg-accent`,
+      )}
+    >
+      {({ isActive }) => (
+        <>
+          <RiTableLine
+            className={cn(
+              'size-4 shrink-0 text-muted-foreground opacity-50',
+              isActive && 'text-primary opacity-100',
+            )}
+          />
+          <span className="truncate">
+            <HighlightText text={table} match={search} />
+          </span>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className={cn(
+              `
+                -mr-1 ml-auto opacity-0 transition-opacity
+                group-hover:opacity-100
+                focus-visible:opacity-100
+              `,
+              isActive && 'hover:bg-primary/10',
+            )}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              togglePinTable(connection.id, schema, table)
+            }}
+          >
+            {pinned
+              ? <RiPushpinFill className="size-3 text-primary" />
+              : (
+                  <RiPushpinLine className="size-3" />
+                )}
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className={cn(
+                  `
+                    opacity-0 transition-opacity
+                    group-hover:opacity-100
+                    focus-visible:opacity-100
+                  `,
+                  isActive && 'hover:bg-primary/10',
+                )}
+                onClick={e => e.stopPropagation()}
+              >
+                <RiMoreLine className="size-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-48">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  copyToClipboard(table, 'Table name copied')
+                }}
+              >
+                <RiFileCopyLine className="size-4" />
+                Copy Name
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onAddToFolder()
+                }}
+              >
+                <RiFolderAddLine className="size-4" />
+                Add to Folder
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRename()
+                }}
+              >
+                <RiEditLine className="size-4" />
+                Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDrop()
+                }}
+              >
+                <RiDeleteBin7Line className="size-4" />
+                Drop
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      )}
+    </SidebarLink>
+  )
+}
+
 export function TablesTree({ className, search }: { className?: string, search?: string }) {
-  const { database } = Route.useRouteContext()
-  const { data: tablesAndSchemas, isPending } = useDatabaseTablesAndSchemas({ database })
+  const { connection } = Route.useRouteContext()
+  const { data: tablesAndSchemas, isPending } = useConnectionTablesAndSchemas({ connection })
   const { schema: schemaParam } = useSearch({ from: '/_protected/database/$id/table/' })
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
   const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const pinnedTables = useStore(store, state => state.pinnedTables)
   const tableFolders = useStore(store, state => state.tableFolders)
@@ -55,8 +235,8 @@ export function TablesTree({ className, search }: { className?: string, search?:
     if (!tablesAndSchemas)
       return
 
-    cleanupPinnedTables(database.id, tablesAndSchemas.schemas.flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
-  }, [database, tablesAndSchemas])
+    cleanupPinnedTables(connection.id, tablesAndSchemas.schemas.flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
+  }, [connection, tablesAndSchemas])
 
   const filteredTablesAndSchemas = useMemo(() => {
     if (!tablesAndSchemas)
@@ -123,23 +303,23 @@ export function TablesTree({ className, search }: { className?: string, search?:
     <ScrollArea className={cn('h-full overflow-y-auto p-2', className)}>
       <DropTableDialog
         ref={dropTableDialogRef}
-        database={database}
+        connection={connection}
       />
       <RenameTableDialog
         ref={renameTableDialogRef}
-        database={database}
+        connection={connection}
       />
       <AddToFolderDialog
         ref={addToFolderDialogRef}
-        database={database}
+        connection={connection}
       />
       <RenameFolderDialog
         ref={renameFolderDialogRef}
-        database={database}
+        connection={connection}
       />
       <DeleteFolderDialog
         ref={deleteFolderDialogRef}
-        database={database}
+        connection={connection}
       />
       {selectedTables.length > 0 && (
         <div className={`
@@ -158,7 +338,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => clearTableSelection(database.id)}
+            onClick={() => clearTableSelection(connection.id)}
             className="ml-auto h-6 px-2 text-xs"
           >
             Clear
@@ -196,7 +376,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                   text-center
                 `}
                 >
-                  <RiTableLine className="mb-2 h-10 w-10 text-muted-foreground" />
+                  <RiTableLine className="mb-2 size-10 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">No tables found</p>
                 </div>
               )
@@ -281,7 +461,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                 search={search}
                                 onRename={() => renameFolderDialogRef.current?.rename(schema.name, folder.name)}
                                 onDelete={() => deleteFolderDialogRef.current?.deleteFolder(schema.name, folder.name)}
-                                onRemoveTable={table => removeTableFromFolder(database.id, schema.name, folder.name, table)}
+                                onRemoveTable={table => removeTableFromFolder(connection.id, schema.name, folder.name, table)}
                                 onRenameTable={table => renameTableDialogRef.current?.rename(schema.name, table)}
                                 onDropTable={table => dropTableDialogRef.current?.drop(schema.name, table)}
                               />

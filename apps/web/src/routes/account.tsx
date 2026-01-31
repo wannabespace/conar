@@ -1,3 +1,4 @@
+import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -7,8 +8,9 @@ import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { cn } from '@conar/ui/lib/utils'
-import { RiDashboard3Line, RiFileListLine, RiLogoutCircleLine, RiMessageLine, RiMoonLine, RiSunLine } from '@remixicon/react'
-import { useMutation } from '@tanstack/react-query'
+import NumberFlow from '@number-flow/react'
+import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMessageLine, RiMoonLine, RiSunLine } from '@remixicon/react'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, Outlet, redirect, useMatches, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -128,6 +130,7 @@ function AccountLayout() {
   const match = useMatches({
     select: matches => matches.map(match => match.routeId).at(-1),
   })
+  const { data } = useQuery(orpcQuery.repo.queryOptions())
   const { user } = Route.useLoaderData()
 
   return (
@@ -153,6 +156,52 @@ function AccountLayout() {
           sm:gap-2
         `}
         >
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`
+              hidden gap-1
+              sm:flex sm:gap-2
+            `}
+            asChild
+          >
+            <Link to="/releases">
+              <RiGitBranchLine className={`
+                size-3
+                sm:size-4
+              `}
+              />
+              Releases
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`
+              hidden gap-1
+              sm:flex sm:gap-2
+            `}
+            asChild
+          >
+            <a
+              href={SOCIAL_LINKS.GITHUB}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <RiGithubFill className={`
+                size-3
+                sm:size-4
+              `}
+              />
+              <NumberFlow
+                value={data?.stargazers_count || 0}
+                className={cn(`
+                  text-xs tabular-nums duration-200
+                  sm:text-sm
+                `, !data && `animate-pulse text-muted-foreground`)}
+              />
+            </a>
+          </Button>
           <ThemeToggle side="bottom">
             <Button size="icon-sm" variant="ghost">
               <RiSunLine className={`

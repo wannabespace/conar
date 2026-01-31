@@ -1,5 +1,5 @@
 import { Button } from '@conar/ui/components/button'
-import { HighlightText } from '@conar/ui/components/custom/hightlight'
+import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -7,9 +7,10 @@ import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiFolderLine, RiMoreLine,
 import { Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
-import React, { useState } from 'react'
+import * as React from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
-import { addTab, addTableToFolder, clearTableSelection, databaseStore, removeTableFromFolder, toggleFolder } from '~/entities/database/store'
+import { addTab, addTableToFolder, clearTableSelection, connectionStore, removeTableFromFolder, toggleFolder } from '~/entities/connection/store'
 import { Route } from '..'
 
 const treeVariants = {
@@ -33,7 +34,7 @@ interface TableInFolderItemProps {
 }
 
 function TableInFolderItem({ schema, table, search, onRemove, onRename, onDrop }: TableInFolderItemProps) {
-  const { database } = Route.useRouteContext()
+  const { connection } = Route.useRouteContext()
 
   const handleDragStart = (e: React.DragEvent) => {
     const dragData = {
@@ -50,13 +51,13 @@ function TableInFolderItem({ schema, table, search, onRemove, onRename, onDrop }
     <div className="group/table-in-folder relative">
       <Link
         to="/database/$id/table"
-        params={{ id: database.id }}
+        params={{ id: connection.id }}
         search={{
           schema,
           table,
         }}
         preloadDelay={200}
-        onDoubleClick={() => addTab(database.id, schema, table)}
+        onDoubleClick={() => addTab(connection.id, schema, table)}
         draggable={true}
         onDragStart={handleDragStart}
         className={cn(
@@ -144,8 +145,8 @@ export function FolderItem({ schema, folder, tables, search, onRename, onDelete,
   onRenameTable: (table: string) => void
   onDropTable: (table: string) => void
 }) {
-  const { database } = Route.useRouteContext()
-  const store = databaseStore(database.id)
+  const { connection } = Route.useRouteContext()
+  const store = connectionStore(connection.id)
   const openedFolders = useStore(store, state => state.tablesTreeOpenedFolders)
   const selectedTables = useStore(store, state => state.selectedTables)
   const isOpen = openedFolders.some(f => f.schema === schema && f.folder === folder)
@@ -190,7 +191,7 @@ export function FolderItem({ schema, folder, tables, search, onRename, onDelete,
         tablesToMove.forEach((table) => {
           tableFolders.forEach((existingFolder) => {
             if (existingFolder.tables.includes(table) && existingFolder.folder !== folder) {
-              removeTableFromFolder(database.id, schema, existingFolder.folder, table)
+              removeTableFromFolder(connection.id, schema, existingFolder.folder, table)
               moved = true
             }
           })
@@ -198,14 +199,14 @@ export function FolderItem({ schema, folder, tables, search, onRename, onDelete,
 
         tablesToMove.forEach((table) => {
           if (!currentFolder?.tables.includes(table)) {
-            addTableToFolder(database.id, schema, folder, table)
+            addTableToFolder(connection.id, schema, folder, table)
             moved = true
           }
         })
 
         if (moved) {
           if (selectedTables.length > 0) {
-            clearTableSelection(database.id)
+            clearTableSelection(connection.id)
           }
 
           toast.success(
@@ -240,7 +241,7 @@ export function FolderItem({ schema, folder, tables, search, onRename, onDelete,
           `,
           isDragOver && 'border-primary bg-primary/10',
         )}
-        onClick={() => toggleFolder(database.id, schema, folder)}
+        onClick={() => toggleFolder(connection.id, schema, folder)}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}

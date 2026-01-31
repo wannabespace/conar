@@ -9,7 +9,6 @@ import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanst
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
-import { getRepoOptions } from '~/queries'
 import { seo } from '~/utils/seo'
 
 if (import.meta.env.DEV) {
@@ -21,11 +20,6 @@ if (import.meta.env.DEV) {
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
-  beforeLoad: async ({ context }) => {
-    if (typeof window !== 'undefined') {
-      context.queryClient.prefetchQuery(getRepoOptions)
-    }
-  },
   head: () => ({
     meta: [
       {

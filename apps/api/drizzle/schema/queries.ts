@@ -4,12 +4,12 @@ import { pgTable } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedText } from '../utils'
 import { users } from './auth'
-import { databases } from './databases'
+import { connections } from './connections'
 
 export const queries = pgTable('queries', ({ uuid, text }) => ({
   ...baseTable,
   userId: uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  databaseId: uuid().references(() => databases.id, { onDelete: 'cascade' }).notNull(),
+  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
   name: text().notNull(),
   query: encryptedText().notNull(),
 }))
@@ -22,8 +22,8 @@ export const queriesRelations = relations(queries, ({ one }) => ({
     fields: [queries.userId],
     references: [users.id],
   }),
-  database: one(databases, {
-    fields: [queries.databaseId],
-    references: [databases.id],
+  connection: one(connections, {
+    fields: [queries.connectionId],
+    references: [connections.id],
   }),
 }))

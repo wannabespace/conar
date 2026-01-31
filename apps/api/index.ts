@@ -6,7 +6,7 @@ import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { xai } from '@ai-sdk/xai'
 import { PORTS } from '@conar/shared/constants'
-import { onError } from '@orpc/server'
+import { onError, ORPCError, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { generateText } from 'ai'
 import { consola } from 'consola'
@@ -18,16 +18,28 @@ import { env, nodeEnv } from './env'
 import { auth } from './lib/auth'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
+import { sendEmail } from './lib/resend'
 
 const handler = new RPCHandler(router, {
   interceptors: [
     onError((error) => {
+      if (error instanceof ORPCError) {
+        if (error.cause instanceof ValidationError) {
+          const message = error.cause.issues.map(issue => issue.path
+            ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
+            : issue.message,
+          ).join(', ')
+
+          throw new ORPCError('BAD_REQUEST', { message })
+        }
+
+        throw error
+      }
+
       consola.error(error)
+
+      throw new ORPCError('INTERNAL_SERVER_ERROR', { message: 'An unexpected error occurred' })
     }),
-    async ({ request, next }) => {
-      consola.log('Desktop version: ', request.headers['x-desktop-version'] || 'Unknown')
-      return next()
-    },
   ],
 })
 
@@ -46,12 +58,28 @@ app.use(cors({
 app.use('*', async (c, next) => {
   await next()
 
-  if (c.res.status >= 400 && c.res.status !== 401) {
-    consola.error('Alerting response status', {
-      status: c.res.status,
-      path: c.req.path,
-      method: c.req.method,
-      url: c.req.url,
+  if (
+    c.res.status >= 400
+    && c.res.status !== 401
+    && c.res.status !== 404
+    && env.ALERTS_EMAIL
+  ) {
+    sendEmail({
+      to: env.ALERTS_EMAIL,
+      subject: `Alert from API: ${c.res.status} ${c.req.method} ${c.req.url}`,
+      template: 'Alert',
+      props: {
+        text: JSON.stringify({
+          status: c.res.status,
+          method: c.req.method,
+          url: c.req.url,
+          authHeader: c.req.header('Authorization'),
+          cookieHeader: c.req.header('Cookie'),
+          userAgent: c.req.header('User-Agent'),
+          desktopVersion: c.req.header('x-desktop-version'),
+        }, null, 2),
+        service: 'API',
+      },
     })
   }
 })

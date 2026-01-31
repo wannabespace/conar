@@ -1,4 +1,4 @@
-import type { databases } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import {
@@ -14,16 +14,16 @@ import { Label } from '@conar/ui/components/label'
 import { RiAlertLine } from '@remixicon/react'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { deleteFolder } from '~/entities/database/store'
+import { deleteFolder } from '~/entities/connection/store'
 
 interface DeleteFolderDialogProps {
   ref: React.RefObject<{
     deleteFolder: (schema: string, folder: string) => void
   } | null>
-  database: typeof databases.$inferSelect
+  connection: typeof connections.$inferSelect
 }
 
-export function DeleteFolderDialog({ ref, database }: DeleteFolderDialogProps) {
+export function DeleteFolderDialog({ ref, connection }: DeleteFolderDialogProps) {
   const [confirmationText, setConfirmationText] = useState('')
   const [schema, setSchema] = useState('')
   const [folder, setFolder] = useState('')
@@ -39,7 +39,7 @@ export function DeleteFolderDialog({ ref, database }: DeleteFolderDialogProps) {
   }))
 
   const handleDelete = () => {
-    deleteFolder(database.id, schema, folder)
+    deleteFolder(connection.id, schema, folder)
     toast.success(`Folder "${folder}" successfully deleted`)
     setOpen(false)
     setConfirmationText('')

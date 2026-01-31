@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '~/ai-tools'
+import type { AppUIMessage } from '~/ai/tools/helpers'
 import { google } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { type } from 'arktype'

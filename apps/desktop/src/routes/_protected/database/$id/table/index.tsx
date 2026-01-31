@@ -10,15 +10,15 @@ import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { FiltersProvider } from '~/components/table'
-import { addTab, databaseStore } from '~/entities/database/store'
-import { prefetchDatabaseCore, prefetchDatabaseTableCore } from '~/entities/database/utils'
+import { addTab, connectionStore } from '~/entities/connection/store'
+import { prefetchConnectionCore, prefetchConnectionTableCore } from '~/entities/connection/utils'
 import { Filters } from './-components/filters'
-import { Header } from './-components/header'
+import { Header } from './-components/header/header'
 import { Sidebar } from './-components/sidebar'
-import { Table } from './-components/table'
+import { Table } from './-components/table/table'
 import { TablesTabs } from './-components/tabs'
 import { useTableColumns } from './-queries/use-columns-query'
-import { createPageStore, PageStoreContext } from './-store'
+import { PageStoreContext, tablePageStore } from './-store'
 
 export const Route = createFileRoute(
   '/_protected/database/$id/table/',
@@ -32,24 +32,25 @@ export const Route = createFileRoute(
   component: DatabaseTablesPage,
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => {
-    const store = deps.table && deps.schema ? createPageStore({ id: context.database.id, schema: deps.schema, table: deps.table }) : null
+    const store = deps.table && deps.schema ? tablePageStore({ id: context.connection.id, schema: deps.schema, table: deps.table }) : null
 
-    prefetchDatabaseCore(context.database)
+    prefetchConnectionCore(context.connection)
 
     if (store) {
-      prefetchDatabaseTableCore({
-        database: context.database,
+      prefetchConnectionTableCore({
+        connection: context.connection,
         schema: deps.schema!,
         table: deps.table!,
         query: {
           filters: store.state.filters,
           orderBy: store.state.orderBy,
+          exact: store.state.exact,
         },
       })
     }
 
     return {
-      database: context.database,
+      connection: context.connection,
       schema: deps.schema ?? null,
       table: deps.table ?? null,
       store,
@@ -60,7 +61,7 @@ export const Route = createFileRoute(
       ? [{
           title: title(
             loaderData.schema && loaderData.table ? `${loaderData.schema}.${loaderData.table}` : 'Tables',
-            loaderData.database.name,
+            loaderData.connection.name,
           ),
         }]
       : [],
@@ -68,11 +69,23 @@ export const Route = createFileRoute(
 })
 
 function TableContent({ table, schema, store }: { table: string, schema: string, store: Store<typeof storeState.infer> }) {
-  const { database } = Route.useLoaderData()
+  const { connection } = Route.useLoaderData()
   const deps = Route.useLoaderDeps()
 
+  const resetSelectionStateEvent = useEffectEvent(() => {
+    store.setState(state => ({
+      ...state,
+      lastClickedIndex: null,
+      selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
+    } satisfies typeof state))
+  })
+
   useEffect(() => {
-    if (store && (deps.filters || deps.orderBy)) {
+    resetSelectionStateEvent()
+  }, [table, schema, store])
+
+  useEffect(() => {
+    if (deps.filters || deps.orderBy) {
       store.setState(state => ({
         ...state,
         ...(deps.filters ? { filters: deps.filters } : {}),
@@ -81,7 +94,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
     }
   }, [store, deps])
 
-  const columns = useTableColumns({ database, table, schema })
+  const columns = useTableColumns({ connection, table, schema })
 
   const removeUnusedOrdersEvent = useEffectEvent(() => {
     if (!columns || columns.length === 0)
@@ -109,11 +122,11 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
 
   return (
     <PageStoreContext value={store}>
-      <TablesTabs className="h-9" database={database} />
+      <TablesTabs className="h-9" connection={connection} />
       <div
         key={table}
         className="h-[calc(100%-(--spacing(9)))]"
-        onClick={() => addTab(database.id, schema, table)}
+        onClick={() => addTab(connection.id, schema, table)}
       >
         <FiltersProvider
           columns={columns ?? []}
@@ -135,9 +148,9 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
 }
 
 function DatabaseTablesPage() {
-  const { database, store: tableStore } = Route.useLoaderData()
+  const { connection, store: tableStore } = Route.useLoaderData()
   const { schema, table } = Route.useSearch()
-  const store = databaseStore(database.id)
+  const store = connectionStore(connection.id)
   const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
 
   const handleLastOpenedTableEvent = useEffectEvent(() => {
@@ -161,15 +174,15 @@ function DatabaseTablesPage() {
     handleLastOpenedTableEvent()
   }, [schema, table, lastOpenedTable])
 
-  const { defaultLayout, onLayoutChange } = useDefaultLayout({
-    id: `database-layout-${database.id}`,
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: `database-table-layout-${connection.id}`,
     storage: localStorage,
   })
 
   return (
     <ResizablePanelGroup
       defaultLayout={defaultLayout}
-      onLayoutChange={onLayoutChange}
+      onLayoutChanged={onLayoutChanged}
       orientation="horizontal"
       className="flex"
     >
@@ -177,14 +190,14 @@ function DatabaseTablesPage() {
         defaultSize="20%"
         minSize="10%"
         maxSize="50%"
-        className="h-full rounded-lg border bg-background"
+        className="h-full rounded-lg border bg-background overflow-hidden"
       >
-        <Sidebar key={database.id} />
+        <Sidebar key={connection.id} />
       </ResizablePanel>
       <ResizableSeparator className="w-1 bg-transparent" />
       <ResizablePanel
         defaultSize="80%"
-        className="flex-1 rounded-lg border bg-background"
+        className="flex-1 rounded-lg border bg-background overflow-hidden"
       >
         {schema && table && tableStore
           ? (

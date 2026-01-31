@@ -76,10 +76,10 @@ export function tryParseJson<T>(json: string): T | null {
   }
 }
 
-export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F) {
+export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F): F {
   const cache = new Map<string, ReturnType<F>>()
 
-  return (...args: Parameters<F>) => {
+  return ((...args: Parameters<F>) => {
     const key = JSON.stringify(args)
     if (cache.has(key)) {
       return cache.get(key)!
@@ -94,5 +94,5 @@ export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(fun
     }
 
     return result
-  }
+  }) as F
 }

@@ -1,4 +1,4 @@
-import type { databases } from '~/drizzle'
+import type { connections } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
 import {
   Dialog,
@@ -12,16 +12,16 @@ import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { folderExists, renameFolder } from '~/entities/database/store'
+import { folderExists, renameFolder } from '~/entities/connection/store'
 
 interface RenameFolderDialogProps {
   ref: React.RefObject<{
     rename: (schema: string, folder: string) => void
   } | null>
-  database: typeof databases.$inferSelect
+  connection: typeof connections.$inferSelect
 }
 
-export function RenameFolderDialog({ ref, database }: RenameFolderDialogProps) {
+export function RenameFolderDialog({ ref, connection }: RenameFolderDialogProps) {
   const [schema, setSchema] = useState('')
   const [folder, setFolder] = useState('')
   const [newFolderName, setNewFolderName] = useState('')
@@ -47,12 +47,12 @@ export function RenameFolderDialog({ ref, database }: RenameFolderDialogProps) {
       return
     }
 
-    if (folderExists(database.id, schema, newFolderName.trim())) {
+    if (folderExists(connection.id, schema, newFolderName.trim())) {
       toast.error(`A folder named "${newFolderName.trim()}" already exists in this schema`)
       return
     }
 
-    const success = renameFolder(database.id, schema, folder, newFolderName.trim())
+    const success = renameFolder(connection.id, schema, folder, newFolderName.trim())
 
     if (success) {
       toast.success(`Folder "${folder}" renamed to "${newFolderName.trim()}"`)
