@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import type { connections } from '~/drizzle'
 import type { connectionStoreType } from '~/entities/connection/store'
 import { getOS, isCtrlAndKey } from '@conar/shared/utils/os'
@@ -18,16 +19,16 @@ import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { motion, Reorder } from 'motion/react'
-import { useEffect, useEffectEvent, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { addTab, connectionStore, removeTab, updateTabs } from '~/entities/connection/store'
 import { prefetchConnectionTableCore } from '~/entities/connection/utils'
-import { getPageStoreState } from '../-store'
+import { tablePageStore } from '../-store'
 
 const MotionScrollViewport = motion.create(ScrollViewport)
 
 const os = getOS(navigator.userAgent)
 
-function CloseButton({ onClick }: { onClick: (e: React.MouseEvent<SVGSVGElement>) => void }) {
+function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] }) {
   return (
     <TooltipProvider>
       <Tooltip>
@@ -53,18 +54,12 @@ function CloseButton({ onClick }: { onClick: (e: React.MouseEvent<SVGSVGElement>
 }
 
 function getQueryOpts(connection: typeof connections.$inferSelect, schema: string, tableName: string) {
-  const state = schema ? getPageStoreState(connection.id, schema, tableName) : null
-
-  if (state) {
-    return {
-      filters: state.filters,
-      orderBy: state.orderBy,
-    }
-  }
+  const store = tablePageStore({ id: connection.id, schema, table: tableName })
 
   return {
-    filters: [],
-    orderBy: {},
+    filters: store.state.filters,
+    orderBy: store.state.orderBy,
+    exact: store.state.exact,
   }
 }
 
@@ -93,6 +88,7 @@ function SortableTab({
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const ref = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(ref, 'full')
+  const [contextMenuOpen, setContextMenuOpen] = useState(false)
 
   const isActive = schemaParam === item.tab.schema && tableParam === item.tab.table
 
@@ -104,8 +100,6 @@ function SortableTab({
       })
     }
   }, [isActive, isVisible])
-
-  const active = schemaParam === item.tab.schema && tableParam === item.tab.table
 
   return (
     <Reorder.Item
@@ -120,7 +114,7 @@ function SortableTab({
         item.tab.preview && 'italic',
       )}
     >
-      <ContextMenu>
+      <ContextMenu open={contextMenuOpen} onOpenChange={setContextMenuOpen}>
         <ContextMenuTrigger className="h-full">
           <button
             data-mask
@@ -131,7 +125,7 @@ function SortableTab({
                 border-transparent pr-1.5 pl-2 text-sm text-foreground
                 hover:border-accent hover:bg-muted/70
               `,
-              active && `
+              isActive && `
                 border-primary/50 bg-primary/10
                 hover:border-primary/50 hover:bg-primary/10
               `,
@@ -152,7 +146,7 @@ function SortableTab({
             <RiTableLine
               className={cn(
                 'size-4 shrink-0 text-muted-foreground opacity-50',
-                active && 'text-primary opacity-100',
+                isActive && 'text-primary opacity-100',
               )}
             />
             {showSchema && (

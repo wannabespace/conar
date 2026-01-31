@@ -4,31 +4,43 @@ import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import { Separator } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
+import { RiCloseLine, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useRef, useState } from 'react'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionLinkParams } from '~/entities/connection/hooks'
+import { useConnectionVersion } from '~/entities/connection/queries/connection-version'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { useLastOpenedConnections } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
-function ConnectionCard({ connection, onRemove, onRename }: { connection: typeof connections.$inferSelect, onRemove: () => void, onRename: () => void }) {
+function ConnectionCard({
+  connection,
+  onRemove,
+  onRename,
+  onClose,
+}: {
+  connection: typeof connections.$inferSelect
+  onRemove: VoidFunction
+  onRename: VoidFunction
+  onClose?: VoidFunction
+}) {
   const url = new SafeURL(connection.connectionString)
-
   if (connection.isPasswordExists || url.password) {
     url.password = '*'.repeat(url.password.length || 6)
   }
-
   const connectionString = url.toString()
 
   const params = useConnectionLinkParams(connection.id)
+
+  const { data: version } = useConnectionVersion({ connection })
 
   return (
     <motion.div
@@ -37,13 +49,28 @@ function ConnectionCard({ connection, onRemove, onRename }: { connection: typeof
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.75 }}
       transition={{ duration: 0.15 }}
+      className="group relative"
     >
+      {onClose && (
+        <Button
+          variant="outline"
+          size="icon-xs"
+          className="
+            absolute -top-1.5 -right-1.5 z-10 rounded-full bg-card! opacity-0
+            duration-75
+            group-hover:opacity-100
+          "
+          onClick={() => onClose()}
+        >
+          <RiCloseLine className="size-3.5" />
+        </Button>
+      )}
       <Link
         className={cn(
           `
             group relative flex items-center justify-between gap-4
             overflow-hidden rounded-lg border border-l-4 border-border/50
-            bg-muted/30 p-5
+            bg-muted/30 p-4
           `,
           connection.color
             ? `
@@ -88,6 +115,15 @@ function ConnectionCard({ connection, onRemove, onRename }: { connection: typeof
           >
             {connectionString.replaceAll('*', '•')}
           </div>
+          {version && (
+            <span className="
+              absolute right-4 bottom-0.5 font-mono text-[.6rem]
+              text-muted-foreground/50
+            "
+            >
+              {version}
+            </span>
+          )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger className={`
@@ -158,7 +194,15 @@ export function Empty() {
   )
 }
 
-function LastOpenedConnections({ onRemove, onRename }: { onRemove: (connection: typeof connections.$inferSelect) => void, onRename: (connection: typeof connections.$inferSelect) => void }) {
+function LastOpenedConnections({
+  onRemove,
+  onRename,
+  onClose,
+}: {
+  onRemove: (connection: typeof connections.$inferSelect) => void
+  onRename: (connection: typeof connections.$inferSelect) => void
+  onClose: (connection: typeof connections.$inferSelect) => void
+}) {
   const { data: connections } = useLiveQuery(q => q
     .from({ connections: connectionsCollection })
     .orderBy(({ connections }) => connections.createdAt, 'desc'))
@@ -180,6 +224,7 @@ function LastOpenedConnections({ onRemove, onRename }: { onRemove: (connection: 
             connection={connection}
             onRemove={() => onRemove(connection)}
             onRename={() => onRename(connection)}
+            onClose={() => onClose(connection)}
           />
         ))}
       </AnimatePresence>
@@ -187,14 +232,14 @@ function LastOpenedConnections({ onRemove, onRename }: { onRemove: (connection: 
   )
 }
 
-export function DatabasesList() {
+export function ConnectionsList() {
   const { data: connections } = useLiveQuery(q => q
     .from({ connections: connectionsCollection })
     .orderBy(({ connections }) => connections.createdAt, 'desc'))
   const renameDialogRef = useRef<ComponentRef<typeof RenameConnectionDialog>>(null)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
-  const [lastOpenedConnections] = useLastOpenedConnections()
+  const [lastOpenedConnections, setLastOpenedConnections] = useLastOpenedConnections()
 
   const availableLabels = Array.from(new Set(connections.map(connection => connection.label).filter(Boolean) as string[])).sort()
 
@@ -216,10 +261,13 @@ export function DatabasesList() {
           onRename={(connection) => {
             renameDialogRef.current?.rename(connection)
           }}
+          onClose={(connection) => {
+            setLastOpenedConnections(prev => prev.filter(id => id !== connection.id))
+          }}
         />
       )}
       {hasLastOpened && (
-        <div className="border-t border-border/50" />
+        <Separator />
       )}
       {availableLabels.length > 0 && (
         <Tabs

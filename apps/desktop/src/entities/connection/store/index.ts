@@ -43,6 +43,7 @@ export const connectionStoreType = type({
   chatInput: 'string',
   tabs: tabType.array(),
   tablesSearch: 'string',
+  definitionsSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
   pinnedTables: type({
     schema: 'string',
@@ -79,6 +80,7 @@ const defaultState: typeof connectionStoreType.infer = {
   chatInput: '',
   tabs: [],
   tablesSearch: '',
+  definitionsSearch: '',
   tablesTreeOpenedSchemas: null,
   pinnedTables: [],
   layout: {
@@ -137,6 +139,7 @@ export function connectionStore(id: string) {
       chatInput: currentVal.chatInput,
       tabs: currentVal.tabs,
       tablesSearch: currentVal.tablesSearch,
+      definitionsSearch: currentVal.definitionsSearch,
       tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
       pinnedTables: currentVal.pinnedTables,
       layout: currentVal.layout,

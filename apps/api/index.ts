@@ -6,7 +6,7 @@ import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { xai } from '@ai-sdk/xai'
 import { PORTS } from '@conar/shared/constants'
-import { onError } from '@orpc/server'
+import { onError, ORPCError, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { generateText } from 'ai'
 import { consola } from 'consola'
@@ -23,12 +23,23 @@ import { sendEmail } from './lib/resend'
 const handler = new RPCHandler(router, {
   interceptors: [
     onError((error) => {
+      if (error instanceof ORPCError) {
+        if (error.cause instanceof ValidationError) {
+          const message = error.cause.issues.map(issue => issue.path
+            ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
+            : issue.message,
+          ).join(', ')
+
+          throw new ORPCError('BAD_REQUEST', { message })
+        }
+
+        throw error
+      }
+
       consola.error(error)
+
+      throw new ORPCError('INTERNAL_SERVER_ERROR', { message: 'An unexpected error occurred' })
     }),
-    async ({ request, next }) => {
-      consola.log('Desktop version: ', request.headers['x-desktop-version'] || 'Unknown')
-      return next()
-    },
   ],
 })
 
@@ -44,19 +55,14 @@ app.use(cors({
   credentials: true,
 }))
 
-const IGNORE_ROUTES: { path: string, method: string, status?: number }[] = [
-  { path: '/', method: 'POST', status: 404 },
-  { path: '/.env', method: 'GET', status: 404 },
-]
-
 app.use('*', async (c, next) => {
   await next()
 
   if (
     c.res.status >= 400
     && c.res.status !== 401
+    && c.res.status !== 404
     && env.ALERTS_EMAIL
-    && !IGNORE_ROUTES.some(route => route.path === c.req.path && route.method === c.req.method && (route.status ? c.res.status === route.status : true))
   ) {
     sendEmail({
       to: env.ALERTS_EMAIL,
@@ -67,6 +73,10 @@ app.use('*', async (c, next) => {
           status: c.res.status,
           method: c.req.method,
           url: c.req.url,
+          authHeader: c.req.header('Authorization'),
+          cookieHeader: c.req.header('Cookie'),
+          userAgent: c.req.header('User-Agent'),
+          desktopVersion: c.req.header('x-desktop-version'),
         }, null, 2),
         service: 'API',
       },

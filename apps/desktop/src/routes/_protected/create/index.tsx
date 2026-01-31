@@ -15,10 +15,12 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
+import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { executeSql } from '~/entities/connection/sql'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { prefetchConnectionCore } from '~/entities/connection/utils'
 import { generateRandomName } from '~/lib/utils'
+import { queryClient } from '~/main'
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
 import { StepType } from './-components/step-type'
@@ -77,6 +79,8 @@ function CreateConnectionPage() {
     const connection = connectionsCollection.get(id)!
 
     prefetchConnectionCore(connection)
+
+    queryClient.prefetchQuery(connectionVersionQueryOptions({ connection }))
 
     router.navigate({ to: '/database/$id/table', params: { id } })
   }

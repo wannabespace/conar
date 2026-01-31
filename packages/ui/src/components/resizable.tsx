@@ -41,8 +41,6 @@ export function ResizableSeparator({
           focus-visible:bg-primary/40
           data-[separator='active']:bg-primary/30
           data-[separator='hover']:bg-primary/50
-          data-[separator='hover']:aria-[orientation='horizontal']:cursor-row-resize
-          data-[separator='hover']:aria-[orientation='vertical']:cursor-col-resize
         `,
         className,
       )}

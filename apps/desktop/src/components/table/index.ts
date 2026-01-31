@@ -10,6 +10,15 @@ export * from './header'
 export * from './provider'
 export * from './table'
 export * from './table-context'
+export {
+  useShiftSelectionClick,
+  type UseShiftSelectionClickOptions,
+} from './use-shift-selection-click'
+export {
+  type SelectionState,
+  useShiftSelectionKeyDown,
+  type UseShiftSelectionKeyDownOptions,
+} from './use-shift-selection-key-down'
 
 export interface TableCellProps extends Pick<ColumnRenderer, 'size' | 'id'> {
   style: CSSProperties
@@ -32,9 +41,9 @@ export interface ColumnRenderer {
   header?: ComponentType<TableHeaderCellProps>
 }
 
-export function getBaseColumnStyle({ id, size }: { id: string, size: number }): CSSProperties {
+export function getBaseColumnStyle({ id, defaultSize }: { id: string, defaultSize: number }): CSSProperties {
   return {
-    width: `var(--table-column-width-${id}, ${size}px)`,
+    width: `var(--table-column-width-${id}, ${defaultSize}px)`,
     height: '100%',
     flexShrink: 0,
     willChange: 'width',

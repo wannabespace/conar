@@ -27,6 +27,7 @@ export async function prefetchConnectionTableCore({ connection, schema, table, q
   query: {
     filters: ActiveFilter[]
     orderBy: Record<string, 'ASC' | 'DESC'>
+    exact: boolean
   }
 }) {
   await Promise.all([

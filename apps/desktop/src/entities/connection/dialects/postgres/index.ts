@@ -1,6 +1,6 @@
 import type { CompiledQuery, Dialect, Driver, QueryResult } from 'kysely'
 import type { connections } from '~/drizzle'
-import { PostgresAdapter, PostgresQueryCompiler } from 'kysely'
+import { DummyDriver, PostgresAdapter, PostgresQueryCompiler } from 'kysely'
 import { logSql } from '../../sql'
 
 function execute(connection: typeof connections.$inferSelect, compiledQuery: CompiledQuery) {
@@ -50,6 +50,17 @@ function createDriver(connection: typeof connections.$inferSelect) {
 export function postgresDialect(connection: typeof connections.$inferSelect) {
   return {
     createDriver: () => createDriver(connection),
+    createQueryCompiler: () => new PostgresQueryCompiler(),
+    createAdapter: () => new PostgresAdapter(),
+    createIntrospector: () => {
+      throw new Error('Not implemented')
+    },
+  } satisfies Dialect
+}
+
+export function postgresColdDialect() {
+  return {
+    createDriver: () => new DummyDriver(),
     createQueryCompiler: () => new PostgresQueryCompiler(),
     createAdapter: () => new PostgresAdapter(),
     createIntrospector: () => {
