@@ -14,7 +14,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@conar/ui/components/tooltip'
-import { RiBracesLine, RiTableLine } from '@remixicon/react'
+import { copy } from '@conar/ui/lib/copy'
+import { RiBracesLine, RiDownloadLine, RiFileCopyLine, RiTableLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { handleError } from '~/lib/error'
 
@@ -76,60 +77,142 @@ export function ExportData({
     onError: handleError,
   })
 
+  const { mutate: copyToClipboard, isPending: isCopying } = useMutation({
+    mutationFn: async ({
+      format,
+      limit,
+    }: {
+      format: keyof ReturnType<typeof contentGenerators>
+      limit?: (typeof EXPORT_LIMITS)[number]
+    }) => {
+      const data = await getData(limit)
+      const content = contentGenerators(data)[format]()
+      return { content, count: data.length, format }
+    },
+    onSuccess: ({ content, count, format }) => {
+      copy(content, `Copied ${count} ${count === 1 ? 'row' : 'rows'} to clipboard as ${format}`)
+    },
+    onError: handleError,
+  })
+
+  const isPending = isExporting || isCopying
+
   return (
     <TooltipProvider>
       <Tooltip>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <TooltipTrigger asChild>
-              {trigger({ isExporting })}
+              {trigger({ isExporting: isPending })}
             </TooltipTrigger>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger disabled={isExporting}>
-                <RiTableLine />
-                Export as CSV
+              <DropdownMenuSubTrigger>
+                <RiDownloadLine />
+                Export
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
-                {EXPORT_LIMITS.map(limitOption => (
-                  <DropdownMenuItem
-                    key={limitOption}
-                    onClick={() => exportData({ format: 'csv', limit: limitOption })}
-                    disabled={isExporting}
-                  >
-                    {`First ${limitOption} rows`}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuItem
-                  onClick={() => exportData({ format: 'csv' })}
-                  disabled={isExporting}
-                >
-                  All rows
-                </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <RiTableLine />
+                    Export as CSV
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {EXPORT_LIMITS.map(limitOption => (
+                      <DropdownMenuItem
+                        key={limitOption}
+                        onClick={() => exportData({ format: 'csv', limit: limitOption })}
+                      >
+                        First
+                        {' '}
+                        {limitOption}
+                        {' '}
+                        rows
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuItem onClick={() => exportData({ format: 'csv' })}>
+                      All rows
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <RiBracesLine />
+                    Export as JSON
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {EXPORT_LIMITS.map(limitOption => (
+                      <DropdownMenuItem
+                        key={limitOption}
+                        onClick={() => exportData({ format: 'json', limit: limitOption })}
+                      >
+                        First
+                        {' '}
+                        {limitOption}
+                        {' '}
+                        rows
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuItem onClick={() => exportData({ format: 'json' })}>
+                      All rows
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger disabled={isExporting}>
-                <RiBracesLine />
-                Export as JSON
+              <DropdownMenuSubTrigger>
+                <RiFileCopyLine />
+                Copy
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
-                {EXPORT_LIMITS.map(limitOption => (
-                  <DropdownMenuItem
-                    key={limitOption}
-                    onClick={() => exportData({ format: 'json', limit: limitOption })}
-                    disabled={isExporting}
-                  >
-                    {`First ${limitOption} rows`}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuItem
-                  onClick={() => exportData({ format: 'json' })}
-                  disabled={isExporting}
-                >
-                  All rows
-                </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <RiTableLine />
+                    Copy as CSV
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {EXPORT_LIMITS.map(limitOption => (
+                      <DropdownMenuItem
+                        key={limitOption}
+                        onClick={() => copyToClipboard({ format: 'csv', limit: limitOption })}
+                      >
+                        First
+                        {' '}
+                        {limitOption}
+                        {' '}
+                        rows
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuItem onClick={() => copyToClipboard({ format: 'csv' })}>
+                      All rows
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <RiBracesLine />
+                    Copy as JSON
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {EXPORT_LIMITS.map(limitOption => (
+                      <DropdownMenuItem
+                        key={limitOption}
+                        onClick={() => copyToClipboard({ format: 'json', limit: limitOption })}
+                      >
+                        First
+                        {' '}
+                        {limitOption}
+                        {' '}
+                        rows
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuItem onClick={() => copyToClipboard({ format: 'json' })}>
+                      All rows
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
           </DropdownMenuContent>

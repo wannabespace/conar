@@ -10,9 +10,10 @@ import { ExportData } from '~/components/export-data'
 import { connectionConstraintsQuery, connectionRowsQuery, connectionTableColumnsQuery, connectionTableTotalQuery } from '~/entities/connection/queries'
 import { rowsQuery } from '~/entities/connection/sql/rows'
 import { queryClient } from '~/main'
-import { Route } from '..'
-import { usePageStoreContext } from '../-store'
+import { Route } from '../../'
+import { usePageStoreContext } from '../../-store'
 import { HeaderActionsColumns } from './header-actions-columns'
+import { HeaderActionsCopy } from './header-actions-copy'
 import { HeaderActionsDelete } from './header-actions-delete'
 import { HeaderActionsFilters } from './header-actions-filters'
 import { HeaderActionsOrder } from './header-actions-order'
@@ -20,7 +21,7 @@ import { HeaderActionsOrder } from './header-actions-order'
 export function HeaderActions({ table, schema }: { table: string, schema: string }) {
   const { connection } = Route.useLoaderData()
   const store = usePageStoreContext()
-  const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
+  const [filters, orderBy, exact] = useStore(store, state => [state.filters, state.orderBy, state.exact])
   const { isFetching, dataUpdatedAt, refetch, data: rows, isPending } = useInfiniteQuery(
     connectionRowsQuery({ connection, table, schema, query: { filters, orderBy } }),
   )
@@ -28,7 +29,7 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
   async function handleRefresh() {
     refetch()
     queryClient.invalidateQueries(connectionTableColumnsQuery({ connection, table, schema }))
-    queryClient.invalidateQueries(connectionTableTotalQuery({ connection, table, schema, query: { filters } }))
+    queryClient.invalidateQueries(connectionTableTotalQuery({ connection, table, schema, query: { filters, exact } }))
     queryClient.invalidateQueries(connectionConstraintsQuery({ connection }))
   }
 
@@ -78,6 +79,11 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
         table={table}
         schema={schema}
         connection={connection}
+      />
+      <HeaderActionsCopy
+        connection={connection}
+        table={table}
+        schema={schema}
       />
       <HeaderActionsColumns
         connection={connection}

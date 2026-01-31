@@ -13,12 +13,12 @@ import { FiltersProvider } from '~/components/table'
 import { addTab, connectionStore } from '~/entities/connection/store'
 import { prefetchConnectionCore, prefetchConnectionTableCore } from '~/entities/connection/utils'
 import { Filters } from './-components/filters'
-import { Header } from './-components/header'
+import { Header } from './-components/header/header'
 import { Sidebar } from './-components/sidebar'
-import { Table } from './-components/table'
+import { Table } from './-components/table/table'
 import { TablesTabs } from './-components/tabs'
 import { useTableColumns } from './-queries/use-columns-query'
-import { createPageStore, PageStoreContext } from './-store'
+import { PageStoreContext, tablePageStore } from './-store'
 
 export const Route = createFileRoute(
   '/_protected/database/$id/table/',
@@ -32,7 +32,7 @@ export const Route = createFileRoute(
   component: DatabaseTablesPage,
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => {
-    const store = deps.table && deps.schema ? createPageStore({ id: context.connection.id, schema: deps.schema, table: deps.table }) : null
+    const store = deps.table && deps.schema ? tablePageStore({ id: context.connection.id, schema: deps.schema, table: deps.table }) : null
 
     prefetchConnectionCore(context.connection)
 
@@ -44,6 +44,7 @@ export const Route = createFileRoute(
         query: {
           filters: store.state.filters,
           orderBy: store.state.orderBy,
+          exact: store.state.exact,
         },
       })
     }
@@ -70,6 +71,18 @@ export const Route = createFileRoute(
 function TableContent({ table, schema, store }: { table: string, schema: string, store: Store<typeof storeState.infer> }) {
   const { connection } = Route.useLoaderData()
   const deps = Route.useLoaderDeps()
+
+  const resetSelectionStateEvent = useEffectEvent(() => {
+    store.setState(state => ({
+      ...state,
+      lastClickedIndex: null,
+      selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
+    } satisfies typeof state))
+  })
+
+  useEffect(() => {
+    resetSelectionStateEvent()
+  }, [table, schema, store])
 
   useEffect(() => {
     if (deps.filters || deps.orderBy) {
@@ -161,15 +174,15 @@ function DatabaseTablesPage() {
     handleLastOpenedTableEvent()
   }, [schema, table, lastOpenedTable])
 
-  const { defaultLayout, onLayoutChange } = useDefaultLayout({
-    id: `database-layout-${connection.id}`,
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: `database-table-layout-${connection.id}`,
     storage: localStorage,
   })
 
   return (
     <ResizablePanelGroup
       defaultLayout={defaultLayout}
-      onLayoutChange={onLayoutChange}
+      onLayoutChanged={onLayoutChanged}
       orientation="horizontal"
       className="flex"
     >
@@ -177,14 +190,14 @@ function DatabaseTablesPage() {
         defaultSize="20%"
         minSize="10%"
         maxSize="50%"
-        className="h-full rounded-lg border bg-background"
+        className="h-full rounded-lg border bg-background overflow-hidden"
       >
         <Sidebar key={connection.id} />
       </ResizablePanel>
       <ResizableSeparator className="w-1 bg-transparent" />
       <ResizablePanel
         defaultSize="80%"
-        className="flex-1 rounded-lg border bg-background"
+        className="flex-1 rounded-lg border bg-background overflow-hidden"
       >
         {schema && table && tableStore
           ? (

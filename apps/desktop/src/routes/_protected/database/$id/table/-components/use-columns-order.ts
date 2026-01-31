@@ -1,7 +1,7 @@
 import { omit } from '@conar/shared/utils/helpers'
 import { usePageStoreContext } from '../-store'
 
-export function useHeaderActionsOrder() {
+export function useColumnsOrder() {
   const store = usePageStoreContext()
 
   const setOrder = (columnId: string, order: 'ASC' | 'DESC') => {
@@ -21,7 +21,7 @@ export function useHeaderActionsOrder() {
     } satisfies typeof state))
   }
 
-  const onOrder = (columnId: string) => {
+  const toggleOrder = (columnId: string) => {
     const currentOrder = store.state.orderBy?.[columnId]
 
     if (currentOrder === 'ASC') {
@@ -38,6 +38,6 @@ export function useHeaderActionsOrder() {
   return {
     setOrder,
     removeOrder,
-    onOrder,
+    toggleOrder,
   }
 }

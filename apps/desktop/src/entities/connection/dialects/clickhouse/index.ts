@@ -1,22 +1,41 @@
 import type { CompiledQuery, Dialect, Driver, QueryResult } from 'kysely'
 import type { connections } from '~/drizzle'
-import { MysqlQueryCompiler } from 'kysely'
+import { type } from 'arktype'
+import { DummyDriver, MysqlQueryCompiler } from 'kysely'
 import { logSql } from '../../sql'
+
+function escapeSqlString(v: string) {
+  return v.replace(/[\\']/g, '\\$&')
+}
+
+const dateStringType = type('string.date')
 
 function prepareQuery(compiledQuery: CompiledQuery) {
   let i = 0
   const compiledSql = compiledQuery.sql.replace(/\?/g, () => {
     const param = compiledQuery.parameters[i++]
 
+    if (param === null || param === undefined) {
+      return 'NULL'
+    }
+
     if (typeof param === 'number') {
       return `${param}`
     }
 
-    if (typeof param !== 'string') {
-      return `'${JSON.stringify(param)}'`
+    if (param instanceof Date) {
+      return `parseDateTime64BestEffort('${escapeSqlString(param.toISOString())}')`
     }
 
-    return `'${param.replace(/'/g, `\\'`).replace(/\\"/g, '\\\\"')}'`
+    if (typeof param !== 'string') {
+      return `'${escapeSqlString(JSON.stringify(param))}'`
+    }
+
+    if (dateStringType.allows(param)) {
+      return `parseDateTime64BestEffort('${escapeSqlString(param)}')`
+    }
+
+    return `'${escapeSqlString(param)}'`
   })
 
   return compiledSql.replace(
@@ -67,16 +86,31 @@ function createDriver(connection: typeof connections.$inferSelect) {
   } satisfies Driver
 }
 
+function clickhouseAdapter() {
+  return {
+    supportsCreateIfNotExists: false,
+    supportsTransactionalDdl: false,
+    supportsReturning: false,
+    acquireMigrationLock: async () => {},
+    releaseMigrationLock: async () => {},
+  }
+}
+
 export function clickhouseDialect(connection: typeof connections.$inferSelect) {
   return {
-    createAdapter: () => ({
-      supportsCreateIfNotExists: false,
-      supportsTransactionalDdl: false,
-      supportsReturning: false,
-      acquireMigrationLock: async () => {},
-      releaseMigrationLock: async () => {},
-    }),
+    createAdapter: clickhouseAdapter,
     createDriver: () => createDriver(connection),
+    createQueryCompiler: () => new MysqlQueryCompiler(),
+    createIntrospector: () => {
+      throw new Error('Not implemented')
+    },
+  } satisfies Dialect
+}
+
+export function clickhouseColdDialect() {
+  return {
+    createAdapter: clickhouseAdapter,
+    createDriver: () => new DummyDriver(),
     createQueryCompiler: () => new MysqlQueryCompiler(),
     createIntrospector: () => {
       throw new Error('Not implemented')
