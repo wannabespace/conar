@@ -25,6 +25,6 @@ export const dialects = {
   mssql: memoize((connection: typeof connections.$inferSelect) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(connection) })),
 } satisfies Record<ConnectionType, (connection: typeof connections.$inferSelect) => unknown>
 
-export function getColdKysely(dialect: ConnectionType) {
+export function getColdDialect(dialect: ConnectionType) {
   return new Kysely<Record<string, Record<string, unknown>>>({ dialect: coldDialects[dialect]() })
 }

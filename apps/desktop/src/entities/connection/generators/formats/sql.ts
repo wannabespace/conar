@@ -4,7 +4,7 @@ import type { enumType } from '../../sql/enums'
 import type { Index } from '../utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { formatSql } from '~/lib/formatter'
-import { getColdKysely } from '../../dialects'
+import { getColdDialect } from '../../dialects'
 import { findEnum } from '../../sql/enums'
 import { buildWhere } from '../../sql/rows'
 import * as templates from '../templates'
@@ -20,7 +20,7 @@ export function generateQuerySQL({
   filters,
   dialect = ConnectionType.Postgres,
 }: QueryParams) {
-  const db = getColdKysely(dialect)
+  const db = getColdDialect(dialect)
   const base = db.withTables<{ [table]: Record<string, unknown> }>().selectFrom(table).selectAll()
   const query = filters.length > 0 ? base.where(eb => buildWhere(eb, filters)) : base
   const compiled = query.compile()
