@@ -49,10 +49,7 @@ function formatEnumType(foundEnum: typeof enumType.infer, dialect: ConnectionTyp
 }
 
 function formatScalarType(c: Column, dialect: ConnectionType) {
-  let typeDef = c.type ? getColumnType(c.type, 'sql', dialect) : null
-
-  if (!typeDef)
-    return ''
+  let typeDef = getColumnType(c.type, 'sql', dialect)
 
   if (c.maxLength !== undefined) {
     const len = c.maxLength === -1 ? 'MAX' : c.maxLength
@@ -83,7 +80,7 @@ function getTypeDef(
   dialect: ConnectionType,
   usedEnums: Map<string, typeof enumType.infer>,
 ): string {
-  const lowerType = (c.type ?? '').toLowerCase()
+  const lowerType = c.type.toLowerCase()
   const foundEnum = findEnum(enums, c, table)
   const isList = foundEnum
     || lowerType === 'enum'
@@ -119,10 +116,10 @@ function buildColumnParts(
 
   if (c.primaryKey) {
     pkColumns.push(quoted)
-    if (dialect === ConnectionType.MySQL && /int|serial/i.test(c.type ?? '')) {
+    if (dialect === ConnectionType.MySQL && /int|serial/i.test(c.type)) {
       parts.push('AUTO_INCREMENT')
     }
-    if (dialect === ConnectionType.MSSQL && /int/i.test(c.type ?? '')) {
+    if (dialect === ConnectionType.MSSQL && /int/i.test(c.type)) {
       parts.push('IDENTITY(1,1)')
     }
   }
