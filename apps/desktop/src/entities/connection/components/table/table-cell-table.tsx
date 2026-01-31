@@ -66,7 +66,6 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
         header: props => (
           <TableHeaderCell
             column={column}
-            resize={false}
             {...props}
           />
         ),
