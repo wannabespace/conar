@@ -13,7 +13,7 @@ export function generateSchemaZod({
   const cols = columns.map((c) => {
     const key = camelCase(c.id)
     const safeId = /^[a-z_$][\w$]*$/i.test(key) ? key : `'${key}'`
-    let t = getColumnType(c.type, 'zod', dialect)
+    let t = getColumnType(c.type, 'zod', dialect) || 'any'
 
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {

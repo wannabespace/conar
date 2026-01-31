@@ -55,9 +55,9 @@ function formatEnumType(
 }
 
 function formatScalarType(c: Column, dialect: ConnectionType): string {
-  let typeDef = getColumnType(c.type, 'sql', dialect)
+  let typeDef = getColumnType(c.type, 'sql', dialect) || 'any'
 
-  if (c.maxLength != null && c.maxLength) {
+  if (c.maxLength !== undefined) {
     const len = c.maxLength === -1 ? 'MAX' : c.maxLength
     if (/(?:var)?char|binary/i.test(typeDef) && !/text/i.test(typeDef)) {
       typeDef += `(${len})`

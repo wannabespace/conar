@@ -13,7 +13,7 @@ export function generateSchemaTypeScript({
   const cols = columns.map((c) => {
     const key = camelCase(c.id)
     const safeId = /^[a-z_$][\w$]*$/i.test(key) ? key : `'${key}'`
-    let typeScriptType = getColumnType(c.type, 'ts', dialect)
+    let typeScriptType = getColumnType(c.type, 'ts', dialect) || 'any'
 
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {

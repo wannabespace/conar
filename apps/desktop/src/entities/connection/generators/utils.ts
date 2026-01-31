@@ -266,15 +266,15 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
   },
 }
 
-export function getColumnType(type: string | undefined, format: GeneratorFormat, dialect: ConnectionType = ConnectionType.Postgres): string {
+export function getColumnType(type: string | undefined, format: GeneratorFormat, dialect: ConnectionType = ConnectionType.Postgres) {
   if (!type)
-    return 'any'
+    return null
 
   const mapper = TYPE_MAPPINGS[format][dialect]
-  return mapper ? mapper(type) : ''
+  return mapper ? mapper(type) : null
 }
 
-export function formatValue(value: unknown): string {
+export function formatValue(value: unknown) {
   if (value === null)
     return 'NULL'
   if (typeof value === 'string')

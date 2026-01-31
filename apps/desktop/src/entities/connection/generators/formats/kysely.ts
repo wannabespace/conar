@@ -31,7 +31,7 @@ export function generateSchemaKysely({
   enums = [],
 }: SchemaParams) {
   const body = columns.map((c) => {
-    let tsType = getColumnType(c.type, 'ts', dialect)
+    let tsType = getColumnType(c.type, 'ts', dialect) || 'any'
 
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {

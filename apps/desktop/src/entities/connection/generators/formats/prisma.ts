@@ -83,7 +83,7 @@ export function generateSchemaPrisma({
   const usedNames = new Set<string>()
 
   columns.forEach((c) => {
-    let prismaType = getColumnType(c.type, 'prisma', dialect)
+    let prismaType = getColumnType(c.type, 'prisma', dialect) || 'any'
 
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {
