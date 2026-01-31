@@ -1,13 +1,22 @@
-import type { ComponentProps } from 'react'
+import type { VariantProps } from 'class-variance-authority'
+import type { buttonVariants } from '../button.variants'
 import { copy } from '@conar/ui/lib/copy'
 import { RiCheckLine, RiFileCopyLine } from '@remixicon/react'
 import { useState } from 'react'
 import { Button } from '../button'
 import { ContentSwitch } from './content-switch'
 
-type Size = Extract<ComponentProps<typeof Button>['size'], `icon-${string}`>
-
-export function CopyButton({ text, size = 'icon-sm', ...props }: { text: string, className?: string, size?: Size }) {
+export function CopyButton({
+  text,
+  variant = 'ghost',
+  size = 'icon-sm',
+  ...props
+}: {
+  text: string
+  className?: string
+  variant?: VariantProps<typeof buttonVariants>['variant']
+  size?: VariantProps<typeof buttonVariants>['size']
+}) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
@@ -19,7 +28,7 @@ export function CopyButton({ text, size = 'icon-sm', ...props }: { text: string,
     <Button
       {...props}
       size={size}
-      variant="ghost"
+      variant={variant}
       onClick={handleCopy}
     >
       <ContentSwitch

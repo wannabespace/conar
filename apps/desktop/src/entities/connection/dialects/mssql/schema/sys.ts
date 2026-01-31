@@ -8,6 +8,16 @@ export interface Sys {
   schemas: Schemas
   index_columns: IndexColumns
   columns: Columns
+  databases: Databases
+}
+
+/**
+ * @name databases
+ * @type table
+ */
+interface Databases {
+  database_id: number
+  name: string
 }
 
 /**
