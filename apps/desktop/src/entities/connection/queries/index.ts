@@ -1,4 +1,5 @@
 export * from './columns'
+export * from './connection-version'
 export * from './constraints'
 export * from './enums'
 export * from './indexes'

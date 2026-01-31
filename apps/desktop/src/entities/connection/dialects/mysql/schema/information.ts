@@ -9,6 +9,7 @@ export interface InformationSchema {
   TABLE_CONSTRAINTS: TableConstraints
   KEY_COLUMN_USAGE: KeyColumnUsage
   STATISTICS: Statistics
+  REFERENTIAL_CONSTRAINTS: ReferentialConstraints
 }
 
 /**
@@ -128,4 +129,22 @@ interface Statistics {
   INDEX_NAME: string
   COLUMN_NAME: string
   NON_UNIQUE: number
+}
+
+/**
+ * @name REFERENTIAL_CONSTRAINTS
+ * @type table
+ */
+interface ReferentialConstraints {
+  CONSTRAINT_CATALOG: string
+  CONSTRAINT_SCHEMA: string
+  CONSTRAINT_NAME: string
+  UNIQUE_CONSTRAINT_CATALOG: string
+  UNIQUE_CONSTRAINT_SCHEMA: string
+  UNIQUE_CONSTRAINT_NAME: string
+  MATCH_OPTION: string
+  UPDATE_RULE: string
+  DELETE_RULE: string
+  TABLE_NAME: string
+  REFERENCED_TABLE_NAME: string
 }

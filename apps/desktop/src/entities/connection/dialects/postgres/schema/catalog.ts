@@ -7,6 +7,16 @@ export interface PgCatalog {
   pg_class: PgClass
   pg_index: PgIndex
   pg_attribute: PgAttribute
+  pg_settings: PgSettings
+}
+
+/**
+ * @name pg_settings
+ * @type table
+ */
+interface PgSettings {
+  name: string
+  setting: string
 }
 
 /**

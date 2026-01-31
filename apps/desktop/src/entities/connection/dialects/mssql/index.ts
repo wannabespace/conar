@@ -9,7 +9,7 @@ import type {
   SelectQueryNode,
 } from 'kysely'
 import type { connections } from '~/drizzle'
-import { MssqlQueryCompiler as DefaultMssqlQueryCompiler, MssqlAdapter } from 'kysely'
+import { MssqlQueryCompiler as DefaultMssqlQueryCompiler, DummyDriver, MssqlAdapter } from 'kysely'
 import { logSql } from '../../sql'
 
 function isSelectQueryNode(node: OperationNode): node is SelectQueryNode {
@@ -91,6 +91,17 @@ function createDriver(connection: typeof connections.$inferSelect) {
 export function mssqlDialect(connection: typeof connections.$inferSelect) {
   return {
     createDriver: () => createDriver(connection),
+    createQueryCompiler: () => new MssqlQueryCompiler(),
+    createAdapter: () => new MssqlAdapter(),
+    createIntrospector: () => {
+      throw new Error('Not implemented')
+    },
+  } satisfies Dialect
+}
+
+export function mssqlColdDialect() {
+  return {
+    createDriver: () => new DummyDriver(),
     createQueryCompiler: () => new MssqlQueryCompiler(),
     createAdapter: () => new MssqlAdapter(),
     createIntrospector: () => {

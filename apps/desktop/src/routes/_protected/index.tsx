@@ -10,6 +10,7 @@ import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, Ri
 import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useConnectionsSync } from '~/entities/connection/sync'
+import { queryClient } from '~/main'
 import { setIsCreateConnectionDialogOpen } from '~/store'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 import { ConnectionsList } from './-components/connections-list'
@@ -50,7 +51,10 @@ function DashboardPage() {
               variant="outline"
               size="icon"
               disabled={isSyncing}
-              onClick={() => sync()}
+              onClick={() => {
+                sync()
+                queryClient.invalidateQueries({ queryKey: ['connection'] })
+              }}
             >
               <LoadingContent loading={isSyncing}>
                 <ContentSwitch

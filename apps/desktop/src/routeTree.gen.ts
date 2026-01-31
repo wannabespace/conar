@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
+import { Route as ProtectedCreateIndexRouteImport } from './routes/_protected/create/index'
 import { Route as ProtectedDatabaseIdRouteImport } from './routes/_protected/database/$id'
 import { Route as ProtectedDatabaseIdDefinitionsRouteImport } from './routes/_protected/database/$id/definitions'
 import { Route as ProtectedDatabaseIdVisualizerIndexRouteImport } from './routes/_protected/database/$id/visualizer/index'
@@ -33,6 +34,11 @@ const ProtectedRoute = ProtectedRouteImport.update({
 const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedCreateIndexRoute = ProtectedCreateIndexRouteImport.update({
+  id: '/create/',
+  path: '/create/',
   getParentRoute: () => ProtectedRoute,
 } as any)
 const ProtectedDatabaseIdRoute = ProtectedDatabaseIdRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
   '/auth': typeof AuthRoute
   '/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
+  '/create/': typeof ProtectedCreateIndexRoute
   '/database/$id/definitions': typeof ProtectedDatabaseIdDefinitionsRouteWithChildren
   '/database/$id/sql/': typeof ProtectedDatabaseIdSqlIndexRoute
   '/database/$id/table/': typeof ProtectedDatabaseIdTableIndexRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/': typeof ProtectedIndexRoute
   '/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
+  '/create': typeof ProtectedCreateIndexRoute
   '/database/$id/definitions': typeof ProtectedDatabaseIdDefinitionsRouteWithChildren
   '/database/$id/sql': typeof ProtectedDatabaseIdSqlIndexRoute
   '/database/$id/table': typeof ProtectedDatabaseIdTableIndexRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/_protected/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
+  '/_protected/create/': typeof ProtectedCreateIndexRoute
   '/_protected/database/$id/definitions': typeof ProtectedDatabaseIdDefinitionsRouteWithChildren
   '/_protected/database/$id/sql/': typeof ProtectedDatabaseIdSqlIndexRoute
   '/_protected/database/$id/table/': typeof ProtectedDatabaseIdTableIndexRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/database/$id'
+    | '/create/'
     | '/database/$id/definitions'
     | '/database/$id/sql/'
     | '/database/$id/table/'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/'
     | '/database/$id'
+    | '/create'
     | '/database/$id/definitions'
     | '/database/$id/sql'
     | '/database/$id/table'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_protected/'
     | '/_protected/database/$id'
+    | '/_protected/create/'
     | '/_protected/database/$id/definitions'
     | '/_protected/database/$id/sql/'
     | '/_protected/database/$id/table/'
@@ -187,6 +199,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof ProtectedIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/create/': {
+      id: '/_protected/create/'
+      path: '/create'
+      fullPath: '/create/'
+      preLoaderRoute: typeof ProtectedCreateIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/_protected/database/$id': {
@@ -291,11 +310,13 @@ const ProtectedDatabaseIdRouteWithChildren =
 interface ProtectedRouteChildren {
   ProtectedIndexRoute: typeof ProtectedIndexRoute
   ProtectedDatabaseIdRoute: typeof ProtectedDatabaseIdRouteWithChildren
+  ProtectedCreateIndexRoute: typeof ProtectedCreateIndexRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedIndexRoute: ProtectedIndexRoute,
   ProtectedDatabaseIdRoute: ProtectedDatabaseIdRouteWithChildren,
+  ProtectedCreateIndexRoute: ProtectedCreateIndexRoute,
 }
 
 const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(

@@ -6,7 +6,7 @@ import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { xai } from '@ai-sdk/xai'
 import { PORTS } from '@conar/shared/constants'
-import { onError } from '@orpc/server'
+import { onError, ORPCError, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { generateText } from 'ai'
 import { consola } from 'consola'
@@ -23,12 +23,23 @@ import { sendEmail } from './lib/resend'
 const handler = new RPCHandler(router, {
   interceptors: [
     onError((error) => {
+      if (error instanceof ORPCError) {
+        if (error.cause instanceof ValidationError) {
+          const message = error.cause.issues.map(issue => issue.path
+            ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
+            : issue.message,
+          ).join(', ')
+
+          throw new ORPCError('BAD_REQUEST', { message })
+        }
+
+        throw error
+      }
+
       consola.error(error)
+
+      throw new ORPCError('INTERNAL_SERVER_ERROR', { message: 'An unexpected error occurred' })
     }),
-    async ({ request, next }) => {
-      consola.log('Desktop version: ', request.headers['x-desktop-version'] || 'Unknown')
-      return next()
-    },
   ],
 })
 
