@@ -55,7 +55,7 @@ export function ExportData({
   getData: (limit?: (typeof EXPORT_LIMITS)[number]) => Promise<Record<string, unknown>[]>
   trigger: (props: { isExporting: boolean }) => React.ReactNode
 }) {
-  const { mutate: exportData, isPending: isExportingFile } = useMutation({
+  const { mutate: exportData, isPending: isExporting } = useMutation({
     mutationFn: async ({
       format,
       limit,
@@ -78,19 +78,24 @@ export function ExportData({
   })
 
   const { mutate: copyToClipboard, isPending: isCopying } = useMutation({
-    mutationFn: async ({ limit, format = 'json' }: { limit?: (typeof EXPORT_LIMITS)[number], format?: keyof ReturnType<typeof contentGenerators> } = {}) => {
+    mutationFn: async ({
+      format,
+      limit,
+    }: {
+      format: keyof ReturnType<typeof contentGenerators>
+      limit?: (typeof EXPORT_LIMITS)[number]
+    }) => {
       const data = await getData(limit)
       const content = contentGenerators(data)[format]()
       return { content, count: data.length, format }
     },
     onSuccess: ({ content, count, format }) => {
-      const successText = `Copied ${count} ${count === 1 ? 'row' : 'rows'} to clipboard on ${format} format`
-      copy(content, successText)
+      copy(content, `Copied ${count} ${count === 1 ? 'row' : 'rows'} to clipboard as ${format}`)
     },
     onError: handleError,
   })
 
-  const isExporting = isExportingFile || isCopying
+  const isPending = isExporting || isCopying
 
   return (
     <TooltipProvider>
@@ -98,18 +103,18 @@ export function ExportData({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <TooltipTrigger asChild>
-              {trigger({ isExporting })}
+              {trigger({ isExporting: isPending })}
             </TooltipTrigger>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger disabled={isExporting}>
+              <DropdownMenuSubTrigger>
                 <RiDownloadLine />
-                Export as file
+                Export
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger disabled={isExporting}>
+                  <DropdownMenuSubTrigger>
                     <RiTableLine />
                     Export as CSV
                   </DropdownMenuSubTrigger>
@@ -118,21 +123,21 @@ export function ExportData({
                       <DropdownMenuItem
                         key={limitOption}
                         onClick={() => exportData({ format: 'csv', limit: limitOption })}
-                        disabled={isExporting}
                       >
-                        {`First ${limitOption} rows`}
+                        First
+                        {' '}
+                        {limitOption}
+                        {' '}
+                        rows
                       </DropdownMenuItem>
                     ))}
-                    <DropdownMenuItem
-                      onClick={() => exportData({ format: 'csv' })}
-                      disabled={isExporting}
-                    >
+                    <DropdownMenuItem onClick={() => exportData({ format: 'csv' })}>
                       All rows
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger disabled={isExporting}>
+                  <DropdownMenuSubTrigger>
                     <RiBracesLine />
                     Export as JSON
                   </DropdownMenuSubTrigger>
@@ -141,15 +146,15 @@ export function ExportData({
                       <DropdownMenuItem
                         key={limitOption}
                         onClick={() => exportData({ format: 'json', limit: limitOption })}
-                        disabled={isExporting}
                       >
-                        {`First ${limitOption} rows`}
+                        First
+                        {' '}
+                        {limitOption}
+                        {' '}
+                        rows
                       </DropdownMenuItem>
                     ))}
-                    <DropdownMenuItem
-                      onClick={() => exportData({ format: 'json' })}
-                      disabled={isExporting}
-                    >
+                    <DropdownMenuItem onClick={() => exportData({ format: 'json' })}>
                       All rows
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
@@ -157,13 +162,13 @@ export function ExportData({
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger disabled={isExporting}>
+              <DropdownMenuSubTrigger>
                 <RiFileCopyLine />
                 Copy
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger disabled={isExporting}>
+                  <DropdownMenuSubTrigger>
                     <RiTableLine />
                     Copy as CSV
                   </DropdownMenuSubTrigger>
@@ -172,21 +177,21 @@ export function ExportData({
                       <DropdownMenuItem
                         key={limitOption}
                         onClick={() => copyToClipboard({ format: 'csv', limit: limitOption })}
-                        disabled={isExporting}
                       >
-                        {`First ${limitOption} rows`}
+                        First
+                        {' '}
+                        {limitOption}
+                        {' '}
+                        rows
                       </DropdownMenuItem>
                     ))}
-                    <DropdownMenuItem
-                      onClick={() => copyToClipboard({ format: 'csv' })}
-                      disabled={isExporting}
-                    >
+                    <DropdownMenuItem onClick={() => copyToClipboard({ format: 'csv' })}>
                       All rows
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger disabled={isExporting}>
+                  <DropdownMenuSubTrigger>
                     <RiBracesLine />
                     Copy as JSON
                   </DropdownMenuSubTrigger>
@@ -195,15 +200,15 @@ export function ExportData({
                       <DropdownMenuItem
                         key={limitOption}
                         onClick={() => copyToClipboard({ format: 'json', limit: limitOption })}
-                        disabled={isExporting}
                       >
-                        {`First ${limitOption} rows`}
+                        First
+                        {' '}
+                        {limitOption}
+                        {' '}
+                        rows
                       </DropdownMenuItem>
                     ))}
-                    <DropdownMenuItem
-                      onClick={() => copyToClipboard({ format: 'json' })}
-                      disabled={isExporting}
-                    >
+                    <DropdownMenuItem onClick={() => copyToClipboard({ format: 'json' })}>
                       All rows
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
