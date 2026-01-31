@@ -61,16 +61,14 @@ function mergeWhereField(
 
 export function generateQueryPrisma({ table, filters }: QueryParams) {
   const tableName = camelCase(table)
-  const where: Record<string, PrismaFilterValue> = {}
-
-  for (const f of filters) {
+  const where = filters.reduce<Record<string, PrismaFilterValue>>((acc, f) => {
     const finalValue = singleFilterToPrisma(f)
     if (finalValue === null)
-      continue
-
+      return acc
     const colName = camelCase(f.column)
-    where[colName] = mergeWhereField(where[colName], finalValue)
-  }
+    acc[colName] = mergeWhereField(acc[colName], finalValue)
+    return acc
+  }, {})
 
   const jsonWhere = Object.keys(where).length > 0
     ? JSON.stringify(where, null, 2).replace(/"([^"]+)":/g, '$1:')
@@ -99,11 +97,11 @@ export function generateSchemaPrisma({
   enums = [],
   indexes = [],
 }: SchemaParams) {
-  const extraBlocks: string[] = []
-  const fields: { name: string, type: string, attributes: string[], isRelation: boolean }[] = []
-  const usedNames = new Set<string>()
-
-  for (const c of columns) {
+  const { fields, extraBlocks } = columns.reduce<{
+    fields: { name: string, type: string, attributes: string[], isRelation: boolean }[]
+    extraBlocks: string[]
+    usedNames: Set<string>
+  }>((acc, c) => {
     let prismaType = getColumnType(c.type, 'prisma', dialect)
 
     const foundEnum = findEnum(enums, c, table)
@@ -117,12 +115,12 @@ export function generateSchemaPrisma({
         return `  ${v.replace(/\W/g, '_')} @map("${v}")`
       }).join('\n')
 
-      extraBlocks.push(`enum ${enumName} {\n${enumValues}\n}`)
+      acc.extraBlocks.push(`enum ${enumName} {\n${enumValues}\n}`)
     }
 
     const fieldName = camelCase(c.id)
     const needsMap = fieldName !== c.id
-    usedNames.add(fieldName)
+    acc.usedNames.add(fieldName)
 
     const attributes: string[] = []
     if (c.primaryKey) {
@@ -146,7 +144,7 @@ export function generateSchemaPrisma({
       attributes.push(`@map("${c.id}")`)
     }
 
-    fields.push({
+    acc.fields.push({
       name: fieldName,
       type: prismaType + (c.isNullable ? '?' : ''),
       attributes,
@@ -155,15 +153,15 @@ export function generateSchemaPrisma({
 
     if (c.foreign) {
       let relName = camelCase(c.foreign.table)
-      if (usedNames.has(relName))
+      if (acc.usedNames.has(relName))
         relName = camelCase(`${c.foreign.table}_${c.foreign.column}`)
-      usedNames.add(relName)
+      acc.usedNames.add(relName)
 
       const relType = pascalCase(c.foreign.table)
       const onDelete = foreignActionToPrisma(c.foreign.onDelete ?? '', 'onDelete')
       const onUpdate = foreignActionToPrisma(c.foreign.onUpdate ?? '', 'onUpdate')
 
-      fields.push({
+      acc.fields.push({
         name: relName,
         type: relType,
         attributes: [`@relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}]${onDelete}${onUpdate})`],
@@ -171,24 +169,23 @@ export function generateSchemaPrisma({
       })
     }
 
-    if (c.references?.length) {
-      for (const ref of c.references) {
-        const isValidRef = /^[a-z]\w*$/i.test(ref.table)
-        const refType = isValidRef ? ref.table : pascalCase(ref.table)
-        let fieldName = camelCase(ref.table)
-        if (usedNames.has(fieldName))
-          fieldName = camelCase(`${ref.table}_${ref.column}`)
-        usedNames.add(fieldName)
-
-        fields.push({
-          name: fieldName,
-          type: ref.isUnique ? `${refType}?` : `${refType}[]`,
-          attributes: [],
-          isRelation: true,
-        })
+    const refFields = (c.references ?? []).map((ref) => {
+      const isValidRef = /^[a-z]\w*$/i.test(ref.table)
+      const refType = isValidRef ? ref.table : pascalCase(ref.table)
+      let refFieldName = camelCase(ref.table)
+      if (acc.usedNames.has(refFieldName))
+        refFieldName = camelCase(`${ref.table}_${ref.column}`)
+      acc.usedNames.add(refFieldName)
+      return {
+        name: refFieldName,
+        type: ref.isUnique ? `${refType}?` : `${refType}[]`,
+        attributes: [] as string[],
+        isRelation: true as const,
       }
-    }
-  }
+    })
+    acc.fields.push(...refFields)
+    return acc
+  }, { fields: [], extraBlocks: [], usedNames: new Set<string>() })
 
   const allFields = [...fields.filter(f => !f.isRelation), ...fields.filter(f => f.isRelation)]
   const maxNameLen = Math.max(...allFields.map(f => f.name.length), 0)

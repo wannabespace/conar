@@ -117,38 +117,39 @@ export function generateSchemaDrizzle({
     return `  ${safeKey}: ${chain},`
   }).join('\n')
 
-  const relationships: string[] = []
-  const usedNames = new Set<string>()
-
-  columns.forEach((c) => {
+  const { relationships, relationshipFkImports } = columns.reduce<{
+    relationships: string[]
+    usedNames: Set<string>
+    relationshipFkImports: Set<string>
+  }>((acc, c) => {
     if (c.foreign && dialect !== 'clickhouse') {
       const isValidRef = /^[a-z_$][\w$]*$/i.test(c.foreign.table)
       const refTable = isValidRef ? c.foreign.table : pascalCase(c.foreign.table)
       const fieldName = camelCase(c.id.replace(/(_id|Id)$/, ''))
-      usedNames.add(fieldName)
-
-      relationships.push(`  ${fieldName}: one(${refTable}, {\n    fields: [${varName}.${camelCase(c.id)}],\n    references: [${refTable}.${camelCase(c.foreign.column)}],\n  }),`)
+      acc.usedNames.add(fieldName)
+      acc.relationships.push(`  ${fieldName}: one(${refTable}, {\n    fields: [${varName}.${camelCase(c.id)}],\n    references: [${refTable}.${camelCase(c.foreign.column)}],\n  }),`)
     }
 
-    if (c.references?.length) {
-      c.references.forEach((ref) => {
-        const isValidRef = /^[a-z_$][\w$]*$/i.test(ref.table)
-        const refTable = isValidRef ? ref.table : pascalCase(ref.table)
-        let fieldName = camelCase(ref.table)
-        if (usedNames.has(fieldName)) {
-          fieldName = camelCase(`${ref.table}_${ref.column}`)
-        }
-        usedNames.add(fieldName)
+    const refEntries = (c.references ?? []).map((ref) => {
+      const isValidRef = /^[a-z_$][\w$]*$/i.test(ref.table)
+      const refTable = isValidRef ? ref.table : pascalCase(ref.table)
+      let fieldName = camelCase(ref.table)
+      if (acc.usedNames.has(fieldName)) {
+        fieldName = camelCase(`${ref.table}_${ref.column}`)
+      }
+      acc.usedNames.add(fieldName)
+      const rel = ref.isUnique
+        ? `  ${fieldName}: one(${refTable}),`
+        : `  ${fieldName}: many(${refTable}),`
+      const fkImport = `import { ${refTable} } from './${ref.table}';`
+      return { rel, fkImport }
+    })
+    acc.relationships.push(...refEntries.map(e => e.rel))
+    refEntries.map(e => e.fkImport).map(imp => acc.relationshipFkImports.add(imp))
+    return acc
+  }, { relationships: [], usedNames: new Set<string>(), relationshipFkImports: new Set<string>() })
 
-        if (ref.isUnique)
-          relationships.push(`  ${fieldName}: one(${refTable}),`)
-        else
-          relationships.push(`  ${fieldName}: many(${refTable}),`)
-
-        foreignKeyImports.add(`import { ${refTable} } from './${ref.table}';`)
-      })
-    }
-  })
+  const allFkImports = new Set([...foreignKeyImports, ...relationshipFkImports])
 
   const groupedIndexes = groupIndexes(indexes, table)
   const explicitIndexes = filterExplicitIndexes(groupedIndexes, columns, dialect)
@@ -180,7 +181,7 @@ export function generateSchemaDrizzle({
 
   const allImports = [
     relationships.length > 0 ? 'import { relations } from \'drizzle-orm\';' : null,
-    ...foreignKeyImports,
+    ...allFkImports,
     baseImports,
   ].filter(Boolean).join('\n')
 

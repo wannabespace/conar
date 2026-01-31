@@ -191,29 +191,33 @@ export function generateSchemaSQL({
 }: SchemaParams) {
   const usedEnums = new Map<string, typeof enumType.infer>()
   const pkColumns: string[] = []
-  const foreignKeys: string[] = []
-  const columnLines: string[] = []
+  const { columnLines, foreignKeys } = columns.reduce<{
+    columnLines: string[]
+    foreignKeys: string[]
+  }>(
+    (acc, c) => {
+      let typeDef = getTypeDef(c, table, enums, dialect, usedEnums)
+      let defaultValue = c.defaultValue
 
-  for (const c of columns) {
-    let typeDef = getTypeDef(c, table, enums, dialect, usedEnums)
-    let defaultValue = c.defaultValue
-
-    if (dialect === ConnectionType.Postgres && defaultValue?.toLowerCase().startsWith('nextval')) {
-      if (typeDef === 'INTEGER') {
-        typeDef = 'SERIAL'
-        defaultValue = null
+      if (dialect === ConnectionType.Postgres && defaultValue?.toLowerCase().startsWith('nextval')) {
+        if (typeDef === 'INTEGER') {
+          typeDef = 'SERIAL'
+          defaultValue = null
+        }
+        else if (typeDef === 'BIGINT') {
+          typeDef = 'BIGSERIAL'
+          defaultValue = null
+        }
       }
-      else if (typeDef === 'BIGINT') {
-        typeDef = 'BIGSERIAL'
-        defaultValue = null
-      }
-    }
 
-    const { parts, foreignKey } = buildColumnParts(c, typeDef, dialect, pkColumns, defaultValue)
-    columnLines.push(`  ${parts.join(' ')}`)
-    if (foreignKey)
-      foreignKeys.push(`  ${foreignKey}`)
-  }
+      const { parts, foreignKey } = buildColumnParts(c, typeDef, dialect, pkColumns, defaultValue)
+      acc.columnLines.push(`  ${parts.join(' ')}`)
+      if (foreignKey)
+        acc.foreignKeys.push(foreignKey)
+      return acc
+    },
+    { columnLines: [], foreignKeys: [] },
+  )
 
   let columnBlock = columnLines.join(',\n')
   if (foreignKeys.length > 0) {
