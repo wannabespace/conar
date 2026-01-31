@@ -22,7 +22,7 @@ import { motion, Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { addTab, connectionStore, removeTab, updateTabs } from '~/entities/connection/store'
 import { prefetchConnectionTableCore } from '~/entities/connection/utils'
-import { getPageStoreState } from '../-store'
+import { tablePageStore } from '../-store'
 
 const MotionScrollViewport = motion.create(ScrollViewport)
 
@@ -54,20 +54,12 @@ function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] })
 }
 
 function getQueryOpts(connection: typeof connections.$inferSelect, schema: string, tableName: string) {
-  const state = schema ? getPageStoreState(connection.id, schema, tableName) : null
-
-  if (state) {
-    return {
-      filters: state.filters,
-      orderBy: state.orderBy,
-      exact: state.exact,
-    }
-  }
+  const store = tablePageStore({ id: connection.id, schema, table: tableName })
 
   return {
-    filters: [],
-    orderBy: {},
-    exact: false,
+    filters: store.state.filters,
+    orderBy: store.state.orderBy,
+    exact: store.state.exact,
   }
 }
 

@@ -1,6 +1,6 @@
 import type { CompiledQuery, Dialect, Driver, QueryResult } from 'kysely'
 import type { connections } from '~/drizzle'
-import { MysqlAdapter, MysqlQueryCompiler } from 'kysely'
+import { DummyDriver, MysqlAdapter, MysqlQueryCompiler } from 'kysely'
 import { logSql } from '../../sql'
 
 function execute(connection: typeof connections.$inferSelect, compiledQuery: CompiledQuery) {
@@ -50,6 +50,17 @@ function createDriver(connection: typeof connections.$inferSelect) {
 export function mysqlDialect(connection: typeof connections.$inferSelect) {
   return {
     createDriver: () => createDriver(connection),
+    createQueryCompiler: () => new MysqlQueryCompiler(),
+    createAdapter: () => new MysqlAdapter(),
+    createIntrospector: () => {
+      throw new Error('Not implemented')
+    },
+  } satisfies Dialect
+}
+
+export function mysqlColdDialect() {
+  return {
+    createDriver: () => new DummyDriver(),
     createQueryCompiler: () => new MysqlQueryCompiler(),
     createAdapter: () => new MysqlAdapter(),
     createIntrospector: () => {

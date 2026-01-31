@@ -21,6 +21,7 @@ export function useTableColumns({ connection, table, schema }: { connection: typ
       return {
         ...column,
         primaryKey: primaryConstraint?.name,
+        defaultValue: column.default,
         unique: uniqueConstraint?.name,
         foreign: foreignConstraint && foreignConstraint.foreignSchema && foreignConstraint.foreignTable && foreignConstraint.foreignColumn
           ? {
@@ -28,6 +29,8 @@ export function useTableColumns({ connection, table, schema }: { connection: typ
               schema: foreignConstraint.foreignSchema,
               table: foreignConstraint.foreignTable,
               column: foreignConstraint.foreignColumn,
+              onDelete: foreignConstraint.onDelete ?? undefined,
+              onUpdate: foreignConstraint.onUpdate ?? undefined,
             }
           : undefined,
         references: constraints
@@ -37,12 +40,22 @@ export function useTableColumns({ connection, table, schema }: { connection: typ
             && c.foreignTable === table
             && !!c.column,
           )
-          .map(c => ({
-            name: c.name,
-            schema: c.schema,
-            table: c.table,
-            column: c.column!,
-          })),
+          .map((c) => {
+            const isUnique = constraints.some(u =>
+              (u.type === 'unique' || u.type === 'primaryKey')
+              && u.schema === c.schema
+              && u.table === c.table
+              && u.column === c.column,
+            )
+
+            return {
+              name: c.name,
+              schema: c.schema,
+              table: c.table,
+              column: c.column!,
+              isUnique,
+            }
+          }),
       }
     })
     .toSorted((a, b) => {

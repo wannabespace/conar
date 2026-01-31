@@ -16,6 +16,7 @@ import { Route } from '../../'
 import { usePageStoreContext } from '../../-store'
 import { AddRecordDialog } from '../add-record-dialog'
 import { HeaderActionsColumns } from './header-actions-columns'
+import { HeaderActionsCopy } from './header-actions-copy'
 import { HeaderActionsDelete } from './header-actions-delete'
 import { HeaderActionsFilters } from './header-actions-filters'
 import { HeaderActionsOrder } from './header-actions-order'
@@ -102,6 +103,11 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
         table={table}
         schema={schema}
         connection={connection}
+      />
+      <HeaderActionsCopy
+        connection={connection}
+        table={table}
+        schema={schema}
       />
       <HeaderActionsColumns
         connection={connection}
