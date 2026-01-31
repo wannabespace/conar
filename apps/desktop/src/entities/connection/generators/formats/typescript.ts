@@ -2,7 +2,7 @@ import type { SchemaParams } from '..'
 import { camelCase } from 'change-case'
 import { findEnum } from '../../sql/enums'
 import * as templates from '../templates'
-import { getColumnType } from '../utils'
+import { getColumnType, toLiteralKey } from '../utils'
 
 export function generateSchemaTypeScript({
   table,
@@ -12,8 +12,8 @@ export function generateSchemaTypeScript({
 }: SchemaParams) {
   const cols = columns.map((c) => {
     const key = camelCase(c.id)
-    const safeId = /^[a-z_$][\w$]*$/i.test(key) ? key : `'${key}'`
-    let typeScriptType = getColumnType(c.type, 'ts', dialect) || 'any'
+    const literalKey = toLiteralKey(key)
+    let typeScriptType = c.type ? getColumnType(c.type, 'ts', dialect) : 'any'
 
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {
@@ -21,12 +21,11 @@ export function generateSchemaTypeScript({
       if (c.type === 'set')
         typeScriptType = `(${typeScriptType})[]`
     }
-
     if (c.isNullable)
       typeScriptType += ' | null'
 
-    return `  ${safeId}${c.isNullable ? '?' : ''}: ${typeScriptType};`
-  }).join('\n')
+    return `  ${literalKey}${c.isNullable ? '?' : ''}: ${typeScriptType};`
+  }).filter(Boolean).join('\n')
 
   return templates.typeScriptSchemaTemplate(table, cols)
 }

@@ -12,13 +12,11 @@ export function generateQueryKysely({
     if (f.ref.hasValue === false) {
       return `'${col}', '${f.ref.operator.toLowerCase()}'`
     }
-    else if (f.ref.isArray) {
+    if (f.ref.isArray) {
       const method = f.ref.operator.toUpperCase() === 'IN' ? 'in' : 'not in'
       return `'${col}', '${method}', ${JSON.stringify(f.values)}`
     }
-    else {
-      return `'${col}', '${f.ref.operator}', ${formatValue(f.values[0])}`
-    }
+    return `'${col}', '${f.ref.operator}', ${formatValue(f.values[0])}`
   }).filter(Boolean).join(')\n  .where(')
 
   return templates.kyselyQueryTemplate(table, conditions)
@@ -31,7 +29,10 @@ export function generateSchemaKysely({
   enums = [],
 }: SchemaParams) {
   const body = columns.map((c) => {
-    let tsType = getColumnType(c.type, 'ts', dialect) || 'any'
+    let tsType = c.type ? getColumnType(c.type, 'ts', dialect) : null
+
+    if (!tsType)
+      return null
 
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {

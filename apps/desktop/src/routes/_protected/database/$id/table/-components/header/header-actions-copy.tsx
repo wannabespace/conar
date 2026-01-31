@@ -134,7 +134,6 @@ function CopyDialogEditor({ activeFormat, activeCategory, codeContent }: {
           options={{
             readOnly: true,
             minimap: { enabled: false },
-            fontSize: 13,
             lineNumbers: 'off',
             padding: { top: 16, bottom: 16 },
             scrollBeyondLastLine: false,

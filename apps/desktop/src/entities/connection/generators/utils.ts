@@ -1,5 +1,5 @@
-import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { pascalCase } from 'change-case'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { Column } from '../components/table/utils'
 
 export type GeneratorFormat = 'ts' | 'zod' | 'prisma' | 'sql' | 'drizzle' | 'kysely'
 
@@ -12,52 +12,15 @@ export interface Index {
   isPrimary: boolean
 }
 
-export function sanitize(name: string) {
-  return name.replace(/\W/g, '_')
+export interface GroupedIndex {
+  name: string
+  isUnique: boolean
+  isPrimary: boolean
+  columns: string[]
 }
 
-export function safePascalCase(name: string) {
-  const replaced = name
-    .replace(/ /g, '_Space_')
-    .replace(/-/g, '_Minus_')
-    .replace(/\./g, '_Dot_')
-    .replace(/@/g, '_At_')
-    .replace(/\$/g, '_Dollar_')
-    .replace(/%/g, '_Percent_')
-    .replace(/&/g, '_Ampersand_')
-    .replace(/\*/g, '_Asterisk_')
-    .replace(/#/g, '_Hash_')
-    .replace(/!/g, '_Exclamation_')
-    .replace(/\^/g, '_Caret_')
-    .replace(/\(/g, '_OpenParen_')
-    .replace(/\)/g, '_CloseParen_')
-    .replace(/\+/g, '_Plus_')
-    .replace(/=/g, '_Equal_')
-    .replace(/\{/g, '_OpenBrace_')
-    .replace(/\}/g, '_CloseBrace_')
-    .replace(/\[/g, '_OpenBracket_')
-    .replace(/\]/g, '_CloseBracket_')
-    .replace(/\|/g, '_Pipe_')
-    .replace(/\\/g, '_Backslash_')
-    .replace(/\//g, '_Slash_')
-    .replace(/:/g, '_Colon_')
-    .replace(/;/g, '_Semicolon_')
-    .replace(/"/g, '_Quote_')
-    .replace(/'/g, '_SingleQuote_')
-    .replace(/</g, '_LessThan_')
-    .replace(/>/g, '_GreaterThan_')
-    .replace(/,/g, '_Comma_')
-    .replace(/\?/g, '_Question_')
-    .replace(/~/g, '_Tilde_')
-    .replace(/`/g, '_Backtick_')
-
-  const pascal = pascalCase(replaced)
-
-  if (/^\d/.test(pascal)) {
-    return name.startsWith('_') ? `_${pascal}` : `Num${pascal}`
-  }
-
-  return pascal
+export function toLiteralKey(name: string) {
+  return /^[a-z_$][\w$]*$/i.test(name) ? name : `'${name}'`
 }
 
 function tsMapper(t: string) {
@@ -84,8 +47,21 @@ function zodMapper(t: string) {
   return 'z.string()'
 }
 
-const sqlDefault = (t: string) => t
-const kyselyDefault = (t: string) => t
+function prismaScalarMapper(t: string): string {
+  if (/decimal|numeric/i.test(t))
+    return 'Decimal'
+  if (/bool/i.test(t))
+    return 'Boolean'
+  if (/date|timestamp/i.test(t))
+    return 'DateTime'
+  if (/json/i.test(t))
+    return 'Json'
+  if (/int/i.test(t))
+    return 'Int'
+  if (/float/i.test(t))
+    return 'Float'
+  return 'String'
+}
 
 export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type: string) => string>> = {
   ts: {
@@ -101,53 +77,9 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
     clickhouse: zodMapper,
   },
   prisma: {
-    postgres: (t) => {
-      if (/decimal|numeric/i.test(t))
-        return 'Decimal'
-      if (/bool/i.test(t))
-        return 'Boolean'
-      if (/date|timestamp/i.test(t))
-        return 'DateTime'
-      if (/json/i.test(t))
-        return 'Json'
-      if (/int/i.test(t))
-        return 'Int'
-      if (/float/i.test(t))
-        return 'Float'
-      return 'String'
-    },
-    mysql: (t) => {
-      if (/decimal|numeric/i.test(t))
-        return 'Decimal'
-      if (/bool/i.test(t))
-        return 'Boolean'
-      if (/date|timestamp/i.test(t))
-        return 'DateTime'
-      if (/json/i.test(t))
-        return 'Json'
-      if (/int/i.test(t))
-        return 'Int'
-      if (/float/i.test(t))
-        return 'Float'
-      return 'String'
-    },
-    mssql: (t) => {
-      if (/^date$/i.test(t))
-        return 'DateTime @db.Date'
-      if (/decimal|numeric/i.test(t))
-        return 'Decimal'
-      if (/bool|bit/i.test(t))
-        return 'Boolean'
-      if (/date|timestamp/i.test(t))
-        return 'DateTime'
-      if (/json/i.test(t))
-        return 'Json'
-      if (/int/i.test(t))
-        return 'Int'
-      if (/float/i.test(t))
-        return 'Float'
-      return 'String'
-    },
+    postgres: prismaScalarMapper,
+    mysql: prismaScalarMapper,
+    mssql: t => (/^date$/i.test(t) ? 'DateTime @db.Date' : prismaScalarMapper(t)),
     clickhouse: () => '',
   },
   drizzle: {
@@ -254,24 +186,20 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
         return 'integer'
       return t
     },
-    mysql: sqlDefault,
-    mssql: sqlDefault,
-    clickhouse: sqlDefault,
+    mysql: t => t,
+    mssql: t => t,
+    clickhouse: t => t,
   },
   kysely: {
-    postgres: kyselyDefault,
-    mysql: kyselyDefault,
-    mssql: kyselyDefault,
-    clickhouse: kyselyDefault,
+    postgres: t => t,
+    mysql: t => t,
+    mssql: t => t,
+    clickhouse: t => t,
   },
 }
 
-export function getColumnType(type: string | undefined, format: GeneratorFormat, dialect: ConnectionType = ConnectionType.Postgres) {
-  if (!type)
-    return null
-
-  const mapper = TYPE_MAPPINGS[format][dialect]
-  return mapper ? mapper(type) : null
+export function getColumnType(type: string, format: GeneratorFormat, dialect: ConnectionType) {
+  return TYPE_MAPPINGS[format][dialect](type)
 }
 
 export function formatValue(value: unknown) {
@@ -299,23 +227,44 @@ export function quoteIdentifier(name: string, dialect: ConnectionType) {
   return QUOTE_IDENTIFIER_MAP[dialect](name)
 }
 
-export function groupIndexes(indexes: Index[] = [], table: string) {
-  const grouped = new Map<string, { name: string, isUnique: boolean, isPrimary: boolean, columns: string[] }>()
+export function groupIndexes(indexes: Index[] = [], table: string): GroupedIndex[] {
+  const grouped = new Map<string, GroupedIndex>()
 
-  indexes.forEach((idx) => {
+  for (const idx of indexes) {
     if (idx.table !== table)
-      return
+      continue
 
-    if (!grouped.has(idx.name)) {
+    const existing = grouped.get(idx.name)
+    if (existing) {
+      existing.columns.push(idx.column)
+    }
+    else {
       grouped.set(idx.name, {
         name: idx.name,
         isUnique: idx.isUnique,
         isPrimary: idx.isPrimary,
-        columns: [],
+        columns: [idx.column],
       })
     }
-    grouped.get(idx.name)!.columns.push(idx.column)
-  })
+  }
 
   return Array.from(grouped.values())
+}
+
+export function filterExplicitIndexes(
+  grouped: GroupedIndex[],
+  columns: Column[],
+  dialect?: ConnectionType,
+): GroupedIndex[] {
+  return grouped.filter((idx) => {
+    if (idx.isPrimary)
+      return false
+    if (dialect === 'clickhouse')
+      return false
+    const isRedundantUnique = idx.isUnique && idx.columns.length === 1
+      && columns.some(c => c.id === idx.columns[0] && c.unique)
+    if (isRedundantUnique)
+      return false
+    return true
+  })
 }

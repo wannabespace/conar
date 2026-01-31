@@ -3,13 +3,13 @@ import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
 import { findEnum } from '../../sql/enums'
 import * as templates from '../templates'
-import { getColumnType, groupIndexes, safePascalCase } from '../utils'
+import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
 
 export function generateQueryDrizzle({
   table,
   filters,
 }: QueryParams) {
-  const varName = camelCase(safePascalCase(table))
+  const varName = camelCase(table)
 
   const conditions = filters.map((f) => {
     const op = f.ref.operator.toUpperCase()
@@ -51,17 +51,19 @@ export function generateSchemaDrizzle({
   enums = [],
   indexes = [],
 }: SchemaParams) {
-  const config = dialectConfig[dialect]
-  const { tableFunc, importPath, enumFunc } = config
+  const { tableFunc, importPath, enumFunc } = dialectConfig[dialect]
 
   const imports = new Set<string>()
   const foreignKeyImports = new Set<string>()
   const extras: string[] = []
 
-  const varName = camelCase(safePascalCase(table))
+  const varName = camelCase(table)
 
   const cols = columns.map((c) => {
-    let typeFunc = getColumnType(c.type, 'drizzle', dialect) || 'any'
+    let typeFunc = c.type ? getColumnType(c.type, 'drizzle', dialect) : null
+
+    if (!typeFunc)
+      return null
 
     imports.add(typeFunc)
 
@@ -151,43 +153,33 @@ export function generateSchemaDrizzle({
     }
   })
 
-  const explicitIndexes = groupIndexes(indexes, table).filter(idx => !idx.isPrimary && dialect !== 'clickhouse' && !(idx.isUnique && idx.columns.length === 1 && columns.find(c => c.id === idx.columns[0] && c.unique)))
+  const groupedIndexes = groupIndexes(indexes, table)
+  const explicitIndexes = filterExplicitIndexes(groupedIndexes, columns, dialect)
 
   let extraConfig = ''
   if (explicitIndexes.length > 0) {
-    const idxDecls: string[] = []
-    let usedIndex = false
-    let usedUnique = false
-
-    explicitIndexes.forEach((idx) => {
+    const idxDecls = explicitIndexes.map((idx) => {
       const func = idx.isUnique ? 'uniqueIndex' : 'index'
       if (idx.isUnique)
-        usedUnique = true
-      else
-        usedIndex = true
+        imports.add('uniqueIndex')
+      else imports.add('index')
 
       const onCols = idx.columns.map((col) => {
         const key = camelCase(col)
         const isSafe = /^[a-z_$][\w$]*$/i.test(key)
         return isSafe ? `t.${key}` : `t['${key}']`
       }).join(', ')
-
-      idxDecls.push(`  ${func}('${idx.name}').on(${onCols}),`)
+      return `  ${func}('${idx.name}').on(${onCols}),`
     })
-
-    if (usedIndex)
-      imports.add('index')
-    if (usedUnique)
-      imports.add('uniqueIndex')
-
     extraConfig = idxDecls.join('\n')
   }
 
   const base = templates.drizzleSchemaTemplate(table, Array.from(imports), cols, tableFunc, importPath, extraConfig)
 
-  const splitIdx = base.indexOf('\n\nexport')
-  const baseImports = splitIdx !== -1 ? base.slice(0, splitIdx) : ''
-  const baseBody = splitIdx !== -1 ? base.slice(splitIdx).trim() : base
+  // Template outputs "import...\n\nexport const ..."; split so we can prepend relation imports.
+  const exportStart = base.indexOf('\n\nexport')
+  const baseImports = exportStart >= 0 ? base.slice(0, exportStart) : ''
+  const baseBody = exportStart >= 0 ? base.slice(exportStart).trim() : base
 
   const allImports = [
     relationships.length > 0 ? 'import { relations } from \'drizzle-orm\';' : null,

@@ -2,7 +2,37 @@ import type { SchemaParams } from '..'
 import { camelCase } from 'change-case'
 import { findEnum } from '../../sql/enums'
 import * as templates from '../templates'
-import { getColumnType } from '../utils'
+import { getColumnType, toLiteralKey } from '../utils'
+
+function buildZodType(
+  column: SchemaParams['columns'][number],
+  table: string,
+  dialect: SchemaParams['dialect'],
+  enums: NonNullable<SchemaParams['enums']>,
+): string | null {
+  let zodType = column.type ? getColumnType(column.type, 'zod', dialect) : null
+
+  if (!zodType)
+    return null
+
+  const foundEnum = findEnum(enums, column, table)
+  if (foundEnum?.values.length) {
+    zodType = `z.enum([${foundEnum.values.map(v => `'${v}'`).join(', ')}])`
+    if (column.type === 'set') {
+      zodType = `${zodType}.array()`
+    }
+  }
+
+  if (column.isNullable)
+    zodType += '.nullable()'
+  if (column.maxLength && column.maxLength > 0 && zodType.includes('z.string')) {
+    zodType = zodType.replace('z.string()', `z.string().max(${column.maxLength})`)
+  }
+  if (zodType.includes('z.number()') && /int/i.test(column.type ?? '')) {
+    zodType = zodType.replace('z.number()', 'z.int()')
+  }
+  return zodType
+}
 
 export function generateSchemaZod({
   table,
@@ -10,32 +40,18 @@ export function generateSchemaZod({
   dialect,
   enums = [],
 }: SchemaParams) {
-  const cols = columns.map((c) => {
-    const key = camelCase(c.id)
-    const safeId = /^[a-z_$][\w$]*$/i.test(key) ? key : `'${key}'`
-    let t = getColumnType(c.type, 'zod', dialect) || 'any'
+  const lines = columns
+    .map((column) => {
+      const key = toLiteralKey(camelCase(column.id))
+      const zodType = buildZodType(column, table, dialect, enums ?? [])
 
-    const foundEnum = findEnum(enums, c, table)
-    if (foundEnum?.values.length) {
-      const valuesArr = foundEnum.values.map(v => `'${v}'`).join(', ')
-      t = `z.enum([${valuesArr}])`
-      if (c.type === 'set')
-        t = `${t}.array()`
-    }
+      if (!zodType)
+        return null
 
-    if (c.isNullable)
-      t += '.nullable()'
+      return `  ${key}: ${zodType},`
+    })
+    .filter(Boolean)
+    .join('\n')
 
-    if (c.maxLength && c.maxLength > 0 && t.includes('z.string')) {
-      t = t.replace('z.string()', `z.string().max(${c.maxLength})`)
-    }
-
-    if (t.includes('z.number()') && /int/i.test(c.type || '')) {
-      t = t.replace('z.number()', 'z.int()')
-    }
-
-    return `  ${safeId}: ${t},`
-  }).join('\n')
-
-  return templates.zodSchemaTemplate(table, cols)
+  return templates.zodSchemaTemplate(table, lines)
 }

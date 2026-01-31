@@ -20,7 +20,7 @@ export function RunnerResultsTable({
   executionTime,
 }: {
   data: Record<string, unknown>[]
-  columns: Column[]
+  columns: Pick<Column, 'id'>[]
   executionTime: number
 }) {
   const [search, setSearch] = useState('')
@@ -56,7 +56,12 @@ export function RunnerResultsTable({
           </div>
         </div>
       ),
-      cell: props => <TableCell column={column} {...props} />,
+      cell: props => (
+        <TableCell
+          column={{ id: column.id, type: 'text' }}
+          {...props}
+        />
+      ),
       size: DEFAULT_COLUMN_WIDTH,
     } satisfies ColumnRenderer))
   }, [columns])

@@ -190,7 +190,7 @@ const resizeOverlay = document.createElement('div')
 resizeOverlay.className = 'cursor-col-resize size-full fixed top-0 left-0 z-1000'
 
 export function TableHeaderCell({
-  resize,
+  onResize,
   onSort,
   onRename,
   column,
@@ -199,7 +199,7 @@ export function TableHeaderCell({
   className,
   style,
 }: {
-  resize?: boolean
+  onResize?: (newWidth: number) => void
   column: Column
   onSort?: () => void
   onRename?: () => void
@@ -229,13 +229,7 @@ export function TableHeaderCell({
         document.body.appendChild(resizeOverlay)
       }
       const newWidth = Math.max(100, startWidth + (moveEvent.clientX - e.clientX))
-      store.setState(state => ({
-        ...state,
-        columnSizes: {
-          ...state.columnSizes,
-          [column.id]: newWidth,
-        },
-      } satisfies typeof storeState.infer))
+      onResize?.(newWidth)
     }
 
     const handleMouseUp = () => {
@@ -335,7 +329,7 @@ export function TableHeaderCell({
         {onSort && column.label && !CANNOT_SORT_TYPES.includes(column.label) && (
           <SortButton order={order} onClick={onSort} />
         )}
-        {resize !== false && (
+        {onResize && (
           <div
             className={cn(`
               h-full w-1 cursor-col-resize rounded-xs bg-foreground/20 opacity-0

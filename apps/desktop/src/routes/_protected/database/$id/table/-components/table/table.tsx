@@ -219,6 +219,15 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
               column={column}
               onSort={() => toggleOrder(column.id)}
               onRename={onRename}
+              onResize={(newWidth) => {
+                store.setState(state => ({
+                  ...state,
+                  columnSizes: {
+                    ...state.columnSizes,
+                    [column.id]: newWidth,
+                  },
+                } satisfies typeof state))
+              }}
               {...props}
             />
           )
@@ -254,7 +263,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     })
 
     return sortedColumns
-  }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, enums])
+  }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, enums, store])
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,

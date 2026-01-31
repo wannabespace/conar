@@ -1,8 +1,9 @@
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
 import { findEnum } from '../../sql/enums'
 import * as templates from '../templates'
-import { getColumnType, groupIndexes, safePascalCase, sanitize } from '../utils'
+import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
 
 export type PrismaFilterValue = string | number | boolean | Date | null | { [key: string]: PrismaFilterValue } | PrismaFilterValue[]
 
@@ -10,64 +11,85 @@ export function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
   return v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
 }
 
-export function generateQueryPrisma({
-  table,
-  filters,
-}: QueryParams) {
-  const tableName = camelCase(safePascalCase(table))
+const PRISMA_OP_MAP: Record<string, string> = {
+  '=': 'equals',
+  '!=': 'not',
+  '>': 'gt',
+  '>=': 'gte',
+  '<': 'lt',
+  '<=': 'lte',
+  'LIKE': 'contains',
+  'ILIKE': 'contains',
+}
 
-  const where = filters.reduce<Record<string, PrismaFilterValue>>((acc: Record<string, PrismaFilterValue>, f) => {
-    const value = f.values[0]
-    let finalValue: PrismaFilterValue
-    const op = f.ref.operator.toUpperCase()
+function singleFilterToPrisma(filter: ActiveFilter): PrismaFilterValue | null {
+  const op = filter.ref.operator.toUpperCase()
+  const value = filter.values[0]
 
-    if (f.ref.isArray) {
-      if (op === 'IN')
-        finalValue = { in: f.values.filter(isPrismaFilterValue) }
-      else if (op === 'NOT IN')
-        finalValue = { notIn: f.values.filter(isPrismaFilterValue) }
-      else
-        return acc
-    }
-    else if (f.ref.hasValue === false) {
-      if (op === 'IS NULL')
-        finalValue = null
-      else if (op === 'IS NOT NULL')
-        finalValue = { not: null }
-      else
-        return acc
-    }
-    else {
-      if (!isPrismaFilterValue(value))
-        return acc
+  if (filter.ref.isArray) {
+    if (op === 'IN')
+      return { in: filter.values.filter(isPrismaFilterValue) }
+    if (op === 'NOT IN')
+      return { notIn: filter.values.filter(isPrismaFilterValue) }
+    return null
+  }
+  if (filter.ref.hasValue === false) {
+    if (op === 'IS NULL')
+      return null
+    if (op === 'IS NOT NULL')
+      return { not: null }
+    return null
+  }
+  if (!isPrismaFilterValue(value))
+    return null
 
-      const opMap: Record<string, string> = {
-        '=': 'equals',
-        '!=': 'not',
-        '>': 'gt',
-        '>=': 'gte',
-        '<': 'lt',
-        '<=': 'lte',
-        'LIKE': 'contains',
-        'ILIKE': 'contains',
-      }
-      if (opMap[op])
-        finalValue = opMap[op] === 'equals' ? value : { [opMap[op]]: value }
-      else
-        return acc
-    }
+  const prismaOp = PRISMA_OP_MAP[op]
+  if (!prismaOp)
+    return null
+  return prismaOp === 'equals' ? value : { [prismaOp]: value }
+}
+
+function mergeWhereField(
+  existing: PrismaFilterValue | undefined,
+  next: PrismaFilterValue,
+): PrismaFilterValue {
+  if (existing == null || typeof existing !== 'object' || typeof next !== 'object' || next === null) {
+    return next
+  }
+  return { ...existing, ...next }
+}
+
+export function generateQueryPrisma({ table, filters }: QueryParams) {
+  const tableName = camelCase(table)
+  const where: Record<string, PrismaFilterValue> = {}
+
+  for (const f of filters) {
+    const finalValue = singleFilterToPrisma(f)
+    if (finalValue === null)
+      continue
 
     const colName = camelCase(f.column)
-
-    const existing = acc[colName]
-    return { ...acc, [colName]: existing && typeof existing === 'object' && typeof finalValue === 'object' && finalValue !== null && existing !== null ? { ...existing, ...finalValue } : finalValue }
-  }, {})
+    where[colName] = mergeWhereField(where[colName], finalValue)
+  }
 
   const jsonWhere = Object.keys(where).length > 0
     ? JSON.stringify(where, null, 2).replace(/"([^"]+)":/g, '$1:')
     : '{}'
 
   return templates.prismaQueryTemplate(tableName, jsonWhere)
+}
+
+function foreignActionToPrisma(action: string, kind: 'onDelete' | 'onUpdate'): string {
+  const key = kind === 'onDelete' ? 'onDelete' : 'onUpdate'
+  const map: Record<string, string> = {
+    'CASCADE': 'Cascade',
+    'SET NULL': 'SetNull',
+    'SET DEFAULT': 'SetDefault',
+    'RESTRICT': 'Restrict',
+    'NO ACTION': 'NoAction',
+  }
+  const value = map[action?.toUpperCase() ?? '']
+  return value ? `, ${key}: ${value}` : ''
 }
 
 export function generateSchemaPrisma({
@@ -78,12 +100,14 @@ export function generateSchemaPrisma({
   indexes = [],
 }: SchemaParams) {
   const extraBlocks: string[] = []
-  const relations: string[] = []
   const fields: { name: string, type: string, attributes: string[], isRelation: boolean }[] = []
   const usedNames = new Set<string>()
 
-  columns.forEach((c) => {
-    let prismaType = getColumnType(c.type, 'prisma', dialect) || 'any'
+  for (const c of columns) {
+    let prismaType = c.type ? getColumnType(c.type, 'prisma', dialect) : null
+
+    if (!prismaType)
+      continue
 
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {
@@ -93,13 +117,13 @@ export function generateSchemaPrisma({
       const enumValues = foundEnum.values.map((v) => {
         if (/^[a-z]\w*$/i.test(v))
           return `  ${v}`
-        return `  ${sanitize(v)} @map("${v}")`
+        return `  ${v.replace(/\W/g, '_')} @map("${v}")`
       }).join('\n')
 
       extraBlocks.push(`enum ${enumName} {\n${enumValues}\n}`)
     }
 
-    const fieldName = camelCase(safePascalCase(c.id))
+    const fieldName = camelCase(c.id)
     const needsMap = fieldName !== c.id
     usedNames.add(fieldName)
 
@@ -134,54 +158,13 @@ export function generateSchemaPrisma({
 
     if (c.foreign) {
       let relName = camelCase(c.foreign.table)
-      if (usedNames.has(relName)) {
+      if (usedNames.has(relName))
         relName = camelCase(`${c.foreign.table}_${c.foreign.column}`)
-      }
       usedNames.add(relName)
 
       const relType = pascalCase(c.foreign.table)
-
-      let onDelete = ''
-      if (c.foreign.onDelete) {
-        switch (c.foreign.onDelete.toUpperCase()) {
-          case 'CASCADE':
-            onDelete = ', onDelete: Cascade'
-            break
-          case 'SET NULL':
-            onDelete = ', onDelete: SetNull'
-            break
-          case 'SET DEFAULT':
-            onDelete = ', onDelete: SetDefault'
-            break
-          case 'RESTRICT':
-            onDelete = ', onDelete: Restrict'
-            break
-          case 'NO ACTION':
-            onDelete = ', onDelete: NoAction'
-            break
-        }
-      }
-
-      let onUpdate = ''
-      if (c.foreign.onUpdate) {
-        switch (c.foreign.onUpdate.toUpperCase()) {
-          case 'CASCADE':
-            onUpdate = ', onUpdate: Cascade'
-            break
-          case 'SET NULL':
-            onUpdate = ', onUpdate: SetNull'
-            break
-          case 'SET DEFAULT':
-            onUpdate = ', onUpdate: SetDefault'
-            break
-          case 'RESTRICT':
-            onUpdate = ', onUpdate: Restrict'
-            break
-          case 'NO ACTION':
-            onUpdate = ', onUpdate: NoAction'
-            break
-        }
-      }
+      const onDelete = foreignActionToPrisma(c.foreign.onDelete ?? '', 'onDelete')
+      const onUpdate = foreignActionToPrisma(c.foreign.onUpdate ?? '', 'onUpdate')
 
       fields.push({
         name: relName,
@@ -192,64 +175,46 @@ export function generateSchemaPrisma({
     }
 
     if (c.references?.length) {
-      c.references.forEach((ref) => {
+      for (const ref of c.references) {
         const isValidRef = /^[a-z]\w*$/i.test(ref.table)
         const refType = isValidRef ? ref.table : pascalCase(ref.table)
         let fieldName = camelCase(ref.table)
-        if (usedNames.has(fieldName)) {
+        if (usedNames.has(fieldName))
           fieldName = camelCase(`${ref.table}_${ref.column}`)
-        }
         usedNames.add(fieldName)
-
-        const isOneToOne = ref.isUnique
 
         fields.push({
           name: fieldName,
-          type: isOneToOne ? `${refType}?` : `${refType}[]`,
+          type: ref.isUnique ? `${refType}?` : `${refType}[]`,
           attributes: [],
           isRelation: true,
         })
-      })
+      }
     }
-  })
+  }
 
-  const columnFields = fields.filter(f => !f.isRelation)
-  const relationFields = fields.filter(f => f.isRelation)
-
-  const allFields = [...columnFields, ...relationFields]
-
-  const maxNameLen = Math.max(...allFields.map(f => f.name.length))
-  const maxTypeLen = Math.max(...allFields.map(f => f.type.length))
+  const allFields = [...fields.filter(f => !f.isRelation), ...fields.filter(f => f.isRelation)]
+  const maxNameLen = Math.max(...allFields.map(f => f.name.length), 0)
+  const maxTypeLen = Math.max(...allFields.map(f => f.type.length), 0)
 
   const cols = allFields.map((f) => {
-    const parts = [
-      f.name.padEnd(maxNameLen),
-      f.type.padEnd(maxTypeLen),
-      ...f.attributes,
-    ]
+    const parts = [f.name.padEnd(maxNameLen), f.type.padEnd(maxTypeLen), ...f.attributes]
     return `  ${parts.join(' ').trimEnd()}`
   })
 
-  const explicitIndexes = groupIndexes(indexes, table).filter(idx => !idx.isPrimary && !(idx.isUnique && idx.columns.length === 1 && columns.find(c => c.id === idx.columns[0] && c.unique)))
+  const groupedIndexes = groupIndexes(indexes, table)
+  const explicitIndexes = filterExplicitIndexes(groupedIndexes, columns)
 
-  const indexBlocks: string[] = []
-  explicitIndexes.forEach((idx) => {
+  const indexBlocks = explicitIndexes.map((idx) => {
     const fieldNames = idx.columns.map((col) => {
-      const c = columns.find(c => c.id === col)
-      if (!c)
-        return col
-      return camelCase(c.id)
+      const colDef = columns.find(c => c.id === col)
+      return colDef ? camelCase(colDef.id) : col
     })
-
     const type = idx.isUnique ? '@@unique' : '@@index'
-    const cols = fieldNames.join(', ')
-
-    indexBlocks.push(`  ${type}([${cols}], map: "${idx.name}")`)
+    return `  ${type}([${fieldNames.join(', ')}], map: "${idx.name}")`
   })
 
-  const body = cols.join('\n')
-    + (relations.length ? `\n${relations.join('\n')}` : '')
-    + (indexBlocks.length ? `\n${indexBlocks.join('\n')}` : '')
+  const body = cols.join('\n') + (indexBlocks.length ? `\n${indexBlocks.join('\n')}` : '')
 
   const uniqueExtras = Array.from(new Set(extraBlocks))
 
