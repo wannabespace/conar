@@ -1,3 +1,4 @@
+import type { Column } from '../components/table/utils'
 import { type } from 'arktype'
 import { createQuery } from '../query'
 
@@ -11,6 +12,13 @@ export const enumType = type({
     column: 'string?',
   }).optional(),
 })
+
+export function findEnum(enums: typeof enumType.infer[], column: Column, table: string) {
+  return enums.find(e => (e.metadata?.table === table && e.metadata?.column === column.id)
+    || (column.enum && e.name === column.enum)
+    || (column.type && e.name === column.type),
+  )
+}
 
 function parseClickhouseEnum(type: string): string[] {
   const match = type.match(/^Enum\d+\((.*)\)$/)

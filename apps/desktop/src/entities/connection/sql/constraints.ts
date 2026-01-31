@@ -22,6 +22,8 @@ export const constraintsType = type({
   name: 'string',
   type: constraintType,
   column: 'string | null',
+  onDelete: 'string | null',
+  onUpdate: 'string | null',
 })
   .pipe(({ type, foreign_column, foreign_table, foreign_schema, ...item }) => ({
     ...item,
@@ -38,6 +40,7 @@ export const constraintsQuery = createQuery({
       .selectFrom('information_schema.table_constraints as tc')
       .leftJoin('information_schema.key_column_usage as kcu', 'tc.constraint_name', 'kcu.constraint_name')
       .leftJoin('information_schema.constraint_column_usage as ccu', 'tc.constraint_name', 'ccu.constraint_name')
+      .leftJoin('information_schema.referential_constraints as rc', 'tc.constraint_name', 'rc.constraint_name')
       .select([
         'tc.table_schema as schema',
         'tc.table_name as table',
@@ -47,6 +50,8 @@ export const constraintsQuery = createQuery({
         'ccu.table_schema as foreign_schema',
         'ccu.table_name as foreign_table',
         'ccu.column_name as foreign_column',
+        'rc.delete_rule as onDelete',
+        'rc.update_rule as onUpdate',
       ])
       .where('tc.constraint_type', 'in', neededConstraintTypes)
       .where('ccu.table_schema', 'not like', 'pg_%')
@@ -58,6 +63,10 @@ export const constraintsQuery = createQuery({
         .onRef('tc.CONSTRAINT_SCHEMA', '=', 'kcu.CONSTRAINT_SCHEMA')
         .onRef('tc.TABLE_SCHEMA', '=', 'kcu.TABLE_SCHEMA')
         .onRef('tc.TABLE_NAME', '=', 'kcu.TABLE_NAME'))
+      .leftJoin('information_schema.REFERENTIAL_CONSTRAINTS as rc', join => join
+        .onRef('tc.CONSTRAINT_NAME', '=', 'rc.CONSTRAINT_NAME')
+        .onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA')
+        .onRef('tc.TABLE_NAME', '=', 'rc.TABLE_NAME'))
       .select([
         'tc.TABLE_SCHEMA as schema',
         'tc.TABLE_NAME as table',
@@ -67,6 +76,8 @@ export const constraintsQuery = createQuery({
         'kcu.REFERENCED_TABLE_SCHEMA as foreign_schema',
         'kcu.REFERENCED_TABLE_NAME as foreign_table',
         'kcu.REFERENCED_COLUMN_NAME as foreign_column',
+        'rc.DELETE_RULE as onDelete',
+        'rc.UPDATE_RULE as onUpdate',
       ])
       .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
       .where('tc.TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
@@ -94,6 +105,8 @@ export const constraintsQuery = createQuery({
         'referenced_kcu.TABLE_SCHEMA as foreign_schema',
         'referenced_kcu.TABLE_NAME as foreign_table',
         'referenced_kcu.COLUMN_NAME as foreign_column',
+        'rc.DELETE_RULE as onDelete',
+        'rc.UPDATE_RULE as onUpdate',
       ])
       .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
       .where('tc.TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'sys'])
@@ -118,6 +131,8 @@ export const constraintsQuery = createQuery({
         foreign_schema: null,
         foreign_table: null,
         foreign_column: null,
+        onDelete: null,
+        onUpdate: null,
       }))
     },
   }),

@@ -1,16 +1,332 @@
 import type { ComponentRef } from 'react'
+import type { connections } from '~/drizzle'
+import { SafeURL } from '@conar/shared/utils/safe-url'
+import { Badge } from '@conar/ui/components/badge'
+import { Button } from '@conar/ui/components/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Separator } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
+import { copy } from '@conar/ui/lib/copy'
+import { cn } from '@conar/ui/lib/utils'
+import { RiArrowDownSLine, RiArrowUpSLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
-import { AnimatePresence } from 'motion/react'
+import { Link } from '@tanstack/react-router'
+import { AnimatePresence, motion } from 'motion/react'
 import { useRef, useState } from 'react'
+import { ConnectionIcon } from '~/entities/connection/components'
+import { useConnectionLinkParams, useServerConnections } from '~/entities/connection/hooks'
+import { useConnectionVersion } from '~/entities/connection/queries/connection-version'
 import { connectionsCollection } from '~/entities/connection/sync'
-import { useLastOpenedConnections } from '~/entities/connection/utils'
-import { ConnectionCard } from './connection-card'
-import { EmptyConnection } from './empty-connection'
-import { LastOpenedConnections } from './last-opened-connections'
+import { cloneConnectionForConnection, useLastOpenedConnections } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
+
+function ConnectionCard({
+  connection,
+  onRemove,
+  onRename,
+  onClose,
+}: {
+  connection: typeof connections.$inferSelect
+  onRemove: VoidFunction
+  onRename: VoidFunction
+  onClose?: VoidFunction
+}) {
+  const url = new SafeURL(connection.connectionString)
+  if (connection.isPasswordExists || url.password) {
+    url.password = '*'.repeat(url.password.length || 6)
+  }
+  const connectionString = url.toString()
+
+  const params = useConnectionLinkParams(connection.id)
+
+  const { data: version } = useConnectionVersion({ connection })
+
+  const { connectionNamesList, isLoading, isExpanded, toggleExpand } = useServerConnections(connection)
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.75 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.75 }}
+      transition={{ duration: 0.15 }}
+      className="group relative"
+    >
+      {onClose && (
+        <Button
+          variant="outline"
+          size="icon-xs"
+          className="
+            absolute -top-1.5 -right-1.5 z-10 rounded-full bg-card! opacity-0
+            duration-75
+            group-hover:opacity-100
+          "
+          onClick={() => onClose()}
+        >
+          <RiCloseLine className="size-3.5" />
+        </Button>
+      )}
+      <Link
+        className={cn(
+          `
+            group relative flex items-center justify-between gap-4
+            overflow-hidden rounded-lg border border-l-4 border-border/50
+            bg-muted/30 p-4
+          `,
+          connection.color
+            ? `
+              border-l-(--color)/60
+              hover:border-(--color)/60
+            `
+            : 'hover:border-primary/60',
+        )}
+        style={connection.color ? { '--color': connection.color } : {}}
+        preload={false}
+        {...params}
+      >
+        <div className="size-12 shrink-0 rounded-lg bg-muted/70 p-3">
+          <ConnectionIcon
+            type={connection.type}
+            className="size-full"
+          />
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className={`
+            flex items-center gap-2 truncate font-medium tracking-tight
+          `}
+          >
+            <span className={connection.color
+              ? `
+                text-(--color)
+                group-hover:text-(--color)/80
+              `
+              : ''}
+            >
+              {connection.name}
+            </span>
+            {connection.label && (
+              <Badge variant="secondary">
+                {connection.label}
+              </Badge>
+            )}
+          </div>
+          <div
+            data-mask
+            className="truncate font-mono text-xs text-muted-foreground"
+          >
+            {connectionString.replaceAll('*', '•')}
+          </div>
+        </div>
+
+        <div className="z-10 flex items-center gap-1">
+          {connectionNamesList.length > 0 && (
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                toggleExpand()
+              }}
+            >
+              {isExpanded
+                ? <RiArrowUpSLine className="size-4" />
+                : (
+                    <RiArrowDownSLine className="size-4" />
+                  )}
+            </Button>
+          )}
+
+          {version && (
+            <span className="
+              absolute right-4 bottom-0.5 font-mono text-[.6rem]
+              text-muted-foreground/50
+            "
+            >
+              {version}
+            </span>
+          )}
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger className={`
+            rounded-md p-2
+            hover:bg-accent-foreground/5
+          `}
+          >
+            <RiMoreLine className="size-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                copy(connection.connectionString, 'Connection string copied to clipboard')
+              }}
+            >
+              <RiFileCopyLine className="size-4 opacity-50" />
+              Copy Connection String
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                onRename()
+              }}
+            >
+              <RiEditLine className="size-4 opacity-50" />
+              Rename
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className={`
+                text-destructive
+                focus:text-destructive
+              `}
+              onClick={(e) => {
+                e.stopPropagation()
+                onRemove()
+              }}
+            >
+              <RiDeleteBinLine className="size-4" />
+              Remove
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Link>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className={`
+              mx-4 flex max-h-60 flex-col gap-1 overflow-y-auto rounded-lg
+              border bg-muted/30 p-2
+            `}
+            >
+              {isLoading
+                ? (
+                    <div className={`
+                      flex items-center gap-2 p-2 text-sm text-muted-foreground
+                    `}
+                    >
+                      <RiLoader4Line className="size-4 animate-spin" />
+                      Loading databases...
+                    </div>
+                  )
+                : connectionNamesList.length > 0
+                  ? (
+                      connectionNamesList.map(connectionName => (
+                        <div
+                          key={connectionName}
+                          role="button"
+                          tabIndex={0}
+                          className="
+                            flex cursor-pointer items-center gap-2 rounded-md
+                            border border-transparent p-2 text-sm
+                            hover:border-border hover:bg-muted
+                          "
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            try {
+                              const newConnection = cloneConnectionForConnection(connection, connectionName)
+                              connectionsCollection.insert(newConnection)
+                            }
+                            catch (error) {
+                              console.error(`Failed to open server connection ${connectionName} for this connection ${connection.name} with error ${error instanceof Error ? error.message : error}`)
+                            }
+                          }}
+                        >
+                          <RiDatabase2Line className="
+                            size-4 text-muted-foreground
+                          "
+                          />
+                          <span>{connectionName}</span>
+                        </div>
+                      ))
+                    )
+                  : (
+                      <div className="
+                        flex items-center gap-2 p-2 text-sm
+                        text-muted-foreground
+                      "
+                      >
+                        No other databases found
+                      </div>
+                    )}
+
+            </div>
+
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
+export function Empty() {
+  return (
+    <div className={`
+      group m-auto w-full rounded-xl border-2 border-dashed border-border/50
+      bg-card p-14 text-center
+    `}
+    >
+      <h2 className="mt-6 font-medium text-foreground">
+        No connections found
+      </h2>
+      <p className="mt-1 mb-4 text-sm whitespace-pre-line text-muted-foreground">
+        Create a new connection to get started.
+      </p>
+      <Button asChild>
+        <Link to="/create">
+          Create a new connection
+        </Link>
+      </Button>
+    </div>
+  )
+}
+
+function LastOpenedConnections({
+  onRemove,
+  onRename,
+  onClose,
+}: {
+  onRemove: (connection: typeof connections.$inferSelect) => void
+  onRename: (connection: typeof connections.$inferSelect) => void
+  onClose: (connection: typeof connections.$inferSelect) => void
+}) {
+  const { data: connections } = useLiveQuery(q => q
+    .from({ connections: connectionsCollection })
+    .orderBy(({ connections }) => connections.createdAt, 'desc'))
+  const [lastOpenedConnections] = useLastOpenedConnections()
+  const filteredConnections = (connections?.filter(connection => lastOpenedConnections.includes(connection.id)) ?? [])
+    .toSorted((a, b) => lastOpenedConnections.indexOf(a.id) - lastOpenedConnections.indexOf(b.id))
+
+  if (filteredConnections.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <h3 className="text-sm font-medium text-muted-foreground">Last Opened</h3>
+      <AnimatePresence initial={false} mode="popLayout">
+        {filteredConnections.map(connection => (
+          <ConnectionCard
+            key={connection.id}
+            connection={connection}
+            onRemove={() => onRemove(connection)}
+            onRename={() => onRename(connection)}
+            onClose={() => onClose(connection)}
+          />
+        ))}
+      </AnimatePresence>
+    </div>
+  )
+}
 
 export function ConnectionsList() {
   const { data: connections } = useLiveQuery(q => q
@@ -84,7 +400,7 @@ export function ConnectionsList() {
                 ))}
               </AnimatePresence>
             )
-          : <EmptyConnection />}
+          : <Empty />}
       </div>
     </div>
   )

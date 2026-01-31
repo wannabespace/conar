@@ -3,6 +3,7 @@ import type { connections } from '~/drizzle'
 import { Store } from '@tanstack/react-store'
 import { formatSql } from '~/lib/formatter'
 
+export * from './connection-version'
 export * from './constraints'
 export * from './delete-rows'
 export * from './drop-table'

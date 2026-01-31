@@ -6,6 +6,15 @@ export interface System {
   databases: Databases
   columns: Columns
   parts: Parts
+  one: One
+}
+
+/**
+ * @name one
+ * @type table
+ */
+interface One {
+  dummy: number
 }
 
 /**
