@@ -21,6 +21,7 @@ import { Route as DeepSignInRouteImport } from './routes/deep.sign-in'
 import { Route as LayoutReleasesRouteImport } from './routes/_layout/releases'
 import { Route as LayoutHomeRouteImport } from './routes/_layout/home'
 import { Route as LayoutDownloadRouteImport } from './routes/_layout/download'
+import { Route as AuthTwoFactorRouteImport } from './routes/_auth/two-factor'
 import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
@@ -121,6 +122,11 @@ const LayoutDownloadRoute = LayoutDownloadRouteImport.update({
   path: '/download',
   getParentRoute: () => LayoutRoute,
 } as any)
+const AuthTwoFactorRoute = AuthTwoFactorRouteImport.update({
+  id: '/two-factor',
+  path: '/two-factor',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthSignUpRoute = AuthSignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/two-factor': typeof AuthTwoFactorRoute
   '/download': typeof LayoutDownloadRoute
   '/home': typeof LayoutHomeRoute
   '/releases': typeof LayoutReleasesRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/two-factor': typeof AuthTwoFactorRoute
   '/download': typeof LayoutDownloadRoute
   '/home': typeof LayoutHomeRoute
   '/releases': typeof LayoutReleasesRoute
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
+  '/_auth/two-factor': typeof AuthTwoFactorRoute
   '/_layout/download': typeof LayoutDownloadRoute
   '/_layout/home': typeof LayoutHomeRoute
   '/_layout/releases': typeof LayoutReleasesRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
+    | '/two-factor'
     | '/download'
     | '/home'
     | '/releases'
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
+    | '/two-factor'
     | '/download'
     | '/home'
     | '/releases'
@@ -238,6 +249,7 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
+    | '/_auth/two-factor'
     | '/_layout/download'
     | '/_layout/home'
     | '/_layout/releases'
@@ -366,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutDownloadRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_auth/two-factor': {
+      id: '/_auth/two-factor'
+      path: '/two-factor'
+      fullPath: '/two-factor'
+      preLoaderRoute: typeof AuthTwoFactorRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/_auth/sign-up': {
       id: '/_auth/sign-up'
       path: '/sign-up'
@@ -394,6 +413,7 @@ interface AuthRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
+  AuthTwoFactorRoute: typeof AuthTwoFactorRoute
   AuthForgotPasswordLazyRoute: typeof AuthForgotPasswordLazyRoute
 }
 
@@ -401,6 +421,7 @@ const AuthRouteChildren: AuthRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
+  AuthTwoFactorRoute: AuthTwoFactorRoute,
   AuthForgotPasswordLazyRoute: AuthForgotPasswordLazyRoute,
 }
 
