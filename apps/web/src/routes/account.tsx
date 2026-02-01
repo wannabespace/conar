@@ -7,6 +7,7 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogT
 import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
+import { UserAvatar } from '@conar/ui/components/user-avatar'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMessageLine, RiMoonLine, RiSunLine } from '@remixicon/react'
@@ -239,9 +240,12 @@ function AccountLayout() {
       </header>
       <div className="mb-10 flex flex-1 gap-6">
         <aside className="w-64 shrink-0">
-          <div className="mb-4 flex flex-col">
-            <p className="truncate font-medium">{user.name}</p>
-            <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+          <div className="mb-4 flex items-center gap-3">
+            <UserAvatar user={user} className="size-10 shrink-0" />
+            <div className="min-w-0 flex-1 flex flex-col">
+              <p className="truncate font-medium">{user.name}</p>
+              <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+            </div>
           </div>
           <nav className="space-y-1">
             <SidebarButton active={match === '/account/'} asChild>
