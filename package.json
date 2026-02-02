@@ -40,7 +40,6 @@
     "playwright": "catalog:",
     "tailwindcss": "catalog:",
     "taze": "catalog:",
-    "tsx": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }
