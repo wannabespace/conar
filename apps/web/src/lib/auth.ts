@@ -1,9 +1,10 @@
+import { AUTH_COOKIE_PREFIX } from '@conar/shared/constants'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { lastLoginMethodClient, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 
-const TWO_FACTOR_COOKIE_NAME = 'conar.two_factor'
+const TWO_FACTOR_COOKIE_NAME = `${AUTH_COOKIE_PREFIX}.two_factor`
 
 function hasTwoFactorPendingCookie(cookieHeader: string): boolean {
   const parts = cookieHeader.split(';').map(s => s.trim())

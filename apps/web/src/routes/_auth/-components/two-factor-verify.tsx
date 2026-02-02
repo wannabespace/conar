@@ -12,7 +12,9 @@ import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
 const twoFactorSchema = type({
-  code: 'string',
+  code: type('string').narrow(
+    (s, ctx) => (s.length === TOTP_LENGTH ? true : ctx.mustBe(`Code must be ${TOTP_LENGTH} digits`)),
+  ),
   trustDevice: 'boolean',
 })
 

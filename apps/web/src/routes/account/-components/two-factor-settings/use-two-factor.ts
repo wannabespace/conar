@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-export function useTwoFactor() {
+export function useTwoFactorSetup() {
   const queryClient = useQueryClient()
   const [totpUri, setTotpUri] = useState('')
 
@@ -38,6 +38,16 @@ export function useTwoFactor() {
     onError: handleError,
   })
 
+  const reset = () => {
+    setTotpUri('')
+  }
+
+  return { totpUri, enableTotp, verifyTotp, reset }
+}
+
+export function useTwoFactorDisable() {
+  const queryClient = useQueryClient()
+
   const disableTotp = useMutation({
     mutationKey: ['two-factor', 'disable'],
     mutationFn: async (password: string) => {
@@ -53,9 +63,5 @@ export function useTwoFactor() {
     onError: handleError,
   })
 
-  const reset = () => {
-    setTotpUri('')
-  }
-
-  return { totpUri, enableTotp, verifyTotp, disableTotp, reset }
+  return { disableTotp }
 }

@@ -14,7 +14,7 @@ import { useForm, useStore } from '@tanstack/react-form'
 import { useState } from 'react'
 import QRCode from 'react-qr-code'
 import { TOTP_LENGTH, TotpCodeInput } from '~/components/totp-code-input'
-import { useTwoFactor } from './use-two-factor'
+import { useTwoFactorSetup } from './use-two-factor'
 
 type Step = 'password' | 'setup'
 
@@ -25,7 +25,7 @@ interface EnableDialogProps {
 
 export function EnableDialog({ open, onOpenChange }: EnableDialogProps) {
   const [step, setStep] = useState<Step>('password')
-  const { totpUri, enableTotp, verifyTotp, reset } = useTwoFactor()
+  const { totpUri, enableTotp, verifyTotp, reset } = useTwoFactorSetup()
 
   const form = useForm({
     defaultValues: {
@@ -35,7 +35,10 @@ export function EnableDialog({ open, onOpenChange }: EnableDialogProps) {
     onSubmit: ({ value }) => {
       if (step === 'password') {
         enableTotp.mutate(value.password, {
-          onSuccess: () => setStep('setup'),
+          onSuccess: () => {
+            setStep('setup')
+            form.setFieldValue('password', '')
+          },
         })
       }
       else {

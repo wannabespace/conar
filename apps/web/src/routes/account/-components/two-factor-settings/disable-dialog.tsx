@@ -11,7 +11,7 @@ import {
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useForm, useStore } from '@tanstack/react-form'
-import { useTwoFactor } from './use-two-factor'
+import { useTwoFactorDisable } from './use-two-factor'
 
 interface DisableDialogProps {
   open: boolean
@@ -19,7 +19,7 @@ interface DisableDialogProps {
 }
 
 export function DisableDialog({ open, onOpenChange }: DisableDialogProps) {
-  const { disableTotp } = useTwoFactor()
+  const { disableTotp } = useTwoFactorDisable()
 
   const form = useForm({
     defaultValues: {
