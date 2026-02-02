@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@conar/ui/components/avatar'
 import { cn } from '@conar/ui/lib/utils'
 import { Facehash } from 'facehash'
@@ -21,15 +22,23 @@ export interface UserAvatarUser {
   image?: string | null
 }
 
-export interface UserAvatarProps {
+function getAvatarAlt(name?: string | null, email?: string | null): string {
+  if (name)
+    return `Avatar of ${name}`
+  if (email)
+    return `Avatar of ${email}`
+  return 'User avatar'
+}
+
+export interface UserAvatarProps extends ComponentProps<'img'> {
   user?: UserAvatarUser | null
-  className?: string
   fallbackClassName?: string
   facehashColorClasses?: readonly string[]
 }
 
 export function UserAvatar({
   user,
+  alt,
   className,
   fallbackClassName,
   facehashColorClasses = DEFAULT_FACEHASH_COLORS,
@@ -39,6 +48,7 @@ export function UserAvatar({
   const image = user?.image ?? null
   const hasImage = Boolean(image)
   const facehashName = getFacehashName(name, email)
+  const imageAlt = alt ?? getAvatarAlt(name, email)
 
   return (
     <Avatar
@@ -47,13 +57,20 @@ export function UserAvatar({
           size-6 shrink-0 overflow-hidden rounded-full shadow-sm ring-1
           ring-border/60
         `,
-        'transition-shadow hover:shadow-md',
+        `
+          transition-shadow
+          hover:shadow-md
+        `,
         className,
       )}
     >
       {hasImage
         ? (
-            <AvatarImage src={image ?? ''} className="rounded-full" />
+            <AvatarImage
+              src={image ?? ''}
+              alt={imageAlt}
+              className="rounded-full"
+            />
           )
         : (
             <AvatarFallback
