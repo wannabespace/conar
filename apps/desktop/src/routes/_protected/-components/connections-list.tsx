@@ -17,7 +17,7 @@ import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionLinkParams, useServerConnections } from '~/entities/connection/hooks'
 import { useConnectionVersion } from '~/entities/connection/queries/connection-version'
 import { connectionsCollection } from '~/entities/connection/sync'
-import { cloneConnectionForConnection, useLastOpenedConnections } from '~/entities/connection/utils'
+import { useLastOpenedConnections } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
@@ -229,17 +229,6 @@ function ConnectionCard({
                             border border-transparent p-2 text-sm
                             hover:border-border hover:bg-muted
                           "
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            try {
-                              const newConnection = cloneConnectionForConnection(connection, connectionName)
-                              connectionsCollection.insert(newConnection)
-                            }
-                            catch (error) {
-                              console.error(`Failed to open server connection ${connectionName} for this connection ${connection.name} with error ${error instanceof Error ? error.message : error}`)
-                            }
-                          }}
                         >
                           <RiDatabase2Line className="
                             size-4 text-muted-foreground
