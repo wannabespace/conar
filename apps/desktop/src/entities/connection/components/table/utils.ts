@@ -1,3 +1,5 @@
+export { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '@conar/table'
+
 export interface Column {
   id: string
   type: string
@@ -28,9 +30,6 @@ export interface Column {
     isUnique?: boolean
   }[]
 }
-
-export const DEFAULT_ROW_HEIGHT = 32
-export const DEFAULT_COLUMN_WIDTH = 240
 
 function prepareValue(value: unknown) {
   if (value instanceof Date)

@@ -1,0 +1,11 @@
+{
+  "extends": "@conar/configs/ts/react.json",
+  "compilerOptions": {
+    "paths": {
+      "@conar/table/*": ["./src/*"]
+    },
+    "noEmit": true
+  },
+  "include": ["."],
+  "exclude": ["node_modules"]
+}
