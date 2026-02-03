@@ -1,9 +1,9 @@
+import { FilterForm } from '@conar/table'
 import { Button } from '@conar/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiFilterLine } from '@remixicon/react'
 import { useState } from 'react'
-import { FilterForm } from '~/components/table'
 import { usePageStoreContext } from '../../-store'
 
 export function HeaderActionsFilters() {

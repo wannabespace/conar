@@ -1,9 +1,9 @@
+import { FilterForm, FilterItem } from '@conar/table'
 import { Button } from '@conar/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { useToggle } from '@conar/ui/hookas/use-toggle'
 import { RiAddLine, RiFilterOffLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { FilterForm, FilterItem } from '~/components/table'
 import { usePageStoreContext } from '../-store'
 
 export function Filters() {

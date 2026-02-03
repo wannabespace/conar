@@ -1,5 +1,5 @@
+import type { TableCellProps } from '@conar/table'
 import type { ComponentProps } from 'react'
-import type { TableCellProps } from '~/components/table'
 import { cn } from '@conar/ui/lib/utils'
 
 export function TableCellContent({
