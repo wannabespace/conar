@@ -10,7 +10,9 @@
 @plugin '@tailwindcss/typography';
 
 @source "../../../apps/**/*.{ts,tsx}";
-@source "../../../packages/**/*.{ts,tsx}";
+@source "../../../components/**/*.{ts,tsx}";
+@source "../../../packages/table/**/*.{ts,tsx}";
+@source "../**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
 
