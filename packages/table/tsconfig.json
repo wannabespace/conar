@@ -1,0 +1,6 @@
+{
+  "extends": "@conar/configs/ts/react.json",
+  "compilerOptions": {
+    "noEmit": true
+  }
+}

@@ -1,11 +1,11 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { connections } from '~/drizzle'
+import { useTableContext } from '@conar/table'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiLoaderLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
-import { useTableContext } from '~/components/table'
 import { connectionRowsQuery } from '~/entities/connection/queries'
 import { TableEmpty } from './table-empty'
 

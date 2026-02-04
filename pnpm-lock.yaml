@@ -691,6 +691,9 @@ importers:
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@conar/table':
+        specifier: workspace:*
+        version: link:../../packages/table
       '@conar/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1070,6 +1073,34 @@ importers:
       nanoid:
         specifier: 'catalog:'
         version: 5.1.6
+
+  packages/table:
+    dependencies:
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@conar/ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@fluentui/react-context-selector':
+        specifier: 'catalog:'
+        version: 9.2.13(@types/react-dom@19.2.3(@types/react@19.2.9))(@types/react@19.2.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(scheduler@0.27.0)
+      '@remixicon/react':
+        specifier: 'catalog:'
+        version: 4.8.0(react@19.2.3)
+      '@tanstack/react-virtual':
+        specifier: 'catalog:'
+        version: 3.13.18(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react:
+        specifier: 'catalog:'
+        version: 19.2.3
+    devDependencies:
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.9
 
   packages/ui:
     dependencies:
@@ -7251,7 +7282,7 @@ packages:
   glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
     engines: {node: '>=12'}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-agent@3.0.0:
     resolution: {integrity: sha512-PT6XReJ+D07JvGoxQMkT6qji/jVNfX/h364XHZOWeRzy64sSFr+xJ5OX7LI3b4MPQzdL4H8Y8M0xzPpsVMwA8Q==}
@@ -14792,10 +14823,10 @@ snapshots:
       firebase: 12.8.0
       git-rev-sync: 3.0.2
       ink: 3.2.0(@types/react@19.2.9)(react@17.0.2)
-      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2)
-      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2)
-      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2)
-      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2)
+      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2)
+      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2)
+      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2)
+      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2)
       is-ci: 4.1.0
       is-installed-globally: 0.4.0
       js-yaml: 4.1.1
@@ -18020,7 +18051,7 @@ snapshots:
 
   ini@4.1.1: {}
 
-  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2):
+  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2):
     dependencies:
       gradient-string: 1.2.0
       ink: 3.2.0(@types/react@19.2.9)(react@17.0.2)
@@ -18028,14 +18059,14 @@ snapshots:
       react: 17.0.2
       strip-ansi: 6.0.1
 
-  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2):
+  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2):
     dependencies:
       ink: 3.2.0(@types/react@19.2.9)(react@17.0.2)
       prop-types: 15.8.1
       react: 17.0.2
       terminal-link: 2.1.1
 
-  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2):
+  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2):
     dependencies:
       arr-rotate: 1.0.0
       figures: 3.2.0
@@ -18043,7 +18074,7 @@ snapshots:
       lodash.isequal: 4.5.0
       react: 17.0.2
 
-  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2):
+  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2):
     dependencies:
       chalk: 4.1.2
       ink: 3.2.0(@types/react@19.2.9)(react@17.0.2)
