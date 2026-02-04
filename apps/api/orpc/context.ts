@@ -38,4 +38,4 @@ export function createContext(c: HonoContext) {
   }
 }
 
-export type Context = Awaited<ReturnType<typeof createContext>>
+export type Context = ReturnType<typeof createContext>
