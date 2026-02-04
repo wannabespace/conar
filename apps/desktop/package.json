@@ -43,6 +43,7 @@
     "@conar/configs": "workspace:*",
     "@conar/connection": "workspace:*",
     "@conar/shared": "workspace:*",
+    "@conar/table": "workspace:*",
     "@conar/ui": "workspace:*",
     "@dagrejs/dagre": "catalog:",
     "@electric-sql/pglite": "catalog:",

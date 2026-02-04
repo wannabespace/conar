@@ -1,4 +1,4 @@
-import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
+import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { webSearch } from '@exalabs/ai-sdk'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
 import { tool } from 'ai'
