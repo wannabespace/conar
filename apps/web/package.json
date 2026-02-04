@@ -25,14 +25,12 @@
     "js-confetti": "catalog:",
     "motion": "catalog:",
     "nitro": "catalog:",
-    "postgres": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-markdown": "catalog:",
     "react-qr-code": "catalog:",
     "sonner": "catalog:",
     "streamdown": "catalog:",
-    "superjson": "catalog:",
     "tailwind-merge": "catalog:"
   },
   "devDependencies": {
