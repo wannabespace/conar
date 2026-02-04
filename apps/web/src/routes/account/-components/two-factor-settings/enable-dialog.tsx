@@ -16,15 +16,11 @@ import QRCode from 'react-qr-code'
 import { TOTP_LENGTH, TotpCodeInput } from '~/components/totp-code-input'
 import { useTwoFactorSetup } from './use-two-factor'
 
-type Step = 'password' | 'setup'
-
-interface EnableDialogProps {
+export function EnableDialog({ open, onOpenChange }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-}
-
-export function EnableDialog({ open, onOpenChange }: EnableDialogProps) {
-  const [step, setStep] = useState<Step>('password')
+}) {
+  const [step, setStep] = useState<'password' | 'setup'>('password')
   const { totpUri, enableTotp, verifyTotp, reset } = useTwoFactorSetup()
 
   const form = useForm({

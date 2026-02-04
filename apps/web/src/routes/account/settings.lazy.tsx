@@ -12,6 +12,20 @@ export const Route = createLazyFileRoute('/account/settings')({
   component: SettingsPage,
 })
 
+function SecurityCardLoader() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Security</CardTitle>
+        <CardDescription>Two-factor authentication and sign-in</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <LoadingContent loading>Loading...</LoadingContent>
+      </CardContent>
+    </Card>
+  )
+}
+
 function SettingsPage() {
   const { data: session, isPending: isSessionLoading } = useQuery({
     queryKey: ['session'],
@@ -41,17 +55,7 @@ function SettingsPage() {
   const twoFactorEnabled = session?.user?.twoFactorEnabled ?? false
 
   if (isSessionLoading || isAccountsLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Security</CardTitle>
-          <CardDescription>Two-factor authentication and sign-in</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LoadingContent loading>Loading...</LoadingContent>
-        </CardContent>
-      </Card>
-    )
+    return <SecurityCardLoader />
   }
 
   return (
