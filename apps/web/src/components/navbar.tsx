@@ -3,7 +3,6 @@ import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
-import { UserAvatar } from '@conar/ui/components/user-avatar'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { RiGitBranchLine, RiGithubFill, RiMoonLine, RiSunLine } from '@remixicon/react'
@@ -110,27 +109,6 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             />
           </Button>
         </ThemeToggle>
-        {isSignedIn && (
-          <Link
-            to="/account"
-            className={cn(
-              `
-                flex items-center rounded-full
-                focus-visible:ring-2 focus-visible:ring-primary
-                focus-visible:ring-offset-2
-              `,
-            )}
-            aria-label="Account"
-          >
-            <UserAvatar
-              user={session?.user}
-              className={cn(`
-                size-8
-                sm:size-9
-              `)}
-            />
-          </Link>
-        )}
         <Button
           variant="outline"
           size="sm"

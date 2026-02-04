@@ -17,7 +17,7 @@ export function Profile({ className }: { className?: string }) {
     <div className={cn('flex flex-col gap-4', className)}>
       <div className="flex flex-row items-center justify-between">
         <div className="flex flex-row items-center gap-4">
-          <UserAvatar className="size-16" fallbackClassName="text-2xl" />
+          <UserAvatar className="size-16" />
           <div>
             {data?.user
               ? (
