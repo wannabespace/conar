@@ -1,9 +1,9 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ComponentProps, CSSProperties } from 'react'
-import type { ColumnRenderer } from '.'
+import type { ColumnRenderer } from './'
 import { cn } from '@conar/ui/lib/utils'
 import { memo } from 'react'
-import { getBaseColumnStyle, useTableContext } from '.'
+import { getBaseColumnStyle, useTableContext } from './'
 
 const VirtualColumn = memo(function VirtualColumn({
   virtualColumn,

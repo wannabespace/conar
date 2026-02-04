@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google'
-import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
+import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { generateText, Output } from 'ai'
 import { type } from 'arktype'
 import { consola } from 'consola'
