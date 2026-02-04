@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
-import type { ColumnRenderer } from '.'
+import type { ColumnRenderer } from './'
 import { useDebouncedCallback } from '@conar/ui/hookas/use-debounced-callback'
 import { useScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useRef } from 'react'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/connection/components/table/utils'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from './constants'
 import { TableContext } from './table-context'
 
 export type { TableContextType } from './table-context'

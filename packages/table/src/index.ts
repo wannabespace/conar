@@ -2,10 +2,9 @@ import type { ComponentType, CSSProperties } from 'react'
 
 export * from './body'
 export {
-  FilterForm,
-  FilterItem,
-  FiltersProvider,
-} from './filters'
+  DEFAULT_COLUMN_WIDTH,
+  DEFAULT_ROW_HEIGHT,
+} from './constants'
 export * from './header'
 export * from './provider'
 export * from './table'

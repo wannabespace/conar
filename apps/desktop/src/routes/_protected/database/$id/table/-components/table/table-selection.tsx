@@ -1,9 +1,9 @@
+import type { TableCellProps, TableHeaderCellProps } from '@conar/table'
 import type { ComponentProps } from 'react'
-import type { TableCellProps, TableHeaderCellProps } from '~/components/table'
+import { useShiftSelectionClick, useTableContext } from '@conar/table'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useStore } from '@tanstack/react-store'
-import { useShiftSelectionClick, useTableContext } from '~/components/table'
 import { usePageStoreContext } from '../../-store'
 
 function IndeterminateCheckbox({
