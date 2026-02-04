@@ -10,13 +10,15 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@conar/configs": "workspace:*",
     "@conar/shared": "workspace:*",
     "@conar/ui": "workspace:*",
     "@fluentui/react-context-selector": "catalog:",
     "@remixicon/react": "catalog:",
     "@tanstack/react-virtual": "catalog:",
-    "@types/react": "catalog:",
     "react": "catalog:"
+  },
+  "devDependencies": {
+    "@conar/configs": "workspace:*",
+    "@types/react": "catalog:"
   }
 }

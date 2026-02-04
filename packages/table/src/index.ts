@@ -5,11 +5,6 @@ export {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_ROW_HEIGHT,
 } from './constants'
-export {
-  FilterForm,
-  FilterItem,
-  FiltersProvider,
-} from './filters'
 export * from './header'
 export * from './provider'
 export * from './table'

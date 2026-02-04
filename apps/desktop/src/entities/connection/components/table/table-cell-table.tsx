@@ -1,6 +1,6 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { ColumnRenderer } from '@conar/table'
-import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
+import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Table, TableBody, TableHeader, TableProvider } from '@conar/table'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
