@@ -1,4 +1,4 @@
-import type { Filter, FilterGroup } from '.'
+import type { Filter, FilterGroup } from './types'
 
 export const SQL_FILTERS_GROUPED = [
   {
