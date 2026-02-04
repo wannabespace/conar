@@ -9,8 +9,6 @@
 @plugin 'tailwind-scrollbar';
 @plugin '@tailwindcss/typography';
 
-@source "../../../apps/**/*.{ts,tsx}";
-@source "../../../components/**/*.{ts,tsx}";
 @source "../../../table/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
 
