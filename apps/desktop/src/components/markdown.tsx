@@ -153,7 +153,7 @@ function MarkdownBase({ content }: { content: string }) {
     <Streamdown
       mode="static"
       components={{
-        pre: ({ children }: { children?: ReactNode }) => <Pre children={children} />,
+        pre: ({ children }) => <Pre children={children} />,
         table: MarkdownTable,
         thead: TableHeader,
         tbody: TableBody,
