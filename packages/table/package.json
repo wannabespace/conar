@@ -1,0 +1,24 @@
+{
+  "name": "@conar/table",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./constants": "./src/constants.ts"
+  },
+  "scripts": {
+    "check-types": "tsc"
+  },
+  "dependencies": {
+    "@conar/shared": "workspace:*",
+    "@conar/ui": "workspace:*",
+    "@fluentui/react-context-selector": "catalog:",
+    "@remixicon/react": "catalog:",
+    "@tanstack/react-virtual": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@conar/configs": "workspace:*",
+    "@types/react": "catalog:"
+  }
+}
