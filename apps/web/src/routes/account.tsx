@@ -3,6 +3,7 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
+import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
 import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
@@ -239,9 +240,12 @@ function AccountLayout() {
       </header>
       <div className="mb-10 flex flex-1 gap-6">
         <aside className="w-64 shrink-0">
-          <div className="mb-4 flex flex-col">
-            <p className="truncate font-medium">{user.name}</p>
-            <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+          <div className="mb-4 flex items-center gap-3">
+            <UserAvatar user={user} className="size-10" />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <p className="truncate font-medium">{user.name}</p>
+              <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+            </div>
           </div>
           <nav className="space-y-1">
             <SidebarButton active={match === '/account/'} asChild>
