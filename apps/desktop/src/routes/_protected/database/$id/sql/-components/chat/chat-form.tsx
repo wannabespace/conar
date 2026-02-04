@@ -386,7 +386,7 @@ export function ChatForm() {
                   size="icon-xs"
                   variant="outline"
                   className={input.length < 10 ? 'cursor-default opacity-50' : ''}
-                  disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt}
+                  disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt || !subscription}
                   onClick={() => enhancePrompt({
                     prompt: input,
                     chatId: chat.id,
