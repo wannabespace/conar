@@ -1,6 +1,6 @@
+import type { TableCellProps } from '@conar/table'
 import type { editor } from 'monaco-editor'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
-import type { TableCellProps } from '~/components/table'
 import type { Column } from '~/entities/connection/components/table/utils'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'

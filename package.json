@@ -1,7 +1,7 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.28.1",
+  "packageManager": "pnpm@10.28.2",
   "engines": {
     "bun": ">=1.3.0"
   },
@@ -40,7 +40,6 @@
     "playwright": "catalog:",
     "tailwindcss": "catalog:",
     "taze": "catalog:",
-    "tsx": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }
