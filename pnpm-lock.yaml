@@ -433,7 +433,7 @@ catalogs:
       specifier: ^19.9.2
       version: 19.9.2
     turbo:
-      specifier: ^2.8.2
+      specifier: ^2.8.3
       version: 2.8.3
     tw-animate-css:
       specifier: ^1.4.0
@@ -14792,10 +14792,10 @@ snapshots:
       firebase: 12.8.0
       git-rev-sync: 3.0.2
       ink: 3.2.0(@types/react@19.2.9)(react@17.0.2)
-      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2)
-      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2)
-      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2)
-      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2)
+      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2)
+      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2)
+      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2)
+      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2)
       is-ci: 4.1.0
       is-installed-globally: 0.4.0
       js-yaml: 4.1.1
@@ -18020,7 +18020,7 @@ snapshots:
 
   ini@4.1.1: {}
 
-  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2):
+  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2):
     dependencies:
       gradient-string: 1.2.0
       ink: 3.2.0(@types/react@19.2.9)(react@17.0.2)
@@ -18028,14 +18028,14 @@ snapshots:
       react: 17.0.2
       strip-ansi: 6.0.1
 
-  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2):
+  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2):
     dependencies:
       ink: 3.2.0(@types/react@19.2.9)(react@17.0.2)
       prop-types: 15.8.1
       react: 17.0.2
       terminal-link: 2.1.1
 
-  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2):
+  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2):
     dependencies:
       arr-rotate: 1.0.0
       figures: 3.2.0
@@ -18043,7 +18043,7 @@ snapshots:
       lodash.isequal: 4.5.0
       react: 17.0.2
 
-  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.9)(react@19.2.3))(react@17.0.2):
+  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.9)(react@17.0.2))(react@17.0.2):
     dependencies:
       chalk: 4.1.2
       ink: 3.2.0(@types/react@19.2.9)(react@17.0.2)
