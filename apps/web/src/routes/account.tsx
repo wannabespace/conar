@@ -241,7 +241,7 @@ function AccountLayout() {
       <div className="mb-10 flex flex-1 gap-6">
         <aside className="w-64 shrink-0">
           <div className="mb-4 flex items-center gap-3">
-            <UserAvatar user={user} className="size-10 shrink-0" />
+            <UserAvatar user={user} className="size-10" />
             <div className="flex min-w-0 flex-1 flex-col">
               <p className="truncate font-medium">{user.name}</p>
               <p className="truncate text-sm text-muted-foreground">{user.email}</p>

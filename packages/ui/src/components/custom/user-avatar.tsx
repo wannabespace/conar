@@ -5,10 +5,10 @@ export function UserAvatar({
   user,
   className,
 }: {
-  user?: {
+  user: {
     email: string
     image?: string | null
-  }
+  } | null | undefined
   className?: string
 }) {
   return (
