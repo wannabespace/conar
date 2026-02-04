@@ -1076,9 +1076,6 @@ importers:
 
   packages/table:
     dependencies:
-      '@conar/configs':
-        specifier: workspace:*
-        version: link:../configs
       '@conar/shared':
         specifier: workspace:*
         version: link:../shared
@@ -1094,12 +1091,16 @@ importers:
       '@tanstack/react-virtual':
         specifier: 'catalog:'
         version: 3.13.18(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.2.9
       react:
         specifier: 'catalog:'
         version: 19.2.3
+    devDependencies:
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.9
 
   packages/ui:
     dependencies:
@@ -7281,7 +7282,7 @@ packages:
   glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
     engines: {node: '>=12'}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-agent@3.0.0:
     resolution: {integrity: sha512-PT6XReJ+D07JvGoxQMkT6qji/jVNfX/h364XHZOWeRzy64sSFr+xJ5OX7LI3b4MPQzdL4H8Y8M0xzPpsVMwA8Q==}

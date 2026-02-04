@@ -1,10 +1,10 @@
-import { FilterForm } from '@conar/table'
 import { Button } from '@conar/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiFilterLine } from '@remixicon/react'
 import { useState } from 'react'
 import { usePageStoreContext } from '../../-store'
+import { FilterForm } from '../filters/filters-form'
 
 export function HeaderActionsFilters() {
   const [isFiltersOpened, setIsFiltersOpened] = useState(false)

@@ -1,7 +1,7 @@
 import type { ColumnRenderer } from '@conar/table'
 import type { Column } from '~/entities/connection/components/table/utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
+import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Table, TableBody, TableProvider, useShiftSelectionKeyDown } from '@conar/table'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'

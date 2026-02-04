@@ -1,9 +1,8 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Store } from '@tanstack/react-store'
 import type { storeState } from './-store'
-import { SQL_FILTERS_GROUPED } from '@conar/shared/filters/sql'
+import { SQL_FILTERS_GROUPED } from '@conar/shared/filters'
 import { title } from '@conar/shared/utils/title'
-import { FiltersProvider } from '@conar/table'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
@@ -12,7 +11,8 @@ import { useEffect, useEffectEvent } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { addTab, connectionStore } from '~/entities/connection/store'
 import { prefetchConnectionCore, prefetchConnectionTableCore } from '~/entities/connection/utils'
-import { Filters } from './-components/filters'
+import { Filters } from './-components/filters/filters'
+import { FiltersProvider } from './-components/filters/filters-provider'
 import { Header } from './-components/header/header'
 import { Sidebar } from './-components/sidebar'
 import { Table } from './-components/table/table'
@@ -190,14 +190,14 @@ function DatabaseTablesPage() {
         defaultSize="20%"
         minSize="10%"
         maxSize="50%"
-        className="h-full rounded-lg border bg-background overflow-hidden"
+        className="h-full overflow-hidden rounded-lg border bg-background"
       >
         <Sidebar key={connection.id} />
       </ResizablePanel>
       <ResizableSeparator className="w-1 bg-transparent" />
       <ResizablePanel
         defaultSize="80%"
-        className="flex-1 rounded-lg border bg-background overflow-hidden"
+        className="flex-1 overflow-hidden rounded-lg border bg-background"
       >
         {schema && table && tableStore
           ? (

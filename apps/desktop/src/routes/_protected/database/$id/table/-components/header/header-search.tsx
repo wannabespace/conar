@@ -1,5 +1,5 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import { SQL_FILTERS_LIST } from '@conar/shared/filters/sql'
+import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
