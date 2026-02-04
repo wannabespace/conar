@@ -84,7 +84,7 @@ export function Subscription() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <span>
-                                  Free trial ends in
+                                  Free trial ends
                                   {' '}
                                   {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
                                 </span>
