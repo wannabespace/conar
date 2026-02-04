@@ -1,5 +1,5 @@
+import { drizzle } from 'drizzle-orm/node-postgres'
 import { drizzle as drizzlePglite } from 'drizzle-orm/pglite'
-import { drizzle } from 'drizzle-orm/postgres-js'
 import { env, nodeEnv } from '~/env'
 import * as auth from './schema/auth'
 import * as chats from './schema/chats'
