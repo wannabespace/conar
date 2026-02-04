@@ -8,7 +8,7 @@ import { handleError } from '~/lib/error'
 import { queryClient } from '~/main'
 
 export function useSignOut() {
-  const { refetch, data } = authClient.useSession()
+  const { refetch } = authClient.useSession()
 
   const { mutate: signOut, isPending: isSigningOut } = useMutation({
     mutationKey: ['sign-out'],
@@ -32,7 +32,6 @@ export function useSignOut() {
   })
 
   return {
-    data,
     signOut,
     isSigningOut,
   }
