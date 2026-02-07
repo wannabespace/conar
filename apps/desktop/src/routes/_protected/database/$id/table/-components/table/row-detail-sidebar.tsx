@@ -2,24 +2,61 @@ import type { Column } from '~/entities/connection/components/table/utils'
 import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine } from '@remixicon/react'
+import { RiCloseLine, RiSidebarFoldLine, RiSideBarLine } from '@remixicon/react'
 import { getEditableValue } from '~/entities/connection/components/table/utils'
 
 export function RowDetailSidebar({
   row,
   columns,
   onClose,
+  onExpand,
+  onCollapse,
+  isCollapsed,
   className,
 }: {
   row: Record<string, unknown>
   columns: Column[]
   onClose: VoidFunction
+  onExpand?: VoidFunction
+  onCollapse?: VoidFunction
+  isCollapsed?: boolean
   className?: string
 }) {
+  if (isCollapsed) {
+    return (
+      <aside
+        className={cn(
+          'flex w-12 shrink-0 flex-col items-center gap-1 border-l border-border bg-background py-2',
+          className,
+        )}
+        aria-label="Row details (collapsed)"
+      >
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
+          onClick={onExpand}
+          aria-label="Expand row details"
+        >
+          <RiSideBarLine className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
+          onClick={onClose}
+          aria-label="Close row details"
+        >
+          <RiCloseLine className="size-4" />
+        </Button>
+      </aside>
+    )
+  }
+
   return (
     <aside
       className={cn(
-        'flex w-80 shrink-0 flex-col border-l border-border bg-background',
+        'flex min-w-0 w-full shrink-0 flex-col border-l border-border bg-background',
         className,
       )}
       aria-label="Row details"
@@ -32,18 +69,31 @@ export function RowDetailSidebar({
         <span className="text-sm font-medium text-muted-foreground">
           Row details
         </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-7"
-          onClick={onClose}
-          aria-label="Close row details"
-        >
-          <RiCloseLine className="size-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {onCollapse && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              onClick={onCollapse}
+              aria-label="Collapse row details"
+            >
+              <RiSidebarFoldLine className="size-4" />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            onClick={onClose}
+            aria-label="Close row details"
+          >
+            <RiCloseLine className="size-4" />
+          </Button>
+        </div>
       </div>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <dl className="divide-y divide-border">
           {columns.map((column) => {
             const rowValue = row[column.id]
