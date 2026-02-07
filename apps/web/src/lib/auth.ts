@@ -1,6 +1,6 @@
 import { AUTH_COOKIE_PREFIX } from '@conar/shared/constants'
 import { createIsomorphicFn } from '@tanstack/react-start'
-import { getRequest } from '@tanstack/react-start/server'
+import { getCookie, getRequest } from '@tanstack/react-start/server'
 import { lastLoginMethodClient, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 
@@ -12,11 +12,7 @@ function hasTwoFactorPendingCookie(cookieHeader: string): boolean {
 }
 
 export const isTwoFactorPendingIsomorphic = createIsomorphicFn()
-  .server(() => {
-    const request = getRequest()
-    const cookie = request.headers.get('cookie') ?? ''
-    return hasTwoFactorPendingCookie(cookie)
-  })
+  .server(() => !!getCookie(TWO_FACTOR_COOKIE_NAME))
   .client(() => hasTwoFactorPendingCookie(document.cookie))
 
 export const authClient = createAuthClient({

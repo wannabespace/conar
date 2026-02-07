@@ -8,15 +8,15 @@ export const Route = createFileRoute('/_auth/two-factor')({
   validateSearch: type({
     'redirectPath?': 'string',
   }),
-  beforeLoad: async ({ search: { redirectPath } }) => {
-    const [{ data: session }, isTwoFactorPending] = await Promise.all([
-      getSessionIsomorphic(),
-      isTwoFactorPendingIsomorphic(),
-    ])
+  loaderDeps: ({ search }) => search,
+  loader: async ({ deps: { redirectPath } }) => {
+    const { data: session } = await getSessionIsomorphic()
 
     if (session?.user) {
       throw redirect({ to: '/account' })
     }
+
+    const isTwoFactorPending = isTwoFactorPendingIsomorphic()
 
     if (!isTwoFactorPending) {
       throw redirect({ to: '/sign-in', search: redirectPath ? { redirectPath } : {} })

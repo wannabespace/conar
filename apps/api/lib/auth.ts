@@ -53,7 +53,6 @@ export const auth: Auth = betterAuth({
         returned: false,
         input: false,
         defaultValue: () => nanoid(),
-        required: true,
       },
       stripeCustomerId: {
         type: 'string',
@@ -65,7 +64,6 @@ export const auth: Auth = betterAuth({
       desktopVersion: {
         fieldName: 'desktop_version',
         type: 'string',
-        returned: true,
         input: false,
         required: false,
       },
