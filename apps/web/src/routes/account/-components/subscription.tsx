@@ -31,7 +31,7 @@ export function Subscription() {
   const { period } = Route.useSearch()
   const { subscription, isPending } = useSubscription()
   const router = useRouter()
-  const returnUrl = router.buildLocation({ to: '/account' }).url.href
+  const returnUrl = router.buildLocation({ to: '/account' }).href
   const { openBillingPortal, isOpening } = useBillingPortal({ returnUrl })
   const { upgrade, isUpgrading } = useUpgradeSubscription()
   const [isYearly, setIsYearly] = useState(period === 'yearly')

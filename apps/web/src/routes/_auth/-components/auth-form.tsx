@@ -29,7 +29,7 @@ const signUpSchema = baseAuthSchema.and({
 
 function useSocialMutation(provider: 'google' | 'github', redirectPath?: string) {
   const router = useRouter()
-  const { url } = router.buildLocation({ to: '/account' })
+  const url = router.buildLocation({ to: '/account' })
 
   return useMutation({
     mutationKey: ['social', provider],
@@ -278,8 +278,8 @@ export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: st
       <div className="relative">
         <Separator />
         <span className={`
-          absolute top-1/2 left-1/2 -translate-1/2
-          bg-background px-4 text-sm text-muted-foreground
+          absolute top-1/2 left-1/2 -translate-1/2 bg-background px-4 text-sm
+          text-muted-foreground
         `}
         >
           Or continue with
