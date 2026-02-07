@@ -1,4 +1,3 @@
-import { SafeURL } from '@conar/shared/utils/safe-url'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { getSessionIsomorphic, isTwoFactorPendingIsomorphic } from '~/lib/auth'
@@ -31,7 +30,7 @@ function TwoFactorPage() {
 
   const onVerified = async () => {
     if (redirectPath) {
-      const url = new SafeURL(location.origin + redirectPath)
+      const url = new URL(location.origin + redirectPath)
       const path = url.pathname + url.search
       const to = path.startsWith('/') && !path.startsWith('//') ? path : '/account'
       await router.navigate({ to })

@@ -103,7 +103,10 @@ export function EnableDialog({ open, onOpenChange }: {
             <DialogFooter className="pt-2">
               <Button
                 type="submit"
-                className="w-full sm:w-auto"
+                className="
+                  w-full
+                  sm:w-auto
+                "
                 disabled={enableTotp.isPending || !canSubmitPassword || isPasswordSubmitting}
               >
                 <LoadingContent loading={enableTotp.isPending}>Continue</LoadingContent>
@@ -146,7 +149,10 @@ export function EnableDialog({ open, onOpenChange }: {
             <DialogFooter className="pt-2">
               <Button
                 type="submit"
-                className="w-full sm:w-auto"
+                className="
+                  w-full
+                  sm:w-auto
+                "
                 disabled={verifyTotp.isPending || !canSubmitCode}
               >
                 <LoadingContent loading={verifyTotp.isPending}>Verify</LoadingContent>
