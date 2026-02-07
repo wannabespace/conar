@@ -12,6 +12,8 @@ export type NodeType = Node<{
   table: string
   columns: Column[]
   selected?: boolean
+  searchActive?: boolean
+  searchMatched?: boolean
   edges: Edge[]
 }, 'tableNode'>
 
@@ -22,8 +24,11 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         `
           w-66 rounded-xl bg-card font-mono
           shadow-[0_1px_1px_rgba(0,0,0,0.02),0_2px_2px_rgba(0,0,0,0.02),0_4px_4px_rgba(0,0,0,0.02),0_8px_8px_rgba(0,0,0,0.02),0_16px_16px_rgba(0,0,0,0.02),0_32px_32px_rgba(0,0,0,0.02)]
+          transition-opacity
         `,
-        data.selected ? 'ring-2 ring-primary ring-offset-2' : '',
+        data.selected && 'ring-2 ring-primary ring-offset-2',
+        !data.selected && data.searchActive && data.searchMatched && 'ring-2 ring-primary/60 ring-offset-2',
+        data.searchActive && !data.searchMatched && !data.selected && 'opacity-50',
       )}
     >
       <div className="

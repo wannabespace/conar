@@ -19,6 +19,48 @@ export function getEdges({ constraints }: { constraints: typeof constraintsType.
     }))
 }
 
+export function getTableSearchState({
+  tables,
+  query,
+}: {
+  tables: string[]
+  query: string
+}) {
+  const normalizedQuery = query.trim().toLowerCase()
+
+  if (!normalizedQuery) {
+    return {
+      isActive: false,
+      matchedTables: new Set<string>(),
+    }
+  }
+
+  return {
+    isActive: true,
+    matchedTables: new Set(tables.filter(table => table.toLowerCase().includes(normalizedQuery))),
+  }
+}
+
+export function applySearchHighlight<TNode extends NodeType>({
+  nodes,
+  isSearchActive,
+  matchedTables,
+}: {
+  nodes: TNode[]
+  isSearchActive: boolean
+  matchedTables: Set<string>
+}): TNode[] {
+  return nodes.map((node) => {
+    const highlightedNode = { ...node }
+    highlightedNode.data = {
+      ...highlightedNode.data,
+      searchActive: isSearchActive,
+      searchMatched: isSearchActive && matchedTables.has(node.data.table),
+    }
+    return highlightedNode
+  })
+}
+
 export function getNodes({
   databaseId,
   schema,
@@ -72,6 +114,37 @@ export function getNodes({
       },
     } satisfies NodeType
   })
+}
+
+export function getVisualizerLayout({
+  databaseId,
+  schema,
+  tables,
+  columns,
+  constraints,
+}: {
+  databaseId: string
+  schema: string
+  tables: string[]
+  columns: typeof columnType.infer[]
+  constraints: typeof constraintsType.infer[]
+}) {
+  const visibleTables = new Set(tables)
+  const edges = getEdges({ constraints }).filter(
+    edge => visibleTables.has(edge.source) && visibleTables.has(edge.target),
+  )
+
+  return getLayoutElements(
+    getNodes({
+      databaseId,
+      schema,
+      tables,
+      columns,
+      edges,
+      constraints,
+    }),
+    edges,
+  )
 }
 
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}))
