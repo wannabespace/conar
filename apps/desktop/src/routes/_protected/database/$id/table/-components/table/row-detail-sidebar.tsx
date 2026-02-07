@@ -83,6 +83,20 @@ export function RowDetailSidebar({
                   {column.unique && (
                     <span className="ml-1 text-primary">UQ</span>
                   )}
+                  {column.isNullable && (
+                    <span className="ml-1 text-secondary-foreground">NULL</span>
+                  )}
+                  {column.enum && (
+                    <span className="rounded-xl ml-1 text-secondary-foreground p-2 bg-secondary">Enum</span>
+                  )}
+                  {column.maxLength && (
+                    <span className="ml-1 text-primary">
+                      (MAX
+                      {' '}
+                      {column.maxLength}
+                      )
+                    </span>
+                  )}
                 </dt>
 
                 <dd
