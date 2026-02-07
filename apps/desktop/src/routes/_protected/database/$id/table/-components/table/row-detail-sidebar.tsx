@@ -84,7 +84,7 @@ export function RowDetailSidebar({
                     <span className="ml-1 text-primary">UQ</span>
                   )}
                   {column.isNullable && (
-                    <span className="ml-1 text-secondary-foreground">NULL</span>
+                    <span className="ml-1 text-secondary-foreground">NULLABLE</span>
                   )}
                   {column.enum && (
                     <span className="rounded-xl ml-1 text-secondary-foreground p-2 bg-secondary">Enum</span>
