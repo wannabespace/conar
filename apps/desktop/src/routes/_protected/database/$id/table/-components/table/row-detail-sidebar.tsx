@@ -77,6 +77,12 @@ export function RowDetailSidebar({
                   {column.primaryKey && (
                     <span className="ml-1 text-primary">PK</span>
                   )}
+                  {column.foreign && (
+                    <span className="ml-1 text-secondary-foreground">FK</span>
+                  )}
+                  {column.unique && (
+                    <span className="ml-1 text-primary">UQ</span>
+                  )}
                 </dt>
 
                 <dd
