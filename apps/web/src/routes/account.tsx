@@ -10,7 +10,7 @@ import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMessageLine, RiMoonLine, RiShieldLine, RiSunLine } from '@remixicon/react'
+import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMessageLine, RiMoonLine, RiSettingsLine, RiSunLine } from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, Outlet, redirect, useMatches, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -260,10 +260,10 @@ function AccountLayout() {
                 Billing & Invoices
               </Link>
             </SidebarButton>
-            <SidebarButton active={match === '/account/settings'} asChild>
+            <SidebarButton active={match === '/account/settings/'} asChild>
               <Link to="/account/settings">
-                <RiShieldLine className="size-4" />
-                Security
+                <RiSettingsLine className="size-4" />
+                Settings
               </Link>
             </SidebarButton>
             <SupportButton />

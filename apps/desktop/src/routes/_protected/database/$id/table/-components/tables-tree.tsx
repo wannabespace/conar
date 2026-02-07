@@ -4,7 +4,7 @@ import { Button } from '@conar/ui/components/button'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
-import { Separator } from '@conar/ui/components/separator'
+import { MotionSeparator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -19,8 +19,6 @@ import { addTab, cleanupPinnedTables, connectionStore, togglePinTable } from '~/
 import { Route } from '..'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
-
-const MotionSeparator = motion.create(Separator)
 
 const treeVariants = {
   visible: { opacity: 1, height: 'auto' },

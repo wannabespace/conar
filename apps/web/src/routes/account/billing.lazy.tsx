@@ -36,7 +36,7 @@ function RouteComponent() {
   const { openBillingPortal, isOpening } = useBillingPortal({ returnUrl })
 
   return (
-    <div>
+    <>
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-semibold tracking-tight">Billing & Invoices</h2>
         <Button
@@ -136,6 +136,6 @@ function RouteComponent() {
               )}
         </CardContent>
       </Card>
-    </div>
+    </>
   )
 }

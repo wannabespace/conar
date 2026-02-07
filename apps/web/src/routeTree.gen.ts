@@ -26,7 +26,6 @@ import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 
-const AccountSettingsLazyRouteImport = createFileRoute('/account/settings')()
 const AccountBillingLazyRouteImport = createFileRoute('/account/billing')()
 const LayoutTermsOfServiceLazyRouteImport = createFileRoute(
   '/_layout/terms-of-service',
@@ -37,6 +36,8 @@ const LayoutPrivacyPolicyLazyRouteImport = createFileRoute(
 const AuthForgotPasswordLazyRouteImport = createFileRoute(
   '/_auth/forgot-password',
 )()
+const AccountSettingsIndexLazyRouteImport =
+  createFileRoute('/account/settings/')()
 
 const OpenRoute = OpenRouteImport.update({
   id: '/open',
@@ -66,13 +67,6 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const AccountSettingsLazyRoute = AccountSettingsLazyRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AccountRoute,
-} as any).lazy(() =>
-  import('./routes/account/settings.lazy').then((d) => d.Route),
-)
 const AccountBillingLazyRoute = AccountBillingLazyRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -142,6 +136,14 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => AuthRoute,
 } as any)
+const AccountSettingsIndexLazyRoute =
+  AccountSettingsIndexLazyRouteImport.update({
+    id: '/settings/',
+    path: '/settings/',
+    getParentRoute: () => AccountRoute,
+  } as any).lazy(() =>
+    import('./routes/account/settings/index.lazy').then((d) => d.Route),
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -159,8 +161,8 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof LayoutPrivacyPolicyLazyRoute
   '/terms-of-service': typeof LayoutTermsOfServiceLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
-  '/account/settings': typeof AccountSettingsLazyRoute
   '/account/': typeof AccountIndexRoute
+  '/account/settings/': typeof AccountSettingsIndexLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof LayoutIndexRoute
@@ -177,8 +179,8 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof LayoutPrivacyPolicyLazyRoute
   '/terms-of-service': typeof LayoutTermsOfServiceLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
-  '/account/settings': typeof AccountSettingsLazyRoute
   '/account': typeof AccountIndexRoute
+  '/account/settings': typeof AccountSettingsIndexLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -198,9 +200,9 @@ export interface FileRoutesById {
   '/_layout/privacy-policy': typeof LayoutPrivacyPolicyLazyRoute
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
-  '/account/settings': typeof AccountSettingsLazyRoute
   '/_layout/': typeof LayoutIndexRoute
   '/account/': typeof AccountIndexRoute
+  '/account/settings/': typeof AccountSettingsIndexLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -220,8 +222,8 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/terms-of-service'
     | '/account/billing'
-    | '/account/settings'
     | '/account/'
+    | '/account/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -238,8 +240,8 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/terms-of-service'
     | '/account/billing'
-    | '/account/settings'
     | '/account'
+    | '/account/settings'
   id:
     | '__root__'
     | '/_auth'
@@ -258,9 +260,9 @@ export interface FileRouteTypes {
     | '/_layout/privacy-policy'
     | '/_layout/terms-of-service'
     | '/account/billing'
-    | '/account/settings'
     | '/_layout/'
     | '/account/'
+    | '/account/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -314,13 +316,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
-    }
-    '/account/settings': {
-      id: '/account/settings'
-      path: '/settings'
-      fullPath: '/account/settings'
-      preLoaderRoute: typeof AccountSettingsLazyRouteImport
-      parentRoute: typeof AccountRoute
     }
     '/account/billing': {
       id: '/account/billing'
@@ -406,6 +401,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/account/settings/': {
+      id: '/account/settings/'
+      path: '/settings'
+      fullPath: '/account/settings/'
+      preLoaderRoute: typeof AccountSettingsIndexLazyRouteImport
+      parentRoute: typeof AccountRoute
+    }
   }
 }
 
@@ -450,14 +452,14 @@ const LayoutRouteWithChildren =
 
 interface AccountRouteChildren {
   AccountBillingLazyRoute: typeof AccountBillingLazyRoute
-  AccountSettingsLazyRoute: typeof AccountSettingsLazyRoute
   AccountIndexRoute: typeof AccountIndexRoute
+  AccountSettingsIndexLazyRoute: typeof AccountSettingsIndexLazyRoute
 }
 
 const AccountRouteChildren: AccountRouteChildren = {
   AccountBillingLazyRoute: AccountBillingLazyRoute,
-  AccountSettingsLazyRoute: AccountSettingsLazyRoute,
   AccountIndexRoute: AccountIndexRoute,
+  AccountSettingsIndexLazyRoute: AccountSettingsIndexLazyRoute,
 }
 
 const AccountRouteWithChildren =

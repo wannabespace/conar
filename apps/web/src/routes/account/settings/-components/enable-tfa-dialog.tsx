@@ -11,17 +11,56 @@ import {
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useForm, useStore } from '@tanstack/react-form'
+import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import QRCode from 'react-qr-code'
-import { TOTP_LENGTH, TotpCodeInput } from '~/components/totp-code-input'
-import { useTwoFactorSetup } from './use-two-factor'
+import { toast } from 'sonner'
+import { TotpCodeInput } from '~/components/totp-code-input'
+import { authClient } from '~/lib/auth'
+import { handleError } from '~/utils/error'
 
-export function EnableDialog({ open, onOpenChange }: {
+export function EnableTfaDialog({ open, onOpenChange }: {
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const [totpUri, setTotpUri] = useState('')
   const [step, setStep] = useState<'password' | 'setup'>('password')
-  const { totpUri, enableTotp, verifyTotp, reset } = useTwoFactorSetup()
+
+  const { mutate: enableTotp, isPending: isEnableTotpPending } = useMutation({
+    mutationFn: async (password: string) => {
+      const { data, error } = await authClient.twoFactor.enable({ password })
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: ({ totpURI }) => {
+      setTotpUri(totpURI)
+      setStep('setup')
+    },
+    onError: handleError,
+  })
+
+  const { mutate: verifyTotp, isPending: isVerifyTotpPending } = useMutation({
+    mutationFn: async (code: string) => {
+      const { error } = await authClient.twoFactor.verifyTotp({ code })
+
+      if (error) {
+        throw error
+      }
+    },
+    onSuccess: () => {
+      toast.success('2FA enabled')
+      onOpenChange(false)
+      setStep('password')
+    },
+    onError: handleError,
+    onSettled: () => {
+      setTotpUri('')
+    },
+  })
 
   const form = useForm({
     defaultValues: {
@@ -30,44 +69,18 @@ export function EnableDialog({ open, onOpenChange }: {
     },
     onSubmit: ({ value }) => {
       if (step === 'password') {
-        enableTotp.mutate(value.password, {
-          onSuccess: () => {
-            setStep('setup')
-            form.setFieldValue('password', '')
-          },
-        })
+        enableTotp(value.password)
       }
       else {
-        verifyTotp.mutate(value.code, {
-          onSuccess: () => {
-            onOpenChange(false)
-            setStep('password')
-            form.reset()
-            reset()
-          },
-        })
+        verifyTotp(value.code)
       }
     },
   })
 
-  const handleClose = (value: boolean) => {
-    onOpenChange(value)
-    if (!value) {
-      setStep('password')
-      form.reset()
-      reset()
-    }
-  }
-
-  const { isSubmitting: isPasswordSubmitting, values } = useStore(form.store, ({ isSubmitting, values }) => ({
-    isSubmitting,
-    values,
-  }))
-  const canSubmitPassword = Boolean(values.password?.trim())
-  const canSubmitCode = (values.code?.length ?? 0) === TOTP_LENGTH
+  const canSubmit = useStore(form.store, state => state.canSubmit)
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         {step === 'password' && (
           <form
@@ -77,7 +90,7 @@ export function EnableDialog({ open, onOpenChange }: {
               form.handleSubmit()
             }}
           >
-            <DialogHeader className="gap-1.5">
+            <DialogHeader>
               <DialogTitle>Enable 2FA</DialogTitle>
               <DialogDescription>
                 Enter your password to continue.
@@ -90,9 +103,10 @@ export function EnableDialog({ open, onOpenChange }: {
                   <Input
                     id="enable-password"
                     type="password"
+                    name={field.name}
                     value={field.state.value}
                     onChange={e => field.handleChange(e.target.value)}
-                    disabled={enableTotp.isPending}
+                    disabled={isEnableTotpPending}
                     autoComplete="current-password"
                     autoFocus
                     className="h-10"
@@ -107,14 +121,13 @@ export function EnableDialog({ open, onOpenChange }: {
                   w-full
                   sm:w-auto
                 "
-                disabled={enableTotp.isPending || !canSubmitPassword || isPasswordSubmitting}
+                disabled={isEnableTotpPending || !canSubmit}
               >
-                <LoadingContent loading={enableTotp.isPending}>Continue</LoadingContent>
+                <LoadingContent loading={isEnableTotpPending}>Continue</LoadingContent>
               </Button>
             </DialogFooter>
           </form>
         )}
-
         {step === 'setup' && (
           <form
             className="flex flex-col gap-6"
@@ -140,7 +153,7 @@ export function EnableDialog({ open, onOpenChange }: {
                       label="Verification code"
                       value={field.state.value}
                       onChange={value => field.handleChange(value)}
-                      disabled={verifyTotp.isPending}
+                      disabled={isVerifyTotpPending}
                     />
                   </div>
                 )}
@@ -153,9 +166,9 @@ export function EnableDialog({ open, onOpenChange }: {
                   w-full
                   sm:w-auto
                 "
-                disabled={verifyTotp.isPending || !canSubmitCode}
+                disabled={isVerifyTotpPending || !canSubmit}
               >
-                <LoadingContent loading={verifyTotp.isPending}>Verify</LoadingContent>
+                <LoadingContent loading={isVerifyTotpPending}>Verify</LoadingContent>
               </Button>
             </DialogFooter>
           </form>

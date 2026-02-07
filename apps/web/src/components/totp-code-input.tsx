@@ -1,11 +1,11 @@
 import type { ComponentProps } from 'react'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@conar/ui/components/input-otp'
 import { Label } from '@conar/ui/components/label'
+import { useId } from 'react'
 
 const TOTP_LENGTH = 6
 
-function TotpCodeInput({
-  id = 'totp-code',
+export function TotpCodeInput({
   label = 'Code',
   value,
   onChange,
@@ -19,12 +19,13 @@ function TotpCodeInput({
   label?: string
   onComplete?: VoidFunction
 } & Pick<ComponentProps<typeof InputOTP>, 'disabled' | 'autoFocus'>) {
+  const id = useId()
+
   return (
     <div className="flex flex-col gap-1">
       <Label htmlFor={id} className="text-sm text-muted-foreground">
         {label}
       </Label>
-
       <InputOTP
         id={id}
         maxLength={TOTP_LENGTH}
@@ -43,5 +44,3 @@ function TotpCodeInput({
     </div>
   )
 }
-
-export { TOTP_LENGTH, TotpCodeInput }

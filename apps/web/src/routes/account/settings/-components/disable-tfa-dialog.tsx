@@ -11,45 +11,40 @@ import {
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useForm, useStore } from '@tanstack/react-form'
-import { useTwoFactorDisable } from './use-two-factor'
+import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { authClient } from '~/lib/auth'
+import { handleError } from '~/utils/error'
 
-interface DisableDialogProps {
+export function DisableTfaDialog({ open, onOpenChange }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-}
+}) {
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (password: string) => {
+      const { error } = await authClient.twoFactor.disable({ password })
 
-export function DisableDialog({ open, onOpenChange }: DisableDialogProps) {
-  const { disableTotp } = useTwoFactorDisable()
+      if (error) {
+        throw error
+      }
+    },
+    onSuccess: async () => {
+      toast.success('2FA disabled')
+    },
+    onError: handleError,
+  })
 
   const form = useForm({
     defaultValues: {
       password: '',
     },
-    onSubmit: ({ value }) => {
-      disableTotp.mutate(value.password, {
-        onSuccess: () => {
-          onOpenChange(false)
-          form.reset()
-        },
-      })
-    },
+    onSubmit: ({ value }) => mutate(value.password),
   })
 
-  const handleClose = (value: boolean) => {
-    onOpenChange(value)
-    if (!value) {
-      form.reset()
-    }
-  }
-
-  const { isSubmitting, values } = useStore(form.store, ({ isSubmitting, values }) => ({
-    isSubmitting,
-    values,
-  }))
-  const canSubmit = Boolean(values.password?.trim())
+  const canSubmit = useStore(form.store, state => state.canSubmit)
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <form
           className="flex flex-col gap-6"
@@ -73,7 +68,7 @@ export function DisableDialog({ open, onOpenChange }: DisableDialogProps) {
                   type="password"
                   value={field.state.value}
                   onChange={e => field.handleChange(e.target.value)}
-                  disabled={disableTotp.isPending}
+                  disabled={isPending}
                   autoComplete="current-password"
                   autoFocus
                   className="h-10"
@@ -82,16 +77,27 @@ export function DisableDialog({ open, onOpenChange }: DisableDialogProps) {
             )}
           </form.Field>
           <DialogFooter className="pt-2">
-            <Button variant="outline" type="button" onClick={() => handleClose(false)} className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="
+                w-full
+                sm:w-auto
+              "
+            >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="destructive"
-              className="w-full sm:w-auto"
-              disabled={disableTotp.isPending || !canSubmit || isSubmitting}
+              className="
+                w-full
+                sm:w-auto
+              "
+              disabled={isPending || !canSubmit}
             >
-              <LoadingContent loading={disableTotp.isPending}>Disable</LoadingContent>
+              <LoadingContent loading={isPending}>Disable</LoadingContent>
             </Button>
           </DialogFooter>
         </form>
