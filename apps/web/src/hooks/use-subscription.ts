@@ -15,9 +15,9 @@ export function useSubscription() {
 
 export function useUpgradeSubscription() {
   const router = useRouter()
-  const { url: returnUrl } = router.buildLocation({ to: '/account' })
-  const { url: successUrl } = router.buildLocation({ to: '/account', search: { subscription: 'success' } })
-  const { url: cancelUrl } = router.buildLocation({ to: '/account', search: { subscription: 'cancel' } })
+  const returnUrl = router.buildLocation({ to: '/account' })
+  const successUrl = router.buildLocation({ to: '/account', search: { subscription: 'success' } })
+  const cancelUrl = router.buildLocation({ to: '/account', search: { subscription: 'cancel' } })
 
   const { mutate: upgrade, isPending: isUpgrading } = useMutation({
     mutationKey: ['subscription', 'upgrade'],

@@ -15,7 +15,6 @@ export * from './schema/queries'
 export * from './schema/subscriptions'
 
 const config = {
-  logger: true,
   schema: {
     ...auth,
     ...connections,
