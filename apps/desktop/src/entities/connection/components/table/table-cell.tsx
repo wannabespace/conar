@@ -3,7 +3,7 @@ import type { editor } from 'monaco-editor'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '~/entities/connection/components/table/utils'
 import { sleep } from '@conar/shared/utils/helpers'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
+import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { CtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
@@ -178,15 +178,17 @@ function CellPopoverContent({
             <>
               {canSetNull && (
                 <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="xs"
-                      variant="secondary"
-                    >
-                      Set
-                      {' '}
-                      <span className="font-mono">null</span>
-                    </Button>
+                  <AlertDialogTrigger
+                    render={(
+                      <Button
+                        size="xs"
+                        variant="secondary"
+                      />
+                    )}
+                  >
+                    Set
+                    {' '}
+                    <span className="font-mono">null</span>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -200,8 +202,8 @@ function CellPopoverContent({
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => setNull()}>Set to null</AlertDialogAction>
+                      <AlertDialogClose>Cancel</AlertDialogClose>
+                      <AlertDialogClose onClick={() => setNull()}>Set to null</AlertDialogClose>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
