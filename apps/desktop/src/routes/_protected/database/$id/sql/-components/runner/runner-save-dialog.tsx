@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import {
   Dialog,
@@ -5,6 +6,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogPanel,
   DialogTitle,
 } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
@@ -57,9 +59,13 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
           <DialogTitle>
             Save Query
           </DialogTitle>
-          <div className="text-sm text-muted-foreground mb-4">
-            Saved queries are stored for this database and can be quickly accessed and run from the "Saved queries" panel.
-          </div>
+        </DialogHeader>
+        <DialogPanel className="space-y-4">
+          <Alert>
+            <AlertDescription>
+              Saved queries are stored for this database and can be quickly accessed and run from the "Saved queries" panel.
+            </AlertDescription>
+          </Alert>
           <Label htmlFor="name">
             Query name
           </Label>
@@ -76,12 +82,10 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
               }
             }}
           />
-        </DialogHeader>
+        </DialogPanel>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">
-              Cancel
-            </Button>
+          <DialogClose render={<Button variant="outline" />}>
+            Cancel
           </DialogClose>
           <Button
             disabled={!canConfirm}
