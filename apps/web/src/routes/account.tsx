@@ -3,13 +3,14 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
+import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
 import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMessageLine, RiMoonLine, RiSunLine } from '@remixicon/react'
+import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMessageLine, RiMoonLine, RiSettingsLine, RiSunLine } from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, Outlet, redirect, useMatches, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -34,27 +35,21 @@ export const Route = createFileRoute('/account')({
 
 function SidebarButton({
   active = false,
-  children,
-  asChild = false,
-  onClick,
+  className,
+  ...props
 }: {
   active?: boolean
-  children: React.ReactNode
-  asChild?: boolean
-  onClick?: () => void
-}) {
+} & React.ComponentProps<typeof Button>) {
   return (
     <Button
       variant="ghost"
       className={cn(
         `w-full justify-start`,
         active && `bg-accent/50`,
+        className,
       )}
-      asChild={asChild}
-      onClick={onClick}
-    >
-      {children}
-    </Button>
+      {...props}
+    />
   )
 }
 
@@ -81,11 +76,9 @@ function SupportButton() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <SidebarButton>
-          <RiMessageLine className="size-4" />
-          Support
-        </SidebarButton>
+      <DialogTrigger render={<SidebarButton />}>
+        <RiMessageLine className="size-4" />
+        Support
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -108,10 +101,8 @@ function SupportButton() {
             />
           </div>
           <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
+            <DialogClose render={<Button type="button" variant="outline" />}>
+              Cancel
             </DialogClose>
             <Button type="submit" disabled={loading || !message}>
               <LoadingContent loading={loading}>
@@ -239,9 +230,12 @@ function AccountLayout() {
       </header>
       <div className="mb-10 flex flex-1 gap-6">
         <aside className="w-64 shrink-0">
-          <div className="mb-4 flex flex-col">
-            <p className="truncate font-medium">{user.name}</p>
-            <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+          <div className="mb-4 flex items-center gap-3">
+            <UserAvatar user={user} className="size-10" />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <p className="truncate font-medium">{user.name}</p>
+              <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+            </div>
           </div>
           <nav className="space-y-1">
             <SidebarButton active={match === '/account/'} asChild>
@@ -254,6 +248,12 @@ function AccountLayout() {
               <Link to="/account/billing">
                 <RiFileListLine className="size-4" />
                 Billing & Invoices
+              </Link>
+            </SidebarButton>
+            <SidebarButton active={match === '/account/settings/'} asChild>
+              <Link to="/account/settings">
+                <RiSettingsLine className="size-4" />
+                Settings
               </Link>
             </SidebarButton>
             <SupportButton />
