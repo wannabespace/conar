@@ -178,14 +178,7 @@ function CellPopoverContent({
             <>
               {canSetNull && (
                 <AlertDialog>
-                  <AlertDialogTrigger
-                    render={(
-                      <Button
-                        size="xs"
-                        variant="secondary"
-                      />
-                    )}
-                  >
+                  <AlertDialogTrigger render={<Button size="xs" variant="secondary" />}>
                     Set
                     {' '}
                     <span className="font-mono">null</span>

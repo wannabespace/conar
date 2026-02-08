@@ -39,56 +39,57 @@ export function DisableTfaDialog({ open, onOpenChange }: {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            mutate(password)
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>Disable 2FA</DialogTitle>
-            <DialogDescription>
-              Enter your password to turn off two-factor authentication.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogPanel className="flex flex-col gap-2">
-            <Label htmlFor="disable-password">Password</Label>
-            <Input
-              id="disable-password"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              disabled={isPending}
-              autoComplete="current-password"
-              autoFocus
-            />
-          </DialogPanel>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => onOpenChange(false)}
-              className="
-                w-full
-                sm:w-auto
-              "
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="destructive"
-              className="
-                w-full
-                sm:w-auto
-              "
-              disabled={isPending || password.length === 0}
-            >
-              <LoadingContent loading={isPending}>Disable</LoadingContent>
-            </Button>
-          </DialogFooter>
-        </form>
+      <DialogContent
+        className="sm:max-w-sm"
+        onSubmit={(e) => {
+          e.preventDefault()
+          mutate(password)
+        }}
+        render={<form />}
+      >
+
+        <DialogHeader>
+          <DialogTitle>Disable 2FA</DialogTitle>
+          <DialogDescription>
+            Enter your password to turn off two-factor authentication.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogPanel className="flex flex-col gap-2">
+          <Label htmlFor="disable-password">Password</Label>
+          <Input
+            id="disable-password"
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            disabled={isPending}
+            autoComplete="current-password"
+            autoFocus
+          />
+        </DialogPanel>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="
+              w-full
+              sm:w-auto
+            "
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="destructive"
+            className="
+              w-full
+              sm:w-auto
+            "
+            disabled={isPending || password.length === 0}
+          >
+            <LoadingContent loading={isPending}>Disable</LoadingContent>
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
