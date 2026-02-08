@@ -35,10 +35,10 @@ export function prepareValue(value: unknown, type?: string, database?: typeof co
     }
   }
 
-  if (value instanceof Date && (
-    type.includes('date')
-    || type.includes('time')
-  )) {
+  if (
+    value instanceof Date
+    && (type.includes('date') || type.includes('time'))
+  ) {
     if (database?.type === ConnectionType.Postgres) {
       return value.toISOString()
     }
@@ -102,15 +102,24 @@ export function buildInitialValues(
     let isPrimary = primaryKeyColumns.includes(col.id)
 
     if (primaryKeyColumns.length === 0) {
-      if (col.id === 'id' || col.id === '_id'
+      if (
+        col.id === 'id'
+        || col.id === '_id'
         || (col.id.endsWith('_id') && col.id.startsWith(table.toLowerCase()))
-        || (col.id.endsWith('Id') && col.id.startsWith(table.toLowerCase()))) {
+        || (col.id.endsWith('Id') && col.id.startsWith(table.toLowerCase()))
+      ) {
         isPrimary = true
       }
 
-      if ((col.type === 'uuid' || col.type === 'cuid'
-        || col.type?.includes('int') || col.type?.includes('serial'))
-      && (col.id === 'id' || col.id.endsWith('Id') || col.id.endsWith('_id'))) {
+      if (
+        (
+          col.type === 'uuid'
+          || col.type === 'cuid'
+          || col.type?.includes('int')
+          || col.type?.includes('serial')
+        )
+        && (col.id === 'id' || col.id.endsWith('Id') || col.id.endsWith('_id'))
+      ) {
         isPrimary = true
       }
     }
@@ -123,8 +132,10 @@ export function buildInitialValues(
         || defaultVal?.includes('IDENTITY'))
 
     if (isPrimary) {
-      if ((col.type?.includes('int') || col.type?.includes('serial') || col.type?.includes('number'))
-        && (hasAutoDefault || col.type?.includes('serial'))) {
+      if (
+        (col.type?.includes('int') || col.type?.includes('serial') || col.type?.includes('number'))
+        && (hasAutoDefault || col.type?.includes('serial'))
+      ) {
         initialValues[col.id] = '(Auto-generated)'
       }
 

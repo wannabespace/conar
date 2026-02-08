@@ -398,8 +398,8 @@ export function AddRecordDialog({ ref }: AddRecordDialogProps) {
         </div>
 
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+          <DialogClose render={<Button variant="outline" />}>
+            Cancel
           </DialogClose>
           <Button
             onClick={handleSubmit}

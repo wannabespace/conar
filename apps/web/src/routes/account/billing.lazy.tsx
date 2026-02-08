@@ -32,11 +32,11 @@ function formatCurrency(amount: number) {
 function RouteComponent() {
   const { data: invoices = [], isPending } = useQuery(orpcQuery.account.invoices.queryOptions())
   const router = useRouter()
-  const returnUrl = router.buildLocation({ to: '/account/billing' }).url.href
-  const { openBillingPortal, isOpening } = useBillingPortal({ returnUrl })
+  const returnHref = router.buildLocation({ to: '/account/billing' }).href
+  const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
 
   return (
-    <div>
+    <>
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-semibold tracking-tight">Billing & Invoices</h2>
         <Button
@@ -136,6 +136,6 @@ function RouteComponent() {
               )}
         </CardContent>
       </Card>
-    </div>
+    </>
   )
 }
