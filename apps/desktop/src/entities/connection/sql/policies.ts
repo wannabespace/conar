@@ -6,7 +6,7 @@ export const policyType = type({
   table: 'string',
   name: 'string',
   type: '"PERMISSIVE" | "RESTRICTIVE"',
-  command: '"ALL" | "SELECT" | "INSERT" | "UPDATE" | "DELETE" | null',
+  command: 'string',
   roles: 'string[]',
   using: 'string | null',
   check: 'string | null',

@@ -21,7 +21,7 @@ interface TablePrivileges {
   GRANTEE: string
   TABLE_SCHEMA: string
   TABLE_NAME: string
-  PRIVILEGE_TYPE: 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'ALL'
+  PRIVILEGE_TYPE: string
   IS_GRANTABLE: string
 }
 
