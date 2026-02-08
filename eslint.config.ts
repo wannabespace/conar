@@ -16,6 +16,7 @@ export default antfu(
       'react-hooks/exhaustive-deps': ['warn', {
         additionalHooks: '(useMountedEffect|useAsyncEffect)',
       }],
+      'react-refresh/only-export-components': 'off',
     },
     ignores: [
       '**/routeTree.gen.ts',

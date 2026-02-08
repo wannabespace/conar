@@ -15,17 +15,17 @@ export function useSubscription() {
 
 export function useUpgradeSubscription() {
   const router = useRouter()
-  const { url: returnUrl } = router.buildLocation({ to: '/account' })
-  const { url: successUrl } = router.buildLocation({ to: '/account', search: { subscription: 'success' } })
-  const { url: cancelUrl } = router.buildLocation({ to: '/account', search: { subscription: 'cancel' } })
+  const returnHref = router.buildLocation({ to: '/account' }).href
+  const successHref = router.buildLocation({ to: '/account', search: { subscription: 'success' } }).href
+  const cancelHref = router.buildLocation({ to: '/account', search: { subscription: 'cancel' } }).href
 
   const { mutate: upgrade, isPending: isUpgrading } = useMutation({
     mutationKey: ['subscription', 'upgrade'],
     mutationFn: async (isYearly: boolean = false) => {
       const result = await orpc.account.subscription.upgrade({
-        returnUrl: returnUrl.href,
-        successUrl: successUrl.href,
-        cancelUrl: cancelUrl.href,
+        returnUrl: location.origin + returnHref,
+        successUrl: location.origin + successHref,
+        cancelUrl: location.origin + cancelHref,
         isYearly,
       })
 
@@ -39,12 +39,12 @@ export function useUpgradeSubscription() {
   }
 }
 
-export function useBillingPortal({ returnUrl}: { returnUrl: string }) {
+export function useBillingPortal({ returnHref }: { returnHref: string }) {
   const { mutate: openBillingPortal, isPending: isOpening } = useMutation({
     mutationKey: ['subscription', 'billingPortal'],
     mutationFn: async () => {
       const result = await orpc.account.subscription.billingPortal({
-        returnUrl,
+        returnUrl: location.origin + returnHref,
       })
 
       location.assign(result.url)
