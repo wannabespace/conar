@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardPanel, CardTitle } from '@conar/ui/components/card'
 import { Label } from '@conar/ui/components/label'
 import { Switch } from '@conar/ui/components/switch'
+import { RiInformationLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -38,10 +39,15 @@ function SettingsPage() {
               <span className="text-base font-medium">Two-factor authentication</span>
               <p className="text-xs text-muted-foreground">
                 {twoFactorEnabled
-                  ? 'A code is required when you sign in.'
+                  ? 'A code for your authenticator app is required when you sign in.'
                   : hasCredentialAccount
                     ? 'Turn on to require an authenticator code at sign-in.'
-                    : '2FA is only available for accounts that can sign in with email and password.'}
+                    : (
+                        <span className="flex items-center gap-1">
+                          <RiInformationLine className="size-4" />
+                          2FA is only available for accounts that can sign in with email and password.
+                        </span>
+                      )}
               </p>
             </div>
             <Switch
