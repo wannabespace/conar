@@ -23,6 +23,7 @@ export async function handleError(error: unknown) {
       && 'code' in error
       && error.status === 401
       && error.code !== 'INVALID_EMAIL_OR_PASSWORD'
+      && error.code !== 'INVALID_CODE'
     )
     || (error instanceof ORPCError && error.code === 'UNAUTHORIZED')
   ) {

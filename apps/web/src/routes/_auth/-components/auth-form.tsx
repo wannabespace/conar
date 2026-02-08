@@ -21,6 +21,10 @@ const baseAuthSchema = type({
   password: 'string >= 8',
 })
 
+const twoFactorRedirectSchema = type({
+  twoFactorRedirect: 'true',
+})
+
 const signInSchema = baseAuthSchema
 
 const signUpSchema = baseAuthSchema.and({
@@ -29,12 +33,12 @@ const signUpSchema = baseAuthSchema.and({
 
 function useSocialMutation(provider: 'google' | 'github', redirectPath?: string) {
   const router = useRouter()
-  const url = router.buildLocation({ to: '/account' })
+  const href = router.buildLocation({ to: '/account' }).href
 
   return useMutation({
     mutationKey: ['social', provider],
     mutationFn: async () => {
-      const callbackUrl = new URL(redirectPath ? location.origin + redirectPath : url.href)
+      const callbackUrl = new URL(location.origin + (redirectPath || href))
       const newUserCallbackUrl = new URL(callbackUrl)
 
       newUserCallbackUrl.searchParams.set('newUser', 'true')
@@ -127,6 +131,11 @@ export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: st
             email: value.email,
             password: value.password,
           })
+
+      if (type === 'sign-in' && twoFactorRedirectSchema.allows(data)) {
+        await router.navigate({ to: '/two-factor', search: redirectPath ? { redirectPath } : {} })
+        return
+      }
 
       if (error || !(data && data.token)) {
         if (data && !data.token) {

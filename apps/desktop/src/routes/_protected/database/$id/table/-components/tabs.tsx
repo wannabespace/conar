@@ -10,7 +10,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@conar/ui/components/context-menu'
-import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
+import { MotionScrollViewport, ScrollArea, ScrollBar } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
@@ -18,13 +18,11 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { motion, Reorder } from 'motion/react'
+import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { addTab, connectionStore, removeTab, updateTabs } from '~/entities/connection/store'
 import { prefetchConnectionTableCore } from '~/entities/connection/utils'
 import { tablePageStore } from '../-store'
-
-const MotionScrollViewport = motion.create(ScrollViewport)
 
 const os = getOS(navigator.userAgent)
 

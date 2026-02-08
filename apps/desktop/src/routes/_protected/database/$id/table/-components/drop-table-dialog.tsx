@@ -1,4 +1,3 @@
-import type { connections } from '~/drizzle'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
@@ -10,6 +9,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogPanel,
   DialogTitle,
 } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
@@ -29,10 +29,10 @@ interface DropTableDialogProps {
   ref: React.RefObject<{
     drop: (schema: string, table: string) => void
   } | null>
-  connection: typeof connections.$inferSelect
 }
 
-export function DropTableDialog({ ref, connection }: DropTableDialogProps) {
+export function DropTableDialog({ ref }: DropTableDialogProps) {
+  const { connection } = Route.useRouteContext()
   const { schema: schemaFromSearch, table: tableFromSearch } = Route.useSearch()
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')
@@ -95,60 +95,62 @@ export function DropTableDialog({ ref, connection }: DropTableDialogProps) {
           <DialogTitle>
             Drop Table
           </DialogTitle>
-          <div className="space-y-4">
-            <Alert variant="destructive">
-              <RiAlertLine className="size-5 text-destructive" />
-              <AlertTitle>This action cannot be undone.</AlertTitle>
-              <AlertDescription>
-                This will permanently delete the table and all its data from the database.
-              </AlertDescription>
-            </Alert>
-            <div className="space-y-2">
-              <Label htmlFor="confirmation" className="font-normal">
-                <span>
-                  Type
-                  {' '}
-                  <span className="font-semibold">
-                    {table}
-                  </span>
-                  {' '}
-                  to confirm
-                </span>
-              </Label>
-              <Input
-                id="confirmation"
-                value={confirmationText}
-                onChange={e => setConfirmationText(e.target.value)}
-                placeholder={table}
-                spellCheck={false}
-                autoComplete="off"
-              />
-            </div>
-            {connection.type !== ConnectionType.ClickHouse && (
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="cascade"
-                  checked={cascade}
-                  onCheckedChange={() => setCascade(!cascade)}
-                />
-                <Label htmlFor="cascade" className="font-normal">
-                  Drop tables that depend on this table (CASCADE)
-                </Label>
-              </div>
-            )}
-          </div>
         </DialogHeader>
-        <DialogFooter className="mt-4 flex gap-2">
-          <DialogClose asChild>
+        <DialogPanel className="space-y-4">
+          <Alert variant="destructive">
+            <RiAlertLine className="size-5 text-destructive" />
+            <AlertTitle>This action cannot be undone.</AlertTitle>
+            <AlertDescription>
+              This will permanently delete the table and all its data from the database.
+            </AlertDescription>
+          </Alert>
+          <div className="space-y-2">
+            <Label htmlFor="confirmation">
+              <span>
+                Type
+                {' '}
+                <span className="font-semibold">
+                  {table}
+                </span>
+                {' '}
+                to confirm
+              </span>
+            </Label>
+            <Input
+              id="confirmation"
+              value={confirmationText}
+              onChange={e => setConfirmationText(e.target.value)}
+              placeholder={table}
+              spellCheck={false}
+              autoComplete="off"
+              autoFocus
+            />
+          </div>
+          {connection.type !== ConnectionType.ClickHouse && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="cascade"
+                checked={cascade}
+                onCheckedChange={() => setCascade(!cascade)}
+              />
+              <Label htmlFor="cascade" className="font-normal">
+                Drop tables that depend on this table (CASCADE)
+              </Label>
+            </div>
+          )}
+        </DialogPanel>
+        <DialogFooter>
+          <DialogClose render={(
             <Button
               variant="outline"
               onClick={() => {
                 setConfirmationText('')
                 setCascade(false)
               }}
-            >
-              Cancel
-            </Button>
+            />
+          )}
+          >
+            Cancel
           </DialogClose>
           <Button
             variant="destructive"

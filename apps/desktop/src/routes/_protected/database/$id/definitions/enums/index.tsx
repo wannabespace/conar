@@ -98,7 +98,7 @@ function DatabaseEnumsPage() {
             layout
             {...MOTION_BLOCK_PROPS}
           >
-            <CardHeader className="bg-muted/30 px-4 py-3">
+            <CardHeader className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-base">

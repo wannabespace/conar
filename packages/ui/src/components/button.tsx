@@ -2,7 +2,10 @@ import type { VariantProps } from 'class-variance-authority'
 import type * as React from 'react'
 import { cn } from '@conar/ui/lib/utils'
 import { Slot } from '@radix-ui/react-slot'
+import { motion } from 'motion/react'
 import { buttonVariants } from './button.variants'
+
+export const MotionButton = motion.create(Button)
 
 export function Button({
   className,

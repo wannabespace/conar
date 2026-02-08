@@ -1,6 +1,7 @@
 import type { RefObject } from 'react'
 import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area'
 import { cn } from '@conar/ui/lib/utils'
+import { motion } from 'motion/react'
 
 function ScrollArea({
   className,
@@ -19,6 +20,8 @@ function ScrollArea({
   )
 }
 
+export const MotionScrollViewport = motion.create(ScrollViewport)
+
 function ScrollViewport({
   ref,
   className,
@@ -29,7 +32,12 @@ function ScrollViewport({
       ref={ref}
       data-slot="scroll-area-viewport"
       className={cn(
-        'focus-visible:ring-ring/50 size-full overscroll-contain transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1',
+        `
+          size-full overscroll-contain transition-[color,box-shadow]
+          outline-none
+          focus-visible:ring-[3px] focus-visible:ring-ring/50
+          focus-visible:outline-1
+        `,
         className,
       )}
       {...props}
@@ -48,15 +56,23 @@ function ScrollBar({
       orientation={orientation}
       className={cn(
         'flex touch-none p-px transition-[colors,width,height] select-none',
-        orientation === 'vertical' && 'h-full w-2.5 border-l border-l-transparent',
-        orientation === 'horizontal' && 'h-2.5 flex-col border-t border-t-transparent',
+        orientation === 'vertical' && `
+          h-full w-2.5 border-l border-l-transparent
+        `,
+        orientation === 'horizontal' && `
+          h-2.5 flex-col border-t border-t-transparent
+        `,
         className,
       )}
       {...props}
     >
       <ScrollAreaPrimitive.Thumb
         data-slot="scroll-area-thumb"
-        className="z-20 duration-150 transition-colors bg-transparent group-hover/scroll-area:bg-accent/60 relative flex-1 rounded-full"
+        className="
+          relative z-20 flex-1 rounded-full bg-transparent transition-colors
+          duration-150
+          group-hover/scroll-area:bg-accent/60
+        "
       />
     </ScrollAreaPrimitive.Scrollbar>
   )

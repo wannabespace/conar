@@ -1,6 +1,6 @@
 import type { connections } from '~/drizzle'
 import { Button } from '@conar/ui/components/button'
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogPanel, DialogTitle } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useImperativeHandle, useState } from 'react'
@@ -45,32 +45,30 @@ export function RenameConnectionDialog({ ref }: RenameConnectionDialogProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Rename Connection</DialogTitle>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="newConnectionName" className="font-normal">
-                Connection name
-              </Label>
-              <Input
-                id="newConnectionName"
-                value={newName}
-                placeholder="Enter new connection name"
-                spellCheck={false}
-                autoComplete="off"
-                onChange={e => setNewName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && canConfirm) {
-                    rename(e)
-                  }
-                }}
-              />
-            </div>
-          </div>
         </DialogHeader>
-        <DialogFooter className="mt-4 flex gap-2">
-          <DialogClose asChild>
-            <Button variant="outline">
-              Cancel
-            </Button>
+        <DialogPanel className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="newConnectionName" className="font-normal">
+              Connection name
+            </Label>
+            <Input
+              id="newConnectionName"
+              value={newName}
+              placeholder="Enter new connection name"
+              spellCheck={false}
+              autoComplete="off"
+              onChange={e => setNewName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && canConfirm) {
+                  rename(e)
+                }
+              }}
+            />
+          </div>
+        </DialogPanel>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>
+            Cancel
           </DialogClose>
           <Button
             disabled={!canConfirm}
@@ -80,7 +78,7 @@ export function RenameConnectionDialog({ ref }: RenameConnectionDialogProps) {
               }
             }}
           >
-            Rename Connection
+            Rename
           </Button>
         </DialogFooter>
       </DialogContent>

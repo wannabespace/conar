@@ -176,13 +176,11 @@ export function HeaderActionsCopy({ connection, table, schema }: { connection: t
     <Dialog>
       <TooltipProvider>
         <Tooltip>
-          <DialogTrigger asChild>
-            <TooltipTrigger asChild>
-              <Button variant="outline" size="icon">
-                <RiCodeSSlashLine />
-              </Button>
-            </TooltipTrigger>
-          </DialogTrigger>
+          <TooltipTrigger asChild>
+            <DialogTrigger render={<Button variant="outline" size="icon" />}>
+              <RiCodeSSlashLine />
+            </DialogTrigger>
+          </TooltipTrigger>
           <TooltipContent side="top">
             Copy schema / query
           </TooltipContent>

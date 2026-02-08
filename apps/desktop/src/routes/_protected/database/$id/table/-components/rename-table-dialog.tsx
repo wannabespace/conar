@@ -1,4 +1,3 @@
-import type { connections } from '~/drizzle'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -8,6 +7,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogPanel,
   DialogTitle,
 } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
@@ -21,15 +21,16 @@ import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { renameTableQuery } from '~/entities/connection/sql'
 import { renameTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
+import { Route } from '..'
 
 interface RenameTableDialogProps {
   ref: React.RefObject<{
     rename: (schema: string, table: string) => void
   } | null>
-  connection: typeof connections.$inferSelect
 }
 
-export function RenameTableDialog({ ref, connection }: RenameTableDialogProps) {
+export function RenameTableDialog({ ref }: RenameTableDialogProps) {
+  const { connection } = Route.useRouteContext()
   const router = useRouter()
   const [newTableName, setNewTableName] = useState('')
   const [schema, setSchema] = useState('')
@@ -77,45 +78,43 @@ export function RenameTableDialog({ ref, connection }: RenameTableDialogProps) {
           <DialogTitle>
             Rename Table
           </DialogTitle>
-          <div className="space-y-4">
-            <Alert>
-              <RiInformationLine className="size-5 text-blue-500" />
-              <AlertTitle>
-                Rename table "
-                {table}
-                "
-              </AlertTitle>
-              <AlertDescription>
-                This will rename the table from "
-                {table}
-                " to the new name you specify. This action cannot be undone.
-              </AlertDescription>
-            </Alert>
-            <div className="space-y-2">
-              <Label htmlFor="newTableName" className="font-normal">
-                Table name
-              </Label>
-              <Input
-                id="newTableName"
-                value={newTableName}
-                placeholder="Enter new table name"
-                spellCheck={false}
-                autoComplete="off"
-                onChange={e => setNewTableName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && canConfirm) {
-                    renameTable()
-                  }
-                }}
-              />
-            </div>
-          </div>
         </DialogHeader>
-        <DialogFooter className="mt-4 flex gap-2">
-          <DialogClose asChild>
-            <Button variant="outline">
-              Cancel
-            </Button>
+        <DialogPanel className="space-y-4">
+          <Alert>
+            <RiInformationLine className="size-5" />
+            <AlertTitle>
+              Rename table "
+              {table}
+              "
+            </AlertTitle>
+            <AlertDescription>
+              This will rename the table from "
+              {table}
+              " to the new name you specify. This action cannot be undone.
+            </AlertDescription>
+          </Alert>
+          <div className="space-y-2">
+            <Label htmlFor="newTableName">
+              Table name
+            </Label>
+            <Input
+              id="newTableName"
+              value={newTableName}
+              placeholder="Enter new table name"
+              spellCheck={false}
+              autoComplete="off"
+              onChange={e => setNewTableName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && canConfirm) {
+                  renameTable()
+                }
+              }}
+            />
+          </div>
+        </DialogPanel>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>
+            Cancel
           </DialogClose>
           <Button
             disabled={!canConfirm}

@@ -21,11 +21,11 @@ import { Route as DeepSignInRouteImport } from './routes/deep.sign-in'
 import { Route as LayoutReleasesRouteImport } from './routes/_layout/releases'
 import { Route as LayoutHomeRouteImport } from './routes/_layout/home'
 import { Route as LayoutDownloadRouteImport } from './routes/_layout/download'
+import { Route as AuthTwoFactorRouteImport } from './routes/_auth/two-factor'
 import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 
-const AccountSettingsLazyRouteImport = createFileRoute('/account/settings')()
 const AccountBillingLazyRouteImport = createFileRoute('/account/billing')()
 const LayoutTermsOfServiceLazyRouteImport = createFileRoute(
   '/_layout/terms-of-service',
@@ -36,6 +36,8 @@ const LayoutPrivacyPolicyLazyRouteImport = createFileRoute(
 const AuthForgotPasswordLazyRouteImport = createFileRoute(
   '/_auth/forgot-password',
 )()
+const AccountSettingsIndexLazyRouteImport =
+  createFileRoute('/account/settings/')()
 
 const OpenRoute = OpenRouteImport.update({
   id: '/open',
@@ -65,13 +67,6 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const AccountSettingsLazyRoute = AccountSettingsLazyRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AccountRoute,
-} as any).lazy(() =>
-  import('./routes/account/settings.lazy').then((d) => d.Route),
-)
 const AccountBillingLazyRoute = AccountBillingLazyRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -121,6 +116,11 @@ const LayoutDownloadRoute = LayoutDownloadRouteImport.update({
   path: '/download',
   getParentRoute: () => LayoutRoute,
 } as any)
+const AuthTwoFactorRoute = AuthTwoFactorRouteImport.update({
+  id: '/two-factor',
+  path: '/two-factor',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthSignUpRoute = AuthSignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
@@ -136,6 +136,14 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => AuthRoute,
 } as any)
+const AccountSettingsIndexLazyRoute =
+  AccountSettingsIndexLazyRouteImport.update({
+    id: '/settings/',
+    path: '/settings/',
+    getParentRoute: () => AccountRoute,
+  } as any).lazy(() =>
+    import('./routes/account/settings/index.lazy').then((d) => d.Route),
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -144,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/two-factor': typeof AuthTwoFactorRoute
   '/download': typeof LayoutDownloadRoute
   '/home': typeof LayoutHomeRoute
   '/releases': typeof LayoutReleasesRoute
@@ -152,8 +161,8 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof LayoutPrivacyPolicyLazyRoute
   '/terms-of-service': typeof LayoutTermsOfServiceLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
-  '/account/settings': typeof AccountSettingsLazyRoute
   '/account/': typeof AccountIndexRoute
+  '/account/settings/': typeof AccountSettingsIndexLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof LayoutIndexRoute
@@ -161,6 +170,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/two-factor': typeof AuthTwoFactorRoute
   '/download': typeof LayoutDownloadRoute
   '/home': typeof LayoutHomeRoute
   '/releases': typeof LayoutReleasesRoute
@@ -169,8 +179,8 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof LayoutPrivacyPolicyLazyRoute
   '/terms-of-service': typeof LayoutTermsOfServiceLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
-  '/account/settings': typeof AccountSettingsLazyRoute
   '/account': typeof AccountIndexRoute
+  '/account/settings': typeof AccountSettingsIndexLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -181,6 +191,7 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
+  '/_auth/two-factor': typeof AuthTwoFactorRoute
   '/_layout/download': typeof LayoutDownloadRoute
   '/_layout/home': typeof LayoutHomeRoute
   '/_layout/releases': typeof LayoutReleasesRoute
@@ -189,9 +200,9 @@ export interface FileRoutesById {
   '/_layout/privacy-policy': typeof LayoutPrivacyPolicyLazyRoute
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
-  '/account/settings': typeof AccountSettingsLazyRoute
   '/_layout/': typeof LayoutIndexRoute
   '/account/': typeof AccountIndexRoute
+  '/account/settings/': typeof AccountSettingsIndexLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
+    | '/two-factor'
     | '/download'
     | '/home'
     | '/releases'
@@ -210,8 +222,8 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/terms-of-service'
     | '/account/billing'
-    | '/account/settings'
     | '/account/'
+    | '/account/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -219,6 +231,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
+    | '/two-factor'
     | '/download'
     | '/home'
     | '/releases'
@@ -227,8 +240,8 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/terms-of-service'
     | '/account/billing'
-    | '/account/settings'
     | '/account'
+    | '/account/settings'
   id:
     | '__root__'
     | '/_auth'
@@ -238,6 +251,7 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
+    | '/_auth/two-factor'
     | '/_layout/download'
     | '/_layout/home'
     | '/_layout/releases'
@@ -246,9 +260,9 @@ export interface FileRouteTypes {
     | '/_layout/privacy-policy'
     | '/_layout/terms-of-service'
     | '/account/billing'
-    | '/account/settings'
     | '/_layout/'
     | '/account/'
+    | '/account/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -302,13 +316,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
-    }
-    '/account/settings': {
-      id: '/account/settings'
-      path: '/settings'
-      fullPath: '/account/settings'
-      preLoaderRoute: typeof AccountSettingsLazyRouteImport
-      parentRoute: typeof AccountRoute
     }
     '/account/billing': {
       id: '/account/billing'
@@ -366,6 +373,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutDownloadRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_auth/two-factor': {
+      id: '/_auth/two-factor'
+      path: '/two-factor'
+      fullPath: '/two-factor'
+      preLoaderRoute: typeof AuthTwoFactorRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/_auth/sign-up': {
       id: '/_auth/sign-up'
       path: '/sign-up'
@@ -387,6 +401,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/account/settings/': {
+      id: '/account/settings/'
+      path: '/settings'
+      fullPath: '/account/settings/'
+      preLoaderRoute: typeof AccountSettingsIndexLazyRouteImport
+      parentRoute: typeof AccountRoute
+    }
   }
 }
 
@@ -394,6 +415,7 @@ interface AuthRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
+  AuthTwoFactorRoute: typeof AuthTwoFactorRoute
   AuthForgotPasswordLazyRoute: typeof AuthForgotPasswordLazyRoute
 }
 
@@ -401,6 +423,7 @@ const AuthRouteChildren: AuthRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
+  AuthTwoFactorRoute: AuthTwoFactorRoute,
   AuthForgotPasswordLazyRoute: AuthForgotPasswordLazyRoute,
 }
 
@@ -429,14 +452,14 @@ const LayoutRouteWithChildren =
 
 interface AccountRouteChildren {
   AccountBillingLazyRoute: typeof AccountBillingLazyRoute
-  AccountSettingsLazyRoute: typeof AccountSettingsLazyRoute
   AccountIndexRoute: typeof AccountIndexRoute
+  AccountSettingsIndexLazyRoute: typeof AccountSettingsIndexLazyRoute
 }
 
 const AccountRouteChildren: AccountRouteChildren = {
   AccountBillingLazyRoute: AccountBillingLazyRoute,
-  AccountSettingsLazyRoute: AccountSettingsLazyRoute,
   AccountIndexRoute: AccountIndexRoute,
+  AccountSettingsIndexLazyRoute: AccountSettingsIndexLazyRoute,
 }
 
 const AccountRouteWithChildren =
