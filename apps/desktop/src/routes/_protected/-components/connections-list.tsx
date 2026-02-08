@@ -158,7 +158,7 @@ function ConnectionCard({
           >
             <RiMoreLine className="size-4" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" onCloseAutoFocus={e => e.preventDefault()}>
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()

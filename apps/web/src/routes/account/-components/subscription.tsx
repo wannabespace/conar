@@ -31,8 +31,8 @@ export function Subscription() {
   const { period } = Route.useSearch()
   const { subscription, isPending } = useSubscription()
   const router = useRouter()
-  const returnUrl = router.buildLocation({ to: '/account' }).url.href
-  const { openBillingPortal, isOpening } = useBillingPortal({ returnUrl })
+  const returnHref = router.buildLocation({ to: '/account' }).href
+  const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
   const { upgrade, isUpgrading } = useUpgradeSubscription()
   const [isYearly, setIsYearly] = useState(period === 'yearly')
 
@@ -84,7 +84,7 @@ export function Subscription() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <span>
-                                  Free trial ends in
+                                  Free trial ends
                                   {' '}
                                   {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
                                 </span>
