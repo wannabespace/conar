@@ -33,12 +33,12 @@ const signUpSchema = baseAuthSchema.and({
 
 function useSocialMutation(provider: 'google' | 'github', redirectPath?: string) {
   const router = useRouter()
-  const url = router.buildLocation({ to: '/account' })
+  const href = router.buildLocation({ to: '/account' }).href
 
   return useMutation({
     mutationKey: ['social', provider],
     mutationFn: async () => {
-      const callbackUrl = new URL(redirectPath ? location.origin + redirectPath : url.href)
+      const callbackUrl = new URL(location.origin + (redirectPath || href))
       const newUserCallbackUrl = new URL(callbackUrl)
 
       newUserCallbackUrl.searchParams.set('newUser', 'true')

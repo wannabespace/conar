@@ -32,8 +32,8 @@ function formatCurrency(amount: number) {
 function RouteComponent() {
   const { data: invoices = [], isPending } = useQuery(orpcQuery.account.invoices.queryOptions())
   const router = useRouter()
-  const returnUrl = router.buildLocation({ to: '/account/billing' }).href
-  const { openBillingPortal, isOpening } = useBillingPortal({ returnUrl })
+  const returnHref = router.buildLocation({ to: '/account/billing' }).href
+  const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
 
   return (
     <>

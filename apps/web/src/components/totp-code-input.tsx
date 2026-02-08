@@ -6,19 +6,9 @@ import { useId } from 'react'
 const TOTP_LENGTH = 6
 
 export function TotpCodeInput({
-  label = 'Code',
-  value,
-  onChange,
-  onComplete,
-  disabled,
-  autoFocus,
-}: {
-  value: string
-  onChange: (value: string) => void
-  id?: string
-  label?: string
-  onComplete?: VoidFunction
-} & Pick<ComponentProps<typeof InputOTP>, 'disabled' | 'autoFocus'>) {
+  label,
+  ...props
+}: { label?: string } & Omit<ComponentProps<typeof InputOTP>, 'maxLength' | 'id' | 'children' | 'render'>) {
   const id = useId()
 
   return (
@@ -29,11 +19,7 @@ export function TotpCodeInput({
       <InputOTP
         id={id}
         maxLength={TOTP_LENGTH}
-        value={value}
-        onChange={onChange}
-        onComplete={onComplete}
-        disabled={disabled}
-        autoFocus={autoFocus}
+        {...props}
       >
         <InputOTPGroup>
           {Array.from({ length: TOTP_LENGTH }, (_, i) => (
