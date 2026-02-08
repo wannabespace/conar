@@ -202,8 +202,8 @@ function CellPopoverContent({
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogClose>Cancel</AlertDialogClose>
-                      <AlertDialogClose onClick={() => setNull()}>Set to null</AlertDialogClose>
+                      <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
+                      <AlertDialogClose render={<Button variant="destructive" />} onClick={() => setNull()}>Set to null</AlertDialogClose>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
