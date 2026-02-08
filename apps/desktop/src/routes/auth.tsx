@@ -1,6 +1,6 @@
 import { generateCodeChallenge, generateVerifier } from '@conar/shared/utils/challenge'
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
-import { Button } from '@conar/ui/components/button'
+import { MotionButton } from '@conar/ui/components/button'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
@@ -10,7 +10,6 @@ import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
 import { orpcQuery } from '~/lib/orpc'
 
 const AppLogoSquareMotion = motion.create(AppLogoSquare)
-const ButtonMotion = motion.create(Button)
 
 export const Route = createFileRoute('/auth')({
   component: AuthPage,
@@ -77,7 +76,7 @@ function AuthPage() {
         >
           Start managing your data
         </motion.p>
-        <ButtonMotion
+        <MotionButton
           className="mb-2 w-full"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -87,7 +86,7 @@ function AuthPage() {
           {!!codeChallenge && isPending
             ? <span className="animate-pulse">Waiting for sign in...</span>
             : 'Sign In'}
-        </ButtonMotion>
+        </MotionButton>
         <motion.p
           className="mb-4 text-center text-xs text-muted-foreground"
           initial={{ opacity: 0, y: 5 }}
@@ -118,7 +117,7 @@ function AuthPage() {
         animate={{ y: 0 }}
         transition={{ duration: 1, delay: 0.4, type: 'spring' }}
       >
-        <ButtonMotion
+        <MotionButton
           className="w-full"
           variant="outline"
           disabled
@@ -127,7 +126,7 @@ function AuthPage() {
           transition={{ duration: 0.5, delay: 0.32 }}
         >
           Anonymous Sign In (soon)
-        </ButtonMotion>
+        </MotionButton>
       </motion.div>
     </div>
   )

@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogPanel,
   DialogTitle,
 } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
@@ -77,45 +78,43 @@ export function RenameColumnDialog({ ref, connection }: RenameColumnDialogProps)
           <DialogTitle>
             Rename Column
           </DialogTitle>
-          <div className="space-y-4">
-            <Alert>
-              <RiInformationLine className="size-5 text-blue-500" />
-              <AlertTitle>
-                Rename column "
-                {column}
-                "
-              </AlertTitle>
-              <AlertDescription>
-                This will rename the column from "
-                {column}
-                " to the new name you specify.
-              </AlertDescription>
-            </Alert>
-            <div className="space-y-2">
-              <Label htmlFor="newColumnName" className="font-normal">
-                Column name
-              </Label>
-              <Input
-                id="newColumnName"
-                value={newColumnName}
-                placeholder="Enter new column name"
-                spellCheck={false}
-                autoComplete="off"
-                onChange={e => setNewColumnName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && canConfirm) {
-                    renameColumn()
-                  }
-                }}
-              />
-            </div>
-          </div>
         </DialogHeader>
-        <DialogFooter className="mt-4 flex gap-2">
-          <DialogClose asChild>
-            <Button variant="outline">
-              Cancel
-            </Button>
+        <DialogPanel className="space-y-4">
+          <Alert>
+            <RiInformationLine className="size-5 text-blue-500" />
+            <AlertTitle>
+              Rename column "
+              {column}
+              "
+            </AlertTitle>
+            <AlertDescription>
+              This will rename the column from "
+              {column}
+              " to the new name you specify.
+            </AlertDescription>
+          </Alert>
+          <div className="space-y-2">
+            <Label htmlFor="newColumnName">
+              Column name
+            </Label>
+            <Input
+              id="newColumnName"
+              value={newColumnName}
+              placeholder="Enter new column name"
+              spellCheck={false}
+              autoComplete="off"
+              onChange={e => setNewColumnName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && canConfirm) {
+                  renameColumn()
+                }
+              }}
+            />
+          </div>
+        </DialogPanel>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>
+            Cancel
           </DialogClose>
           <Button
             disabled={!canConfirm}
