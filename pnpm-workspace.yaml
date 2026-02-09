@@ -5,6 +5,7 @@ trustPolicy: no-downgrade
 packages:
   - packages/*
   - apps/*
+
 catalog:
   '@ai-sdk/anthropic': ^3.0.38
   '@ai-sdk/google': ^3.0.22
@@ -53,6 +54,7 @@ catalog:
   '@radix-ui/react-tooltip': ^1.2.8
   '@react-email/components': ^1.0.7
   '@remixicon/react': ^4.9.0
+  '@streamdown/code': ^1.0.1
   '@tailwindcss/typography': ^0.5.19
   '@tailwindcss/vite': ^4.1.18
   '@tanstack/react-db': ^0.1.69
@@ -138,7 +140,6 @@ catalog:
   react-resizable-panels: ^4.6.2
   react-scan: ^0.4.3
   redis: ^5.10.0
-  remark-gfm: ^4.0.1
   resend: ^6.9.1
   resumable-stream: ^2.2.10
   sonner: ^2.0.7
@@ -159,12 +160,14 @@ catalog:
   vite: ^7.3.1
   vite-tsconfig-paths: ^6.0.5
   zod: ^4.3.6
+
 ignoredBuiltDependencies:
   - '@firebase/util'
   - core-js
   - dtrace-provider
   - esbuild
   - protobufjs
+
 onlyBuiltDependencies:
   - electron
   - electron-winstaller
