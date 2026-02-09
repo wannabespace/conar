@@ -1,5 +1,6 @@
 import { isCtrlAndKey } from '@conar/shared/utils/os'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
+import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
+import { Button } from '@conar/ui/components/button'
 import { ShiftCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { RiAlertLine } from '@remixicon/react'
@@ -64,13 +65,13 @@ export function RunnerAlertDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">
-          <AlertDialogCancel className="border-muted-foreground/20">Cancel</AlertDialogCancel>
-          <AlertDialogAction variant="warning" onClick={onConfirm}>
+          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
+          <AlertDialogClose render={<Button variant="warning" />} onClick={onConfirm}>
             <span className="flex items-center gap-2">
               Run Anyway
               <ShiftCtrlEnter userAgent={navigator.userAgent} />
             </span>
-          </AlertDialogAction>
+          </AlertDialogClose>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

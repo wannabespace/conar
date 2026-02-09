@@ -268,7 +268,6 @@ function AccountLayout() {
             </Button>
           </nav>
         </aside>
-        <Separator orientation="vertical" />
         <main className="flex-1">
           <Outlet />
         </main>

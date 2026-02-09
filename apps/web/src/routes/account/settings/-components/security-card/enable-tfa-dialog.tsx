@@ -74,14 +74,11 @@ export function EnableTfaDialog({ open, onOpenChange }: {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-sm"
-        render={(
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              enableTotp(password)
-            }}
-          />
-        )}
+        onSubmit={(e) => {
+          e.preventDefault()
+          enableTotp(password)
+        }}
+        render={<form />}
       >
         <DialogHeader>
           <DialogTitle>Enable 2FA</DialogTitle>
@@ -106,32 +103,26 @@ export function EnableTfaDialog({ open, onOpenChange }: {
         <DialogFooter>
           <Dialog open={setupOpen} onOpenChange={open => !open && handleClose()}>
             <DialogTrigger
-              render={(
-                <Button
-                  type="submit"
-                  className="
-                    w-full
-                    sm:w-auto
-                  "
-                  variant="outline"
-                  disabled={isEnableTotpPending || password.length === 0}
-                />
-              )}
+              className="
+                w-full
+                sm:w-auto
+              "
+              disabled={isEnableTotpPending || password.length === 0}
+              render={<Button type="submit" variant="outline" />}
             >
               <LoadingContent loading={isEnableTotpPending}>Continue</LoadingContent>
             </DialogTrigger>
             <DialogContent
-              className="sm:max-w-xs"
+              className="
+                flex flex-col gap-6
+                sm:max-w-xs
+              "
               showCloseButton={false}
-              render={(
-                <form
-                  className="flex flex-col gap-6"
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    verifyTotp(code)
-                  }}
-                />
-              )}
+              onSubmit={(e) => {
+                e.preventDefault()
+                verifyTotp(code)
+              }}
+              render={<form />}
             >
               <DialogHeader>
                 <DialogTitle>Scan QR Code</DialogTitle>

@@ -140,15 +140,12 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
           )}
         </DialogPanel>
         <DialogFooter>
-          <DialogClose render={(
-            <Button
-              variant="outline"
-              onClick={() => {
-                setConfirmationText('')
-                setCascade(false)
-              }}
-            />
-          )}
+          <DialogClose
+            render={<Button variant="outline" />}
+            onClick={() => {
+              setConfirmationText('')
+              setCascade(false)
+            }}
           >
             Cancel
           </DialogClose>
