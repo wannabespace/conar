@@ -1,5 +1,6 @@
 import type { queries } from '~/drizzle'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
+import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
+import { Button } from '@conar/ui/components/button'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { queriesCollection } from '~/entities/query/sync'
@@ -40,16 +41,10 @@ export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            onClick={(e) => {
-              e.preventDefault()
-              removeQuery()
-            }}
-          >
+          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
+          <AlertDialogClose render={<Button variant="destructive" />} onClick={removeQuery}>
             Remove
-          </AlertDialogAction>
+          </AlertDialogClose>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
