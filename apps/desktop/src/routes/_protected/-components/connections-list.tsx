@@ -219,11 +219,12 @@ function ConnectionCard({
                   )
                 : connectionNamesList.length > 0
                   ? (
-                      connectionNamesList.map(connectionName => (
-                        <div
+                      connectionNamesList.map((connectionName: string) => (
+                        <Link
                           key={connectionName}
-                          role="button"
-                          tabIndex={0}
+                          to="/database/$id/table"
+                          params={{ id: connection.id }}
+                          search={{ database: connectionName }}
                           className="
                             flex cursor-pointer items-center gap-2 rounded-md
                             border border-transparent p-2 text-sm
@@ -235,7 +236,7 @@ function ConnectionCard({
                           "
                           />
                           <span>{connectionName}</span>
-                        </div>
+                        </Link>
                       ))
                     )
                   : (

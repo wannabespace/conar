@@ -14,7 +14,7 @@ const connectionSystemNames = {
 
 export function useServerConnections(connection: typeof connections.$inferSelect) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const { data: connectionNamesList = [], isLoading } = useQuery({
+  const { data: connectionNamesList = [], isLoading } = useQuery<string[]>({
     queryKey: ['server-connections', connection.id],
     throwOnError: false,
     queryFn: async () => {
