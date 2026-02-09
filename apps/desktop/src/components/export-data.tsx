@@ -3,6 +3,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -46,13 +47,25 @@ const mimeTypes = {
 
 const EXPORT_LIMITS = [50, 100, 500, 1000] as const
 
+export interface JsonCopyAction {
+  id: string
+  label: string
+  disabled?: boolean
+  getContent: () => Promise<{
+    content: string
+    message?: string
+  }>
+}
+
 export function ExportData({
   filename = 'export',
   getData,
+  copyJsonActions,
   trigger,
 }: {
   filename?: string
   getData: (limit?: (typeof EXPORT_LIMITS)[number]) => Promise<Record<string, unknown>[]>
+  copyJsonActions?: JsonCopyAction[]
   trigger: (props: { isExporting: boolean }) => React.ReactNode
 }) {
   const { mutate: exportData, isPending: isExporting } = useMutation({
@@ -95,7 +108,15 @@ export function ExportData({
     onError: handleError,
   })
 
-  const isPending = isExporting || isCopying
+  const { mutate: copyCustomJsonToClipboard, isPending: isCopyingCustomJson } = useMutation({
+    mutationFn: async (action: JsonCopyAction) => action.getContent(),
+    onSuccess: ({ content, message }) => {
+      copy(content, message ?? 'JSON copied to clipboard')
+    },
+    onError: handleError,
+  })
+
+  const isPending = isExporting || isCopying || isCopyingCustomJson
 
   return (
     <TooltipProvider>
@@ -211,6 +232,20 @@ export function ExportData({
                     <DropdownMenuItem onClick={() => copyToClipboard({ format: 'json' })}>
                       All rows
                     </DropdownMenuItem>
+                    {copyJsonActions && copyJsonActions.length > 0 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        {copyJsonActions.map(action => (
+                          <DropdownMenuItem
+                            key={action.id}
+                            disabled={action.disabled}
+                            onClick={() => copyCustomJsonToClipboard(action)}
+                          >
+                            {action.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </>
+                    )}
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
               </DropdownMenuSubContent>
