@@ -1,4 +1,3 @@
-export { ask } from './ask__legacy'
 export { chat } from './chat'
 export { codeCompletion } from './code-completion'
 export { enhancePrompt } from './enhance-prompt'
