@@ -30,7 +30,9 @@
     "react-markdown": "catalog:",
     "react-qr-code": "catalog:",
     "sonner": "catalog:",
-    "tailwind-merge": "catalog:"
+    "streamdown": "catalog:",
+    "tailwind-merge": "catalog:",
+    "ua-parser-js": "catalog:"
   },
   "devDependencies": {
     "@conar/api": "workspace:*",
