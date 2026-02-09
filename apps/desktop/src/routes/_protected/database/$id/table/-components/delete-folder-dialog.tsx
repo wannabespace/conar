@@ -54,7 +54,7 @@ export function DeleteFolderDialog({ ref, connection }: DeleteFolderDialogProps)
           <DialogTitle>
             Delete Folder
           </DialogTitle>
-          <div className="space-y-4">
+          <div className="space-y-4 p-4">
             <Alert variant="destructive">
               <RiAlertLine className="size-5 text-destructive" />
               <AlertTitle>This will delete the folder organization.</AlertTitle>
@@ -83,10 +83,8 @@ export function DeleteFolderDialog({ ref, connection }: DeleteFolderDialogProps)
           </div>
         </DialogHeader>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">
-              Cancel
-            </Button>
+          <DialogClose render={<Button variant="outline" />}>
+            Cancel
           </DialogClose>
           <Button
             variant="destructive"

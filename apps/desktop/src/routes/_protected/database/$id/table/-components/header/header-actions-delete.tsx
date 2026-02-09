@@ -1,5 +1,5 @@
 import type { connections } from '~/drizzle'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
+import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import NumberFlow from '@number-flow/react'
@@ -61,8 +61,8 @@ export function HeaderActionsDelete({ table, schema, connection }: { table: stri
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={() => deleteRows()}>
+            <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
+            <AlertDialogClose render={<Button variant="destructive" />} onClick={() => deleteRows()}>
               <LoadingContent loading={isDeleting}>
                 Delete
                 {' '}
@@ -71,7 +71,7 @@ export function HeaderActionsDelete({ table, schema, connection }: { table: stri
                 selected row
                 {selected.length === 1 ? '' : 's'}
               </LoadingContent>
-            </AlertDialogAction>
+            </AlertDialogClose>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

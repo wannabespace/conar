@@ -79,7 +79,7 @@ export function AddToFolderDialog({ ref, connection }: AddToFolderDialogProps) {
             " to Folder
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-4 p-4">
           {existingFolders.length > 0 && (
             <div className="space-y-2">
               <Label>Select Existing Folder</Label>

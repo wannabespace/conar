@@ -2,9 +2,9 @@ import type { ComponentRef } from 'react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
-import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
-import { Separator } from '@conar/ui/components/separator'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
+import { MotionSeparator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -36,8 +36,6 @@ const treeTransition = {
   opacity: { duration: 0.1 },
   height: { duration: 0.1 },
 }
-
-const MotionSeparator = motion.create(Separator)
 
 function Skeleton() {
   return (
@@ -96,10 +94,7 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop, on
     <SidebarLink
       to="/database/$id/table"
       params={{ id: connection.id }}
-      search={{
-        schema,
-        table,
-      }}
+      search={{ schema, table }}
       preloadDelay={200}
       onClick={handleClick}
       onDoubleClick={() => addTab(connection.id, schema, table)}
@@ -107,14 +102,14 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop, on
       onDragStart={handleDragStart}
       className={cn(
         `
-                  group flex w-full items-center gap-2 rounded-md border
-                  border-transparent px-2 py-1 text-sm text-foreground
-                  hover:bg-accent/30
-                `,
+          group flex w-full items-center gap-2 rounded-md border
+          border-transparent px-2 py-1 text-sm text-foreground
+          hover:bg-accent/30
+        `,
         tableParam === table && schemaParam === schema && `
-                  border-primary/20 bg-primary/10
-                  hover:bg-primary/20
-                `,
+          border-primary/20 bg-primary/10
+          hover:bg-primary/20
+        `,
         isSelected && `border-accent-foreground/20 bg-accent`,
       )}
     >
@@ -170,7 +165,11 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop, on
                 <RiMoreLine className="size-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-48">
+            <DropdownMenuContent
+              align="end"
+              className="min-w-48"
+              onCloseAutoFocus={e => e.preventDefault()}
+            >
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation()
@@ -303,11 +302,9 @@ export function TablesTree({ className, search }: { className?: string, search?:
     <ScrollArea className={cn('h-full overflow-y-auto p-2', className)}>
       <DropTableDialog
         ref={dropTableDialogRef}
-        connection={connection}
       />
       <RenameTableDialog
         ref={renameTableDialogRef}
-        connection={connection}
       />
       <AddToFolderDialog
         ref={addToFolderDialogRef}

@@ -1,5 +1,5 @@
 import type { Auth, BetterAuthOptions } from 'better-auth'
-import { PORTS } from '@conar/shared/constants'
+import { AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
@@ -53,7 +53,6 @@ export const auth: Auth = betterAuth({
         returned: false,
         input: false,
         defaultValue: () => nanoid(),
-        required: true,
       },
       stripeCustomerId: {
         type: 'string',
@@ -65,7 +64,6 @@ export const auth: Auth = betterAuth({
       desktopVersion: {
         fieldName: 'desktop_version',
         type: 'string',
-        returned: true,
         input: false,
         required: false,
       },
@@ -157,7 +155,7 @@ export const auth: Auth = betterAuth({
     ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
   ],
   advanced: {
-    cookiePrefix: 'conar',
+    cookiePrefix: AUTH_COOKIE_PREFIX,
     crossSubDomainCookies: {
       enabled: nodeEnv === 'production',
       domain: new URL(env.WEB_URL).host,

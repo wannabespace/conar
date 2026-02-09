@@ -70,10 +70,8 @@ function SupportButton() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <DialogTrigger asChild>
-              <Button size="icon" variant="ghost">
-                <RiMessageLine className="size-4" />
-              </Button>
+            <DialogTrigger render={<Button size="icon" variant="ghost" />}>
+              <RiMessageLine className="size-4" />
             </DialogTrigger>
           </TooltipTrigger>
           <TooltipContent side="right">Support</TooltipContent>
@@ -100,10 +98,8 @@ function SupportButton() {
             />
           </div>
           <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
+            <DialogClose render={<Button type="button" variant="outline" />}>
+              Cancel
             </DialogClose>
             <Button type="submit" disabled={loading || !message}>
               <LoadingContent loading={loading}>

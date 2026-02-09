@@ -73,7 +73,7 @@ export function RenameFolderDialog({ ref, connection }: RenameFolderDialogProps)
             Rename Folder
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-4 p-4">
           <div className="space-y-2">
             <Label htmlFor="folder-name">Folder Name</Label>
             <Input
@@ -92,10 +92,8 @@ export function RenameFolderDialog({ ref, connection }: RenameFolderDialogProps)
           </div>
         </div>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button type="button" variant="outline">
-              Cancel
-            </Button>
+          <DialogClose render={<Button type="button" variant="outline" />}>
+            Cancel
           </DialogClose>
           <Button
             type="button"
