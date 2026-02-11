@@ -1,19 +1,23 @@
 import type { constraintsType, tablesAndSchemasType } from '~/entities/connection/sql'
 import type { columnType } from '~/entities/connection/sql/columns'
+import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
+import { Input } from '@conar/ui/components/input'
 import { ReactFlowEdge } from '@conar/ui/components/react-flow/edge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
+import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
+import { RiCloseLine, RiSearchLine } from '@remixicon/react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
-import { useEffect, useEffectEvent, useMemo, useState } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { animationHooks } from '~/enter'
 import { ReactFlowNode } from '~/entities/connection/components'
 import { connectionConstraintsQuery, connectionTableColumnsQuery, connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { prefetchConnectionCore } from '~/entities/connection/utils'
-import { getEdges, getLayoutElements, getNodes } from './-lib'
+import { applySearchHighlight, getTableSearchState, getVisualizerLayout } from './-lib'
 
 export const Route = createFileRoute(
   '/_protected/database/$id/visualizer/',
@@ -99,42 +103,62 @@ function Visualizer({
   const { connection } = Route.useRouteContext()
   const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
   const [schema, setSchema] = useState(schemas[0]!)
-  const schemaTables = tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table)
+  const [tableSearch, setTableSearch] = useState('')
+  const searchRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setTableSearch('')
+  }, [schema])
+
+  const schemaTables = useMemo(
+    () => tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table),
+    [tablesAndSchemas, schema],
+  )
+  const searchState = useMemo(
+    () => getTableSearchState({ tables: schemaTables, query: tableSearch }),
+    [schemaTables, tableSearch],
+  )
+  const isSearchActive = searchState.isActive
+  const matchedTablesRef = useRef(searchState.matchedTables)
+
+  const matchedTables = useMemo(() => {
+    const prev = matchedTablesRef.current
+    const next = searchState.matchedTables
+    if (prev.size === next.size && [...prev].every(t => next.has(t))) {
+      return prev
+    }
+    matchedTablesRef.current = next
+    return next
+  }, [searchState.matchedTables])
 
   const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
-    const edges = getEdges({ constraints })
-    return getLayoutElements(
-      getNodes({
-        databaseId: connection.id,
-        schema,
-        tables: schemaTables,
-        columns,
-        edges,
-        constraints,
-      }),
-      edges,
-    )
+    return getVisualizerLayout({
+      databaseId: connection.id,
+      schema,
+      tables: schemaTables,
+      columns,
+      constraints,
+    })
   }, [connection.id, schema, schemaTables, columns, constraints])
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes)
 
   const recalculateLayoutEvent = useEffectEvent(() => {
-    const edges = getEdges({ constraints })
-    const { nodes: layoutNodes, edges: layoutEdges } = getLayoutElements(
-      getNodes({
-        databaseId: connection.id,
-        schema,
-        tables: schemaTables,
-        columns,
-        edges,
-        constraints,
-      }),
-      edges,
-    )
+    const { nodes: calculatedNodes, edges: calculatedEdges } = getVisualizerLayout({
+      databaseId: connection.id,
+      schema,
+      tables: schemaTables,
+      columns,
+      constraints,
+    })
 
-    setNodes(layoutNodes)
-    setEdges(layoutEdges)
+    setNodes(applySearchHighlight({
+      nodes: calculatedNodes,
+      isSearchActive,
+      matchedTables,
+    }))
+    setEdges(calculatedEdges)
   })
 
   useEffect(() => {
@@ -150,13 +174,58 @@ function Visualizer({
     recalculateLayoutEvent()
   }, [schema])
 
+  useMountedEffect(() => {
+    setNodes(currentNodes => applySearchHighlight({
+      nodes: currentNodes,
+      isSearchActive,
+      matchedTables,
+    }))
+  }, [isSearchActive, matchedTables])
+
+  useKeyboardEvent(
+    event => isCtrlAndKey(event, 'f') && !event.shiftKey && !event.altKey,
+    (event) => {
+      event.preventDefault()
+      searchRef.current?.focus()
+      searchRef.current?.select()
+    },
+  )
+
   return (
     <div className="
       relative size-full overflow-hidden rounded-lg
       dark:border
     "
     >
-      <div className="absolute top-2 right-2 z-10">
+      <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+        <div className="relative w-40">
+          <Input
+            ref={searchRef}
+            placeholder="Search tables"
+            className="h-9 pr-8 pl-7"
+            value={tableSearch}
+            onChange={e => setTableSearch(e.target.value)}
+            title="Search tables (Ctrl+F / Cmd+F)"
+          />
+          <RiSearchLine className="
+            pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2
+            text-muted-foreground
+          "
+          />
+          {tableSearch && (
+            <button
+              type="button"
+              className="
+                absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer
+                p-1
+              "
+              onClick={() => setTableSearch('')}
+              aria-label="Clear table search"
+            >
+              <RiCloseLine className="size-4 text-muted-foreground" />
+            </button>
+          )}
+        </div>
         <Select
           value={schema}
           onValueChange={setSchema}
