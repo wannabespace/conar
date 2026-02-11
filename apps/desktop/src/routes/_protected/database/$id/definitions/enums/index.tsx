@@ -9,11 +9,11 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiLayoutColumnLine, RiListIndefinite, RiListUnordered, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useConnectionEnums, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { DefinitionsEmptyState } from '../-components/empty-state'
-import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
+import { VirtualDefinitionsGrid } from '../-components/virtual-grid'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/database/$id/definitions/enums/')({
@@ -35,20 +35,42 @@ function DatabaseEnumsPage() {
   if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
     setSelectedSchema(schemas[0])
 
-  const filteredEnums = enums
-    ?.filter(enumItem =>
-      enumItem.schema === selectedSchema
-      && (!search
-        || enumItem.name.toLowerCase().includes(search.toLowerCase())
-        || enumItem.values.some(value => value.toLowerCase().includes(search.toLowerCase()))
-        || (!!enumItem.metadata?.table && enumItem.metadata.table.toLowerCase().includes(search.toLowerCase()))
-        || (!!enumItem.metadata?.column && enumItem.metadata.column.toLowerCase().includes(search.toLowerCase()))
-      ),
-    )
-    .map(enumItem => ({
-      ...enumItem,
-      values: enumItem.values.filter(value => value.toLowerCase().includes(search.toLowerCase())),
-    })) ?? []
+  const filteredEnums = useMemo(() => {
+    if (!enums)
+      return []
+
+    const lowerSearch = search?.trim().toLowerCase()
+
+    return enums.reduce<typeof enums>((acc, enumItem) => {
+      if (enumItem.schema !== selectedSchema)
+        return acc
+
+      if (!lowerSearch) {
+        acc.push(enumItem)
+        return acc
+      }
+
+      const matchesName = enumItem.name.toLowerCase().includes(lowerSearch)
+      const matchesTable = !!enumItem.metadata?.table && enumItem.metadata.table.toLowerCase().includes(lowerSearch)
+      const matchesColumn = !!enumItem.metadata?.column && enumItem.metadata.column.toLowerCase().includes(lowerSearch)
+
+      if (matchesName || matchesTable || matchesColumn) {
+        acc.push(enumItem)
+        return acc
+      }
+
+      const matchingValues = enumItem.values.filter(value => value.toLowerCase().includes(lowerSearch))
+
+      if (matchingValues.length > 0) {
+        acc.push({
+          ...enumItem,
+          values: matchingValues,
+        })
+      }
+
+      return acc
+    }, [])
+  }, [enums, search, selectedSchema])
 
   return (
     <>
@@ -84,18 +106,18 @@ function DatabaseEnumsPage() {
           </Select>
         )}
       </div>
-      <DefinitionsGrid loading={isPending}>
-        {filteredEnums.length === 0 && (
+      <VirtualDefinitionsGrid
+        loading={isPending}
+        items={filteredEnums}
+        emptyState={(
           <DefinitionsEmptyState
             title="No enums found"
             description="This schema doesn't have any enums defined yet."
           />
         )}
-
-        {filteredEnums.map(enumItem => (
+        renderItem={enumItem => (
           <MotionCard
             key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
-            layout
             {...MOTION_BLOCK_PROPS}
           >
             <CardContent className="px-4 py-3">
@@ -166,8 +188,8 @@ function DatabaseEnumsPage() {
               </div>
             </CardContent>
           </MotionCard>
-        ))}
-      </DefinitionsGrid>
+        )}
+      />
     </>
   )
 }
