@@ -1,6 +1,6 @@
 import type { constraintsType, tablesAndSchemasType } from '~/entities/connection/sql'
 import type { columnType } from '~/entities/connection/sql/columns'
-import { isCtrlAndKey } from '@conar/shared/utils/os'
+import { getOS, isCtrlAndKey } from '@conar/shared/utils/os'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Input } from '@conar/ui/components/input'
@@ -105,6 +105,7 @@ function Visualizer({
   const [schema, setSchema] = useState(schemas[0]!)
   const [tableSearch, setTableSearch] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
+  const os = getOS(navigator.userAgent)
 
   useEffect(() => {
     setTableSearch('')
@@ -198,20 +199,36 @@ function Visualizer({
     "
     >
       <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-        <div className="relative w-40">
+        <div className="relative w-48">
           <Input
             ref={searchRef}
             placeholder="Search tables"
             className="h-9 pr-8 pl-7"
             value={tableSearch}
             onChange={e => setTableSearch(e.target.value)}
-            title="Search tables (Ctrl+F / Cmd+F)"
+            title="Search tables"
           />
           <RiSearchLine className="
             pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2
             text-muted-foreground
           "
           />
+
+          {!tableSearch && (
+            <div className="
+            pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 flex
+            items-center gap-1 text-xs text-muted-foreground
+            "
+            >
+              <kbd className="rounded-sm border px-1 py-0.5 text-[12px]">
+                {os.type === 'macos' ? '⌘' : 'Ctrl'}
+              </kbd>
+              <kbd className="rounded-sm border px-1 py-0.5 text-[12px]">
+                F
+              </kbd>
+            </div>
+          )}
+
           {tableSearch && (
             <button
               type="button"
