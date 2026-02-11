@@ -22,11 +22,26 @@ import { RiBracesLine, RiDownloadLine, RiFileCopyLine, RiTableLine } from '@remi
 import { useMutation } from '@tanstack/react-query'
 import { handleError } from '~/lib/error'
 
-function contentGenerators(data: Record<string, unknown>[]) {
-  return {
+const EXPORT_LIMITS = [50, 100, 500, 1000, 5000] as const
+
+type ContentGeneratorType = 'download' | 'copy'
+type ContentFormatType = 'csv' | 'json'
+
+function exportData({
+  type,
+  data,
+  format,
+  filename,
+}: {
+  type: ContentGeneratorType
+  data: Record<string, unknown>[]
+  format: ContentFormatType
+  filename: string
+}) {
+  const generators = {
     csv: () => {
       if (data[0] === undefined) {
-        return ''
+        return
       }
 
       const headers = Object.keys(data[0])
@@ -36,32 +51,48 @@ function contentGenerators(data: Record<string, unknown>[]) {
           headers.map(header => escapeCSVValue(row[header])).join(','),
         ),
       ]
-      return csvRows.join('\n')
+      const content = csvRows.join('\n')
+
+      if (type === 'download') {
+        downloadFile(content, `${filename}.csv`, 'text/csv;charset=utf-8;')
+      }
+
+      if (type === 'copy') {
+        copy(content, `Copied ${data.length} rows to clipboard as CSV`)
+      }
     },
-    json: () => JSON.stringify(data, null, 2),
-  } satisfies Record<string, () => string>
-}
+    json: () => {
+      const content = JSON.stringify(data, null, 2)
 
-const mimeTypes = {
-  csv: 'text/csv;charset=utf-8;',
-  json: 'application/json',
-}
+      if (type === 'download') {
+        downloadFile(content, `${filename}.json`, 'application/json')
+      }
 
-const EXPORT_LIMITS = [50, 100, 500, 1000, 5000] as const
+      if (type === 'copy') {
+        copy(content, `Copied ${data.length} rows to clipboard as JSON`)
+      }
+    },
+  } satisfies Record<ContentFormatType, () => void>
+
+  return generators[format]
+}
 
 interface ExportProps {
-  format: keyof ReturnType<typeof contentGenerators>
+  type: ContentGeneratorType
+  format: ContentFormatType
   limit?: (typeof EXPORT_LIMITS)[number]
   selectedFilters?: ActiveFilter[]
 }
 
 function ExportDataDropdownMenuSubContent({
   format,
+  type,
   onExport,
   rowsCount,
   selected,
 }: {
-  format: keyof ReturnType<typeof contentGenerators>
+  format: ContentFormatType
+  type: ContentGeneratorType
   onExport: (props: ExportProps) => void
   rowsCount: number
   selected?: Record<string, unknown>[]
@@ -83,7 +114,7 @@ function ExportDataDropdownMenuSubContent({
         <>
           <DropdownMenuItem
             disabled={selected.length === 0}
-            onClick={() => onExport({ format, selectedFilters })}
+            onClick={() => onExport({ type, format, selectedFilters })}
           >
             {selected.length === 0
               ? 'Selected rows'
@@ -97,7 +128,7 @@ function ExportDataDropdownMenuSubContent({
       {limits.map(({ limit, disabled }) => (
         <DropdownMenuItem
           key={limit}
-          onClick={() => onExport({ format, limit })}
+          onClick={() => onExport({ type, format, limit })}
           disabled={disabled}
         >
           First
@@ -108,7 +139,7 @@ function ExportDataDropdownMenuSubContent({
         </DropdownMenuItem>
       ))}
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={() => onExport({ format })}>
+      <DropdownMenuItem onClick={() => onExport({ type, format })}>
         All rows
       </DropdownMenuItem>
     </DropdownMenuSubContent>
@@ -128,43 +159,19 @@ export function ExportData({
   trigger: (props: { isExporting: boolean }) => React.ReactNode
   selected?: Record<string, unknown>[]
 }) {
-  const { mutate: exportData, isPending: isExporting } = useMutation({
+  const { mutate: startExport, isPending } = useMutation({
     mutationFn: async ({
+      type,
       format,
       selectedFilters,
       limit,
     }: ExportProps) => {
       const data = await getData({ limit, selectedFilters })
 
-      const content = contentGenerators(data)[format]()
-      const fileName = `${filename}.${format}`
-      const mimeType = mimeTypes[format]
-
-      return { content, fileName, mimeType }
-    },
-    onSuccess: ({ content, fileName, mimeType }) => {
-      downloadFile(content, fileName, mimeType)
+      exportData({ type, data, format, filename: `${filename}_${limit}` })()
     },
     onError: handleError,
   })
-
-  const { mutate: copyToClipboard, isPending: isCopying } = useMutation({
-    mutationFn: async ({
-      format,
-      limit,
-      selectedFilters,
-    }: ExportProps) => {
-      const data = await getData({ limit, selectedFilters })
-      const content = contentGenerators(data)[format]()
-      return { content, count: data.length, format }
-    },
-    onSuccess: ({ content, count, format }) => {
-      copy(content, `Copied ${count} ${count === 1 ? 'row' : 'rows'} to clipboard as ${format}`)
-    },
-    onError: handleError,
-  })
-
-  const isPending = isExporting || isCopying
 
   return (
     <TooltipProvider>
@@ -187,14 +194,26 @@ export function ExportData({
                     <RiTableLine />
                     Export as CSV
                   </DropdownMenuSubTrigger>
-                  <ExportDataDropdownMenuSubContent format="csv" onExport={exportData} rowsCount={rowsCount} selected={selected} />
+                  <ExportDataDropdownMenuSubContent
+                    type="download"
+                    format="csv"
+                    onExport={startExport}
+                    rowsCount={rowsCount}
+                    selected={selected}
+                  />
                 </DropdownMenuSub>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
                     <RiBracesLine />
                     Export as JSON
                   </DropdownMenuSubTrigger>
-                  <ExportDataDropdownMenuSubContent format="json" onExport={exportData} rowsCount={rowsCount} selected={selected} />
+                  <ExportDataDropdownMenuSubContent
+                    type="download"
+                    format="json"
+                    onExport={startExport}
+                    rowsCount={rowsCount}
+                    selected={selected}
+                  />
                 </DropdownMenuSub>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
@@ -209,14 +228,26 @@ export function ExportData({
                     <RiTableLine />
                     Copy as CSV
                   </DropdownMenuSubTrigger>
-                  <ExportDataDropdownMenuSubContent format="csv" onExport={copyToClipboard} rowsCount={rowsCount} selected={selected} />
+                  <ExportDataDropdownMenuSubContent
+                    type="copy"
+                    format="csv"
+                    onExport={startExport}
+                    rowsCount={rowsCount}
+                    selected={selected}
+                  />
                 </DropdownMenuSub>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
                     <RiBracesLine />
                     Copy as JSON
                   </DropdownMenuSubTrigger>
-                  <ExportDataDropdownMenuSubContent format="json" onExport={copyToClipboard} rowsCount={rowsCount} selected={selected} />
+                  <ExportDataDropdownMenuSubContent
+                    type="copy"
+                    format="json"
+                    onExport={startExport}
+                    rowsCount={rowsCount}
+                    selected={selected}
+                  />
                 </DropdownMenuSub>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
