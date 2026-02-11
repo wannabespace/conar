@@ -1,7 +1,7 @@
 import type { indexesType } from '~/entities/connection/sql/indexes'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardTitle, MotionCard } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -99,7 +99,7 @@ function DatabaseIndexesPage() {
       >
         Indexes
       </DefinitionsHeader>
-      <div className="flex items-center gap-2 mb-4">
+      <div className="mb-4 flex items-center gap-2">
         <SearchInput
           placeholder="Search indexes"
           autoFocus
@@ -153,7 +153,7 @@ function DatabaseIndexesPage() {
             layout
             {...MOTION_BLOCK_PROPS}
           >
-            <CardHeader className="px-4 py-3">
+            <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -197,7 +197,7 @@ function DatabaseIndexesPage() {
                   </div>
                 </div>
               </div>
-            </CardHeader>
+            </CardContent>
           </MotionCard>
         ))}
       </DefinitionsGrid>
