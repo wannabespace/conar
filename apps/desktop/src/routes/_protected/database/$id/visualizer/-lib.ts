@@ -1,13 +1,15 @@
 import type { Edge } from '@xyflow/react'
 import type { NodeType } from '~/entities/connection/components'
 import type { Column } from '~/entities/connection/components/table/utils'
-import type { constraintsType } from '~/entities/connection/sql'
+import type { constraintsType, enumType } from '~/entities/connection/sql'
 import type { columnType } from '~/entities/connection/sql/columns'
 import dagre from '@dagrejs/dagre'
 import { Position } from '@xyflow/react'
 
-export function getEdges({ constraints }: { constraints: typeof constraintsType.infer[] }): Edge[] {
-  return constraints
+export const ENUM_ANCHOR_ID = 'enum_anchor'
+
+export function getEdges({ constraints, columns, enums, schema }: { constraints: typeof constraintsType.infer[], columns: typeof columnType.infer[], enums: typeof enumType.infer[], schema: string }): Edge[] {
+  const edges = constraints
     .filter(c => c.type === 'foreignKey' && c.foreignTable && c.foreignColumn && c.table && c.column)
     .map(c => ({
       id: `${c.table}_${c.column}_${c.foreignTable}_${c.foreignColumn}`,
@@ -17,6 +19,26 @@ export function getEdges({ constraints }: { constraints: typeof constraintsType.
       sourceHandle: c.column!,
       targetHandle: c.foreignColumn!,
     }))
+
+  if (columns && enums && schema) {
+    const schemaEnums = enums.filter(e => e.schema === schema)
+
+    columns.forEach((c) => {
+      const enumDef = c.enum ? schemaEnums.find(e => e.name === c.enum) : null
+      if (enumDef) {
+        edges.push({
+          id: `${c.table}_${c.id}_${enumDef.name}`,
+          type: 'custom',
+          source: c.table,
+          target: enumDef.name,
+          sourceHandle: c.id,
+          targetHandle: ENUM_ANCHOR_ID,
+        })
+      }
+    })
+  }
+
+  return edges
 }
 
 export function getNodes({
@@ -26,6 +48,7 @@ export function getNodes({
   columns,
   edges,
   constraints,
+  enums,
 }: {
   databaseId: string
   schema: string
@@ -33,8 +56,11 @@ export function getNodes({
   columns: typeof columnType.infer[]
   edges: Edge[]
   constraints: typeof constraintsType.infer[]
+  enums: typeof enumType.infer[]
 }): NodeType[] {
-  return tables.map((table) => {
+  const schemaEnums = enums.filter(e => e.schema === schema)
+
+  const tableNodes = tables.map((table) => {
     const tableColumns = columns.filter(c => c.table === table && c.schema === schema)
     const tableConstraints = constraints.filter(c => c.table === table && c.schema === schema)
     const tableForeignKeys = tableConstraints.filter(c => c.type === 'foreignKey' && c.table === table && c.schema === schema)
@@ -52,9 +78,12 @@ export function getNodes({
           const columnConstraints = tableConstraints.filter(constraint => constraint.column === c.id)
           const foreign = tableForeignKeys.find(foreignKey => foreignKey.column === c.id && foreignKey.schema === schema && foreignKey.table === table)
 
+          const enumLabelDef = c.enum ? enums.find(e => e.name === c.enum) : null
+          const enumNodeDef = c.enum ? schemaEnums.find(e => e.name === c.enum) : null
+
           return {
             id: c.id,
-            type: c.type,
+            type: enumLabelDef ? enumLabelDef.name : c.type,
             isEditable: c.isEditable,
             isNullable: c.isNullable,
             foreign: foreign && foreign.foreignSchema && foreign.foreignTable && foreign.foreignColumn
@@ -64,7 +93,14 @@ export function getNodes({
                   table: foreign.foreignTable,
                   column: foreign.foreignColumn,
                 }
-              : undefined,
+              : (enumNodeDef
+                  ? {
+                      name: `enum_${c.id}`,
+                      schema: enumNodeDef.schema,
+                      table: enumNodeDef.name,
+                      column: ENUM_ANCHOR_ID,
+                    }
+                  : undefined),
             primaryKey: columnConstraints.find(constraint => constraint.type === 'primaryKey')?.name,
             unique: columnConstraints.find(constraint => constraint.type === 'unique')?.name,
           } satisfies Column
@@ -72,6 +108,38 @@ export function getNodes({
       },
     } satisfies NodeType
   })
+
+  const enumNodes = schemaEnums.map((e) => {
+    return {
+      id: e.name,
+      type: 'tableNode',
+      position: { x: 0, y: 0 },
+      data: {
+        schema: e.schema,
+        table: e.name,
+        databaseId,
+        edges,
+        isEnum: true,
+        columns: [
+          {
+            id: ENUM_ANCHOR_ID,
+            type: 'enum',
+            isEditable: false,
+            isNullable: false,
+            primaryKey: 'false',
+          },
+          ...e.values.map(val => ({
+            id: val,
+            type: 'value',
+            isEditable: false,
+            isNullable: false,
+          })),
+        ] satisfies Column[],
+      },
+    } satisfies NodeType
+  })
+
+  return [...tableNodes, ...enumNodes]
 }
 
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}))

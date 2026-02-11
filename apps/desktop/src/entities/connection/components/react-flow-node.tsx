@@ -2,9 +2,10 @@ import type { Edge, Node, NodeProps } from '@xyflow/react'
 import type { Column } from './table/utils'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
-import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiTableLine } from '@remixicon/react'
+import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiListUnordered, RiTableLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 import { Handle, Position } from '@xyflow/react'
+import { ENUM_ANCHOR_ID } from '~/routes/_protected/database/$id/visualizer/-lib'
 
 export type NodeType = Node<{
   databaseId: string
@@ -13,6 +14,7 @@ export type NodeType = Node<{
   columns: Column[]
   selected?: boolean
   edges: Edge[]
+  isEnum?: boolean
 }, 'tableNode'>
 
 export function ReactFlowNode({ data }: NodeProps<NodeType>) {
@@ -30,28 +32,53 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         flex items-center justify-between gap-2 border-b border-border/80
         bg-linear-to-t from-background/70 px-4 py-3
         dark:from-background/30
+        relative
       "
       >
+
+        <Handle
+          type="target"
+          position={Position.Left}
+          id={ENUM_ANCHOR_ID}
+          className="
+          size-2.5 rounded-full border-2 border-background
+          bg-foreground!
+        "
+          isConnectable={false}
+        />
+
         <div data-mask className="flex min-w-0 items-center gap-2 text-sm">
-          <RiTableLine className="size-5 shrink-0 text-muted-foreground/80" />
+          {data.isEnum
+            ? (
+                <RiListUnordered className="size-5 shrink-0 text-muted-foreground/80" />
+              )
+            : (
+                <RiTableLine className="size-5 shrink-0 text-muted-foreground/80" />
+              )}
           <span className="block truncate">{data.table}</span>
+          {data.isEnum && (
+            <span className="absolute right-2 block truncate text-xs text-muted-foreground/80">enum</span>
+          )}
         </div>
-        <Button
-          size="icon-xs"
-          variant="outline"
-          asChild
-        >
-          <Link
-            to="/database/$id/table"
-            params={{ id: data.databaseId }}
-            search={{ schema: data.schema, table: data.table }}
+
+        {!data.isEnum && (
+          <Button
+            size="icon-xs"
+            variant="outline"
+            asChild
           >
-            <RiExternalLinkLine className="size-3" />
-          </Link>
-        </Button>
+            <Link
+              to="/database/$id/table"
+              params={{ id: data.databaseId }}
+              search={{ schema: data.schema, table: data.table }}
+            >
+              <RiExternalLinkLine className="size-3" />
+            </Link>
+          </Button>
+        )}
       </div>
       <div className="py-2 text-xs">
-        {data.columns.map(column => (
+        {data.columns.filter(column => column.id !== ENUM_ANCHOR_ID).map(column => (
           <div key={column.id} className="group relative px-4">
             <div className="
               flex items-center justify-between gap-2 border-dashed py-2
@@ -92,6 +119,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                 <span data-mask className="truncate font-medium">{column.id}</span>
               </div>
               <span className="max-w-1/2 truncate text-muted-foreground/60">{column.type}</span>
+
               {column.foreign && (
                 <Handle
                   type="source"
