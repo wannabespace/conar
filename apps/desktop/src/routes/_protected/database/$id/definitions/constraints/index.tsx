@@ -2,7 +2,7 @@ import type { constraintsType } from '~/entities/connection/sql/constraints'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardTitle, MotionCard } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -135,7 +135,7 @@ function DatabaseConstraintsPage() {
             layout
             {...MOTION_BLOCK_PROPS}
           >
-            <CardHeader className="px-4 py-3">
+            <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -168,7 +168,7 @@ function DatabaseConstraintsPage() {
                   </div>
                 </div>
               </div>
-            </CardHeader>
+            </CardContent>
             {item.type === 'foreignKey' && (
               <CardContent className="border-t bg-muted/10 px-4 py-3 text-sm">
                 <div className="flex items-center gap-2">

@@ -1,8 +1,11 @@
+import type { ActiveFilter } from '@conar/shared/filters'
+import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { downloadFile, escapeCSVValue } from '@conar/shared/utils/files'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -44,26 +47,94 @@ const mimeTypes = {
   json: 'application/json',
 }
 
-const EXPORT_LIMITS = [50, 100, 500, 1000] as const
+const EXPORT_LIMITS = [50, 100, 500, 1000, 5000] as const
+
+interface ExportProps {
+  format: keyof ReturnType<typeof contentGenerators>
+  limit?: (typeof EXPORT_LIMITS)[number]
+  selectedFilters?: ActiveFilter[]
+}
+
+function ExportDataDropdownMenuSubContent({
+  format,
+  onExport,
+  rowsCount,
+  selected,
+}: {
+  format: keyof ReturnType<typeof contentGenerators>
+  onExport: (props: ExportProps) => void
+  rowsCount: number
+  selected?: Record<string, unknown>[]
+}) {
+  const selectedFilters = selected?.flatMap(row => Object.entries(row).map(([column, value]) => ({
+    column,
+    ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
+    values: [value],
+  } satisfies ActiveFilter)))
+
+  const limits = EXPORT_LIMITS.map(limit => ({
+    limit,
+    disabled: EXPORT_LIMITS.findIndex(l => l === limit) > EXPORT_LIMITS.findIndex(l => l <= rowsCount) + 1,
+  }))
+
+  return (
+    <DropdownMenuSubContent>
+      {!!selected && (
+        <>
+          <DropdownMenuItem
+            disabled={selected.length === 0}
+            onClick={() => onExport({ format, selectedFilters })}
+          >
+            {selected.length === 0
+              ? 'Selected rows'
+              : selected.length === 1
+                ? '1 selected row'
+                : `${selected.length} selected rows`}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+        </>
+      )}
+      {limits.map(({ limit, disabled }) => (
+        <DropdownMenuItem
+          key={limit}
+          onClick={() => onExport({ format, limit })}
+          disabled={disabled}
+        >
+          First
+          {' '}
+          {limit}
+          {' '}
+          rows
+        </DropdownMenuItem>
+      ))}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onClick={() => onExport({ format })}>
+        All rows
+      </DropdownMenuItem>
+    </DropdownMenuSubContent>
+  )
+}
 
 export function ExportData({
   filename = 'export',
   getData,
+  rowsCount,
   trigger,
+  selected,
 }: {
   filename?: string
-  getData: (limit?: (typeof EXPORT_LIMITS)[number]) => Promise<Record<string, unknown>[]>
+  getData: ({ limit, selectedFilters }: { limit?: (typeof EXPORT_LIMITS)[number], selectedFilters?: ActiveFilter[] }) => Promise<Record<string, unknown>[]>
+  rowsCount: number
   trigger: (props: { isExporting: boolean }) => React.ReactNode
+  selected?: Record<string, unknown>[]
 }) {
   const { mutate: exportData, isPending: isExporting } = useMutation({
     mutationFn: async ({
       format,
+      selectedFilters,
       limit,
-    }: {
-      format: keyof ReturnType<typeof contentGenerators>
-      limit?: (typeof EXPORT_LIMITS)[number]
-    }) => {
-      const data = await getData(limit)
+    }: ExportProps) => {
+      const data = await getData({ limit, selectedFilters })
 
       const content = contentGenerators(data)[format]()
       const fileName = `${filename}.${format}`
@@ -81,11 +152,9 @@ export function ExportData({
     mutationFn: async ({
       format,
       limit,
-    }: {
-      format: keyof ReturnType<typeof contentGenerators>
-      limit?: (typeof EXPORT_LIMITS)[number]
-    }) => {
-      const data = await getData(limit)
+      selectedFilters,
+    }: ExportProps) => {
+      const data = await getData({ limit, selectedFilters })
       const content = contentGenerators(data)[format]()
       return { content, count: data.length, format }
     },
@@ -118,46 +187,14 @@ export function ExportData({
                     <RiTableLine />
                     Export as CSV
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    {EXPORT_LIMITS.map(limitOption => (
-                      <DropdownMenuItem
-                        key={limitOption}
-                        onClick={() => exportData({ format: 'csv', limit: limitOption })}
-                      >
-                        First
-                        {' '}
-                        {limitOption}
-                        {' '}
-                        rows
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuItem onClick={() => exportData({ format: 'csv' })}>
-                      All rows
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
+                  <ExportDataDropdownMenuSubContent format="csv" onExport={exportData} rowsCount={rowsCount} selected={selected} />
                 </DropdownMenuSub>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
                     <RiBracesLine />
                     Export as JSON
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    {EXPORT_LIMITS.map(limitOption => (
-                      <DropdownMenuItem
-                        key={limitOption}
-                        onClick={() => exportData({ format: 'json', limit: limitOption })}
-                      >
-                        First
-                        {' '}
-                        {limitOption}
-                        {' '}
-                        rows
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuItem onClick={() => exportData({ format: 'json' })}>
-                      All rows
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
+                  <ExportDataDropdownMenuSubContent format="json" onExport={exportData} rowsCount={rowsCount} selected={selected} />
                 </DropdownMenuSub>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
@@ -172,46 +209,14 @@ export function ExportData({
                     <RiTableLine />
                     Copy as CSV
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    {EXPORT_LIMITS.map(limitOption => (
-                      <DropdownMenuItem
-                        key={limitOption}
-                        onClick={() => copyToClipboard({ format: 'csv', limit: limitOption })}
-                      >
-                        First
-                        {' '}
-                        {limitOption}
-                        {' '}
-                        rows
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuItem onClick={() => copyToClipboard({ format: 'csv' })}>
-                      All rows
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
+                  <ExportDataDropdownMenuSubContent format="csv" onExport={copyToClipboard} rowsCount={rowsCount} selected={selected} />
                 </DropdownMenuSub>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
                     <RiBracesLine />
                     Copy as JSON
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    {EXPORT_LIMITS.map(limitOption => (
-                      <DropdownMenuItem
-                        key={limitOption}
-                        onClick={() => copyToClipboard({ format: 'json', limit: limitOption })}
-                      >
-                        First
-                        {' '}
-                        {limitOption}
-                        {' '}
-                        rows
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuItem onClick={() => copyToClipboard({ format: 'json' })}>
-                      All rows
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
+                  <ExportDataDropdownMenuSubContent format="json" onExport={copyToClipboard} rowsCount={rowsCount} selected={selected} />
                 </DropdownMenuSub>
               </DropdownMenuSubContent>
             </DropdownMenuSub>

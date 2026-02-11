@@ -33,6 +33,8 @@ function Card({
   })
 }
 
+export const CardFrameMotion = motion.create(CardFrame)
+
 function CardFrame({
   className,
   render,

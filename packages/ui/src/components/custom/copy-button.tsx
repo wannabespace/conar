@@ -16,6 +16,7 @@ export function CopyButton({
   className?: string
   variant?: VariantProps<typeof buttonVariants>['variant']
   size?: VariantProps<typeof buttonVariants>['size']
+  disabled?: boolean
 }) {
   const [copied, setCopied] = useState(false)
 
