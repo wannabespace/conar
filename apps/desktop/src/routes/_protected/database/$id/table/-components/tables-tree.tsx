@@ -70,7 +70,7 @@ const SchemaHeader = memo(function SchemaHeader({
       type="button"
       onClick={onToggle}
       className="
-        group flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-2
+        group flex w-full cursor-pointer items-center gap-2 rounded-md p-2
         text-left text-sm font-medium
         hover:bg-accent/50
       "
