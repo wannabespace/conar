@@ -1,6 +1,7 @@
 import type { Edge, Node, NodeProps } from '@xyflow/react'
 import type { Column } from './table/utils'
 import { Button } from '@conar/ui/components/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiListUnordered, RiTableLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
@@ -15,6 +16,7 @@ export type NodeType = Node<{
   selected?: boolean
   edges: Edge[]
   isEnum?: boolean
+  referencedTables?: string[]
 }, 'tableNode'>
 
 export function ReactFlowNode({ data }: NodeProps<NodeType>) {
@@ -50,15 +52,56 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         <div data-mask className="flex min-w-0 items-center gap-2 text-sm">
           {data.isEnum
             ? (
-                <RiListUnordered className="size-5 shrink-0 text-muted-foreground/80" />
+                <RiListUnordered className="size-5 shrink-0 text-muted-foreground/80 self-start mt-0.5" />
               )
             : (
                 <RiTableLine className="size-5 shrink-0 text-muted-foreground/80" />
               )}
-          <span className="block truncate">{data.table}</span>
           {data.isEnum && (
             <span className="absolute right-2 block truncate text-xs text-muted-foreground/80">enum</span>
           )}
+
+          <div className="flex flex-col min-w-0">
+            <span className="block truncate font-medium leading-tight">{data.table}</span>
+            {data.isEnum && data.referencedTables && data.referencedTables.length > 0 && (
+              <div className="mt-0.5 flex items-center gap-1">
+                <span className="
+                    block w-fit max-w-[120px] truncate rounded-[4px] border border-border/50
+                    bg-muted/50 px-1.5 py-0.5 text-[10px] text-muted-foreground
+                    leading-none
+                 "
+                >
+                  {data.referencedTables[0]}
+                </span>
+                {data.referencedTables.length > 1 && (
+                  <TooltipProvider>
+                    <Tooltip delayDuration={0}>
+                      <TooltipTrigger asChild>
+                        <span className="
+                              flex items-center justify-center
+                              cursor-help rounded-[4px] border border-border/50
+                              bg-muted/50 px-1 py-0.5 text-[10px] text-muted-foreground
+                              leading-none hover:bg-muted font-medium
+                           "
+                        >
+                          +
+                          {data.referencedTables.length - 1}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" align="start" className="max-w-[200px] p-2">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] font-semibold text-muted-foreground mb-0.5">Referenced in:</span>
+                          {data.referencedTables.map(t => (
+                            <span key={t} className="text-xs">{t}</span>
+                          ))}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {!data.isEnum && (

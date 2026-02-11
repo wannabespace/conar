@@ -24,13 +24,22 @@ export function getEdges({ constraints, columns, enums, schema }: { constraints:
     const schemaEnums = enums.filter(e => e.schema === schema)
 
     columns.forEach((c) => {
-      const enumDef = c.enum ? schemaEnums.find(e => e.name === c.enum) : null
+      const enumDef = c.enum
+        ? schemaEnums.find((e) => {
+            if (e.metadata?.table) {
+              return e.metadata.table === c.table && e.metadata.column === c.id
+            }
+
+            return e.id === c.enum || e.name === c.enum
+          })
+        : null
+
       if (enumDef) {
         edges.push({
-          id: `${c.table}_${c.id}_${enumDef.name}`,
+          id: `${c.table}_${c.id}_${enumDef.id}`,
           type: 'custom',
           source: c.table,
-          target: enumDef.name,
+          target: enumDef.id,
           sourceHandle: c.id,
           targetHandle: ENUM_ANCHOR_ID,
         })
@@ -78,8 +87,17 @@ export function getNodes({
           const columnConstraints = tableConstraints.filter(constraint => constraint.column === c.id)
           const foreign = tableForeignKeys.find(foreignKey => foreignKey.column === c.id && foreignKey.schema === schema && foreignKey.table === table)
 
-          const enumLabelDef = c.enum ? enums.find(e => e.name === c.enum) : null
-          const enumNodeDef = c.enum ? schemaEnums.find(e => e.name === c.enum) : null
+          const findEnum = (targetEnums: typeof enumType.infer[]) => c.enum
+            ? targetEnums.find((e) => {
+                if (e.metadata?.table) {
+                  return e.metadata.table === c.table && e.metadata.column === c.id
+                }
+                return e.id === c.enum || e.name === c.enum
+              })
+            : null
+
+          const enumLabelDef = findEnum(enums)
+          const enumNodeDef = findEnum(schemaEnums)
 
           return {
             id: c.id,
@@ -110,13 +128,24 @@ export function getNodes({
   })
 
   const enumNodes = schemaEnums.map((e) => {
+    const referencedTables = tables.filter((table) => {
+      const tableColumns = columns.filter(c => c.table === table && c.schema === schema)
+      return tableColumns.some((c) => {
+        if (e.metadata?.table) {
+          return e.metadata.table === c.table && e.metadata.column === c.id
+        }
+        return e.id === c.enum || e.name === c.enum
+      })
+    })
+
     return {
-      id: e.name,
+      id: e.id,
       type: 'tableNode',
       position: { x: 0, y: 0 },
       data: {
         schema: e.schema,
         table: e.name,
+        referencedTables,
         databaseId,
         edges,
         isEnum: true,
