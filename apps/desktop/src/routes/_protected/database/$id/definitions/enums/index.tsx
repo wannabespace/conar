@@ -20,7 +20,7 @@ export const Route = createFileRoute('/_protected/database/$id/definitions/enums
   component: DatabaseEnumsPage,
   loader: ({ context }) => ({ connection: context.connection }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Enums', loaderData.connection.name) }] : [],
+    meta: loaderData?.connection ? [{ title: title('Enums', loaderData.connection.name) }] : [],
   }),
 })
 
