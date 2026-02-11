@@ -20,7 +20,7 @@ export const Route = createFileRoute('/_protected/database/$id/definitions/index
   component: DatabaseIndexesPage,
   loader: ({ context }) => ({ connection: context.connection }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Indexes', loaderData.connection.name) }] : [],
+    meta: loaderData?.connection ? [{ title: title('Indexes', loaderData.connection.name) }] : [],
   }),
 })
 
