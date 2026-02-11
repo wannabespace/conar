@@ -124,7 +124,6 @@ export function RunnerResultsTable({
           <ExportData
             getData={getData}
             filename="runner_results"
-            totalRows={data.length}
             trigger={({ isExporting }) => (
               <Button
                 variant="outline"

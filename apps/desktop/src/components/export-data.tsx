@@ -89,13 +89,11 @@ function ExportDataDropdownMenuSubContent({
   format,
   type,
   onExport,
-  totalRows,
   selected,
 }: {
   format: ContentFormatType
   type: ContentGeneratorType
   onExport: (props: ExportProps) => void
-  totalRows: number
   selected?: Record<string, unknown>[]
 }) {
   const filters = selected?.flatMap(row => Object.entries(row).map(([column, value]) => ({
@@ -106,7 +104,6 @@ function ExportDataDropdownMenuSubContent({
 
   const limits = EXPORT_LIMITS.map(limit => ({
     limit,
-    disabled: EXPORT_LIMITS.findIndex(l => l === limit) > EXPORT_LIMITS.findIndex(l => l <= totalRows) + 1,
   }))
 
   return (
@@ -126,11 +123,10 @@ function ExportDataDropdownMenuSubContent({
           <DropdownMenuSeparator />
         </>
       )}
-      {limits.map(({ limit, disabled }) => (
+      {limits.map(({ limit }) => (
         <DropdownMenuItem
           key={limit}
           onClick={() => onExport({ type, format, limit })}
-          disabled={disabled}
         >
           First
           {' '}
@@ -150,13 +146,11 @@ function ExportDataDropdownMenuSubContent({
 export function ExportData({
   filename,
   getData,
-  totalRows,
   trigger,
   selected,
 }: {
   filename: string
   getData: ({ limit, filters }: { limit?: (typeof EXPORT_LIMITS)[number], filters?: ActiveFilter[] }) => Promise<Record<string, unknown>[]>
-  totalRows: number
   trigger: (props: { isExporting: boolean }) => React.ReactNode
   selected?: Record<string, unknown>[]
 }) {
@@ -169,7 +163,7 @@ export function ExportData({
     }: ExportProps) => {
       const data = await getData({ limit, filters })
 
-      exportData({ type, data, format, filename: `${filename}_${limit}_${formatDate(new Date(), 'yyyy-MM-dd_HH-mm-ss')}` })()
+      exportData({ type, data, format, filename: `${filename}${limit ? `_${limit}` : ''}_${formatDate(new Date(), 'yyyy-MM-dd_HH-mm-ss')}` })()
     },
     onError: handleError,
   })
@@ -199,7 +193,6 @@ export function ExportData({
                     type="download"
                     format="csv"
                     onExport={startExport}
-                    totalRows={totalRows}
                     selected={selected}
                   />
                 </DropdownMenuSub>
@@ -212,7 +205,6 @@ export function ExportData({
                     type="download"
                     format="json"
                     onExport={startExport}
-                    totalRows={totalRows}
                     selected={selected}
                   />
                 </DropdownMenuSub>
@@ -233,7 +225,6 @@ export function ExportData({
                     type="copy"
                     format="csv"
                     onExport={startExport}
-                    totalRows={totalRows}
                     selected={selected}
                   />
                 </DropdownMenuSub>
@@ -246,7 +237,6 @@ export function ExportData({
                     type="copy"
                     format="json"
                     onExport={startExport}
-                    totalRows={totalRows}
                     selected={selected}
                   />
                 </DropdownMenuSub>

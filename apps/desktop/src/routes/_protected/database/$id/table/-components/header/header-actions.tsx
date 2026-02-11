@@ -133,7 +133,6 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
         selected={selected}
         filename={`${schema}_${table}`}
         getData={getData}
-        totalRows={rows.length}
         trigger={({ isExporting }) => (
           <Button
             variant="outline"
