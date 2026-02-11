@@ -34,7 +34,7 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
     queryClient.invalidateQueries(connectionConstraintsQuery({ connection }))
   }
 
-  const getAllData = async ({ selectedFilters }: { selectedFilters?: ActiveFilter[] }) => {
+  const getAllData = async ({ filters: exportFilters }: { filters?: ActiveFilter[] }) => {
     const data: Record<string, unknown>[] = []
     const limit = 1000
     let offset = 0
@@ -46,8 +46,8 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
         limit,
         offset,
         orderBy,
-        filters: selectedFilters || filters,
-        filtersConcatOperator: selectedFilters ? 'OR' : 'AND',
+        filters: exportFilters || filters,
+        filtersConcatOperator: exportFilters ? 'OR' : 'AND',
       })
 
       data.push(...batch)
@@ -62,18 +62,18 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
     return data
   }
 
-  const getLimitedData = async ({ limit, selectedFilters }: { limit: number, selectedFilters?: ActiveFilter[] }) => rowsQuery(connection, {
+  const getLimitedData = async ({ limit, filters: exportFilters }: { limit: number, filters?: ActiveFilter[] }) => rowsQuery(connection, {
     schema,
     table,
     limit,
     offset: 0,
     orderBy,
-    filters: selectedFilters || filters,
-    filtersConcatOperator: selectedFilters ? 'OR' : 'AND',
+    filters: exportFilters || filters,
+    filtersConcatOperator: exportFilters ? 'OR' : 'AND',
   })
 
-  const getData = async ({ limit, selectedFilters }: { limit?: number, selectedFilters?: ActiveFilter[] }) => {
-    return limit ? getLimitedData({ limit, selectedFilters }) : getAllData({ selectedFilters })
+  const getData = async ({ limit, filters }: { limit?: number, filters?: ActiveFilter[] }) => {
+    return limit ? getLimitedData({ limit, filters }) : getAllData({ filters })
   }
 
   return (
@@ -133,7 +133,7 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
         selected={selected}
         filename={`${schema}_${table}`}
         getData={getData}
-        rowsCount={rows.length}
+        totalRows={rows.length}
         trigger={({ isExporting }) => (
           <Button
             variant="outline"
