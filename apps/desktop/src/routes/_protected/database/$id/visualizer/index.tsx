@@ -107,6 +107,8 @@ function Visualizer({
   const searchRef = useRef<HTMLInputElement>(null)
   const os = getOS(navigator.userAgent)
 
+  const kbdClasses = 'rounded-sm border px-1 py-0.5 text-[12px]'
+
   useEffect(() => {
     setTableSearch('')
   }, [schema])
@@ -220,10 +222,10 @@ function Visualizer({
             items-center gap-1 text-xs text-muted-foreground
             "
             >
-              <kbd className="rounded-sm border px-1 py-0.5 text-[12px]">
+              <kbd className={kbdClasses}>
                 {os.type === 'macos' ? '⌘' : 'Ctrl'}
               </kbd>
-              <kbd className="rounded-sm border px-1 py-0.5 text-[12px]">
+              <kbd className={kbdClasses}>
                 F
               </kbd>
             </div>
