@@ -7,7 +7,6 @@ export const indexesType = type({
   'table': 'string',
   'name': 'string',
   'column': 'string | null',
-  'custom_column?': 'string',
   'is_unique': 'boolean | 1 | 0',
   'is_primary': 'boolean | 1 | 0',
   'index_type?': 'string',

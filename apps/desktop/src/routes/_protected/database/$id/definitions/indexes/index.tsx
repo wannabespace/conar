@@ -24,8 +24,9 @@ export const Route = createFileRoute('/_protected/database/$id/definitions/index
 
 type IndexItem = typeof indexesType.infer
 
-interface GroupedIndex extends IndexItem {
+interface GroupedIndex extends Pick<IndexItem, 'schema' | 'table' | 'type' | 'name' | 'isUnique' | 'isPrimary'> {
   columns: string[]
+  customExpressions: string[]
 }
 
 type IndexType = 'primary' | 'unique' | 'regular'
@@ -83,8 +84,15 @@ function DatabaseIndexesPage() {
             columns: indexItem.column && !acc[key].columns.includes(indexItem.column)
               ? [...acc[key].columns, indexItem.column]
               : acc[key].columns,
+            customExpressions: indexItem.customExpression && !acc[key].customExpressions.includes(indexItem.customExpression)
+              ? [...acc[key].customExpressions, indexItem.customExpression]
+              : acc[key].customExpressions,
           }
-        : { ...indexItem, columns: indexItem.column ? [indexItem.column] : [] },
+        : {
+            ...indexItem,
+            columns: indexItem.column ? [indexItem.column] : [],
+            customExpressions: indexItem.customExpression ? [indexItem.customExpression] : [],
+          },
     }
   }, {})
 
@@ -187,6 +195,16 @@ function DatabaseIndexesPage() {
                           <Badge key={col} variant="outline">
                             <RiLayoutColumnLine className="size-3" />
                             <HighlightText text={col} match={search} />
+                          </Badge>
+                        ))}
+                      </>
+                    )}
+                    {item.customExpressions.length > 0 && (
+                      <>
+                        <span>on</span>
+                        {item.customExpressions.map(expr => (
+                          <Badge key={expr} variant="outline">
+                            {expr}
                           </Badge>
                         ))}
                       </>
