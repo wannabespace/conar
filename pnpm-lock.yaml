@@ -186,6 +186,9 @@ catalogs:
     '@tanstack/router-plugin':
       specifier: ^1.158.4
       version: 1.158.4
+    '@tiptap/extension-mention':
+      specifier: ^3.15.3
+      version: 3.16.0
     '@tiptap/extension-placeholder':
       specifier: ^3.19.0
       version: 3.19.0
@@ -195,6 +198,9 @@ catalogs:
     '@tiptap/starter-kit':
       specifier: ^3.19.0
       version: 3.19.0
+    '@tiptap/suggestion':
+      specifier: ^3.15.3
+      version: 3.16.0
     '@todesktop/cli':
       specifier: ^1.20.2
       version: 1.20.2
@@ -775,6 +781,9 @@ importers:
       '@tanstack/router-plugin':
         specifier: 'catalog:'
         version: 1.158.4(@tanstack/react-router@1.158.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))
+      '@tiptap/extension-mention':
+        specifier: 'catalog:'
+        version: 3.16.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)(@tiptap/suggestion@3.16.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0))
       '@tiptap/extension-placeholder':
         specifier: 'catalog:'
         version: 3.19.0(@tiptap/extensions@3.19.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0))
@@ -784,6 +793,9 @@ importers:
       '@tiptap/starter-kit':
         specifier: 'catalog:'
         version: 3.19.0
+      '@tiptap/suggestion':
+        specifier: 'catalog:'
+        version: 3.16.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)
       '@todesktop/cli':
         specifier: 'catalog:'
         version: 1.20.2(@types/react@19.2.13)(encoding@0.1.13)
@@ -4948,6 +4960,13 @@ packages:
       '@tiptap/core': ^3.19.0
       '@tiptap/pm': ^3.19.0
 
+  '@tiptap/extension-mention@3.16.0':
+    resolution: {integrity: sha512-4vCC8XxHruYSTdoRr37GXvUDvSU0nEc9tUr6673ylOMxPu2lvMb7W+unDn6p5mQu91vKvotyzJMtyHCo9Ac3Fw==}
+    peerDependencies:
+      '@tiptap/core': ^3.16.0
+      '@tiptap/pm': ^3.16.0
+      '@tiptap/suggestion': ^3.16.0
+
   '@tiptap/extension-ordered-list@3.19.0':
     resolution: {integrity: sha512-cxGsINquwHYE1kmhAcLNLHAofmoDEG6jbesR5ybl7tU5JwtKVO7S/xZatll2DU1dsDAXWPWEeeMl4e/9svYjCg==}
     peerDependencies:
@@ -4999,6 +5018,12 @@ packages:
 
   '@tiptap/starter-kit@3.19.0':
     resolution: {integrity: sha512-dTCkHEz+Y8ADxX7h+xvl6caAj+3nII/wMB1rTQchSuNKqJTOrzyUsCWm094+IoZmLT738wANE0fRIgziNHs/ug==}
+
+  '@tiptap/suggestion@3.16.0':
+    resolution: {integrity: sha512-o0fix23VeqiFtvGqJkiBLlBrbfhSMeYFlXPoanU7zbL1TC2dhhEb6nlUr8Ppnc6pkUpWwo7JSN18hjJutPYGPw==}
+    peerDependencies:
+      '@tiptap/core': ^3.16.0
+      '@tiptap/pm': ^3.16.0
 
   '@todesktop/cli@1.20.2':
     resolution: {integrity: sha512-Nhkflxf1xEG11j0hc67UTCTfpJOACvQg0X3OUXod915sR0R+GwhlsVn/al221q+BBUZBygNwkrTHXc7yNH5UWg==}
@@ -14763,6 +14788,12 @@ snapshots:
       '@tiptap/core': 3.19.0(@tiptap/pm@3.19.0)
       '@tiptap/pm': 3.19.0
 
+  '@tiptap/extension-mention@3.16.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)(@tiptap/suggestion@3.16.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0))':
+    dependencies:
+      '@tiptap/core': 3.19.0(@tiptap/pm@3.19.0)
+      '@tiptap/pm': 3.19.0
+      '@tiptap/suggestion': 3.16.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)
+
   '@tiptap/extension-ordered-list@3.19.0(@tiptap/extension-list@3.19.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0))':
     dependencies:
       '@tiptap/extension-list': 3.19.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)
@@ -14855,6 +14886,11 @@ snapshots:
       '@tiptap/extension-text': 3.19.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))
       '@tiptap/extension-underline': 3.19.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))
       '@tiptap/extensions': 3.19.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)
+      '@tiptap/pm': 3.19.0
+
+  '@tiptap/suggestion@3.16.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)':
+    dependencies:
+      '@tiptap/core': 3.19.0(@tiptap/pm@3.19.0)
       '@tiptap/pm': 3.19.0
 
   '@todesktop/cli@1.20.2(@types/react@19.2.13)(encoding@0.1.13)':
