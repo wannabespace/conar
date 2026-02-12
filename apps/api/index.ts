@@ -109,9 +109,10 @@ const app = new Hono<{
     const userAgent = c.req.header('User-Agent')
     const desktopVersion = c.req.header('x-desktop-version')
     const logEvent = c.get('logEvent') || {}
+    const level = status >= 500 ? 'error' : status >= 400 ? 'warn' : 'info'
 
     // eslint-disable-next-line no-console
-    console.log(JSON.stringify({
+    console[level](JSON.stringify({
       method,
       status,
       path,
