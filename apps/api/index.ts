@@ -105,7 +105,6 @@ const app = new Hono<{
       })
     }
 
-    const auth = c.req.header('Authorization')
     const userAgent = c.req.header('User-Agent')
     const desktopVersion = c.req.header('x-desktop-version')
     const logEvent = c.get('logEvent') || {}
@@ -116,7 +115,6 @@ const app = new Hono<{
       method,
       status,
       path,
-      ...(auth ? { auth } : {}),
       duration: `${Date.now() - startTime}ms`,
       ...(desktopVersion ? { desktopVersion } : {}),
       ...(userAgent ? { userAgent } : {}),
