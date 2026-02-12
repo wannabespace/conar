@@ -175,7 +175,6 @@ export function ChatForm() {
     },
   }))
 
-  // Handler for file input change
   const handleFileAttach = (e: ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files
 
