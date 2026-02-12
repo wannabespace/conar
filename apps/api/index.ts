@@ -6,7 +6,7 @@ import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { xai } from '@ai-sdk/xai'
 import { PORTS } from '@conar/shared/constants'
-import { onError, ORPCError, ValidationError } from '@orpc/server'
+import { ORPCError, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { generateText } from 'ai'
 import { consola } from 'consola'
@@ -22,24 +22,36 @@ import { sendEmail } from './lib/resend'
 
 const handler = new RPCHandler(router, {
   interceptors: [
-    onError((error) => {
-      if (error instanceof ORPCError) {
-        if (error.cause instanceof ValidationError) {
-          const message = error.cause.issues.map(issue => issue.path
-            ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
-            : issue.message,
-          ).join(', ')
+    async (options) => {
+      try {
+        return await options.next()
+      }
+      catch (error) {
+        options.context.addLogData({
+          error: {
+            type: error instanceof Error ? error.constructor.name : typeof error,
+            message: error instanceof Error ? error.message : String(error),
+            cause: error instanceof Error ? error.cause : undefined,
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+        })
 
-          throw new ORPCError('BAD_REQUEST', { message })
+        if (error instanceof ORPCError) {
+          if (error.cause instanceof ValidationError) {
+            const message = error.cause.issues.map(issue => issue.path
+              ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
+              : issue.message,
+            ).join(', ')
+
+            throw new ORPCError('BAD_REQUEST', { message })
+          }
+
+          throw error
         }
 
-        throw error
+        throw new ORPCError('INTERNAL_SERVER_ERROR', { message: 'An unexpected error occurred' })
       }
-
-      consola.error(error)
-
-      throw new ORPCError('INTERNAL_SERVER_ERROR', { message: 'An unexpected error occurred' })
-    }),
+    },
   ],
 })
 
@@ -104,12 +116,11 @@ const app = new Hono<{
     const color = status >= 500 ? 'red' : status >= 400 ? 'yellow' : 'green'
 
     consola[level](
-      `${method} ${colorize(color, status)} ${path}`,
+      method,
+      colorize(color, status),
+      colorize('gray', `(${Date.now() - startTime}ms)`),
+      path,
       {
-        method,
-        status,
-        path,
-        duration_ms: Date.now() - startTime,
         ...(auth ? { auth } : {}),
         ...(cookie ? { cookie } : {}),
         ...(userAgent ? { userAgent } : {}),
