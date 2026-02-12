@@ -120,13 +120,13 @@ const app = new Hono<{
       colorize(color, status),
       colorize('gray', `(${Date.now() - startTime}ms)`),
       path,
-      {
+      JSON.stringify({
         ...(auth ? { auth } : {}),
         ...(cookie ? { cookie } : {}),
         ...(userAgent ? { userAgent } : {}),
         ...(desktopVersion ? { desktopVersion } : {}),
         ...logEvent,
-      },
+      }, null, nodeEnv === 'production' ? undefined : 2),
     )
   })
   .on(['GET', 'POST'], '/auth/*', (c) => {
