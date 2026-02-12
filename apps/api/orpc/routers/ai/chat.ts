@@ -6,7 +6,6 @@ import { streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryable } from 'ai-retry'
 import { type } from 'arktype'
-import { consola } from 'consola'
 import { v7 } from 'uuid'
 import { tools } from '~/ai/tools'
 import { withPosthog } from '~/lib/posthog'
@@ -47,12 +46,15 @@ export const chat = orpc
     messages: 'object[]' as type.cast<AppUIMessage[]>,
   }))
   .handler(async ({ input, context, signal }) => {
-    consola.info('messages', JSON.stringify(input.messages.map(message => ({
-      id: message.id,
+    context.addLogData({
       chatId: input.id,
-      role: message.role,
-      partsCount: message.parts.length,
-    })), null, 2))
+      connectionType: input.type,
+      inputMessages: input.messages.map(message => ({
+        id: message.id,
+        role: message.role,
+        partsCount: message.parts.length,
+      })),
+    })
 
     const result = streamText({
       messages: [
@@ -104,13 +106,17 @@ export const chat = orpc
       generateMessageId: () => v7(),
       sendSources: true,
       onFinish: async (result) => {
-        consola.info('stream finished', JSON.stringify({
-          ...result.responseMessage,
-          parts: result.responseMessage.parts.map(part => part.type),
-        }, null, 2))
+        context.addLogData({
+          response: {
+            ...result.responseMessage,
+            parts: result.responseMessage.parts.map(part => part.type),
+          },
+        })
       },
       onError: (error) => {
-        consola.error('error toUIMessageStream onError', error)
+        context.addLogData({
+          streamError: error,
+        })
 
         return handleError(error)
       },
