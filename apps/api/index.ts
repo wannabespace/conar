@@ -78,6 +78,19 @@ const app = new Hono<{
     const status = c.res.status
     const method = c.req.method
     const path = new URL(c.req.url).pathname
+    const userAgent = c.req.header('User-Agent')
+    const version = c.req.header('x-desktop-version')
+    const logEvent = c.get('logEvent') || {}
+
+    const logInfo = {
+      method,
+      status,
+      path,
+      duration: `${Date.now() - startTime}ms`,
+      ...(version ? { version } : {}),
+      ...(userAgent ? { userAgent } : {}),
+      ...logEvent,
+    }
 
     if (
       status >= 400
@@ -91,35 +104,16 @@ const app = new Hono<{
         subject: `Alert from API: ${status} ${method} ${c.req.url}`,
         template: 'Alert',
         props: {
-          text: JSON.stringify({
-            status,
-            method,
-            url: c.req.url,
-            auth: c.req.header('Authorization'),
-            cookie: c.req.header('Cookie'),
-            userAgent: c.req.header('User-Agent'),
-            desktopVersion: c.req.header('x-desktop-version'),
-          }, null, 2),
+          text: JSON.stringify(logInfo, null, 2),
           service: 'API',
         },
       })
     }
 
-    const userAgent = c.req.header('User-Agent')
-    const desktopVersion = c.req.header('x-desktop-version')
-    const logEvent = c.get('logEvent') || {}
     const level = status >= 500 ? 'error' : status >= 400 ? 'warn' : 'info'
 
     // eslint-disable-next-line no-console
-    console[level](JSON.stringify({
-      method,
-      status,
-      path,
-      duration: `${Date.now() - startTime}ms`,
-      ...(desktopVersion ? { desktopVersion } : {}),
-      ...(userAgent ? { userAgent } : {}),
-      ...logEvent,
-    }, null, nodeEnv === 'production' ? undefined : 2))
+    console[level](JSON.stringify(logInfo, null, nodeEnv === 'production' ? undefined : 2))
   })
   .on(['GET', 'POST'], '/auth/*', (c) => {
     const req = c.req.raw
