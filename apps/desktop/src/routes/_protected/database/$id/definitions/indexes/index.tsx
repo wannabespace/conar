@@ -188,23 +188,13 @@ function DatabaseIndexesPage() {
                       <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
-                    {item.columns.length > 0 && (
+                    {(item.columns.length > 0 || item.customExpressions.length > 0) && (
                       <>
                         <span>on</span>
-                        {item.columns.map(col => (
+                        {[...item.columns, ...item.customExpressions].map(col => (
                           <Badge key={col} variant="outline">
                             <RiLayoutColumnLine className="size-3" />
                             <HighlightText text={col} match={search} />
-                          </Badge>
-                        ))}
-                      </>
-                    )}
-                    {item.customExpressions.length > 0 && (
-                      <>
-                        <span>on</span>
-                        {item.customExpressions.map(expr => (
-                          <Badge key={expr} variant="outline">
-                            {expr}
                           </Badge>
                         ))}
                       </>
