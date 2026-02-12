@@ -112,18 +112,16 @@ const app = new Hono<{
     const logEvent = c.get('logEvent') || {}
     const level = status >= 500 ? 'error' : status >= 400 ? 'warn' : 'log'
 
-    consola[level](
+    consola[level](JSON.stringify({
       method,
       status,
       path,
-      JSON.stringify({
-        ...(auth ? { auth } : {}),
-        duration: `${Date.now() - startTime}ms`,
-        ...(desktopVersion ? { desktopVersion } : {}),
-        ...(userAgent ? { userAgent } : {}),
-        ...logEvent,
-      }, null, nodeEnv === 'production' ? undefined : 2),
-    )
+      ...(auth ? { auth } : {}),
+      duration: `${Date.now() - startTime}ms`,
+      ...(desktopVersion ? { desktopVersion } : {}),
+      ...(userAgent ? { userAgent } : {}),
+      ...logEvent,
+    }, null, nodeEnv === 'production' ? undefined : 2))
   })
   .on(['GET', 'POST'], '/auth/*', (c) => {
     const req = c.req.raw
