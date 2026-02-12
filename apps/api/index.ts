@@ -10,7 +10,6 @@ import { ORPCError, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { generateText } from 'ai'
 import { consola } from 'consola'
-import { colorize } from 'consola/utils'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { db, users } from './drizzle'
@@ -79,7 +78,7 @@ const app = new Hono<{
 
     const status = c.res.status
     const method = c.req.method
-    const path = c.req.url.replace(env.API_URL, '')
+    const path = new URL(c.req.url).pathname
 
     if (
       status >= 400
@@ -108,23 +107,20 @@ const app = new Hono<{
     }
 
     const auth = c.req.header('Authorization')
-    const cookie = c.req.header('Cookie')
-    const desktopVersion = c.req.header('x-desktop-version')
     const userAgent = c.req.header('User-Agent')
+    const desktopVersion = c.req.header('x-desktop-version')
     const logEvent = c.get('logEvent') || {}
     const level = status >= 500 ? 'error' : status >= 400 ? 'warn' : 'log'
-    const color = status >= 500 ? 'red' : status >= 400 ? 'yellow' : 'green'
 
     consola[level](
       method,
-      colorize(color, status),
-      colorize('gray', `(${Date.now() - startTime}ms)`),
+      status,
       path,
       JSON.stringify({
         ...(auth ? { auth } : {}),
-        ...(cookie ? { cookie } : {}),
-        ...(userAgent ? { userAgent } : {}),
+        duration: `${Date.now() - startTime}ms`,
         ...(desktopVersion ? { desktopVersion } : {}),
+        ...(userAgent ? { userAgent } : {}),
         ...logEvent,
       }, null, nodeEnv === 'production' ? undefined : 2),
     )

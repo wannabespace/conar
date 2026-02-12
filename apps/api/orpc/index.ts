@@ -66,12 +66,7 @@ export async function getSubscription(userId: string) {
 export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
   const minorVersion = context.minorVersion ?? 0
-  const subscription = await redisMemoize(() => getSubscription(session.user.id), `subscription:${session.user.id}`, 60 * 30)
-
-  context.addLogData({
-    userId: session.user.id,
-    subscriptionStatus: subscription?.status ?? null,
-  })
+  const subscription = await redisMemoize(() => getSubscription(session.user.id), `subscription:${session.user.id}`, 60 * 10)
 
   if (!subscription) {
     throw new ORPCError('FORBIDDEN', {
