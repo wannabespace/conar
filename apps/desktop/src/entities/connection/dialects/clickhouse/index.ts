@@ -1,4 +1,5 @@
 import type { CompiledQuery, Dialect, Driver, QueryResult } from 'kysely'
+import type { DialectOptions } from '..'
 import type { connections } from '~/drizzle'
 import { type } from 'arktype'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
@@ -44,7 +45,7 @@ function prepareQuery(compiledQuery: CompiledQuery) {
   )
 }
 
-function execute(connection: typeof connections.$inferSelect, compiledQuery: CompiledQuery) {
+function execute(connection: typeof connections.$inferSelect, compiledQuery: CompiledQuery, options?: DialectOptions) {
   if (!window.electron) {
     throw new Error('Electron is not available')
   }
@@ -54,6 +55,7 @@ function execute(connection: typeof connections.$inferSelect, compiledQuery: Com
   const promise = window.electron.query.clickhouse({
     connectionString: connection.connectionString,
     sql: preparedQuery,
+    silent: options?.silent,
   })
 
   logSql(connection, promise, { sql: preparedQuery })
@@ -61,13 +63,13 @@ function execute(connection: typeof connections.$inferSelect, compiledQuery: Com
   return promise
 }
 
-function createDriver(connection: typeof connections.$inferSelect) {
+function createDriver(connection: typeof connections.$inferSelect, options?: DialectOptions) {
   return {
     async init() {},
     async acquireConnection() {
       return {
         executeQuery: async <R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> => {
-          const { result } = await execute(connection, compiledQuery)
+          const { result } = await execute(connection, compiledQuery, options)
 
           return {
             rows: result as R[],
@@ -96,10 +98,10 @@ function clickhouseAdapter() {
   }
 }
 
-export function clickhouseDialect(connection: typeof connections.$inferSelect) {
+export function clickhouseDialect(connection: typeof connections.$inferSelect, options?: DialectOptions) {
   return {
     createAdapter: clickhouseAdapter,
-    createDriver: () => createDriver(connection),
+    createDriver: () => createDriver(connection, options),
     createQueryCompiler: () => new MysqlQueryCompiler(),
     createIntrospector: () => {
       throw new Error('Not implemented')
