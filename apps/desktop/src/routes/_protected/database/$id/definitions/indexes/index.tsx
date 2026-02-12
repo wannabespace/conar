@@ -68,7 +68,7 @@ function DatabaseIndexesPage() {
     const matchesSearch = !search
       || indexItem.name.toLowerCase().includes(search.toLowerCase())
       || indexItem.table.toLowerCase().includes(search.toLowerCase())
-      || indexItem.column.toLowerCase().includes(search.toLowerCase())
+      || indexItem.column?.toLowerCase().includes(search.toLowerCase())
 
     if (!matchesSearch)
       return acc
@@ -80,11 +80,11 @@ function DatabaseIndexesPage() {
       [key]: acc[key]
         ? {
             ...acc[key],
-            columns: acc[key].columns.includes(indexItem.column)
-              ? acc[key].columns
-              : [...acc[key].columns, indexItem.column],
+            columns: indexItem.column && !acc[key].columns.includes(indexItem.column)
+              ? [...acc[key].columns, indexItem.column]
+              : acc[key].columns,
           }
-        : { ...indexItem, columns: [indexItem.column] },
+        : { ...indexItem, columns: indexItem.column ? [indexItem.column] : [] },
     }
   }, {})
 
@@ -156,44 +156,41 @@ function DatabaseIndexesPage() {
             <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2 text-base">
+                  <CardTitle className="mb-2 flex items-center gap-2 text-base">
                     {item.isPrimary
                       ? <RiKey2Line className="size-4 text-primary" />
                       : <RiFileList3Line className="size-4 text-primary" />}
                     <HighlightText text={item.name} match={search} />
                     {item.isPrimary && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 text-xs font-normal"
-                      >
+                      <Badge variant="secondary">
                         Primary Key
                       </Badge>
                     )}
                     {item.isUnique && !item.isPrimary && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary">
                         Unique
                       </Badge>
                     )}
                   </CardTitle>
                   <div className={`
-                    mt-2 flex items-center gap-2 text-sm text-muted-foreground
+                    flex items-center gap-1.5 text-sm text-muted-foreground
                   `}
                   >
-                    <Badge variant="outline" className="text-xs font-normal">
-                      <RiTable2 className="mr-1 size-3" />
+                    <Badge variant="outline">
+                      <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
-                    <span>on</span>
-                    {item.columns.map((col: string) => (
-                      <Badge
-                        key={col}
-                        variant="outline"
-                        className="font-mono text-xs"
-                      >
-                        <RiLayoutColumnLine className="mr-1 size-3" />
-                        <HighlightText text={col} match={search} />
-                      </Badge>
-                    ))}
+                    {item.columns.length > 0 && (
+                      <>
+                        <span>on</span>
+                        {item.columns.map(col => (
+                          <Badge key={col} variant="outline">
+                            <RiLayoutColumnLine className="size-3" />
+                            <HighlightText text={col} match={search} />
+                          </Badge>
+                        ))}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

@@ -42,18 +42,28 @@ export function prismaSchemaTemplate(table: string, columns: string) {
   ].join('\n')
 }
 
-export function drizzleSchemaTemplate(
-  table: string,
-  imports: string[],
-  columns: string,
-  tableFunc: string = 'pgTable',
-  importPath: string = 'drizzle-orm/pg-core',
-  extraConfig?: string,
-) {
+export function drizzleSchemaTemplate({
+  table,
+  coreImports,
+  dialectImports,
+  columns,
+  tableFunc = 'pgTable',
+  dialectImportPath = 'drizzle-orm/pg-core',
+  extraConfig,
+}: {
+  table: string
+  coreImports: string[]
+  dialectImports: string[]
+  columns: string
+  tableFunc: string
+  dialectImportPath?: string
+  extraConfig?: string
+}) {
   const escapedTable = table.replace(/'/g, '\\\'')
   const varName = camelCase(table)
   return [
-    `import { ${imports.join(', ')}, ${tableFunc} } from '${importPath}';`,
+    `import { ${coreImports.join(', ')} } from 'drizzle-orm';`,
+    `import { ${dialectImports.join(', ')}, ${tableFunc} } from '${dialectImportPath}';`,
     '',
     `export const ${varName} = ${tableFunc}('${escapedTable}', {`,
     columns,

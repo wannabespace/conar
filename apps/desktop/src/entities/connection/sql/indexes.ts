@@ -3,40 +3,69 @@ import { sql } from 'kysely'
 import { createQuery } from '../query'
 
 export const indexesType = type({
-  schema: 'string',
-  table: 'string',
-  name: 'string',
-  column: 'string',
-  is_unique: 'boolean | 1 | 0',
-  is_primary: 'boolean | 1 | 0',
-}).pipe(({ is_unique, is_primary, ...data }) => ({
+  'schema': 'string',
+  'table': 'string',
+  'name': 'string',
+  'column': 'string | null',
+  'custom_column?': 'string',
+  'is_unique': 'boolean | 1 | 0',
+  'is_primary': 'boolean | 1 | 0',
+  'index_type?': 'string',
+  'custom_expression?': 'string',
+}).pipe(({ is_unique, is_primary, index_type, custom_expression, ...data }) => ({
   ...data,
   isUnique: !!is_unique,
   isPrimary: !!is_primary,
+  type: index_type,
+  customExpression: custom_expression,
 }))
 
 export const indexesQuery = createQuery({
   type: indexesType.array(),
   query: () => ({
-    postgres: db => db
-      .selectFrom('pg_catalog.pg_class as t')
-      .innerJoin('pg_catalog.pg_index as ix', 't.oid', 'ix.indrelid')
-      .innerJoin('pg_catalog.pg_class as i', 'i.oid', 'ix.indexrelid')
-      .innerJoin('pg_catalog.pg_attribute as a', join => join
-        .onRef('a.attrelid', '=', 't.oid')
-        .on(sql<boolean>`a.attnum = ANY(ix.indkey)`))
-      .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 't.relnamespace')
-      .select([
-        'n.nspname as schema',
-        't.relname as table',
-        'i.relname as name',
-        'a.attname as column',
-        'ix.indisunique as is_unique',
-        'ix.indisprimary as is_primary',
-      ])
-      .where('n.nspname', 'not in', ['pg_catalog', 'information_schema'])
-      .where('t.relkind', '=', 'r')
-      .execute(),
+    postgres: async (db) => {
+      const query = await db
+        .selectFrom('pg_catalog.pg_class as t')
+        .innerJoin('pg_catalog.pg_index as ix', 't.oid', 'ix.indrelid')
+        .innerJoin('pg_catalog.pg_class as i', 'i.oid', 'ix.indexrelid')
+        .innerJoin('pg_catalog.pg_am as am', 'i.relam', 'am.oid')
+        .leftJoin('pg_catalog.pg_attribute as a', join => join
+          .onRef('a.attrelid', '=', 't.oid')
+          .on(sql<boolean>`a.attnum = ANY(ix.indkey)`))
+        .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 't.relnamespace')
+        .select([
+          'n.nspname as schema',
+          't.relname as table',
+          'i.relname as name',
+          'a.attname as column',
+          'ix.indisunique as is_unique',
+          'ix.indisprimary as is_primary',
+          'am.amname as index_type',
+          sql<string>`pg_get_indexdef(ix.indexrelid)`.as('index_definition'),
+        ])
+        .where('n.nspname', 'not in', ['pg_catalog', 'information_schema'])
+        .where('t.relkind', '=', 'r')
+        .execute()
+
+      return query.map(({ index_definition, ...row }) => {
+        // To handle custom indexes like JSONB indexes, vector indexes, etc.
+        let customExpression = !row.column
+          ? index_definition
+              .toLowerCase()
+              .split(` using ${row.index_type.toLowerCase()}`)[1]!
+              .trim()
+          : undefined
+
+        if (customExpression?.startsWith('((')) {
+          customExpression = customExpression.slice(1, -1)
+        }
+        if (customExpression?.startsWith('((')) {
+          customExpression = customExpression.slice(1, -1)
+        }
+
+        return { ...row, custom_expression: customExpression }
+      })
+    },
 
     mysql: db => db
       .selectFrom('information_schema.STATISTICS')
@@ -72,10 +101,6 @@ export const indexesQuery = createQuery({
       .execute(),
 
     clickhouse: async (db) => {
-      /* ClickHouse uses ORDER BY as its primary key/sorting key (similar to clustered index).
-      It doesn't enforce constraints like traditional RDBMS (no foreign keys, unique constraints, etc.).
-      We show ORDER BY columns as primary key indexes since that's how ClickHouse optimizes queries. */
-
       const query = await db
         .selectFrom('system.columns')
         .select([
