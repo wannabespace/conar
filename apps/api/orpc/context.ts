@@ -1,7 +1,8 @@
 import type { Context as HonoContext } from 'hono'
+import type { AppVariables } from '..'
 import { UAParser } from 'ua-parser-js'
 
-export function createContext(c: HonoContext) {
+export function createContext(c: HonoContext<{ Variables: AppVariables }>) {
   const desktopVersion = c.req.header('x-desktop-version') || null
   const userAgent = c.req.raw.headers.get('User-Agent') || null
   const minorVersion = Number(desktopVersion?.split('.')[1]) || null
@@ -12,6 +13,9 @@ export function createContext(c: HonoContext) {
     headers: c.req.raw.headers,
     setHeader: (key: string, value: string) => {
       c.res.headers.set(key, value)
+    },
+    addLogData: (data: Record<string, unknown>) => {
+      c.set('logEvent', { ...c.get('logEvent'), ...data })
     },
     desktopVersion,
     minorVersion,
