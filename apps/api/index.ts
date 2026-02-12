@@ -110,7 +110,7 @@ const app = new Hono<{
       })
     }
 
-    const level = status >= 500 ? 'error' : status >= 400 ? 'warn' : 'info'
+    const level = status >= 400 ? 'error' : 'info'
 
     // eslint-disable-next-line no-console
     console[level](JSON.stringify(logInfo, null, nodeEnv === 'production' ? undefined : 2))
