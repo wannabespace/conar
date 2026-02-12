@@ -43,11 +43,11 @@ function zodMapper(t: string) {
   if (/date|time/i.test(t))
     return 'z.date()'
   if (/json/i.test(t))
-    return 'z.unknown()'
+    return 'z.record(z.string(), z.any())'
   return 'z.string()'
 }
 
-function prismaScalarMapper(t: string): string {
+function prismaScalarMapper(t: string) {
   if (/decimal|numeric/i.test(t))
     return 'Decimal'
   if (/bool/i.test(t))
