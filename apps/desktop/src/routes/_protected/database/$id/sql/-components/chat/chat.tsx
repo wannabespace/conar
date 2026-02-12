@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { cn } from '@conar/ui/lib/utils'
 import { useEffect, useRef } from 'react'
+import { useSubscription } from '~/entities/user/hooks'
 import { Route } from '../..'
 import { ChatForm } from './chat-form'
 import { ChatHeader } from './chat-header'
@@ -11,13 +12,14 @@ import { ChatPlaceholder } from './chat-placeholder'
 export function Chat({ className, ...props }: Omit<ComponentProps<'div'>, 'ref'>) {
   const { chat } = Route.useLoaderData()
   const { messages, error } = useChat({ chat })
+  const { subscription } = useSubscription()
   const elementRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (chat.messages.at(-1)?.role === 'user' && chat.status !== 'streaming' && chat.status !== 'submitted') {
+    if (subscription && chat.messages.at(-1)?.role === 'user' && chat.status !== 'streaming' && chat.status !== 'submitted') {
       chat.regenerate()
     }
-  }, [chat])
+  }, [chat, subscription])
 
   return (
     <div
