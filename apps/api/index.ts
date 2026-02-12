@@ -63,6 +63,7 @@ app.use('*', async (c, next) => {
     && c.res.status !== 401
     && c.res.status !== 404
     && env.ALERTS_EMAIL
+    && !c.req.url.includes('healthcheck.railway.app')
   ) {
     sendEmail({
       to: env.ALERTS_EMAIL,
