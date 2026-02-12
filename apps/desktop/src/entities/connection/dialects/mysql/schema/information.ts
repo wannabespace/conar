@@ -10,6 +10,19 @@ export interface InformationSchema {
   KEY_COLUMN_USAGE: KeyColumnUsage
   STATISTICS: Statistics
   REFERENTIAL_CONSTRAINTS: ReferentialConstraints
+  TABLE_PRIVILEGES: TablePrivileges
+}
+
+/**
+ * @name TABLE_PRIVILEGES
+ * @type table
+ */
+interface TablePrivileges {
+  GRANTEE: string
+  TABLE_SCHEMA: string
+  TABLE_NAME: string
+  PRIVILEGE_TYPE: string
+  IS_GRANTABLE: string
 }
 
 /**
