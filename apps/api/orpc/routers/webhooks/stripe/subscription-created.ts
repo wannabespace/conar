@@ -1,5 +1,4 @@
 import type Stripe from 'stripe'
-import { consola } from 'consola'
 import { eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
 import { db, subscriptions, users } from '~/drizzle'
@@ -16,8 +15,6 @@ export async function subscriptionCreated(event: Stripe.Event) {
   if (!userId) {
     throw new Error('No userId found in subscription metadata')
   }
-
-  consola.info('Stripe subscription created', { subscription: JSON.stringify(subscription) })
 
   const [existing] = await db
     .select({ id: subscriptions.id })

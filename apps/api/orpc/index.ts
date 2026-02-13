@@ -36,6 +36,8 @@ async function getSession(headers: Headers) {
 export const authMiddleware = orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
 
+  context.addLogData({ userId: session.user.id })
+
   return next({
     context: {
       ...session,
@@ -46,6 +48,10 @@ export const authMiddleware = orpc.middleware(async ({ context, next }) => {
 
 export const optionalAuthMiddleware = orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers).catch(() => null)
+
+  if (session) {
+    context.addLogData({ userId: session.user.id })
+  }
 
   return next({
     context: {
@@ -64,7 +70,11 @@ export async function getSubscription(userId: string) {
 export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
   const minorVersion = context.minorVersion ?? 0
-  const subscription = await redisMemoize(() => getSubscription(session.user.id), `subscription:${session.user.id}`, 60 * 30)
+  const subscription = await redisMemoize(() => getSubscription(session.user.id), `subscription:${session.user.id}`, 60 * 10)
+
+  if (session) {
+    context.addLogData({ userId: session.user.id })
+  }
 
   if (!subscription) {
     throw new ORPCError('FORBIDDEN', {

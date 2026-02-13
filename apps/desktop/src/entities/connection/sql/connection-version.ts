@@ -8,6 +8,7 @@ export const connectionVersionType = type({
 
 export const connectionVersionQuery = createQuery({
   type: connectionVersionType,
+  silent: true,
   // Each query has a fallback to get a version in older versions
   query: () => ({
     postgres: async (db) => {
