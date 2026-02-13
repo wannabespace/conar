@@ -46,7 +46,7 @@ function HomebrewInstall() {
         Install via Homebrew
       </h2>
       <Card className={`
-        flex w-full items-center justify-between gap-4 p-3
+        flex flex-row w-full items-center justify-between gap-4 p-3
         sm:gap-8 sm:p-2
       `}
       >
@@ -129,7 +129,7 @@ function DownloadOption({ Icon, type, arch, link }: {
 }) {
   return (
     <Card className={`
-      flex w-full items-center justify-between gap-4 p-3
+      flex flex-row w-full items-center justify-between gap-4 p-3
       sm:gap-8 sm:p-2
     `}
     >
