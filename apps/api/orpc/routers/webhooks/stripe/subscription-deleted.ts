@@ -1,5 +1,4 @@
 import type Stripe from 'stripe'
-import consola from 'consola'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
 import { env } from '~/env'
@@ -17,7 +16,7 @@ export async function subscriptionDeleted(event: Stripe.Event) {
     .limit(1)
 
   if (!existing) {
-    consola.warn('Subscription not found in database', { event: JSON.stringify(event) })
+    console.warn('Subscription not found in database', { event: JSON.stringify(event) })
     return
   }
 

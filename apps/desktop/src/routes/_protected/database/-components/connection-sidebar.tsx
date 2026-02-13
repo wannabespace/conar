@@ -155,6 +155,7 @@ function LastOpenedConnection({ connection }: { connection: typeof connections.$
                   : '',
               )}
               style={connection.color ? { '--color': connection.color } : {}}
+              preload={false}
               {...params}
             >
               <span className="text-sm font-bold">
