@@ -57,6 +57,9 @@ catalogs:
     '@fluentui/react-context-selector':
       specifier: ^9.2.14
       version: 9.2.14
+    '@hackylabs/deep-redact':
+      specifier: ^3.0.4
+      version: 3.0.4
     '@hono/arktype-validator':
       specifier: ^2.0.1
       version: 2.0.1
@@ -463,9 +466,6 @@ catalogs:
       specifier: ^4.3.6
       version: 4.3.6
 
-overrides:
-  eslint-plugin-yml: ^3.1.2
-
 importers:
 
   .:
@@ -548,6 +548,9 @@ importers:
       '@exalabs/ai-sdk':
         specifier: 'catalog:'
         version: 1.0.5(ai@6.0.82(zod@4.3.6))
+      '@hackylabs/deep-redact':
+        specifier: 'catalog:'
+        version: 3.0.4
       '@hono/arktype-validator':
         specifier: 'catalog:'
         version: 2.0.1(arktype@2.1.29)(hono@4.11.9)
@@ -2668,6 +2671,9 @@ packages:
     resolution: {integrity: sha512-tMXdRCfYVixjuFK+Hk0Q1s38gV9zDiDJfWL3h1rv4Qc39oILCu1TRTDt7+fGUI8K4G1Fj125Hx/ru3azECWTyQ==}
     engines: {node: '>=6'}
     hasBin: true
+
+  '@hackylabs/deep-redact@3.0.4':
+    resolution: {integrity: sha512-N0YS4KgBfoqwt90BwjPTDGriZUEFG0xKcU5DI/qKR6d8X731Ump/7sSefUMkccbS6MZ3P9T65ED99KHnn06FEA==}
 
   '@hono/arktype-validator@2.0.1':
     resolution: {integrity: sha512-Z4PQFtzgbGneBap+TTViRIBAoUWbwEwg8PaKNqALAP6z9N2ksJI81PfcsSQNUzwtrn8LipkMvBb8/D9Pei2GJw==}
@@ -12596,6 +12602,8 @@ snapshots:
       long: 5.3.2
       protobufjs: 7.5.4
       yargs: 17.7.2
+
+  '@hackylabs/deep-redact@3.0.4': {}
 
   '@hono/arktype-validator@2.0.1(arktype@2.1.29)(hono@4.11.9)':
     dependencies:

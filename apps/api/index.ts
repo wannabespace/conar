@@ -17,6 +17,7 @@ import { auth } from './lib/auth'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
 import { sendEmail } from './lib/resend'
+import { sanitizeLogData } from './lib/sanitize-log'
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -82,7 +83,7 @@ const app = new Hono<{
     const version = c.req.header('x-desktop-version')
     const logEvent = c.get('logEvent') || {}
 
-    const logInfo = {
+    const logInfo = sanitizeLogData({
       method,
       status,
       path,
@@ -90,7 +91,7 @@ const app = new Hono<{
       ...(version ? { version } : {}),
       ...(userAgent ? { userAgent } : {}),
       ...logEvent,
-    }
+    })
 
     if (
       status >= 400
