@@ -38,7 +38,11 @@ export const logMiddleware = orpc.middleware(async ({ context, next }, input) =>
 
   context.addLogData({
     input,
-    output: result.output,
+    output: (Array.isArray(result.output) && result.output.length > 0)
+      || (typeof result.output === 'object' && Object.keys(result.output).length > 0)
+      || (!Array.isArray(result.output) && typeof result.output !== 'object' && !!result.output)
+      ? result.output
+      : undefined,
   })
 
   return result
