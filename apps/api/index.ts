@@ -54,7 +54,7 @@ const handler = new RPCHandler(router, {
 })
 
 export interface AppVariables {
-  logEvent: Record<string, unknown>
+  logEvent?: Record<string, unknown>
 }
 
 const app = new Hono<{
@@ -110,10 +110,15 @@ const app = new Hono<{
       })
     }
 
-    const level = status >= 400 ? 'error' : 'info'
+    const log = JSON.stringify(logInfo, null, nodeEnv === 'production' ? undefined : 2)
 
-    // eslint-disable-next-line no-console
-    console[level](JSON.stringify(logInfo, null, nodeEnv === 'production' ? undefined : 2))
+    if (status >= 400) {
+      console.error(log)
+    }
+    else {
+      // eslint-disable-next-line no-console
+      console.info(log)
+    }
   })
   .on(['GET', 'POST'], '/auth/*', (c) => {
     const req = c.req.raw
