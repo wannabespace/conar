@@ -19,10 +19,12 @@ export function getEdges({ constraints }: { constraints: typeof constraintsType.
     }))
 }
 
-export function getTableSearchState({
+export function getSearchState({
+  columns,
   tables,
   query,
 }: {
+  columns: typeof columnType.infer[]
   tables: string[]
   query: string
 }) {
@@ -32,12 +34,14 @@ export function getTableSearchState({
     return {
       isActive: false,
       matchedTables: new Set<string>(),
+      matchedColumns: new Set<string>(),
     }
   }
 
   return {
     isActive: true,
     matchedTables: new Set(tables.filter(table => table.toLowerCase().includes(normalizedQuery))),
+    matchedColumns: new Set(columns.filter(column => column.id.toLowerCase().includes(normalizedQuery)).map(column => column.id)),
   }
 }
 
@@ -45,17 +49,23 @@ export function applySearchHighlight<TNode extends NodeType>({
   nodes,
   isSearchActive,
   matchedTables,
+  matchedColumns,
 }: {
   nodes: TNode[]
   isSearchActive: boolean
   matchedTables: Set<string>
+  matchedColumns: Set<string>
 }): TNode[] {
   return nodes.map((node) => {
     const highlightedNode = { ...node }
     highlightedNode.data = {
       ...highlightedNode.data,
       searchActive: isSearchActive,
-      searchMatched: isSearchActive && matchedTables.has(node.data.table),
+      tableSearchMatched: isSearchActive && matchedTables.has(node.data.table),
+      columns: node.data.columns.map(col => ({
+        ...col,
+        searchMatched: isSearchActive && matchedColumns.has(col.id),
+      })),
     }
     return highlightedNode
   })

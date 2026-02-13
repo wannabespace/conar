@@ -6,14 +6,18 @@ import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, Ri
 import { Link } from '@tanstack/react-router'
 import { Handle, Position } from '@xyflow/react'
 
+export type SearchableColumn = Column & {
+  searchMatched?: boolean
+}
+
 export type NodeType = Node<{
   databaseId: string
   schema: string
   table: string
-  columns: Column[]
+  columns: SearchableColumn[]
   selected?: boolean
   searchActive?: boolean
-  searchMatched?: boolean
+  tableSearchMatched?: boolean
   edges: Edge[]
 }, 'tableNode'>
 
@@ -27,8 +31,8 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
           transition-opacity
         `,
         data.selected && 'ring-2 ring-primary ring-offset-2',
-        !data.selected && data.searchActive && data.searchMatched && 'ring-2 ring-primary/60 ring-offset-2',
-        data.searchActive && !data.searchMatched && !data.selected && 'opacity-50',
+        !data.selected && data.searchActive && data.tableSearchMatched && 'ring-2 ring-primary/60 ring-offset-2',
+        data.searchActive && !data.tableSearchMatched && !data.columns.some(c => c.searchMatched) && !data.selected && 'opacity-50',
       )}
     >
       <div className="
@@ -39,7 +43,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
       >
         <div data-mask className="flex min-w-0 items-center gap-2 text-sm">
           <RiTableLine className="size-5 shrink-0 text-muted-foreground/80" />
-          <span className="block truncate">{data.table}</span>
+          <span className={cn(`block truncate`, data.searchActive && data.tableSearchMatched && 'text-primary')}>{data.table}</span>
         </div>
         <Button
           size="icon-xs"
@@ -57,7 +61,14 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
       </div>
       <div className="py-2 text-xs">
         {data.columns.map(column => (
-          <div key={column.id} className="group relative px-4">
+          <div
+            key={column.id}
+            className={cn(
+              'group relative px-4 transition-opacity',
+              data.searchActive && column.searchMatched && 'rounded-sm text-primary ring-2 ring-primary/60 ring-offset-2',
+              data.searchActive && data.columns.some(c => c.searchMatched) && !column.searchMatched && 'opacity-50',
+            )}
+          >
             <div className="
               flex items-center justify-between gap-2 border-dashed py-2
               group-not-last:border-b

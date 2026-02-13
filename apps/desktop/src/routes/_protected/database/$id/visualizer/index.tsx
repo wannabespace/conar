@@ -17,7 +17,7 @@ import { animationHooks } from '~/enter'
 import { ReactFlowNode } from '~/entities/connection/components'
 import { connectionConstraintsQuery, connectionTableColumnsQuery, connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { prefetchConnectionCore } from '~/entities/connection/utils'
-import { applySearchHighlight, getTableSearchState, getVisualizerLayout } from './-lib'
+import { applySearchHighlight, getSearchState, getVisualizerLayout } from './-lib'
 
 export const Route = createFileRoute(
   '/_protected/database/$id/visualizer/',
@@ -118,8 +118,8 @@ function Visualizer({
     [tablesAndSchemas, schema],
   )
   const searchState = useMemo(
-    () => getTableSearchState({ tables: schemaTables, query: tableSearch }),
-    [schemaTables, tableSearch],
+    () => getSearchState({ columns, tables: schemaTables, query: tableSearch }),
+    [columns, schemaTables, tableSearch],
   )
   const isSearchActive = searchState.isActive
   const matchedTablesRef = useRef(searchState.matchedTables)
@@ -160,6 +160,7 @@ function Visualizer({
       nodes: calculatedNodes,
       isSearchActive,
       matchedTables,
+      matchedColumns: searchState.matchedColumns,
     }))
     setEdges(calculatedEdges)
   })
@@ -182,8 +183,9 @@ function Visualizer({
       nodes: currentNodes,
       isSearchActive,
       matchedTables,
+      matchedColumns: searchState.matchedColumns,
     }))
-  }, [isSearchActive, matchedTables])
+  }, [isSearchActive, matchedTables, searchState.matchedColumns])
 
   useKeyboardEvent(
     event => isCtrlAndKey(event, 'f') && !event.shiftKey && !event.altKey,
