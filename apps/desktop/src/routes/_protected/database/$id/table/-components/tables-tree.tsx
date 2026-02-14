@@ -57,12 +57,17 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
   onDrop: () => void
 }) {
   const { connection } = Route.useRouteContext()
+  const { database } = useSearch({ strict: false }) as { database?: string }
+
+  const connectionId = database && connection.id.endsWith(`:${database}`)
+    ? connection.id.slice(0, -(database.length + 1))
+    : connection.id
 
   return (
     <SidebarLink
       to="/database/$id/table"
-      params={{ id: connection.id }}
-      search={{ schema, table }}
+      params={{ id: connectionId }}
+      search={{ schema, table, database }}
       preloadDelay={200}
       onDoubleClick={() => addTab(connection.id, schema, table)}
       className="group"

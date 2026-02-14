@@ -1,11 +1,13 @@
 'use no memo'
 import type { connectionStoreType } from '~/entities/connection/store'
 import type { FileRoutesById } from '~/routeTree.gen'
+import { SafeURL } from '@conar/shared/utils/safe-url'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { cn } from '@conar/ui/lib/utils'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
+import { type } from 'arktype'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { QueryLogger } from '~/entities/connection/components'
@@ -17,11 +19,28 @@ import { PasswordForm } from './-components/password-form'
 
 export const Route = createFileRoute('/_protected/database/$id')({
   component: DatabasePage,
-  beforeLoad: async ({ params }) => {
+  validateSearch: type({
+    'database?': 'string',
+  }),
+  beforeLoad: async ({ params, search }) => {
     const connection = connectionsCollection.get(params.id)
 
     if (!connection) {
       throw redirect({ to: '/' })
+    }
+
+    if (search.database) {
+      const url = new SafeURL(connection.connectionString)
+      url.pathname = search.database
+
+      return {
+        connection: {
+          ...connection,
+          id: `${connection.id}:${search.database}`,
+          name: search.database,
+          connectionString: url.toString(),
+        },
+      }
     }
 
     return { connection }

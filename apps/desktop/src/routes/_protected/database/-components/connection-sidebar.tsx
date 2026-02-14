@@ -194,7 +194,7 @@ function LastOpenedConnections() {
 
 function MainLinks() {
   const { connection } = Route.useLoaderData()
-  const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
+  const { schema: schemaParam, table: tableParam, database } = useSearch({ strict: false }) as { schema?: string, table?: string, database?: string }
   const match = useMatches({
     select: matches => matches.map(match => match.routeId).at(-1),
   })
@@ -217,17 +217,21 @@ function MainLinks() {
 
   const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
 
+  const connectionId = database && connection.id.endsWith(`:${database}`)
+    ? connection.id.slice(0, -(database.length + 1))
+    : connection.id
+
   const route = useMemo(() => {
     if (!isCurrentTableAsLastOpened && lastOpenedTable) {
       return {
         to: '/database/$id/table',
-        params: { id: connection.id },
-        search: { schema: lastOpenedTable.schema, table: lastOpenedTable.table },
+        params: { id: connectionId },
+        search: { schema: lastOpenedTable.schema, table: lastOpenedTable.table, database },
       } satisfies LinkProps
     }
 
-    return { to: '/database/$id/table', params: { id: connection.id } } satisfies LinkProps
-  }, [connection.id, isCurrentTableAsLastOpened, lastOpenedTable])
+    return { to: '/database/$id/table', params: { id: connectionId }, search: database ? { database } : undefined } satisfies LinkProps
+  }, [connectionId, isCurrentTableAsLastOpened, lastOpenedTable, database])
 
   function onTablesClick() {
     if (isCurrentTableAsLastOpened && lastOpenedTable) {
@@ -247,8 +251,11 @@ function MainLinks() {
           <TooltipTrigger asChild>
             <Link
               to="/database/$id/sql"
-              params={{ id: connection.id }}
-              search={lastOpenedChatId ? { chatId: lastOpenedChatId } : undefined}
+              params={{ id: connectionId }}
+              search={{
+                ...(lastOpenedChatId ? { chatId: lastOpenedChatId } : {}),
+                ...(database ? { database } : {}),
+              }}
               className={baseClasses(isActiveSql)}
             >
               <RiPlayLargeLine className="size-4" />
@@ -279,8 +286,9 @@ function MainLinks() {
           <TooltipTrigger asChild>
             <Link
               to="/database/$id/definitions"
-              params={{ id: connection.id }}
+              params={{ id: connectionId }}
               className={baseClasses(isActiveDefinitions)}
+              search={database ? { database } : undefined}
             >
               <RiShieldCheckLine className="size-4" />
             </Link>
@@ -291,7 +299,12 @@ function MainLinks() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Link to="/database/$id/visualizer" params={{ id: connection.id }} className={baseClasses(isActiveVisualizer)}>
+            <Link
+              to="/database/$id/visualizer"
+              params={{ id: connectionId }}
+              search={database ? { database } : undefined}
+              className={baseClasses(isActiveVisualizer)}
+            >
               <RiNodeTree className="size-4" />
             </Link>
           </TooltipTrigger>
