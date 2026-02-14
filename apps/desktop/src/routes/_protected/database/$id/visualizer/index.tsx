@@ -1,4 +1,4 @@
-import type { constraintsType, tablesAndSchemasType } from '~/entities/connection/sql'
+import type { constraintsType, enumType, tablesAndSchemasType } from '~/entities/connection/sql'
 import type { columnType } from '~/entities/connection/sql/columns'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
@@ -11,7 +11,7 @@ import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, u
 import { useEffect, useEffectEvent, useMemo, useState } from 'react'
 import { animationHooks } from '~/enter'
 import { ReactFlowNode } from '~/entities/connection/components'
-import { connectionConstraintsQuery, connectionTableColumnsQuery, connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { connectionConstraintsQuery, connectionEnumsQuery, connectionTableColumnsQuery, connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { prefetchConnectionCore } from '~/entities/connection/utils'
 import { getEdges, getLayoutElements, getNodes } from './-lib'
 
@@ -41,8 +41,9 @@ function VisualizerPage() {
     ) ?? [],
   })
   const { data: constraints } = useQuery(connectionConstraintsQuery({ connection }))
+  const { data: enums } = useQuery(connectionEnumsQuery({ connection }))
 
-  if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
+  if (!tablesAndSchemas || !constraints || !enums || columnsQueries.some(q => q.isPending)) {
     return (
       <div className="
         flex size-full items-center justify-center rounded-lg border
@@ -75,6 +76,7 @@ function VisualizerPage() {
         tablesAndSchemas={tablesAndSchemas}
         columns={columns}
         constraints={constraints}
+        enums={enums}
       />
     </ReactFlowProvider>
   )
@@ -91,10 +93,12 @@ function Visualizer({
   tablesAndSchemas,
   columns,
   constraints,
+  enums,
 }: {
   tablesAndSchemas: typeof tablesAndSchemasType.infer[]
   columns: typeof columnType.infer[]
   constraints: typeof constraintsType.infer[]
+  enums: typeof enumType.infer[]
 }) {
   const { connection } = Route.useRouteContext()
   const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
@@ -102,7 +106,7 @@ function Visualizer({
   const schemaTables = tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table)
 
   const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
-    const edges = getEdges({ constraints })
+    const edges = getEdges({ constraints, columns, enums, schema })
     return getLayoutElements(
       getNodes({
         databaseId: connection.id,
@@ -111,16 +115,17 @@ function Visualizer({
         columns,
         edges,
         constraints,
+        enums,
       }),
       edges,
     )
-  }, [connection.id, schema, schemaTables, columns, constraints])
+  }, [connection.id, schema, schemaTables, columns, constraints, enums])
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes)
 
   const recalculateLayoutEvent = useEffectEvent(() => {
-    const edges = getEdges({ constraints })
+    const edges = getEdges({ constraints, columns, enums, schema })
     const { nodes: layoutNodes, edges: layoutEdges } = getLayoutElements(
       getNodes({
         databaseId: connection.id,
@@ -129,6 +134,7 @@ function Visualizer({
         columns,
         edges,
         constraints,
+        enums,
       }),
       edges,
     )
