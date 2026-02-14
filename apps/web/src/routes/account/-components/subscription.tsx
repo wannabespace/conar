@@ -139,7 +139,7 @@ export function Subscription() {
         </Alert>
       )}
       <Card>
-        <CardHeader className="flex-row justify-between space-y-0">
+        <CardHeader className="flex flex-row justify-between space-y-0">
           <div className="flex flex-col">
             <CardTitle className="flex items-center gap-2">
               Subscription

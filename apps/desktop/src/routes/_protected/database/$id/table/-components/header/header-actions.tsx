@@ -1,3 +1,4 @@
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { ComponentRef } from 'react'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
@@ -24,8 +25,8 @@ import { HeaderActionsOrder } from './header-actions-order'
 export function HeaderActions({ table, schema }: { table: string, schema: string }) {
   const { connection } = Route.useLoaderData()
   const store = usePageStoreContext()
-  const [filters, orderBy, exact] = useStore(store, state => [state.filters, state.orderBy, state.exact])
-  const { isFetching, dataUpdatedAt, refetch, data: rows, isPending } = useInfiniteQuery(
+  const [filters, orderBy, exact, selected] = useStore(store, state => [state.filters, state.orderBy, state.exact, state.selected])
+  const { isFetching, dataUpdatedAt, refetch, data: rows = [], isPending } = useInfiniteQuery(
     connectionRowsQuery({ connection, table, schema, query: { filters, orderBy } }),
   )
 
@@ -38,7 +39,7 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
 
   const addRecordDialogRef = useRef<ComponentRef<typeof AddRecordDialog>>(null)
 
-  const getAllData = async () => {
+  const getAllData = async ({ filters: exportFilters }: { filters?: ActiveFilter[] }) => {
     const data: Record<string, unknown>[] = []
     const limit = 1000
     let offset = 0
@@ -50,7 +51,8 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
         limit,
         offset,
         orderBy,
-        filters,
+        filters: exportFilters || filters,
+        filtersConcatOperator: exportFilters ? 'OR' : 'AND',
       })
 
       data.push(...batch)
@@ -65,17 +67,18 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
     return data
   }
 
-  const getLimitedData = async (limit: number) => rowsQuery(connection, {
+  const getLimitedData = async ({ limit, filters: exportFilters }: { limit: number, filters?: ActiveFilter[] }) => rowsQuery(connection, {
     schema,
     table,
     limit,
     offset: 0,
     orderBy,
-    filters,
+    filters: exportFilters || filters,
+    filtersConcatOperator: exportFilters ? 'OR' : 'AND',
   })
 
-  const getData = async (limit?: number) => {
-    return limit ? getLimitedData(limit) : getAllData()
+  const getData = async ({ limit, filters }: { limit?: number, filters?: ActiveFilter[] }) => {
+    return limit ? getLimitedData({ limit, filters }) : getAllData({ filters })
   }
 
   return (
@@ -151,6 +154,7 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
       </TooltipProvider>
       <Separator orientation="vertical" className="h-6!" />
       <ExportData
+        selected={selected}
         filename={`${schema}_${table}`}
         getData={getData}
         trigger={({ isExporting }) => (
