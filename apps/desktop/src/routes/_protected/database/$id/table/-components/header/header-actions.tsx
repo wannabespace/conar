@@ -1,18 +1,21 @@
 import type { ActiveFilter } from '@conar/shared/filters'
+import type { ComponentRef } from 'react'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
+import { RiAddLine, RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
+import { useRef } from 'react'
 import { ExportData } from '~/components/export-data'
 import { connectionConstraintsQuery, connectionRowsQuery, connectionTableColumnsQuery, connectionTableTotalQuery } from '~/entities/connection/queries'
 import { rowsQuery } from '~/entities/connection/sql/rows'
 import { queryClient } from '~/main'
 import { Route } from '../../'
 import { usePageStoreContext } from '../../-store'
+import { AddRecordDialog } from '../add-record-dialog'
 import { HeaderActionsColumns } from './header-actions-columns'
 import { HeaderActionsCopy } from './header-actions-copy'
 import { HeaderActionsDelete } from './header-actions-delete'
@@ -33,6 +36,8 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
     queryClient.invalidateQueries(connectionTableTotalQuery({ connection, table, schema, query: { filters, exact } }))
     queryClient.invalidateQueries(connectionConstraintsQuery({ connection }))
   }
+
+  const addRecordDialogRef = useRef<ComponentRef<typeof AddRecordDialog>>(null)
 
   const getAllData = async ({ filters: exportFilters }: { filters?: ActiveFilter[] }) => {
     const data: Record<string, unknown>[] = []
@@ -78,6 +83,25 @@ export function HeaderActions({ table, schema }: { table: string, schema: string
 
   return (
     <div className="flex items-center gap-2">
+
+      <AddRecordDialog ref={addRecordDialogRef} />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => addRecordDialogRef.current?.open(connection, schema, table)}
+            >
+              <RiAddLine />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            Add new record
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       <HeaderActionsDelete
         table={table}
         schema={schema}
