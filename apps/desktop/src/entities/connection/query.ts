@@ -5,6 +5,12 @@ import { dialects } from './dialects'
 
 export function createQuery<P = undefined, T extends Type = Type<unknown>>(options: {
   type?: T
+  /**
+   * In case of connection error, the query will not show a toast notification.
+   *
+   * @default false
+   */
+  silent?: boolean
   query: (params: P) => ({
     [D in ConnectionType]: (dialect: ReturnType<typeof dialects[D]>) => Promise<
       T extends Type ? T['inferIn'] : unknown
