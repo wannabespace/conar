@@ -45,6 +45,19 @@ export const connectionStoreType = type({
   tablesSearch: 'string',
   definitionsSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
+  tablesTreeOpenedFolders: type({
+    schema: 'string',
+    folder: 'string',
+  }).array(),
+  tableFolders: type({
+    schema: 'string',
+    folder: 'string',
+    tables: 'string[]',
+  }).array(),
+  selectedTables: type({
+    schema: 'string',
+    table: 'string',
+  }).array(),
   pinnedTables: type({
     schema: 'string',
     table: 'string',
@@ -82,6 +95,9 @@ const defaultState: typeof connectionStoreType.infer = {
   tablesSearch: '',
   definitionsSearch: '',
   tablesTreeOpenedSchemas: null,
+  tablesTreeOpenedFolders: [],
+  tableFolders: [],
+  selectedTables: [],
   pinnedTables: [],
   layout: {
     chatVisible: true,
@@ -141,6 +157,9 @@ export function connectionStore(id: string) {
       tablesSearch: currentVal.tablesSearch,
       definitionsSearch: currentVal.definitionsSearch,
       tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
+      tablesTreeOpenedFolders: currentVal.tablesTreeOpenedFolders,
+      tableFolders: currentVal.tableFolders,
+      selectedTables: currentVal.selectedTables,
       pinnedTables: currentVal.pinnedTables,
       layout: currentVal.layout,
     } satisfies Omit<typeof currentVal, 'queriesToRun' | 'files' | 'editorQueries'>))

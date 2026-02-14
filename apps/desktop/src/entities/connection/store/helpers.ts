@@ -148,3 +148,178 @@ export function setChatPosition(id: string, position: typeof connectionStoreType
     },
   } satisfies typeof state))
 }
+
+export function toggleFolder(id: string, schema: string, folder: string) {
+  const store = connectionStore(id)
+  store.setState((state) => {
+    const key = `${schema}:${folder}`
+    const isOpen = state.tablesTreeOpenedFolders.some(f => `${f.schema}:${f.folder}` === key)
+
+    return {
+      ...state,
+      tablesTreeOpenedFolders: isOpen
+        ? state.tablesTreeOpenedFolders.filter(f => `${f.schema}:${f.folder}` !== key)
+        : [...state.tablesTreeOpenedFolders, { schema, folder }],
+    } satisfies typeof state
+  })
+}
+
+export function addTableToFolder(id: string, schema: string, folder: string, table: string) {
+  const store = connectionStore(id)
+  store.setState((state) => {
+    // First, remove the table from any other folder in the same schema
+    const updatedFolders = state.tableFolders
+      .map(g =>
+        g.schema === schema && g.tables.includes(table)
+          ? { ...g, tables: g.tables.filter(t => t !== table) }
+          : g,
+      )
+      .filter(g => g.tables.length > 0)
+
+    const existingFolder = updatedFolders.find(g => g.schema === schema && g.folder === folder)
+
+    if (existingFolder) {
+      if (existingFolder.tables.includes(table)) {
+        return state
+      }
+
+      return {
+        ...state,
+        tableFolders: updatedFolders.map(g =>
+          g.schema === schema && g.folder === folder
+            ? { ...g, tables: [...g.tables, table] }
+            : g,
+        ),
+      } satisfies typeof state
+    }
+
+    return {
+      ...state,
+      tableFolders: [...updatedFolders, { schema, folder, tables: [table] }],
+    } satisfies typeof state
+  })
+}
+
+export function removeTableFromFolder(id: string, schema: string, folder: string, table: string) {
+  const store = connectionStore(id)
+  store.setState(state => ({
+    ...state,
+    tableFolders: state.tableFolders
+      .map(g =>
+        g.schema === schema && g.folder === folder
+          ? { ...g, tables: g.tables.filter(t => t !== table) }
+          : g,
+      )
+      .filter(g => g.tables.length > 0),
+  } satisfies typeof state))
+}
+
+export function folderExists(id: string, schema: string, folder: string): boolean {
+  const store = connectionStore(id)
+  return store.state.tableFolders.some(g => g.schema === schema && g.folder === folder)
+}
+
+export function renameFolder(id: string, schema: string, oldFolder: string, newFolder: string): boolean {
+  const store = connectionStore(id)
+
+  // Check if a folder with the new name already exists
+  if (folderExists(id, schema, newFolder)) {
+    return false
+  }
+
+  store.setState(state => ({
+    ...state,
+    tableFolders: state.tableFolders.map(g =>
+      g.schema === schema && g.folder === oldFolder
+        ? { ...g, folder: newFolder }
+        : g,
+    ),
+    tablesTreeOpenedFolders: state.tablesTreeOpenedFolders.map(f =>
+      f.schema === schema && f.folder === oldFolder
+        ? { schema, folder: newFolder }
+        : f,
+    ),
+  } satisfies typeof state))
+
+  return true
+}
+
+export function deleteFolder(id: string, schema: string, folder: string) {
+  const store = connectionStore(id)
+  store.setState(state => ({
+    ...state,
+    tableFolders: state.tableFolders.filter(g => !(g.schema === schema && g.folder === folder)),
+    tablesTreeOpenedFolders: state.tablesTreeOpenedFolders.filter(f => !(f.schema === schema && f.folder === folder)),
+  } satisfies typeof state))
+}
+
+export function toggleTableSelection(id: string, schema: string, table: string) {
+  const store = connectionStore(id)
+  store.setState((state) => {
+    const key = `${schema}:${table}`
+    const isSelected = state.selectedTables.some(t => `${t.schema}:${t.table}` === key)
+
+    return {
+      ...state,
+      selectedTables: isSelected
+        ? state.selectedTables.filter(t => `${t.schema}:${t.table}` !== key)
+        : [...state.selectedTables, { schema, table }],
+    } satisfies typeof state
+  })
+}
+
+export function clearTableSelection(id: string) {
+  const store = connectionStore(id)
+  store.setState(state => ({
+    ...state,
+    selectedTables: [],
+  } satisfies typeof state))
+}
+
+export function selectMultipleTables(id: string, tables: { schema: string, table: string }[]) {
+  const store = connectionStore(id)
+  store.setState(state => ({
+    ...state,
+    selectedTables: tables,
+  } satisfies typeof state))
+}
+
+export function addMultipleTablesToFolder(id: string, schema: string, folder: string, tables: string[]) {
+  const store = connectionStore(id)
+  store.setState((state) => {
+    // First, remove all these tables from any other folder in the same schema
+    const updatedFolders = state.tableFolders
+      .map(g =>
+        g.schema === schema
+          ? { ...g, tables: g.tables.filter(t => !tables.includes(t)) }
+          : g,
+      )
+      .filter(g => g.tables.length > 0)
+
+    const existingFolder = updatedFolders.find(g => g.schema === schema && g.folder === folder)
+
+    if (existingFolder) {
+      const newTables = tables.filter(t => !existingFolder.tables.includes(t))
+      if (newTables.length === 0) {
+        return {
+          ...state,
+          tableFolders: updatedFolders,
+        } satisfies typeof state
+      }
+
+      return {
+        ...state,
+        tableFolders: updatedFolders.map(g =>
+          g.schema === schema && g.folder === folder
+            ? { ...g, tables: [...g.tables, ...newTables] }
+            : g,
+        ),
+      } satisfies typeof state
+    }
+
+    return {
+      ...state,
+      tableFolders: [...updatedFolders, { schema, folder, tables }],
+    } satisfies typeof state
+  })
+}
