@@ -169,3 +169,50 @@ export function connectionCompletionService(connection: typeof connections.$infe
     return [...items, ...keywordItems]
   }
 }
+
+export async function connectionAICompletionContext(connection: typeof connections.$inferSelect) {
+  queryClient.prefetchQuery(connectionTablesAndSchemasQuery({ connection }))
+  queryClient.prefetchQuery(connectionEnumsQuery({ connection }))
+
+  const buildSchemaContext = async (): Promise<string> => {
+    const [tablesAndSchemas, enums] = await Promise.all([
+      queryClient.ensureQueryData(connectionTablesAndSchemasQuery({ connection })),
+      queryClient.ensureQueryData(connectionEnumsQuery({ connection })),
+    ])
+
+    const contextLines: string[] = []
+
+    for (const schema of tablesAndSchemas.schemas) {
+      contextLines.push('', `Schema: ${schema.name}`, '')
+
+      for (const tableName of schema.tables) {
+        const columns = await queryClient.ensureQueryData(
+          connectionTableColumnsQuery({
+            connection,
+            schema: schema.name,
+            table: tableName,
+          }),
+        )
+
+        contextLines.push(`  Table: ${tableName}`, '')
+        columns.forEach((col) => {
+          contextLines.push(`    - ${col.id}: ${col.type} ${col.isNullable ? '(nullable)' : '(not null)'}`)
+        })
+      }
+    }
+
+    if (enums?.length > 0) {
+      contextLines.push('', 'Enums:', '')
+      enums.forEach((enumItem) => {
+        contextLines.push(`  ${enumItem.schema}.${enumItem.name}: [${enumItem.values.join(', ')}]`)
+      })
+    }
+
+    return contextLines.join('\n')
+  }
+
+  return {
+    type: connection.type,
+    buildSchemaContext,
+  }
+}

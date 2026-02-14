@@ -1,4 +1,5 @@
 export { chat } from './chat'
+export { codeCompletion } from './code-completion'
 export { enhancePrompt } from './enhance-prompt'
 export { filters } from './filters'
 export { fixSQL } from './fix-sql'

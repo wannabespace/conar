@@ -10,6 +10,7 @@ import { connectionStore } from '~/entities/connection/store'
 import { connectionCompletionService } from '~/entities/connection/utils/monaco'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
+import { useRunnerEditorAiTabCompletion } from './ai-tab-completion'
 import { useRunnerContext } from './runner-context'
 import { useRunnerEditorAIZones } from './runner-editor-ai-zones'
 import { useRunnerEditorQueryZones } from './runner-editor-query-zones'
@@ -121,14 +122,15 @@ export function RunnerEditor() {
   const sql = useStore(store, state => state.sql)
   const editorQueries = useStore(store, state => state.editorQueries)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
+
   const run = useRunnerContext(({ run }) => run)
 
   const runEvent = useEffectEvent(run)
 
   useRunnerEditorHooks(monacoRef)
-
   useRunnerEditorQueryZones(monacoRef)
   useRunnerEditorAIZones(monacoRef)
+  useRunnerEditorAiTabCompletion(monacoRef)
 
   useEffect(() => {
     setupLanguageFeatures(dialectsMap[connection.type], {

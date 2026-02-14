@@ -121,6 +121,7 @@ catalog:
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
   monaco-themes: ^0.4.8
+  monacopilot: ^1.2.12
   motion: ^12.34.0
   mssql: ^12.2.0
   mysql2: ^3.17.0
