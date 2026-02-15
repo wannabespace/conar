@@ -145,8 +145,6 @@ function Visualizer({
     setNodes(applySearchHighlight({
       nodes,
       searchQuery: trimmedSearchQuery,
-      tables,
-      columns,
     }))
     setEdges(edges)
   }
@@ -189,8 +187,6 @@ function Visualizer({
               setNodes(nodes => applySearchHighlight({
                 nodes,
                 searchQuery: e.target.value.trim(),
-                tables,
-                columns,
               }))
             }}
           />

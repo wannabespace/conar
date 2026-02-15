@@ -53,33 +53,30 @@ export function getEdges({ constraints, columns, enums, schema }: { constraints:
 export function applySearchHighlight<TNode extends NodeType>({
   nodes,
   searchQuery,
-  tables,
-  columns,
 }: {
   nodes: TNode[]
   searchQuery: string
-  tables: string[]
-  columns: typeof columnType.infer[]
 }): TNode[] {
-  const matchedTables = searchQuery
-    ? [...new Set(tables.filter(table => table.toLowerCase().includes(searchQuery)))]
-    : []
-  const matchedColumns = searchQuery
-    ? [...new Set(columns.filter(column => column.id.toLowerCase().includes(searchQuery)).map(column => column.id))]
-    : []
+  const normalizedQuery = searchQuery.toLowerCase().trim()
+  const isSearchActive = !!normalizedQuery
 
-  return nodes.map(node => ({
-    ...node,
-    data: {
-      ...node.data,
-      searchActive: !!searchQuery,
-      tableSearchMatched: matchedTables.includes(node.data.table),
-      columns: node.data.columns.map(col => ({
-        ...col,
-        searchMatched: matchedColumns.includes(col.id),
-      })),
-    },
-  }))
+  return nodes.map((node) => {
+    const tableSearchMatched = isSearchActive && node.data.table.toLowerCase().includes(normalizedQuery)
+    const columns = node.data.columns.map(col => ({
+      ...col,
+      searchMatched: isSearchActive && col.id.toLowerCase().includes(normalizedQuery),
+    }))
+
+    return {
+      ...node,
+      data: {
+        ...node.data,
+        searchActive: isSearchActive,
+        tableSearchMatched,
+        columns,
+      },
+    }
+  })
 }
 
 export function getNodes({
@@ -153,6 +150,7 @@ export function getNodes({
                   : undefined),
             primaryKey: columnConstraints.find(constraint => constraint.type === 'primaryKey')?.name,
             unique: columnConstraints.find(constraint => constraint.type === 'unique')?.name,
+            enum: c.enum,
           } satisfies Column
         }),
       },

@@ -171,8 +171,15 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                   "
                   />
                 )}
-                {column.foreign && (
+                {column.foreign && !column.enum && (
                   <RiLinksLine className="
+                    size-3 shrink-0 text-muted-foreground/70
+                  "
+                  />
+                )}
+
+                {column.enum && (
+                  <RiListUnordered className="
                     size-3 shrink-0 text-muted-foreground/70
                   "
                   />
