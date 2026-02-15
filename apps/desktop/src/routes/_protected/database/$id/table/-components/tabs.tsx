@@ -358,7 +358,7 @@ export function TablesTabs({
         <Reorder.Group
           axis="x"
           values={tabItems}
-          onReorder={(newItems) => {
+          onReorder={(newItems: typeof tabItems) => {
             updateTabs(connection.id, newItems.map(item => item.tab))
           }}
           className="flex gap-1"

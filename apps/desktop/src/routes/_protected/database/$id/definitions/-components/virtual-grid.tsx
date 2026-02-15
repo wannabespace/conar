@@ -7,13 +7,12 @@ function Skeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: 3 }).map((_, i) => (
-
         <div
           key={i}
-          className={`
+          className="
             flex w-full flex-col gap-3 rounded-xl border border-border/40
             bg-muted/10 p-4
-          `}
+          "
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -23,11 +22,9 @@ function Skeleton() {
             </div>
             <div className="h-5 w-24 animate-pulse rounded-full bg-muted/20" />
           </div>
-          <div className="pl-8">
-            <div className="flex gap-2">
-              <div className="h-5 w-16 animate-pulse rounded-md bg-muted/20" />
-              <div className="h-5 w-24 animate-pulse rounded-md bg-muted/20" />
-            </div>
+          <div className="flex gap-2 pl-8">
+            <div className="h-5 w-16 animate-pulse rounded-md bg-muted/20" />
+            <div className="h-5 w-24 animate-pulse rounded-md bg-muted/20" />
           </div>
         </div>
       ))}
@@ -48,7 +45,7 @@ export function VirtualDefinitionsGrid<T>({
   renderItem,
   emptyState,
 }: VirtualDefinitionsGridProps<T>) {
-  const scrollRef = useDefinitionsScroll()
+  const { scrollRef, isScrollReady } = useDefinitionsScroll()
   const listRef = useRef<HTMLDivElement>(null)
 
   const rowVirtualizer = useVirtualizer({
@@ -58,7 +55,7 @@ export function VirtualDefinitionsGrid<T>({
     overscan: 5,
   })
 
-  if (loading) {
+  if (!isScrollReady || loading) {
     return (
       <div className="mt-2 grid grid-cols-1 gap-4">
         <Skeleton />
@@ -78,9 +75,7 @@ export function VirtualDefinitionsGrid<T>({
     <div
       ref={listRef}
       className="relative mt-2 w-full"
-      style={{
-        height: `${rowVirtualizer.getTotalSize()}px`,
-      }}
+      style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
     >
       {rowVirtualizer.getVirtualItems().map((virtualRow) => {
         const item = items[virtualRow.index]
