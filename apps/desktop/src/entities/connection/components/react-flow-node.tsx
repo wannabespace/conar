@@ -6,7 +6,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiListUnordered, RiTableLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 import { Handle, Position } from '@xyflow/react'
-import { ENUM_ANCHOR_ID } from '~/routes/_protected/database/$id/visualizer/-lib'
+import { ENUM_ANCHOR_ID } from '~/routes/_protected/database/$id/visualizer/-constants'
 
 export type NodeType = Node<{
   databaseId: string

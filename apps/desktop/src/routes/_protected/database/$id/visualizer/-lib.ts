@@ -5,8 +5,7 @@ import type { constraintsType, enumType } from '~/entities/connection/sql'
 import type { columnType } from '~/entities/connection/sql/columns'
 import dagre from '@dagrejs/dagre'
 import { Position } from '@xyflow/react'
-
-export const ENUM_ANCHOR_ID = 'enum_anchor'
+import { ENUM_ANCHOR_ID } from './-constants'
 
 export function getEdges({ constraints, columns, enums, schema }: { constraints: typeof constraintsType.infer[], columns: typeof columnType.infer[], enums: typeof enumType.infer[], schema: string }): Edge[] {
   const edges = constraints
