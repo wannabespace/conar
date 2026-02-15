@@ -106,9 +106,12 @@ function Visualizer({
   const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
   const [schema, setSchema] = useState(schemas[0]!)
   const [searchQuery, setSearchQuery] = useState('')
-  const trimmedSearchQuery = searchQuery.trim().toLowerCase()
   const searchRef = useRef<HTMLInputElement>(null)
 
+  const trimmedSearchQuery = searchQuery.trim().toLowerCase()
+  const schemaConstraints = constraints.filter(
+    c => c.schema === schema && (!c.foreignSchema || c.foreignSchema === schema),
+  )
   const tables = tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table)
 
   const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
@@ -117,9 +120,9 @@ function Visualizer({
       schema,
       tables,
       columns,
-      constraints,
+      constraints: schemaConstraints,
     })
-  }, [connection.id, schema, tables, columns, constraints])
+  }, [connection.id, schema, tables, columns, schemaConstraints])
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes)
@@ -130,7 +133,7 @@ function Visualizer({
       schema,
       tables,
       columns,
-      constraints,
+      constraints: schemaConstraints,
     })
 
     setNodes(applySearchHighlight({

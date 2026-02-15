@@ -119,16 +119,7 @@ export function getVisualizerLayout({
   columns: typeof columnType.infer[]
   constraints: typeof constraintsType.infer[]
 }) {
-  const visibleTables = new Set(tables)
-
-  const schemaConstraints = constraints.filter(
-    c => c.schema === schema && (!c.foreignSchema || c.foreignSchema === schema),
-  )
-
-  const edges = getEdges({ constraints: schemaConstraints }).filter(
-    edge => visibleTables.has(edge.source) && visibleTables.has(edge.target),
-  )
-
+  const edges = getEdges({ constraints }).filter(edge => tables.includes(edge.source) && tables.includes(edge.target))
   return getLayoutElements(
     getNodes({
       databaseId,
