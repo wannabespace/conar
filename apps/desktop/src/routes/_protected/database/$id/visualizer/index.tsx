@@ -1,9 +1,11 @@
 import type { constraintsType, tablesAndSchemasType } from '~/entities/connection/sql'
 import type { columnType } from '~/entities/connection/sql/columns'
-import { getOS, isCtrlAndKey } from '@conar/shared/utils/os'
+import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
+import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Input } from '@conar/ui/components/input'
+import { Kbd } from '@conar/ui/components/kbd'
 import { ReactFlowEdge } from '@conar/ui/components/react-flow/edge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
@@ -105,13 +107,6 @@ function Visualizer({
   const [schema, setSchema] = useState(schemas[0]!)
   const [tableSearch, setTableSearch] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
-  const os = getOS(navigator.userAgent)
-
-  const kbdClasses = 'rounded-sm border px-1 py-0.5 text-[12px]'
-
-  useEffect(() => {
-    setTableSearch('')
-  }, [schema])
 
   const schemaTables = useMemo(
     () => tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table),
@@ -147,7 +142,7 @@ function Visualizer({
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes)
 
-  const recalculateLayoutEvent = useEffectEvent(() => {
+  const recalculateLayout = () => {
     const { nodes: calculatedNodes, edges: calculatedEdges } = getVisualizerLayout({
       databaseId: connection.id,
       schema,
@@ -163,7 +158,9 @@ function Visualizer({
       matchedColumns: searchState.matchedColumns,
     }))
     setEdges(calculatedEdges)
-  })
+  }
+
+  const recalculateLayoutEvent = useEffectEvent(recalculateLayout)
 
   useEffect(() => {
     // It's needed for fixing lines between nodes
@@ -185,16 +182,11 @@ function Visualizer({
       matchedTables,
       matchedColumns: searchState.matchedColumns,
     }))
-  }, [isSearchActive, matchedTables, searchState.matchedColumns])
+  }, [setNodes, isSearchActive, matchedTables, searchState.matchedColumns])
 
-  useKeyboardEvent(
-    event => isCtrlAndKey(event, 'f') && !event.shiftKey && !event.altKey,
-    (event) => {
-      event.preventDefault()
-      searchRef.current?.focus()
-      searchRef.current?.select()
-    },
-  )
+  useKeyboardEvent(event => isCtrlAndKey(event, 'f'), () => {
+    searchRef.current?.focus()
+  })
 
   return (
     <div className="
@@ -207,29 +199,26 @@ function Visualizer({
           <Input
             ref={searchRef}
             placeholder="Search tables"
-            className="h-9 pr-8 pl-7"
+            className="pr-8 pl-7"
             value={tableSearch}
+            autoFocus
             onChange={e => setTableSearch(e.target.value)}
-            title="Search tables"
           />
           <RiSearchLine className="
-            pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2
-            text-muted-foreground
+            pointer-events-none absolute top-1/2 left-2 size-3.5
+            -translate-y-1/2 text-muted-foreground
           "
           />
 
           {!tableSearch && (
             <div className="
-            pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 flex
-            items-center gap-1 text-xs text-muted-foreground
+              pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2
+              items-center gap-1 text-xs text-muted-foreground
             "
             >
-              <kbd className={kbdClasses}>
-                {os.type === 'macos' ? '⌘' : 'Ctrl'}
-              </kbd>
-              <kbd className={kbdClasses}>
-                F
-              </kbd>
+              <Kbd asChild>
+                <CtrlLetter userAgent={navigator.userAgent} letter="F" />
+              </Kbd>
             </div>
           )}
 
@@ -237,8 +226,7 @@ function Visualizer({
             <button
               type="button"
               className="
-                absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer
-                p-1
+                absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
               "
               onClick={() => setTableSearch('')}
               aria-label="Clear table search"
@@ -249,7 +237,10 @@ function Visualizer({
         </div>
         <Select
           value={schema}
-          onValueChange={setSchema}
+          onValueChange={(v) => {
+            setSchema(v)
+            setTableSearch('')
+          }}
         >
           <SelectTrigger>
             <div className="flex items-center gap-2">
