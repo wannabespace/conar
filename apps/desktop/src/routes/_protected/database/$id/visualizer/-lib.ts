@@ -178,21 +178,12 @@ export function getNodes({
         databaseId,
         edges,
         isEnum: true,
-        columns: [
-          {
-            id: ENUM_ANCHOR_ID,
-            type: 'enum',
-            isEditable: false,
-            isNullable: false,
-            primaryKey: 'false',
-          },
-          ...e.values.map(val => ({
-            id: val,
-            type: 'value',
-            isEditable: false,
-            isNullable: false,
-          })),
-        ] satisfies Column[],
+        columns: e.values.map(val => ({
+          id: val,
+          type: 'value',
+          isEditable: false,
+          isNullable: false,
+        })) satisfies Column[],
       },
     } satisfies NodeType
   })

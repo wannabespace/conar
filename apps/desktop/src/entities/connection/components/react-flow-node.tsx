@@ -45,16 +45,18 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
       "
       >
 
-        <Handle
-          type="target"
-          position={Position.Left}
-          id={ENUM_ANCHOR_ID}
-          className="
-          size-2.5 rounded-full border-2 border-background
-          bg-foreground!
-        "
-          isConnectable={false}
-        />
+        {data.isEnum && (
+          <Handle
+            type="target"
+            position={Position.Left}
+            id={ENUM_ANCHOR_ID}
+            className="
+            size-2.5 rounded-full border-2 border-background
+            bg-foreground!
+          "
+            isConnectable={false}
+          />
+        )}
 
         <div data-mask className="flex min-w-0 items-center gap-2 text-sm">
           {data.isEnum
@@ -134,7 +136,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         )}
       </div>
       <div className="py-2 text-xs">
-        {data.columns.filter(column => column.id !== ENUM_ANCHOR_ID).map(column => (
+        {data.columns.map(column => (
           <div
             key={column.id}
             className={cn(
