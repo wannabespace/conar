@@ -32,7 +32,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
   const prompt = useStore(store, state => state.prompt)
   const [freeAiUsage, setFreeAiUsage] = useState<{ remaining: number, max: number, resetAt: Date } | null>(null)
   const { mutate: generateFilter, isPending } = useMutation(orpcQuery.ai.filters.mutationOptions({
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
       const hasOrderBy = Object.keys(data.orderBy).length > 0
       store.setState(state => ({
         ...state,
