@@ -1,5 +1,4 @@
 import type { QueryClient } from '@tanstack/react-query'
-import type { ErrorComponentProps } from '@tanstack/react-router'
 import { Toaster } from '@conar/ui/components/sonner'
 import appCss from '@conar/ui/globals.css?url'
 import { cn } from '@conar/ui/lib/utils'
@@ -55,7 +54,7 @@ export const Route = createRootRouteWithContext<{
     ],
   }),
   component: RootComponent,
-  errorComponent: (props: ErrorComponentProps) => <ErrorPage {...props} />,
+  errorComponent: props => <ErrorPage {...props} />,
 })
 
 function RootComponent() {

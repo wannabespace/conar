@@ -1,5 +1,5 @@
 import type { Filter } from '@conar/shared/filters'
-import type { KeyboardEvent, RefObject } from 'react'
+import type { RefObject } from 'react'
 import { FILTER_GROUPS } from '@conar/shared/filters'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { RiFilterLine } from '@remixicon/react'
@@ -21,7 +21,7 @@ export function FiltersSelector({
       <CommandInput
         ref={ref}
         placeholder="Select operator..."
-        onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
+        onKeyDown={(e) => {
           if (e.key === 'Backspace') {
             onBackspace?.()
           }
