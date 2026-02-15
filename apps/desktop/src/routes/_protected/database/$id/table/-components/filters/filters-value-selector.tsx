@@ -1,4 +1,4 @@
-import type { RefObject } from 'react'
+import type { KeyboardEvent, RefObject } from 'react'
 import { Button } from '@conar/ui/components/button'
 import { Command, CommandInput } from '@conar/ui/components/command'
 import { Separator } from '@conar/ui/components/separator'
@@ -29,9 +29,9 @@ export function FilterValueSelector({
         <CommandInput
           ref={ref}
           value={isArray ? values.join(',') : values[0] as string}
-          onValueChange={value => onChange(isArray ? value.split(',') : [value])}
+          onValueChange={(value: string) => onChange(isArray ? value.split(',') : [value])}
           placeholder={`Enter value for ${column}...`}
-          onKeyDown={(e) => {
+          onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
             if (e.key === 'Enter') {
               onApply()
             }

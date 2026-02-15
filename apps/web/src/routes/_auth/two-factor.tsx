@@ -47,7 +47,7 @@ function TwoFactorPage() {
       <TotpCodeInput
         label="Verification code"
         value={code}
-        onChange={value => setCode(value)}
+        onChange={(value: string) => setCode(value)}
         onComplete={() => verifyTotp(code)}
         disabled={isPending}
         autoFocus

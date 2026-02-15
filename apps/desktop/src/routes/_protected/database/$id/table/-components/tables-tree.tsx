@@ -10,6 +10,7 @@ import { RiArrowDownSLine, RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreL
 import { useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { motion } from 'motion/react'
 import { memo, useEffect, useMemo, useRef } from 'react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { useConnectionTablesAndSchemas } from '~/entities/connection/queries'
@@ -28,6 +29,21 @@ const ROW_HEIGHTS: Record<TableTreeRow['type'], number> = {
   table: 34,
   separator: 17,
 }
+
+const MotionSeparator = motion.create(Separator)
+
+const treeVariants = {
+  visible: { opacity: 1, height: 'auto' },
+  hidden: { opacity: 0, height: 0 },
+}
+
+const treeTransition = {
+  layout: { duration: 0.15, ease: 'easeInOut' as const },
+  opacity: { duration: 0.1 },
+  height: { duration: 0.1 },
+}
+
+const VIEWPORT_PADDING_TOP = 12
 
 function SkeletonLoader() {
   return (
@@ -114,7 +130,7 @@ const TableItem = memo(function TableItem({
       onDoubleClick={() => addTab(connection.id, schema, table)}
       className="group pl-4"
     >
-      {({ isActive }) => (
+      {({ isActive }: { isActive: boolean }) => (
         <>
           <RiTableLine className={cn(`
             size-4 shrink-0 opacity-50 transition-colors
@@ -244,6 +260,45 @@ export function TablesTree({ className, search }: Pick<HTMLAttributes<HTMLDivEle
     overscan: 10,
   })
 
+  const virtualItems = rowVirtualizer.getVirtualItems()
+  const scrollOffset = rowVirtualizer.scrollOffset ?? 0
+  let stickyState: { row: Extract<TableTreeRow, { type: 'header' }>, transform: number } | null = null
+
+  if (virtualItems.length) {
+    const currentItem = virtualItems.find(item => item.start + item.size > scrollOffset) ?? virtualItems[0]
+    let activeIndex = -1
+
+    for (let i = currentItem?.index ?? 0; i >= 0; i--) {
+      if (tableVirtualRows[i]?.type === 'header') {
+        activeIndex = i
+        break
+      }
+    }
+
+    if (activeIndex !== -1) {
+      const activeRow = tableVirtualRows[activeIndex]
+      if (activeRow?.type === 'header') {
+        const visibleActiveItem = virtualItems.find(item => item.index === activeIndex)
+        const shouldStick = !visibleActiveItem || scrollOffset > visibleActiveItem.start + VIEWPORT_PADDING_TOP
+
+        if (shouldStick) {
+          let transform = 0
+          const nextHeaderItem = virtualItems.find(item =>
+            item.index > activeIndex && tableVirtualRows[item.index]?.type === 'header',
+          )
+
+          if (nextHeaderItem) {
+            const distance = (nextHeaderItem.start + VIEWPORT_PADDING_TOP) - scrollOffset
+            if (distance < ROW_HEIGHTS.header)
+              transform = distance - ROW_HEIGHTS.header
+          }
+
+          stickyState = { row: activeRow, transform }
+        }
+      }
+    }
+  }
+
   const toggleSchema = (name: string) => {
     if (search)
       return
@@ -268,11 +323,30 @@ export function TablesTree({ className, search }: Pick<HTMLAttributes<HTMLDivEle
   }
 
   return (
-    <ScrollArea className={cn('h-full', className)}>
+    <ScrollArea className={cn('relative h-full', className)}>
       <DropTableDialog ref={dropRef} />
       <RenameTableDialog ref={renameRef} />
 
-      <ScrollViewport ref={scrollRef} className="p-2">
+      {stickyState && (
+        <div
+          className="
+            absolute top-0 right-0 left-0 z-20 h-10 border-b border-border/40
+            bg-background px-2
+          "
+          style={{
+            transform: `translateY(${stickyState.transform}px)`,
+          }}
+        >
+          <SchemaHeader
+            schema={stickyState.row.schema}
+            isOpen={openedSet.has(stickyState.row.schema)}
+            isActive={activeSchema === stickyState.row.schema}
+            onToggle={() => toggleSchema(stickyState.row.schema)}
+          />
+        </div>
+      )}
+
+      <ScrollViewport ref={scrollRef} className="relative px-2 pt-3 pb-2">
         <div className="relative w-full" style={{ height: rowVirtualizer.getTotalSize() }}>
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
             const row = tableVirtualRows[virtualRow.index]
@@ -280,7 +354,15 @@ export function TablesTree({ className, search }: Pick<HTMLAttributes<HTMLDivEle
               return null
 
             return (
-              <div key={virtualRow.key} className="absolute top-0 left-0 w-full" style={{ height: virtualRow.size, transform: `translateY(${virtualRow.start}px)` }}>
+              <div
+                key={virtualRow.key}
+                className="absolute left-0 w-full"
+                style={{
+                  height: virtualRow.size,
+                  transform: `translateY(${virtualRow.start}px)`,
+                  top: 0,
+                }}
+              >
                 {row.type === 'header' && (
                   <SchemaHeader
                     schema={row.schema}
@@ -290,16 +372,33 @@ export function TablesTree({ className, search }: Pick<HTMLAttributes<HTMLDivEle
                   />
                 )}
                 {row.type === 'table' && (
-                  <TableItem
-                    schema={row.schema}
-                    table={row.table}
-                    pinned={row.pinned}
-                    search={search}
-                    onRename={() => renameRef.current?.rename(row.schema, row.table)}
-                    onDrop={() => dropRef.current?.drop(row.schema, row.table)}
+                  <motion.div
+                    layout
+                    variants={treeVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={treeTransition}
+                  >
+                    <TableItem
+                      schema={row.schema}
+                      table={row.table}
+                      pinned={row.pinned}
+                      search={search}
+                      onRename={() => renameRef.current?.rename(row.schema, row.table)}
+                      onDrop={() => dropRef.current?.drop(row.schema, row.table)}
+                    />
+                  </motion.div>
+                )}
+                {row.type === 'separator' && (
+                  <MotionSeparator
+                    className="my-2 h-px!"
+                    layout
+                    variants={treeVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={treeTransition}
                   />
                 )}
-                {row.type === 'separator' && <Separator className="my-2" />}
               </div>
             )
           })}

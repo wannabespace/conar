@@ -18,7 +18,7 @@ export const Route = createFileRoute('/_protected/database/$id/definitions/index
   component: DatabaseIndexesPage,
   loader: ({ context }) => ({ connection: context.connection }),
   head: ({ loaderData }) => ({
-    meta: loaderData?.connection ? [{ title: title('Indexes', loaderData.connection.name) }] : [],
+    meta: loaderData ? [{ title: title('Indexes', loaderData.connection.name) }] : [],
   }),
 })
 
@@ -75,18 +75,19 @@ function DatabaseIndexesPage() {
       const matchesSearch = !lowerSearch
         || indexItem.name.toLowerCase().includes(lowerSearch)
         || indexItem.table.toLowerCase().includes(lowerSearch)
-        || indexItem.column.toLowerCase().includes(lowerSearch)
+        || indexItem.column?.toLowerCase().includes(lowerSearch)
 
       if (!matchesSearch)
         continue
 
       const key = `${indexItem.schema}-${indexItem.table}-${indexItem.name}`
+      const column = indexItem.column ?? ''
 
       if (!result[key]) {
-        result[key] = { ...indexItem, columns: [indexItem.column] }
+        result[key] = { ...indexItem, columns: [column] }
       }
-      else if (!result[key].columns.includes(indexItem.column)) {
-        result[key].columns.push(indexItem.column)
+      else if (column && !result[key].columns.includes(column)) {
+        result[key].columns.push(column)
       }
     }
 
