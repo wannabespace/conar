@@ -6,16 +6,11 @@ import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, Ri
 import { Link } from '@tanstack/react-router'
 import { Handle, Position } from '@xyflow/react'
 
-export type SearchableColumn = Column & {
-  searchMatched?: boolean
-}
-
 export type NodeType = Node<{
   databaseId: string
   schema: string
   table: string
-  columns: SearchableColumn[]
-  selected?: boolean
+  columns: (Column & { searchMatched?: boolean })[]
   searchActive?: boolean
   tableSearchMatched?: boolean
   edges: Edge[]
@@ -30,9 +25,12 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
           shadow-[0_1px_1px_rgba(0,0,0,0.02),0_2px_2px_rgba(0,0,0,0.02),0_4px_4px_rgba(0,0,0,0.02),0_8px_8px_rgba(0,0,0,0.02),0_16px_16px_rgba(0,0,0,0.02),0_32px_32px_rgba(0,0,0,0.02)]
           transition-opacity
         `,
-        data.selected && 'ring-2 ring-primary ring-offset-2',
-        !data.selected && data.searchActive && data.tableSearchMatched && 'ring-2 ring-primary/60 ring-offset-2',
-        data.searchActive && !data.tableSearchMatched && !data.columns.some(c => c.searchMatched) && !data.selected && 'opacity-50',
+        data.searchActive && data.tableSearchMatched && `
+          ring-2 ring-primary/60 ring-offset-2
+        `,
+        data.searchActive && !data.tableSearchMatched && !data.columns.some(c => c.searchMatched) && `
+          opacity-50
+        `,
       )}
     >
       <div className="
@@ -43,7 +41,12 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
       >
         <div data-mask className="flex min-w-0 items-center gap-2 text-sm">
           <RiTableLine className="size-5 shrink-0 text-muted-foreground/80" />
-          <span className={cn(`block truncate`, data.searchActive && data.tableSearchMatched && 'text-primary')}>{data.table}</span>
+          <span className={cn(`block truncate`, data.searchActive && data.tableSearchMatched && `
+            text-primary
+          `)}
+          >
+            {data.table}
+          </span>
         </div>
         <Button
           size="icon-xs"
@@ -65,8 +68,12 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
             key={column.id}
             className={cn(
               'group relative px-4 transition-opacity',
-              data.searchActive && column.searchMatched && 'rounded-sm text-primary ring-2 ring-primary/60 ring-offset-2',
-              data.searchActive && data.columns.some(c => c.searchMatched) && !column.searchMatched && 'opacity-50',
+              data.searchActive && column.searchMatched && `
+                rounded-sm text-primary ring-2 ring-primary/60 ring-offset-2
+              `,
+              data.searchActive && data.columns.some(c => c.searchMatched) && !column.searchMatched && `
+                opacity-50
+              `,
             )}
           >
             <div className="

@@ -19,56 +19,36 @@ export function getEdges({ constraints }: { constraints: typeof constraintsType.
     }))
 }
 
-export function getSearchState({
-  columns,
-  tables,
-  query,
-}: {
-  columns: typeof columnType.infer[]
-  tables: string[]
-  query: string
-}) {
-  const normalizedQuery = query.trim().toLowerCase()
-
-  if (!normalizedQuery) {
-    return {
-      isActive: false,
-      matchedTables: new Set<string>(),
-      matchedColumns: new Set<string>(),
-    }
-  }
-
-  return {
-    isActive: true,
-    matchedTables: new Set(tables.filter(table => table.toLowerCase().includes(normalizedQuery))),
-    matchedColumns: new Set(columns.filter(column => column.id.toLowerCase().includes(normalizedQuery)).map(column => column.id)),
-  }
-}
-
 export function applySearchHighlight<TNode extends NodeType>({
   nodes,
-  isSearchActive,
-  matchedTables,
-  matchedColumns,
+  searchQuery,
+  tables,
+  columns,
 }: {
   nodes: TNode[]
-  isSearchActive: boolean
-  matchedTables: Set<string>
-  matchedColumns: Set<string>
+  searchQuery: string
+  tables: string[]
+  columns: typeof columnType.infer[]
 }): TNode[] {
-  return nodes.map((node) => {
-    const highlightedNode = { ...node }
-    highlightedNode.data = {
-      ...highlightedNode.data,
-      searchActive: isSearchActive,
-      tableSearchMatched: isSearchActive && matchedTables.has(node.data.table),
+  const matchedTables = searchQuery
+    ? [...new Set(tables.filter(table => table.toLowerCase().includes(searchQuery)))]
+    : []
+  const matchedColumns = searchQuery
+    ? [...new Set(columns.filter(column => column.id.toLowerCase().includes(searchQuery)).map(column => column.id))]
+    : []
+
+  return nodes.map(node => ({
+    ...node,
+    data: {
+      ...node.data,
+      searchActive: !!searchQuery,
+      tableSearchMatched: matchedTables.includes(node.data.table),
       columns: node.data.columns.map(col => ({
         ...col,
-        searchMatched: isSearchActive && matchedColumns.has(col.id),
+        searchMatched: matchedColumns.includes(col.id),
       })),
-    }
-    return highlightedNode
-  })
+    },
+  }))
 }
 
 export function getNodes({

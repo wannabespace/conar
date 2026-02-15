@@ -19,7 +19,7 @@ import { animationHooks } from '~/enter'
 import { ReactFlowNode } from '~/entities/connection/components'
 import { connectionConstraintsQuery, connectionTableColumnsQuery, connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { prefetchConnectionCore } from '~/entities/connection/utils'
-import { applySearchHighlight, getSearchState, getVisualizerLayout } from './-lib'
+import { applySearchHighlight, getVisualizerLayout } from './-lib'
 
 export const Route = createFileRoute(
   '/_protected/database/$id/visualizer/',
@@ -105,59 +105,41 @@ function Visualizer({
   const { connection } = Route.useRouteContext()
   const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
   const [schema, setSchema] = useState(schemas[0]!)
-  const [tableSearch, setTableSearch] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const trimmedSearchQuery = searchQuery.trim().toLowerCase()
   const searchRef = useRef<HTMLInputElement>(null)
 
-  const schemaTables = useMemo(
-    () => tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table),
-    [tablesAndSchemas, schema],
-  )
-  const searchState = useMemo(
-    () => getSearchState({ columns, tables: schemaTables, query: tableSearch }),
-    [columns, schemaTables, tableSearch],
-  )
-  const isSearchActive = searchState.isActive
-  const matchedTablesRef = useRef(searchState.matchedTables)
-
-  const matchedTables = useMemo(() => {
-    const prev = matchedTablesRef.current
-    const next = searchState.matchedTables
-    if (prev.size === next.size && [...prev].every(t => next.has(t))) {
-      return prev
-    }
-    matchedTablesRef.current = next
-    return next
-  }, [searchState.matchedTables])
+  const tables = tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table)
 
   const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
     return getVisualizerLayout({
       databaseId: connection.id,
       schema,
-      tables: schemaTables,
+      tables,
       columns,
       constraints,
     })
-  }, [connection.id, schema, schemaTables, columns, constraints])
+  }, [connection.id, schema, tables, columns, constraints])
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes)
 
   const recalculateLayout = () => {
-    const { nodes: calculatedNodes, edges: calculatedEdges } = getVisualizerLayout({
+    const { nodes, edges } = getVisualizerLayout({
       databaseId: connection.id,
       schema,
-      tables: schemaTables,
+      tables,
       columns,
       constraints,
     })
 
     setNodes(applySearchHighlight({
-      nodes: calculatedNodes,
-      isSearchActive,
-      matchedTables,
-      matchedColumns: searchState.matchedColumns,
+      nodes,
+      searchQuery: trimmedSearchQuery,
+      tables,
+      columns,
     }))
-    setEdges(calculatedEdges)
+    setEdges(edges)
   }
 
   const recalculateLayoutEvent = useEffectEvent(recalculateLayout)
@@ -175,15 +157,6 @@ function Visualizer({
     recalculateLayoutEvent()
   }, [schema])
 
-  useMountedEffect(() => {
-    setNodes(currentNodes => applySearchHighlight({
-      nodes: currentNodes,
-      isSearchActive,
-      matchedTables,
-      matchedColumns: searchState.matchedColumns,
-    }))
-  }, [setNodes, isSearchActive, matchedTables, searchState.matchedColumns])
-
   useKeyboardEvent(event => isCtrlAndKey(event, 'f'), () => {
     searchRef.current?.focus()
   })
@@ -200,9 +173,17 @@ function Visualizer({
             ref={searchRef}
             placeholder="Search tables"
             className="pr-8 pl-7"
-            value={tableSearch}
+            value={searchQuery}
             autoFocus
-            onChange={e => setTableSearch(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              setNodes(nodes => applySearchHighlight({
+                nodes,
+                searchQuery: e.target.value.trim(),
+                tables,
+                columns,
+              }))
+            }}
           />
           <RiSearchLine className="
             pointer-events-none absolute top-1/2 left-2 size-3.5
@@ -210,7 +191,7 @@ function Visualizer({
           "
           />
 
-          {!tableSearch && (
+          {!searchQuery && (
             <div className="
               pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2
               items-center gap-1 text-xs text-muted-foreground
@@ -222,13 +203,13 @@ function Visualizer({
             </div>
           )}
 
-          {tableSearch && (
+          {searchQuery && (
             <button
               type="button"
               className="
                 absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
               "
-              onClick={() => setTableSearch('')}
+              onClick={() => setSearchQuery('')}
               aria-label="Clear table search"
             >
               <RiCloseLine className="size-4 text-muted-foreground" />
@@ -239,7 +220,7 @@ function Visualizer({
           value={schema}
           onValueChange={(v) => {
             setSchema(v)
-            setTableSearch('')
+            setSearchQuery('')
           }}
         >
           <SelectTrigger>
