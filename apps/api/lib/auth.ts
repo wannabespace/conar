@@ -4,7 +4,6 @@ import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
-import { consola } from 'consola'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { db, users } from '~/drizzle'
@@ -127,7 +126,7 @@ export const auth: Auth = betterAuth({
   onAPIError: {
     onError: async (error) => {
       if (!env.ALERTS_EMAIL) {
-        consola.error('ALERTS_EMAIL is not set')
+        console.error('ALERTS_EMAIL is not set')
         return
       }
 
