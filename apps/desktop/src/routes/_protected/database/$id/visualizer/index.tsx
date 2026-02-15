@@ -214,7 +214,13 @@ function Visualizer({
               className="
                 absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
               "
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('')
+                setNodes(nodes => applySearchHighlight({
+                  nodes,
+                  searchQuery: '',
+                }))
+              }}
               aria-label="Clear table search"
             >
               <RiCloseLine className="size-4 text-muted-foreground" />
