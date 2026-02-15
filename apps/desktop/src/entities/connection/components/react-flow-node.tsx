@@ -14,7 +14,7 @@ export type NodeType = Node<{
   table: string
   columns: (Column & { searchMatched?: boolean })[]
   searchActive?: boolean
-  tableSearchMatched?: boolean
+  nodeSearchMatched?: boolean
   edges: Edge[]
   isEnum?: boolean
   referencedTables?: string[]
@@ -29,10 +29,10 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
           shadow-[0_1px_1px_rgba(0,0,0,0.02),0_2px_2px_rgba(0,0,0,0.02),0_4px_4px_rgba(0,0,0,0.02),0_8px_8px_rgba(0,0,0,0.02),0_16px_16px_rgba(0,0,0,0.02),0_32px_32px_rgba(0,0,0,0.02)]
           transition-opacity
         `,
-        data.searchActive && data.tableSearchMatched && `
+        data.searchActive && data.nodeSearchMatched && `
           ring-2 ring-primary/60 ring-offset-2
         `,
-        data.searchActive && !data.tableSearchMatched && !data.columns.some(c => c.searchMatched) && `
+        data.searchActive && !data.nodeSearchMatched && !data.columns.some(c => c.searchMatched) && `
           opacity-50
         `,
       )}

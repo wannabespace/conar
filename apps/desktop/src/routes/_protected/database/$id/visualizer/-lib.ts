@@ -61,7 +61,7 @@ export function applySearchHighlight<TNode extends NodeType>({
   const isSearchActive = !!normalizedQuery
 
   return nodes.map((node) => {
-    const tableSearchMatched = isSearchActive && node.data.table.toLowerCase().includes(normalizedQuery)
+    const nodeSearchMatched = isSearchActive && node.data.table.toLowerCase().includes(normalizedQuery)
     const columns = node.data.columns.map(col => ({
       ...col,
       searchMatched: isSearchActive && col.id.toLowerCase().includes(normalizedQuery),
@@ -72,7 +72,7 @@ export function applySearchHighlight<TNode extends NodeType>({
       data: {
         ...node.data,
         searchActive: isSearchActive,
-        tableSearchMatched,
+        nodeSearchMatched,
         columns,
       },
     }
