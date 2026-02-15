@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import {
@@ -14,11 +15,14 @@ import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
-import QRCode from 'react-qr-code'
+import QRCodeLib from 'react-qr-code'
 import { toast } from 'sonner'
 import { TotpCodeInput } from '~/components/totp-code-input'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
+
+// react-qr-code is a class component that doesn't align with React 19 types
+const QRCode = QRCodeLib as unknown as ComponentType<{ value: string, size?: number }>
 
 export function EnableTfaDialog({ open, onOpenChange }: {
   open: boolean
@@ -137,8 +141,8 @@ export function EnableTfaDialog({ open, onOpenChange }: {
                 <TotpCodeInput
                   label="Verification code"
                   value={code}
-                  onChange={value => setCode(value)}
-                  onComplete={value => verifyTotp(value)}
+                  onChange={(value: string) => setCode(value)}
+                  onComplete={(value: string) => verifyTotp(value)}
                   disabled={isVerifyTotpPending}
                 />
               </DialogPanel>
