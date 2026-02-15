@@ -69,7 +69,13 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
           )}
 
           <div className="flex flex-col min-w-0">
-            <span className="block truncate font-medium leading-tight">{data.table}</span>
+            <span className={cn(
+              'block truncate font-medium leading-tight',
+              data.searchActive && data.nodeSearchMatched && 'text-primary',
+            )}
+            >
+              {data.table}
+            </span>
             {data.isEnum && data.referencedTables && data.referencedTables.length > 0 && (
               <div className="mt-0.5 flex items-center gap-1">
                 <span className="
