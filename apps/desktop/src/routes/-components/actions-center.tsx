@@ -2,7 +2,7 @@ import type { connections } from '~/drizzle'
 import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
-import { RiAddLine, RiDashboardLine, RiTableLine } from '@remixicon/react'
+import { RiAddLine, RiDashboardLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
@@ -115,6 +115,14 @@ export function ActionsCenter() {
           </CommandItem>
           <CommandItem
             onSelect={() => {
+              window.location.reload()
+            }}
+          >
+            <RiRefreshLine className="size-4 shrink-0 text-muted-foreground" />
+            Reload window
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
               setIsActionCenterOpen(false)
               router.navigate({ to: '/create' })
             }}
@@ -124,7 +132,7 @@ export function ActionsCenter() {
           </CommandItem>
         </CommandGroup>
         {!!connections?.length && (
-          <CommandGroup heading="Databases">
+          <CommandGroup heading="Connections">
             {connections.map(connection => <ActionsConnection key={connection.id} connection={connection} />)}
           </CommandGroup>
         )}
