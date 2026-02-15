@@ -41,8 +41,6 @@ function InputOTPSlot({
   index: number
 }) {
   const inputOTPContext = React.use(OTPInputContext)
-  // eslint-disable-next-line ts/ban-ts-comment
-  // @ts-expect-error
   const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[index] ?? {}
 
   return (
