@@ -2,10 +2,10 @@ import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 import { chats, chatsMessages, chatsMessagesUpdateSchema, db } from '~/drizzle'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const update = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(subscriptionMiddleware)
   .input(type.and(
     chatsMessagesUpdateSchema.omit('id'),
     chatsMessagesUpdateSchema.pick('id').required(),

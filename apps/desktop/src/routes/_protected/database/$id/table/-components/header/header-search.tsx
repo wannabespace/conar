@@ -1,14 +1,21 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { isCtrlAndKey } from '@conar/shared/utils/os'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Input } from '@conar/ui/components/input'
 import { Kbd } from '@conar/ui/components/kbd'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
-import { RiBardLine } from '@remixicon/react'
+import { cn } from '@conar/ui/lib/utils'
+import NumberFlow from '@number-flow/react'
+import { isDefinedError } from '@orpc/client'
+import { RiBardLine, RiCheckLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useMemo, useRef } from 'react'
+import { format } from 'date-fns'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useConnectionEnums } from '~/entities/connection/queries'
 import { orpcQuery } from '~/lib/orpc'
@@ -23,11 +30,13 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
   const inputRef = useRef<HTMLInputElement>(null)
   const store = usePageStoreContext()
   const prompt = useStore(store, state => state.prompt)
+  const [freeAiUsage, setFreeAiUsage] = useState<{ remaining: number, max: number, resetAt: Date } | null>(null)
   const { mutate: generateFilter, isPending } = useMutation(orpcQuery.ai.filters.mutationOptions({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      const hasOrderBy = Object.keys(data.orderBy).length > 0
       store.setState(state => ({
         ...state,
-        // ...(data.orderBy && Object.keys(data.orderBy).length > 0 ? { orderBy: data.orderBy } : {}),
+        orderBy: data.orderBy,
         filters: data.filters.map(filter => ({
           column: filter.column,
           ref: SQL_FILTERS_LIST.find(f => f.operator === filter.operator)!,
@@ -35,14 +44,25 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         } satisfies ActiveFilter)),
       } satisfies typeof state))
 
-      if (data.filters.length === 0) {
-        toast.info('No filters were generated, please try again with a different prompt')
+      if (data.filters.length === 0 && !hasOrderBy) {
+        toast.info('No filters or ordering were generated, please try again with a different prompt')
+      }
+
+      setFreeAiUsage(data.freeAiUsage || null)
+
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+    },
+    onError: (error) => {
+      if (isDefinedError(error)) {
+        setFreeAiUsage(error.data)
       }
     },
   }))
   const columns = useTableColumns({ connection, table, schema })
   const { data: enums } = useConnectionEnums({ connection })
-  const context = useMemo(() => `
+  const context = `
     Filters working with AND operator.
     Table name: ${table}
     Schema name: ${schema}
@@ -53,7 +73,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       isNullable: col.isNullable,
     })), null, 2)}
     Enums: ${JSON.stringify(enums, null, 2)}
-  `.trim(), [columns, enums, schema, table])
+  `.trim()
 
   useKeyboardEvent(e => isCtrlAndKey(e, 'f'), () => {
     inputRef.current?.focus()
@@ -67,20 +87,65 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         generateFilter({ prompt, context })
       }}
     >
-      <RiBardLine className="
-        pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2
-        text-muted-foreground
-      "
-      />
+      <LoadingContent
+        className="
+          pointer-events-none absolute top-1/2 left-2 -translate-y-1/2
+          text-muted-foreground
+        "
+        loaderClassName="size-4"
+        loading={isPending}
+      >
+        <ContentSwitch
+          active={isPending}
+          activeContent={<RiCheckLine className="size-4 text-success" />}
+        >
+          <RiBardLine className="size-4" />
+        </ContentSwitch>
+      </LoadingContent>
       <Input
         ref={inputRef}
-        className="pr-10 pl-8"
+        className={cn('pr-10 pl-8', freeAiUsage && 'pr-22')}
         placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
-        disabled={isPending || !isOnline}
+        disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
         value={prompt}
         autoFocus
         onChange={e => store.setState(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
       />
+      {freeAiUsage && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="
+                  absolute top-1/2 right-12 -translate-y-1/2 cursor-help text-xs
+                  text-muted-foreground
+                "
+                tabIndex={0}
+                aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
+              >
+                <NumberFlow
+                  value={freeAiUsage.remaining}
+                  className="tabular-nums"
+                />
+                /
+                {freeAiUsage.max}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              You have
+              {' '}
+              {freeAiUsage.remaining}
+              /
+              {freeAiUsage.max}
+              {' '}
+              free AI filter uses left this month. Reset at
+              {' '}
+              {format(freeAiUsage.resetAt, 'MMM d, yyyy')}
+              .
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       <Kbd
         asChild
         className="absolute top-1/2 right-2 -translate-y-1/2"
