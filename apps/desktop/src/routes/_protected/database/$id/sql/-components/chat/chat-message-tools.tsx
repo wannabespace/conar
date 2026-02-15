@@ -153,34 +153,30 @@ const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[num
     </>
   ),
   'tool-select': ({ part }) => (
-    <>
-      <div className="flex flex-col gap-2">
-        <div className="mb-1 font-medium">
-          Agent called a tool to get data from the database.
-        </div>
-        {part.input && (
-          <InfoTable
-            data={[
-              { name: 'Select', value: part.input.select?.length
-                ? part.input.select.join(', ')
-                : null },
-              { name: 'From', value: part.input.tableAndSchema ? `${part.input.tableAndSchema.schemaName}.${part.input.tableAndSchema?.tableName}` : null },
-              { name: 'Where', value: (part.state === 'input-available' || part.state === 'output-available') && part.input.whereFilters?.length
-                ? part.input.whereFilters.map(filter => `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map(value => `"${value}"`).join(', ') : ''}`).join(` ${part.input.whereConcatOperator} `)
-                : null },
-              { name: 'Order by', value: part.input.orderBy && Object.keys(part.input.orderBy).length
-                ? Object.entries(part.input.orderBy).map(([col, dir]) => `${col} ${dir}`).join(', ')
-                : null },
-              { name: 'Limit', value: part.input.limit },
-              { name: 'Offset', value: part.input.offset || null },
-            ]}
-          />
-        )}
-      </div>
+    <div className="flex flex-col gap-2 text-xs">
+      <div className="text-muted-foreground">Agent called a tool to get data from the database.</div>
+      {part.input && (
+        <InfoTable
+          data={[
+            { name: 'Select', value: part.input.select?.length
+              ? part.input.select.join(', ')
+              : null },
+            { name: 'From', value: part.input.tableAndSchema ? `${part.input.tableAndSchema.schemaName}.${part.input.tableAndSchema?.tableName}` : null },
+            { name: 'Where', value: (part.state === 'input-available' || part.state === 'output-available') && part.input.whereFilters?.length
+              ? part.input.whereFilters.map(filter => `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map(value => `"${value}"`).join(', ') : ''}`).join(` ${part.input.whereConcatOperator} `)
+              : null },
+            { name: 'Order by', value: part.input.orderBy && Object.keys(part.input.orderBy).length
+              ? Object.entries(part.input.orderBy).map(([col, dir]) => `${col} ${dir}`).join(', ')
+              : null },
+            { name: 'Limit', value: part.input.limit },
+            { name: 'Offset', value: part.input.offset || null },
+          ]}
+        />
+      )}
       {part.state === 'output-available' && (
         <MonacoOutput value={JSON.stringify(part.output)} />
       )}
-    </>
+    </div>
   ),
   'tool-webSearch': ({ part }) => (
     <>
