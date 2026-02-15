@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Badge } from '@conar/ui/components/badge'
 import { Card, CardContent } from '@conar/ui/components/card'
@@ -81,7 +80,7 @@ function RouteComponent() {
                       className="text-sm"
                       linkSafety={{ enabled: false }}
                       components={{
-                        h2: ({ children }: { children: ReactNode }) => (
+                        h2: ({ children }) => (
                           <h2 className="
                             mb-2 text-2xl font-semibold
                             not-first:mt-6
@@ -90,7 +89,7 @@ function RouteComponent() {
                             {children}
                           </h2>
                         ),
-                        h3: ({ children }: { children: ReactNode }) => (
+                        h3: ({ children }) => (
                           <h3 className="
                             mb-2 text-xl font-semibold
                             not-first:mt-6
@@ -99,11 +98,7 @@ function RouteComponent() {
                             {children}
                           </h3>
                         ),
-                        ul: ({ children }: { children: ReactNode }) => (
-                          <ul className="list-disc pl-4">
-                            {children}
-                          </ul>
-                        ),
+                        ul: ({ children }) => <ul className="list-disc pl-4">{children}</ul>,
                       }}
                     >
                       {release.body || ''}

@@ -1,4 +1,3 @@
-import type { NodeType } from '~/entities/connection/components'
 import type { constraintsType, tablesAndSchemasType } from '~/entities/connection/sql'
 import type { columnType } from '~/entities/connection/sql/columns'
 import { isCtrlAndKey } from '@conar/shared/utils/os'
@@ -181,8 +180,8 @@ function Visualizer({
             autoFocus
             onChange={(e) => {
               setSearchQuery(e.target.value)
-              setNodes((prevNodes: NodeType[]) => applySearchHighlight({
-                nodes: prevNodes,
+              setNodes(nodes => applySearchHighlight({
+                nodes,
                 searchQuery: e.target.value.trim(),
                 tables,
                 columns,

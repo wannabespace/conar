@@ -160,12 +160,6 @@ const TableItem = memo(function TableItem({ schema, table, pinned = false, searc
   )
 })
 
-interface SchemaSection {
-  name: string
-  pinnedTables: string[]
-  unpinnedTables: string[]
-}
-
 const ITEM_HEIGHT = 32
 
 const VirtualizedTableList = memo(function VirtualizedTableList({
@@ -325,8 +319,8 @@ export function TablesTree({ className, search }: Pick<HTMLAttributes<HTMLDivEle
   const store = connectionStore(connection.id)
   const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const pinnedTables = useStore(store, state => state.pinnedTables)
-  const dropRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
-  const renameRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
+  const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
+  const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
 
   useEffect(() => {
     if (!tablesAndSchemas)
@@ -335,7 +329,7 @@ export function TablesTree({ className, search }: Pick<HTMLAttributes<HTMLDivEle
     cleanupPinnedTables(connection.id, tablesAndSchemas.schemas.flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
   }, [connection, tablesAndSchemas])
 
-  const filteredTablesAndSchemas = useMemo((): SchemaSection[] => {
+  const filteredTablesAndSchemas = useMemo(() => {
     if (!tablesAndSchemas)
       return []
 
@@ -366,7 +360,7 @@ export function TablesTree({ className, search }: Pick<HTMLAttributes<HTMLDivEle
       })
 
       return {
-        name: schema.name,
+        ...schema,
         pinnedTables: pinned,
         unpinnedTables: unpinned,
       }
@@ -379,8 +373,8 @@ export function TablesTree({ className, search }: Pick<HTMLAttributes<HTMLDivEle
 
   return (
     <ScrollArea className={cn('h-full', className)}>
-      <DropTableDialog ref={dropRef} />
-      <RenameTableDialog ref={renameRef} />
+      <DropTableDialog ref={dropTableDialogRef} />
+      <RenameTableDialog ref={renameTableDialogRef} />
       <ScrollViewport className="p-2">
         <Accordion
           value={searchAccordionValue}
@@ -466,8 +460,8 @@ export function TablesTree({ className, search }: Pick<HTMLAttributes<HTMLDivEle
                               pinnedTables={schema.pinnedTables}
                               unpinnedTables={schema.unpinnedTables}
                               search={search}
-                              dropRef={dropRef}
-                              renameRef={renameRef}
+                              dropRef={dropTableDialogRef}
+                              renameRef={renameTableDialogRef}
                             />
                           </AccordionContent>
                         </AccordionItem>
