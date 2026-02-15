@@ -12,8 +12,9 @@ export type NodeType = Node<{
   databaseId: string
   schema: string
   table: string
-  columns: Column[]
-  selected?: boolean
+  columns: (Column & { searchMatched?: boolean })[]
+  searchActive?: boolean
+  tableSearchMatched?: boolean
   edges: Edge[]
   isEnum?: boolean
   referencedTables?: string[]
@@ -26,8 +27,14 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         `
           w-66 rounded-xl bg-card font-mono
           shadow-[0_1px_1px_rgba(0,0,0,0.02),0_2px_2px_rgba(0,0,0,0.02),0_4px_4px_rgba(0,0,0,0.02),0_8px_8px_rgba(0,0,0,0.02),0_16px_16px_rgba(0,0,0,0.02),0_32px_32px_rgba(0,0,0,0.02)]
+          transition-opacity
         `,
-        data.selected ? 'ring-2 ring-primary ring-offset-2' : '',
+        data.searchActive && data.tableSearchMatched && `
+          ring-2 ring-primary/60 ring-offset-2
+        `,
+        data.searchActive && !data.tableSearchMatched && !data.columns.some(c => c.searchMatched) && `
+          opacity-50
+        `,
       )}
     >
       <div className="
@@ -122,7 +129,18 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
       </div>
       <div className="py-2 text-xs">
         {data.columns.filter(column => column.id !== ENUM_ANCHOR_ID).map(column => (
-          <div key={column.id} className="group relative px-4">
+          <div
+            key={column.id}
+            className={cn(
+              'group relative px-4 transition-opacity',
+              data.searchActive && column.searchMatched && `
+                rounded-sm text-primary ring-2 ring-primary/60 ring-offset-2
+              `,
+              data.searchActive && data.columns.some(c => c.searchMatched) && !column.searchMatched && `
+                opacity-50
+              `,
+            )}
+          >
             <div className="
               flex items-center justify-between gap-2 border-dashed py-2
               group-not-last:border-b
