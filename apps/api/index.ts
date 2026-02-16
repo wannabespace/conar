@@ -62,7 +62,15 @@ export interface AppVariables {
 const app = new Hono<{
   Variables: AppVariables
 }>()
-  .all('*', async (c) => {
+  .use(cors({
+    origin: [
+      env.WEB_URL,
+      ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
+      ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
+    ],
+    credentials: true,
+  }))
+  .all('*', async (c, next) => {
     const url = new URL(c.req.url)
 
     if (url.hostname === 'conar.app') {
@@ -71,18 +79,8 @@ const app = new Hono<{
       return proxy(url, c.req.raw)
     }
 
-    return proxy(c.req.raw)
+    return next()
   })
-  .use(cors({
-    origin: [
-      env.WEB_URL,
-      'https://conar.app',
-      'https://connix.app',
-      ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
-      ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
-    ],
-    credentials: true,
-  }))
   .get('/', c => c.redirect(env.WEB_URL))
   .use('*', async (c, next) => {
     const startTime = Date.now()
