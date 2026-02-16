@@ -1,11 +1,10 @@
-import consola from 'consola'
 import { env } from '~/env'
 import { sendEmail } from '~/lib/resend'
 import { orpc } from '~/orpc'
 
 export const railway = orpc.handler(async ({ context }) => {
   if (!env.ALERTS_EMAIL) {
-    consola.error('ALERTS_EMAIL is not set')
+    context.addLogData({ warning: 'ALERTS_EMAIL is not set' })
     return
   }
 

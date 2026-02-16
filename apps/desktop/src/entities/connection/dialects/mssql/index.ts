@@ -8,6 +8,7 @@ import type {
   QueryResult,
   SelectQueryNode,
 } from 'kysely'
+import type { DialectOptions } from '..'
 import type { connections } from '~/drizzle'
 import { MssqlQueryCompiler as DefaultMssqlQueryCompiler, DummyDriver, MssqlAdapter } from 'kysely'
 import { logSql } from '../../sql'
@@ -44,7 +45,7 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
   }
 }
 
-function execute(connection: typeof connections.$inferSelect, compiledQuery: CompiledQuery) {
+function execute(connection: typeof connections.$inferSelect, compiledQuery: CompiledQuery, options?: DialectOptions) {
   if (!window.electron) {
     throw new Error('Electron is not available')
   }
@@ -53,6 +54,7 @@ function execute(connection: typeof connections.$inferSelect, compiledQuery: Com
     connectionString: connection.connectionString,
     sql: compiledQuery.sql,
     values: compiledQuery.parameters as unknown[],
+    silent: options?.silent,
   })
 
   logSql(connection, promise, {
@@ -63,13 +65,13 @@ function execute(connection: typeof connections.$inferSelect, compiledQuery: Com
   return promise
 }
 
-function createDriver(connection: typeof connections.$inferSelect) {
+function createDriver(connection: typeof connections.$inferSelect, options?: DialectOptions) {
   return {
     async init() {},
     async acquireConnection() {
       return {
         executeQuery: async <R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> => {
-          const { result } = await execute(connection, compiledQuery)
+          const { result } = await execute(connection, compiledQuery, options)
 
           return {
             rows: result as R[],
@@ -88,9 +90,9 @@ function createDriver(connection: typeof connections.$inferSelect) {
   } satisfies Driver
 }
 
-export function mssqlDialect(connection: typeof connections.$inferSelect) {
+export function mssqlDialect(connection: typeof connections.$inferSelect, options?: DialectOptions) {
   return {
-    createDriver: () => createDriver(connection),
+    createDriver: () => createDriver(connection, options),
     createQueryCompiler: () => new MssqlQueryCompiler(),
     createAdapter: () => new MssqlAdapter(),
     createIntrospector: () => {

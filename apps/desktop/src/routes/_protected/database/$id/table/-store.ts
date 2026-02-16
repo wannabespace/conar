@@ -13,7 +13,7 @@ export const storeState = type({
   selected: 'Record<string, string>[]',
   filters: type({
     column: 'string',
-    ref: type('object') as type.cast<Filter>,
+    ref: 'object' as type.cast<Filter>,
     values: 'string[]',
   }).array() as type.cast<ActiveFilter[]>,
   exact: 'boolean',

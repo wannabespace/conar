@@ -23,61 +23,82 @@ function isConnectionError(error: unknown) {
 const MAX_RECONNECTION_ATTEMPTS = 5
 const RECONNECTION_DELAY = 3000
 
-async function retryIfConnectionError<T>(func: () => Promise<T>, attempt: number = 0): Promise<T> {
+async function retryIfConnectionError<T>(func: () => Promise<T>, {
+  onRetry,
+  onError,
+  onSuccess,
+  attempt = 0,
+}: {
+  onRetry?: (props: { attempt: number }) => void
+  onError?: (error: unknown) => void
+  onSuccess?: (props: { attempt: number }) => void
+  attempt?: number
+} = {
+  attempt: 0,
+}): Promise<T> {
   try {
     const result = await func()
-    if (attempt > 0) {
-      sendToast({ message: `Database connection successful after reconnection ${attempt} attempt${attempt > 1 ? 's' : ''}.`, type: 'success' })
-    }
+    onSuccess?.({ attempt })
     return result
   }
   catch (error) {
     if (isConnectionError(error) && attempt < MAX_RECONNECTION_ATTEMPTS) {
-      sendToast({
-        message: `Could not connect to the database. Reconnection attempt ${attempt + 1}/${MAX_RECONNECTION_ATTEMPTS}.`,
-        type: 'info',
-      })
-
       await new Promise(resolve => setTimeout(resolve, RECONNECTION_DELAY))
-      return retryIfConnectionError(func, attempt + 1)
-    }
-    if (attempt >= MAX_RECONNECTION_ATTEMPTS) {
-      sendToast({
-        message: 'Could not connect to the database. Please check your network or database server and try again.',
-        type: 'error',
+      onRetry?.({ attempt: attempt + 1 })
+      return retryIfConnectionError(func, {
+        attempt: attempt + 1,
+        onError,
+        onRetry,
+        onSuccess,
       })
     }
+    onError?.(error)
     throw error
   }
 }
 
-interface QueryResult {
-  result: unknown
-  duration: number
+function retryOptions({ silent }: { silent?: boolean }) {
+  return {
+    onSuccess: ({ attempt }) => {
+      if (attempt > 0 && !silent) {
+        sendToast({ message: `Database connection successful after reconnection ${attempt} attempt${attempt > 1 ? 's' : ''}.`, type: 'success' })
+      }
+    },
+    onRetry({ attempt }) {
+      if (!silent) {
+        sendToast({ message: `Could not connect to the database. Reconnection attempt ${attempt + 1}/${MAX_RECONNECTION_ATTEMPTS}.`, type: 'info' })
+      }
+    },
+    onError: () => {
+      if (!silent) {
+        sendToast({ message: 'Could not connect to the database. Please check your network or database server and try again.', type: 'error' })
+      }
+    },
+  } satisfies Parameters<typeof retryIfConnectionError>[1]
 }
 
 const queryMap = {
-  postgres: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
+  postgres: async ({ connectionString, sql, values, silent }: { sql: string, values: unknown[], connectionString: string, silent?: boolean }) => {
     let start = 0
     const result = await retryIfConnectionError(async () => {
       const pool = await getPgPool(connectionString)
       start = performance.now()
       return pool.query(sql, values)
-    })
+    }, retryOptions({ silent }))
 
     return { result: result.rows as unknown, duration: performance.now() - start }
   },
-  mysql: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
+  mysql: async ({ connectionString, sql, values, silent }: { sql: string, values: unknown[], connectionString: string, silent?: boolean }) => {
     let start = 0
     const [result] = await retryIfConnectionError(async () => {
       const pool = await getMysqlPool(connectionString)
       start = performance.now()
       return pool.query(sql, values)
-    })
+    }, retryOptions({ silent }))
 
     return { result: result as unknown, duration: performance.now() - start! }
   },
-  clickhouse: async ({ connectionString, sql }: { sql: string, connectionString: string, insertValues?: unknown[] }) => {
+  clickhouse: async ({ connectionString, sql, silent }: { sql: string, connectionString: string, insertValues?: unknown[], silent?: boolean }) => {
     try {
       const client = getClickhouseClient(connectionString)
       const isSelect = [
@@ -94,14 +115,14 @@ const queryMap = {
         const result = await retryIfConnectionError(() => {
           start = performance.now()
           return client.query({ query: sql, format: 'JSONEachRow' }).then(result => result.json())
-        })
+        }, retryOptions({ silent }))
         return { result, duration: performance.now() - start }
       }
 
       await retryIfConnectionError(() => {
         start = performance.now()
         return client.exec({ query: sql })
-      })
+      }, retryOptions({ silent }))
 
       return { result: [], duration: performance.now() - start }
     }
@@ -110,13 +131,13 @@ const queryMap = {
         const parsed = tryParseJson<Partial<{ message: string, status: string, code: number, request_id: string }>>(error.message)
 
         if (parsed?.message) {
-          throw new Error(parsed.message)
+          throw new Error(parsed.message, { cause: error })
         }
       }
       throw error
     }
   },
-  mssql: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string }) => {
+  mssql: async ({ connectionString, sql, values, silent }: { sql: string, values: unknown[], connectionString: string, silent?: boolean }) => {
     let start = 0
 
     const result = await retryIfConnectionError(async () => {
@@ -129,12 +150,15 @@ const queryMap = {
 
       start = performance.now()
       return request.query(sql)
-    })
+    }, retryOptions({ silent }))
 
     return { result: result.recordset as unknown, duration: performance.now() - start! }
   },
 // eslint-disable-next-line ts/no-explicit-any
-} satisfies Record<ConnectionType, (...args: any[]) => Promise<QueryResult>>
+} satisfies Record<ConnectionType, (...args: any[]) => Promise<{
+  result: unknown
+  duration: number
+}>>
 
 const encryption = {
   encrypt: async (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),

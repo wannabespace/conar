@@ -63,8 +63,8 @@ function CellPopoverContent({
   }, [monacoRef])
 
   const canEdit = !!column?.isEditable && hasUpdateFn
-  const canSetNull = !!column?.isNullable && initialValue !== null
-  const canSave = value !== displayValue
+  const hasArrayValues = !!values && !column.isArray
+  const canSave = value !== displayValue && !(hasArrayValues && !value)
 
   const setNull = () => {
     update({ value: null, rowIndex })
@@ -176,9 +176,9 @@ function CellPopoverContent({
         <div className="flex gap-2">
           {canEdit && (
             <>
-              {canSetNull && (
+              {!!column?.isNullable && (
                 <AlertDialog>
-                  <AlertDialogTrigger render={<Button size="xs" variant="secondary" />}>
+                  <AlertDialogTrigger disabled={initialValue === null} render={<Button size="xs" variant="secondary" />}>
                     Set
                     {' '}
                     <span className="font-mono">null</span>

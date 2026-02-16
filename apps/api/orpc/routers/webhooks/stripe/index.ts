@@ -1,6 +1,5 @@
 import type Stripe from 'stripe'
 import { ORPCError } from '@orpc/server'
-import { consola } from 'consola'
 import { env } from '~/env'
 import { sendEmail } from '~/lib/resend'
 import { orpc } from '~/orpc'
@@ -42,7 +41,9 @@ export const stripe = orpc
         throw error
       })
 
-      consola.success(`Stripe event ${event.type} handled`, { event: { id: event.id } })
+      context.addLogData({
+        stripeEvent: { type: event.type, id: event.id },
+      })
 
       return true
     }

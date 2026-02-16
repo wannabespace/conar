@@ -3,7 +3,6 @@ import crypto from 'node:crypto'
 import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from '@conar/shared/constants'
 import { Octokit } from '@octokit/rest'
 import { ORPCError } from '@orpc/server'
-import { consola } from 'consola'
 import { env } from '~/env'
 import { orpc } from '~/orpc'
 
@@ -91,16 +90,20 @@ export const todesktop = orpc.handler(async ({ context }) => {
       target_commitish: payload.versionControlInfo?.commitId || undefined,
     })
 
-    consola.success(`Created draft release ${release.tag_name} from ToDesktop build ${payload.buildId}`, {
-      release_id: release.id,
-      html_url: release.html_url,
-      build_id: payload.buildId,
-      app_version: payload.appVersion,
+    context.addLogData({
+      release: {
+        tagName: release.tag_name,
+        id: release.id,
+        url: release.html_url,
+      },
+      build: {
+        id: payload.buildId,
+        appVersion: payload.appVersion,
+      },
     })
   }
   catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
-    consola.error('Failed to process ToDesktop webhook:', errorMessage)
 
     throw new ORPCError('INTERNAL_SERVER_ERROR', {
       message: errorMessage,

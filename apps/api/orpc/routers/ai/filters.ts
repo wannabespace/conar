@@ -2,7 +2,6 @@ import { google } from '@ai-sdk/google'
 import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { generateText, Output } from 'ai'
 import { type } from 'arktype'
-import { consola } from 'consola'
 import * as z from 'zod/mini'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
@@ -25,7 +24,9 @@ export const filters = orpc
     context: 'string',
   }))
   .handler(async ({ input, signal, context }) => {
-    consola.info('[SQL FILTERS] input', input.prompt)
+    context.addLogData({
+      filterInput: input.prompt,
+    })
 
     const { output: result } = await generateText({
       model: withPosthog(google('gemini-2.0-flash'), {
@@ -70,7 +71,9 @@ export const filters = orpc
       }),
     })
 
-    consola.info('[SQL FILTERS] response', JSON.stringify(result, null, 2))
+    context.addLogData({
+      filterResult: result,
+    })
 
     return result
   })

@@ -8,6 +8,7 @@ export interface PgCatalog {
   pg_index: PgIndex
   pg_attribute: PgAttribute
   pg_settings: PgSettings
+  pg_am: PgAm
 }
 
 /**
@@ -38,8 +39,35 @@ interface PgClass {
   oid: number
   relname: string
   relnamespace: number
-  relkind: string
+  reltype: number
+  reloftype: number
+  relowner: number
+  relam: number
+  relfilenode: number
+  reltablespace: number
+  relpages: number
   reltuples: number
+  relallvisible: number
+  reltoastrelid: number
+  relhasindex: boolean
+  relisshared: boolean
+  relpersistence: string
+  relkind: string
+  relnatts: number
+  relchecks: number
+  relhasrules: boolean
+  relhastriggers: boolean
+  relhassubclass: boolean
+  relrowsecurity: boolean
+  relforcerowsecurity: boolean
+  relispopulated: boolean
+  relreplident: string
+  relispartition: boolean
+  relrewrite: number
+  relfrozenxid: string
+  relminmxid: string
+  relacl: string | null
+  relpartbound: null
 }
 
 /**
@@ -62,4 +90,15 @@ interface PgAttribute {
   attrelid: number
   attnum: number
   attname: string
+}
+
+/**
+ * @name pg_am
+ * @type table
+ */
+interface PgAm {
+  oid: number
+  amname: string
+  amhandler: string
+  amtype: string
 }

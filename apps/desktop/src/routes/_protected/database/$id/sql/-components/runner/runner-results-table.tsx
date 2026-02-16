@@ -17,11 +17,11 @@ import { DEFAULT_COLUMN_WIDTH } from '~/entities/connection/components/table/uti
 export function RunnerResultsTable({
   data,
   columns,
-  executionTime,
+  duration,
 }: {
   data: Record<string, unknown>[]
   columns: Pick<Column, 'id'>[]
-  executionTime: number
+  duration: number
 }) {
   const [search, setSearch] = useState('')
 
@@ -66,18 +66,8 @@ export function RunnerResultsTable({
     } satisfies ColumnRenderer))
   }, [columns])
 
-  const getData = async (limit?: number) => {
+  const getData = async ({ limit }: { limit?: number }) => {
     return limit ? filteredData.slice(0, limit) : filteredData
-  }
-
-  const formatExecutionTime = (ms: number) => {
-    if (ms < 1) {
-      return `${(ms * 1000).toFixed(0)}μs`
-    }
-    if (ms < 1000) {
-      return `${ms.toFixed(2)}ms`
-    }
-    return `${(ms / 1000).toFixed(2)}s`
   }
 
   return (
@@ -93,7 +83,8 @@ export function RunnerResultsTable({
           </span>
           <Separator orientation="vertical" className="h-4!" />
           <span className="text-xs text-muted-foreground">
-            {formatExecutionTime(executionTime)}
+            {duration.toFixed()}
+            ms
           </span>
         </div>
         <div className="flex items-center gap-2">

@@ -37,11 +37,11 @@ export function generateQueryDrizzle({
   return templates.drizzleQueryTemplate(varName, conditions)
 }
 
-const dialectConfig: Record<ConnectionType, { tableFunc: string, importPath: string, enumFunc?: string }> = {
-  postgres: { tableFunc: 'pgTable', importPath: 'drizzle-orm/pg-core', enumFunc: 'pgEnum' },
-  mysql: { tableFunc: 'mysqlTable', importPath: 'drizzle-orm/mysql-core', enumFunc: 'mysqlEnum' },
-  mssql: { tableFunc: 'mssqlTable', importPath: 'drizzle-orm/mssql-core' },
-  clickhouse: { tableFunc: 'clickhouseTable', importPath: 'drizzle-orm/clickhouse-core', enumFunc: 'enum' },
+const dialectConfig: Record<ConnectionType, { tableFunc: string, dialectImportPath: string, enumFunc?: string }> = {
+  postgres: { tableFunc: 'pgTable', dialectImportPath: 'drizzle-orm/pg-core', enumFunc: 'pgEnum' },
+  mysql: { tableFunc: 'mysqlTable', dialectImportPath: 'drizzle-orm/mysql-core', enumFunc: 'mysqlEnum' },
+  mssql: { tableFunc: 'mssqlTable', dialectImportPath: 'drizzle-orm/mssql-core' },
+  clickhouse: { tableFunc: 'clickhouseTable', dialectImportPath: 'drizzle-orm/clickhouse-core', enumFunc: 'enum' },
 }
 
 export function generateSchemaDrizzle({
@@ -51,9 +51,10 @@ export function generateSchemaDrizzle({
   enums = [],
   indexes = [],
 }: SchemaParams) {
-  const { tableFunc, importPath, enumFunc } = dialectConfig[dialect]
+  const { tableFunc, dialectImportPath, enumFunc } = dialectConfig[dialect]
 
-  const imports = new Set<string>()
+  const coreImports = new Set<string>()
+  const dialectImports = new Set<string>()
   const foreignKeyImports = new Set<string>()
   const extras: string[] = []
 
@@ -62,7 +63,7 @@ export function generateSchemaDrizzle({
   const cols = columns.map((c) => {
     let typeFunc = getColumnType(c.type, 'drizzle', dialect)
 
-    imports.add(typeFunc)
+    dialectImports.add(typeFunc)
 
     const foundEnum = findEnum(enums, c, table)
     if (enumFunc && foundEnum?.values.length) {
@@ -70,7 +71,7 @@ export function generateSchemaDrizzle({
       const enumTypeName = `${camelCase(eName)}Enum`
       const valuesList = foundEnum.values.map(v => `'${v}'`).join(', ')
 
-      imports.add(enumFunc)
+      dialectImports.add(enumFunc)
       extras.push(`export const ${enumTypeName} = ${enumFunc}('${eName}', [${valuesList}]);`)
 
       typeFunc = enumTypeName
@@ -154,25 +155,41 @@ export function generateSchemaDrizzle({
   const groupedIndexes = groupIndexes(indexes, table)
   const explicitIndexes = filterExplicitIndexes(groupedIndexes, columns, dialect)
 
+  if (relationships.length > 0) {
+    coreImports.add('relations')
+  }
+
+  if (explicitIndexes.some(idx => idx.customExpressions.length > 0)) {
+    coreImports.add('sql')
+  }
+
   let extraConfig = ''
   if (explicitIndexes.length > 0) {
     const idxDecls = explicitIndexes.map((idx) => {
       const func = idx.isUnique ? 'uniqueIndex' : 'index'
       if (idx.isUnique)
-        imports.add('uniqueIndex')
-      else imports.add('index')
+        dialectImports.add('uniqueIndex')
+      else dialectImports.add('index')
 
       const onCols = idx.columns.map((col) => {
         const key = camelCase(col)
         const isSafe = /^[a-z_$][\w$]*$/i.test(key)
         return isSafe ? `t.${key}` : `t['${key}']`
-      }).join(', ')
-      return `  ${func}('${idx.name}').on(${onCols}),`
+      })
+      return `  ${func}('${idx.name}').on(${[...onCols, ...idx.customExpressions.map(c => `sql\`${c}\``)].join(', ')}),`
     })
     extraConfig = idxDecls.join('\n')
   }
 
-  const base = templates.drizzleSchemaTemplate(table, Array.from(imports), cols, tableFunc, importPath, extraConfig)
+  const base = templates.drizzleSchemaTemplate({
+    table,
+    coreImports: Array.from(coreImports),
+    dialectImports: Array.from(dialectImports),
+    columns: cols,
+    tableFunc,
+    dialectImportPath,
+    extraConfig,
+  })
 
   // Template outputs "import...\n\nexport const ..."; split so we can prepend relation imports.
   const exportStart = base.indexOf('\n\nexport')
@@ -180,7 +197,6 @@ export function generateSchemaDrizzle({
   const baseBody = exportStart >= 0 ? base.slice(exportStart).trim() : base
 
   const allImports = [
-    relationships.length > 0 ? 'import { relations } from \'drizzle-orm\';' : null,
     ...allFkImports,
     baseImports,
   ].filter(Boolean).join('\n')

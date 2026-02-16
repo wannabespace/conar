@@ -143,7 +143,7 @@ function buildColumnParts(
   if (c.foreign && dialect !== ConnectionType.ClickHouse) {
     const ref = quoteIdentifier(c.foreign.table, dialect)
     const col = quoteIdentifier(c.foreign.column, dialect)
-    let fk = `FOREIGN KEY (${quoted}) REFERENCES ${ref}(${col})`
+    let fk = `  FOREIGN KEY (${quoted}) REFERENCES ${ref}(${col})`
 
     if (c.foreign.onDelete)
       fk += ` ON DELETE ${c.foreign.onDelete}`
@@ -175,9 +175,19 @@ function appendIndexStatements(
     return schema
 
   const lines = explicit.map((idx) => {
-    const cols = idx.columns.map(c => quoteIdentifier(c, dialect)).join(', ')
-    const unique = idx.isUnique ? 'UNIQUE ' : ''
-    return `CREATE ${unique}INDEX ${quoteIdentifier(idx.name, dialect)} ON ${quoteIdentifier(table, dialect)} (${cols});`
+    return [
+      'CREATE',
+      idx.isUnique ? 'UNIQUE' : '',
+      'INDEX',
+      `${quoteIdentifier(idx.name, dialect)}`,
+      'ON',
+      quoteIdentifier(table, dialect),
+      dialect === ConnectionType.Postgres && idx.type ? `USING ${idx.type}` : '',
+      `(${[
+        ...idx.columns.map(c => quoteIdentifier(c, dialect)),
+        ...idx.customExpressions.map(c => c),
+      ].join(', ')})`,
+    ].filter(Boolean).join(' ')
   })
   return `${schema}\n\n${lines.join('\n')}`
 }

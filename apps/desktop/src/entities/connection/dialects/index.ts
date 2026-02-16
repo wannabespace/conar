@@ -18,11 +18,15 @@ const coldDialects = {
   mssql: mssqlColdDialect,
 } satisfies Record<ConnectionType, () => unknown>
 
+export interface DialectOptions {
+  silent?: boolean
+}
+
 export const dialects = {
-  postgres: memoize((connection: typeof connections.$inferSelect) => new Kysely<PostgresDatabase>({ dialect: postgresDialect(connection) })),
-  mysql: memoize((connection: typeof connections.$inferSelect) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(connection) })),
-  clickhouse: memoize((connection: typeof connections.$inferSelect) => new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(connection) })),
-  mssql: memoize((connection: typeof connections.$inferSelect) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(connection) })),
+  postgres: memoize((connection: typeof connections.$inferSelect, options?: DialectOptions) => new Kysely<PostgresDatabase>({ dialect: postgresDialect(connection, options) })),
+  mysql: memoize((connection: typeof connections.$inferSelect, options?: DialectOptions) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(connection, options) })),
+  clickhouse: memoize((connection: typeof connections.$inferSelect, options?: DialectOptions) => new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(connection, options) })),
+  mssql: memoize((connection: typeof connections.$inferSelect, options?: DialectOptions) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(connection, options) })),
 } satisfies Record<ConnectionType, (connection: typeof connections.$inferSelect) => unknown>
 
 export function getColdDialect(dialect: ConnectionType) {

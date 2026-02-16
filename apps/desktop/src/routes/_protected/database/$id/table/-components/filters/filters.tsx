@@ -21,6 +21,9 @@ function FilterItem({
   onRemove: () => void
   onEdit: (filter: ActiveFilter) => void
 }) {
+  const [isColumnOpen, setIsColumnOpen] = useState(false)
+  const [isOperatorOpen, setIsOperatorOpen] = useState(false)
+  const [isValueOpen, setIsValueOpen] = useState(false)
   const [values, setValues] = useState(filter.values)
 
   return (
@@ -28,7 +31,7 @@ function FilterItem({
       flex h-6 items-center overflow-hidden rounded-sm border bg-card
     `}
     >
-      <Popover>
+      <Popover open={isColumnOpen} onOpenChange={setIsColumnOpen}>
         <PopoverTrigger
           data-mask
           className={`
@@ -42,12 +45,15 @@ function FilterItem({
         </PopoverTrigger>
         <PopoverContent className="p-0 shadow-md">
           <FiltersColumnSelector
-            onSelect={column => onEdit({ column, ref: filter.ref, values })}
+            onSelect={(column) => {
+              onEdit({ column, ref: filter.ref, values })
+              setIsColumnOpen(false)
+            }}
           />
         </PopoverContent>
       </Popover>
       <Separator orientation="vertical" />
-      <Popover>
+      <Popover open={isOperatorOpen} onOpenChange={setIsOperatorOpen}>
         <PopoverTrigger className={`
           h-full px-2 text-xs text-muted-foreground transition-colors
           hover:bg-accent/50
@@ -57,14 +63,17 @@ function FilterItem({
         </PopoverTrigger>
         <PopoverContent className="p-0 shadow-md">
           <FiltersSelector
-            onSelect={operator => onEdit({ column: filter.column, ref: operator, values })}
+            onSelect={(operator) => {
+              onEdit({ column: filter.column, ref: operator, values })
+              setIsOperatorOpen(false)
+            }}
           />
         </PopoverContent>
       </Popover>
       <Separator orientation="vertical" />
       {filter.ref.hasValue !== false && (
         <>
-          <Popover>
+          <Popover open={isValueOpen} onOpenChange={setIsValueOpen}>
             <PopoverTrigger className={`
               h-full px-2 text-xs transition-colors
               hover:bg-accent/50
@@ -86,7 +95,10 @@ function FilterItem({
                 isArray={filter.ref.isArray ?? false}
                 values={values}
                 onChange={setValues}
-                onApply={() => onEdit({ column: filter.column, ref: filter.ref, values })}
+                onApply={() => {
+                  onEdit({ column: filter.column, ref: filter.ref, values })
+                  setIsValueOpen(false)
+                }}
               />
             </PopoverContent>
           </Popover>

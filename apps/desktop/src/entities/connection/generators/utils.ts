@@ -4,19 +4,19 @@ import type { Column } from '../components/table/utils'
 export type GeneratorFormat = 'ts' | 'zod' | 'prisma' | 'sql' | 'drizzle' | 'kysely'
 
 export interface Index {
+  type?: string
   schema: string
   table: string
   name: string
-  column: string
+  column: string | null
+  customExpression?: string
   isUnique: boolean
   isPrimary: boolean
 }
 
-export interface GroupedIndex {
-  name: string
-  isUnique: boolean
-  isPrimary: boolean
+export interface GroupedIndex extends Pick<Index, 'type' | 'name' | 'isUnique' | 'isPrimary'> {
   columns: string[]
+  customExpressions: string[]
 }
 
 export function toLiteralKey(name: string) {
@@ -43,11 +43,11 @@ function zodMapper(t: string) {
   if (/date|time/i.test(t))
     return 'z.date()'
   if (/json/i.test(t))
-    return 'z.unknown()'
+    return 'z.record(z.string(), z.any())'
   return 'z.string()'
 }
 
-function prismaScalarMapper(t: string): string {
+function prismaScalarMapper(t: string) {
   if (/decimal|numeric/i.test(t))
     return 'Decimal'
   if (/bool/i.test(t))
@@ -236,14 +236,21 @@ export function groupIndexes(indexes: Index[] = [], table: string): GroupedIndex
 
     const existing = grouped.get(idx.name)
     if (existing) {
-      existing.columns.push(idx.column)
+      if (idx.column) {
+        existing.columns.push(idx.column)
+      }
+      if (idx.customExpression) {
+        existing.customExpressions.push(idx.customExpression)
+      }
     }
     else {
       grouped.set(idx.name, {
+        type: idx.type,
         name: idx.name,
         isUnique: idx.isUnique,
         isPrimary: idx.isPrimary,
-        columns: [idx.column],
+        columns: idx.column ? [idx.column] : [],
+        customExpressions: idx.customExpression ? [idx.customExpression] : [],
       })
     }
   }

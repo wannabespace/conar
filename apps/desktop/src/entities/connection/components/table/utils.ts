@@ -83,6 +83,7 @@ export function getDisplayValue({
     we truncate it to avoid performance issues.
     Used 6 as a multiplier because 1 symbol takes ~6px width
     + 5 to make sure there are extra symbols for ellipsis
+    + 50 for resizing
   */
-  return getEditableValue({ value, oneLine: true, column }).slice(0, (size / 6) + 5)
+  return getEditableValue({ value, oneLine: true, column }).slice(0, (size / 6) + 5 + 50)
 }

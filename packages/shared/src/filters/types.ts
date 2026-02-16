@@ -5,9 +5,9 @@ export interface Filter {
   hasValue?: boolean
 }
 
-export interface ActiveFilter<T extends Filter = Filter, V = unknown> {
+export interface ActiveFilter<F extends Filter = Filter, V = unknown> {
   column: string
-  ref: T
+  ref: F
   values: V[]
 }
 

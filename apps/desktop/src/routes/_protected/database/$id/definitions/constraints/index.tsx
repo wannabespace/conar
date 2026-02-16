@@ -2,7 +2,7 @@ import type { constraintsType } from '~/entities/connection/sql/constraints'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardTitle, MotionCard } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -135,32 +135,29 @@ function DatabaseConstraintsPage() {
             layout
             {...MOTION_BLOCK_PROPS}
           >
-            <CardHeader className="px-4 py-3">
+            <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2 text-base">
+                  <CardTitle className="mb-2 flex items-center gap-2 text-base">
                     {getIcon(item.type)}
                     <HighlightText text={item.name} match={search} />
-                    <Badge
-                      variant="secondary"
-                      className="text-xs"
-                    >
+                    <Badge variant="secondary">
                       {formatType(item.type)}
                     </Badge>
                   </CardTitle>
                   <div className={`
-                    mt-2 flex items-center gap-2 text-sm text-muted-foreground
+                    flex items-center gap-1.5 text-sm text-muted-foreground
                   `}
                   >
-                    <Badge variant="outline" className="text-xs">
-                      <RiTable2 className="mr-1 size-3" />
+                    <Badge variant="outline">
+                      <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
                     {item.column && (
                       <>
                         <span>on</span>
-                        <Badge variant="outline" className="text-xs">
-                          <RiLayoutColumnLine className="mr-1 size-3" />
+                        <Badge variant="outline">
+                          <RiLayoutColumnLine className="size-3" />
                           <HighlightText text={item.column} match={search} />
                         </Badge>
                       </>
@@ -168,7 +165,7 @@ function DatabaseConstraintsPage() {
                   </div>
                 </div>
               </div>
-            </CardHeader>
+            </CardContent>
             {item.type === 'foreignKey' && (
               <CardContent className="border-t bg-muted/10 px-4 py-3 text-sm">
                 <div className="flex items-center gap-2">

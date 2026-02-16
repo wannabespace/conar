@@ -199,7 +199,7 @@ export function generateSchemaPrisma({
   const groupedIndexes = groupIndexes(indexes, table)
   const explicitIndexes = filterExplicitIndexes(groupedIndexes, columns)
 
-  const indexBlocks = explicitIndexes.map((idx) => {
+  const indexBlocks = explicitIndexes.filter(idx => idx.columns.length > 0).map((idx) => {
     const fieldNames = idx.columns.map((col) => {
       const colDef = columns.find(c => c.id === col)
       return colDef ? camelCase(colDef.id) : col

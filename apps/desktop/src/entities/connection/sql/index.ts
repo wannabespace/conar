@@ -21,25 +21,28 @@ export function executeSql({
   connectionString,
   sql,
   values = [],
+  silent = false,
 }: {
   type: ConnectionType
   connectionString: string
   sql: string
   values?: unknown[]
+  silent?: boolean
 }) {
   if (!window.electron) {
     throw new Error('Electron is not available')
   }
 
-  return window.electron.query[type]({ connectionString, sql, values })
+  return window.electron.query[type]({ connectionString, sql, values, silent })
 }
 
-export function executeAndLogSql({ connection, sql, values = [] }: {
+export function executeAndLogSql({ connection, sql, values = [], silent = false }: {
   connection: typeof connections.$inferSelect
   sql: string
   values?: unknown[]
+  silent?: boolean
 }) {
-  const promise = executeSql({ type: connection.type, connectionString: connection.connectionString, sql, values })
+  const promise = executeSql({ type: connection.type, connectionString: connection.connectionString, sql, values, silent })
 
   logSql(connection, promise, { sql, values })
 
