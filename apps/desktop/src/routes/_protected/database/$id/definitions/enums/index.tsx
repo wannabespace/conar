@@ -8,9 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@conar/ui/lib/utils'
 import { RiLayoutColumnLine, RiListIndefinite, RiListUnordered, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useConnectionEnums, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { connectionStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -27,7 +29,9 @@ export const Route = createFileRoute('/_protected/database/$id/definitions/enums
 function DatabaseEnumsPage() {
   const { connection } = Route.useLoaderData()
   const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useConnectionEnums({ connection })
-  const { data } = useConnectionTablesAndSchemas({ connection })
+  const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
+  const { data } = useConnectionTablesAndSchemas({ connection, showSystem })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')

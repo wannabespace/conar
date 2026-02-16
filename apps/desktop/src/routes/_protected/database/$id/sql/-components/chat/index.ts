@@ -102,7 +102,7 @@ export async function createChat({ id = uuid(), connection }: { id?: string, con
             \`\`\`
             `,
             'Database schemas and tables:',
-            encode(await queryClient.ensureQueryData(connectionTablesAndSchemasQuery({ connection }))),
+            encode(await queryClient.ensureQueryData(connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem }))),
           ].join('\n'),
         }, { signal: options.abortSignal }))
       },

@@ -189,7 +189,7 @@ function DatabaseTablesPage() {
     >
       <ResizablePanel
         defaultSize="20%"
-        minSize="10%"
+        minSize={200}
         maxSize="50%"
         className="h-full overflow-hidden rounded-lg border bg-background"
       >

@@ -15,6 +15,7 @@ const redactor = new DeepRedact({
     /cvv/i,
     /cvc/i,
     /credentials?/i,
+    /connectionString?/i,
   ],
   fuzzyKeyMatch: true,
   caseSensitiveKeyMatch: false,
