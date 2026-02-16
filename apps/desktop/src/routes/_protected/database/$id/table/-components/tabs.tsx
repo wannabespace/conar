@@ -20,6 +20,7 @@ import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { addTab, connectionStore, removeTab, updateTabs } from '~/entities/connection/store'
 import { prefetchConnectionTableCore } from '~/entities/connection/utils'
 import { tablePageStore } from '../-store'
@@ -194,9 +195,11 @@ export function TablesTabs({
   connection: typeof connections.$inferSelect
   className?: string
 }) {
+  const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
+  const { data: tablesAndSchemas } = useConnectionTablesAndSchemas({ connection, showSystem })
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const router = useRouter()
-  const store = connectionStore(connection.id)
   const tabs = useStore(store, state => state.tabs)
 
   const addNewTab = useEffectEvent((schema: string, table: string) => {
@@ -320,6 +323,22 @@ export function TablesTabs({
       closeTab(schemaParam, tableParam)
     }
   })
+
+  const cleanupTabsEvent = useEffectEvent(async (tables: { schema: string, table: string }[]) => {
+    const tabsToRemove = tabs.filter(tab => !tables.some(t => t.schema === tab.schema && t.table === tab.table))
+
+    for (const { schema, table } of tabsToRemove) {
+      closeTab(schema, table)
+    }
+  })
+
+  useEffect(() => {
+    if (!tablesAndSchemas)
+      return
+
+    cleanupTabsEvent(tablesAndSchemas.schemas
+      .flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
+  }, [tablesAndSchemas, tabs])
 
   const isOneSchema = tabs.length
     ? tabs.every(tab => tab.schema === tabs[0]?.schema) && schemaParam === tabs[0]?.schema
