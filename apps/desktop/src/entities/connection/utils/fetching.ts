@@ -7,14 +7,16 @@ import { connectionEnumsQuery } from '../queries/enums'
 import { connectionRowsQuery } from '../queries/rows'
 import { connectionTablesAndSchemasQuery } from '../queries/tables-and-schemas'
 import { connectionTableTotalQuery } from '../queries/total'
+import { connectionStore } from '../store'
 
 export async function prefetchConnectionCore(connection: typeof connections.$inferSelect) {
   if (connection.isPasswordExists && !connection.isPasswordPopulated) {
     return
   }
 
+  const store = connectionStore(connection.id)
   await Promise.all([
-    queryClient.prefetchQuery(connectionTablesAndSchemasQuery({ connection })),
+    queryClient.prefetchQuery(connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem })),
     queryClient.prefetchQuery(connectionEnumsQuery({ connection })),
     queryClient.prefetchQuery(connectionConstraintsQuery({ connection })),
   ])
