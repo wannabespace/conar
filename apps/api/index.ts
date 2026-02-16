@@ -10,6 +10,7 @@ import { ORPCError, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { generateText } from 'ai'
 import { Hono } from 'hono'
+import { proxy } from 'hono/proxy'
 import { cors } from 'hono/cors'
 import { db, users } from './drizzle'
 import { env, nodeEnv } from './env'
@@ -61,9 +62,19 @@ export interface AppVariables {
 const app = new Hono<{
   Variables: AppVariables
 }>()
+  .use('*', async (c, next) => {
+    const url = new URL(c.req.url)
+    if (url.hostname.endsWith('conar.app')) {
+      url.hostname = url.hostname.replace(/conar\.app$/i, 'connix.app')
+      return proxy(new Request(url.toString(), c.req.raw))
+    }
+
+    return next()
+  })
   .use(cors({
     origin: [
-      env.WEB_URL,
+      'https://conar.app',
+      'https://connix.app',
       ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
       ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
     ],
