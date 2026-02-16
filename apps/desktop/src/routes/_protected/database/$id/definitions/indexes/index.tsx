@@ -157,7 +157,6 @@ function DatabaseIndexesPage() {
         )}
         renderItem={item => (
           <MotionCard
-            key={`${item.schema}-${item.table}-${item.name}`}
             {...MOTION_BLOCK_PROPS}
           >
             <CardContent className="px-4 py-3">
@@ -197,14 +196,14 @@ function DatabaseIndexesPage() {
                             {item.columns
                               ?.filter(col => col && col.trim() !== '')
                               .map(col => (
-                                <Badge key={col} variant="outline">
-                                  <RiLayoutColumnLine className="size-3" />
+                                <Badge key={col} variant="outline" className="text-xs font-normal">
+                                  <RiLayoutColumnLine className="mr-1 size-3" />
                                   <HighlightText text={col} match={search} />
                                 </Badge>
                               ))}
                             {!(item.columns?.some(col => col && col.trim() !== '') ?? false) && item.customExpression && (
-                              <Badge key={item.customExpression} variant="outline">
-                                <RiLayoutColumnLine className="size-3" />
+                              <Badge key={item.customExpression} variant="outline" className="text-xs font-normal">
+                                <RiLayoutColumnLine className="mr-1 size-3" />
                                 <HighlightText text={item.customExpression} match={search} />
                               </Badge>
                             )}

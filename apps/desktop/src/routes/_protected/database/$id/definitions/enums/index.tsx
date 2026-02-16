@@ -117,7 +117,6 @@ function DatabaseEnumsPage() {
         )}
         renderItem={enumItem => (
           <MotionCard
-            key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
             {...MOTION_BLOCK_PROPS}
           >
             <CardContent className="px-4 py-3">

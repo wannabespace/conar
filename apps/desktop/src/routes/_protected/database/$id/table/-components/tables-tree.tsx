@@ -180,7 +180,10 @@ const VirtualizedTableList = memo(function VirtualizedTableList({
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const items = useMemo(() => {
-    const result: Array<{ type: 'pinned' | 'unpinned' | 'separator', table?: string }> = []
+    const result: Array<
+      | { type: 'pinned' | 'unpinned', table: string }
+      | { type: 'separator' }
+    > = []
 
     pinnedTables.forEach(table => result.push({ type: 'pinned', table }))
     if (pinnedTables.length > 0 && unpinnedTables.length > 0) {
