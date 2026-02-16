@@ -19,6 +19,11 @@ export const generateTitle = orpc
       .join('\n'),
     ).join('\n')
 
+    context.addLogData({
+      chatId: input.chatId,
+      prompt,
+    })
+
     const { text } = await generateText({
       model: withPosthog(google('gemini-2.0-flash'), {
         chatId: input.chatId,

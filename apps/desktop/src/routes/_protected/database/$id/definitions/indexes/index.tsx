@@ -75,18 +75,20 @@ function DatabaseIndexesPage() {
       const matchesSearch = !lowerSearch
         || indexItem.name.toLowerCase().includes(lowerSearch)
         || indexItem.table.toLowerCase().includes(lowerSearch)
-        || indexItem.column.toLowerCase().includes(lowerSearch)
+        || indexItem.column?.toLowerCase().includes(lowerSearch)
+        || indexItem.customExpression?.toLowerCase().includes(lowerSearch)
 
       if (!matchesSearch)
         continue
 
       const key = `${indexItem.schema}-${indexItem.table}-${indexItem.name}`
+      const column = indexItem.column ?? indexItem.customExpression ?? null
 
       if (!result[key]) {
-        result[key] = { ...indexItem, columns: [indexItem.column] }
+        result[key] = { ...indexItem, columns: column ? [column] : [] }
       }
-      else if (!result[key].columns.includes(indexItem.column)) {
-        result[key].columns.push(indexItem.column)
+      else if (column && !result[key].columns.includes(column)) {
+        result[key].columns.push(column)
       }
     }
 
@@ -188,17 +190,27 @@ function DatabaseIndexesPage() {
                       <RiTable2 className="mr-1 size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
-                    <span>on</span>
-                    {item.columns.map((col: string) => (
-                      <Badge
-                        key={col}
-                        variant="outline"
-                        className="font-mono text-xs"
-                      >
-                        <RiLayoutColumnLine className="mr-1 size-3" />
-                        <HighlightText text={col} match={search} />
-                      </Badge>
-                    ))}
+                    {(item.columns?.some(col => col && col.trim() !== '') ?? false) || item.customExpression
+                      ? (
+                          <>
+                            <span>on</span>
+                            {item.columns
+                              ?.filter(col => col && col.trim() !== '')
+                              .map(col => (
+                                <Badge key={col} variant="outline">
+                                  <RiLayoutColumnLine className="size-3" />
+                                  <HighlightText text={col} match={search} />
+                                </Badge>
+                              ))}
+                            {!(item.columns?.some(col => col && col.trim() !== '') ?? false) && item.customExpression && (
+                              <Badge key={item.customExpression} variant="outline">
+                                <RiLayoutColumnLine className="size-3" />
+                                <HighlightText text={item.customExpression} match={search} />
+                              </Badge>
+                            )}
+                          </>
+                        )
+                      : null}
                   </div>
                 </div>
               </div>

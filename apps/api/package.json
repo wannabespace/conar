@@ -20,6 +20,7 @@
     "@conar/connection": "workspace:*",
     "@conar/shared": "workspace:*",
     "@exalabs/ai-sdk": "catalog:",
+    "@hackylabs/deep-redact": "catalog:",
     "@hono/arktype-validator": "catalog:",
     "@octokit/rest": "catalog:",
     "@orpc/server": "catalog:",

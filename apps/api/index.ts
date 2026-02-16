@@ -17,6 +17,7 @@ import { auth } from './lib/auth'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
 import { sendEmail } from './lib/resend'
+import { sanitizeLogData } from './lib/sanitize-log'
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -54,7 +55,7 @@ const handler = new RPCHandler(router, {
 })
 
 export interface AppVariables {
-  logEvent: Record<string, unknown>
+  logEvent?: Record<string, unknown>
 }
 
 const app = new Hono<{
@@ -82,7 +83,7 @@ const app = new Hono<{
     const version = c.req.header('x-desktop-version')
     const logEvent = c.get('logEvent') || {}
 
-    const logInfo = {
+    const logInfo = sanitizeLogData({
       method,
       status,
       path,
@@ -90,7 +91,7 @@ const app = new Hono<{
       ...(version ? { version } : {}),
       ...(userAgent ? { userAgent } : {}),
       ...logEvent,
-    }
+    })
 
     if (
       status >= 400
@@ -110,10 +111,15 @@ const app = new Hono<{
       })
     }
 
-    const level = status >= 400 ? 'error' : 'info'
+    const log = JSON.stringify(logInfo, null, nodeEnv === 'production' ? undefined : 2)
 
-    // eslint-disable-next-line no-console
-    console[level](JSON.stringify(logInfo, null, nodeEnv === 'production' ? undefined : 2))
+    if (status >= 400) {
+      console.error(log)
+    }
+    else {
+      // eslint-disable-next-line no-console
+      console.info(log)
+    }
   })
   .on(['GET', 'POST'], '/auth/*', (c) => {
     const req = c.req.raw
