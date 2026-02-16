@@ -76,15 +76,16 @@ function DatabaseIndexesPage() {
         || indexItem.name.toLowerCase().includes(lowerSearch)
         || indexItem.table.toLowerCase().includes(lowerSearch)
         || indexItem.column?.toLowerCase().includes(lowerSearch)
+        || indexItem.customExpression?.toLowerCase().includes(lowerSearch)
 
       if (!matchesSearch)
         continue
 
       const key = `${indexItem.schema}-${indexItem.table}-${indexItem.name}`
-      const column = indexItem.column ?? ''
+      const column = indexItem.column ?? indexItem.customExpression ?? null
 
       if (!result[key]) {
-        result[key] = { ...indexItem, columns: [column] }
+        result[key] = { ...indexItem, columns: column ? [column] : [] }
       }
       else if (column && !result[key].columns.includes(column)) {
         result[key].columns.push(column)
