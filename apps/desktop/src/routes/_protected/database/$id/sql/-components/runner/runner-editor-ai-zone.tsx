@@ -10,6 +10,7 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
 import { MonacoDiff } from '~/components/monaco'
 import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { connectionStore } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
@@ -27,6 +28,7 @@ export function RunnerEditorAIZone({
   onClose: () => void
 }) {
   const isOnline = useStore(appStore, state => state.isOnline)
+  const store = connectionStore(connection.id)
   const { subscription } = useSubscription()
   const [prompt, setPrompt] = useState('')
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null)
@@ -42,7 +44,7 @@ export function RunnerEditorAIZone({
   useEffect(() => {
     const timeout = setTimeout(() => {
       ref.current?.focus()
-    }, 0)
+    }, 100)
 
     return () => {
       clearTimeout(timeout)
@@ -75,7 +77,7 @@ export function RunnerEditorAIZone({
         type: connection.type,
         context: [
           'Database schemas and tables:',
-          JSON.stringify(await queryClient.ensureQueryData(connectionTablesAndSchemasQuery({ connection })), null, 2),
+          JSON.stringify(await queryClient.ensureQueryData(connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem })), null, 2),
         ].join('\n'),
       })
     }
