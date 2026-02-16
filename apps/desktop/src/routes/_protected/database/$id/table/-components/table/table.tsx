@@ -304,7 +304,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const handleRowClick = useCallback((rowIndex: number) => {
     store.setState(state => ({
       ...state,
-      detailRowIndex: state.detailRowIndex === rowIndex ? null : rowIndex,
+      detailRowIndex: rowIndex,
     } satisfies typeof state))
   }, [store])
 
