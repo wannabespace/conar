@@ -217,9 +217,10 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop, on
 
 export function TablesTree({ className, search }: { className?: string, search?: string }) {
   const { connection } = Route.useRouteContext()
-  const { data: tablesAndSchemas, isPending } = useConnectionTablesAndSchemas({ connection })
-  const { schema: schemaParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
+  const { data: tablesAndSchemas, isPending } = useConnectionTablesAndSchemas({ connection, showSystem })
+  const { schema: schemaParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const pinnedTables = useStore(store, state => state.pinnedTables)
   const tableFolders = useStore(store, state => state.tableFolders)

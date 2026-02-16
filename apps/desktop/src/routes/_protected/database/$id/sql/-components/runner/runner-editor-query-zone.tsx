@@ -54,11 +54,11 @@ export function RunnerEditorQueryZone({
 
   return (
     <div className={cn(
-      'flex gap-2 items-center justify-between h-full',
-      'px-2 pr-6 py-1 border-y',
+      'flex h-full items-center justify-between gap-2',
+      'border-y px-2 py-1 pr-6',
     )}
     >
-      <div className="flex-1 flex items-center justify-between gap-2">
+      <div className="flex flex-1 items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <label className="flex items-center gap-2 text-xs">
             <Checkbox
@@ -115,7 +115,7 @@ export function RunnerEditorQueryZone({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <Separator orientation="vertical" className="h-4! mx-1" />
+          <Separator orientation="vertical" className="mx-1 h-4!" />
           {Array.from({ length: queriesLength }).map((_, idx) => {
             const buttonKey = `query-run-${connection.id}-${lineNumber}-${idx}`
             return (

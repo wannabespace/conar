@@ -5,6 +5,9 @@ export default antfu(
   {
     react: true,
     rules: {
+      'no-unassigned-vars': 'warn',
+      'no-useless-assignment': 'warn',
+      'preserve-caught-error': 'warn',
       'ts/no-explicit-any': 'error',
       'no-console': 'warn',
       'prefer-arrow-callback': 'off',

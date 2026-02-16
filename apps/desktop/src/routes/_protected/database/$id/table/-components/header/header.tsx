@@ -54,7 +54,6 @@ export function Header({ table, schema }: { table: string, schema: string }) {
                       >
                         <NumberFlow
                           value={total.count}
-                          format={{ notation: 'compact', compactDisplay: 'short', maximumFractionDigits: 1 }}
                           className={cn('text-muted-foreground tabular-nums', isLoading && `
                             animate-pulse text-muted-foreground/50
                           `)}

@@ -2,7 +2,7 @@ import type { connections } from '~/drizzle'
 import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
-import { RiAddLine, RiDashboardLine, RiTableLine } from '@remixicon/react'
+import { RiAddLine, RiDashboardLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
@@ -10,13 +10,15 @@ import { useStore } from '@tanstack/react-store'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionLinkParams } from '~/entities/connection/hooks'
 import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { connectionStore } from '~/entities/connection/store'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { prefetchConnectionCore } from '~/entities/connection/utils'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
 function ActionsConnectionTables({ connection }: { connection: typeof connections.$inferSelect }) {
+  const store = connectionStore(connection.id)
   const { data: tablesAndSchemas } = useQuery({
-    ...connectionTablesAndSchemasQuery({ connection }),
+    ...connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem }),
     throwOnError: false,
   })
   const router = useRouter()
@@ -115,6 +117,14 @@ export function ActionsCenter() {
           </CommandItem>
           <CommandItem
             onSelect={() => {
+              window.location.reload()
+            }}
+          >
+            <RiRefreshLine className="size-4 shrink-0 text-muted-foreground" />
+            Reload window
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
               setIsActionCenterOpen(false)
               router.navigate({ to: '/create' })
             }}
@@ -124,7 +134,7 @@ export function ActionsCenter() {
           </CommandItem>
         </CommandGroup>
         {!!connections?.length && (
-          <CommandGroup heading="Databases">
+          <CommandGroup heading="Connections">
             {connections.map(connection => <ActionsConnection key={connection.id} connection={connection} />)}
           </CommandGroup>
         )}

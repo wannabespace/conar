@@ -1,16 +1,18 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardTitle, MotionCard } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { cn } from '@conar/ui/lib/utils'
 import { RiLayoutColumnLine, RiListIndefinite, RiListUnordered, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useConnectionEnums, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { connectionStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -27,7 +29,9 @@ export const Route = createFileRoute('/_protected/database/$id/definitions/enums
 function DatabaseEnumsPage() {
   const { connection } = Route.useLoaderData()
   const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useConnectionEnums({ connection })
-  const { data } = useConnectionTablesAndSchemas({ connection })
+  const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
+  const { data } = useConnectionTablesAndSchemas({ connection, showSystem })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
@@ -98,7 +102,7 @@ function DatabaseEnumsPage() {
             layout
             {...MOTION_BLOCK_PROPS}
           >
-            <CardHeader className="px-4 py-3">
+            <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -164,7 +168,7 @@ function DatabaseEnumsPage() {
                   </div>
                 </div>
               </div>
-            </CardHeader>
+            </CardContent>
           </MotionCard>
         ))}
       </DefinitionsGrid>
