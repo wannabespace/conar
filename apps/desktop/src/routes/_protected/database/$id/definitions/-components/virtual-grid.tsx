@@ -8,7 +8,7 @@ function Skeleton() {
     <div className="space-y-4">
       {Array.from({ length: 3 }).map((_, i) => (
         <div
-          key={i}
+          key={`skeleton-${i}`}
           className="
             flex w-full flex-col gap-3 rounded-xl border border-border/40
             bg-muted/10 p-4
