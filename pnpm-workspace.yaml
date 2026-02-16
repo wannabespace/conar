@@ -5,6 +5,20 @@ trustPolicy: no-downgrade
 packages:
   - packages/*
   - apps/*
+overrides:
+  '@isaacs/brace-expansion': '>=5.0.1'
+  axios: '>=1.13.5'
+  diff: '>=8.0.3'
+  dompurify: '>=3.2.4'
+  esbuild: '>=0.25.0'
+  got: '>=11.8.5'
+  langsmith: '>=0.4.6'
+  lodash: '>=4.17.23'
+  markdown-it: '>=14.1.1'
+  qs: '>=6.14.2'
+  seroval: '>=1.4.1'
+  tar: '>=7.5.7'
+  tmp: '>=0.2.4'
 catalog:
   '@ai-sdk/anthropic': ^3.0.42
   '@ai-sdk/google': ^3.0.26
