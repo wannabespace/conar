@@ -56,7 +56,7 @@ export const codeCompletion = orpc
       ].join('\n')
 
       const result = await generateText({
-        model: google('gemma-3-27b-it'),
+        model: google('gemini-2.5-flash'),
         prompt: enhancedPrompt,
       })
 
