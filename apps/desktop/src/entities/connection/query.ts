@@ -19,8 +19,11 @@ export function createQuery<P = undefined, T extends Type = Type<unknown>>(optio
 }) {
   return async (...p: [database: typeof connections.$inferSelect, ...(P extends undefined ? [] : [P])]): Promise<T extends Type ? T['inferOut'] : unknown> => {
     const [database, params] = p
+
+    const result = await options.query(params)[database.type](dialects[database.type](database, {
+      silent: options.silent,
     // eslint-disable-next-line ts/no-explicit-any
-    const result = await options.query(params)[database.type](dialects[database.type](database) as any)
+    }) as any)
 
     try {
       return options.type
