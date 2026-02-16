@@ -1,5 +1,6 @@
 /* eslint-disable perfectionist/sort-imports */
 import '@conar/shared/arktype-config'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
@@ -31,12 +32,6 @@ window.electron?.app.onSendToast(({ message, type }) => {
 })
 
 initEvents()
-
-window.addEventListener('keydown', (event) => {
-  if (((event.ctrlKey || event.metaKey) && event.key === 'r') || event.key === 'F5') {
-    event.preventDefault()
-  }
-})
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -78,12 +73,19 @@ declare module '@tanstack/react-router' {
 
 const root = createRoot(document.getElementById('root')!)
 
+function AppWithHotkeys() {
+  useHotkey('Mod+R', e => e.preventDefault(), { ignoreInputs: false })
+  useHotkey('F5', e => e.preventDefault(), { ignoreInputs: false })
+
+  return <RouterProvider router={router} />
+}
+
 runMigrations().then(async () => {
   await Promise.all([
     connectionsCollection.stateWhenReady(),
     chatsCollection.stateWhenReady(),
   ])
-  root.render(<RouterProvider router={router} />)
+  root.render(<AppWithHotkeys />)
 })
 
 if (import.meta.hot) {
