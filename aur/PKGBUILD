@@ -1,6 +1,6 @@
 # Maintainer: Bouteiller a2n Alan <hi@a2n.dev>
 pkgname=conar-bin
-pkgver=0.26.1
+pkgver=0.27.3
 pkgrel=1
 pkgdesc="AI-powered tool for working with Postgres, MySQL, MSSQL and ClickHouse."
 arch=('x86_64')
@@ -34,7 +34,7 @@ depends=(
 )
 options=('!strip' '!emptydirs')
 source_x86_64=("conar-${pkgver}.deb::https://download.conar.app/linux/deb/x64")
-sha256sums_x86_64=('SKIP')
+sha256sums_x86_64=('b2a736572cf4fde0a3869c90a00dae1cfb500fd86d6ac20473a0d36d6bf0ba8c')
 
 package() {
   # Extract the .deb file
