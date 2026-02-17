@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useRef } from 'react'
 import { useDefinitionsScroll } from '../../definitions'
 
 function Skeleton() {
@@ -46,7 +45,6 @@ export function VirtualDefinitionsGrid<T>({
   emptyState,
 }: VirtualDefinitionsGridProps<T>) {
   const { scrollRef, isScrollReady } = useDefinitionsScroll()
-  const listRef = useRef<HTMLDivElement>(null)
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,
@@ -73,7 +71,6 @@ export function VirtualDefinitionsGrid<T>({
 
   return (
     <div
-      ref={listRef}
       className="relative mt-2 w-full"
       style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
     >

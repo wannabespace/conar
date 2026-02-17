@@ -148,7 +148,6 @@ function DatabaseConstraintsPage() {
         )}
         renderItem={item => (
           <MotionCard
-            key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
             {...MOTION_BLOCK_PROPS}
           >
             <CardContent className="px-4 py-3">

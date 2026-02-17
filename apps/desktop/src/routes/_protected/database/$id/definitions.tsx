@@ -1,7 +1,7 @@
 import type { RefObject } from 'react'
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { createContext, use, useEffect, useRef, useState } from 'react'
+import { createContext, use, useEffect, useMemo, useRef, useState } from 'react'
 import { Sidebar } from './definitions/-components/sidebar'
 
 export const Route = createFileRoute(
@@ -46,13 +46,15 @@ function DefinitionsLayout() {
     }
   }, [])
 
+  const scrollContext = useMemo(() => ({ scrollRef, isScrollReady }), [isScrollReady])
+
   return (
     <div className="flex size-full gap-1">
       <Sidebar />
       <ScrollArea className="h-full flex-1 rounded-lg border bg-background">
         <ScrollViewport ref={scrollRef}>
           <div className="mx-auto flex max-w-3xl flex-col px-4 py-6">
-            <DefinitionsScrollContext.Provider value={{ scrollRef, isScrollReady }}>
+            <DefinitionsScrollContext.Provider value={scrollContext}>
               <Outlet />
             </DefinitionsScrollContext.Provider>
           </div>
