@@ -7,8 +7,10 @@ import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { RiFileList3Line, RiKey2Line, RiLayoutColumnLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { useMemo, useState } from 'react'
 import { useConnectionIndexes, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { connectionStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsHeader } from '../-components/header'
 import { VirtualDefinitionsGrid } from '../-components/virtual-grid'
@@ -47,7 +49,9 @@ function getIndexType(indexItem: IndexItem): IndexType {
 function DatabaseIndexesPage() {
   const { connection } = Route.useLoaderData()
   const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useConnectionIndexes({ connection })
-  const { data } = useConnectionTablesAndSchemas({ connection })
+  const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
+  const { data } = useConnectionTablesAndSchemas({ connection, showSystem })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')

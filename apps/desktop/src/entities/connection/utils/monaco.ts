@@ -6,6 +6,7 @@ import { queryClient } from '~/main'
 import { connectionTableColumnsQuery } from '../queries/columns'
 import { connectionEnumsQuery } from '../queries/enums'
 import { connectionTablesAndSchemasQuery } from '../queries/tables-and-schemas'
+import { connectionStore } from '../store'
 
 const keywordPriority = [
   'SELECT',
@@ -36,7 +37,8 @@ const keywordPriority = [
 ]
 
 export function connectionCompletionService(connection: typeof connections.$inferSelect): CompletionService {
-  queryClient.prefetchQuery(connectionTablesAndSchemasQuery({ connection }))
+  const store = connectionStore(connection.id)
+  queryClient.prefetchQuery(connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem }))
   queryClient.prefetchQuery(connectionEnumsQuery({ connection }))
 
   return async (
@@ -64,7 +66,7 @@ export function connectionCompletionService(connection: typeof connections.$infe
     })
 
     const [tablesAndSchemas, enums] = await Promise.all([
-      queryClient.ensureQueryData(connectionTablesAndSchemasQuery({ connection })),
+      queryClient.ensureQueryData(connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem })),
       queryClient.ensureQueryData(connectionEnumsQuery({ connection })),
     ])
 

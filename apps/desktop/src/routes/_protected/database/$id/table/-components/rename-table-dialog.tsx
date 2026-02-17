@@ -19,7 +19,7 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { renameTableQuery } from '~/entities/connection/sql'
-import { renameTab } from '~/entities/connection/store'
+import { connectionStore, renameTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
 import { Route } from '..'
 
@@ -31,6 +31,7 @@ interface RenameTableDialogProps {
 
 export function RenameTableDialog({ ref }: RenameTableDialogProps) {
   const { connection } = Route.useRouteContext()
+  const store = connectionStore(connection.id)
   const router = useRouter()
   const [newTableName, setNewTableName] = useState('')
   const [schema, setSchema] = useState('')
@@ -54,7 +55,7 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
       toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)
       setOpen(false)
 
-      await queryClient.invalidateQueries(connectionTablesAndSchemasQuery({ connection }))
+      await queryClient.invalidateQueries(connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem }))
       renameTab(connection.id, schema, table, newTableName)
 
       router.navigate({

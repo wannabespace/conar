@@ -314,9 +314,10 @@ const VirtualizedTableList = memo(function VirtualizedTableList({
 
 export function TablesTree({ className, search }: Pick<HTMLAttributes<HTMLDivElement>, 'className'> & { search?: string }) {
   const { connection } = Route.useRouteContext()
-  const { data: tablesAndSchemas, isPending } = useConnectionTablesAndSchemas({ connection })
-  const { schema: schemaParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
+  const { data: tablesAndSchemas, isPending } = useConnectionTablesAndSchemas({ connection, showSystem })
+  const { schema: schemaParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const pinnedTables = useStore(store, state => state.pinnedTables)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
