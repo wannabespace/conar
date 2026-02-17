@@ -17,13 +17,13 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Footer } from '~/components/footer'
 import { NavbarTextLogo } from '~/components/navbar-text-logo'
-import { authClient } from '~/lib/auth'
+import { authClient, getSessionIsomorphic } from '~/lib/auth'
 import { orpcQuery } from '~/lib/orpc'
 
 export const Route = createFileRoute('/account')({
   component: AccountLayout,
   loader: async () => {
-    const { data } = await authClient.getSession()
+    const { data } = await getSessionIsomorphic()
 
     if (!data?.user) {
       throw redirect({ to: '/sign-in' })

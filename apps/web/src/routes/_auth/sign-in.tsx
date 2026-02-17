@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { authClient } from '~/lib/auth'
+import { getSessionIsomorphic } from '~/lib/auth'
 import { AuthForm } from './-components/auth-form'
 
 export const Route = createFileRoute('/_auth/sign-in')({
@@ -9,7 +9,7 @@ export const Route = createFileRoute('/_auth/sign-in')({
     'redirectPath?': 'string',
   }),
   loader: async () => {
-    const { data } = await authClient.getSession()
+    const { data } = await getSessionIsomorphic()
 
     if (data?.user) {
       throw redirect({ to: '/account' })
