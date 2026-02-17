@@ -20,14 +20,7 @@ export const getFetchOptionsIsomorphic = createIsomorphicFn()
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_PUBLIC_API_URL,
   basePath: '/auth',
-  fetchOptions: {
-    customFetchImpl: (input, init) => {
-      return fetch(input, {
-        ...init,
-        ...getFetchOptionsIsomorphic(),
-      })
-    },
-  },
+  fetchOptions: getFetchOptionsIsomorphic(),
   plugins: [
     organizationClient(),
     twoFactorClient(),
