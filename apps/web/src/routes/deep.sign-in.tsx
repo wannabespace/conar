@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { getSessionIsomorphic } from '~/lib/auth'
+import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
 export const Route = createFileRoute('/deep/sign-in')({
@@ -12,7 +12,7 @@ export const Route = createFileRoute('/deep/sign-in')({
   loader: async ({ deps }) => {
     const { codeChallenge, newUser } = deps
 
-    const { data } = await getSessionIsomorphic()
+    const { data } = await authClient.getSession()
 
     if (data) {
       await orpc.account.challenge.publish({ codeChallenge, newUser })
