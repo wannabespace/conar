@@ -35,5 +35,3 @@ export const authClient = createAuthClient({
     lastLoginMethodClient(),
   ],
 })
-
-export const getSessionIsomorphic = authClient.getSession
