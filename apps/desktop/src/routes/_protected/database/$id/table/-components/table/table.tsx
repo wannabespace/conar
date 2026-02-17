@@ -297,6 +297,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       customColumnSizes={columnSizes}
     >
       <div
+        role="grid"
         className="relative size-full bg-background outline-none"
         tabIndex={0}
         onKeyDown={handleShiftSelectionKeyDown}
