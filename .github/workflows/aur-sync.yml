@@ -37,6 +37,7 @@ jobs:
         run: |
           git config --global user.name "$AUR_GIT_NAME"
           git config --global user.email "$AUR_GIT_EMAIL"
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/aur_key -o StrictHostKeyChecking=accept-new"
           git clone ssh://aur@aur.archlinux.org/conar-bin.git aur-repo
           cp aur/PKGBUILD aur/.SRCINFO aur-repo/
           cd aur-repo
