@@ -20,12 +20,11 @@ export const getSessionIsomorphic = createIsomorphicFn()
 
     return authClient.getSession({
       fetchOptions: {
-        headers: request.headers,
+        headers: {
+          'user-agent': request.headers.get('user-agent') ?? '',
+          'cookie': request.headers.get('cookie') ?? '',
+        },
       },
     })
   })
-  .client(() => authClient.getSession({
-    fetchOptions: {
-      credentials: 'include',
-    },
-  }))
+  .client(() => authClient.getSession())
