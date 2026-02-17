@@ -34,6 +34,7 @@ interface DropTableDialogProps {
 export function DropTableDialog({ ref }: DropTableDialogProps) {
   const { connection } = Route.useRouteContext()
   const { schema: schemaFromSearch, table: tableFromSearch } = Route.useSearch()
+  const store = connectionStore(connection.id)
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')
   const [schema, setSchema] = useState('')
@@ -71,7 +72,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       setConfirmationText('')
       setCascade(false)
 
-      queryClient.invalidateQueries(connectionTablesAndSchemasQuery({ connection }))
+      queryClient.invalidateQueries(connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem }))
 
       if (isCurrentTable) {
         await router.navigate({

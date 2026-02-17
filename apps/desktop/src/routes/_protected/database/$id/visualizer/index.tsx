@@ -13,11 +13,13 @@ import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiCloseLine, RiSearchLine } from '@remixicon/react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { animationHooks } from '~/enter'
 import { ReactFlowNode } from '~/entities/connection/components'
 import { connectionConstraintsQuery, connectionEnumsQuery, connectionTableColumnsQuery, connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { connectionStore } from '~/entities/connection/store'
 import { prefetchConnectionCore } from '~/entities/connection/utils'
 import { applySearchHighlight, getVisualizerLayout } from './-lib'
 
@@ -37,8 +39,10 @@ export const Route = createFileRoute(
 
 function VisualizerPage() {
   const { connection } = Route.useLoaderData()
+  const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
   const { data: tablesAndSchemas } = useQuery({
-    ...connectionTablesAndSchemasQuery({ connection }),
+    ...connectionTablesAndSchemasQuery({ connection, showSystem }),
     select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))),
   })
   const columnsQueries = useQueries({

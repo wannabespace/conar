@@ -8,8 +8,10 @@ import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { RiDatabase2Line, RiKey2Line, RiLayoutColumnLine, RiLinksLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
 import { useConnectionConstraints, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { connectionStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -55,7 +57,9 @@ function getIcon(type: ConstraintType) {
 function DatabaseConstraintsPage() {
   const { connection } = Route.useLoaderData()
   const { data: constraints, refetch, isFetching, isPending, dataUpdatedAt } = useConnectionConstraints({ connection })
-  const { data } = useConnectionTablesAndSchemas({ connection })
+  const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
+  const { data } = useConnectionTablesAndSchemas({ connection, showSystem })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
