@@ -7,12 +7,9 @@ export const getAuthHeadersIsomorphic = createIsomorphicFn()
   .server(() => {
     const request = getRequest()
 
-    return {
-      'user-agent': request.headers.get('user-agent') ?? '',
-      'cookie': request.headers.get('cookie') ?? '',
-    }
+    return request.headers
   })
-  .client(() => ({}))
+  .client(() => new Headers())
 
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_PUBLIC_API_URL,
@@ -21,9 +18,9 @@ export const authClient = createAuthClient({
     onRequest: (request) => {
       const headers = getAuthHeadersIsomorphic()
 
-      for (const [key, value] of Object.entries(headers)) {
+      headers.forEach((value, key) => {
         request.headers.set(key, value)
-      }
+      })
 
       return request
     },
