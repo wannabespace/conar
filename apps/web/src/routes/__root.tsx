@@ -61,7 +61,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext()
 
   return (
-    <html suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

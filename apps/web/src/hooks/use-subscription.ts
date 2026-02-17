@@ -3,8 +3,6 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { orpc, orpcQuery } from '~/lib/orpc'
 
-export type Subscription = NonNullable<NonNullable<ReturnType<typeof useSubscription>>['subscription']>
-
 export function useSubscription() {
   const { data: list, isPending } = useQuery(orpcQuery.account.subscription.list.queryOptions())
 

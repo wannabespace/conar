@@ -3,7 +3,7 @@ import { Store } from '@tanstack/react-store'
 export type ResolvedTheme = 'dark' | 'light'
 export type Theme = ResolvedTheme | 'system'
 
-export interface ThemeStoreState {
+interface ThemeStoreState {
   theme: Theme
   resolvedTheme: ResolvedTheme
   storageKey: string
