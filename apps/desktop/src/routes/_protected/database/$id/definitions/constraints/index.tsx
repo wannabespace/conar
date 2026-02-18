@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RiDatabase2Line, RiKey2Line, RiLayoutColumnLine, RiLinksLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useConnectionConstraints, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { connectionStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
@@ -65,8 +65,11 @@ function DatabaseConstraintsPage() {
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<ConstraintType | 'all'>('all')
 
-  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
-    setSelectedSchema(schemas[0])
+  useEffect(() => {
+    if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema))) {
+      setSelectedSchema(schemas[0])
+    }
+  }, [schemas, selectedSchema])
 
   const filteredConstraints = useMemo(() => {
     if (!constraints)
