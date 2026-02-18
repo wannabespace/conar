@@ -250,8 +250,8 @@ function VirtualizedTableList({
             key={rowKey}
             ref={rowVirtualizer.measureElement}
             data-index={virtualRow.index}
-            className="absolute left-0 top-0 w-full"
-            style={{ transform: `translateY(${virtualRow.start - scrollMargin}px)` }}
+            className="absolute top-0 left-0 w-full"
+            style={{ transform: `translateY(${virtualRow.start}px)` }}
           >
             {item.type === 'separator'
               ? (
