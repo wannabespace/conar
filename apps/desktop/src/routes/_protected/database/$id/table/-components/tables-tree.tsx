@@ -13,7 +13,7 @@ import { useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { AnimatePresence, motion } from 'motion/react'
-import { memo, useEffect, useMemo, useRef } from 'react'
+import { memo, useDeferredValue, useEffect, useMemo, useRef } from 'react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { addTab, cleanupPinnedTables, connectionStore, togglePinTable } from '~/entities/connection/store'
@@ -253,7 +253,8 @@ function VirtualizedTableList({
   )
 }
 
-export function TablesTree({ className, search }: Pick<ComponentProps<typeof ScrollArea>, 'className'> & { search?: string }) {
+export function TablesTree({ className, search: rawSearch }: Pick<ComponentProps<typeof ScrollArea>, 'className'> & { search?: string }) {
+  const search = useDeferredValue(rawSearch)
   const { connection } = Route.useRouteContext()
   const store = connectionStore(connection.id)
   const { showSystem, tablesTreeOpenedSchemas, pinnedTables } = useStore(store, ({ showSystem, tablesTreeOpenedSchemas, pinnedTables }) => ({
@@ -282,12 +283,14 @@ export function TablesTree({ className, search }: Pick<ComponentProps<typeof Scr
     if (!tablesAndSchemas)
       return []
 
+    const lowerSearch = search?.trim().toLowerCase()
+
     const schemas = tablesAndSchemas.schemas
       .map(schema => ({
         ...schema,
         tables: schema.tables.filter(table =>
-          !search
-          || table.toLowerCase().includes(search.toLowerCase()),
+          !lowerSearch
+          || table.toLowerCase().includes(lowerSearch),
         ).toSorted((a, b) => a.localeCompare(b)),
       }))
       .filter(schema => schema.tables.length)
