@@ -13,7 +13,7 @@ import { useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { AnimatePresence, motion } from 'motion/react'
-import { memo, useDeferredValue, useEffect, useMemo, useRef } from 'react'
+import { memo, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { addTab, cleanupPinnedTables, connectionStore, togglePinTable } from '~/entities/connection/store'
@@ -185,6 +185,27 @@ function VirtualizedTableList({
   onDrop: (schema: string, table: string) => void
   search?: string
 }) {
+  const listRef = useRef<HTMLDivElement>(null)
+  const [scrollMargin, setScrollMargin] = useState(0)
+
+  useLayoutEffect(() => {
+    const scrollEl = parentRef.current
+    const listEl = listRef.current
+    if (!scrollEl || !listEl)
+      return
+
+    const measure = () => {
+      const scrollRect = scrollEl.getBoundingClientRect()
+      const listRect = listEl.getBoundingClientRect()
+      setScrollMargin(listRect.top - scrollRect.top + scrollEl.scrollTop)
+    }
+
+    measure()
+    const resizeObserver = new ResizeObserver(measure)
+    resizeObserver.observe(scrollEl)
+    return () => resizeObserver.disconnect()
+  }, [parentRef])
+
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
@@ -203,6 +224,7 @@ function VirtualizedTableList({
       return 28
     },
     overscan: 5,
+    scrollMargin,
   })
 
   const virtualItems = rowVirtualizer.getVirtualItems()
@@ -210,6 +232,7 @@ function VirtualizedTableList({
 
   return (
     <div
+      ref={listRef}
       className="relative w-full"
       style={{ height: `${totalSize}px` }}
     >
@@ -228,7 +251,7 @@ function VirtualizedTableList({
             ref={rowVirtualizer.measureElement}
             data-index={virtualRow.index}
             className="absolute left-0 top-0 w-full"
-            style={{ transform: `translateY(${virtualRow.start}px)` }}
+            style={{ transform: `translateY(${virtualRow.start - scrollMargin}px)` }}
           >
             {item.type === 'separator'
               ? (

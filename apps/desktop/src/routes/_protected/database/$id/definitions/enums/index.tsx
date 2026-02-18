@@ -10,7 +10,7 @@ import { RiLayoutColumnLine, RiListIndefinite, RiListUnordered, RiTable2 } from 
 import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useConnectionEnums, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { connectionStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
@@ -32,12 +32,15 @@ function DatabaseEnumsPage() {
   const store = connectionStore(connection.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data } = useConnectionTablesAndSchemas({ connection, showSystem })
-  const schemas = data?.schemas.map(({ name }) => name) ?? []
+  const schemas = useMemo(() => data?.schemas.map(({ name }) => name) ?? [], [data])
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
 
-  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
-    setSelectedSchema(schemas[0])
+  useEffect(() => {
+    if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema))) {
+      setSelectedSchema(schemas[0])
+    }
+  }, [schemas, selectedSchema])
 
   const filteredEnums = useMemo(() => {
     if (!enums)
@@ -113,7 +116,7 @@ function DatabaseEnumsPage() {
       <VirtualDefinitionsGrid
         loading={isPending}
         items={filteredEnums}
-        getItemKey={item => `${item.schema}-${item.name}`}
+        getItemKey={item => `${item.schema}-${item.name}-${item.metadata?.table ?? ''}-${item.metadata?.column ?? ''}`}
         emptyState={(
           <DefinitionsEmptyState
             title="No enums found"

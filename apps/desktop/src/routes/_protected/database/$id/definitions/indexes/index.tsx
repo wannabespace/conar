@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RiFileList3Line, RiKey2Line, RiLayoutColumnLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useConnectionIndexes, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { connectionStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
@@ -52,13 +52,16 @@ function DatabaseIndexesPage() {
   const store = connectionStore(connection.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data } = useConnectionTablesAndSchemas({ connection, showSystem })
-  const schemas = data?.schemas.map(({ name }) => name) ?? []
+  const schemas = useMemo(() => data?.schemas.map(({ name }) => name) ?? [], [data])
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<IndexType | 'all'>('all')
 
-  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
-    setSelectedSchema(schemas[0])
+  useEffect(() => {
+    if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema))) {
+      setSelectedSchema(schemas[0])
+    }
+  }, [schemas, selectedSchema])
 
   const groupedIndexes = useMemo(() => {
     if (!indexes)
@@ -187,27 +190,19 @@ function DatabaseIndexesPage() {
                       <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
-                    {(item.columns?.some(col => col?.trim()) ?? false) || item.customExpression
-                      ? (
-                          <>
-                            <span>on</span>
-                            {item.columns
-                              ?.filter(col => col?.trim())
-                              .map(col => (
-                                <Badge key={col} variant="outline">
-                                  <RiLayoutColumnLine className="size-3" />
-                                  <HighlightText text={col} match={search} />
-                                </Badge>
-                              ))}
-                            {!(item.columns?.some(col => col?.trim()) ?? false) && item.customExpression && (
-                              <Badge variant="outline">
-                                <RiLayoutColumnLine className="size-3" />
-                                <HighlightText text={item.customExpression} match={search} />
-                              </Badge>
-                            )}
-                          </>
-                        )
-                      : null}
+                    {(item.columns?.length ?? 0) > 0 && (
+                      <>
+                        <span>on</span>
+                        {item.columns
+                          ?.filter(col => col?.trim())
+                          .map(col => (
+                            <Badge key={col} variant="outline">
+                              <RiLayoutColumnLine className="size-3" />
+                              <HighlightText text={col} match={search} />
+                            </Badge>
+                          ))}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
