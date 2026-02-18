@@ -36,10 +36,12 @@ function DatabaseEnumsPage() {
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
 
+  // Sync selected schema with available schemas
   useEffect(() => {
     if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema))) {
       setSelectedSchema(schemas[0])
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setSelectedSchema is stable
   }, [schemas, selectedSchema])
 
   const filteredEnums = useMemo(() => {

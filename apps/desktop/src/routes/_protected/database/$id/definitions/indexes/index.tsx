@@ -57,10 +57,12 @@ function DatabaseIndexesPage() {
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<IndexType | 'all'>('all')
 
+  // Sync selected schema with available schemas
   useEffect(() => {
     if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema))) {
       setSelectedSchema(schemas[0])
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setSelectedSchema is stable
   }, [schemas, selectedSchema])
 
   const groupedIndexes = useMemo(() => {
