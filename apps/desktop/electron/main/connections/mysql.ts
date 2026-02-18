@@ -12,9 +12,9 @@ export const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const ssl = parseSSLConfig(searchParams)
   const conf: PoolOptions = {
+    ...config,
     connectionLimit: 1,
     dateStrings: true,
-    ...config,
     ...(ssl ? { ssl: readSSLFiles(ssl) } : {}),
   }
   const hasSsl = conf.ssl !== undefined
