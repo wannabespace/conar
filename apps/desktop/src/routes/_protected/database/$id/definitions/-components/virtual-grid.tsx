@@ -119,7 +119,7 @@ export function VirtualDefinitionsGrid<T>({
             data-index={virtualRow.index}
             className="absolute top-0 left-0 w-full pb-4"
             style={{
-              transform: `translateY(${virtualRow.start}px)`,
+              transform: `translateY(${virtualRow.start - scrollMargin}px)`,
             }}
           >
             {renderItem(item)}
