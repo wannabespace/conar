@@ -151,7 +151,7 @@ export function RowDetailSidebar({
 
                 <dd
                   className={cn(
-                    'mt-0.5 font-mono text-sm whitespace-pre-wrap wrap-break-word',
+                    'mt-0.5 font-mono text-sm whitespace-pre-wrap break-words',
                     isPlaceholder && 'text-muted-foreground italic',
                   )}
                 >
