@@ -197,14 +197,15 @@ function VirtualizedTableList({
     const measure = () => {
       const scrollRect = scrollEl.getBoundingClientRect()
       const listRect = listEl.getBoundingClientRect()
-      setScrollMargin(listRect.top - scrollRect.top + scrollEl.scrollTop)
+      const newScrollMargin = listRect.top - scrollRect.top + scrollEl.scrollTop
+      setScrollMargin((prev) => (prev === newScrollMargin ? prev : newScrollMargin))
     }
 
     measure()
     const resizeObserver = new ResizeObserver(measure)
     resizeObserver.observe(scrollEl)
     return () => resizeObserver.disconnect()
-  }, [parentRef])
+  }, [parentRef, items.length])
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,
