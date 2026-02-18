@@ -1,3 +1,4 @@
+import type { PoolConfig } from 'pg'
 import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
 import { readSSLFiles } from '@conar/connection/server'
@@ -18,8 +19,9 @@ pg.types.setTypeParser(pg.types.builtins.TIMETZ, parseDate)
 export const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const ssl = parseSSLConfig(searchParams)
-  const conf = {
+  const conf: PoolConfig = {
     ...config,
+    max: 1,
     ...(typeof ssl === 'object' ? { ssl: readSSLFiles(ssl) } : {}),
     ...(typeof ssl === 'boolean' ? { ssl } : {}),
   }
