@@ -61,7 +61,7 @@ function DatabaseIndexesPage() {
     if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema))) {
       setSelectedSchema(schemas[0])
     }
-  }, [schemas, selectedSchema, setSelectedSchema])
+  }, [schemas, selectedSchema])
 
   const groupedIndexes = useMemo(() => {
     if (!indexes)
