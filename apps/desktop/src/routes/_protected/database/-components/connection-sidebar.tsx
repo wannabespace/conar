@@ -130,7 +130,8 @@ function LastOpenedConnection({ connection }: { connection: typeof connections.$
         <TooltipTrigger asChild>
           <div className="group relative">
             {!isActive && (
-              <span
+              <button
+                type="button"
                 className={cn(
                   `
                     absolute top-0 right-0 z-10 flex size-4 translate-x-1/2
@@ -142,7 +143,7 @@ function LastOpenedConnection({ connection }: { connection: typeof connections.$
                 onClick={onCloseClick}
               >
                 <RiCloseLine className="size-3" />
-              </span>
+              </button>
             )}
             <Link
               className={cn(

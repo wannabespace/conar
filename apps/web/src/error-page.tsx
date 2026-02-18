@@ -59,7 +59,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                   {error.arkErrors.map((err, index) => (
 
                     <div
-                      key={index}
+                      key={err.message}
                       className={`
                         mb-4
                         last:mb-0

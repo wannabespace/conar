@@ -16,5 +16,8 @@ export const getPool = memoize((connectionString: string) => {
     user: config.user,
     password: config.password,
     options,
+    pool: {
+      max: 1,
+    },
   })
 })

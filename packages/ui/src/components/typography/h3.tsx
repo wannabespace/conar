@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import { cn } from '../../lib/utils'
 
-export function TypographyH3({ className, ...props }: ComponentProps<'h3'>) {
+export function TypographyH3({ className, children, ...props }: ComponentProps<'h3'>) {
   return (
     <h3
       className={cn(
@@ -9,6 +9,8 @@ export function TypographyH3({ className, ...props }: ComponentProps<'h3'>) {
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+    </h3>
   )
 }

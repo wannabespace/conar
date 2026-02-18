@@ -331,6 +331,8 @@ export function TableHeaderCell({
         )}
         {onResize && (
           <div
+            role="separator"
+            aria-orientation="vertical"
             className={cn(`
               h-full w-1 cursor-col-resize rounded-xs bg-foreground/20 opacity-0
               transition-opacity select-none

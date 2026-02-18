@@ -72,15 +72,19 @@ export const auth: Auth = betterAuth({
     after: createAuthMiddleware(async (ctx) => {
       const desktopVersion = ctx.headers?.get('x-desktop-version')
 
-      if (!ctx.context.session || !desktopVersion) {
+      if (!ctx.context.session) {
         return
       }
 
-      await redisMemoize(async () => {
-        await db.update(users).set({
-          desktopVersion,
-        }).where(eq(users.id, ctx.context.session!.user.id))
-      }, `desktop-version:${ctx.context.session.user.id}`)
+      ctx.request?.headers.set('user-id', ctx.context.session.user.id)
+
+      if (desktopVersion) {
+        await redisMemoize(async () => {
+          await db.update(users).set({
+            desktopVersion,
+          }).where(eq(users.id, ctx.context.session!.user.id))
+        }, `desktop-version:${ctx.context.session.user.id}`)
+      }
     }),
   },
   databaseHooks: {

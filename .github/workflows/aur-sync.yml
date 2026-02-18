@@ -1,0 +1,45 @@
+# .github/workflows/aur-publish.yml
+name: Publish to AUR
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    name: Push to aur.archlinux.org
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Sync AUR files (version + checksum)
+        run: bun scripts/sync-aur-version.ts --checksum
+
+      - name: Setup SSH for AUR
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > ~/.ssh/aur_key
+          chmod 600 ~/.ssh/aur_key
+          ssh-keyscan -t ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
+
+      - name: Clone AUR repo and push
+        env:
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          AUR_GIT_NAME: ${{ secrets.AUR_GIT_NAME }}
+          AUR_GIT_EMAIL: ${{ secrets.AUR_GIT_EMAIL }}
+        run: |
+          git config --global user.name "$AUR_GIT_NAME"
+          git config --global user.email "$AUR_GIT_EMAIL"
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/aur_key -o StrictHostKeyChecking=accept-new"
+          git clone ssh://aur@aur.archlinux.org/conar-bin.git aur-repo
+          cp aur/PKGBUILD aur/.SRCINFO aur-repo/
+          cd aur-repo
+          git add PKGBUILD .SRCINFO
+          git diff --staged --quiet || (git commit -m "Update to $(grep '^pkgver=' PKGBUILD | cut -d= -f2)" && git push origin master)

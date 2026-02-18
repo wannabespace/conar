@@ -2,13 +2,13 @@ import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { TotpCodeInput } from '~/components/totp-code-input'
-import { authClient, getSessionIsomorphic } from '~/lib/auth'
+import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
 export const Route = createFileRoute('/_auth/two-factor')({
   component: TwoFactorPage,
   loader: async () => {
-    const { data: session } = await getSessionIsomorphic()
+    const { data: session } = await authClient.getSession()
 
     if (session?.user) {
       throw redirect({ to: '/account' })

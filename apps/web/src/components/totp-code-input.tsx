@@ -4,6 +4,7 @@ import { Label } from '@conar/ui/components/label'
 import { useId } from 'react'
 
 const TOTP_LENGTH = 6
+const TOTP_SLOTS = Array.from({ length: TOTP_LENGTH }, (_, i) => ({ key: `slot-${i}`, index: i }))
 
 export function TotpCodeInput({
   label,
@@ -22,8 +23,8 @@ export function TotpCodeInput({
         {...props}
       >
         <InputOTPGroup>
-          {Array.from({ length: TOTP_LENGTH }, (_, i) => (
-            <InputOTPSlot key={i} index={i} />
+          {TOTP_SLOTS.map(slot => (
+            <InputOTPSlot key={slot.key} index={slot.index} />
           ))}
         </InputOTPGroup>
       </InputOTP>

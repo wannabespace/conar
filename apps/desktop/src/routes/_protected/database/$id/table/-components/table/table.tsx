@@ -421,6 +421,36 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
               {tableContent}
             </div>
           )}
+      <div
+        role="grid"
+        className="relative size-full bg-background outline-none"
+        tabIndex={0}
+        onKeyDown={handleShiftSelectionKeyDown}
+      >
+        <Table>
+          <TableHeader />
+          {isRowsPending
+            ? <TableBodySkeleton selectable={primaryColumns.length > 0} />
+            : error
+              ? <TableError error={error} />
+              : rows?.length === 0
+                ? <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
+                : tableColumns.length === 0
+                  ? <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />
+                  : (
+                      <>
+                        <TableBody data-mask className="bg-background" />
+                        <TableInfiniteLoader
+                          table={table}
+                          schema={schema}
+                          connection={connection}
+                          filters={filters}
+                          orderBy={orderBy}
+                        />
+                      </>
+                    )}
+        </Table>
+      </div>
       <RenameColumnDialog ref={renameColumnRef} connection={connection} />
     </TableProvider>
   )

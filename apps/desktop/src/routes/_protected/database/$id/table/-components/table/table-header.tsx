@@ -115,7 +115,7 @@ function Header() {
     if (!el)
       return
 
-    el.addEventListener('scroll', updateScrollLeft)
+    el.addEventListener('scroll', updateScrollLeft, { passive: true })
 
     return () => {
       el.removeEventListener('scroll', updateScrollLeft)

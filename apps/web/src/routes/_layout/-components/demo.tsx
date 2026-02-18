@@ -1,13 +1,6 @@
 import type { MotionProps } from 'motion/react'
-import type { ComponentProps } from 'react'
 import { cn } from '@conar/ui/lib/utils'
 import { motion, useScroll, useSpring, useTransform } from 'motion/react'
-
-function imageProps(index: number) {
-  return {
-    alt: `Demo part ${index + 1}`,
-  } satisfies ComponentProps<'img'>
-}
 
 function transitionProps(index: number) {
   return {
@@ -44,31 +37,30 @@ const imagesDark = [
 ]
 
 function Image({ className, image, index, type }: { className?: string, image: string, index: number, type: 'light' | 'dark' }) {
-  const props = {
-    src: image,
-    className: cn(
-      type === 'dark'
-        ? `
-          hidden
-          dark:block
-        `
-        : 'dark:hidden',
-      index === 0 ? 'mx-auto' : 'absolute top-0 left-0 rounded-xl',
-      className,
-    ),
-    ...imageProps(index),
-  }
+  const imgClassName = cn(
+    type === 'dark'
+      ? `
+        hidden
+        dark:block
+      `
+      : 'dark:hidden',
+    index === 0 ? 'mx-auto' : 'absolute top-0 left-0 rounded-xl',
+    className,
+  )
+  const alt = `Demo part ${index + 1}`
 
   if (index === 0) {
     return (
-      <img key={image} {...props} />
+      <img key={image} src={image} alt={alt} className={imgClassName} />
     )
   }
 
   return (
     <motion.img
       key={image}
-      {...props}
+      src={image}
+      alt={alt}
+      className={imgClassName}
       {...transitionProps(index)}
     />
   )

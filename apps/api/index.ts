@@ -83,6 +83,10 @@ const app = new Hono<{
     const version = c.req.header('x-desktop-version')
     const logEvent = c.get('logEvent') || {}
 
+    if (!logEvent.userId && c.req.header('user-id')) {
+      logEvent.userId = c.req.header('user-id')
+    }
+
     const logInfo = {
       method,
       status,

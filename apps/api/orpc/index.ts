@@ -4,7 +4,7 @@ import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
 import { auth } from '~/lib/auth'
-import { redis, redisMemoize } from '~/lib/redis'
+import { redis } from '~/lib/redis'
 
 export const orpc = os.$context<Context>()
 
@@ -85,7 +85,7 @@ export async function getSubscription(userId: string) {
 export const requireSubscriptionMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
   const minorVersion = context.minorVersion ?? 0
-  const subscription = await redisMemoize(() => getSubscription(session.user.id), `subscription:${session.user.id}`, 60 * 10)
+  const subscription = await getSubscription(session.user.id)
 
   if (session) {
     context.addLogData({ userId: session.user.id })
