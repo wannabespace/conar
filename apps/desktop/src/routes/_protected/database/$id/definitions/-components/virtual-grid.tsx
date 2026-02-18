@@ -52,25 +52,20 @@ export function VirtualDefinitionsGrid<T>({
   const [scrollMargin, setScrollMargin] = useState(0)
 
   useLayoutEffect(() => {
+    if (!isScrollReady)
+      return
+
     const scrollEl = scrollRef?.current
     const gridEl = gridRef.current
     if (!scrollEl || !gridEl)
       return
 
-    const measure = () => {
-      const scrollRect = scrollEl.getBoundingClientRect()
-      const gridRect = gridEl.getBoundingClientRect()
-      const offset = gridRect.top - scrollRect.top + scrollEl.scrollTop
-      setScrollMargin(offset)
-    }
+    const scrollRect = scrollEl.getBoundingClientRect()
+    const gridRect = gridEl.getBoundingClientRect()
+    const offset = gridRect.top - scrollRect.top + scrollEl.scrollTop
 
-    measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(scrollEl)
-
-    return () => observer.disconnect()
-  }, [scrollRef, isScrollReady])
-
+    setScrollMargin((prev) => (prev !== offset ? offset : prev))
+  })
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollRef?.current ?? null,
