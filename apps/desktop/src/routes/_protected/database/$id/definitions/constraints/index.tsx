@@ -140,6 +140,7 @@ function DatabaseConstraintsPage() {
       <VirtualDefinitionsGrid
         loading={isPending}
         items={filteredConstraints}
+        getItemKey={item => `${item.schema}-${item.table}-${item.name}`}
         emptyState={(
           <DefinitionsEmptyState
             title="No constraints found"

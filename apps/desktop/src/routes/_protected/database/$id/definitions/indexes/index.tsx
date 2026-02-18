@@ -97,7 +97,7 @@ function DatabaseIndexesPage() {
     return result
   }, [indexes, search, selectedSchema, filterType])
 
-  const indexList = useMemo(() => Object.values(groupedIndexes), [groupedIndexes])
+  const indexList = Object.values(groupedIndexes)
 
   return (
     <>
@@ -151,6 +151,7 @@ function DatabaseIndexesPage() {
       <VirtualDefinitionsGrid
         loading={isPending}
         items={indexList}
+        getItemKey={item => `${item.schema}-${item.table}-${item.name}`}
         emptyState={(
           <DefinitionsEmptyState
             title="No indexes found"

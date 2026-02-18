@@ -188,6 +188,14 @@ function VirtualizedTableList({
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
+    getItemKey: (index) => {
+      const item = items[index]
+      if (!item)
+        return index
+      if (item.type === 'separator')
+        return `separator-${index}`
+      return `${item.type}-${item.schema}-${item.table}`
+    },
     estimateSize: (index) => {
       const item = items[index]
       if (item?.type === 'separator')
@@ -210,12 +218,16 @@ function VirtualizedTableList({
         if (!item)
           return null
 
+        const rowKey = item.type === 'separator'
+          ? `separator-${virtualRow.index}`
+          : `${item.type}-${item.schema}-${item.table}`
+
         return (
           <div
-            key={virtualRow.key}
+            key={rowKey}
             ref={rowVirtualizer.measureElement}
             data-index={virtualRow.index}
-            className="absolute left-0 w-full"
+            className="absolute left-0 top-0 w-full"
             style={{ transform: `translateY(${virtualRow.start}px)` }}
           >
             {item.type === 'separator'

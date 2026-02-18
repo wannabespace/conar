@@ -113,6 +113,7 @@ function DatabaseEnumsPage() {
       <VirtualDefinitionsGrid
         loading={isPending}
         items={filteredEnums}
+        getItemKey={item => `${item.schema}-${item.name}`}
         emptyState={(
           <DefinitionsEmptyState
             title="No enums found"
