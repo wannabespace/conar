@@ -79,7 +79,7 @@ export const optionalAuthMiddleware = logMiddleware.concat(orpc.middleware(async
 export async function getSubscription(userId: string) {
   const userSubscriptions = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
 
-  return userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number]) && !s.cancelAt) ?? null
+  return userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number])) ?? null
 }
 
 export const requireSubscriptionMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
