@@ -40,7 +40,7 @@ function DatabaseEnumsPage() {
     if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema))) {
       setSelectedSchema(schemas[0])
     }
-  }, [schemas, selectedSchema])
+  }, [schemas, selectedSchema, setSelectedSchema])
 
   const filteredEnums = useMemo(() => {
     if (!enums)
