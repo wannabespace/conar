@@ -99,6 +99,11 @@ export const requireSubscriptionMiddleware = logMiddleware.concat(orpc.middlewar
     })
   }
 
+  context.addLogData({
+    subscriptionId: subscription.id,
+    subscriptionStatus: subscription.status,
+  })
+
   return next({
     context: {
       ...session,
