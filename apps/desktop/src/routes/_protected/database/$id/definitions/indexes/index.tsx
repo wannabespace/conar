@@ -7,8 +7,10 @@ import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { RiFileList3Line, RiKey2Line, RiLayoutColumnLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { useMemo, useState } from 'react'
 import { useConnectionIndexes, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { connectionStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsHeader } from '../-components/header'
 import { VirtualDefinitionsGrid } from '../-components/virtual-grid'
@@ -47,7 +49,9 @@ function getIndexType(indexItem: IndexItem): IndexType {
 function DatabaseIndexesPage() {
   const { connection } = Route.useLoaderData()
   const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useConnectionIndexes({ connection })
-  const { data } = useConnectionTablesAndSchemas({ connection })
+  const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
+  const { data } = useConnectionTablesAndSchemas({ connection, showSystem })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
@@ -67,16 +71,14 @@ function DatabaseIndexesPage() {
       if (indexItem.schema !== selectedSchema)
         continue
 
-      const matchesFilter = filterType === 'all' || filterType === getIndexType(indexItem)
-
-      if (!matchesFilter)
+      if (filterType !== 'all' && filterType !== getIndexType(indexItem))
         continue
 
       const matchesSearch = !lowerSearch
         || indexItem.name.toLowerCase().includes(lowerSearch)
         || indexItem.table.toLowerCase().includes(lowerSearch)
-        || indexItem.column?.toLowerCase().includes(lowerSearch)
-        || indexItem.customExpression?.toLowerCase().includes(lowerSearch)
+        || (indexItem.column && indexItem.column.toLowerCase().includes(lowerSearch))
+        || (indexItem.customExpression && indexItem.customExpression.toLowerCase().includes(lowerSearch))
 
       if (!matchesSearch)
         continue
@@ -156,10 +158,7 @@ function DatabaseIndexesPage() {
           />
         )}
         renderItem={item => (
-          <MotionCard
-            key={`${item.schema}-${item.table}-${item.name}`}
-            {...MOTION_BLOCK_PROPS}
-          >
+          <MotionCard {...MOTION_BLOCK_PROPS}>
             <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
@@ -187,25 +186,27 @@ function DatabaseIndexesPage() {
                       <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
-                    {(item.columns?.some(col => col && col.trim() !== '') ?? false) || item.customExpression ? (
-                      <>
-                        <span>on</span>
-                        {item.columns
-                          ?.filter(col => col && col.trim() !== '')
-                          .map(col => (
-                            <Badge key={col} variant="outline">
-                              <RiLayoutColumnLine className="size-3" />
-                              <HighlightText text={col} match={search} />
-                            </Badge>
-                          ))}
-                        {!(item.columns?.some(col => col && col.trim() !== '') ?? false) && item.customExpression && (
-                          <Badge key={item.customExpression} variant="outline">
-                            <RiLayoutColumnLine className="size-3" />
-                            <HighlightText text={item.customExpression} match={search} />
-                          </Badge>
-                        )}
-                      </>
-                    ) : null}
+                    {(item.columns?.some(col => col?.trim()) ?? false) || item.customExpression
+                      ? (
+                          <>
+                            <span>on</span>
+                            {item.columns
+                              ?.filter(col => col?.trim())
+                              .map(col => (
+                                <Badge key={col} variant="outline">
+                                  <RiLayoutColumnLine className="size-3" />
+                                  <HighlightText text={col} match={search} />
+                                </Badge>
+                              ))}
+                            {!(item.columns?.some(col => col?.trim()) ?? false) && item.customExpression && (
+                              <Badge variant="outline">
+                                <RiLayoutColumnLine className="size-3" />
+                                <HighlightText text={item.customExpression} match={search} />
+                              </Badge>
+                            )}
+                          </>
+                        )
+                      : null}
                   </div>
                 </div>
               </div>
