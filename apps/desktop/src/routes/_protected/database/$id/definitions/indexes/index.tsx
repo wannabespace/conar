@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RiFileList3Line, RiKey2Line, RiLayoutColumnLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useConnectionIndexes, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { connectionStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
@@ -57,11 +57,8 @@ function DatabaseIndexesPage() {
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<IndexType | 'all'>('all')
 
-  useEffect(() => {
-    if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema))) {
-      setSelectedSchema(schemas[0])
-    }
-  }, [schemas, selectedSchema])
+  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
+    setSelectedSchema(schemas[0])
 
   const groupedIndexes = useMemo(() => {
     if (!indexes)
