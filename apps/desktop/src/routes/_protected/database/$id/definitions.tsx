@@ -30,7 +30,7 @@ export function useDefinitionsScroll() {
   const scrollCtx = use(DefinitionsScrollContext)
 
   if (!scrollCtx) {
-    throw new Error('DefinitionsScrollContext not found')
+    throw new Error('useDefinitionsScroll must be called within a DefinitionsLayout component')
   }
 
   return scrollCtx

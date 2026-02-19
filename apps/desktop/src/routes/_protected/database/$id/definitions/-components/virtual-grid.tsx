@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react'
+import type { Key, ReactNode } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useDefinitionsScroll } from '../../definitions'
 
 function Skeleton() {
@@ -36,6 +37,7 @@ interface VirtualDefinitionsGridProps<T> {
   items: T[]
   renderItem: (item: T) => ReactNode
   emptyState?: ReactNode
+  getItemKey?: (item: T) => Key
 }
 
 export function VirtualDefinitionsGrid<T>({
@@ -43,14 +45,39 @@ export function VirtualDefinitionsGrid<T>({
   items,
   renderItem,
   emptyState,
+  getItemKey,
 }: VirtualDefinitionsGridProps<T>) {
   const { scrollRef, isScrollReady } = useDefinitionsScroll()
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [scrollMargin, setScrollMargin] = useState(0)
 
+  useLayoutEffect(() => {
+    if (!isScrollReady)
+      return
+
+    const scrollEl = scrollRef?.current
+    const gridEl = gridRef.current
+    if (!scrollEl || !gridEl)
+      return
+
+    const scrollRect = scrollEl.getBoundingClientRect()
+    const gridRect = gridEl.getBoundingClientRect()
+    const offset = gridRect.top - scrollRect.top + scrollEl.scrollTop
+
+    setScrollMargin(prev => (prev !== offset ? offset : prev))
+  })
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollRef?.current ?? null,
+    getItemKey: getItemKey
+      ? (index) => {
+          const item = items[index]
+          return item != null ? getItemKey(item) : index
+        }
+      : undefined,
     estimateSize: () => 100,
     overscan: 5,
+    scrollMargin,
   })
 
   if (!isScrollReady || loading) {
@@ -71,6 +98,7 @@ export function VirtualDefinitionsGrid<T>({
 
   return (
     <div
+      ref={gridRef}
       className="relative mt-2 w-full"
       style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
     >
@@ -78,14 +106,15 @@ export function VirtualDefinitionsGrid<T>({
         const item = items[virtualRow.index]
         if (!item)
           return null
+        const rowKey = getItemKey ? getItemKey(item) : virtualRow.key
         return (
           <div
-            key={virtualRow.key}
+            key={rowKey}
             ref={rowVirtualizer.measureElement}
             data-index={virtualRow.index}
             className="absolute top-0 left-0 w-full pb-4"
             style={{
-              transform: `translateY(${virtualRow.start}px)`,
+              transform: `translateY(${virtualRow.start - scrollMargin}px)`,
             }}
           >
             {renderItem(item)}

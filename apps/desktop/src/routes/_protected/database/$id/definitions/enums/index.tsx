@@ -32,7 +32,7 @@ function DatabaseEnumsPage() {
   const store = connectionStore(connection.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data } = useConnectionTablesAndSchemas({ connection, showSystem })
-  const schemas = data?.schemas.map(({ name }) => name) ?? []
+  const schemas = useMemo(() => data?.schemas.map(({ name }) => name) ?? [], [data])
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
 
@@ -113,6 +113,7 @@ function DatabaseEnumsPage() {
       <VirtualDefinitionsGrid
         loading={isPending}
         items={filteredEnums}
+        getItemKey={item => `${item.schema}-${item.name}-${item.metadata?.table ?? ''}-${item.metadata?.column ?? ''}`}
         emptyState={(
           <DefinitionsEmptyState
             title="No enums found"

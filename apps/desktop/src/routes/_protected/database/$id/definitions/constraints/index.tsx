@@ -60,7 +60,7 @@ function DatabaseConstraintsPage() {
   const store = connectionStore(connection.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data } = useConnectionTablesAndSchemas({ connection, showSystem })
-  const schemas = data?.schemas.map(({ name }) => name) ?? []
+  const schemas = useMemo(() => data?.schemas.map(({ name }) => name) ?? [], [data])
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<ConstraintType | 'all'>('all')
@@ -140,6 +140,7 @@ function DatabaseConstraintsPage() {
       <VirtualDefinitionsGrid
         loading={isPending}
         items={filteredConstraints}
+        getItemKey={item => `${item.schema}-${item.table}-${item.name}`}
         emptyState={(
           <DefinitionsEmptyState
             title="No constraints found"

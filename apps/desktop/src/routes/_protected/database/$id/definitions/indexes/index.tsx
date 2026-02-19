@@ -52,7 +52,7 @@ function DatabaseIndexesPage() {
   const store = connectionStore(connection.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data } = useConnectionTablesAndSchemas({ connection, showSystem })
-  const schemas = data?.schemas.map(({ name }) => name) ?? []
+  const schemas = useMemo(() => data?.schemas.map(({ name }) => name) ?? [], [data])
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState<IndexType | 'all'>('all')
@@ -71,16 +71,14 @@ function DatabaseIndexesPage() {
       if (indexItem.schema !== selectedSchema)
         continue
 
-      const matchesFilter = filterType === 'all' || filterType === getIndexType(indexItem)
-
-      if (!matchesFilter)
+      if (filterType !== 'all' && filterType !== getIndexType(indexItem))
         continue
 
       const matchesSearch = !lowerSearch
         || indexItem.name.toLowerCase().includes(lowerSearch)
         || indexItem.table.toLowerCase().includes(lowerSearch)
-        || indexItem.column?.toLowerCase().includes(lowerSearch)
-        || indexItem.customExpression?.toLowerCase().includes(lowerSearch)
+        || (indexItem.column && indexItem.column.toLowerCase().includes(lowerSearch))
+        || (indexItem.customExpression && indexItem.customExpression.toLowerCase().includes(lowerSearch))
 
       if (!matchesSearch)
         continue
@@ -99,7 +97,7 @@ function DatabaseIndexesPage() {
     return result
   }, [indexes, search, selectedSchema, filterType])
 
-  const indexList = useMemo(() => Object.values(groupedIndexes), [groupedIndexes])
+  const indexList = Object.values(groupedIndexes)
 
   return (
     <>
@@ -153,6 +151,7 @@ function DatabaseIndexesPage() {
       <VirtualDefinitionsGrid
         loading={isPending}
         items={indexList}
+        getItemKey={item => `${item.schema}-${item.table}-${item.name}`}
         emptyState={(
           <DefinitionsEmptyState
             title="No indexes found"
@@ -160,9 +159,7 @@ function DatabaseIndexesPage() {
           />
         )}
         renderItem={item => (
-          <MotionCard
-            {...MOTION_BLOCK_PROPS}
-          >
+          <MotionCard {...MOTION_BLOCK_PROPS}>
             <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
@@ -193,27 +190,19 @@ function DatabaseIndexesPage() {
                       <RiTable2 className="mr-1 size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
-                    {(item.columns?.some(col => col && col.trim() !== '') ?? false) || item.customExpression
-                      ? (
-                          <>
-                            <span>on</span>
-                            {item.columns
-                              ?.filter(col => col && col.trim() !== '')
-                              .map(col => (
-                                <Badge key={col} variant="outline" className="text-xs font-normal">
-                                  <RiLayoutColumnLine className="mr-1 size-3" />
-                                  <HighlightText text={col} match={search} />
-                                </Badge>
-                              ))}
-                            {!(item.columns?.some(col => col && col.trim() !== '') ?? false) && item.customExpression && (
-                              <Badge key={item.customExpression} variant="outline" className="text-xs font-normal">
-                                <RiLayoutColumnLine className="mr-1 size-3" />
-                                <HighlightText text={item.customExpression} match={search} />
-                              </Badge>
-                            )}
-                          </>
-                        )
-                      : null}
+                    {(item.columns?.length ?? 0) > 0 && (
+                      <>
+                        <span>on</span>
+                        {item.columns
+                          ?.filter(col => col?.trim())
+                          .map(col => (
+                            <Badge key={col} variant="outline">
+                              <RiLayoutColumnLine className="size-3" />
+                              <HighlightText text={col} match={search} />
+                            </Badge>
+                          ))}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
