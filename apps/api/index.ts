@@ -192,7 +192,7 @@ const app = new Hono<{
         })
         .catch(e => createAnswer('error', 'openai', e instanceof Error ? e.message : 'OpenAI connection failed')),
       generateText({
-        model: google('gemini-2.0-flash'),
+        model: google('gemini-2.5-flash'),
         prompt: 'Hello, how are you?',
       })
         .then((result) => {

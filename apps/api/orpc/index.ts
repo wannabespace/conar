@@ -82,7 +82,7 @@ export async function getSubscription(userId: string) {
   return userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number])) ?? null
 }
 
-export const requireSubscriptionMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
+export const subscriptionMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
   const minorVersion = context.minorVersion ?? 0
   const subscription = await getSubscription(session.user.id)
@@ -107,6 +107,22 @@ export const requireSubscriptionMiddleware = logMiddleware.concat(orpc.middlewar
   return next({
     context: {
       ...session,
+      subscription,
+      getUserSecret: () => getUserSecret(session.user.id),
+    },
+  })
+}))
+
+export const optionalSubscriptionMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
+  const session = await getSession(context.headers)
+  const subscription = await getSubscription(session.user.id)
+
+  context.addLogData({ userId: session.user.id })
+
+  return next({
+    context: {
+      ...session,
+      subscription,
       getUserSecret: () => getUserSecret(session.user.id),
     },
   })

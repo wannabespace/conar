@@ -1,10 +1,10 @@
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm/sql'
 import { chats, chatsUpdateSchema, db } from '~/drizzle'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const update = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(subscriptionMiddleware)
   .input(type.and(
     chatsUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'userId', 'activeStreamId', 'connectionId'),
     chatsUpdateSchema.pick('id').required(),

@@ -1,10 +1,10 @@
 import { ORPCError } from '@orpc/server'
 import { and, eq } from 'drizzle-orm'
 import { chats, chatsMessages, chatsMessagesInsertSchema, db } from '~/drizzle'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const create = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(subscriptionMiddleware)
   .input(chatsMessagesInsertSchema)
   .handler(async ({ context, input }) => {
     const [chat] = await db.select({ userId: chats.userId })
