@@ -8,7 +8,7 @@ interface StickyHeaderProps extends ComponentProps<typeof motion.div> {
   schemaParam: string | undefined
 }
 
-export function StickyHeader({ activeSchemaId, schemaParam, ...props }: StickyHeaderProps) {
+export function StickyHeader({ activeSchemaId, schemaParam, className, ...props }: StickyHeaderProps) {
   return (
     <motion.div
       key={activeSchemaId}
@@ -16,10 +16,7 @@ export function StickyHeader({ activeSchemaId, schemaParam, ...props }: StickyHe
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -4 }}
       transition={{ duration: 0.15 }}
-      className="
-        absolute inset-x-0 top-0 z-20 border-b border-border bg-background px-2
-        pt-2 pb-1
-      "
+      className={cn('absolute inset-x-0 top-0 z-20 border-b border-border bg-background px-2 pt-2 pb-1', className)}
       {...props}
     >
       <div className="flex items-center gap-2 rounded-md px-2 py-1.5">

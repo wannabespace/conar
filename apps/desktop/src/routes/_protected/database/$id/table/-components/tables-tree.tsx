@@ -212,11 +212,8 @@ function VirtualizedTableList({
       resizeObserver.observe(containerRef.current)
     }
 
-    scrollEl.addEventListener('scroll', measure)
-
     return () => {
       resizeObserver.disconnect()
-      scrollEl.removeEventListener('scroll', measure)
     }
   }, [parentRef, containerRef, items.length])
 
@@ -302,7 +299,6 @@ export function TablesTree({ className, search }: { className?: string, search?:
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const accordionRef = useRef<HTMLDivElement>(null)
-  const { activeSchemaId, isActiveSchemaExpanded } = useActiveSchema(scrollRef, tablesTreeOpenedSchemas)
 
   useEffect(() => {
     if (!tablesAndSchemas)
@@ -372,6 +368,8 @@ export function TablesTree({ className, search }: { className?: string, search?:
     ? filteredTablesAndSchemas.map(schema => schema.name)
     : tablesTreeOpenedSchemas, [search, filteredTablesAndSchemas, tablesTreeOpenedSchemas])
 
+  const { activeSchemaId, isActiveSchemaExpanded } = useActiveSchema(scrollRef, searchAccordionValue)
+
   return (
     <ScrollArea className={cn('h-full', className)}>
       <DropTableDialog ref={dropTableDialogRef} />
@@ -437,7 +435,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                             className={`
                               mb-1 cursor-pointer truncate px-2 py-1.5
                               hover:bg-accent/50 hover:no-underline
-                              data-[state=open]:sticky data-[state=open]:top-0
+                              data-[state=open]:sticky data-[state=open]:top-2
                               data-[state=open]:z-10
                               data-[state=open]:bg-background
                             `}

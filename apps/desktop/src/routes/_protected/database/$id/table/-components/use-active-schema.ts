@@ -30,8 +30,10 @@ export function useActiveSchema(
     }
 
     scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+
     return () => scrollContainer.removeEventListener('scroll', handleScroll)
-  }, [scrollContainerRef])
+  }, [scrollContainerRef, expandedSchemaIds])
 
   return {
     activeSchemaId,
