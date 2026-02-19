@@ -83,15 +83,19 @@ const app = new Hono<{
     const version = c.req.header('x-desktop-version')
     const logEvent = c.get('logEvent') || {}
 
-    const logInfo = sanitizeLogData({
+    if (!logEvent.userId && c.req.header('user-id')) {
+      logEvent.userId = c.req.header('user-id')
+    }
+
+    const logInfo = {
       method,
       status,
       path,
       duration: `${Date.now() - startTime}ms`,
       ...(version ? { version } : {}),
       ...(userAgent ? { userAgent } : {}),
-      ...logEvent,
-    })
+      ...sanitizeLogData(logEvent),
+    }
 
     if (
       status >= 400

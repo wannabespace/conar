@@ -31,16 +31,17 @@ const treeTransition = {
   height: { duration: 0.1 },
 }
 
+const skeletonWidths = Array.from({ length: 10 }, () => `${Math.random() * 40 + 30}%`)
+
 function Skeleton() {
   return (
     <div className="w-full space-y-3">
-      {Array.from({ length: 10 }).map((_, i) => (
-        // eslint-disable-next-line react/no-array-index-key
-        <div key={i} className="flex h-5 items-center gap-2 px-2">
+      {skeletonWidths.map(width => (
+        <div key={width} className="flex h-5 items-center gap-2 px-2">
           <div className="h-full w-5 shrink-0 animate-pulse rounded-md bg-muted" />
           <div
             className="h-full animate-pulse rounded-md bg-muted"
-            style={{ width: `${Math.random() * 40 + 60 - 30}%` }}
+            style={{ width }}
           />
         </div>
       ))}
@@ -162,9 +163,10 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
 
 export function TablesTree({ className, search }: { className?: string, search?: string }) {
   const { connection } = Route.useRouteContext()
-  const { data: tablesAndSchemas, isPending } = useConnectionTablesAndSchemas({ connection })
-  const { schema: schemaParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
+  const { data: tablesAndSchemas, isPending } = useConnectionTablesAndSchemas({ connection, showSystem })
+  const { schema: schemaParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
   const pinnedTables = useStore(store, state => state.pinnedTables)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
