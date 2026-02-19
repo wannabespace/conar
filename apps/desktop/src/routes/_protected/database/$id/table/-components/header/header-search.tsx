@@ -1,11 +1,10 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
-import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Input } from '@conar/ui/components/input'
 import { Kbd } from '@conar/ui/components/kbd'
-import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { RiBardLine } from '@remixicon/react'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useMemo, useRef } from 'react'
@@ -55,7 +54,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
     Enums: ${JSON.stringify(enums, null, 2)}
   `.trim(), [columns, enums, schema, table])
 
-  useKeyboardEvent(e => isCtrlAndKey(e, 'f'), () => {
+  useHotkey('Mod+F', () => {
     inputRef.current?.focus()
   })
 

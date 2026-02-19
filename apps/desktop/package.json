@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
+    "@tanstack/react-hotkeys": "catalog:",
     "@todesktop/runtime": "catalog:",
     "electron-store": "catalog:",
     "mssql": "catalog:",
