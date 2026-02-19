@@ -129,12 +129,12 @@ function P({ children, className }: { children?: ReactNode, className?: string }
   const generating = useMarkdownContext(c => c.generating)
 
   if (typeof children === 'string') {
+    const chars = children.split('').map((char, i) => ({ char, key: `${char}-${i}` }))
     return (
       <p className={className}>
-        {children.split('').map((char, index) => (
+        {chars.map(({ char, key }) => (
           <span
-            // eslint-disable-next-line react/no-array-index-key
-            key={index}
+            key={key}
             className={cn(generating && 'animate-in fade-in duration-200')}
           >
             {char}
@@ -154,7 +154,7 @@ function MarkdownBase({ content }: { content: string }) {
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        pre: ({ children }) => <Pre children={children} />,
+        pre: ({ children }) => <Pre>{children}</Pre>,
         table: MarkdownTable,
         thead: TableHeader,
         tbody: TableBody,
@@ -164,8 +164,9 @@ function MarkdownBase({ content }: { content: string }) {
         td: TableCell,
         a: A,
       }}
-      children={processedContent}
-    />
+    >
+      {processedContent}
+    </ReactMarkdown>
   )
 }
 

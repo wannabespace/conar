@@ -220,11 +220,12 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
 
 function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loading?: boolean }) {
   return parts.map((part, index) => {
+    const key = `${part.type}-${index}`
+
     if (part.type === 'text') {
       return (
         <Markdown
-          // eslint-disable-next-line react/no-array-index-key
-          key={index}
+          key={key}
           content={part.text}
           generating={loading}
           codeActions={props => <ChatMessageCodeActions {...props} />}
@@ -235,8 +236,7 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loadi
     if (part.type === 'reasoning') {
       return (
         <div
-          // eslint-disable-next-line react/no-array-index-key
-          key={index}
+          key={key}
           className={cn(loading && 'animate-in duration-200 fade-in')}
         >
           <p className="text-xs font-medium">Reasoning</p>
@@ -248,8 +248,7 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loadi
     if (isToolUIPart(part)) {
       return (
         <ChatMessageTool
-          // eslint-disable-next-line react/no-array-index-key
-          key={index}
+          key={key}
           className={cn(loading && 'animate-in duration-200 fade-in')}
           part={part}
         />
@@ -451,12 +450,16 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
   }, [scrollToBottom])
 
   useEffect(() => {
-    if (userMessageRef.current) {
-      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
+    if (!userMessageRef.current)
+      return
+
+    const frame = requestAnimationFrame(() => {
       setPlaceholderHeight(
         (scrollRef.current?.offsetHeight || 0) - (userMessageRef.current?.offsetHeight || 0) - MESSAGES_GAP,
       )
-    }
+    })
+
+    return () => cancelAnimationFrame(frame)
   }, [scrollRef, userMessageRef, messages.length])
 
   const isLastMessageFromUser = messages.at(-1)?.role === 'user'

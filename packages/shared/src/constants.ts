@@ -1,3 +1,5 @@
+import { ConnectionType } from './enums/connection-type'
+
 export const SOCIAL_LINKS = {
   GITHUB: 'https://github.com/wannabespace/conar',
   TWITTER: 'https://x.com/conar_app',
@@ -43,3 +45,5 @@ export const LATEST_VERSION_BEFORE_SUBSCRIPTION = 26 as const
 
 export const SUBSCRIPTION_PAST_DUE_MESSAGE = 'We couldn\'t process your recent payment. Please update your payment method to avoid any interruption to your subscription.' as const
 export const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due'] as const
+
+export const CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES: ConnectionType[] = [ConnectionType.MSSQL]

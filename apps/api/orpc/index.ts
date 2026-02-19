@@ -4,7 +4,7 @@ import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
 import { auth } from '~/lib/auth'
-import { redis, redisMemoize } from '~/lib/redis'
+import { redis } from '~/lib/redis'
 
 export const orpc = os.$context<Context>()
 
@@ -79,13 +79,13 @@ export const optionalAuthMiddleware = logMiddleware.concat(orpc.middleware(async
 export async function getSubscription(userId: string) {
   const userSubscriptions = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
 
-  return userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number]) && !s.cancelAt) ?? null
+  return userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number])) ?? null
 }
 
 export const requireSubscriptionMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
   const minorVersion = context.minorVersion ?? 0
-  const subscription = await redisMemoize(() => getSubscription(session.user.id), `subscription:${session.user.id}`, 60 * 10)
+  const subscription = await getSubscription(session.user.id)
 
   if (session) {
     context.addLogData({ userId: session.user.id })
@@ -98,6 +98,11 @@ export const requireSubscriptionMiddleware = logMiddleware.concat(orpc.middlewar
         : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
     })
   }
+
+  context.addLogData({
+    subscriptionId: subscription.id,
+    subscriptionStatus: subscription.status,
+  })
 
   return next({
     context: {

@@ -48,8 +48,7 @@ export function RunnerResults() {
         <TabsList className="w-full rounded-none bg-muted/50">
           {results.map(({ query, error }, index) => (
             <TabsTrigger
-              // eslint-disable-next-line react/no-array-index-key
-              key={index}
+              key={`query-${query}`}
               value={`table-${index}`}
               className="h-8"
             >
@@ -84,8 +83,7 @@ export function RunnerResults() {
         </TabsList>
         {results.map(({ data, error, startLineNumber, endLineNumber, duration }, index) => (
           <TabsContent
-            // eslint-disable-next-line react/no-array-index-key
-            key={index}
+            key={`result-${data?.length ?? 'error'}-${startLineNumber}`}
             value={`table-${index}`}
             className="h-[calc(100%-(--spacing(8)))]"
           >
