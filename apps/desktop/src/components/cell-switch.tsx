@@ -1,7 +1,6 @@
-import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { Switch } from '@conar/ui/components/switch'
-import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { cn } from '@conar/ui/lib/utils'
+import { useHotkey } from '@tanstack/react-hotkeys'
 
 export function CellSwitch({
   checked,
@@ -14,7 +13,7 @@ export function CellSwitch({
   onSave: (value: string) => void
   className?: string
 }) {
-  useKeyboardEvent(e => isCtrlAndKey(e, 'Enter'), () => onSave(checked ? 'true' : 'false'))
+  useHotkey('Mod+Enter', () => onSave(checked ? 'true' : 'false'))
 
   return (
     <label className={cn('flex gap-2 items-center text-sm', className)}>

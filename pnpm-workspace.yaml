@@ -59,6 +59,7 @@ catalog:
   '@tanstack/react-db': ^0.1.69
   '@tanstack/react-devtools': ^0.9.5
   '@tanstack/react-form': ^1.28.0
+  '@tanstack/react-hotkeys': ^0.1.0
   '@tanstack/react-query': ^5.90.21
   '@tanstack/react-query-devtools': ^5.91.3
   '@tanstack/react-router': ^1.159.5
