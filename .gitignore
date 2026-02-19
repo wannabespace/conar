@@ -3,3 +3,4 @@ node_modules
 .turbo
 *.tsbuildinfo
 .idea
+.node-modules-inspector
