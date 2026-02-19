@@ -20,6 +20,8 @@ import { addTab, cleanupPinnedTables, connectionStore, togglePinTable } from '~/
 import { Route } from '..'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
+import { StickyHeader } from './sticky-header'
+import { useActiveSchema } from './use-active-schema'
 
 const treeVariants = {
   visible: { opacity: 1, height: 'auto' },
@@ -173,12 +175,14 @@ interface VirtualItemData {
 function VirtualizedTableList({
   items,
   parentRef,
+  containerRef,
   onRename,
   onDrop,
   search,
 }: {
   items: VirtualItemData[]
   parentRef: RefObject<HTMLDivElement | null>
+  containerRef?: RefObject<HTMLDivElement | null>
   onRename: (schema: string, table: string) => void
   onDrop: (schema: string, table: string) => void
   search?: string
@@ -202,8 +206,19 @@ function VirtualizedTableList({
     measure()
     const resizeObserver = new ResizeObserver(measure)
     resizeObserver.observe(scrollEl)
-    return () => resizeObserver.disconnect()
-  }, [parentRef, items.length])
+    resizeObserver.observe(listEl)
+
+    if (containerRef?.current) {
+      resizeObserver.observe(containerRef.current)
+    }
+
+    scrollEl.addEventListener('scroll', measure)
+
+    return () => {
+      resizeObserver.disconnect()
+      scrollEl.removeEventListener('scroll', measure)
+    }
+  }, [parentRef, containerRef, items.length])
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,
@@ -286,6 +301,8 @@ export function TablesTree({ className, search }: { className?: string, search?:
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const accordionRef = useRef<HTMLDivElement>(null)
+  const { activeSchemaId, isActiveSchemaExpanded } = useActiveSchema(scrollRef, tablesTreeOpenedSchemas)
 
   useEffect(() => {
     if (!tablesAndSchemas)
@@ -359,8 +376,14 @@ export function TablesTree({ className, search }: { className?: string, search?:
     <ScrollArea className={cn('h-full', className)}>
       <DropTableDialog ref={dropTableDialogRef} />
       <RenameTableDialog ref={renameTableDialogRef} />
+      <AnimatePresence>
+        {activeSchemaId && isActiveSchemaExpanded && (
+          <StickyHeader activeSchemaId={activeSchemaId} schemaParam={schemaParam} />
+        )}
+      </AnimatePresence>
       <ScrollViewport ref={scrollRef} className="p-2">
         <Accordion
+          ref={accordionRef}
           value={searchAccordionValue}
           onValueChange={(v) => {
             if (!search) {
@@ -409,10 +432,15 @@ export function TablesTree({ className, search }: { className?: string, search?:
                           value={schema.name}
                           className="border-b-0"
                         >
-                          <AccordionTrigger className={`
-                            mb-1 cursor-pointer truncate px-2 py-1.5
-                            hover:bg-accent/50 hover:no-underline
-                          `}
+                          <AccordionTrigger
+                            data-schema-trigger={schema.name}
+                            className={`
+                              mb-1 cursor-pointer truncate px-2 py-1.5
+                              hover:bg-accent/50 hover:no-underline
+                              data-[state=open]:sticky data-[state=open]:top-0
+                              data-[state=open]:z-10
+                              data-[state=open]:bg-background
+                            `}
                           >
                             <span className="flex items-center gap-2">
                               <TooltipProvider>
@@ -444,6 +472,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                   <VirtualizedTableList
                                     items={schema.virtualItems}
                                     parentRef={scrollRef}
+                                    containerRef={accordionRef}
                                     search={search}
                                     onRename={(s, t) => renameTableDialogRef.current?.rename(s, t)}
                                     onDrop={(s, t) => dropTableDialogRef.current?.drop(s, t)}
