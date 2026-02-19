@@ -474,8 +474,8 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                     parentRef={scrollRef}
                                     containerRef={accordionRef}
                                     search={search}
-                                    onRename={(s, t) => renameTableDialogRef.current?.rename(s, t)}
-                                    onDrop={(s, t) => dropTableDialogRef.current?.drop(s, t)}
+                                    onRename={(schema, table) => renameTableDialogRef.current?.rename(schema, table)}
+                                    onDrop={(schema, table) => dropTableDialogRef.current?.drop(schema, table)}
                                   />
                                 )
                               : (
