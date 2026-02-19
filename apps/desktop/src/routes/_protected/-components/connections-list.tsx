@@ -8,13 +8,13 @@ import { Separator } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiMoreLine } from '@remixicon/react'
+import { RiArrowDownSLine, RiArrowUpSLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useRef, useState } from 'react'
 import { ConnectionIcon } from '~/entities/connection/components'
-import { useConnectionLinkParams } from '~/entities/connection/hooks'
+import { useConnectionLinkParams, useServerConnections } from '~/entities/connection/hooks'
 import { useConnectionVersion } from '~/entities/connection/queries/connection-version'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { useLastOpenedConnections } from '~/entities/connection/utils'
@@ -41,6 +41,8 @@ function ConnectionCard({
   const params = useConnectionLinkParams(connection.id)
 
   const { data: version } = useConnectionVersion({ connection })
+
+  const { connectionNamesList, isLoading, isExpanded, toggleExpand } = useServerConnections(connection)
 
   return (
     <motion.div
@@ -115,6 +117,29 @@ function ConnectionCard({
           >
             {connectionString.replaceAll('*', '•')}
           </div>
+        </div>
+
+        <div className="z-10 flex items-center gap-1">
+          {connectionNamesList.length > 0 && (
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                toggleExpand()
+              }}
+            >
+              {isExpanded
+                ? <RiArrowUpSLine className="size-4" />
+                : (
+                    <RiArrowDownSLine className="size-4" />
+                  )}
+            </Button>
+          )}
+
           {version && (
             <span className="
               absolute right-4 bottom-0.5 font-mono text-[.6rem]
@@ -168,6 +193,67 @@ function ConnectionCard({
           </DropdownMenuContent>
         </DropdownMenu>
       </Link>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className={`
+              mx-4 flex max-h-60 flex-col gap-1 overflow-y-auto rounded-lg
+              border bg-muted/30 p-2
+            `}
+            >
+              {isLoading
+                ? (
+                    <div className={`
+                      flex items-center gap-2 p-2 text-sm text-muted-foreground
+                    `}
+                    >
+                      <RiLoader4Line className="size-4 animate-spin" />
+                      Loading databases...
+                    </div>
+                  )
+                : connectionNamesList.length > 0
+                  ? (
+                      connectionNamesList.map((connectionName: string) => (
+                        <Link
+                          key={connectionName}
+                          to="/database/$id/table"
+                          params={{ id: connection.id }}
+                          search={{ database: connectionName }}
+                          className="
+                            flex cursor-pointer items-center gap-2 rounded-md
+                            border border-transparent p-2 text-sm
+                            hover:border-border hover:bg-muted
+                          "
+                        >
+                          <RiDatabase2Line className="
+                            size-4 text-muted-foreground
+                          "
+                          />
+                          <span>{connectionName}</span>
+                        </Link>
+                      ))
+                    )
+                  : (
+                      <div className="
+                        flex items-center gap-2 p-2 text-sm
+                        text-muted-foreground
+                      "
+                      >
+                        No other databases found
+                      </div>
+                    )}
+
+            </div>
+
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
