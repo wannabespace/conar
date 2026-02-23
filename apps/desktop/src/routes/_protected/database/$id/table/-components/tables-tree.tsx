@@ -370,13 +370,31 @@ export function TablesTree({ className, search }: { className?: string, search?:
 
   const { activeSchemaId, isActiveSchemaExpanded } = useActiveSchema(scrollRef, searchAccordionValue)
 
+  const handleStickyToggle = () => {
+    if (search || !activeSchemaId)
+      return
+    const next = tablesTreeOpenedSchemas.includes(activeSchemaId)
+      ? tablesTreeOpenedSchemas.filter(id => id !== activeSchemaId)
+      : [...tablesTreeOpenedSchemas, activeSchemaId]
+    store.setState(state => ({
+      ...state,
+      tablesTreeOpenedSchemas: next,
+    } satisfies typeof state))
+  }
+
   return (
     <ScrollArea className={cn('h-full', className)}>
       <DropTableDialog ref={dropTableDialogRef} />
       <RenameTableDialog ref={renameTableDialogRef} />
       <AnimatePresence>
-        {activeSchemaId && isActiveSchemaExpanded && (
-          <StickyHeader activeSchemaId={activeSchemaId} schemaParam={schemaParam} />
+        {activeSchemaId && (
+          <StickyHeader
+            activeSchemaId={activeSchemaId}
+            schemaParam={schemaParam}
+            isExpanded={isActiveSchemaExpanded}
+            onToggle={handleStickyToggle}
+            canToggle={!search}
+          />
         )}
       </AnimatePresence>
       <ScrollViewport ref={scrollRef} className="p-2">
