@@ -1,29 +1,32 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { connections } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle'
 import { queryClient } from '~/main'
-import { connectionTableColumnsQuery } from '../queries/columns'
-import { connectionConstraintsQuery } from '../queries/constraints'
-import { connectionEnumsQuery } from '../queries/enums'
-import { connectionRowsQuery } from '../queries/rows'
-import { connectionTablesAndSchemasQuery } from '../queries/tables-and-schemas'
-import { connectionTableTotalQuery } from '../queries/total'
-import { connectionStore } from '../store'
+import { resourceTableColumnsQuery } from '../queries/columns'
+import { resourceConstraintsQuery } from '../queries/constraints'
+import { resourceEnumsQuery } from '../queries/enums'
+import { resourceRowsQuery } from '../queries/rows'
+import { resourceTablesAndSchemasQuery } from '../queries/tables-and-schemas'
+import { resourceTableTotalQuery } from '../queries/total'
+import { connectionResourceStore } from '../store'
+import { connectionsCollection } from '../sync'
 
-export async function prefetchConnectionCore(connection: typeof connections.$inferSelect) {
+export async function prefetchConnectionResourceCore(connectionResource: typeof connectionsResources.$inferSelect) {
+  const connection = connectionsCollection.get(connectionResource.connectionId)!
+
   if (connection.isPasswordExists && !connection.isPasswordPopulated) {
     return
   }
 
-  const store = connectionStore(connection.id)
+  const store = connectionResourceStore(connectionResource.id)
   await Promise.all([
-    queryClient.prefetchQuery(connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem })),
-    queryClient.prefetchQuery(connectionEnumsQuery({ connection })),
-    queryClient.prefetchQuery(connectionConstraintsQuery({ connection })),
+    queryClient.prefetchQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem })),
+    queryClient.prefetchQuery(resourceEnumsQuery({ connectionResource })),
+    queryClient.prefetchQuery(resourceConstraintsQuery({ connectionResource })),
   ])
 }
 
-export async function prefetchConnectionTableCore({ connection, schema, table, query }: {
-  connection: typeof connections.$inferSelect
+export async function prefetchConnectionResourceTableCore({ connectionResource, schema, table, query }: {
+  connectionResource: typeof connectionsResources.$inferSelect
   schema: string
   table: string
   query: {
@@ -33,8 +36,8 @@ export async function prefetchConnectionTableCore({ connection, schema, table, q
   }
 }) {
   await Promise.all([
-    queryClient.prefetchInfiniteQuery(connectionRowsQuery({ connection, table, schema, query })),
-    queryClient.prefetchQuery(connectionTableTotalQuery({ connection, table, schema, query })),
-    queryClient.prefetchQuery(connectionTableColumnsQuery({ connection, table, schema })),
+    queryClient.prefetchInfiniteQuery(resourceRowsQuery({ connectionResource, table, schema, query })),
+    queryClient.prefetchQuery(resourceTableTotalQuery({ connectionResource, table, schema, query })),
+    queryClient.prefetchQuery(resourceTableColumnsQuery({ connectionResource, table, schema })),
   ])
 }

@@ -23,8 +23,8 @@ const layoutSettingsType = type({
   chatPosition: '"left" | "right"',
 })
 
-export const connectionStoreType = type({
-  lastOpenedPage: 'string | null' as type.cast<(Extract<keyof FileRoutesById, `/_protected/database/$id/${string}`> | null)>,
+export const connectionResourceStoreType = type({
+  lastOpenedPage: 'string | null' as type.cast<(Extract<keyof FileRoutesById, `/_protected/connection/$resourceId/${string}`> | null)>,
   lastOpenedChatId: 'string | null',
   lastOpenedTable: type({
     schema: 'string',
@@ -53,7 +53,7 @@ export const connectionStoreType = type({
   layout: layoutSettingsType,
 })
 
-const defaultState: typeof connectionStoreType.infer = {
+const defaultState: typeof connectionResourceStoreType.infer = {
   lastOpenedPage: null,
   lastOpenedChatId: null,
   lastOpenedTable: null,
@@ -92,24 +92,19 @@ const defaultState: typeof connectionStoreType.infer = {
   },
 }
 
-const storesMap = new Map<string, Store<typeof connectionStoreType.infer>>()
+const storesMap = new Map<string, Store<typeof connectionResourceStoreType.infer>>()
 
-export function connectionStore(id: string) {
+export function connectionResourceStore(id: string) {
   if (storesMap.has(id)) {
     return storesMap.get(id)!
   }
 
-  const persistedState = JSON.parse(
-    localStorage.getItem(`connection-store-${id}`)
-    // TODO: remove this in the future
-    || localStorage.getItem(`database-store-${id}`)
-    || '{}',
-  ) as typeof defaultState
+  const persistedState = JSON.parse(localStorage.getItem(`connection-resource-store-${id}`) || '{}') as typeof defaultState
 
   persistedState.sql ||= defaultState.sql
   persistedState.editorQueries ||= getEditorQueries(persistedState.sql)
 
-  const state = connectionStoreType(Object.assign(
+  const state = connectionResourceStoreType(Object.assign(
     {},
     defaultState,
     persistedState,
@@ -119,7 +114,7 @@ export function connectionStore(id: string) {
     console.error('Invalid connection store state', state.summary)
   }
 
-  const store = new Store<typeof connectionStoreType.infer>(
+  const store = new Store<typeof connectionResourceStoreType.infer>(
     state instanceof type.errors ? defaultState : state,
   )
 

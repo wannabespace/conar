@@ -120,15 +120,6 @@ export class SafeURL implements URL {
     return href
   }
 
-  get hrefEncoded() {
-    const url = new URL(this.#url.toString())
-
-    url.username = this.username || ''
-    url.password = this.password || ''
-
-    return url.toString()
-  }
-
   toString() {
     return this.href
   }

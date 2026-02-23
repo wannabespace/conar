@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { connections } from '~/drizzle'
+import type { connections, connectionsResources, connections as connectionsTable } from '~/drizzle'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
@@ -8,16 +8,18 @@ import { Separator } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownSLine, RiArrowUpSLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
-import { useLiveQuery } from '@tanstack/react-db'
+import { RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
+import { eq, inArray, useLiveQuery } from '@tanstack/react-db'
+import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useRef, useState } from 'react'
 import { ConnectionIcon } from '~/entities/connection/components'
-import { useConnectionLinkParams, useServerConnections } from '~/entities/connection/hooks'
-import { useConnectionVersion } from '~/entities/connection/queries/connection-version'
-import { connectionsCollection } from '~/entities/connection/sync'
-import { useLastOpenedConnections } from '~/entities/connection/utils'
+import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
+import { useConnectionResources } from '~/entities/connection/queries'
+import { connectionVersionQuery } from '~/entities/connection/queries/connection-version'
+import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { useLastOpenedResources } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
@@ -25,24 +27,20 @@ function ConnectionCard({
   connection,
   onRemove,
   onRename,
-  onClose,
 }: {
-  connection: typeof connections.$inferSelect
+  connection: typeof connectionsTable.$inferSelect
   onRemove: VoidFunction
   onRename: VoidFunction
-  onClose?: VoidFunction
 }) {
   const url = new SafeURL(connection.connectionString)
-  if (connection.isPasswordExists || url.password) {
+  if (url.password) {
     url.password = '*'.repeat(url.password.length || 6)
   }
   const connectionString = url.toString()
 
-  const params = useConnectionLinkParams(connection.id)
-
-  const { data: version } = useConnectionVersion({ connection })
-
-  const { connectionNamesList, isLoading, isExpanded, toggleExpand } = useServerConnections(connection)
+  const params = useConnectionResourceLinkParams(connection.connectionString)
+  const { data: version } = useQuery(connectionVersionQuery(connection))
+  const { data: resources, isPending } = useConnectionResources(connection)
 
   return (
     <motion.div
@@ -53,20 +51,6 @@ function ConnectionCard({
       transition={{ duration: 0.15 }}
       className="group relative"
     >
-      {onClose && (
-        <Button
-          variant="outline"
-          size="icon-xs"
-          className="
-            absolute -top-1.5 -right-1.5 z-10 rounded-full bg-card! opacity-0
-            duration-75
-            group-hover:opacity-100
-          "
-          onClick={() => onClose()}
-        >
-          <RiCloseLine className="size-3.5" />
-        </Button>
-      )}
       <Link
         className={cn(
           `
@@ -120,26 +104,6 @@ function ConnectionCard({
         </div>
 
         <div className="z-10 flex items-center gap-1">
-          {connectionNamesList.length > 0 && (
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                toggleExpand()
-              }}
-            >
-              {isExpanded
-                ? <RiArrowUpSLine className="size-4" />
-                : (
-                    <RiArrowDownSLine className="size-4" />
-                  )}
-            </Button>
-          )}
-
           {version && (
             <span className="
               absolute right-4 bottom-0.5 font-mono text-[.6rem]
@@ -194,65 +158,59 @@ function ConnectionCard({
         </DropdownMenu>
       </Link>
 
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
+      <AnimatePresence initial={false}>
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="overflow-hidden"
+        >
+          <div className={`
+            mx-4 flex max-h-60 flex-col gap-1 overflow-y-auto rounded-lg border
+            bg-muted/30 p-2
+          `}
           >
-            <div className={`
-              mx-4 flex max-h-60 flex-col gap-1 overflow-y-auto rounded-lg
-              border bg-muted/30 p-2
-            `}
-            >
-              {isLoading
+            {isPending
+              ? (
+                  <div className={`
+                    flex items-center gap-2 p-2 text-sm text-muted-foreground
+                  `}
+                  >
+                    <RiLoader4Line className="size-4 animate-spin" />
+                    Loading databases...
+                  </div>
+                )
+              : resources.length > 0
                 ? (
-                    <div className={`
-                      flex items-center gap-2 p-2 text-sm text-muted-foreground
-                    `}
-                    >
-                      <RiLoader4Line className="size-4 animate-spin" />
-                      Loading databases...
-                    </div>
-                  )
-                : connectionNamesList.length > 0
-                  ? (
-                      connectionNamesList.map((connectionName: string) => (
-                        <Link
-                          key={connectionName}
-                          to="/database/$id/table"
-                          params={{ id: connection.id }}
-                          search={{ database: connectionName }}
-                          className="
-                            flex cursor-pointer items-center gap-2 rounded-md
-                            border border-transparent p-2 text-sm
-                            hover:border-border hover:bg-muted
-                          "
-                        >
-                          <RiDatabase2Line className="
-                            size-4 text-muted-foreground
-                          "
-                          />
-                          <span>{connectionName}</span>
-                        </Link>
-                      ))
-                    )
-                  : (
-                      <div className="
-                        flex items-center gap-2 p-2 text-sm
-                        text-muted-foreground
-                      "
+                    resources.map(resource => (
+                      <Link
+                        key={resource.id}
+                        to="/connection/$resourceId/table"
+                        params={{ resourceId: resource.id }}
+                        className={`
+                          relative flex cursor-pointer items-center gap-2
+                          rounded-md border border-transparent p-2 text-sm
+                          hover:border-border hover:bg-muted
+                        `}
                       >
-                        No other databases found
-                      </div>
-                    )}
-
-            </div>
-
-          </motion.div>
-        )}
+                        <RiDatabase2Line className="
+                          size-4 text-muted-foreground
+                        "
+                        />
+                        <span>{resource.name}</span>
+                      </Link>
+                    ))
+                  )
+                : (
+                    <div className="
+                      flex items-center gap-2 p-2 text-sm text-muted-foreground
+                    "
+                    >
+                      No other databases found
+                    </div>
+                  )}
+          </div>
+        </motion.div>
       </AnimatePresence>
     </motion.div>
   )
@@ -280,60 +238,105 @@ export function Empty() {
   )
 }
 
-function LastOpenedConnections({
-  onRemove,
-  onRename,
-  onClose,
-}: {
-  onRemove: (connection: typeof connections.$inferSelect) => void
-  onRename: (connection: typeof connections.$inferSelect) => void
-  onClose: (connection: typeof connections.$inferSelect) => void
-}) {
-  const { data: connections } = useLiveQuery(q => q
-    .from({ connections: connectionsCollection })
-    .orderBy(({ connections }) => connections.createdAt, 'desc'))
-  const [lastOpenedConnections] = useLastOpenedConnections()
-  const filteredConnections = (connections?.filter(connection => lastOpenedConnections.includes(connection.id)) ?? [])
-    .toSorted((a, b) => lastOpenedConnections.indexOf(a.id) - lastOpenedConnections.indexOf(b.id))
+function LastOpenedResource({ connectionResource, connection, onClose }: { connectionResource: typeof connectionsResources.$inferSelect, connection: typeof connections.$inferSelect, onClose: VoidFunction }) {
+  const params = useConnectionResourceLinkParams(connectionResource.id)
 
-  if (filteredConnections.length === 0) {
+  return (
+    <div
+      className="flex items-center justify-between gap-2"
+    >
+      <Link
+        className="
+          flex flex-1 items-center gap-2 text-sm text-foreground
+          hover:underline
+        "
+        {...params}
+      >
+        <ConnectionIcon
+          type={connection.type}
+          className="size-4"
+        />
+        {connection.name}
+        {' '}
+        -
+        {' '}
+        {connectionResource.name}
+      </Link>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        className="shrink-0"
+        onClick={onClose}
+      >
+        <RiCloseLine />
+      </Button>
+    </div>
+  )
+}
+
+function LastOpenedResources() {
+  const [lastOpenedResources, setLastOpenedResources] = useLastOpenedResources()
+  const { data } = useLiveQuery(q => q
+    .from({ connectionsResources: connectionsResourcesCollection })
+    .innerJoin(
+      { connections: connectionsCollection },
+      ({ connectionsResources, connections }) => eq(connectionsResources.connectionId, connections.id),
+    )
+    .select(({ connectionsResources, connections }) => ({
+      connectionResource: connectionsResources,
+      connection: connections,
+    }))
+    .where(({ connectionsResources }) => inArray(connectionsResources.id, lastOpenedResources))
+    .orderBy(({ connectionsResources }) => connectionsResources.createdAt, 'desc'), [lastOpenedResources])
+
+  if (data.length === 0) {
     return null
   }
 
+  const close = (resource: typeof connectionsResources.$inferSelect) => {
+    setLastOpenedResources(prev => prev.filter(id => id !== resource.id))
+  }
+
   return (
-    <div className="flex flex-col gap-2">
-      <h3 className="text-sm font-medium text-muted-foreground">Last Opened</h3>
-      <AnimatePresence initial={false} mode="popLayout">
-        {filteredConnections.map(connection => (
-          <ConnectionCard
-            key={connection.id}
-            connection={connection}
-            onRemove={() => onRemove(connection)}
-            onRename={() => onRename(connection)}
-            onClose={() => onClose(connection)}
-          />
-        ))}
-      </AnimatePresence>
+    <div>
+      <h3 className="mb-2 text-sm font-medium text-muted-foreground">Last Opened</h3>
+      <div className="flex flex-col gap-1">
+        <AnimatePresence initial={false} mode="popLayout">
+          {data.map(({ connectionResource, connection }) => (
+            <LastOpenedResource
+              key={connectionResource.id}
+              connectionResource={connectionResource}
+              connection={connection}
+              onClose={() => close(connectionResource)}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
 
 export function ConnectionsList() {
-  const { data: connections } = useLiveQuery(q => q
-    .from({ connections: connectionsCollection })
-    .orderBy(({ connections }) => connections.createdAt, 'desc'))
+  const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
+  const { data } = useLiveQuery((q) => {
+    let query = q
+      .from({ connections: connectionsCollection })
+      .orderBy(({ connections }) => connections.createdAt, 'desc')
+
+    if (selectedLabel) {
+      query = query.where(({ connections }) => eq(connections.label, selectedLabel))
+    }
+
+    return query
+  }, [selectedLabel])
+
   const renameDialogRef = useRef<ComponentRef<typeof RenameConnectionDialog>>(null)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
-  const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
-  const [lastOpenedConnections, setLastOpenedConnections] = useLastOpenedConnections()
+  const [lastOpenedResources] = useLastOpenedResources()
 
-  const availableLabels = Array.from(new Set(connections.map(connection => connection.label).filter(Boolean) as string[])).sort()
+  const availableLabels = Array.from(new Set(data.map(connection => connection.label).filter(Boolean) as string[])).sort()
 
-  const filteredConnections = selectedLabel
-    ? connections.filter(connection => connection.label === selectedLabel)
-    : connections
-
-  const showLastOpened = lastOpenedConnections.length > 0 && filteredConnections.length > 1
+  const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
 
   return (
     <div className="flex flex-col gap-6">
@@ -341,17 +344,7 @@ export function ConnectionsList() {
       <RenameConnectionDialog ref={renameDialogRef} />
       {showLastOpened && (
         <>
-          <LastOpenedConnections
-            onRemove={(connection) => {
-              removeDialogRef.current?.remove(connection)
-            }}
-            onRename={(connection) => {
-              renameDialogRef.current?.rename(connection)
-            }}
-            onClose={(connection) => {
-              setLastOpenedConnections(prev => prev.filter(id => id !== connection.id))
-            }}
-          />
+          <LastOpenedResources />
           <Separator />
         </>
       )}
@@ -373,10 +366,10 @@ export function ConnectionsList() {
         </Tabs>
       )}
       <div className="flex flex-col gap-2">
-        {filteredConnections.length > 0
+        {data.length > 0
           ? (
               <AnimatePresence initial={false} mode="popLayout">
-                {filteredConnections.map(connection => (
+                {data.map(connection => (
                   <ConnectionCard
                     key={connection.id}
                     connection={connection}
