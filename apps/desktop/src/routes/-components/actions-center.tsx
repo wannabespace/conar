@@ -1,9 +1,8 @@
 import type { connections, connectionsResources } from '~/drizzle'
-import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
-import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { RiAddLine, RiDashboardLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
@@ -105,7 +104,7 @@ export function ActionsCenter() {
   const isOpen = useStore(appStore, state => state.isActionCenterOpen)
   const router = useRouter()
 
-  useKeyboardEvent(e => isCtrlAndKey(e, 'p'), () => {
+  useHotkey('Mod+P', () => {
     if (data.length === 0)
       return
 

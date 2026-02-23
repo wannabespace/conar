@@ -1,9 +1,8 @@
 import { useChat } from '@ai-sdk/react'
-import { isCtrlAndKey } from '@conar/shared/utils/os'
-import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { cn } from '@conar/ui/lib/utils'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useRouter } from '@tanstack/react-router'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from '~/entities/user/hooks'
 import { Route } from '../..'
 import { ChatForm } from './chat-form'
@@ -18,6 +17,7 @@ export function Chat({ className }: { className?: string }) {
   const { subscription } = useSubscription()
   const router = useRouter()
   const elementRef = useRef<HTMLDivElement>(null)
+  const [isFocused, setIsFocused] = useState(false)
 
   useEffect(() => {
     if (subscription && chat.messages.at(-1)?.role === 'user' && chat.status !== 'streaming' && chat.status !== 'submitted') {
@@ -25,16 +25,13 @@ export function Chat({ className }: { className?: string }) {
     }
   }, [chat, subscription])
 
-  useKeyboardEvent(e => isCtrlAndKey(e, 'n'), () => {
+  useHotkey('Mod+N', () => {
     router.navigate({
       to: '/connection/$resourceId/query',
       params: { resourceId: connectionResource.id },
       search: { chatId: undefined },
     })
-  }, {
-    target: elementRef,
-    deps: [chat.id],
-  })
+  }, { enabled: isFocused })
 
   return (
     <div
@@ -42,6 +39,12 @@ export function Chat({ className }: { className?: string }) {
       className={cn('relative flex flex-col justify-between gap-4 p-4', className)}
       ref={elementRef}
       tabIndex={0}
+      onFocusCapture={() => setIsFocused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setIsFocused(false)
+        }
+      }}
     >
       <ChatHeader chatId={chat.id} />
       {messages.length === 0 && !error && (

@@ -1,6 +1,5 @@
 import type { constraintsType, tablesAndSchemasType } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
-import { isCtrlAndKey } from '@conar/shared/utils/os'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
@@ -8,9 +7,9 @@ import { Input } from '@conar/ui/components/input'
 import { Kbd } from '@conar/ui/components/kbd'
 import { ReactFlowEdge } from '@conar/ui/components/react-flow/edge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiCloseLine, RiSearchLine } from '@remixicon/react'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
@@ -164,7 +163,7 @@ function Visualizer({
     recalculateLayoutEvent()
   }, [schema])
 
-  useKeyboardEvent(event => isCtrlAndKey(event, 'f'), () => {
+  useHotkey('Mod+F', () => {
     searchRef.current?.focus()
   })
 

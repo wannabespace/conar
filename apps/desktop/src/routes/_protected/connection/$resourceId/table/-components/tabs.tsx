@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import type { connectionsResources } from '~/drizzle'
 import type { connectionResourceStoreType } from '~/entities/connection/store'
-import { getOS, isCtrlAndKey } from '@conar/shared/utils/os'
+import { getOS } from '@conar/shared/utils/os'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -13,9 +13,9 @@ import {
 import { MotionScrollViewport, ScrollArea, ScrollBar } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
-import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
@@ -317,9 +317,7 @@ export function TablesTabs({
     removeTab(connectionResource.id, schema, table)
   }
 
-  useKeyboardEvent(e => isCtrlAndKey(e, 'w'), (e) => {
-    e.preventDefault()
-
+  useHotkey('Mod+W', () => {
     if (schemaParam && tableParam) {
       closeTab(schemaParam, tableParam)
     }
