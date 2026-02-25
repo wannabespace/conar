@@ -34,7 +34,7 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
     startLineNumber: number
     endLineNumber: number
   }) => {
-    const lines = store.state.sql.split('\n')
+    const lines = store.state.query.split('\n')
     const newSqlLines = query.split('\n')
     const updatedLines = [
       ...lines.slice(0, startLineNumber - 1),
@@ -44,7 +44,7 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
 
     store.setState(state => ({
       ...state,
-      sql: updatedLines.join('\n'),
+      query: updatedLines.join('\n'),
     } satisfies typeof state))
   }
 
@@ -58,7 +58,7 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
 
       store.setState(state => ({
         ...state,
-        sql: `${state.sql}\n\n${query}`,
+        query: `${state.query}\n\n${query}`,
       } satisfies typeof state))
     })
     const appendToBottomAndFocusHook = runnerHooks.hook('appendToBottomAndFocus', (query) => {
@@ -118,7 +118,7 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
 export function RunnerEditor() {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = connectionResourceStore(connectionResource.id)
-  const sql = useStore(store, state => state.sql)
+  const query = useStore(store, state => state.query)
   const editorQueries = useStore(store, state => state.editorQueries)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const run = useRunnerContext(({ run }) => run)
@@ -186,10 +186,10 @@ export function RunnerEditor() {
       data-mask
       ref={monacoRef}
       language={dialectsMap[connection.type]}
-      value={sql}
+      value={query}
       onChange={q => store.setState(state => ({
         ...state,
-        sql: q,
+        query: q,
       } satisfies typeof state))}
       className="size-full"
       options={{

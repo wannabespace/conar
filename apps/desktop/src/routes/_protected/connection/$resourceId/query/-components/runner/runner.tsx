@@ -60,21 +60,21 @@ export function Runner() {
   )
   const [isFormatting, setIsFormatting] = useState(false)
   const store = connectionResourceStore(connectionResource.id)
-  const { selectedLines, editorQueries, sql, resultsVisible } = useStore(store, state => ({
+  const { selectedLines, editorQueries, query, resultsVisible } = useStore(store, state => ({
     selectedLines: state.selectedLines,
     editorQueries: state.editorQueries,
-    sql: state.sql,
+    query: state.query,
     resultsVisible: state.layout.resultsVisible,
   }))
 
   useTrackSelectedLinesChange()
 
   function format() {
-    const formatted = formatSql(sql, connection.type)
+    const formatted = formatSql(query, connection.type)
 
     store.setState(state => ({
       ...state,
-      sql: formatted,
+      query: formatted,
     } satisfies typeof state))
   }
 

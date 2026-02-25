@@ -30,7 +30,7 @@ export const connectionResourceStoreType = type({
     schema: 'string',
     table: 'string',
   }).or('null'),
-  sql: 'string',
+  query: 'string',
   selectedLines: 'number[]',
   editorQueries: type({
     startLineNumber: 'number',
@@ -57,7 +57,7 @@ const defaultState: typeof connectionResourceStoreType.infer = {
   lastOpenedPage: null,
   lastOpenedChatId: null,
   lastOpenedTable: null,
-  sql: [
+  query: [
     '-- Write your SQL query here based on your database schema',
     '-- The examples below are for reference only and may not work with your database',
     '',
@@ -101,8 +101,8 @@ export function connectionResourceStore(id: string) {
 
   const persistedState = JSON.parse(localStorage.getItem(`connection-resource-store-${id}`) || '{}') as typeof defaultState
 
-  persistedState.sql ||= defaultState.sql
-  persistedState.editorQueries ||= getEditorQueries(persistedState.sql)
+  persistedState.query ||= defaultState.query
+  persistedState.editorQueries ||= getEditorQueries(persistedState.query)
 
   const state = connectionResourceStoreType(Object.assign(
     {},
@@ -119,10 +119,10 @@ export function connectionResourceStore(id: string) {
   )
 
   store.subscribe(({ currentVal, prevVal }) => {
-    if (prevVal.sql !== currentVal.sql) {
+    if (prevVal.query !== currentVal.query) {
       store.setState(state => ({
         ...state,
-        editorQueries: getEditorQueries(state.sql),
+        editorQueries: getEditorQueries(state.query),
       } satisfies typeof state))
     }
 
@@ -130,7 +130,7 @@ export function connectionResourceStore(id: string) {
       lastOpenedPage: currentVal.lastOpenedPage,
       lastOpenedChatId: currentVal.lastOpenedChatId,
       lastOpenedTable: currentVal.lastOpenedTable,
-      sql: currentVal.sql,
+      query: currentVal.query,
       showSystem: currentVal.showSystem,
       selectedLines: currentVal.selectedLines,
       loggerOpened: currentVal.loggerOpened,

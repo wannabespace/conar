@@ -173,11 +173,12 @@ function ConnectionCard({
             {isPending
               ? (
                   <div className={`
-                    flex items-center gap-2 p-2 text-sm text-muted-foreground
+                    flex animate-pulse items-center gap-2 p-2 text-sm
+                    text-muted-foreground
                   `}
                   >
                     <RiLoader4Line className="size-4 animate-spin" />
-                    Loading databases...
+                    Loading resources...
                   </div>
                 )
               : resources.length > 0
@@ -258,8 +259,7 @@ function LastOpenedResource({ connectionResource, connection, onClose }: { conne
         />
         {connection.name}
         {' '}
-        -
-        {' '}
+        /
         {connectionResource.name}
       </Link>
       <Button

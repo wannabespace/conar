@@ -65,7 +65,7 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
 
                 const { startLineNumber, endLineNumber } = query
 
-                copy(store.state.sql.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
+                copy(store.state.query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
               }}
               onSave={() => {
                 const query = getQueriesEvent(lineNumber)
@@ -75,7 +75,7 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
 
                 const { startLineNumber, endLineNumber } = query
 
-                saveEvent(store.state.sql.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
+                saveEvent(store.state.query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
               }}
             />,
           )

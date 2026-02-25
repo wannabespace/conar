@@ -107,7 +107,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
             connectionResource={connectionResource}
             getSql={() => store
               .state
-              .sql
+              .query
               .split('\n')
               .slice(currentAIZoneQuery.startLineNumber - 1, currentAIZoneQuery.endLineNumber)
               .join('\n')}

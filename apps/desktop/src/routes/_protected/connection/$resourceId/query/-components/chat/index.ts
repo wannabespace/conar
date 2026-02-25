@@ -101,7 +101,7 @@ export async function createChat({ id = uuid(), connectionResource }: { id?: str
           context: [
             `Current query in the SQL runner:
             \`\`\`sql
-            ${store.state.sql.trim() || '-- empty'}
+            ${store.state.query.trim() || '-- empty'}
             \`\`\`
             `,
             'Database schemas and tables:',

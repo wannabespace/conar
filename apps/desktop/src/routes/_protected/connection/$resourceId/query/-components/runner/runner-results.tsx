@@ -146,7 +146,9 @@ export function RunnerResults() {
                         flex h-full flex-col items-center justify-center gap-2
                       `}
                       >
-                        No data returned
+                        No data returned (
+                        {duration.toFixed()}
+                        ms)
                       </div>
                     )
                   : (
