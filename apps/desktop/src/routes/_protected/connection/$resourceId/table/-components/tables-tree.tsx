@@ -1,4 +1,5 @@
 import type { ComponentRef } from 'react'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
@@ -163,7 +164,7 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
 }
 
 export function TablesTree({ className, search }: { className?: string, search?: string }) {
-  const { connectionResource } = Route.useRouteContext()
+  const { connection, connectionResource } = Route.useRouteContext()
   const store = connectionResourceStore(connectionResource.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data: tablesAndSchemas, isPending } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
@@ -276,35 +277,37 @@ export function TablesTree({ className, search }: { className?: string, search?:
                           value={schema.name}
                           className="border-b-0"
                         >
-                          <AccordionTrigger className={`
-                            mb-1 cursor-pointer truncate px-2 py-1.5
-                            hover:bg-accent/50 hover:no-underline
-                          `}
-                          >
-                            <span className="flex items-center gap-2">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <RiStackLine
-                                      className={cn(
-                                        `
-                                          size-4 shrink-0 text-muted-foreground
-                                          opacity-50
-                                        `,
-                                        schemaParam === schema.name && `
-                                          text-primary opacity-100
-                                        `,
-                                      )}
-                                    />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    Schema
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              {schema.name}
-                            </span>
-                          </AccordionTrigger>
+                          {connection.type !== ConnectionType.ClickHouse && (
+                            <AccordionTrigger className={`
+                              mb-1 cursor-pointer truncate px-2 py-1.5
+                              hover:bg-accent/50 hover:no-underline
+                            `}
+                            >
+                              <span className="flex items-center gap-2">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <RiStackLine
+                                        className={cn(
+                                          `
+                                            size-4 shrink-0
+                                            text-muted-foreground opacity-50
+                                          `,
+                                          schemaParam === schema.name && `
+                                            text-primary opacity-100
+                                          `,
+                                        )}
+                                      />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      Schema
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                {schema.name}
+                              </span>
+                            </AccordionTrigger>
+                          )}
                           <AccordionContent className="pb-0">
                             <AnimatePresence mode="popLayout">
                               {schema.pinnedTables.map(table => (

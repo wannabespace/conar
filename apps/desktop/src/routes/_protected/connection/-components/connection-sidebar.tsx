@@ -5,7 +5,7 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
 import { Label } from '@conar/ui/components/label'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
@@ -80,13 +80,13 @@ function SupportButton() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
+          <DialogDescription>
+            Have a question, suggestion, or need assistance?
+            We're here to listen!
+          </DialogDescription>
         </DialogHeader>
-        <div className="mb-2 text-muted-foreground">
-          Have a question, suggestion, or need assistance?
-          We're here to listen!
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+        <DialogPanel>
+          <form onSubmit={handleSubmit} className="space-y-2">
             <Label htmlFor="support-message">Message</Label>
             <Textarea
               id="support-message"
@@ -96,18 +96,18 @@ function SupportButton() {
               placeholder="Type any message you'd like to send us"
               className="min-h-48"
             />
-          </div>
-          <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
-              Cancel
-            </DialogClose>
-            <Button type="submit" disabled={loading || !message}>
-              <LoadingContent loading={loading}>
-                Send
-              </LoadingContent>
-            </Button>
-          </DialogFooter>
-        </form>
+          </form>
+        </DialogPanel>
+        <DialogFooter>
+          <DialogClose render={<Button type="button" variant="outline" />}>
+            Cancel
+          </DialogClose>
+          <Button type="submit" disabled={loading || !message}>
+            <LoadingContent loading={loading}>
+              Send
+            </LoadingContent>
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

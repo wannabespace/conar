@@ -1,5 +1,4 @@
 import type { connections } from '~/drizzle'
-// import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { type } from 'arktype'
@@ -7,13 +6,6 @@ import { useEffect } from 'react'
 import { v7 } from 'uuid'
 import { createQuery } from '../query'
 import { connectionsResourcesCollection } from '../sync'
-
-// const connectionSystemNames = {
-//   [ConnectionType.Postgres]: 'postgres',
-//   [ConnectionType.MySQL]: 'mysql',
-//   [ConnectionType.MSSQL]: 'master',
-//   [ConnectionType.ClickHouse]: 'default',
-// } satisfies Record<ConnectionType, string>
 
 const query = createQuery({
   type: type('string[]'),
