@@ -59,7 +59,7 @@ async function retryIfConnectionError<T>(func: () => Promise<T>, {
   }
 }
 
-function retryOptions({ silent }: { silent?: boolean }) {
+function retryOptions({ silent, connectionString }: { silent?: boolean, connectionString: string }) {
   return {
     onSuccess: ({ attempt }) => {
       if (attempt > 0 && !silent) {
@@ -67,6 +67,10 @@ function retryOptions({ silent }: { silent?: boolean }) {
       }
     },
     onRetry({ attempt }) {
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.log('Connection string on retry', connectionString)
+      }
       if (!silent) {
         sendToast({ message: `Could not connect to the database. Reconnection attempt ${attempt + 1}/${MAX_RECONNECTION_ATTEMPTS}.`, type: 'info' })
       }
@@ -86,7 +90,7 @@ const queryMap = {
       const pool = await getPgPool(connectionString)
       start = performance.now()
       return pool.query(query, values)
-    }, retryOptions({ silent }))
+    }, retryOptions({ silent, connectionString }))
 
     return { result: result.rows as unknown, duration: performance.now() - start }
   },
@@ -96,7 +100,7 @@ const queryMap = {
       const pool = await getMysqlPool(connectionString)
       start = performance.now()
       return pool.query(query, values)
-    }, retryOptions({ silent }))
+    }, retryOptions({ silent, connectionString }))
 
     return { result: result as unknown, duration: performance.now() - start! }
   },
@@ -117,14 +121,14 @@ const queryMap = {
         const result = await retryIfConnectionError(() => {
           start = performance.now()
           return client.query({ query, format: 'JSONEachRow' }).then(result => result.json())
-        }, retryOptions({ silent }))
+        }, retryOptions({ silent, connectionString }))
         return { result, duration: performance.now() - start }
       }
 
       await retryIfConnectionError(() => {
         start = performance.now()
         return client.exec({ query })
-      }, retryOptions({ silent }))
+      }, retryOptions({ silent, connectionString }))
 
       return { result: [], duration: performance.now() - start }
     }
@@ -152,7 +156,7 @@ const queryMap = {
 
       start = performance.now()
       return request.query(query)
-    }, retryOptions({ silent }))
+    }, retryOptions({ silent, connectionString }))
 
     return { result: result.recordset as unknown, duration: performance.now() - start! }
   },

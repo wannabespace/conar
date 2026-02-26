@@ -130,7 +130,7 @@ function CardFrameFooter({
   ...props
 }: useRender.ComponentProps<'div'>) {
   const defaultProps = {
-    'className': cn('px-6 py-4', className),
+    'className': cn('relative px-6 py-4', className),
     'data-slot': 'card-frame-footer',
   }
 

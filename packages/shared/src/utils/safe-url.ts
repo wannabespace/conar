@@ -120,6 +120,20 @@ export class SafeURL implements URL {
     return href
   }
 
+  toMasked() {
+    const saved = this.password
+
+    if (this.password) {
+      this.password = '****'
+    }
+
+    const result = this.href
+
+    this.password = saved
+
+    return result
+  }
+
   toString() {
     return this.href
   }

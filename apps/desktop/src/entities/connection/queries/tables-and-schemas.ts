@@ -17,9 +17,10 @@ export const tablesAndSchemasType = type({
   table: 'string',
 })
 
-export const resourceTablesAndSchemasQuery = memoize(({ connectionResource, showSystem }: { connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
+export const resourceTablesAndSchemasQuery = memoize(({ silent = false, connectionResource, showSystem }: { silent?: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
   const query = createQuery({
     type: tablesAndSchemasType.array(),
+    silent,
     query: {
       postgres: db => db
         .selectFrom('information_schema.tables')

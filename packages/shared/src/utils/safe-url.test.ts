@@ -95,7 +95,7 @@ describe('new SafeURL', () => {
       pathname: '/mydb',
       search: '',
       hash: '',
-      href: conn,
+      href: `${conn}/mydb`,
     })
     expect(Array.from(parsed.searchParams.entries())).toEqual([])
   })
@@ -293,6 +293,55 @@ describe('new SafeURL', () => {
       expect(parsed.username).toBe('alice')
       expect(parsed.password).toBe('wonderland')
       expect(parsed.href).toBe('mysql://alice:wonderland@db.example.com:3306/testdb?foo=bar&baz=qux#top')
+    })
+  })
+
+  describe('toMasked', () => {
+    it('masks the password in a standard connection string', () => {
+      const conn = 'postgresql://user:pass@localhost:5432/mydb'
+      const parsed = new SafeURL(conn)
+
+      expect(parsed.toMasked()).toBe('postgresql://user:****@localhost:5432/mydb')
+    })
+
+    it('returns URL as-is when there is no password', () => {
+      const conn = 'http://localhost:5432/mydb'
+      const parsed = new SafeURL(conn)
+
+      expect(parsed.toMasked()).toBe('http://localhost:5432/mydb')
+    })
+
+    it('preserves username when only password is masked', () => {
+      const conn = 'mysql://root:secret@127.0.0.1:3306/testdb'
+      const parsed = new SafeURL(conn)
+      const masked = parsed.toMasked()
+
+      expect(masked).toContain('root')
+      expect(masked).not.toContain('secret')
+      expect(masked).toBe('mysql://root:****@127.0.0.1:3306/testdb')
+    })
+
+    it('preserves query parameters and hash', () => {
+      const conn = 'postgresql://user:pass@localhost:5432/mydb?ssl=true#section'
+      const parsed = new SafeURL(conn)
+
+      expect(parsed.toMasked()).toBe('postgresql://user:****@localhost:5432/mydb?ssl=true#section')
+    })
+
+    it('handles empty credentials', () => {
+      const conn = 'postgresql://:@localhost:5432/mydb'
+      const parsed = new SafeURL(conn)
+
+      expect(parsed.toMasked()).toBe('postgresql://localhost:5432/mydb')
+    })
+
+    it('masks password with special characters', () => {
+      const conn = 'postgresql://us%40er:pa%3A#ss@localhost:5432/mydb'
+      const parsed = new SafeURL(conn)
+      const masked = parsed.toMasked()
+
+      expect(masked).not.toContain('pa%3A#ss')
+      expect(masked).toContain('****')
     })
   })
 

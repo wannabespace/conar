@@ -1,14 +1,17 @@
 import type { ComponentRef } from 'react'
 import type { connections, connectionsResources, connections as connectionsTable } from '~/drizzle'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
+import { Card, CardFrameDescription, CardFrameFooter, CardFrameHeader, CardFrameMotion, CardFrameTitle, CardPanel } from '@conar/ui/components/card'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Separator } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
+import { RiAddLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
 import { eq, inArray, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
@@ -16,12 +19,65 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useRef, useState } from 'react'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
-import { useConnectionResources } from '~/entities/connection/queries'
+import { resourceTablesAndSchemasQuery, useConnectionResources } from '~/entities/connection/queries'
 import { connectionVersionQuery } from '~/entities/connection/queries/connection-version'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { useLastOpenedResources } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
+
+function ResourceCard({ resource, connection }: { resource: typeof connectionsResources.$inferSelect, connection: typeof connections.$inferSelect }) {
+  const params = useConnectionResourceLinkParams(resource.id)
+  const { data: tablesAndSchemas } = useQuery({
+    ...resourceTablesAndSchemasQuery({ connectionResource: resource, showSystem: false, silent: true }),
+    throwOnError: false,
+  })
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.15 }}
+    >
+      <Link
+        className="
+          flex items-center justify-between gap-2 rounded-md p-2 text-sm
+          text-foreground
+          hover:bg-accent/30
+        "
+        {...params}
+      >
+        <div className="flex items-center gap-2">
+          <RiDatabase2Line className="size-4 text-muted-foreground" />
+          <span>{resource.name}</span>
+        </div>
+        {tablesAndSchemas && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span>
+              {tablesAndSchemas.totalTables}
+              {' '}
+              table
+              {tablesAndSchemas?.totalTables === 1 ? '' : 's'}
+            </span>
+            {connection.type !== ConnectionType.ClickHouse && (
+              <>
+                <Separator orientation="vertical" className="h-3" />
+                <span>
+                  {tablesAndSchemas?.totalSchemas}
+                  {' '}
+                  schema
+                  {tablesAndSchemas?.totalSchemas === 1 ? '' : 's'}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+      </Link>
+    </motion.div>
+  )
+}
 
 function ConnectionCard({
   connection,
@@ -32,87 +88,74 @@ function ConnectionCard({
   onRemove: VoidFunction
   onRename: VoidFunction
 }) {
-  const url = new SafeURL(connection.connectionString)
-  if (url.password) {
-    url.password = '*'.repeat(url.password.length || 6)
-  }
-  const connectionString = url.toString()
+  const connectionString = new SafeURL(connection.connectionString)
+  connectionString.pathname = ''
+  const [isCopied, setIsCopied] = useState(false)
 
-  const params = useConnectionResourceLinkParams(connection.connectionString)
-  const { data: version } = useQuery(connectionVersionQuery(connection))
-  const { data: resources, isPending } = useConnectionResources(connection)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleCopy = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+
+    copy(connectionString.toString())
+    setIsCopied(true)
+
+    timeoutRef.current = setTimeout(() => {
+      setIsCopied(false)
+      timeoutRef.current = null
+    }, 3000)
+  }
+
+  const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery(connectionVersionQuery(connection))
+  const { data: resources, isPending: isResourcesPending } = useConnectionResources(connection)
 
   return (
-    <motion.div
+    <CardFrameMotion
       layout
-      initial={{ opacity: 0, scale: 0.75 }}
+      initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.75 }}
+      exit={{ opacity: 0, scale: 0.98 }}
       transition={{ duration: 0.15 }}
-      className="group relative"
+      style={connection.color ? { '--color': connection.color } : {}}
     >
-      <Link
-        className={cn(
-          `
-            group relative flex items-center justify-between gap-4
-            overflow-hidden rounded-lg border border-l-4 border-border/50
-            bg-muted/30 p-4
-          `,
-          connection.color
-            ? `
-              border-l-(--color)/60
-              hover:border-(--color)/60
-            `
-            : 'hover:border-primary/60',
-        )}
-        style={connection.color ? { '--color': connection.color } : {}}
-        preload={false}
-        {...params}
+      <CardFrameHeader className="
+        flex flex-row items-center justify-between gap-4
+      "
       >
-        <div className="size-12 shrink-0 rounded-lg bg-muted/70 p-3">
+        <div className="flex min-w-0 items-center gap-4">
           <ConnectionIcon
             type={connection.type}
-            className="size-full"
+            className="size-6 shrink-0"
           />
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className={`
-            flex items-center gap-2 truncate font-medium tracking-tight
-          `}
-          >
-            <span className={connection.color
-              ? `
-                text-(--color)
-                group-hover:text-(--color)/80
-              `
-              : ''}
+          <div className="flex min-w-0 flex-col">
+            <CardFrameTitle className="flex gap-2">{connection.name}</CardFrameTitle>
+            <CardFrameDescription
+              className="
+                group flex cursor-pointer items-center justify-between gap-2
+              "
+              render={<button type="button" />}
+              onClick={() => handleCopy()}
             >
-              {connection.name}
-            </span>
-            {connection.label && (
-              <Badge variant="secondary">
-                {connection.label}
-              </Badge>
-            )}
+              <span className="group flex min-w-0 flex-1 gap-2">
+                <span className="min-w-0 flex-1 truncate">
+                  {connectionString.toMasked()}
+                </span>
+              </span>
+              <ContentSwitch
+                active={isCopied}
+                activeContent={<RiCheckLine className="size-4 text-success" />}
+                onSwitchEnd={() => setIsCopied(false)}
+              >
+                <RiFileCopyLine className="
+                  size-3 opacity-0 transition-opacity
+                  group-hover:opacity-100
+                "
+                />
+              </ContentSwitch>
+            </CardFrameDescription>
           </div>
-          <div
-            data-mask
-            className="truncate font-mono text-xs text-muted-foreground"
-          >
-            {connectionString.replaceAll('*', '•')}
-          </div>
-        </div>
-
-        <div className="z-10 flex items-center gap-1">
-          {version && (
-            <span className="
-              absolute right-4 bottom-0.5 font-mono text-[.6rem]
-              text-muted-foreground/50
-            "
-            >
-              {version}
-            </span>
-          )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger className={`
@@ -123,15 +166,6 @@ function ConnectionCard({
             <RiMoreLine className="size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onCloseAutoFocus={e => e.preventDefault()}>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                copy(connection.connectionString, 'Connection string copied to clipboard')
-              }}
-            >
-              <RiFileCopyLine className="size-4 opacity-50" />
-              Copy Connection String
-            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
@@ -156,21 +190,11 @@ function ConnectionCard({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </Link>
-
-      <AnimatePresence initial={false}>
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          className="overflow-hidden"
-        >
-          <div className={`
-            mx-4 flex max-h-60 flex-col gap-1 overflow-y-auto rounded-lg border
-            bg-muted/30 p-2
-          `}
-          >
-            {isPending
+      </CardFrameHeader>
+      <Card>
+        <CardPanel className="-mx-2">
+          <AnimatePresence initial={false} mode="popLayout">
+            {isResourcesPending
               ? (
                   <div className={`
                     flex animate-pulse items-center gap-2 p-2 text-sm
@@ -182,38 +206,72 @@ function ConnectionCard({
                   </div>
                 )
               : resources.length > 0
-                ? (
-                    resources.map(resource => (
-                      <Link
-                        key={resource.id}
-                        to="/connection/$resourceId/table"
-                        params={{ resourceId: resource.id }}
-                        className={`
-                          relative flex cursor-pointer items-center gap-2
-                          rounded-md border border-transparent p-2 text-sm
-                          hover:border-border hover:bg-muted
-                        `}
-                      >
-                        <RiDatabase2Line className="
-                          size-4 text-muted-foreground
-                        "
-                        />
-                        <span>{resource.name}</span>
-                      </Link>
-                    ))
-                  )
+                ? resources.map(resource => (
+                    <ResourceCard
+                      key={resource.id}
+                      resource={resource}
+                      connection={connection}
+                    />
+                  ))
                 : (
                     <div className="
-                      flex items-center gap-2 p-2 text-sm text-muted-foreground
+                      flex items-center p-2 text-sm text-muted-foreground
                     "
                     >
-                      No other databases found
+                      No resources found
                     </div>
                   )}
+          </AnimatePresence>
+          <Button disabled variant="ghost" size="sm" className="mt-2">
+            <RiAddLine className="size-4" />
+            Add Resource
+            (soon)
+          </Button>
+        </CardPanel>
+      </Card>
+      <CardFrameFooter>
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-4">
+            {connection.color && (
+              <div className="size-5 rounded-full bg-(--color)" />
+            )}
+            {connection.label && (
+              <Badge variant="outline">
+                {connection.label}
+              </Badge>
+            )}
           </div>
-        </motion.div>
-      </AnimatePresence>
-    </motion.div>
+          <div className="text-muted-foreground">
+            {isVersionPending
+              ? (
+                  <span className="animate-pulse">Loading version...</span>
+                )
+              : version
+                ? (
+                    <button
+                      className={cn('flex items-center gap-1', isVersionRefetching
+                        ? `animate-pulse`
+                        : '')}
+                      type="button"
+                      onClick={() => refetchVersion()}
+                    >
+                      {isVersionRefetching && (
+                        <RiLoader4Line className="size-3 animate-spin" />
+                      )}
+                      Version:
+                      {' '}
+                      {version}
+                    </button>
+                  )
+                : (
+                    <span className="opacity-50">
+                      Version cannot be detected
+                    </span>
+                  )}
+          </div>
+        </div>
+      </CardFrameFooter>
+    </CardFrameMotion>
   )
 }
 
@@ -243,12 +301,17 @@ function LastOpenedResource({ connectionResource, connection, onClose }: { conne
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   return (
-    <div
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.15 }}
       className="flex items-center justify-between gap-2"
     >
       <Link
         className="
-          flex flex-1 items-center gap-2 text-sm text-foreground
+          flex flex-1 items-center gap-2 py-0.5 text-sm text-foreground
           hover:underline
         "
         {...params}
@@ -264,13 +327,13 @@ function LastOpenedResource({ connectionResource, connection, onClose }: { conne
       </Link>
       <Button
         variant="ghost"
-        size="icon-sm"
+        size="icon-xs"
         className="shrink-0"
         onClick={onClose}
       >
-        <RiCloseLine />
+        <RiCloseLine className="text-muted-foreground" />
       </Button>
-    </div>
+    </motion.div>
   )
 }
 
