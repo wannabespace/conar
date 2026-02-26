@@ -4,6 +4,7 @@ import { useDebouncedCallback } from '@conar/ui/hookas/use-debounced-callback'
 import { useScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useRef } from 'react'
+import { prepareColumnId } from './'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from './constants'
 import { TableContext } from './table-context'
 
@@ -72,14 +73,14 @@ export function TableProvider({
 
     const rafId = requestAnimationFrame(() => {
       columnsToRemove.forEach((column) => {
-        const id = `--table-column-width-${column.id}`
+        const id = `--table-column-width-${prepareColumnId(column.id)}`
 
         if (scrollRef.current!.style.getPropertyValue(id)) {
           scrollRef.current!.style.removeProperty(id)
         }
       })
       customColumnsSizesMap.forEach((size, id) => {
-        scrollRef.current!.style.setProperty(`--table-column-width-${id}`, `${size}px`)
+        scrollRef.current!.style.setProperty(`--table-column-width-${prepareColumnId(id)}`, `${size}px`)
       })
       measureDebounced()
     })
