@@ -12,7 +12,7 @@ catalog:
   '@ai-sdk/provider': ^3.0.8
   '@ai-sdk/react': ^3.0.84
   '@ai-sdk/xai': ^3.0.54
-  '@antfu/eslint-config': ^7.4.3
+  '@antfu/eslint-config': ^7.5.0
   '@base-ui/react': ^1.2.0
   '@clickhouse/client': ^1.17.0
   '@commitlint/cli': ^20.4.2
@@ -103,10 +103,10 @@ catalog:
   electron-builder: ^26.7.0
   electron-store: ^11.0.2
   electron-vite: ^5.0.0
-  eslint: ^10.0.0
+  eslint: ^10.0.2
   eslint-plugin-better-tailwindcss: ^4.3.0
   eslint-plugin-react-hooks: ^7.0.1
-  eslint-plugin-react-refresh: ^0.5.0
+  eslint-plugin-react-refresh: ^0.5.2
   facehash: ^0.0.7
   hono: ^4.11.9
   hookable: ^6.0.1
@@ -148,7 +148,7 @@ catalog:
   stripe: ^20.3.1
   tailwind-merge: ^3.4.0
   tailwind-scrollbar: ^4.0.2
-  tailwindcss: ^4.2.0
+  tailwindcss: ^4.2.1
   tanstack-db-pglite: ^1.0.5
   taze: ^19.9.2
   turbo: ^2.8.10
