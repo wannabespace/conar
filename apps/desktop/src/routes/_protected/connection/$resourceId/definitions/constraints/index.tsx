@@ -112,10 +112,10 @@ function DatabaseConstraintsPage() {
         </Select>
         {schemas.length > 1 && (
           <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
-            <SelectTrigger className="w-[180px]">
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">schema</span>
-                <SelectValue />
+            <SelectTrigger className="min-w-[180px] max-w-56">
+              <div className="flex flex-1 items-center gap-2 overflow-hidden">
+                <span className="text-muted-foreground shrink-0">schema</span>
+                <span className="truncate"><SelectValue /></span>
               </div>
             </SelectTrigger>
             <SelectContent>

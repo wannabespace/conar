@@ -229,12 +229,12 @@ function Visualizer({
             setSearchQuery('')
           }}
         >
-          <SelectTrigger>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">
+          <SelectTrigger className="min-w-[180px] max-w-56">
+            <div className="flex flex-1 items-center gap-2 overflow-hidden text-left">
+              <span className="text-muted-foreground shrink-0">
                 schema
               </span>
-              <SelectValue placeholder="Select schema" />
+              <span className="truncate"><SelectValue placeholder="Select schema" /></span>
             </div>
           </SelectTrigger>
           <SelectContent>
