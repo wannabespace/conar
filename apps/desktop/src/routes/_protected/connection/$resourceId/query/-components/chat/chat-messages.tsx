@@ -20,7 +20,7 @@ import { regex } from 'arkregex'
 import { useEffect, useRef, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceEditorQueriesStore } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks'
 import { authClient } from '~/lib/auth'
 import { Route } from '../..'
@@ -60,8 +60,8 @@ function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick
 
 function ChatMessageCodeActions({ content, lang }: { content: string, lang: string }) {
   const { connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
-  const editorQueries = useStore(store, state => state.editorQueries)
+  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
+  const editorQueries = useStore(editorQueriesStore, state => state)
 
   const [isCopying, setIsCopying] = useState(false)
   const [isAppending, setIsAppending] = useState(false)

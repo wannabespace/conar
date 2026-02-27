@@ -4,6 +4,7 @@ import type { InferToolInput, InferToolOutput } from 'ai'
 import type { chatsMessages, connectionsResources } from '~/drizzle'
 import { Chat } from '@ai-sdk/react'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
+import { memoize } from '@conar/shared/utils/helpers'
 import { eventIteratorToStream } from '@orpc/client'
 import { encode } from '@toon-format/toon'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
@@ -11,7 +12,7 @@ import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
 import { resourceEnumsQuery, resourceTableColumnsQuery, resourceTablesAndSchemasQuery, rowsQuery } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { convertToAppUIMessage } from '~/lib/ai'
 import { orpc } from '~/lib/orpc'
@@ -37,13 +38,7 @@ async function ensureChat(chatId: string, connectionResourceId: string) {
   return chatsCollection.get(chatId)!
 }
 
-const chatsMap = new Map<string, Chat<AppUIMessage>>()
-
-export async function createChat({ id = uuid(), connectionResource }: { id?: string, connectionResource: typeof connectionsResources.$inferSelect }) {
-  if (chatsMap.has(id)) {
-    return chatsMap.get(id)!
-  }
-
+export const createChat = memoize(async ({ id = uuid(), connectionResource }: { id?: string, connectionResource: typeof connectionsResources.$inferSelect }) => {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
 
   const chat = new Chat<AppUIMessage>({
@@ -90,7 +85,7 @@ export async function createChat({ id = uuid(), connectionResource }: { id?: str
           await chatsMessagesCollection.delete(options.messageId).isPersisted.promise
         }
 
-        const store = connectionResourceStore(connectionResource.id)
+        const store = getConnectionResourceStore(connectionResource.id)
 
         return eventIteratorToStream(await orpc.ai.chat({
           id: options.chatId,
@@ -213,7 +208,5 @@ export async function createChat({ id = uuid(), connectionResource }: { id?: str
     },
   })
 
-  chatsMap.set(id, chat)
-
   return chat
-}
+})

@@ -9,7 +9,7 @@ import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
-import { addTab, connectionResourceStore } from '~/entities/connection/store'
+import { addTab, getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore, prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
 import { Filters } from './-components/filters/filters'
 import { FiltersProvider } from './-components/filters/filters-provider'
@@ -152,7 +152,7 @@ function DatabaseTablesPage() {
   const { store: tableStore } = Route.useLoaderData()
   const { connectionResource } = Route.useRouteContext()
   const { schema, table } = Route.useSearch()
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
 
   const handleLastOpenedTableEvent = useEffectEvent(() => {

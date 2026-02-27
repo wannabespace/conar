@@ -9,13 +9,13 @@ import { useStore } from '@tanstack/react-store'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
 function ActionsResourceTables({ connection, connectionResource }: { connection: typeof connections.$inferSelect, connectionResource: typeof connectionsResources.$inferSelect }) {
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const { data: tablesAndSchemas } = useQuery({
     ...resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem }),
     throwOnError: false,

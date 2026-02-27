@@ -14,7 +14,7 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
@@ -23,7 +23,7 @@ import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
 
 function Images({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const files = useStore(store, state => state.files)
 
   if (files.length === 0) {
@@ -57,7 +57,7 @@ export function ChatForm() {
   const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const { connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const input = useStore(store, state => state.chatInput)
   const { subscription } = useSubscription()
 

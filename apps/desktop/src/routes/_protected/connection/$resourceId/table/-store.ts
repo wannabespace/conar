@@ -1,5 +1,6 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
-import { Store } from '@tanstack/react-store'
+import type { Store } from '@tanstack/react-store'
+import { createStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
 
@@ -67,20 +68,20 @@ export function tablePageStore({ id, schema, table }: { id: string, schema: stri
     console.error('Invalid page store state', state.summary)
   }
 
-  const store = new Store<typeof storeState.infer>(
+  const store = createStore<typeof storeState.infer>(
     state instanceof type.errors ? defaultState : state,
   )
 
-  store.subscribe(({ currentVal }) => {
+  store.subscribe((state) => {
     sessionStorage.setItem(getPageStoreKey(id, schema, table), JSON.stringify({
-      selected: currentVal.selected,
-      filters: currentVal.filters,
-      exact: currentVal.exact,
-      hiddenColumns: currentVal.hiddenColumns,
-      orderBy: currentVal.orderBy,
-      prompt: currentVal.prompt,
-      columnSizes: currentVal.columnSizes,
-    } satisfies Omit<typeof currentVal, 'lastClickedIndex' | 'selectionState'>))
+      selected: state.selected,
+      filters: state.filters,
+      exact: state.exact,
+      hiddenColumns: state.hiddenColumns,
+      orderBy: state.orderBy,
+      prompt: state.prompt,
+      columnSizes: state.columnSizes,
+    } satisfies Omit<typeof state, 'lastClickedIndex' | 'selectionState'>))
   })
 
   storesMap.set(key, store)

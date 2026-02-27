@@ -9,7 +9,7 @@ import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
 import { useIsFetching } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 
@@ -29,13 +29,14 @@ export function RunnerEditorQueryZone({
   const [isCopying, setIsCopying] = useState(false)
   const isFetching = useIsFetching(runnerQueryOptions(connectionResource), queryClient) > 0
 
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const isChecked = useStore(store, state => state.selectedLines.includes(lineNumber))
 
-  const index = useStore(store, state => state.editorQueries.findIndex(query => query.startLineNumber === lineNumber))
-  const { queriesLength, queryNumber } = useStore(store, (state) => {
-    const queriesBefore = state.editorQueries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
-    const queriesLength = state.editorQueries[index]?.queries.length ?? 0
+  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
+  const index = useStore(editorQueriesStore, state => state.findIndex(query => query.startLineNumber === lineNumber))
+  const { queriesLength, queryNumber } = useStore(editorQueriesStore, (state) => {
+    const queriesBefore = state.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
+    const queriesLength = state[index]?.queries.length ?? 0
 
     return {
       queriesLength,

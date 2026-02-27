@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
 import type { connectionsResources } from '~/drizzle'
-import type { connectionResourceStoreType } from '~/entities/connection/store'
+import type { getConnectionResourceStoreType } from '~/entities/connection/store'
 import { getOS } from '@conar/shared/utils/os'
 import {
   ContextMenu,
@@ -22,7 +22,7 @@ import { useStore } from '@tanstack/react-store'
 import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { addTab, connectionResourceStore, removeTab, updateTabs } from '~/entities/connection/store'
+import { addTab, getConnectionResourceStore, removeTab, updateTabs } from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
 import { Route } from '..'
 import { tablePageStore } from '../-store'
@@ -75,7 +75,7 @@ function SortableTab({
   currentTabIndex,
   totalTabs,
 }: {
-  item: { id: string, tab: typeof connectionResourceStoreType.infer['tabs'][number] }
+  item: { id: string, tab: typeof getConnectionResourceStoreType.infer['tabs'][number] }
   showSchema: boolean
   connectionResource: typeof connectionsResources.$inferSelect
   onClose: VoidFunction
@@ -196,7 +196,7 @@ export function TablesTabs({
   className?: string
 }) {
   const { connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })

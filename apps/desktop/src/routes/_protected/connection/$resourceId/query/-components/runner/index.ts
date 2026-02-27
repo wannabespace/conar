@@ -1,10 +1,10 @@
 import type { connectionsResources } from '~/drizzle'
-import type { connectionResourceStoreType } from '~/entities/connection/store'
+import type { getConnectionResourceStoreType } from '~/entities/connection/store'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { customQuery } from '~/entities/connection/queries/custom'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 
 export * from './runner'
@@ -12,7 +12,7 @@ export * from './runner'
 function transformResult({ rows, query, startLineNumber, endLineNumber, duration }: {
   rows: unknown[]
   duration: number
-} & Pick<typeof connectionResourceStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
+} & Pick<typeof getConnectionResourceStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: rows as Record<string, unknown>[],
     error: null,
@@ -26,7 +26,7 @@ function transformResult({ rows, query, startLineNumber, endLineNumber, duration
 function transformError({ error, query, startLineNumber, endLineNumber, duration }: {
   error: unknown
   duration: number
-} & Pick<typeof connectionResourceStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
+} & Pick<typeof getConnectionResourceStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: null,
     error: error instanceof Error ? error.message : String(error),
@@ -38,7 +38,7 @@ function transformError({ error, query, startLineNumber, endLineNumber, duration
 }
 
 export function runnerQueryOptions(connectionResource: typeof connectionsResources.$inferSelect) {
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
 
   return queryOptions({
     queryKey: ['query-runner', connectionResource.id],

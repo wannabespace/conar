@@ -1,4 +1,4 @@
-import type { connectionResourceStoreType } from '~/entities/connection/store'
+import type { getConnectionResourceStoreType } from '~/entities/connection/store'
 import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
@@ -8,7 +8,7 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { QueryLogger } from '~/entities/connection/components'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResources, prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { ConnectionSidebar } from './-components/connection-sidebar'
@@ -44,7 +44,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
 })
 
 function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
-  return routesIds.find(route => route.includes('/_protected/connection/$resourceId')) as typeof connectionResourceStoreType.infer['lastOpenedPage']
+  return routesIds.find(route => route.includes('/_protected/connection/$resourceId')) as typeof getConnectionResourceStoreType.infer['lastOpenedPage']
 }
 
 function DatabasePage() {
@@ -52,7 +52,7 @@ function DatabasePage() {
   const currentPageId = useMatches({
     select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const loggerOpened = useStore(store, state => state.loggerOpened)
 
   useEffect(() => {

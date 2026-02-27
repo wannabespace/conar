@@ -16,7 +16,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { formatSql } from '~/lib/formatter'
 import { queryLogsStore } from '../log'
 import { connectionsCollection } from '../sync'
@@ -194,7 +194,7 @@ export function QueryLogger({ connectionResource, className }: {
   const queries = useStore(queryLogsStore, state => Object.values(state[connectionResource.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()))
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
   const [isClearing, setIsClearing] = useState(false)
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
 
   const filteredQueries = useMemo(() => {
     if (statusGroup) {

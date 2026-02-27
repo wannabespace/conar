@@ -4,7 +4,7 @@ import { render } from '@conar/ui/lib/render'
 import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
@@ -46,8 +46,9 @@ function useTrackLineNumberChange(monacoRef: RefObject<editor.IStandaloneCodeEdi
 
 export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { connection, connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
-  const editorQueries = useStore(store, state => state.editorQueries)
+  const store = getConnectionResourceStore(connectionResource.id)
+  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
+  const editorQueries = useStore(editorQueriesStore, state => state)
   const domElementRef = useRef<HTMLElement>(null)
   const { subscription } = useSubscription()
 

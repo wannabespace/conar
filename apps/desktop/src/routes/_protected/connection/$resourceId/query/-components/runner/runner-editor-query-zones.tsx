@@ -4,18 +4,19 @@ import { copy } from '@conar/ui/lib/copy'
 import { render } from '@conar/ui/lib/render'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
 import { Route } from '../..'
 import { useRunnerContext } from './runner-context'
 import { RunnerEditorQueryZone } from './runner-editor-query-zone'
 
 export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
-  const linesWithQueries = useStore(store, state => state.editorQueries.map(({ startLineNumber }) => startLineNumber))
+  const store = getConnectionResourceStore(connectionResource.id)
+  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
+  const linesWithQueries = useStore(editorQueriesStore, state => state.map(({ startLineNumber }) => startLineNumber))
 
   const getQueriesEvent = useEffectEvent((lineNumber: number) =>
-    store.state.editorQueries.find(query => query.startLineNumber === lineNumber),
+    editorQueriesStore.state.find(query => query.startLineNumber === lineNumber),
   )
 
   const run = useRunnerContext(({ run }) => run)

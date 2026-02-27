@@ -17,7 +17,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useRef } from 'react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { addTab, cleanupPinnedTables, connectionResourceStore, togglePinTable } from '~/entities/connection/store'
+import { addTab, cleanupPinnedTables, getConnectionResourceStore, togglePinTable } from '~/entities/connection/store'
 import { Route } from '..'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
@@ -165,7 +165,7 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
 
 export function TablesTree({ className, search }: { className?: string, search?: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data: tablesAndSchemas, isPending } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
   const { schema: schemaParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })

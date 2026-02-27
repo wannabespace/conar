@@ -1,10 +1,10 @@
 import type { LinkProps } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 
 export function useConnectionResourceLinkParams(resourceId: string) {
-  const store = connectionResourceStore(resourceId)
+  const store = getConnectionResourceStore(resourceId)
   const [lastOpenedTable, lastOpenedPage, lastChatId] = useStore(store, state => [state.lastOpenedTable, state.lastOpenedPage, state.lastOpenedChatId])
 
   return useMemo((): LinkProps => {

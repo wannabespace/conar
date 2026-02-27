@@ -10,7 +10,7 @@ import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
 import { MonacoDiff } from '~/components/monaco'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
@@ -30,7 +30,7 @@ export function RunnerEditorAIZone({
   onClose: () => void
 }) {
   const isOnline = useStore(appStore, state => state.isOnline)
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const { subscription } = useSubscription()
   const [prompt, setPrompt] = useState('')
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null)

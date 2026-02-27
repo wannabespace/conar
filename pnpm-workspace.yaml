@@ -65,7 +65,7 @@ catalog:
   '@tanstack/react-router': ^1.163.2
   '@tanstack/react-router-devtools': ^1.163.2
   '@tanstack/react-start': ^1.163.2
-  '@tanstack/react-store': ^0.8.0
+  '@tanstack/react-store': ^0.9.1
   '@tanstack/react-virtual': ^3.13.19
   '@tanstack/router-plugin': ^1.163.2
   '@tiptap/extension-placeholder': ^3.20.0

@@ -21,7 +21,7 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { dropTableQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
-import { connectionResourceStore, removeTab } from '~/entities/connection/store'
+import { getConnectionResourceStore, removeTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
 import { Route } from '..'
 
@@ -34,7 +34,7 @@ interface DropTableDialogProps {
 export function DropTableDialog({ ref }: DropTableDialogProps) {
   const { connection, connectionResource } = Route.useRouteContext()
   const { schema: schemaFromSearch, table: tableFromSearch } = Route.useSearch()
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')
   const [schema, setSchema] = useState('')

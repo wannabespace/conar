@@ -13,7 +13,7 @@ import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { resourceEnumsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -30,7 +30,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
 function DatabaseEnumsPage() {
   const { connection, connectionResource } = Route.useRouteContext()
   const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceEnumsQuery({ connectionResource }))
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []

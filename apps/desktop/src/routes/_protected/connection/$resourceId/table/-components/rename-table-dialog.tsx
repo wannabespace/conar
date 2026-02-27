@@ -19,7 +19,7 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { renameTableQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
-import { connectionResourceStore, renameTab } from '~/entities/connection/store'
+import { getConnectionResourceStore, renameTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
 import { Route } from '..'
 
@@ -31,7 +31,7 @@ interface RenameTableDialogProps {
 
 export function RenameTableDialog({ ref }: RenameTableDialogProps) {
   const { connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const router = useRouter()
   const [newTableName, setNewTableName] = useState('')
   const [schema, setSchema] = useState('')

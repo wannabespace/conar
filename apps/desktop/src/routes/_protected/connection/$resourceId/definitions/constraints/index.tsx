@@ -12,7 +12,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
 import { resourceConstraintsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -58,7 +58,7 @@ function getIcon(type: ConstraintType) {
 function DatabaseConstraintsPage() {
   const { connectionResource } = Route.useRouteContext()
   const { data: constraints, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceConstraintsQuery({ connectionResource }))
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []

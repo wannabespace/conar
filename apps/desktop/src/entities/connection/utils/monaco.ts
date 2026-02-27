@@ -6,7 +6,7 @@ import { queryClient } from '~/main'
 import { resourceTableColumnsQuery } from '../queries/columns'
 import { resourceEnumsQuery } from '../queries/enums'
 import { resourceTablesAndSchemasQuery } from '../queries/tables-and-schemas'
-import { connectionResourceStore } from '../store'
+import { getConnectionResourceStore } from '../store'
 
 const keywordPriority = [
   'SELECT',
@@ -37,7 +37,7 @@ const keywordPriority = [
 ]
 
 export function connectionCompletionService(connectionResource: typeof connectionsResources.$inferSelect): CompletionService {
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   queryClient.prefetchQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem }))
   queryClient.prefetchQuery(resourceEnumsQuery({ connectionResource }))
 

@@ -7,7 +7,7 @@ import { resourceEnumsQuery } from '../queries/enums'
 import { resourceRowsQuery } from '../queries/rows'
 import { resourceTablesAndSchemasQuery } from '../queries/tables-and-schemas'
 import { resourceTableTotalQuery } from '../queries/total'
-import { connectionResourceStore } from '../store'
+import { getConnectionResourceStore } from '../store'
 import { connectionsCollection } from '../sync'
 
 export async function prefetchConnectionResourceCore(connectionResource: typeof connectionsResources.$inferSelect) {
@@ -17,7 +17,7 @@ export async function prefetchConnectionResourceCore(connectionResource: typeof 
     return
   }
 
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   await Promise.all([
     queryClient.prefetchQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem })),
     queryClient.prefetchQuery(resourceEnumsQuery({ connectionResource })),

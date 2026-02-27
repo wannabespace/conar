@@ -13,7 +13,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 import { queriesCollection } from '~/entities/query/sync'
 import { formatSql } from '~/lib/formatter'
@@ -29,8 +29,9 @@ import { RunnerSettings } from './runner-settings'
 
 function useTrackSelectedLinesChange() {
   const { connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
-  const currentLineNumbers = useStore(store, state => state.editorQueries.map(q => q.startLineNumber))
+  const store = getConnectionResourceStore(connectionResource.id)
+  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
+  const currentLineNumbers = useStore(editorQueriesStore, state => state.map(q => q.startLineNumber))
 
   useEffect(() => {
     const selectedLines = store.state.selectedLines
@@ -59,10 +60,11 @@ export function Runner() {
     .findOne(),
   )
   const [isFormatting, setIsFormatting] = useState(false)
-  const store = connectionResourceStore(connectionResource.id)
-  const { selectedLines, editorQueries, query, resultsVisible } = useStore(store, state => ({
+  const store = getConnectionResourceStore(connectionResource.id)
+  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
+  const editorQueries = useStore(editorQueriesStore, state => state)
+  const { selectedLines, query, resultsVisible } = useStore(store, state => ({
     selectedLines: state.selectedLines,
-    editorQueries: state.editorQueries,
     query: state.query,
     resultsVisible: state.layout.resultsVisible,
   }))

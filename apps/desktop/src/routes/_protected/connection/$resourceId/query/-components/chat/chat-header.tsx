@@ -23,7 +23,7 @@ import {
   chatsCollection,
   chatsMessagesCollection,
 } from '~/entities/chat/sync'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { convertToAppUIMessage } from '~/lib/ai'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
@@ -81,7 +81,7 @@ function groupChats(data: typeof chats.$inferSelect[]) {
 export function ChatHeader({ chatId }: { chatId: string }) {
   const { resourceId } = Route.useParams()
   const navigate = useNavigate()
-  const store = connectionResourceStore(resourceId)
+  const store = getConnectionResourceStore(resourceId)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveChatDialog>>(null)
   const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'))
   const chat = allChats.find(chat => chat.id === chatId)

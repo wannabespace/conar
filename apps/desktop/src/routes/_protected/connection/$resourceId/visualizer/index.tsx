@@ -18,7 +18,7 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { animationHooks } from '~/enter'
 import { ReactFlowNode } from '~/entities/connection/components'
 import { resourceConstraintsQuery, resourceTableColumnsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { applySearchHighlight, getVisualizerLayout } from './-lib'
 
@@ -38,7 +38,7 @@ export const Route = createFileRoute(
 function VisualizerPage() {
   const { connection } = Route.useLoaderData()
   const { connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data: tablesAndSchemas } = useQuery({
     ...resourceTablesAndSchemasQuery({ connectionResource, showSystem }),

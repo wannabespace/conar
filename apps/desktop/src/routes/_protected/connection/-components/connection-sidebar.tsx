@@ -21,7 +21,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResources, useLastOpenedResources } from '~/entities/connection/utils'
 import { UserButton } from '~/entities/user/components'
@@ -189,7 +189,7 @@ function MainLinks() {
   const match = useMatches({
     select: matches => matches.map(match => match.routeId).at(-1),
   })
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
 
   useEffect(() => {
@@ -302,7 +302,7 @@ function MainLinks() {
 export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { connectionResource } = Route.useRouteContext()
   const [lastOpenedResources] = useLastOpenedResources()
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const { data: openedResources } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })
     .where(({ connectionsResources }) => inArray(connectionsResources.id, lastOpenedResources))

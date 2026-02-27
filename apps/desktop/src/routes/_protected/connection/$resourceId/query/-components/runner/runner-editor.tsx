@@ -6,7 +6,7 @@ import { KeyCode, KeyMod } from 'monaco-editor'
 import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { Monaco } from '~/components/monaco'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionCompletionService } from '~/entities/connection/utils/monaco'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
@@ -23,7 +23,7 @@ const dialectsMap = {
 
 function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
 
   const replace = ({
     query,
@@ -117,9 +117,9 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
 
 export function RunnerEditor() {
   const { connection, connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const query = useStore(store, state => state.query)
-  const editorQueries = useStore(store, state => state.editorQueries)
+  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const run = useRunnerContext(({ run }) => run)
 
@@ -140,7 +140,7 @@ export function RunnerEditor() {
   }, [connection, connectionResource])
 
   const getEditorQueriesEvent = useEffectEvent((position: Position) => {
-    return editorQueries.find(query =>
+    return editorQueriesStore.state.find(query =>
       position.lineNumber >= query.startLineNumber
       && position.lineNumber <= query.endLineNumber,
     ) ?? null

@@ -5,7 +5,7 @@ import { Switch } from '@conar/ui/components/switch'
 import { ToggleGroup, ToggleGroupItem } from '@conar/ui/components/toggle-group'
 import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
-import { connectionResourceStore, setChatPosition, toggleChat, toggleResults } from '~/entities/connection/store'
+import { getConnectionResourceStore, setChatPosition, toggleChat, toggleResults } from '~/entities/connection/store'
 import { Route } from '../..'
 
 function ToggleRow({
@@ -74,7 +74,7 @@ export function RunnerSettings({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const { resourceId } = Route.useParams()
 
-  const store = connectionResourceStore(resourceId)
+  const store = getConnectionResourceStore(resourceId)
   const {
     chatVisible,
     resultsVisible,

@@ -7,14 +7,14 @@ import { RiCloseLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { resourceConstraintsQuery, resourceEnumsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { queryClient } from '~/main'
 import { Route } from '..'
 import { TablesTree } from './tables-tree'
 
 export function Sidebar() {
   const { connection, connectionResource } = Route.useRouteContext()
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useStore(store, state => state.showSystem)
   const search = useStore(store, state => state.tablesSearch)
   const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))

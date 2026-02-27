@@ -11,7 +11,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
 import { resourceIndexesQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -51,7 +51,7 @@ function getIndexType(indexItem: IndexItem): IndexType {
 function DatabaseIndexesPage() {
   const { connectionResource } = Route.useRouteContext()
   const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceIndexesQuery({ connectionResource }))
-  const store = connectionResourceStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useStore(store, state => state.showSystem)
   const { data } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []

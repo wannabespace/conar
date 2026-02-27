@@ -1,5 +1,6 @@
 import type { FileRoutesById } from '~/routeTree.gen'
-import { Store } from '@tanstack/react-store'
+import { memoize } from '@conar/shared/utils/helpers'
+import { createStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { getEditorQueries } from '~/entities/connection/utils'
 
@@ -23,7 +24,7 @@ const layoutSettingsType = type({
   chatPosition: '"left" | "right"',
 })
 
-export const connectionResourceStoreType = type({
+export const getConnectionResourceStoreType = type({
   lastOpenedPage: 'string | null' as type.cast<(Extract<keyof FileRoutesById, `/_protected/connection/$resourceId/${string}`> | null)>,
   lastOpenedChatId: 'string | null',
   lastOpenedTable: type({
@@ -32,11 +33,6 @@ export const connectionResourceStoreType = type({
   }).or('null'),
   query: 'string',
   selectedLines: 'number[]',
-  editorQueries: type({
-    startLineNumber: 'number',
-    endLineNumber: 'number',
-    queries: 'string[]',
-  }).array(),
   showSystem: 'boolean',
   queriesToRun: queryToRunType.array(),
   files: 'File[]',
@@ -53,7 +49,7 @@ export const connectionResourceStoreType = type({
   layout: layoutSettingsType,
 })
 
-const defaultState: typeof connectionResourceStoreType.infer = {
+const defaultState: typeof getConnectionResourceStoreType.infer = {
   lastOpenedPage: null,
   lastOpenedChatId: null,
   lastOpenedTable: null,
@@ -73,7 +69,6 @@ const defaultState: typeof connectionResourceStoreType.infer = {
     'WHERE p.published = true',
     'LIMIT 10;',
   ].join('\n'),
-  editorQueries: [],
   showSystem: false,
   queriesToRun: [],
   selectedLines: [],
@@ -92,19 +87,12 @@ const defaultState: typeof connectionResourceStoreType.infer = {
   },
 }
 
-const storesMap = new Map<string, Store<typeof connectionResourceStoreType.infer>>()
-
-export function connectionResourceStore(id: string) {
-  if (storesMap.has(id)) {
-    return storesMap.get(id)!
-  }
-
+export const getConnectionResourceStore = memoize((id: string) => {
   const persistedState = JSON.parse(localStorage.getItem(`connection-resource-store-${id}`) || '{}') as typeof defaultState
 
   persistedState.query ||= defaultState.query
-  persistedState.editorQueries ||= getEditorQueries(persistedState.query)
 
-  const state = connectionResourceStoreType(Object.assign(
+  const state = getConnectionResourceStoreType(Object.assign(
     {},
     defaultState,
     persistedState,
@@ -114,37 +102,33 @@ export function connectionResourceStore(id: string) {
     console.error('Invalid connection store state', state.summary)
   }
 
-  const store = new Store<typeof connectionResourceStoreType.infer>(
+  const store = createStore<typeof getConnectionResourceStoreType.infer>(
     state instanceof type.errors ? defaultState : state,
   )
 
-  store.subscribe(({ currentVal, prevVal }) => {
-    if (prevVal.query !== currentVal.query) {
-      store.setState(state => ({
-        ...state,
-        editorQueries: getEditorQueries(state.query),
-      } satisfies typeof state))
-    }
-
-    localStorage.setItem(`database-store-${id}`, JSON.stringify({
-      lastOpenedPage: currentVal.lastOpenedPage,
-      lastOpenedChatId: currentVal.lastOpenedChatId,
-      lastOpenedTable: currentVal.lastOpenedTable,
-      query: currentVal.query,
-      showSystem: currentVal.showSystem,
-      selectedLines: currentVal.selectedLines,
-      loggerOpened: currentVal.loggerOpened,
-      chatInput: currentVal.chatInput,
-      tabs: currentVal.tabs,
-      tablesSearch: currentVal.tablesSearch,
-      definitionsSearch: currentVal.definitionsSearch,
-      tablesTreeOpenedSchemas: currentVal.tablesTreeOpenedSchemas,
-      pinnedTables: currentVal.pinnedTables,
-      layout: currentVal.layout,
-    } satisfies Omit<typeof currentVal, 'queriesToRun' | 'files' | 'editorQueries'>))
+  store.subscribe((state) => {
+    localStorage.setItem(`connection-resource-store-${id}`, JSON.stringify({
+      lastOpenedPage: state.lastOpenedPage,
+      lastOpenedChatId: state.lastOpenedChatId,
+      lastOpenedTable: state.lastOpenedTable,
+      query: state.query,
+      showSystem: state.showSystem,
+      selectedLines: state.selectedLines,
+      loggerOpened: state.loggerOpened,
+      chatInput: state.chatInput,
+      tabs: state.tabs,
+      tablesSearch: state.tablesSearch,
+      definitionsSearch: state.definitionsSearch,
+      tablesTreeOpenedSchemas: state.tablesTreeOpenedSchemas,
+      pinnedTables: state.pinnedTables,
+      layout: state.layout,
+    } satisfies Omit<typeof state, 'queriesToRun' | 'files'>))
   })
 
-  storesMap.set(id, store)
-
   return store
-}
+})
+
+export const getConnectionResourceEditorQueriesStore = memoize((id: string) => {
+  const connectionResourceStore = getConnectionResourceStore(id)
+  return createStore(() => getEditorQueries(connectionResourceStore.state.query))
+})

@@ -5,7 +5,7 @@ import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
-import { connectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
@@ -62,7 +62,7 @@ function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
 function DatabaseSqlPage() {
   const { connection } = Route.useLoaderData()
   const { chatId } = Route.useSearch()
-  const store = connectionResourceStore(connection.id)
+  const store = getConnectionResourceStore(connection.id)
 
   const { chatVisible, chatPosition } = useStore(store, s => ({
     chatVisible: s.layout.chatVisible,
