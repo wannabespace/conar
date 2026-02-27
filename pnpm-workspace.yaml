@@ -15,8 +15,8 @@ catalog:
   '@antfu/eslint-config': ^7.6.1
   '@base-ui/react': ^1.2.0
   '@clickhouse/client': ^1.17.0
-  '@commitlint/cli': ^20.4.2
-  '@commitlint/config-conventional': ^20.4.2
+  '@commitlint/cli': ^20.4.1
+  '@commitlint/config-conventional': ^20.4.1
   '@dagrejs/dagre': 1.1.8
   '@electric-sql/pglite': ^0.3.15
   '@eslint-react/eslint-plugin': ^2.13.0
@@ -80,6 +80,7 @@ catalog:
   '@types/pg': ^8.16.0
   '@types/react': ^19.2.14
   '@types/react-dom': ^19.2.3
+  '@typescript-eslint/utils': ^8.56.0
   '@upstash/context7-tools-ai-sdk': ^0.2.2
   '@vitejs/plugin-react': ^5.1.4
   '@xyflow/react': ^12.10.1
