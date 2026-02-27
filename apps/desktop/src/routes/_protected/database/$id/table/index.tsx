@@ -126,6 +126,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
       <TablesTabs className="h-9" connection={connection} />
       <div
         key={table}
+        role="none"
         className="h-[calc(100%-(--spacing(9)))]"
         onClick={() => addTab(connection.id, schema, table)}
       >
@@ -189,7 +190,7 @@ function DatabaseTablesPage() {
     >
       <ResizablePanel
         defaultSize="20%"
-        minSize="10%"
+        minSize={200}
         maxSize="50%"
         className="h-full overflow-hidden rounded-lg border bg-background"
       >

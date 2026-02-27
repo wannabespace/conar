@@ -7,6 +7,7 @@ export const getClient = memoize((connectionString: string) => clickhouse.create
   url: connectionString.startsWith('clickhouse')
     ? connectionString.replace(/^clickhouse/, 'http')
     : connectionString,
+  max_open_connections: 1,
   clickhouse_settings: {
     date_time_output_format: 'iso',
   },

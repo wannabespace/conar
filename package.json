@@ -1,7 +1,7 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.28.2",
+  "packageManager": "pnpm@10.30.3",
   "engines": {
     "bun": ">=1.3.0"
   },
@@ -17,6 +17,8 @@
     "build:web": "turbo run @conar/web#build",
     "start:web": "cd apps/web && pnpm run start",
     "build:todesktop": "turbo run conar#build:todesktop",
+    "aur:sync": "bun scripts/sync-aur-version.ts",
+    "aur:sync:checksum": "bun scripts/sync-aur-version.ts --checksum",
     "drizzle:generate": "turbo run drizzle:generate",
     "drizzle:migrate": "turbo run drizzle:migrate",
     "check-types": "turbo run check-types",

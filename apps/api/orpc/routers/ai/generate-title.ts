@@ -2,7 +2,6 @@ import type { AppUIMessage } from '~/ai/tools/helpers'
 import { google } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { type } from 'arktype'
-import { consola } from 'consola'
 import { eq } from 'drizzle-orm'
 import { chats, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
@@ -19,6 +18,11 @@ export const generateTitle = orpc
       .map(part => JSON.stringify(part, null, 2))
       .join('\n'),
     ).join('\n')
+
+    context.addLogData({
+      chatId: input.chatId,
+      prompt,
+    })
 
     const { text } = await generateText({
       model: withPosthog(google('gemini-2.0-flash'), {
@@ -47,7 +51,10 @@ export const generateTitle = orpc
       abortSignal: signal,
     })
 
-    consola.info('generateTitle response', text)
+    context.addLogData({
+      chatId: input.chatId,
+      generatedTitle: text,
+    })
 
     await db.update(chats).set({ title: text }).where(eq(chats.id, input.chatId))
 

@@ -17,7 +17,10 @@ export async function handleError(error: unknown) {
     : false
 
   if (!shouldIgnoreError) {
-    toast.error(getErrorMessage(error))
+    const message = getErrorMessage(error)
+    toast.error(message, {
+      id: `error-${message}`,
+    })
   }
 
   if (
@@ -31,6 +34,8 @@ export async function handleError(error: unknown) {
     || (error instanceof ORPCError && error.code === 'UNAUTHORIZED')
   ) {
     await fullSignOut()
-    toast.info('Your session has expired. Please, sign in again.')
+    toast.info('Your session has expired. Please, sign in again.', {
+      id: 'session-expired',
+    })
   }
 }

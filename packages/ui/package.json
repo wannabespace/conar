@@ -39,6 +39,7 @@
     "@remixicon/react": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@tanstack/react-form": "catalog:",
+    "@tanstack/react-hotkeys": "catalog:",
     "@tanstack/react-router": "catalog:",
     "@tanstack/react-store": "catalog:",
     "@tanstack/react-virtual": "catalog:",

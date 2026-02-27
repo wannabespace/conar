@@ -1,10 +1,9 @@
 import type { Auth, BetterAuthOptions } from 'better-auth'
-import { PORTS } from '@conar/shared/constants'
+import { AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
-import { consola } from 'consola'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { db, users } from '~/drizzle'
@@ -53,7 +52,6 @@ export const auth: Auth = betterAuth({
         returned: false,
         input: false,
         defaultValue: () => nanoid(),
-        required: true,
       },
       stripeCustomerId: {
         type: 'string',
@@ -65,7 +63,6 @@ export const auth: Auth = betterAuth({
       desktopVersion: {
         fieldName: 'desktop_version',
         type: 'string',
-        returned: true,
         input: false,
         required: false,
       },
@@ -75,15 +72,19 @@ export const auth: Auth = betterAuth({
     after: createAuthMiddleware(async (ctx) => {
       const desktopVersion = ctx.headers?.get('x-desktop-version')
 
-      if (!ctx.context.session || !desktopVersion) {
+      if (!ctx.context.session) {
         return
       }
 
-      await redisMemoize(async () => {
-        await db.update(users).set({
-          desktopVersion,
-        }).where(eq(users.id, ctx.context.session!.user.id))
-      }, `desktop-version:${ctx.context.session.user.id}`)
+      ctx.request?.headers.set('user-id', ctx.context.session.user.id)
+
+      if (desktopVersion) {
+        await redisMemoize(async () => {
+          await db.update(users).set({
+            desktopVersion,
+          }).where(eq(users.id, ctx.context.session!.user.id))
+        }, `desktop-version:${ctx.context.session.user.id}`)
+      }
     }),
   },
   databaseHooks: {
@@ -129,7 +130,7 @@ export const auth: Auth = betterAuth({
   onAPIError: {
     onError: async (error) => {
       if (!env.ALERTS_EMAIL) {
-        consola.error('ALERTS_EMAIL is not set')
+        console.error('ALERTS_EMAIL is not set')
         return
       }
 
@@ -157,7 +158,7 @@ export const auth: Auth = betterAuth({
     ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
   ],
   advanced: {
-    cookiePrefix: 'conar',
+    cookiePrefix: AUTH_COOKIE_PREFIX,
     crossSubDomainCookies: {
       enabled: nodeEnv === 'production',
       domain: new URL(env.WEB_URL).host,

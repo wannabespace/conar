@@ -5,6 +5,9 @@ export default antfu(
   {
     react: true,
     rules: {
+      'no-unassigned-vars': 'warn',
+      'no-useless-assignment': 'warn',
+      'preserve-caught-error': 'warn',
       'ts/no-explicit-any': 'error',
       'no-console': 'warn',
       'prefer-arrow-callback': 'off',
@@ -16,8 +19,10 @@ export default antfu(
       'react-hooks/exhaustive-deps': ['warn', {
         additionalHooks: '(useMountedEffect|useAsyncEffect)',
       }],
+      'react-refresh/only-export-components': 'off',
     },
     ignores: [
+      '**/*.md',
       '**/routeTree.gen.ts',
       '**/out/**/*',
       '**/release/**/*',

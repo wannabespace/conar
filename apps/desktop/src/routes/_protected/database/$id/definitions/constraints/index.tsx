@@ -2,14 +2,16 @@ import type { constraintsType } from '~/entities/connection/sql/constraints'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardTitle, MotionCard } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { RiDatabase2Line, RiKey2Line, RiLayoutColumnLine, RiLinksLine, RiTable2 } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
 import { useConnectionConstraints, useConnectionTablesAndSchemas } from '~/entities/connection/queries'
+import { connectionStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -55,7 +57,9 @@ function getIcon(type: ConstraintType) {
 function DatabaseConstraintsPage() {
   const { connection } = Route.useLoaderData()
   const { data: constraints, refetch, isFetching, isPending, dataUpdatedAt } = useConnectionConstraints({ connection })
-  const { data } = useConnectionTablesAndSchemas({ connection })
+  const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
+  const { data } = useConnectionTablesAndSchemas({ connection, showSystem })
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
@@ -107,10 +111,10 @@ function DatabaseConstraintsPage() {
         </Select>
         {schemas.length > 1 && (
           <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
-            <SelectTrigger className="w-[180px]">
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">schema</span>
-                <SelectValue />
+            <SelectTrigger className="min-w-[180px] max-w-56">
+              <div className="flex flex-1 items-center gap-2 overflow-hidden">
+                <span className="text-muted-foreground shrink-0">schema</span>
+                <span className="truncate"><SelectValue /></span>
               </div>
             </SelectTrigger>
             <SelectContent>
@@ -135,32 +139,29 @@ function DatabaseConstraintsPage() {
             layout
             {...MOTION_BLOCK_PROPS}
           >
-            <CardHeader className="bg-muted/30 px-4 py-3">
+            <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2 text-base">
+                  <CardTitle className="mb-2 flex items-center gap-2 text-base">
                     {getIcon(item.type)}
                     <HighlightText text={item.name} match={search} />
-                    <Badge
-                      variant="secondary"
-                      className="text-xs"
-                    >
+                    <Badge variant="secondary">
                       {formatType(item.type)}
                     </Badge>
                   </CardTitle>
                   <div className={`
-                    mt-2 flex items-center gap-2 text-sm text-muted-foreground
+                    flex items-center gap-1.5 text-sm text-muted-foreground
                   `}
                   >
-                    <Badge variant="outline" className="text-xs">
-                      <RiTable2 className="mr-1 size-3" />
+                    <Badge variant="outline">
+                      <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
                     {item.column && (
                       <>
                         <span>on</span>
-                        <Badge variant="outline" className="text-xs">
-                          <RiLayoutColumnLine className="mr-1 size-3" />
+                        <Badge variant="outline">
+                          <RiLayoutColumnLine className="size-3" />
                           <HighlightText text={item.column} match={search} />
                         </Badge>
                       </>
@@ -168,7 +169,7 @@ function DatabaseConstraintsPage() {
                   </div>
                 </div>
               </div>
-            </CardHeader>
+            </CardContent>
             {item.type === 'foreignKey' && (
               <CardContent className="border-t bg-muted/10 px-4 py-3 text-sm">
                 <div className="flex items-center gap-2">

@@ -70,10 +70,8 @@ function SupportButton() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <DialogTrigger asChild>
-              <Button size="icon" variant="ghost">
-                <RiMessageLine className="size-4" />
-              </Button>
+            <DialogTrigger render={<Button size="icon" variant="ghost" />}>
+              <RiMessageLine className="size-4" />
             </DialogTrigger>
           </TooltipTrigger>
           <TooltipContent side="right">Support</TooltipContent>
@@ -100,10 +98,8 @@ function SupportButton() {
             />
           </div>
           <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
+            <DialogClose render={<Button type="button" variant="outline" />}>
+              Cancel
             </DialogClose>
             <Button type="submit" disabled={loading || !message}>
               <LoadingContent loading={loading}>
@@ -134,7 +130,8 @@ function LastOpenedConnection({ connection }: { connection: typeof connections.$
         <TooltipTrigger asChild>
           <div className="group relative">
             {!isActive && (
-              <span
+              <button
+                type="button"
                 className={cn(
                   `
                     absolute top-0 right-0 z-10 flex size-4 translate-x-1/2
@@ -146,7 +143,7 @@ function LastOpenedConnection({ connection }: { connection: typeof connections.$
                 onClick={onCloseClick}
               >
                 <RiCloseLine className="size-3" />
-              </span>
+              </button>
             )}
             <Link
               className={cn(
@@ -159,6 +156,7 @@ function LastOpenedConnection({ connection }: { connection: typeof connections.$
                   : '',
               )}
               style={connection.color ? { '--color': connection.color } : {}}
+              preload={false}
               {...params}
             >
               <span className="text-sm font-bold">

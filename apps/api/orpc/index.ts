@@ -4,7 +4,7 @@ import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { db, subscriptions } from '~/drizzle'
 import { auth } from '~/lib/auth'
-import { redis, redisMemoize } from '~/lib/redis'
+import { redis } from '~/lib/redis'
 
 export const orpc = os.$context<Context>()
 
@@ -33,8 +33,25 @@ async function getSession(headers: Headers) {
   return session
 }
 
-export const authMiddleware = orpc.middleware(async ({ context, next }) => {
+export const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
+  const result = await next()
+
+  context.addLogData({
+    input,
+    output: (Array.isArray(result.output) && result.output.length > 0)
+      || (typeof result.output === 'object' && Object.keys(result.output).length > 0)
+      || (!Array.isArray(result.output) && typeof result.output !== 'object' && !!result.output)
+      ? result.output
+      : undefined,
+  })
+
+  return result
+})
+
+export const authMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
+
+  context.addLogData({ userId: session.user.id })
 
   return next({
     context: {
@@ -42,10 +59,14 @@ export const authMiddleware = orpc.middleware(async ({ context, next }) => {
       getUserSecret: () => getUserSecret(session.user.id),
     },
   })
-})
+}))
 
-export const optionalAuthMiddleware = orpc.middleware(async ({ context, next }) => {
+export const optionalAuthMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers).catch(() => null)
+
+  if (session) {
+    context.addLogData({ userId: session.user.id })
+  }
 
   return next({
     context: {
@@ -53,18 +74,22 @@ export const optionalAuthMiddleware = orpc.middleware(async ({ context, next }) 
       user: session?.user ?? null,
     },
   })
-})
+}))
 
 export async function getSubscription(userId: string) {
   const userSubscriptions = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
 
-  return userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number]) && !s.cancelAt) ?? null
+  return userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number])) ?? null
 }
 
-export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, next }) => {
+export const requireSubscriptionMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
   const minorVersion = context.minorVersion ?? 0
-  const subscription = await redisMemoize(() => getSubscription(session.user.id), `subscription:${session.user.id}`, 60 * 30)
+  const subscription = await getSubscription(session.user.id)
+
+  if (session) {
+    context.addLogData({ userId: session.user.id })
+  }
 
   if (!subscription) {
     throw new ORPCError('FORBIDDEN', {
@@ -74,26 +99,31 @@ export const requireSubscriptionMiddleware = orpc.middleware(async ({ context, n
     })
   }
 
+  context.addLogData({
+    subscriptionId: subscription.id,
+    subscriptionStatus: subscription.status,
+  })
+
   return next({
     context: {
       ...session,
       getUserSecret: () => getUserSecret(session.user.id),
     },
   })
-})
+}))
 
 export function cacheMiddleware(ttl: number = 60 * 60 * 24) {
-  return orpc.middleware(async ({ next, path }, input, output) => {
+  return logMiddleware.concat(orpc.middleware(async ({ next, path }, input, output) => {
     const cacheKey = path.join('/') + JSON.stringify(input)
     const cached = await redis.get(cacheKey)
     if (cached) {
       return output(JSON.parse(cached))
     }
 
-    const result = await next({})
+    const result = await next()
 
     await redis.setex(cacheKey, ttl, JSON.stringify(result.output))
 
     return result
-  })
+  }))
 }

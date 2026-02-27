@@ -2,9 +2,18 @@ import { openai } from '@ai-sdk/openai'
 import { encode } from '@toon-format/toon'
 import { generateText } from 'ai'
 import { type } from 'arktype'
+import { asc, eq } from 'drizzle-orm'
+import { chatsMessages, db } from '~/drizzle'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
-import { getMessages } from './ask__legacy'
+
+async function getMessages(chatId: string) {
+  return db
+    .select()
+    .from(chatsMessages)
+    .where(eq(chatsMessages.chatId, chatId))
+    .orderBy(asc(chatsMessages.createdAt))
+}
 
 export const enhancePrompt = orpc
   .use(requireSubscriptionMiddleware)

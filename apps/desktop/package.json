@@ -1,7 +1,7 @@
 {
   "name": "conar",
   "type": "module",
-  "version": "0.26.1",
+  "version": "0.27.3",
   "productName": "Conar",
   "private": true,
   "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
+    "@tanstack/react-hotkeys": "catalog:",
     "@todesktop/runtime": "catalog:",
     "electron-store": "catalog:",
     "mssql": "catalog:",

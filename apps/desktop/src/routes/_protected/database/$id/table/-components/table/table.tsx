@@ -308,49 +308,33 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     >
       <div className="flex size-full">
         <div
+          role="grid"
           className="relative min-w-0 flex-1 bg-background outline-none"
           tabIndex={0}
           onKeyDown={handleShiftSelectionKeyDown}
         >
           <Table>
             <TableHeader />
-
-            {isRowsPending && (
-              <TableBodySkeleton selectable={primaryColumns.length > 0} />
-            )}
-
-            {!isRowsPending && error && (
-              <TableError error={error} />
-            )}
-
-            {!isRowsPending && !error && rows?.length === 0 && (
-              <TableEmpty
-                className="bottom-0 h-[calc(100%-5rem)]"
-                title="Table is empty"
-                description="There are no records to show"
-              />
-            )}
-
-            {!isRowsPending && !error && rows?.length !== 0 && tableColumns.length === 0 && (
-              <TableEmpty
-                className="h-[calc(100%-5rem)]"
-                title="No columns to show"
-                description="Please show at least one column"
-              />
-            )}
-
-            {!isRowsPending && !error && rows?.length !== 0 && tableColumns.length !== 0 && (
-              <>
-                <TableBody data-mask className="bg-background" />
-                <TableInfiniteLoader
-                  table={table}
-                  schema={schema}
-                  connection={connection}
-                  filters={filters}
-                  orderBy={orderBy}
-                />
-              </>
-            )}
+            {isRowsPending
+              ? <TableBodySkeleton selectable={primaryColumns.length > 0} />
+              : error
+                ? <TableError error={error} />
+                : rows?.length === 0
+                  ? <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
+                  : tableColumns.length === 0
+                    ? <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />
+                    : (
+                        <>
+                          <TableBody data-mask className="bg-background" />
+                          <TableInfiniteLoader
+                            table={table}
+                            schema={schema}
+                            connection={connection}
+                            filters={filters}
+                            orderBy={orderBy}
+                          />
+                        </>
+                      )}
           </Table>
         </div>
 

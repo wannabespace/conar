@@ -1,13 +1,13 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
-import { Button } from '@conar/ui/components/button'
-import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Input } from '@conar/ui/components/input'
-import { RiBardLine, RiCheckLine, RiSendPlaneLine } from '@remixicon/react'
+import { Kbd } from '@conar/ui/components/kbd'
+import { RiBardLine } from '@remixicon/react'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { useConnectionEnums } from '~/entities/connection/queries'
 import { orpcQuery } from '~/lib/orpc'
@@ -19,6 +19,7 @@ import { usePageStoreContext } from '../../-store'
 export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
   const isOnline = useStore(appStore, state => state.isOnline)
   const { connection } = Route.useLoaderData()
+  const inputRef = useRef<HTMLInputElement>(null)
   const store = usePageStoreContext()
   const prompt = useStore(store, state => state.prompt)
   const { mutate: generateFilter, isPending } = useMutation(orpcQuery.ai.filters.mutationOptions({
@@ -53,11 +54,13 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
     Enums: ${JSON.stringify(enums, null, 2)}
   `.trim(), [columns, enums, schema, table])
 
+  useHotkey('Mod+F', () => {
+    inputRef.current?.focus()
+  })
+
   return (
     <form
-      className="
-        relative w-full max-w-full transition-all duration-300 ease-in-out
-      "
+      className="relative w-full max-w-full"
       onSubmit={(e) => {
         e.preventDefault()
         generateFilter({ prompt, context })
@@ -69,31 +72,20 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       "
       />
       <Input
-        className="
-          w-full pr-10 pl-8
-          focus-visible:border-border focus-visible:ring-0
-        "
+        ref={inputRef}
+        className="pr-10 pl-8"
         placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
         disabled={isPending || !isOnline}
         value={prompt}
+        autoFocus
         onChange={e => store.setState(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
       />
-      <Button
-        type="submit"
-        variant="secondary"
-        size="icon-xs"
-        disabled={isPending}
+      <Kbd
+        asChild
         className="absolute top-1/2 right-2 -translate-y-1/2"
       >
-        <LoadingContent loading={isPending} loaderClassName="size-3">
-          <ContentSwitch
-            activeContent={<RiCheckLine className="size-3 text-success" />}
-            active={!isPending}
-          >
-            <RiSendPlaneLine className="size-3" />
-          </ContentSwitch>
-        </LoadingContent>
-      </Button>
+        <CtrlLetter userAgent={navigator.userAgent} letter="F" />
+      </Kbd>
     </form>
   )
 }

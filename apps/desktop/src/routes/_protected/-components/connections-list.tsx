@@ -133,7 +133,7 @@ function ConnectionCard({
           >
             <RiMoreLine className="size-4" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" onCloseAutoFocus={e => e.preventDefault()}>
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
@@ -247,27 +247,27 @@ export function ConnectionsList() {
     ? connections.filter(connection => connection.label === selectedLabel)
     : connections
 
-  const hasLastOpened = lastOpenedConnections.length > 0
+  const showLastOpened = lastOpenedConnections.length > 0 && filteredConnections.length > 1
 
   return (
     <div className="flex flex-col gap-6">
       <RemoveConnectionDialog ref={removeDialogRef} />
       <RenameConnectionDialog ref={renameDialogRef} />
-      {hasLastOpened && (
-        <LastOpenedConnections
-          onRemove={(connection) => {
-            removeDialogRef.current?.remove(connection)
-          }}
-          onRename={(connection) => {
-            renameDialogRef.current?.rename(connection)
-          }}
-          onClose={(connection) => {
-            setLastOpenedConnections(prev => prev.filter(id => id !== connection.id))
-          }}
-        />
-      )}
-      {hasLastOpened && (
-        <Separator />
+      {showLastOpened && (
+        <>
+          <LastOpenedConnections
+            onRemove={(connection) => {
+              removeDialogRef.current?.remove(connection)
+            }}
+            onRename={(connection) => {
+              renameDialogRef.current?.rename(connection)
+            }}
+            onClose={(connection) => {
+              setLastOpenedConnections(prev => prev.filter(id => id !== connection.id))
+            }}
+          />
+          <Separator />
+        </>
       )}
       {availableLabels.length > 0 && (
         <Tabs

@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import type { connections } from '~/drizzle'
 import type { connectionStoreType } from '~/entities/connection/store'
-import { getOS, isCtrlAndKey } from '@conar/shared/utils/os'
+import { getOS } from '@conar/shared/utils/os'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -10,21 +10,20 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@conar/ui/components/context-menu'
-import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
+import { MotionScrollViewport, ScrollArea, ScrollBar } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
-import { useKeyboardEvent } from '@conar/ui/hookas/use-keyboard-event'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useRouter, useSearch } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { motion, Reorder } from 'motion/react'
+import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useConnectionTablesAndSchemas } from '~/entities/connection/queries'
 import { addTab, connectionStore, removeTab, updateTabs } from '~/entities/connection/store'
 import { prefetchConnectionTableCore } from '~/entities/connection/utils'
 import { tablePageStore } from '../-store'
-
-const MotionScrollViewport = motion.create(ScrollViewport)
 
 const os = getOS(navigator.userAgent)
 
@@ -196,9 +195,11 @@ export function TablesTabs({
   connection: typeof connections.$inferSelect
   className?: string
 }) {
+  const store = connectionStore(connection.id)
+  const showSystem = useStore(store, state => state.showSystem)
+  const { data: tablesAndSchemas } = useConnectionTablesAndSchemas({ connection, showSystem })
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/database/$id/table/' })
   const router = useRouter()
-  const store = connectionStore(connection.id)
   const tabs = useStore(store, state => state.tabs)
 
   const addNewTab = useEffectEvent((schema: string, table: string) => {
@@ -315,13 +316,27 @@ export function TablesTabs({
     removeTab(connection.id, schema, table)
   }
 
-  useKeyboardEvent(e => isCtrlAndKey(e, 'w'), (e) => {
-    e.preventDefault()
-
+  useHotkey('Mod+W', () => {
     if (schemaParam && tableParam) {
       closeTab(schemaParam, tableParam)
     }
   })
+
+  const cleanupTabsEvent = useEffectEvent(async (tables: { schema: string, table: string }[]) => {
+    const tabsToRemove = tabs.filter(tab => !tables.some(t => t.schema === tab.schema && t.table === tab.table))
+
+    for (const { schema, table } of tabsToRemove) {
+      closeTab(schema, table)
+    }
+  })
+
+  useEffect(() => {
+    if (!tablesAndSchemas)
+      return
+
+    cleanupTabsEvent(tablesAndSchemas.schemas
+      .flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
+  }, [tablesAndSchemas])
 
   const isOneSchema = tabs.length
     ? tabs.every(tab => tab.schema === tabs[0]?.schema) && schemaParam === tabs[0]?.schema

@@ -32,6 +32,12 @@ window.electron?.app.onSendToast(({ message, type }) => {
 
 initEvents()
 
+window.addEventListener('keydown', (event) => {
+  if (((event.ctrlKey || event.metaKey) && event.key === 'r') || event.key === 'F5') {
+    event.preventDefault()
+  }
+})
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
