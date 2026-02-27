@@ -7,8 +7,11 @@ import { Button } from '@conar/ui/components/button'
 import { Card, CardFrameDescription, CardFrameFooter, CardFrameHeader, CardFrameMotion, CardFrameTitle, CardPanel } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { useIsScrolled } from '@conar/ui/hookas/use-is-scrolled'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAddLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
@@ -93,6 +96,8 @@ function ConnectionCard({
   const [isCopied, setIsCopied] = useState(false)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const scrollViewportRef = useRef<HTMLDivElement>(null)
+  const isScrolled = useIsScrolled(scrollViewportRef)
 
   const handleCopy = () => {
     if (timeoutRef.current) {
@@ -193,40 +198,85 @@ function ConnectionCard({
       </CardFrameHeader>
       <Card>
         <CardPanel className="-mx-2">
-          <AnimatePresence initial={false} mode="popLayout">
-            {isResourcesPending
-              ? (
-                  <div className={`
-                    flex animate-pulse items-center gap-2 p-2 text-sm
-                    text-muted-foreground
-                  `}
+          <ScrollArea className={cn(
+            `
+              relative
+              after:pointer-events-none after:absolute after:right-0
+              after:bottom-0 after:left-0 after:z-10 after:h-4
+              after:bg-linear-to-t after:from-card after:to-transparent
+            `,
+            isScrolled && `
+              before:pointer-events-none before:absolute before:top-0
+              before:right-0 before:left-0 before:z-10 before:h-4
+              before:bg-linear-to-b before:from-card before:to-transparent
+            `,
+          )}
+          >
+            <ScrollViewport ref={scrollViewportRef} className="max-h-40">
+              <AnimatePresence initial={false} mode="popLayout">
+                {isResourcesPending
+                  ? (
+                      <motion.div
+                        layout
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.98 }}
+                        transition={{ duration: 0.15 }}
+                        className={`
+                          flex animate-pulse items-center gap-2 p-2 text-sm
+                          text-muted-foreground
+                        `}
+                      >
+                        <RiLoader4Line className="size-4 animate-spin" />
+                        Loading resources...
+                      </motion.div>
+                    )
+                  : resources.length > 0
+                    ? resources.map(resource => (
+                        <ResourceCard
+                          key={resource.id}
+                          resource={resource}
+                          connection={connection}
+                        />
+                      ))
+                    : (
+                        <motion.div
+                          layout
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.98 }}
+                          transition={{ duration: 0.15 }}
+                          className="
+                            flex items-center p-2 text-sm text-muted-foreground
+                          "
+                        >
+                          No resources found
+                        </motion.div>
+                      )}
+              </AnimatePresence>
+            </ScrollViewport>
+            <ScrollBar />
+          </ScrollArea>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button
+                    disabled
+                    variant="ghost"
+                    size="sm"
+                    className="mt-2"
                   >
-                    <RiLoader4Line className="size-4 animate-spin" />
-                    Loading resources...
-                  </div>
-                )
-              : resources.length > 0
-                ? resources.map(resource => (
-                    <ResourceCard
-                      key={resource.id}
-                      resource={resource}
-                      connection={connection}
-                    />
-                  ))
-                : (
-                    <div className="
-                      flex items-center p-2 text-sm text-muted-foreground
-                    "
-                    >
-                      No resources found
-                    </div>
-                  )}
-          </AnimatePresence>
-          <Button disabled variant="ghost" size="sm" className="mt-2">
-            <RiAddLine className="size-4" />
-            Add Resource
-            (soon)
-          </Button>
+                    <RiAddLine className="size-4" />
+                    Add Resource
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                Soon you will be able to add resources to your connection.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardPanel>
       </Card>
       <CardFrameFooter>
@@ -314,6 +364,7 @@ function LastOpenedResource({ connectionResource, connection, onClose }: { conne
           flex flex-1 items-center gap-2 py-0.5 text-sm text-foreground
           hover:underline
         "
+        preload={false}
         {...params}
       >
         <ConnectionIcon

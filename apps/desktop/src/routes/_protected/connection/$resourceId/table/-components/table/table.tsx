@@ -1,4 +1,5 @@
 import type { ColumnRenderer } from '@conar/table'
+import type { ComponentRef } from 'react'
 import type { Column } from '~/entities/connection/components/table/utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
@@ -69,7 +70,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQuery({ connectionResource, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
   const { toggleOrder } = useColumnsOrder()
-  const renameColumnRef = useRef<{ rename: (schema: string, table: string, column: string) => void }>(null)
+  const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
 
   useEffect(() => {
     if (!rows || !store.state.selected)

@@ -1,7 +1,7 @@
 import { DEFAULT_COLUMN_WIDTH } from '~/entities/connection/components/table/utils'
 
-const SELECT_COLUMN_ID = '!__selection_column__!'
-const ACTIONS_COLUMN_ID = '!__actions_column__!'
+const SELECT_COLUMN_ID = '!__(selection_column)__!'
+const ACTIONS_COLUMN_ID = '!__(actions_column)__!'
 
 export const INTERNAL_COLUMN_IDS = {
   SELECT: SELECT_COLUMN_ID,
