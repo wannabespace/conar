@@ -25,6 +25,7 @@ export const storeState = type({
   columnSizes: 'Record<string, number>',
   lastClickedIndex: 'number | null',
   selectionState: 'object' as type.cast<SelectionState>,
+  detailRowIndex: 'number | null',
 })
 
 const defaultState: typeof storeState.infer = {
@@ -37,6 +38,7 @@ const defaultState: typeof storeState.infer = {
   columnSizes: {},
   lastClickedIndex: null,
   selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
+  detailRowIndex: null,
 }
 
 function getPageStoreKey(id: string, schema: string, table: string) {
@@ -80,7 +82,7 @@ export function tablePageStore({ id, schema, table }: { id: string, schema: stri
       orderBy: currentVal.orderBy,
       prompt: currentVal.prompt,
       columnSizes: currentVal.columnSizes,
-    } satisfies Omit<typeof currentVal, 'lastClickedIndex' | 'selectionState'>))
+    } satisfies Omit<typeof currentVal, 'lastClickedIndex' | 'selectionState' | 'detailRowIndex'>))
   })
 
   storesMap.set(key, store)

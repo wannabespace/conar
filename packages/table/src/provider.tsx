@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import type { ColumnRenderer } from './'
 import { useDebouncedCallback } from '@conar/ui/hookas/use-debounced-callback'
 import { useScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
@@ -16,6 +16,7 @@ export function TableProvider({
   estimatedRowSize = DEFAULT_ROW_HEIGHT,
   estimatedColumnSize = DEFAULT_COLUMN_WIDTH,
   customColumnSizes,
+  onRowClick,
 }: {
   rows: Record<string, unknown>[]
   columns: ColumnRenderer[]
@@ -23,6 +24,7 @@ export function TableProvider({
   estimatedRowSize?: number
   estimatedColumnSize?: number
   customColumnSizes?: Record<string, number>
+  onRowClick?: (rowIndex: number, event: MouseEvent<HTMLDivElement>) => void
 }) {
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollDirection = useScrollDirection(scrollRef)
@@ -98,6 +100,7 @@ export function TableProvider({
         virtualColumns,
         tableHeight,
         tableWidth,
+        onRowClick,
       }}
     >
       {children}

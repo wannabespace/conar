@@ -18,6 +18,7 @@ import { useTableColumns } from '../../-queries/use-columns-query'
 import { usePageStoreContext } from '../../-store'
 import { useColumnsOrder } from '../use-columns-order'
 import { RenameColumnDialog } from './rename-column-dialog'
+import { RowDetailSidebar } from './row-detail-sidebar'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
 import { TableHeaderCell } from './table-header-cell'
@@ -63,6 +64,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const store = usePageStoreContext()
   const hiddenColumns = useStore(store, state => state.hiddenColumns)
   const columnSizes = useStore(store, state => state.columnSizes)
+  const detailRowIndex = useStore(store, state => state.detailRowIndex)
   const [filters, orderBy] = useStore(store, state => [state.filters, state.orderBy])
   const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(connectionRowsQuery({ connection, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
@@ -82,6 +84,15 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       selected: validSelected,
     } satisfies typeof state))
   }, [store, rows, primaryColumns])
+
+  useEffect(() => {
+    if (detailRowIndex !== null) {
+      store.setState(state => ({
+        ...state,
+        detailRowIndex: null,
+      } satisfies typeof state))
+    }
+  }, [filters, orderBy, store])
 
   const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
     const rowsQueryOpts = connectionRowsQuery({
@@ -290,41 +301,63 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     },
   })
 
+  const handleRowClick = useCallback((rowIndex: number) => {
+    store.setState(state => ({
+      ...state,
+      detailRowIndex: state.detailRowIndex === rowIndex ? null : rowIndex,
+    } satisfies typeof state))
+  }, [store])
+
   return (
     <TableProvider
       rows={rows}
       columns={tableColumns}
       customColumnSizes={columnSizes}
+      onRowClick={handleRowClick}
     >
-      <div
-        role="grid"
-        className="relative size-full bg-background outline-none"
-        tabIndex={0}
-        onKeyDown={handleShiftSelectionKeyDown}
-      >
-        <Table>
-          <TableHeader />
-          {isRowsPending
-            ? <TableBodySkeleton selectable={primaryColumns.length > 0} />
-            : error
-              ? <TableError error={error} />
-              : rows?.length === 0
-                ? <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
-                : tableColumns.length === 0
-                  ? <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />
-                  : (
-                      <>
-                        <TableBody data-mask className="bg-background" />
-                        <TableInfiniteLoader
-                          table={table}
-                          schema={schema}
-                          connection={connection}
-                          filters={filters}
-                          orderBy={orderBy}
-                        />
-                      </>
-                    )}
-        </Table>
+      <div className="flex size-full">
+        <div
+          role="grid"
+          className="relative min-w-0 flex-1 bg-background outline-none"
+          tabIndex={0}
+          onKeyDown={handleShiftSelectionKeyDown}
+        >
+          <Table>
+            <TableHeader />
+            {isRowsPending
+              ? <TableBodySkeleton selectable={primaryColumns.length > 0} />
+              : error
+                ? <TableError error={error} />
+                : rows?.length === 0
+                  ? <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
+                  : tableColumns.length === 0
+                    ? <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />
+                    : (
+                        <>
+                          <TableBody data-mask className="bg-background" />
+                          <TableInfiniteLoader
+                            table={table}
+                            schema={schema}
+                            connection={connection}
+                            filters={filters}
+                            orderBy={orderBy}
+                          />
+                        </>
+                      )}
+          </Table>
+        </div>
+
+        {detailRowIndex !== null && rows[detailRowIndex] && columns && (
+          <RowDetailSidebar
+            row={rows[detailRowIndex]}
+            columns={columns}
+            onClose={() =>
+              store.setState(state => ({
+                ...state,
+                detailRowIndex: null,
+              } satisfies typeof state))}
+          />
+        )}
       </div>
       <RenameColumnDialog ref={renameColumnRef} connection={connection} />
     </TableProvider>
