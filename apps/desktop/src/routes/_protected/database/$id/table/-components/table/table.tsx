@@ -85,6 +85,15 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     } satisfies typeof state))
   }, [store, rows, primaryColumns])
 
+  useEffect(() => {
+    if (detailRowIndex !== null) {
+      store.setState(state => ({
+        ...state,
+        detailRowIndex: null,
+      } satisfies typeof state))
+    }
+  }, [filters, orderBy, store])
+
   const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
     const rowsQueryOpts = connectionRowsQuery({
       connection,

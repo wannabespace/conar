@@ -3,6 +3,7 @@ import { Button } from '@conar/ui/components/button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine } from '@remixicon/react'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { getEditableValue } from '~/entities/connection/components/table/utils'
 
 export function RowDetailSidebar({
@@ -16,6 +17,8 @@ export function RowDetailSidebar({
   onClose: VoidFunction
   className?: string
 }) {
+  useHotkey('Escape', onClose)
+
   return (
     <aside
       className={cn(
@@ -76,6 +79,9 @@ export function RowDetailSidebar({
                   )}
                   {column.primaryKey && (
                     <span className="ml-1 text-primary">PK</span>
+                  )}
+                  {column.enum && (
+                    <span className="ml-1 text-secondary-foreground">Enum</span>
                   )}
                 </dt>
 
