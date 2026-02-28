@@ -1,7 +1,8 @@
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { CompiledQuery, Dialect, Driver, QueryResult } from 'kysely'
 import type { DialectOptions } from '..'
 import type { connections } from '~/drizzle'
-import { getPostgresQueryKey } from '@conar/shared/utils/connections'
+import { getPostgresQueryKey, isPostgresLikeConnection } from '@conar/shared/utils/connections'
 import { DummyDriver, PostgresAdapter, PostgresQueryCompiler } from 'kysely'
 import { logSql } from '../../sql'
 
@@ -20,8 +21,10 @@ function execute(connection: typeof connections.$inferSelect, compiledQuery: Com
   if (!window.electron) {
     throw new Error('Electron is not available')
   }
-
-  const queryKey = getPostgresQueryKey(connection.type)
+  if (!isPostgresLikeConnection(connection.type)) {
+    throw new Error(`Postgres dialect requires postgres or supabase connection, got ${connection.type}`)
+  }
+  const queryKey = getPostgresQueryKey(connection.type as ConnectionType.Postgres | ConnectionType.Supabase)
   const values = toValuesArray(compiledQuery.parameters)
   const promise = window.electron.query[queryKey]({
     connectionString: connection.connectionString,

@@ -4,7 +4,7 @@ export function isPostgresLikeConnection(type: ConnectionType): boolean {
   return type === ConnectionType.Postgres || type === ConnectionType.Supabase
 }
 
-export function getPostgresQueryKey(type: ConnectionType): 'postgres' | 'supabase' {
+export function getPostgresQueryKey(type: ConnectionType.Postgres | ConnectionType.Supabase): 'postgres' | 'supabase' {
   return type === ConnectionType.Supabase ? 'supabase' : 'postgres'
 }
 
