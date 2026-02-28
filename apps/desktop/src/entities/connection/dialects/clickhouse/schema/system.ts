@@ -6,6 +6,21 @@ export interface System {
   columns: Columns
   parts: Parts
   one: One
+  row_policies: RowPolicies
+}
+
+/**
+ * @name row_policies
+ * @type table
+ */
+interface RowPolicies {
+  name: string
+  short_name: string
+  database: string
+  table: string
+  id: string
+  is_restrictive: number
+  select_filter: string
 }
 
 /**

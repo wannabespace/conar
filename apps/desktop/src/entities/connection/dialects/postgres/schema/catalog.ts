@@ -8,7 +8,23 @@ export interface PgCatalog {
   pg_index: PgIndex
   pg_attribute: PgAttribute
   pg_settings: PgSettings
+  pg_policy: PgPolicy
   pg_am: PgAm
+}
+
+/**
+ * @name pg_policy
+ * @type table
+ */
+interface PgPolicy {
+  oid: number
+  polname: string
+  polrelid: number
+  polcmd: 'r' | 'a' | 'w' | 'd' | '*'
+  polpermissive: boolean
+  polroles: unknown
+  polqual: unknown
+  polwithcheck: unknown
 }
 
 /**
