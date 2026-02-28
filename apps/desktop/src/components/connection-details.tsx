@@ -49,7 +49,7 @@ export function ConnectionDetails({ className, connectionString, type }: { class
         </tr>
         <tr>
           <td className="py-1 pr-4 text-muted-foreground">Database</td>
-          <td data-mask>{url.pathname.slice(1)}</td>
+          <td data-mask className="w-full max-w-0 truncate">{url.pathname.slice(1)}</td>
         </tr>
         {Object.keys(url.searchParams.entries()).length > 0 && (
           <>
