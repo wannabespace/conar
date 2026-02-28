@@ -1,6 +1,6 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 
-export function isPostgresLikeConnection(type: ConnectionType): boolean {
+export function isPostgresLikeConnection(type: ConnectionType): type is ConnectionType.Postgres | ConnectionType.Supabase {
   return type === ConnectionType.Postgres || type === ConnectionType.Supabase
 }
 
