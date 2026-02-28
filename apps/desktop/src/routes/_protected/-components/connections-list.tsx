@@ -1,5 +1,6 @@
 import type { ComponentRef } from 'react'
 import type { connections } from '~/drizzle'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
@@ -21,6 +22,15 @@ import { useLastOpenedConnections } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
+function maskConnectionString(connection: typeof connections.$inferSelect): string {
+  if (connection.type === ConnectionType.SQLite)
+    return connection.connectionString.trim().replace(/^file:\/\//, '')
+  const url = new SafeURL(connection.connectionString)
+  if (connection.isPasswordExists || url.password)
+    url.password = '*'.repeat(url.password.length || 6)
+  return url.toString()
+}
+
 function ConnectionCard({
   connection,
   onRemove,
@@ -32,11 +42,7 @@ function ConnectionCard({
   onRename: VoidFunction
   onClose?: VoidFunction
 }) {
-  const url = new SafeURL(connection.connectionString)
-  if (connection.isPasswordExists || url.password) {
-    url.password = '*'.repeat(url.password.length || 6)
-  }
-  const connectionString = url.toString()
+  const connectionString = maskConnectionString(connection)
 
   const params = useConnectionLinkParams(connection.id)
 

@@ -60,5 +60,9 @@ export const connectionVersionQuery = createQuery({
         return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
       }
     },
+    sqlite: async (db) => {
+      const { rows } = await sql<{ version: string }>`SELECT sqlite_version() as version`.execute(db)
+      return rows[0]!
+    },
   }),
 })

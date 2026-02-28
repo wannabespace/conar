@@ -204,5 +204,23 @@ export const columnsQuery = createQuery({
         type: getClickhouseColumnType(row.type),
       }))
     },
+    sqlite: async (db) => {
+      const tableRef = `"${table.replace(/"/g, '""')}"`
+      const pragmaSql = schema === 'main'
+        ? `PRAGMA table_info(${tableRef})`
+        : `PRAGMA "${schema.replace(/"/g, '""')}".table_info(${tableRef})`
+      const { rows } = await sql.raw(pragmaSql).execute(db) as { rows: { cid: number, name: string, type: string, notnull: number, dflt_value: string | null, pk: number }[] }
+
+      return rows.map(row => ({
+        schema,
+        table,
+        id: row.name,
+        default: row.dflt_value,
+        type: row.type || 'TEXT',
+        label: row.type || 'TEXT',
+        nullable: row.notnull ? 0 : 1,
+        maxLength: null,
+      } satisfies typeof columnType.inferIn))
+    },
   }),
 })

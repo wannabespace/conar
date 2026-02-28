@@ -27,5 +27,12 @@ export const renameColumnQuery = createQuery({
       .alterTable(table)
       .renameColumn(oldColumn, newColumn)
       .execute(),
+    sqlite: db => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .schema
+      .alterTable(table)
+      .renameColumn(oldColumn, newColumn)
+      .execute(),
   }),
 })

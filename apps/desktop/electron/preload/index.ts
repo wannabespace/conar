@@ -44,6 +44,7 @@ contextBridge.exposeInMainWorld('electron', {
     mysql: arg => handleError(() => ipcRenderer.invoke('query.mysql', arg)),
     clickhouse: arg => handleError(() => ipcRenderer.invoke('query.clickhouse', arg)),
     mssql: arg => handleError(() => ipcRenderer.invoke('query.mssql', arg)),
+    sqlite: arg => handleError(() => ipcRenderer.invoke('query.sqlite', arg)),
   },
   encryption: {
     encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg)),

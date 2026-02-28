@@ -1,4 +1,5 @@
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { createQuery } from '../query'
 
 export const tablesAndSchemasType = type({
@@ -50,5 +51,14 @@ export const tablesAndSchemasQuery = createQuery({
       .where('table_type', '=', 'BASE TABLE')
       .$if(!showSystem, qb => qb.where(eb => eb('table_schema', 'not in', ['INFORMATION_SCHEMA', 'information_schema', 'system'])))
       .execute(),
+    sqlite: db =>
+      db.selectFrom('sqlite_master')
+        .select([
+          'name as table',
+          sql<string>`'main'`.as('schema'),
+        ])
+        .where('type', '=', 'table')
+        .where('name', 'not like', 'sqlite_%')
+        .execute(),
   }),
 })

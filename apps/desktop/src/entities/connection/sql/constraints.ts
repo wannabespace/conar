@@ -135,5 +135,9 @@ export const constraintsQuery = createQuery({
         onUpdate: null,
       }))
     },
+    sqlite: async () => {
+      // SQLite constraints from pragma_table_info(pk) and pragma_foreign_key_list - return empty for now
+      return []
+    },
   }),
 })

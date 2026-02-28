@@ -19,6 +19,7 @@ const dialectsMap = {
   mysql: LanguageIdEnum.MYSQL,
   mssql: LanguageIdEnum.PG,
   clickhouse: LanguageIdEnum.MYSQL,
+  sqlite: LanguageIdEnum.PG,
 } satisfies Record<ConnectionType, LanguageIdEnum>
 
 function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {

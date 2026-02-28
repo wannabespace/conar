@@ -116,5 +116,16 @@ export const totalQuery = createQuery({
 
       return { count: Number(query?.total ?? 0), isEstimated: false }
     },
+    sqlite: async (db) => {
+      const query = await db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .select(db.fn.countAll().as('total'))
+        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+        .executeTakeFirst()
+
+      return { count: Number(query?.total ?? 0), isEstimated: false }
+    },
   }),
 })

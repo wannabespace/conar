@@ -42,5 +42,12 @@ export const setQuery = createQuery({
       .set(values)
       .where(eb => buildWhere(eb, filters))
       .execute(),
+    sqlite: db => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .updateTable(table)
+      .set(values)
+      .where(eb => buildWhere(eb, filters))
+      .execute(),
   }),
 })
