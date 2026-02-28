@@ -51,10 +51,9 @@ async function pgLikeIndexes(db: Parameters<ReturnType<Parameters<typeof createQ
           .trim()
       : undefined
 
-    if (customExpression?.startsWith('(('))
+    while (customExpression?.startsWith('((') && customExpression.endsWith('))')) {
       customExpression = customExpression.slice(1, -1)
-    if (customExpression?.startsWith('(('))
-      customExpression = customExpression.slice(1, -1)
+    }
 
     return { ...row, custom_expression: customExpression }
   })
