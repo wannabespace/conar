@@ -160,11 +160,7 @@ const queryMap = {
     const db = getSQLiteDatabase(connectionString)
 
     const stmt = db.prepare(sql)
-    const isSelect = sql.trimStart().toUpperCase().startsWith('SELECT')
-      || sql.trimStart().toUpperCase().startsWith('PRAGMA')
-      || sql.trimStart().toUpperCase().startsWith('WITH')
-
-    const result = isSelect
+    const result = stmt.reader
       ? stmt.all(...values)
       : [stmt.run(...values)]
 
