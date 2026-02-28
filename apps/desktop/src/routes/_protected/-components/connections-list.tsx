@@ -25,7 +25,7 @@ import { RenameConnectionDialog } from './rename-connection-dialog'
 function maskConnectionString(connection: typeof connections.$inferSelect): string {
   if (connection.type === ConnectionType.SQLite)
     return connection.connectionString.trim().replace(/^file:\/\//, '')
-  const url = new SafeURL(connection.connectionString)
+  const url = new SafeURL(connection.connectionString.trim())
   if (connection.isPasswordExists || url.password)
     url.password = '*'.repeat(url.password.length || 6)
   return url.toString()

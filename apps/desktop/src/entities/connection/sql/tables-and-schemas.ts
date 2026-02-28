@@ -58,7 +58,7 @@ export const tablesAndSchemasQuery = createQuery({
           sql<string>`'main'`.as('schema'),
         ])
         .where('type', '=', 'table')
-        .where('name', 'not like', 'sqlite_%')
+        .$if(!showSystem, qb => qb.where('name', 'not like', 'sqlite_%'))
         .execute(),
   }),
 })

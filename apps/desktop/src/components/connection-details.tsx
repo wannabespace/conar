@@ -8,7 +8,7 @@ export function ConnectionDetails({ className, connectionString, type }: { class
   const trimmed = connectionString.trim()
   const parseableUrl = type === ConnectionType.SQLite && !trimmed.startsWith('file:')
     ? `file://${trimmed.startsWith('/') ? '' : '/'}${trimmed}`
-    : connectionString
+    : trimmed
   const url = new SafeURL(parseableUrl)
   const databaseDisplay = type === ConnectionType.SQLite ? trimmed.replace(/^file:\/\//, '') : url.pathname.slice(1)
   const [showPassword, setShowPassword] = useState(false)
