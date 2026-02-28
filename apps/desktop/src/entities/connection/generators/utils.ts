@@ -63,49 +63,67 @@ function prismaScalarMapper(t: string) {
   return 'String'
 }
 
+const postgresQuote = (name: string) => `"${name}"`
+
+function drizzlePgMapper(t: string) {
+  if (/serial/i.test(t))
+    return 'serial'
+  if (/int/i.test(t))
+    return 'integer'
+  if (/text/i.test(t))
+    return 'text'
+  if (/varchar|character varying/i.test(t))
+    return 'varchar'
+  if (/bool/i.test(t))
+    return 'boolean'
+  if (/timestamp/i.test(t))
+    return 'timestamp'
+  if (/date/i.test(t))
+    return 'date'
+  if (/decimal|numeric/i.test(t))
+    return 'decimal'
+  if (/double|float|real/i.test(t))
+    return 'doublePrecision'
+  if (/json/i.test(t))
+    return 'json'
+  return 'text'
+}
+
+function sqlPgMapper(t: string) {
+  if (/datetime2/i.test(t))
+    return 'timestamp'
+  if (/nvarchar/i.test(t))
+    return 'varchar'
+  if (/int32/i.test(t))
+    return 'integer'
+  return t
+}
+
 export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type: string) => string>> = {
   ts: {
     postgres: tsMapper,
+    supabase: tsMapper,
     mysql: tsMapper,
     mssql: tsMapper,
     clickhouse: tsMapper,
   },
   zod: {
     postgres: zodMapper,
+    supabase: zodMapper,
     mysql: zodMapper,
     mssql: zodMapper,
     clickhouse: zodMapper,
   },
   prisma: {
     postgres: prismaScalarMapper,
+    supabase: prismaScalarMapper,
     mysql: prismaScalarMapper,
     mssql: t => (/^date$/i.test(t) ? 'DateTime @db.Date' : prismaScalarMapper(t)),
     clickhouse: () => '',
   },
   drizzle: {
-    postgres: (t) => {
-      if (/serial/i.test(t))
-        return 'serial'
-      if (/int/i.test(t))
-        return 'integer'
-      if (/text/i.test(t))
-        return 'text'
-      if (/varchar|character varying/i.test(t))
-        return 'varchar'
-      if (/bool/i.test(t))
-        return 'boolean'
-      if (/timestamp/i.test(t))
-        return 'timestamp'
-      if (/date/i.test(t))
-        return 'date'
-      if (/decimal|numeric/i.test(t))
-        return 'decimal'
-      if (/double|float|real/i.test(t))
-        return 'doublePrecision'
-      if (/json/i.test(t))
-        return 'json'
-      return 'text'
-    },
+    postgres: drizzlePgMapper,
+    supabase: drizzlePgMapper,
     mysql: (t) => {
       if (/serial/i.test(t))
         return 'serial'
@@ -177,21 +195,15 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
     },
   },
   sql: {
-    postgres: (t) => {
-      if (/datetime2/i.test(t))
-        return 'timestamp'
-      if (/nvarchar/i.test(t))
-        return 'varchar'
-      if (/int32/i.test(t))
-        return 'integer'
-      return t
-    },
+    postgres: sqlPgMapper,
+    supabase: sqlPgMapper,
     mysql: t => t,
     mssql: t => t,
     clickhouse: t => t,
   },
   kysely: {
     postgres: t => t,
+    supabase: t => t,
     mysql: t => t,
     mssql: t => t,
     clickhouse: t => t,
@@ -220,7 +232,8 @@ const QUOTE_IDENTIFIER_MAP: Record<ConnectionType, (name: string) => string> = {
   mysql: (name: string) => `\`${name}\``,
   clickhouse: (name: string) => `\`${name}\``,
   mssql: (name: string) => `[${name}]`,
-  postgres: (name: string) => `"${name}"`,
+  postgres: postgresQuote,
+  supabase: postgresQuote,
 }
 
 export function quoteIdentifier(name: string, dialect: ConnectionType) {

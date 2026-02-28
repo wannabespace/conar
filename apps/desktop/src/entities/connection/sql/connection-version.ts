@@ -1,3 +1,5 @@
+import type { Kysely } from 'kysely'
+import type { Database as PostgresDatabase } from '../dialects/postgres/schema'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 import { createQuery } from '../query'
@@ -10,8 +12,8 @@ export const connectionVersionQuery = createQuery({
   type: connectionVersionType,
   silent: true,
   // Each query has a fallback to get a version in older versions
-  query: () => ({
-    postgres: async (db) => {
+  query: () => {
+    const pgLike = async (db: Kysely<PostgresDatabase>) => {
       try {
         return await db
           .selectFrom('pg_catalog.pg_settings')
@@ -22,43 +24,47 @@ export const connectionVersionQuery = createQuery({
       catch {
         return (await sql<{ version: string }>`SELECT current_setting('server_version') as version`.execute(db)).rows[0]!
       }
-    },
-    mysql: async (db) => {
-      try {
+    }
+    return {
+      postgres: pgLike,
+      supabase: pgLike,
+      mysql: async (db) => {
+        try {
         // for mysql >= v8.0
-        return await db
-          .selectFrom('performance_schema.global_variables')
-          .select('VARIABLE_VALUE as version')
-          .where('VARIABLE_NAME', '=', 'version')
-          .executeTakeFirstOrThrow()
-      }
-      catch {
-        return (await sql<{ version: string }>`SELECT VERSION() as version`.execute(db)).rows[0]!
-      }
-    },
-    mssql: async (db) => {
-      try {
-        return await db
-          .selectFrom('sys.databases')
-          .select(eb => eb.fn<string>('SERVERPROPERTY', [eb.val('ProductVersion')]).as('version'))
-          .orderBy('name')
-          .limit(1)
-          .executeTakeFirstOrThrow()
-      }
-      catch {
-        return (await sql<{ version: string }>`SELECT SERVERPROPERTY('ProductVersion') as version`.execute(db)).rows[0]!
-      }
-    },
-    clickhouse: async (db) => {
-      try {
-        return await db
-          .selectFrom('system.one')
-          .select(eb => eb.fn<string>('version', []).as('version'))
-          .executeTakeFirstOrThrow()
-      }
-      catch {
-        return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
-      }
-    },
-  }),
+          return await db
+            .selectFrom('performance_schema.global_variables')
+            .select('VARIABLE_VALUE as version')
+            .where('VARIABLE_NAME', '=', 'version')
+            .executeTakeFirstOrThrow()
+        }
+        catch {
+          return (await sql<{ version: string }>`SELECT VERSION() as version`.execute(db)).rows[0]!
+        }
+      },
+      mssql: async (db) => {
+        try {
+          return await db
+            .selectFrom('sys.databases')
+            .select(eb => eb.fn<string>('SERVERPROPERTY', [eb.val('ProductVersion')]).as('version'))
+            .orderBy('name')
+            .limit(1)
+            .executeTakeFirstOrThrow()
+        }
+        catch {
+          return (await sql<{ version: string }>`SELECT SERVERPROPERTY('ProductVersion') as version`.execute(db)).rows[0]!
+        }
+      },
+      clickhouse: async (db) => {
+        try {
+          return await db
+            .selectFrom('system.one')
+            .select(eb => eb.fn<string>('version', []).as('version'))
+            .executeTakeFirstOrThrow()
+        }
+        catch {
+          return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
+        }
+      },
+    }
+  },
 })

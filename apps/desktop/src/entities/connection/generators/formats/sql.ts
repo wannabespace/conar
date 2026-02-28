@@ -88,7 +88,7 @@ function getTypeDef(
     || (dialect === ConnectionType.ClickHouse && lowerType.startsWith('enum'))
 
   if (isList && foundEnum?.values.length) {
-    if (dialect === ConnectionType.Postgres) {
+    if (dialect === ConnectionType.Postgres || dialect === ConnectionType.Supabase) {
       usedEnums.set(foundEnum.name, foundEnum)
     }
     return formatEnumType(foundEnum, dialect)
@@ -182,7 +182,7 @@ function appendIndexStatements(
       `${quoteIdentifier(idx.name, dialect)}`,
       'ON',
       quoteIdentifier(table, dialect),
-      dialect === ConnectionType.Postgres && idx.type ? `USING ${idx.type}` : '',
+      (dialect === ConnectionType.Postgres || dialect === ConnectionType.Supabase) && idx.type ? `USING ${idx.type}` : '',
       `(${[
         ...idx.columns.map(c => quoteIdentifier(c, dialect)),
         ...idx.customExpressions.map(c => c),
@@ -209,7 +209,7 @@ export function generateSchemaSQL({
       let typeDef = getTypeDef(c, table, enums, dialect, usedEnums)
       let defaultValue = c.defaultValue
 
-      if (dialect === ConnectionType.Postgres && defaultValue?.toLowerCase().startsWith('nextval')) {
+      if ((dialect === ConnectionType.Postgres || dialect === ConnectionType.Supabase) && defaultValue?.toLowerCase().startsWith('nextval')) {
         if (typeDef === 'INTEGER') {
           typeDef = 'SERIAL'
           defaultValue = null

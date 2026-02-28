@@ -41,6 +41,7 @@ async function handleError(func: () => Promise<any>) {
 contextBridge.exposeInMainWorld('electron', {
   query: {
     postgres: arg => handleError(() => ipcRenderer.invoke('query.postgres', arg)),
+    supabase: arg => handleError(() => ipcRenderer.invoke('query.supabase', arg)),
     mysql: arg => handleError(() => ipcRenderer.invoke('query.mysql', arg)),
     clickhouse: arg => handleError(() => ipcRenderer.invoke('query.clickhouse', arg)),
     mssql: arg => handleError(() => ipcRenderer.invoke('query.mssql', arg)),

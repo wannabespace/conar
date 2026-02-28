@@ -16,11 +16,18 @@ pg.types.setTypeParser(pg.types.builtins.TIMESTAMPTZ, parseDate)
 pg.types.setTypeParser(pg.types.builtins.TIME, parseDate)
 pg.types.setTypeParser(pg.types.builtins.TIMETZ, parseDate)
 
+const SUPABASE_HOST = /\.supabase\.co$|\.pooler\.supabase\.com$/i
+
 export const getPool = memoize(async (connectionString: string) => {
-  const { searchParams, ...config } = parseConnectionString(connectionString)
-  const ssl = parseSSLConfig(searchParams)
+  const { searchParams, host, ...config } = parseConnectionString(connectionString)
+  let ssl = parseSSLConfig(searchParams)
+  const isSupabase = SUPABASE_HOST.test(host)
+  if (isSupabase && ssl === undefined) {
+    ssl = defaultSSLConfig
+  }
   const conf: PoolConfig = {
     ...config,
+    host,
     max: 1,
     ...(typeof ssl === 'object' ? { ssl: readSSLFiles(ssl) } : {}),
     ...(typeof ssl === 'boolean' ? { ssl } : {}),

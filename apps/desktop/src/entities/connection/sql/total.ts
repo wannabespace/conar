@@ -19,8 +19,8 @@ export const totalQuery = createQuery({
     table: string
     filters?: ActiveFilter[]
     exact?: boolean
-  }) => ({
-    postgres: async (db) => {
+  }) => {
+    const pgLike = async (db: Parameters<ReturnType<Parameters<typeof createQuery>[0]['query']>['postgres']>[0]) => {
       if (!exact && !filters?.length) {
         const estimate = await db
           .withSchema('pg_catalog')
@@ -31,90 +31,90 @@ export const totalQuery = createQuery({
           .where('pg_catalog.pg_class.relname', '=', table)
           .executeTakeFirst()
 
-        if (estimate && estimate.count !== null && estimate.count >= 0) {
-          return {
-            count: Math.round(estimate.count),
-            isEstimated: true,
+        if (estimate && estimate.count !== null && estimate.count >= 0)
+          return { count: Math.round(estimate.count), isEstimated: true }
+      }
+
+      const query = await db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .select(db.fn.countAll().as('total'))
+        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+        .executeTakeFirst()
+
+      return { count: Number(query?.total ?? 0), isEstimated: false }
+    }
+    return {
+      postgres: pgLike,
+      supabase: pgLike,
+      mysql: async (db) => {
+        if (!exact && !filters?.length) {
+          const estimate = await db
+            .withSchema('information_schema')
+            .selectFrom('information_schema.TABLES')
+            .select('TABLE_ROWS as count')
+            .where('TABLE_SCHEMA', '=', schema)
+            .where('TABLE_NAME', '=', table)
+            .executeTakeFirst()
+
+          if (estimate && estimate.count !== null && estimate.count >= 0) {
+            return { count: estimate.count, isEstimated: true }
           }
         }
-      }
 
-      const query = await db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .selectFrom(table)
-        .select(db.fn.countAll().as('total'))
-        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-        .executeTakeFirst()
-
-      return { count: Number(query?.total ?? 0), isEstimated: false }
-    },
-    mysql: async (db) => {
-      if (!exact && !filters?.length) {
-        const estimate = await db
-          .withSchema('information_schema')
-          .selectFrom('information_schema.TABLES')
-          .select('TABLE_ROWS as count')
-          .where('TABLE_SCHEMA', '=', schema)
-          .where('TABLE_NAME', '=', table)
+        const query = await db
+          .withSchema(schema)
+          .withTables<{ [table]: Record<string, unknown> }>()
+          .selectFrom(table)
+          .select(db.fn.countAll().as('total'))
+          .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
           .executeTakeFirst()
 
-        if (estimate && estimate.count !== null && estimate.count >= 0) {
-          return { count: estimate.count, isEstimated: true }
-        }
-      }
+        return { count: Number(query?.total ?? 0), isEstimated: false }
+      },
 
-      const query = await db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .selectFrom(table)
-        .select(db.fn.countAll().as('total'))
-        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-        .executeTakeFirst()
-
-      return { count: Number(query?.total ?? 0), isEstimated: false }
-    },
-
-    mssql: async (db) => {
-      const query = await db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .selectFrom(table)
-        .select(db.fn.countAll().as('total'))
-        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-        .executeTakeFirst()
-
-      return {
-        count: Number(query?.total ?? 0),
-        isEstimated: false,
-      }
-    },
-
-    clickhouse: async (db) => {
-      if (!exact && !filters?.length) {
-        const estimate = await db
-          .withSchema('system')
-          .selectFrom('system.parts')
-          .select(db.fn.sum(sql.ref('rows')).as('count'))
-          .where('database', '=', schema)
-          .where('table', '=', table)
-          .where('active', '=', 1)
+      mssql: async (db) => {
+        const query = await db
+          .withSchema(schema)
+          .withTables<{ [table]: Record<string, unknown> }>()
+          .selectFrom(table)
+          .select(db.fn.countAll().as('total'))
+          .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
           .executeTakeFirst()
 
-        if (estimate && Number(estimate.count) >= 0) {
-          return { count: Number(estimate.count), isEstimated: true }
+        return {
+          count: Number(query?.total ?? 0),
+          isEstimated: false,
         }
-      }
+      },
 
-      const query = await db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .selectFrom(table)
-        .select(db.fn.countAll().as('total'))
-        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-        .executeTakeFirst()
+      clickhouse: async (db) => {
+        if (!exact && !filters?.length) {
+          const estimate = await db
+            .withSchema('system')
+            .selectFrom('system.parts')
+            .select(db.fn.sum(sql.ref('rows')).as('count'))
+            .where('database', '=', schema)
+            .where('table', '=', table)
+            .where('active', '=', 1)
+            .executeTakeFirst()
 
-      return { count: Number(query?.total ?? 0), isEstimated: false }
-    },
-  }),
+          if (estimate && Number(estimate.count) >= 0) {
+            return { count: Number(estimate.count), isEstimated: true }
+          }
+        }
+
+        const query = await db
+          .withSchema(schema)
+          .withTables<{ [table]: Record<string, unknown> }>()
+          .selectFrom(table)
+          .select(db.fn.countAll().as('total'))
+          .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+          .executeTakeFirst()
+
+        return { count: Number(query?.total ?? 0), isEstimated: false }
+      },
+    }
+  },
 })

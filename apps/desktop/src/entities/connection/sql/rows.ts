@@ -1,8 +1,46 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { ExpressionBuilder } from 'kysely'
+import type { ExpressionBuilder, Kysely } from 'kysely'
+import type { Database as PostgresDatabase } from '../dialects/postgres/schema'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 import { createQuery } from '../query'
+
+function toOrderDirection(order: 'ASC' | 'DESC'): 'asc' | 'desc' {
+  return order === 'ASC' ? 'asc' : 'desc'
+}
+
+interface RowsQueryParams {
+  schema: string
+  table: string
+  limit: number
+  offset: number
+  orderBy?: Record<string, 'ASC' | 'DESC'>
+  filters?: ActiveFilter[]
+  filtersConcatOperator?: 'AND' | 'OR'
+  select?: string[]
+}
+
+function createPostgresRowsQuery(params: RowsQueryParams) {
+  return (db: Kysely<PostgresDatabase>) => {
+    const order = Object.entries(params.orderBy ?? {})
+
+    let query = db
+      .withSchema(params.schema)
+      .withTables<{ [key: string]: Record<string, unknown> }>()
+      .selectFrom(params.table)
+      .$if(params.select !== undefined, qb => qb.select(params.select!))
+      .$if(params.select === undefined, qb => qb.selectAll())
+      .$if(params.filters !== undefined, qb => qb.where(eb => buildWhere(eb, params.filters!, params.filtersConcatOperator)))
+      .limit(params.limit)
+      .offset(params.offset)
+
+    for (const [column, orderDir] of order) {
+      query = query.orderBy(column, toOrderDirection(orderDir))
+    }
+
+    return query.execute()
+  }
+}
 
 // eslint-disable-next-line ts/no-explicit-any
 export function buildWhere<E extends ExpressionBuilder<any, any>>(eb: E, filters: ActiveFilter[], concatOperator: 'AND' | 'OR' = 'AND') {
@@ -46,27 +84,26 @@ export const rowsQuery = createQuery({
     filtersConcatOperator?: 'AND' | 'OR'
     select?: string[]
   }) => ({
-    postgres: (db) => {
-      const order = Object.entries(orderBy ?? {})
-
-      let query = db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .selectFrom(table)
-        .$if(select !== undefined, qb => qb.select(select!))
-        .$if(select === undefined, qb => qb.selectAll())
-        .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
-        .limit(limit)
-        .offset(offset)
-
-      if (order.length > 0) {
-        order.forEach(([column, order]) => {
-          query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
-        })
-      }
-
-      return query.execute()
-    },
+    postgres: createPostgresRowsQuery({
+      schema,
+      table,
+      limit,
+      offset,
+      orderBy,
+      filters,
+      filtersConcatOperator,
+      select,
+    }),
+    supabase: createPostgresRowsQuery({
+      schema,
+      table,
+      limit,
+      offset,
+      orderBy,
+      filters,
+      filtersConcatOperator,
+      select,
+    }),
     mysql: (db) => {
       const order = Object.entries(orderBy ?? {})
 
@@ -82,7 +119,7 @@ export const rowsQuery = createQuery({
 
       if (order.length > 0) {
         order.forEach(([column, order]) => {
-          query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
+          query = query.orderBy(column, toOrderDirection(order))
         })
       }
 
@@ -104,7 +141,7 @@ export const rowsQuery = createQuery({
 
       if (order.length > 0) {
         order.forEach(([column, order]) => {
-          query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
+          query = query.orderBy(column, toOrderDirection(order))
         })
       }
 
@@ -125,7 +162,7 @@ export const rowsQuery = createQuery({
 
       if (order.length > 0) {
         order.forEach(([column, order]) => {
-          query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
+          query = query.orderBy(column, toOrderDirection(order))
         })
       }
 

@@ -13,6 +13,7 @@ import { postgresColdDialect, postgresDialect } from './postgres'
 
 const coldDialects = {
   postgres: postgresColdDialect,
+  supabase: postgresColdDialect,
   mysql: mysqlColdDialect,
   clickhouse: clickhouseColdDialect,
   mssql: mssqlColdDialect,
@@ -22,8 +23,11 @@ export interface DialectOptions {
   silent?: boolean
 }
 
+const postgresDialectFactory = memoize((connection: typeof connections.$inferSelect, options?: DialectOptions) => new Kysely<PostgresDatabase>({ dialect: postgresDialect(connection, options) }))
+
 export const dialects = {
-  postgres: memoize((connection: typeof connections.$inferSelect, options?: DialectOptions) => new Kysely<PostgresDatabase>({ dialect: postgresDialect(connection, options) })),
+  postgres: postgresDialectFactory,
+  supabase: postgresDialectFactory,
   mysql: memoize((connection: typeof connections.$inferSelect, options?: DialectOptions) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(connection, options) })),
   clickhouse: memoize((connection: typeof connections.$inferSelect, options?: DialectOptions) => new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(connection, options) })),
   mssql: memoize((connection: typeof connections.$inferSelect, options?: DialectOptions) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(connection, options) })),

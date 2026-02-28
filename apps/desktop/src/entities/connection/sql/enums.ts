@@ -45,36 +45,34 @@ function parseMysqlEnumOrSet(typeString: string): string[] {
     : valuesString.split(/,(?=(?:[^']*'[^']*')*[^']*$)/).map(v => v.trim().replace(/^'/, '').replace(/'$/, '').replace(/''/g, '\''))
 }
 
+async function pgLikeEnums(db: Parameters<ReturnType<Parameters<typeof createQuery>[0]['query']>['postgres']>[0]) {
+  const query = await db
+    .selectFrom('pg_type')
+    .innerJoin('pg_enum', 'pg_type.oid', 'pg_enum.enumtypid')
+    .innerJoin('pg_catalog.pg_namespace', 'pg_type.typnamespace', 'pg_catalog.pg_namespace.oid')
+    .select([
+      'pg_catalog.pg_namespace.nspname as schema',
+      'pg_type.typname as name',
+      'pg_enum.enumlabel as value',
+    ])
+    .where('pg_catalog.pg_namespace.nspname', 'not in', ['pg_catalog', 'information_schema'])
+    .execute()
+  const grouped = new Map<string, typeof enumType.infer>()
+  for (const row of query) {
+    const key = `${row.schema}.${row.name}`
+    if (grouped.has(key))
+      grouped.get(key)!.values.push(row.value)
+    else
+      grouped.set(key, { schema: row.schema, name: row.name, values: [row.value] })
+  }
+  return Array.from(grouped.values())
+}
+
 export const enumsQuery = createQuery({
   type: enumType.array(),
   query: () => ({
-    postgres: async (db) => {
-      const query = await db
-        .selectFrom('pg_type')
-        .innerJoin('pg_enum', 'pg_type.oid', 'pg_enum.enumtypid')
-        .innerJoin('pg_catalog.pg_namespace', 'pg_type.typnamespace', 'pg_catalog.pg_namespace.oid')
-        .select([
-          'pg_catalog.pg_namespace.nspname as schema',
-          'pg_type.typname as name',
-          'pg_enum.enumlabel as value',
-        ])
-        .where('pg_catalog.pg_namespace.nspname', 'not in', ['pg_catalog', 'information_schema'])
-        .execute()
-
-      const grouped = new Map<string, typeof enumType.infer>()
-
-      for (const row of query) {
-        const key = `${row.schema}.${row.name}`
-        if (grouped.has(key)) {
-          grouped.get(key)!.values.push(row.value)
-        }
-        else {
-          grouped.set(key, { schema: row.schema, name: row.name, values: [row.value] })
-        }
-      }
-
-      return Array.from(grouped.values())
-    },
+    postgres: pgLikeEnums,
+    supabase: pgLikeEnums,
     mysql: async (db) => {
       const query = await db
         .selectFrom('information_schema.COLUMNS')

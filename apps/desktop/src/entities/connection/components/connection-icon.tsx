@@ -5,9 +5,11 @@ import { ClickHouseIcon } from '~/icons/clickhouse'
 import { MSSQLIcon } from '~/icons/mssql'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
+import { SupabaseIcon } from '~/icons/supabase'
 
 const iconMap: Record<ConnectionType, (props: ComponentProps<'svg'>) => ReactNode> = {
   [ConnectionType.Postgres]: PostgresIcon,
+  [ConnectionType.Supabase]: SupabaseIcon,
   [ConnectionType.MySQL]: MySQLIcon,
   [ConnectionType.ClickHouse]: ClickHouseIcon,
   [ConnectionType.MSSQL]: MSSQLIcon,

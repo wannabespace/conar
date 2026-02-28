@@ -13,34 +13,38 @@ export const setQuery = createQuery({
     table: string
     values: Record<string, unknown>
     filters: ActiveFilter[]
-  }) => ({
-    postgres: db => db
+  }) => {
+    const pgLike = (db: Parameters<ReturnType<Parameters<typeof createQuery>[0]['query']>['postgres']>[0]) => db
       .withSchema(schema)
       .withTables<{ [table]: Record<string, unknown> }>()
       .updateTable(table)
       .set(values)
       .where(eb => buildWhere(eb, filters))
-      .execute(),
-    mysql: db => db
-      .withSchema(schema)
-      .withTables<{ [table]: Record<string, unknown> }>()
-      .updateTable(table)
-      .set(values)
-      .where(eb => buildWhere(eb, filters))
-      .execute(),
-    mssql: db => db
-      .withSchema(schema)
-      .withTables<{ [table]: Record<string, unknown> }>()
-      .updateTable(table)
-      .set(values)
-      .where(eb => buildWhere(eb, filters))
-      .execute(),
-    clickhouse: db => db
-      .withSchema(schema)
-      .withTables<{ [table]: Record<string, unknown> }>()
-      .updateTable(table)
-      .set(values)
-      .where(eb => buildWhere(eb, filters))
-      .execute(),
-  }),
+      .execute()
+    return {
+      postgres: pgLike,
+      supabase: pgLike,
+      mysql: db => db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .updateTable(table)
+        .set(values)
+        .where(eb => buildWhere(eb, filters))
+        .execute(),
+      mssql: db => db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .updateTable(table)
+        .set(values)
+        .where(eb => buildWhere(eb, filters))
+        .execute(),
+      clickhouse: db => db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .updateTable(table)
+        .set(values)
+        .where(eb => buildWhere(eb, filters))
+        .execute(),
+    }
+  },
 })

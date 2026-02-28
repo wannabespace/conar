@@ -1,3 +1,5 @@
+import type { Kysely } from 'kysely'
+import type { Database as PostgresDatabase } from '../dialects/postgres/schema'
 import { type } from 'arktype'
 import { createQuery } from '../query'
 
@@ -27,35 +29,40 @@ export const constraintsType = type({
 })
   .pipe(({ type, foreign_column, foreign_table, foreign_schema, ...item }) => ({
     ...item,
-    type: constraintTypeLabelMap[type as typeof neededConstraintTypes[number]],
+    type: constraintTypeLabelMap[type],
     foreignTable: foreign_table,
     foreignColumn: foreign_column,
     foreignSchema: foreign_schema,
   }))
 
+function postgresConstraintsQuery(db: Kysely<PostgresDatabase>) {
+  return db
+    .selectFrom('information_schema.table_constraints as tc')
+    .leftJoin('information_schema.key_column_usage as kcu', 'tc.constraint_name', 'kcu.constraint_name')
+    .leftJoin('information_schema.constraint_column_usage as ccu', 'tc.constraint_name', 'ccu.constraint_name')
+    .leftJoin('information_schema.referential_constraints as rc', 'tc.constraint_name', 'rc.constraint_name')
+    .select([
+      'tc.table_schema as schema',
+      'tc.table_name as table',
+      'tc.constraint_name as name',
+      'tc.constraint_type as type',
+      'kcu.column_name as column',
+      'ccu.table_schema as foreign_schema',
+      'ccu.table_name as foreign_table',
+      'ccu.column_name as foreign_column',
+      'rc.delete_rule as onDelete',
+      'rc.update_rule as onUpdate',
+    ])
+    .where('tc.constraint_type', 'in', neededConstraintTypes)
+    .where('ccu.table_schema', 'not like', 'pg_%')
+    .execute()
+}
+
 export const constraintsQuery = createQuery({
   type: constraintsType.array(),
   query: () => ({
-    postgres: db => db
-      .selectFrom('information_schema.table_constraints as tc')
-      .leftJoin('information_schema.key_column_usage as kcu', 'tc.constraint_name', 'kcu.constraint_name')
-      .leftJoin('information_schema.constraint_column_usage as ccu', 'tc.constraint_name', 'ccu.constraint_name')
-      .leftJoin('information_schema.referential_constraints as rc', 'tc.constraint_name', 'rc.constraint_name')
-      .select([
-        'tc.table_schema as schema',
-        'tc.table_name as table',
-        'tc.constraint_name as name',
-        'tc.constraint_type as type',
-        'kcu.column_name as column',
-        'ccu.table_schema as foreign_schema',
-        'ccu.table_name as foreign_table',
-        'ccu.column_name as foreign_column',
-        'rc.delete_rule as onDelete',
-        'rc.update_rule as onUpdate',
-      ])
-      .where('tc.constraint_type', 'in', neededConstraintTypes)
-      .where('ccu.table_schema', 'not like', 'pg_%')
-      .execute(),
+    postgres: postgresConstraintsQuery,
+    supabase: postgresConstraintsQuery,
     mysql: db => db
       .selectFrom('information_schema.TABLE_CONSTRAINTS as tc')
       .leftJoin('information_schema.KEY_COLUMN_USAGE as kcu', join => join

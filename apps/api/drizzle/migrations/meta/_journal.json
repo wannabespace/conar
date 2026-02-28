@@ -183,6 +183,13 @@
       "when": 1769250550854,
       "tag": "0025_glamorous_lenny_balinger",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1772237198833,
+      "tag": "0026_square_calypso",
+      "breakpoints": true
     }
   ]
 }

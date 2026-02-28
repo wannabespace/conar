@@ -9,6 +9,7 @@ import { SEO } from '~/constants'
 
 const words = {
   [ConnectionType.Postgres]: 'Postgres',
+  [ConnectionType.Supabase]: 'Supabase',
   [ConnectionType.MySQL]: 'MySQL',
   [ConnectionType.MSSQL]: 'MSSQL',
   [ConnectionType.ClickHouse]: 'ClickHouse',

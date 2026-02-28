@@ -1,3 +1,5 @@
+import type { Kysely } from 'kysely'
+import type { Database as PostgresDatabase } from '../dialects/postgres/schema'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 import { createQuery } from '../query'
@@ -60,8 +62,8 @@ function getPgColumnType(type: string, udtName: string) {
 
 export const columnsQuery = createQuery({
   type: columnType.array(),
-  query: ({ schema, table }: { schema: string, table: string }) => ({
-    postgres: async (db) => {
+  query: ({ schema, table }: { schema: string, table: string }) => {
+    const pgLike = async (db: Kysely<PostgresDatabase>) => {
       const query = await db
         .selectFrom('information_schema.columns')
         .select(eb => [
@@ -97,112 +99,115 @@ export const columnsQuery = createQuery({
         ...row,
         type: data_type === 'ARRAY' ? `${udt_name.slice(1)}[]` : data_type,
         label: data_type === 'ARRAY' ? `${getPgColumnType(data_type, udt_name)}[]` : getPgColumnType(data_type, udt_name),
-        // TODO: handle enum name if data_type is ARRAY
         enum: data_type === 'USER-DEFINED' ? udt_name : undefined,
         isArray: data_type === 'ARRAY',
         maxLength: row.max_length,
       } satisfies typeof columnType.inferIn))
-    },
-    mysql: async (db) => {
-      const query = await db
-        .selectFrom('information_schema.COLUMNS')
-        .select(eb => [
-          'TABLE_SCHEMA as schema',
-          'TABLE_NAME as table',
-          'COLUMN_NAME as id',
-          'COLUMN_DEFAULT as default',
-          'CHARACTER_MAXIMUM_LENGTH as max_length',
-          'NUMERIC_PRECISION as precision',
-          'NUMERIC_SCALE as scale',
-          eb.fn.coalesce('DATA_TYPE', 'COLUMN_TYPE').as('type'),
-          eb
-            .case('IS_NULLABLE')
-            .when('YES')
-            .then(1)
-            .else(0)
-            .end()
-            .$castTo<1 | 0>()
-            .as('nullable'),
-        ])
-        .where(({ and, eb }) => and([
-          eb('TABLE_SCHEMA', '=', schema),
-          eb('TABLE_NAME', '=', table),
-        ]))
-        .execute()
+    }
+    return {
+      postgres: pgLike,
+      supabase: pgLike,
+      mysql: async (db) => {
+        const query = await db
+          .selectFrom('information_schema.COLUMNS')
+          .select(eb => [
+            'TABLE_SCHEMA as schema',
+            'TABLE_NAME as table',
+            'COLUMN_NAME as id',
+            'COLUMN_DEFAULT as default',
+            'CHARACTER_MAXIMUM_LENGTH as max_length',
+            'NUMERIC_PRECISION as precision',
+            'NUMERIC_SCALE as scale',
+            eb.fn.coalesce('DATA_TYPE', 'COLUMN_TYPE').as('type'),
+            eb
+              .case('IS_NULLABLE')
+              .when('YES')
+              .then(1)
+              .else(0)
+              .end()
+              .$castTo<1 | 0>()
+              .as('nullable'),
+          ])
+          .where(({ and, eb }) => and([
+            eb('TABLE_SCHEMA', '=', schema),
+            eb('TABLE_NAME', '=', table),
+          ]))
+          .execute()
 
-      return query.map(column => ({
-        ...column,
-        label: column.type,
-        enum: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
-        isArray: column.type === 'set',
-        maxLength: column.max_length,
-      } satisfies typeof columnType.inferIn))
-    },
-    mssql: async (db) => {
-      const query = await db
-        .selectFrom('information_schema.COLUMNS')
-        .select(eb => [
-          'TABLE_SCHEMA as schema',
-          'TABLE_NAME as table',
-          'COLUMN_NAME as name',
-          'COLUMN_DEFAULT as default',
-          'CHARACTER_MAXIMUM_LENGTH as max_length',
-          'NUMERIC_PRECISION as precision',
-          'NUMERIC_SCALE as scale',
-          'DATA_TYPE as type',
-          eb
-            .case('IS_NULLABLE')
-            .when('YES')
-            .then(1)
-            .else(0)
-            .end()
-            .$castTo<1 | 0>()
-            .as('nullable'),
-        ])
-        .where(({ and, eb }) => and([
-          eb('TABLE_SCHEMA', '=', schema),
-          eb('TABLE_NAME', '=', table),
-        ]))
-        .execute()
+        return query.map(column => ({
+          ...column,
+          label: column.type,
+          enum: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
+          isArray: column.type === 'set',
+          maxLength: column.max_length,
+        } satisfies typeof columnType.inferIn))
+      },
+      mssql: async (db) => {
+        const query = await db
+          .selectFrom('information_schema.COLUMNS')
+          .select(eb => [
+            'TABLE_SCHEMA as schema',
+            'TABLE_NAME as table',
+            'COLUMN_NAME as name',
+            'COLUMN_DEFAULT as default',
+            'CHARACTER_MAXIMUM_LENGTH as max_length',
+            'NUMERIC_PRECISION as precision',
+            'NUMERIC_SCALE as scale',
+            'DATA_TYPE as type',
+            eb
+              .case('IS_NULLABLE')
+              .when('YES')
+              .then(1)
+              .else(0)
+              .end()
+              .$castTo<1 | 0>()
+              .as('nullable'),
+          ])
+          .where(({ and, eb }) => and([
+            eb('TABLE_SCHEMA', '=', schema),
+            eb('TABLE_NAME', '=', table),
+          ]))
+          .execute()
 
-      return query.map(({ name, ...column }) => ({
-        ...column,
-        id: name,
-        label: column.type,
-        enum: column.type === 'set' || column.type === 'enum' ? name : undefined,
-        isArray: column.type === 'set',
-        maxLength: column.max_length,
-      } satisfies typeof columnType.inferIn))
-    },
-    clickhouse: async (db) => {
-      const query = await db
-        .selectFrom('information_schema.columns')
-        .select(eb => [
-          'table_schema as schema',
-          'table_name as table',
-          'column_name as id',
-          'column_default as default',
-          'data_type as type',
-          eb.case('is_nullable')
-            .when(1)
-            .then(true)
-            .else(false)
-            .end()
-            .as('nullable'),
-          sql<boolean>`true`.as('editable'),
-        ])
-        .where(({ and, eb }) => and([
-          eb('table_schema', '=', schema),
-          eb('table_name', '=', table),
-        ]))
-        .execute()
+        return query.map(({ name, ...column }) => ({
+          ...column,
+          id: name,
+          label: column.type,
+          enum: column.type === 'set' || column.type === 'enum' ? name : undefined,
+          isArray: column.type === 'set',
+          maxLength: column.max_length,
+        } satisfies typeof columnType.inferIn))
+      },
+      clickhouse: async (db) => {
+        const query = await db
+          .selectFrom('information_schema.columns')
+          .select(eb => [
+            'table_schema as schema',
+            'table_name as table',
+            'column_name as id',
+            'column_default as default',
+            'data_type as type',
+            eb.case('is_nullable')
+              .when(1)
+              .then(true)
+              .else(false)
+              .end()
+              .as('nullable'),
+            sql<boolean>`true`.as('editable'),
+          ])
+          .where(({ and, eb }) => and([
+            eb('table_schema', '=', schema),
+            eb('table_name', '=', table),
+          ]))
+          .execute()
 
-      return query.map(row => ({
-        ...row,
-        label: row.type,
-        enum: row.type.includes('Enum') ? row.id : undefined,
-        type: getClickhouseColumnType(row.type),
-      }))
-    },
-  }),
+        return query.map(row => ({
+          ...row,
+          label: row.type,
+          enum: row.type.includes('Enum') ? row.id : undefined,
+          type: getClickhouseColumnType(row.type),
+        }))
+      },
+    }
+  },
 })

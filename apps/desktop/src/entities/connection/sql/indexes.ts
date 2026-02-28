@@ -19,53 +19,52 @@ export const indexesType = type({
   customExpression: custom_expression,
 }))
 
+async function pgLikeIndexes(db: Parameters<ReturnType<Parameters<typeof createQuery>[0]['query']>['postgres']>[0]) {
+  const query = await db
+    .selectFrom('pg_catalog.pg_class as t')
+    .innerJoin('pg_catalog.pg_index as ix', 't.oid', 'ix.indrelid')
+    .innerJoin('pg_catalog.pg_class as i', 'i.oid', 'ix.indexrelid')
+    .innerJoin('pg_catalog.pg_am as am', 'i.relam', 'am.oid')
+    .leftJoin('pg_catalog.pg_attribute as a', join => join
+      .onRef('a.attrelid', '=', 't.oid')
+      .on(sql<boolean>`a.attnum = ANY(ix.indkey)`))
+    .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 't.relnamespace')
+    .select([
+      'n.nspname as schema',
+      't.relname as table',
+      'i.relname as name',
+      'a.attname as column',
+      'ix.indisunique as is_unique',
+      'ix.indisprimary as is_primary',
+      'am.amname as index_type',
+      sql<string>`pg_get_indexdef(ix.indexrelid)`.as('index_definition'),
+    ])
+    .where('n.nspname', 'not in', ['pg_catalog', 'information_schema'])
+    .where('t.relkind', '=', 'r')
+    .execute()
+
+  return query.map(({ index_definition, ...row }) => {
+    let customExpression = !row.column
+      ? index_definition
+          .toLowerCase()
+          .split(` using ${row.index_type.toLowerCase()}`)[1]!
+          .trim()
+      : undefined
+
+    if (customExpression?.startsWith('(('))
+      customExpression = customExpression.slice(1, -1)
+    if (customExpression?.startsWith('(('))
+      customExpression = customExpression.slice(1, -1)
+
+    return { ...row, custom_expression: customExpression }
+  })
+}
+
 export const indexesQuery = createQuery({
   type: indexesType.array(),
   query: () => ({
-    postgres: async (db) => {
-      const query = await db
-        .selectFrom('pg_catalog.pg_class as t')
-        .innerJoin('pg_catalog.pg_index as ix', 't.oid', 'ix.indrelid')
-        .innerJoin('pg_catalog.pg_class as i', 'i.oid', 'ix.indexrelid')
-        .innerJoin('pg_catalog.pg_am as am', 'i.relam', 'am.oid')
-        .leftJoin('pg_catalog.pg_attribute as a', join => join
-          .onRef('a.attrelid', '=', 't.oid')
-          .on(sql<boolean>`a.attnum = ANY(ix.indkey)`))
-        .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 't.relnamespace')
-        .select([
-          'n.nspname as schema',
-          't.relname as table',
-          'i.relname as name',
-          'a.attname as column',
-          'ix.indisunique as is_unique',
-          'ix.indisprimary as is_primary',
-          'am.amname as index_type',
-          sql<string>`pg_get_indexdef(ix.indexrelid)`.as('index_definition'),
-        ])
-        .where('n.nspname', 'not in', ['pg_catalog', 'information_schema'])
-        .where('t.relkind', '=', 'r')
-        .execute()
-
-      return query.map(({ index_definition, ...row }) => {
-        // To handle custom indexes like JSONB indexes, vector indexes, etc.
-        let customExpression = !row.column
-          ? index_definition
-              .toLowerCase()
-              .split(` using ${row.index_type.toLowerCase()}`)[1]!
-              .trim()
-          : undefined
-
-        if (customExpression?.startsWith('((')) {
-          customExpression = customExpression.slice(1, -1)
-        }
-        if (customExpression?.startsWith('((')) {
-          customExpression = customExpression.slice(1, -1)
-        }
-
-        return { ...row, custom_expression: customExpression }
-      })
-    },
-
+    postgres: pgLikeIndexes,
+    supabase: pgLikeIndexes,
     mysql: db => db
       .selectFrom('information_schema.STATISTICS')
       .select([

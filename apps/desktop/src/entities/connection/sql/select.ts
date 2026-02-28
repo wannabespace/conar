@@ -10,34 +10,38 @@ export const selectQuery = createQuery({
     table: string
     select: string[]
     filters: ActiveFilter[]
-  }) => ({
-    postgres: db => db
+  }) => {
+    const pgLike = (db: Parameters<ReturnType<Parameters<typeof createQuery>[0]['query']>['postgres']>[0]) => db
       .withSchema(schema)
       .withTables<{ [table]: Record<string, unknown> }>()
       .selectFrom(table)
       .select(select)
       .where(eb => buildWhere(eb, filters))
-      .execute(),
-    mysql: db => db
-      .withSchema(schema)
-      .withTables<{ [table]: Record<string, unknown> }>()
-      .selectFrom(table)
-      .select(select)
-      .where(eb => buildWhere(eb, filters))
-      .execute(),
-    mssql: db => db
-      .withSchema(schema)
-      .withTables<{ [table]: Record<string, unknown> }>()
-      .selectFrom(table)
-      .select(select)
-      .where(eb => buildWhere(eb, filters))
-      .execute(),
-    clickhouse: db => db
-      .withSchema(schema)
-      .withTables<{ [table]: Record<string, unknown> }>()
-      .selectFrom(table)
-      .select(select)
-      .where(eb => buildWhere(eb, filters))
-      .execute(),
-  }),
+      .execute()
+    return {
+      postgres: pgLike,
+      supabase: pgLike,
+      mysql: db => db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .select(select)
+        .where(eb => buildWhere(eb, filters))
+        .execute(),
+      mssql: db => db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .select(select)
+        .where(eb => buildWhere(eb, filters))
+        .execute(),
+      clickhouse: db => db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .select(select)
+        .where(eb => buildWhere(eb, filters))
+        .execute(),
+    }
+  },
 })

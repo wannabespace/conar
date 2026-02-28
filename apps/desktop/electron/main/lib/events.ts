@@ -77,17 +77,20 @@ function retryOptions({ silent }: { silent?: boolean }) {
   } satisfies Parameters<typeof retryIfConnectionError>[1]
 }
 
-const queryMap = {
-  postgres: async ({ connectionString, sql, values, silent }: { sql: string, values: unknown[], connectionString: string, silent?: boolean }) => {
-    let start = 0
-    const result = await retryIfConnectionError(async () => {
-      const pool = await getPgPool(connectionString)
-      start = performance.now()
-      return pool.query(sql, values)
-    }, retryOptions({ silent }))
+async function postgresQuery({ connectionString, sql, values, silent }: { sql: string, values: unknown[], connectionString: string, silent?: boolean }) {
+  let start = 0
+  const result = await retryIfConnectionError(async () => {
+    const pool = await getPgPool(connectionString)
+    start = performance.now()
+    return pool.query(sql, values)
+  }, retryOptions({ silent }))
 
-    return { result: result.rows as unknown, duration: performance.now() - start }
-  },
+  return { result: result.rows, duration: performance.now() - start }
+}
+
+const queryMap = {
+  postgres: postgresQuery,
+  supabase: postgresQuery,
   mysql: async ({ connectionString, sql, values, silent }: { sql: string, values: unknown[], connectionString: string, silent?: boolean }) => {
     let start = 0
     const [result] = await retryIfConnectionError(async () => {
@@ -96,7 +99,7 @@ const queryMap = {
       return pool.query(sql, values)
     }, retryOptions({ silent }))
 
-    return { result: result as unknown, duration: performance.now() - start! }
+    return { result, duration: performance.now() - start }
   },
   clickhouse: async ({ connectionString, sql, silent }: { sql: string, connectionString: string, insertValues?: unknown[], silent?: boolean }) => {
     try {
@@ -152,7 +155,7 @@ const queryMap = {
       return request.query(sql)
     }, retryOptions({ silent }))
 
-    return { result: result.recordset as unknown, duration: performance.now() - start! }
+    return { result: result.recordset, duration: performance.now() - start }
   },
 // eslint-disable-next-line ts/no-explicit-any
 } satisfies Record<ConnectionType, (...args: any[]) => Promise<{

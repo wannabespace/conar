@@ -8,6 +8,7 @@ export function formatSql(
 ) {
   const langMap: Record<ConnectionType, SqlLanguage> = {
     [ConnectionType.Postgres]: 'postgresql',
+    [ConnectionType.Supabase]: 'postgresql',
     [ConnectionType.MySQL]: 'mysql',
     [ConnectionType.MSSQL]: 'tsql',
     [ConnectionType.ClickHouse]: 'mysql',
