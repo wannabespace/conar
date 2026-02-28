@@ -54,7 +54,7 @@ export function ConnectionDetails({ className, connectionString, type }: { class
         </tr>
         <tr>
           <td className="py-1 pr-4 text-muted-foreground">Database</td>
-          <td data-mask className="min-w-0 truncate" title={databaseDisplay}>
+          <td data-mask className="w-full max-w-0 truncate" title={databaseDisplay}>
             {databaseDisplay}
           </td>
         </tr>
