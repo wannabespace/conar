@@ -201,13 +201,13 @@ function ConnectionCard({
           <ScrollArea className={cn(
             `
               relative
-              after:pointer-events-none after:absolute after:right-0
-              after:bottom-0 after:left-0 after:z-10 after:h-4
+              after:pointer-events-none after:absolute after:inset-x-0
+              after:bottom-0 after:z-10 after:h-4
               after:bg-linear-to-t after:from-card after:to-transparent
             `,
             isScrolled && `
               before:pointer-events-none before:absolute before:top-0
-              before:right-0 before:left-0 before:z-10 before:h-4
+              before:inset-x-0 before:z-10 before:h-4
               before:bg-linear-to-b before:from-card before:to-transparent
             `,
           )}
