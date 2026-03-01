@@ -16,6 +16,7 @@ import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
+import { executeRedisCommand } from '~/entities/connection/redis'
 import { executeSql } from '~/entities/connection/sql'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { prefetchConnectionCore } from '~/entities/connection/utils'
@@ -82,7 +83,10 @@ function CreateConnectionPage() {
 
     queryClient.prefetchQuery(connectionVersionQueryOptions({ connection }))
 
-    router.navigate({ to: '/database/$id/table', params: { id } })
+    router.navigate({
+      to: data.type === ConnectionType.Redis ? '/database/$id/sql' : '/database/$id/table',
+      params: { id },
+    })
   }
 
   const defaultValues: typeof createConnectionType.infer = {
@@ -112,11 +116,9 @@ function CreateConnectionPage() {
   })
 
   const { mutate: test, reset, status } = useMutation({
-    mutationFn: ({ type, connectionString }: { type: ConnectionType, connectionString: string }) => executeSql({
-      type,
-      connectionString,
-      sql: 'SELECT 1',
-    }),
+    mutationFn: ({ type, connectionString }: { type: ConnectionType, connectionString: string }) => type === ConnectionType.Redis
+      ? executeRedisCommand({ connectionString, command: 'PING' })
+      : executeSql({ type, connectionString, sql: 'SELECT 1' }),
     onSuccess: () => {
       setStep('save')
       toast.success('Connection successful. You can save the database.')

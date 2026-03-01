@@ -63,24 +63,29 @@ function prismaScalarMapper(t: string) {
   return 'String'
 }
 
+const redisMapper = (t: string) => t
+
 export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type: string) => string>> = {
   ts: {
     postgres: tsMapper,
     mysql: tsMapper,
     mssql: tsMapper,
     clickhouse: tsMapper,
+    redis: redisMapper,
   },
   zod: {
     postgres: zodMapper,
     mysql: zodMapper,
     mssql: zodMapper,
     clickhouse: zodMapper,
+    redis: redisMapper,
   },
   prisma: {
     postgres: prismaScalarMapper,
     mysql: prismaScalarMapper,
     mssql: t => (/^date$/i.test(t) ? 'DateTime @db.Date' : prismaScalarMapper(t)),
     clickhouse: () => '',
+    redis: () => '',
   },
   drizzle: {
     postgres: (t) => {
@@ -175,6 +180,7 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
         return 'json'
       return 'text'
     },
+    redis: redisMapper,
   },
   sql: {
     postgres: (t) => {
@@ -189,12 +195,14 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
     mysql: t => t,
     mssql: t => t,
     clickhouse: t => t,
+    redis: t => t,
   },
   kysely: {
     postgres: t => t,
     mysql: t => t,
     mssql: t => t,
     clickhouse: t => t,
+    redis: redisMapper,
   },
 }
 
@@ -221,6 +229,7 @@ const QUOTE_IDENTIFIER_MAP: Record<ConnectionType, (name: string) => string> = {
   clickhouse: (name: string) => `\`${name}\``,
   mssql: (name: string) => `[${name}]`,
   postgres: (name: string) => `"${name}"`,
+  redis: (name: string) => name,
 }
 
 export function quoteIdentifier(name: string, dialect: ConnectionType) {

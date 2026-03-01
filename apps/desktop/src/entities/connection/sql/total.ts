@@ -116,5 +116,6 @@ export const totalQuery = createQuery({
 
       return { count: Number(query?.total ?? 0), isEstimated: false }
     },
+    redis: async () => ({ count: 0, isEstimated: false }),
   }),
 })

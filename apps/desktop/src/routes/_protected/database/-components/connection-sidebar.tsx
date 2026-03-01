@@ -1,5 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router'
 import type { connections } from '~/drizzle'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -240,6 +241,7 @@ function MainLinks() {
   }
 
   const lastOpenedChatId = useStore(store, state => state.lastOpenedChatId)
+  const isRedis = connection.type === ConnectionType.Redis
 
   return (
     <>
@@ -255,50 +257,53 @@ function MainLinks() {
               <RiPlayLargeLine className="size-4" />
             </Link>
           </TooltipTrigger>
-          <TooltipContent side="right">SQL Runner</TooltipContent>
+          <TooltipContent side="right">{isRedis ? 'Redis' : 'SQL Runner'}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              className={baseClasses(isActiveTables)}
-              {...route}
-              onClick={() => {
-                onTablesClick()
-              }}
-            >
-              <RiTableLine className="size-4" />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">Tables</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              to="/database/$id/definitions"
-              params={{ id: connection.id }}
-              className={baseClasses(isActiveDefinitions)}
-            >
-              <RiShieldCheckLine className="size-4" />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">Definitions</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link to="/database/$id/visualizer" params={{ id: connection.id }} className={baseClasses(isActiveVisualizer)}>
-              <RiNodeTree className="size-4" />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">Visualizer</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      {!isRedis && (
+        <>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  className={baseClasses(isActiveTables)}
+                  {...route}
+                  onClick={() => {
+                    onTablesClick()
+                  }}
+                >
+                  <RiTableLine className="size-4" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Tables</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/database/$id/definitions"
+                  params={{ id: connection.id }}
+                  className={baseClasses(isActiveDefinitions)}
+                >
+                  <RiShieldCheckLine className="size-4" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Definitions</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link to="/database/$id/visualizer" params={{ id: connection.id }} className={baseClasses(isActiveVisualizer)}>
+                  <RiNodeTree className="size-4" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Visualizer</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </>
+      )}
     </>
   )
 }

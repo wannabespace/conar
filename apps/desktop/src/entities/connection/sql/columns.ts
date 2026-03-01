@@ -204,5 +204,6 @@ export const columnsQuery = createQuery({
         type: getClickhouseColumnType(row.type),
       }))
     },
+    redis: async () => [],
   }),
 })

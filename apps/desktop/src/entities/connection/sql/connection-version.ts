@@ -1,6 +1,7 @@
 import { type } from 'arktype'
 import { sql } from 'kysely'
 import { createQuery } from '../query'
+import { executeRedisCommand } from '../redis'
 
 export const connectionVersionType = type({
   version: 'string',
@@ -59,6 +60,17 @@ export const connectionVersionQuery = createQuery({
       catch {
         return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
       }
+    },
+    redis: async (adapter) => {
+      const { result } = await executeRedisCommand({
+        connectionString: adapter.connection.connectionString,
+        command: 'INFO',
+        args: ['server'],
+        silent: true,
+      })
+      const str = typeof result === 'string' ? result : String(result)
+      const match = str.match(/redis_version:([^\r\n]+)/)
+      return { version: (match ? match[1]?.trim() : null) ?? 'unknown' }
     },
   }),
 })

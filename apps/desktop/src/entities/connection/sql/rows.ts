@@ -131,5 +131,6 @@ export const rowsQuery = createQuery({
 
       return query.execute()
     },
+    redis: async () => [],
   }),
 })

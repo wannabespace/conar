@@ -183,6 +183,13 @@
       "when": 1769250550854,
       "tag": "0025_glamorous_lenny_balinger",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1769300000000,
+      "tag": "0026_add_redis_connection_type",
+      "breakpoints": true
     }
   ]
 }

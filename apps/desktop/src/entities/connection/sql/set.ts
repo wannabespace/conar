@@ -42,5 +42,6 @@ export const setQuery = createQuery({
       .set(values)
       .where(eb => buildWhere(eb, filters))
       .execute(),
+    redis: async () => undefined,
   }),
 })

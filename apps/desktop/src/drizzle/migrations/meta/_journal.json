@@ -92,6 +92,13 @@
       "when": 1768945149602,
       "tag": "0012_bouncy_maximus",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1772370264774,
+      "tag": "0013_nifty_power_pack",
+      "breakpoints": true
     }
   ]
 }

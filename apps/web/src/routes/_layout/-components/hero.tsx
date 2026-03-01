@@ -12,6 +12,7 @@ const words = {
   [ConnectionType.MySQL]: 'MySQL',
   [ConnectionType.MSSQL]: 'MSSQL',
   [ConnectionType.ClickHouse]: 'ClickHouse',
+  [ConnectionType.Redis]: 'Redis',
 } satisfies Record<ConnectionType, string>
 
 export function Hero({ className }: { className?: string }) {

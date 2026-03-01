@@ -1,5 +1,6 @@
 import type { constraintsType, tablesAndSchemasType } from '~/entities/connection/sql'
 import type { columnType } from '~/entities/connection/sql/columns'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
@@ -11,7 +12,7 @@ import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiCloseLine, RiSearchLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQueries, useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
@@ -25,6 +26,11 @@ import { applySearchHighlight, getVisualizerLayout } from './-lib'
 export const Route = createFileRoute(
   '/_protected/database/$id/visualizer/',
 )({
+  beforeLoad: ({ context, params }) => {
+    if (context.connection.type === ConnectionType.Redis) {
+      throw redirect({ to: '/database/$id/sql', params: { id: params.id } })
+    }
+  },
   component: VisualizerPage,
   loader: ({ context }) => {
     prefetchConnectionCore(context.connection)

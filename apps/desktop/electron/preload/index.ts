@@ -44,6 +44,12 @@ contextBridge.exposeInMainWorld('electron', {
     mysql: arg => handleError(() => ipcRenderer.invoke('query.mysql', arg)),
     clickhouse: arg => handleError(() => ipcRenderer.invoke('query.clickhouse', arg)),
     mssql: arg => handleError(() => ipcRenderer.invoke('query.mssql', arg)),
+    redis: (...args: Parameters<typeof electron['query']['redis']>) =>
+      handleError(() => ipcRenderer.invoke('query.redis', ...args)) as ReturnType<typeof electron['query']['redis']>,
+  },
+  redis: {
+    command: (arg: Parameters<typeof electron['redis']['command']>[0]) =>
+      handleError(() => ipcRenderer.invoke('redis.command', arg)),
   },
   encryption: {
     encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg)),

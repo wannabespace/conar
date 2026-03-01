@@ -1,3 +1,4 @@
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { Sidebar } from './definitions/-components/sidebar'
@@ -6,7 +7,10 @@ export const Route = createFileRoute(
   '/_protected/database/$id/definitions',
 )({
   component: DefinitionsLayout,
-  beforeLoad: ({ location, params }) => {
+  beforeLoad: ({ context, location, params }) => {
+    if (context.connection.type === ConnectionType.Redis) {
+      throw redirect({ to: '/database/$id/sql', params: { id: params.id } })
+    }
     if (location.pathname.endsWith('/definitions') || location.pathname.endsWith('/definitions/')) {
       throw redirect({
         to: '/database/$id/definitions/enums',

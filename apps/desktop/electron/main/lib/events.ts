@@ -7,6 +7,7 @@ import { getClient as getClickhouseClient } from '../connections/clickhouse'
 import { getPool as getMssqlPool } from '../connections/mssql'
 import { getPool as getMysqlPool } from '../connections/mysql'
 import { getPool as getPgPool } from '../connections/pg'
+import { getClient as getRedisClient } from '../connections/redis'
 
 function isConnectionError(error: unknown) {
   if (error instanceof Error) {
@@ -154,6 +155,9 @@ const queryMap = {
 
     return { result: result.recordset as unknown, duration: performance.now() - start! }
   },
+  redis: async () => {
+    throw new Error('Use redis.command for Redis connections')
+  },
 // eslint-disable-next-line ts/no-explicit-any
 } satisfies Record<ConnectionType, (...args: any[]) => Promise<{
   result: unknown
@@ -178,8 +182,19 @@ const versions = {
   app: async () => app.getVersion(),
 }
 
+const redis = {
+  command: async ({ connectionString, command, args = [], silent }: { connectionString: string, command: string, args?: string[], silent?: boolean }) => {
+    let start = 0
+    const client = await retryIfConnectionError(() => getRedisClient(connectionString), retryOptions({ silent }))
+    start = performance.now()
+    const result = await client.sendCommand([command.toUpperCase(), ...args])
+    return { result, duration: performance.now() - start }
+  },
+}
+
 export const electron = {
   query: queryMap,
+  redis,
   encryption,
   app: _app,
   versions,

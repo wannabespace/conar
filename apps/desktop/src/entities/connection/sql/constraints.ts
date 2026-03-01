@@ -135,5 +135,6 @@ export const constraintsQuery = createQuery({
         onUpdate: null,
       }))
     },
+    redis: async () => [],
   }),
 })

@@ -39,5 +39,6 @@ export const deleteRowsQuery = createQuery({
         Object.entries(pk).map(([key, value]) => eb(key, '=', value)),
       ))))
       .execute(),
+    redis: async () => [],
   }),
 })

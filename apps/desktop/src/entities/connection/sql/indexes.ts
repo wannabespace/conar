@@ -118,5 +118,6 @@ export const indexesQuery = createQuery({
         is_primary: true,
       }))
     },
+    redis: async () => [],
   }),
 })

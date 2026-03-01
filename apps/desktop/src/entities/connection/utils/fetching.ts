@@ -1,5 +1,6 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { connections } from '~/drizzle'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { queryClient } from '~/main'
 import { connectionTableColumnsQuery } from '../queries/columns'
 import { connectionConstraintsQuery } from '../queries/constraints'
@@ -11,6 +12,10 @@ import { connectionStore } from '../store'
 
 export async function prefetchConnectionCore(connection: typeof connections.$inferSelect) {
   if (connection.isPasswordExists && !connection.isPasswordPopulated) {
+    return
+  }
+
+  if (connection.type === ConnectionType.Redis) {
     return
   }
 

@@ -50,5 +50,6 @@ export const tablesAndSchemasQuery = createQuery({
       .where('table_type', '=', 'BASE TABLE')
       .$if(!showSystem, qb => qb.where(eb => eb('table_schema', 'not in', ['INFORMATION_SCHEMA', 'information_schema', 'system'])))
       .execute(),
+    redis: async () => [],
   }),
 })

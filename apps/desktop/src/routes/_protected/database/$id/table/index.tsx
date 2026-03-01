@@ -1,10 +1,11 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Store } from '@tanstack/react-store'
 import type { storeState } from './-store'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SQL_FILTERS_GROUPED } from '@conar/shared/filters'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
@@ -23,6 +24,11 @@ import { PageStoreContext, tablePageStore } from './-store'
 export const Route = createFileRoute(
   '/_protected/database/$id/table/',
 )({
+  beforeLoad: ({ context, params }) => {
+    if (context.connection.type === ConnectionType.Redis) {
+      throw redirect({ to: '/database/$id/sql', params: { id: params.id } })
+    }
+  },
   validateSearch: type({
     'schema?': 'string',
     'table?': 'string',

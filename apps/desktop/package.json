@@ -34,7 +34,8 @@
     "electron-store": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
-    "pg": "catalog:"
+    "pg": "catalog:",
+    "redis": "catalog:"
   },
   "devDependencies": {
     "@ai-sdk/react": "catalog:",

@@ -39,5 +39,6 @@ export const selectQuery = createQuery({
       .select(select)
       .where(eb => buildWhere(eb, filters))
       .execute(),
+    redis: async () => [],
   }),
 })

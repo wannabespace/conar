@@ -27,5 +27,6 @@ export const renameColumnQuery = createQuery({
       .alterTable(table)
       .renameColumn(oldColumn, newColumn)
       .execute(),
+    redis: async () => undefined,
   }),
 })

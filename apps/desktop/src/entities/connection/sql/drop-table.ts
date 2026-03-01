@@ -47,5 +47,6 @@ export const dropTableQuery = createQuery({
       .schema
       .dropTable(table)
       .execute(),
+    redis: async () => [],
   }),
 })
