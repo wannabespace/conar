@@ -7,7 +7,7 @@ import { Link } from '@tanstack/react-router'
 import { Handle, Position } from '@xyflow/react'
 
 export type NodeType = Node<{
-  databaseId: string
+  resourceId: string
   schema: string
   table: string
   columns: (Column & { searchMatched?: boolean })[]
@@ -54,8 +54,8 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
           asChild
         >
           <Link
-            to="/database/$id/table"
-            params={{ id: data.databaseId }}
+            to="/connection/$resourceId/table"
+            params={{ resourceId: data.resourceId }}
             search={{ schema: data.schema, table: data.table }}
           >
             <RiExternalLinkLine className="size-3" />

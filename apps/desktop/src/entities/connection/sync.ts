@@ -4,7 +4,7 @@ import { SafeURL } from '@conar/shared/utils/safe-url'
 import { createCollection } from '@tanstack/react-db'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
-import { connections, db, waitForMigrations } from '~/drizzle'
+import { connections, connectionsResources, db, waitForMigrations } from '~/drizzle'
 import { bearerToken } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 import { router } from '~/main'
@@ -119,7 +119,7 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
         ? { connectionString: prepareConnectionStringToCloud(m.changes.connectionString, m.modified.syncType) }
         : {}),
     })))
-    router.invalidate({ filter: r => r.routeId === '/_protected/database/$id' })
+    router.invalidate({ filter: r => r.routeId === '/_protected/connection/$resourceId' })
   },
   onDelete: async ({ transaction }) => {
     const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionMutationMetadata)?.cloudSync !== false)
@@ -130,6 +130,13 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
 
     await orpc.connections.remove(mutations.map(m => ({ id: m.key })))
   },
+}))
+
+export const connectionsResourcesCollection = createCollection(drizzleCollectionOptions({
+  db,
+  table: connectionsResources,
+  primaryColumn: connectionsResources.id,
+  prepare: waitForMigrations,
 }))
 
 const syncConnectionsMutationOptions = {

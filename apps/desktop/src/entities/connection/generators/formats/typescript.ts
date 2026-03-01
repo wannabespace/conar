@@ -1,6 +1,6 @@
 import type { SchemaParams } from '..'
 import { camelCase } from 'change-case'
-import { findEnum } from '../../sql/enums'
+import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { getColumnType, toLiteralKey } from '../utils'
 

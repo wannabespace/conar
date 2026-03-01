@@ -1,4 +1,4 @@
-import type { Auth, BetterAuthOptions } from 'better-auth'
+import type { BetterAuthOptions } from 'better-auth'
 import { AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
@@ -11,7 +11,7 @@ import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
 
-export const auth: Auth = betterAuth({
+export const auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
