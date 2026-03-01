@@ -1,34 +1,32 @@
 import type { CompiledQuery, Dialect, Driver, QueryResult } from 'kysely'
 import type { DialectOptions } from '..'
-import type { connections } from '~/drizzle'
 import { DummyDriver, SqliteAdapter, SqliteQueryCompiler } from 'kysely'
-import { logSql } from '../../sql'
 
-function execute(connection: typeof connections.$inferSelect, compiledQuery: CompiledQuery, options?: DialectOptions) {
+function execute(connectionString: string, compiledQuery: CompiledQuery, options?: DialectOptions) {
   if (!window.electron) {
     throw new Error('Electron is not available')
   }
 
   const values = [...compiledQuery.parameters]
   const promise = window.electron.query.sqlite({
-    connectionString: connection.connectionString,
+    connectionString,
     sql: compiledQuery.sql,
     values,
     silent: options?.silent,
   })
 
-  logSql(connection, promise, { sql: compiledQuery.sql, values })
+  options?.log?.({ promise, query: compiledQuery.sql, values })
 
   return promise
 }
 
-function createDriver(connection: typeof connections.$inferSelect, options?: DialectOptions) {
+function createDriver(options: DialectOptions) {
   return {
     async init() {},
     async acquireConnection() {
       return {
         executeQuery: async <R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> => {
-          const { result } = await execute(connection, compiledQuery, options)
+          const { result } = await execute(options.connectionString, compiledQuery, options)
           return { rows: result as R[] }
         },
         streamQuery() {
@@ -44,9 +42,9 @@ function createDriver(connection: typeof connections.$inferSelect, options?: Dia
   } satisfies Driver
 }
 
-export function sqliteDialect(connection: typeof connections.$inferSelect, options?: DialectOptions) {
+export function sqliteDialect(options: DialectOptions) {
   return {
-    createDriver: () => createDriver(connection, options),
+    createDriver: () => createDriver(options),
     createQueryCompiler: () => new SqliteQueryCompiler(),
     createAdapter: () => new SqliteAdapter(),
     createIntrospector: () => {

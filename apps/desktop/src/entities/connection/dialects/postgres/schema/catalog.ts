@@ -8,7 +8,17 @@ export interface PgCatalog {
   pg_index: PgIndex
   pg_attribute: PgAttribute
   pg_settings: PgSettings
+  pg_database: PgDatabase
   pg_am: PgAm
+}
+
+/**
+ * @name pg_database
+ * @type table
+ */
+interface PgDatabase {
+  datname: string
+  datistemplate: boolean
 }
 
 /**

@@ -8,10 +8,8 @@ import type {
   QueryResult,
   SelectQueryNode,
 } from 'kysely'
-import type { DialectOptions } from '..'
-import type { connections } from '~/drizzle'
+import type { DialectExecutionOptions, DialectOptions } from '..'
 import { MssqlQueryCompiler as DefaultMssqlQueryCompiler, DummyDriver, MssqlAdapter } from 'kysely'
-import { logSql } from '../../sql'
 
 function isSelectQueryNode(node: OperationNode): node is SelectQueryNode {
   return node.kind === 'SelectQueryNode'
@@ -45,33 +43,30 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
   }
 }
 
-function execute(connection: typeof connections.$inferSelect, compiledQuery: CompiledQuery, options?: DialectOptions) {
+function execute(options: DialectExecutionOptions) {
   if (!window.electron) {
     throw new Error('Electron is not available')
   }
 
   const promise = window.electron.query.mssql({
-    connectionString: connection.connectionString,
-    sql: compiledQuery.sql,
-    values: compiledQuery.parameters as unknown[],
-    silent: options?.silent,
+    connectionString: options.connectionString,
+    query: options.compiledQuery.sql,
+    values: options.compiledQuery.parameters as unknown[],
+    silent: options.silent,
   })
 
-  logSql(connection, promise, {
-    sql: compiledQuery.sql,
-    values: compiledQuery.parameters as unknown[],
-  })
+  options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
   return promise
 }
 
-function createDriver(connection: typeof connections.$inferSelect, options?: DialectOptions) {
+function createDriver(options: DialectOptions) {
   return {
     async init() {},
     async acquireConnection() {
       return {
         executeQuery: async <R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> => {
-          const { result } = await execute(connection, compiledQuery, options)
+          const { result } = await execute({ ...options, compiledQuery })
 
           return {
             rows: result as R[],
@@ -90,9 +85,9 @@ function createDriver(connection: typeof connections.$inferSelect, options?: Dia
   } satisfies Driver
 }
 
-export function mssqlDialect(connection: typeof connections.$inferSelect, options?: DialectOptions) {
+export function mssqlDialect(options: DialectOptions) {
   return {
-    createDriver: () => createDriver(connection, options),
+    createDriver: () => createDriver(options),
     createQueryCompiler: () => new MssqlQueryCompiler(),
     createAdapter: () => new MssqlAdapter(),
     createIntrospector: () => {
