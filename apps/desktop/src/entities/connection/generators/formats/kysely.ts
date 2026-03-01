@@ -1,5 +1,5 @@
 import type { QueryParams, SchemaParams } from '..'
-import { findEnum } from '../../sql/enums'
+import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { formatValue, getColumnType } from '../utils'
 

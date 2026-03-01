@@ -1,23 +1,23 @@
-import type { connections } from '~/drizzle'
+import type { connections, connectionsResources } from '~/drizzle'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { RiAddLine, RiDashboardLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
-import { useLiveQuery } from '@tanstack/react-db'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { ConnectionIcon } from '~/entities/connection/components'
-import { useConnectionLinkParams } from '~/entities/connection/hooks'
-import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { connectionStore } from '~/entities/connection/store'
-import { connectionsCollection } from '~/entities/connection/sync'
-import { prefetchConnectionCore } from '~/entities/connection/utils'
+import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
+import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { getConnectionResourceStore } from '~/entities/connection/store'
+import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
-function ActionsConnectionTables({ connection }: { connection: typeof connections.$inferSelect }) {
-  const store = connectionStore(connection.id)
+function ActionsResourceTables({ connection, connectionResource }: { connection: typeof connections.$inferSelect, connectionResource: typeof connectionsResources.$inferSelect }) {
+  const store = getConnectionResourceStore(connectionResource.id)
   const { data: tablesAndSchemas } = useQuery({
-    ...connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem }),
+    ...resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem }),
     throwOnError: false,
   })
   const router = useRouter()
@@ -27,11 +27,11 @@ function ActionsConnectionTables({ connection }: { connection: typeof connection
 
   function onTableSelect(schema: string, table: string) {
     setIsActionCenterOpen(false)
-    router.navigate({ to: '/database/$id/table', params: { id: connection.id }, search: { schema, table } })
+    router.navigate({ to: '/connection/$resourceId/table', params: { resourceId: connectionResource.id }, search: { schema, table } })
   }
 
   return (
-    <CommandGroup heading={`${connection.name} Tables`} value={connection.name}>
+    <CommandGroup heading={`${connection.name} - ${connectionResource.name} Tables`} value={connectionResource.name}>
       {tablesAndSchemas.schemas.map(schema => schema.tables.map(table => (
         <CommandItem
           key={table}
@@ -49,25 +49,31 @@ function ActionsConnectionTables({ connection }: { connection: typeof connection
   )
 }
 
-function ActionsConnection({ connection }: { connection: typeof connections.$inferSelect }) {
+function ConnectionResource({ connection, connectionResource }: { connection: typeof connections.$inferSelect, connectionResource: typeof connectionsResources.$inferSelect }) {
   const router = useRouter()
-  const params = useConnectionLinkParams(connection.id)
+  const params = useConnectionResourceLinkParams(connectionResource.id)
 
-  function onConnectionSelect(connection: typeof connections.$inferSelect) {
+  function onResourceSelect(connectionResource: typeof connectionsResources.$inferSelect) {
     setIsActionCenterOpen(false)
 
-    prefetchConnectionCore(connection)
+    prefetchConnectionResourceCore(connectionResource)
     router.navigate(params)
   }
 
   return (
     <CommandItem
-      key={connection.id}
-      onSelect={() => onConnectionSelect(connection)}
+      onSelect={() => onResourceSelect(connectionResource)}
     >
-      <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
+      <ConnectionIcon
+        type={connection.type}
+        className="size-4 shrink-0"
+      />
       <div className="flex items-center gap-2">
         {connection.name}
+        {' '}
+        -
+        {' '}
+        {connectionResource.name}
         {connection.label && (
           <span className={`
             rounded-full bg-muted-foreground/10 px-2 py-0.5 text-xs
@@ -83,21 +89,29 @@ function ActionsConnection({ connection }: { connection: typeof connections.$inf
 }
 
 export function ActionsCenter() {
-  const { data: connections } = useLiveQuery(q => q
+  const { resourceId } = useParams({ strict: false })
+  const { data } = useLiveQuery(q => q
     .from({ connections: connectionsCollection })
+    .innerJoin(
+      { connectionResources: connectionsResourcesCollection },
+      ({ connectionResources, connections }) => eq(connectionResources.connectionId, connections.id),
+    )
+    .select(({ connections, connectionResources }) => ({
+      connection: connections,
+      connectionResource: connectionResources,
+    }))
     .orderBy(({ connections }) => connections.createdAt, 'desc'))
   const isOpen = useStore(appStore, state => state.isActionCenterOpen)
   const router = useRouter()
-  const { id } = useParams({ strict: false })
 
   useHotkey('Mod+P', () => {
-    if (!connections || connections.length === 0)
+    if (data.length === 0)
       return
 
     setIsActionCenterOpen(!isOpen)
   })
 
-  const currentConnection = connections?.find(connection => connection.id === id)
+  const current = data?.find(({ connectionResource }) => connectionResource.id === resourceId)
 
   return (
     <CommandDialog open={isOpen} onOpenChange={setIsActionCenterOpen}>
@@ -132,12 +146,14 @@ export function ActionsCenter() {
             Add new connection...
           </CommandItem>
         </CommandGroup>
-        {!!connections?.length && (
+        {!!data.length && (
           <CommandGroup heading="Connections">
-            {connections.map(connection => <ActionsConnection key={connection.id} connection={connection} />)}
+            {data.map(({ connection, connectionResource }) =>
+              <ConnectionResource key={connectionResource.id} connection={connection} connectionResource={connectionResource} />,
+            )}
           </CommandGroup>
         )}
-        {currentConnection && <ActionsConnectionTables connection={currentConnection} />}
+        {current && <ActionsResourceTables connection={current.connection} connectionResource={current.connectionResource} />}
       </CommandList>
     </CommandDialog>
   )

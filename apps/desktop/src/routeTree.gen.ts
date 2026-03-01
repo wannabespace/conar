@@ -13,14 +13,14 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
 import { Route as ProtectedCreateIndexRouteImport } from './routes/_protected/create/index'
-import { Route as ProtectedDatabaseIdRouteImport } from './routes/_protected/database/$id'
-import { Route as ProtectedDatabaseIdDefinitionsRouteImport } from './routes/_protected/database/$id/definitions'
-import { Route as ProtectedDatabaseIdVisualizerIndexRouteImport } from './routes/_protected/database/$id/visualizer/index'
-import { Route as ProtectedDatabaseIdTableIndexRouteImport } from './routes/_protected/database/$id/table/index'
-import { Route as ProtectedDatabaseIdSqlIndexRouteImport } from './routes/_protected/database/$id/sql/index'
-import { Route as ProtectedDatabaseIdDefinitionsIndexesIndexRouteImport } from './routes/_protected/database/$id/definitions/indexes/index'
-import { Route as ProtectedDatabaseIdDefinitionsEnumsIndexRouteImport } from './routes/_protected/database/$id/definitions/enums/index'
-import { Route as ProtectedDatabaseIdDefinitionsConstraintsIndexRouteImport } from './routes/_protected/database/$id/definitions/constraints/index'
+import { Route as ProtectedConnectionResourceIdRouteImport } from './routes/_protected/connection/$resourceId'
+import { Route as ProtectedConnectionResourceIdDefinitionsRouteImport } from './routes/_protected/connection/$resourceId/definitions'
+import { Route as ProtectedConnectionResourceIdVisualizerIndexRouteImport } from './routes/_protected/connection/$resourceId/visualizer/index'
+import { Route as ProtectedConnectionResourceIdTableIndexRouteImport } from './routes/_protected/connection/$resourceId/table/index'
+import { Route as ProtectedConnectionResourceIdQueryIndexRouteImport } from './routes/_protected/connection/$resourceId/query/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/indexes/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsEnumsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/enums/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsConstraintsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/constraints/index'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -41,136 +41,137 @@ const ProtectedCreateIndexRoute = ProtectedCreateIndexRouteImport.update({
   path: '/create/',
   getParentRoute: () => ProtectedRoute,
 } as any)
-const ProtectedDatabaseIdRoute = ProtectedDatabaseIdRouteImport.update({
-  id: '/database/$id',
-  path: '/database/$id',
-  getParentRoute: () => ProtectedRoute,
-} as any)
-const ProtectedDatabaseIdDefinitionsRoute =
-  ProtectedDatabaseIdDefinitionsRouteImport.update({
+const ProtectedConnectionResourceIdRoute =
+  ProtectedConnectionResourceIdRouteImport.update({
+    id: '/connection/$resourceId',
+    path: '/connection/$resourceId',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
+const ProtectedConnectionResourceIdDefinitionsRoute =
+  ProtectedConnectionResourceIdDefinitionsRouteImport.update({
     id: '/definitions',
     path: '/definitions',
-    getParentRoute: () => ProtectedDatabaseIdRoute,
+    getParentRoute: () => ProtectedConnectionResourceIdRoute,
   } as any)
-const ProtectedDatabaseIdVisualizerIndexRoute =
-  ProtectedDatabaseIdVisualizerIndexRouteImport.update({
+const ProtectedConnectionResourceIdVisualizerIndexRoute =
+  ProtectedConnectionResourceIdVisualizerIndexRouteImport.update({
     id: '/visualizer/',
     path: '/visualizer/',
-    getParentRoute: () => ProtectedDatabaseIdRoute,
+    getParentRoute: () => ProtectedConnectionResourceIdRoute,
   } as any)
-const ProtectedDatabaseIdTableIndexRoute =
-  ProtectedDatabaseIdTableIndexRouteImport.update({
+const ProtectedConnectionResourceIdTableIndexRoute =
+  ProtectedConnectionResourceIdTableIndexRouteImport.update({
     id: '/table/',
     path: '/table/',
-    getParentRoute: () => ProtectedDatabaseIdRoute,
+    getParentRoute: () => ProtectedConnectionResourceIdRoute,
   } as any)
-const ProtectedDatabaseIdSqlIndexRoute =
-  ProtectedDatabaseIdSqlIndexRouteImport.update({
-    id: '/sql/',
-    path: '/sql/',
-    getParentRoute: () => ProtectedDatabaseIdRoute,
+const ProtectedConnectionResourceIdQueryIndexRoute =
+  ProtectedConnectionResourceIdQueryIndexRouteImport.update({
+    id: '/query/',
+    path: '/query/',
+    getParentRoute: () => ProtectedConnectionResourceIdRoute,
   } as any)
-const ProtectedDatabaseIdDefinitionsIndexesIndexRoute =
-  ProtectedDatabaseIdDefinitionsIndexesIndexRouteImport.update({
+const ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute =
+  ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport.update({
     id: '/indexes/',
     path: '/indexes/',
-    getParentRoute: () => ProtectedDatabaseIdDefinitionsRoute,
+    getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
   } as any)
-const ProtectedDatabaseIdDefinitionsEnumsIndexRoute =
-  ProtectedDatabaseIdDefinitionsEnumsIndexRouteImport.update({
+const ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute =
+  ProtectedConnectionResourceIdDefinitionsEnumsIndexRouteImport.update({
     id: '/enums/',
     path: '/enums/',
-    getParentRoute: () => ProtectedDatabaseIdDefinitionsRoute,
+    getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
   } as any)
-const ProtectedDatabaseIdDefinitionsConstraintsIndexRoute =
-  ProtectedDatabaseIdDefinitionsConstraintsIndexRouteImport.update({
+const ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute =
+  ProtectedConnectionResourceIdDefinitionsConstraintsIndexRouteImport.update({
     id: '/constraints/',
     path: '/constraints/',
-    getParentRoute: () => ProtectedDatabaseIdDefinitionsRoute,
+    getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
   '/auth': typeof AuthRoute
-  '/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
+  '/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
   '/create/': typeof ProtectedCreateIndexRoute
-  '/database/$id/definitions': typeof ProtectedDatabaseIdDefinitionsRouteWithChildren
-  '/database/$id/sql/': typeof ProtectedDatabaseIdSqlIndexRoute
-  '/database/$id/table/': typeof ProtectedDatabaseIdTableIndexRoute
-  '/database/$id/visualizer/': typeof ProtectedDatabaseIdVisualizerIndexRoute
-  '/database/$id/definitions/constraints/': typeof ProtectedDatabaseIdDefinitionsConstraintsIndexRoute
-  '/database/$id/definitions/enums/': typeof ProtectedDatabaseIdDefinitionsEnumsIndexRoute
-  '/database/$id/definitions/indexes/': typeof ProtectedDatabaseIdDefinitionsIndexesIndexRoute
+  '/connection/$resourceId/definitions': typeof ProtectedConnectionResourceIdDefinitionsRouteWithChildren
+  '/connection/$resourceId/query/': typeof ProtectedConnectionResourceIdQueryIndexRoute
+  '/connection/$resourceId/table/': typeof ProtectedConnectionResourceIdTableIndexRoute
+  '/connection/$resourceId/visualizer/': typeof ProtectedConnectionResourceIdVisualizerIndexRoute
+  '/connection/$resourceId/definitions/constraints/': typeof ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute
+  '/connection/$resourceId/definitions/enums/': typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
+  '/connection/$resourceId/definitions/indexes/': typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/': typeof ProtectedIndexRoute
-  '/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
+  '/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
   '/create': typeof ProtectedCreateIndexRoute
-  '/database/$id/definitions': typeof ProtectedDatabaseIdDefinitionsRouteWithChildren
-  '/database/$id/sql': typeof ProtectedDatabaseIdSqlIndexRoute
-  '/database/$id/table': typeof ProtectedDatabaseIdTableIndexRoute
-  '/database/$id/visualizer': typeof ProtectedDatabaseIdVisualizerIndexRoute
-  '/database/$id/definitions/constraints': typeof ProtectedDatabaseIdDefinitionsConstraintsIndexRoute
-  '/database/$id/definitions/enums': typeof ProtectedDatabaseIdDefinitionsEnumsIndexRoute
-  '/database/$id/definitions/indexes': typeof ProtectedDatabaseIdDefinitionsIndexesIndexRoute
+  '/connection/$resourceId/definitions': typeof ProtectedConnectionResourceIdDefinitionsRouteWithChildren
+  '/connection/$resourceId/query': typeof ProtectedConnectionResourceIdQueryIndexRoute
+  '/connection/$resourceId/table': typeof ProtectedConnectionResourceIdTableIndexRoute
+  '/connection/$resourceId/visualizer': typeof ProtectedConnectionResourceIdVisualizerIndexRoute
+  '/connection/$resourceId/definitions/constraints': typeof ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute
+  '/connection/$resourceId/definitions/enums': typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
+  '/connection/$resourceId/definitions/indexes': typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_protected': typeof ProtectedRouteWithChildren
   '/auth': typeof AuthRoute
   '/_protected/': typeof ProtectedIndexRoute
-  '/_protected/database/$id': typeof ProtectedDatabaseIdRouteWithChildren
+  '/_protected/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
   '/_protected/create/': typeof ProtectedCreateIndexRoute
-  '/_protected/database/$id/definitions': typeof ProtectedDatabaseIdDefinitionsRouteWithChildren
-  '/_protected/database/$id/sql/': typeof ProtectedDatabaseIdSqlIndexRoute
-  '/_protected/database/$id/table/': typeof ProtectedDatabaseIdTableIndexRoute
-  '/_protected/database/$id/visualizer/': typeof ProtectedDatabaseIdVisualizerIndexRoute
-  '/_protected/database/$id/definitions/constraints/': typeof ProtectedDatabaseIdDefinitionsConstraintsIndexRoute
-  '/_protected/database/$id/definitions/enums/': typeof ProtectedDatabaseIdDefinitionsEnumsIndexRoute
-  '/_protected/database/$id/definitions/indexes/': typeof ProtectedDatabaseIdDefinitionsIndexesIndexRoute
+  '/_protected/connection/$resourceId/definitions': typeof ProtectedConnectionResourceIdDefinitionsRouteWithChildren
+  '/_protected/connection/$resourceId/query/': typeof ProtectedConnectionResourceIdQueryIndexRoute
+  '/_protected/connection/$resourceId/table/': typeof ProtectedConnectionResourceIdTableIndexRoute
+  '/_protected/connection/$resourceId/visualizer/': typeof ProtectedConnectionResourceIdVisualizerIndexRoute
+  '/_protected/connection/$resourceId/definitions/constraints/': typeof ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute
+  '/_protected/connection/$resourceId/definitions/enums/': typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
+  '/_protected/connection/$resourceId/definitions/indexes/': typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/database/$id'
+    | '/connection/$resourceId'
     | '/create/'
-    | '/database/$id/definitions'
-    | '/database/$id/sql/'
-    | '/database/$id/table/'
-    | '/database/$id/visualizer/'
-    | '/database/$id/definitions/constraints/'
-    | '/database/$id/definitions/enums/'
-    | '/database/$id/definitions/indexes/'
+    | '/connection/$resourceId/definitions'
+    | '/connection/$resourceId/query/'
+    | '/connection/$resourceId/table/'
+    | '/connection/$resourceId/visualizer/'
+    | '/connection/$resourceId/definitions/constraints/'
+    | '/connection/$resourceId/definitions/enums/'
+    | '/connection/$resourceId/definitions/indexes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
     | '/'
-    | '/database/$id'
+    | '/connection/$resourceId'
     | '/create'
-    | '/database/$id/definitions'
-    | '/database/$id/sql'
-    | '/database/$id/table'
-    | '/database/$id/visualizer'
-    | '/database/$id/definitions/constraints'
-    | '/database/$id/definitions/enums'
-    | '/database/$id/definitions/indexes'
+    | '/connection/$resourceId/definitions'
+    | '/connection/$resourceId/query'
+    | '/connection/$resourceId/table'
+    | '/connection/$resourceId/visualizer'
+    | '/connection/$resourceId/definitions/constraints'
+    | '/connection/$resourceId/definitions/enums'
+    | '/connection/$resourceId/definitions/indexes'
   id:
     | '__root__'
     | '/_protected'
     | '/auth'
     | '/_protected/'
-    | '/_protected/database/$id'
+    | '/_protected/connection/$resourceId'
     | '/_protected/create/'
-    | '/_protected/database/$id/definitions'
-    | '/_protected/database/$id/sql/'
-    | '/_protected/database/$id/table/'
-    | '/_protected/database/$id/visualizer/'
-    | '/_protected/database/$id/definitions/constraints/'
-    | '/_protected/database/$id/definitions/enums/'
-    | '/_protected/database/$id/definitions/indexes/'
+    | '/_protected/connection/$resourceId/definitions'
+    | '/_protected/connection/$resourceId/query/'
+    | '/_protected/connection/$resourceId/table/'
+    | '/_protected/connection/$resourceId/visualizer/'
+    | '/_protected/connection/$resourceId/definitions/constraints/'
+    | '/_protected/connection/$resourceId/definitions/enums/'
+    | '/_protected/connection/$resourceId/definitions/indexes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -208,114 +209,120 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedCreateIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
-    '/_protected/database/$id': {
-      id: '/_protected/database/$id'
-      path: '/database/$id'
-      fullPath: '/database/$id'
-      preLoaderRoute: typeof ProtectedDatabaseIdRouteImport
+    '/_protected/connection/$resourceId': {
+      id: '/_protected/connection/$resourceId'
+      path: '/connection/$resourceId'
+      fullPath: '/connection/$resourceId'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdRouteImport
       parentRoute: typeof ProtectedRoute
     }
-    '/_protected/database/$id/definitions': {
-      id: '/_protected/database/$id/definitions'
+    '/_protected/connection/$resourceId/definitions': {
+      id: '/_protected/connection/$resourceId/definitions'
       path: '/definitions'
-      fullPath: '/database/$id/definitions'
-      preLoaderRoute: typeof ProtectedDatabaseIdDefinitionsRouteImport
-      parentRoute: typeof ProtectedDatabaseIdRoute
+      fullPath: '/connection/$resourceId/definitions'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdRoute
     }
-    '/_protected/database/$id/visualizer/': {
-      id: '/_protected/database/$id/visualizer/'
+    '/_protected/connection/$resourceId/visualizer/': {
+      id: '/_protected/connection/$resourceId/visualizer/'
       path: '/visualizer'
-      fullPath: '/database/$id/visualizer/'
-      preLoaderRoute: typeof ProtectedDatabaseIdVisualizerIndexRouteImport
-      parentRoute: typeof ProtectedDatabaseIdRoute
+      fullPath: '/connection/$resourceId/visualizer/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdVisualizerIndexRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdRoute
     }
-    '/_protected/database/$id/table/': {
-      id: '/_protected/database/$id/table/'
+    '/_protected/connection/$resourceId/table/': {
+      id: '/_protected/connection/$resourceId/table/'
       path: '/table'
-      fullPath: '/database/$id/table/'
-      preLoaderRoute: typeof ProtectedDatabaseIdTableIndexRouteImport
-      parentRoute: typeof ProtectedDatabaseIdRoute
+      fullPath: '/connection/$resourceId/table/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdTableIndexRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdRoute
     }
-    '/_protected/database/$id/sql/': {
-      id: '/_protected/database/$id/sql/'
-      path: '/sql'
-      fullPath: '/database/$id/sql/'
-      preLoaderRoute: typeof ProtectedDatabaseIdSqlIndexRouteImport
-      parentRoute: typeof ProtectedDatabaseIdRoute
+    '/_protected/connection/$resourceId/query/': {
+      id: '/_protected/connection/$resourceId/query/'
+      path: '/query'
+      fullPath: '/connection/$resourceId/query/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdQueryIndexRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdRoute
     }
-    '/_protected/database/$id/definitions/indexes/': {
-      id: '/_protected/database/$id/definitions/indexes/'
+    '/_protected/connection/$resourceId/definitions/indexes/': {
+      id: '/_protected/connection/$resourceId/definitions/indexes/'
       path: '/indexes'
-      fullPath: '/database/$id/definitions/indexes/'
-      preLoaderRoute: typeof ProtectedDatabaseIdDefinitionsIndexesIndexRouteImport
-      parentRoute: typeof ProtectedDatabaseIdDefinitionsRoute
+      fullPath: '/connection/$resourceId/definitions/indexes/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
     }
-    '/_protected/database/$id/definitions/enums/': {
-      id: '/_protected/database/$id/definitions/enums/'
+    '/_protected/connection/$resourceId/definitions/enums/': {
+      id: '/_protected/connection/$resourceId/definitions/enums/'
       path: '/enums'
-      fullPath: '/database/$id/definitions/enums/'
-      preLoaderRoute: typeof ProtectedDatabaseIdDefinitionsEnumsIndexRouteImport
-      parentRoute: typeof ProtectedDatabaseIdDefinitionsRoute
+      fullPath: '/connection/$resourceId/definitions/enums/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
     }
-    '/_protected/database/$id/definitions/constraints/': {
-      id: '/_protected/database/$id/definitions/constraints/'
+    '/_protected/connection/$resourceId/definitions/constraints/': {
+      id: '/_protected/connection/$resourceId/definitions/constraints/'
       path: '/constraints'
-      fullPath: '/database/$id/definitions/constraints/'
-      preLoaderRoute: typeof ProtectedDatabaseIdDefinitionsConstraintsIndexRouteImport
-      parentRoute: typeof ProtectedDatabaseIdDefinitionsRoute
+      fullPath: '/connection/$resourceId/definitions/constraints/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsConstraintsIndexRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
     }
   }
 }
 
-interface ProtectedDatabaseIdDefinitionsRouteChildren {
-  ProtectedDatabaseIdDefinitionsConstraintsIndexRoute: typeof ProtectedDatabaseIdDefinitionsConstraintsIndexRoute
-  ProtectedDatabaseIdDefinitionsEnumsIndexRoute: typeof ProtectedDatabaseIdDefinitionsEnumsIndexRoute
-  ProtectedDatabaseIdDefinitionsIndexesIndexRoute: typeof ProtectedDatabaseIdDefinitionsIndexesIndexRoute
+interface ProtectedConnectionResourceIdDefinitionsRouteChildren {
+  ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute
+  ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
+  ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
 }
 
-const ProtectedDatabaseIdDefinitionsRouteChildren: ProtectedDatabaseIdDefinitionsRouteChildren =
+const ProtectedConnectionResourceIdDefinitionsRouteChildren: ProtectedConnectionResourceIdDefinitionsRouteChildren =
   {
-    ProtectedDatabaseIdDefinitionsConstraintsIndexRoute:
-      ProtectedDatabaseIdDefinitionsConstraintsIndexRoute,
-    ProtectedDatabaseIdDefinitionsEnumsIndexRoute:
-      ProtectedDatabaseIdDefinitionsEnumsIndexRoute,
-    ProtectedDatabaseIdDefinitionsIndexesIndexRoute:
-      ProtectedDatabaseIdDefinitionsIndexesIndexRoute,
+    ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute:
+      ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute,
+    ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute:
+      ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute,
+    ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute:
+      ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute,
   }
 
-const ProtectedDatabaseIdDefinitionsRouteWithChildren =
-  ProtectedDatabaseIdDefinitionsRoute._addFileChildren(
-    ProtectedDatabaseIdDefinitionsRouteChildren,
+const ProtectedConnectionResourceIdDefinitionsRouteWithChildren =
+  ProtectedConnectionResourceIdDefinitionsRoute._addFileChildren(
+    ProtectedConnectionResourceIdDefinitionsRouteChildren,
   )
 
-interface ProtectedDatabaseIdRouteChildren {
-  ProtectedDatabaseIdDefinitionsRoute: typeof ProtectedDatabaseIdDefinitionsRouteWithChildren
-  ProtectedDatabaseIdSqlIndexRoute: typeof ProtectedDatabaseIdSqlIndexRoute
-  ProtectedDatabaseIdTableIndexRoute: typeof ProtectedDatabaseIdTableIndexRoute
-  ProtectedDatabaseIdVisualizerIndexRoute: typeof ProtectedDatabaseIdVisualizerIndexRoute
+interface ProtectedConnectionResourceIdRouteChildren {
+  ProtectedConnectionResourceIdDefinitionsRoute: typeof ProtectedConnectionResourceIdDefinitionsRouteWithChildren
+  ProtectedConnectionResourceIdQueryIndexRoute: typeof ProtectedConnectionResourceIdQueryIndexRoute
+  ProtectedConnectionResourceIdTableIndexRoute: typeof ProtectedConnectionResourceIdTableIndexRoute
+  ProtectedConnectionResourceIdVisualizerIndexRoute: typeof ProtectedConnectionResourceIdVisualizerIndexRoute
 }
 
-const ProtectedDatabaseIdRouteChildren: ProtectedDatabaseIdRouteChildren = {
-  ProtectedDatabaseIdDefinitionsRoute:
-    ProtectedDatabaseIdDefinitionsRouteWithChildren,
-  ProtectedDatabaseIdSqlIndexRoute: ProtectedDatabaseIdSqlIndexRoute,
-  ProtectedDatabaseIdTableIndexRoute: ProtectedDatabaseIdTableIndexRoute,
-  ProtectedDatabaseIdVisualizerIndexRoute:
-    ProtectedDatabaseIdVisualizerIndexRoute,
-}
+const ProtectedConnectionResourceIdRouteChildren: ProtectedConnectionResourceIdRouteChildren =
+  {
+    ProtectedConnectionResourceIdDefinitionsRoute:
+      ProtectedConnectionResourceIdDefinitionsRouteWithChildren,
+    ProtectedConnectionResourceIdQueryIndexRoute:
+      ProtectedConnectionResourceIdQueryIndexRoute,
+    ProtectedConnectionResourceIdTableIndexRoute:
+      ProtectedConnectionResourceIdTableIndexRoute,
+    ProtectedConnectionResourceIdVisualizerIndexRoute:
+      ProtectedConnectionResourceIdVisualizerIndexRoute,
+  }
 
-const ProtectedDatabaseIdRouteWithChildren =
-  ProtectedDatabaseIdRoute._addFileChildren(ProtectedDatabaseIdRouteChildren)
+const ProtectedConnectionResourceIdRouteWithChildren =
+  ProtectedConnectionResourceIdRoute._addFileChildren(
+    ProtectedConnectionResourceIdRouteChildren,
+  )
 
 interface ProtectedRouteChildren {
   ProtectedIndexRoute: typeof ProtectedIndexRoute
-  ProtectedDatabaseIdRoute: typeof ProtectedDatabaseIdRouteWithChildren
+  ProtectedConnectionResourceIdRoute: typeof ProtectedConnectionResourceIdRouteWithChildren
   ProtectedCreateIndexRoute: typeof ProtectedCreateIndexRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedIndexRoute: ProtectedIndexRoute,
-  ProtectedDatabaseIdRoute: ProtectedDatabaseIdRouteWithChildren,
+  ProtectedConnectionResourceIdRoute:
+    ProtectedConnectionResourceIdRouteWithChildren,
   ProtectedCreateIndexRoute: ProtectedCreateIndexRoute,
 }
 

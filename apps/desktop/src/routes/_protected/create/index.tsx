@@ -15,12 +15,10 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
-import { executeSql } from '~/entities/connection/sql'
-import { connectionsCollection } from '~/entities/connection/sync'
-import { prefetchConnectionCore } from '~/entities/connection/utils'
+import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
+import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { generateRandomName } from '~/lib/utils'
-import { queryClient } from '~/main'
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
 import { StepType } from './-components/step-type'
@@ -57,8 +55,7 @@ function CreateConnectionPage() {
     color: string | null
   }) {
     const id = v7()
-
-    const password = new SafeURL(data.connectionString.trim()).password
+    const url = new SafeURL(data.connectionString.trim())
 
     connectionsCollection.insert({
       id,
@@ -67,8 +64,8 @@ function CreateConnectionPage() {
       connectionString: data.connectionString,
       label: data.label || null,
       color: data.color || null,
-      isPasswordExists: !!password,
-      isPasswordPopulated: !!password,
+      isPasswordExists: !!url.password,
+      isPasswordPopulated: !!url.password,
       syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -76,13 +73,23 @@ function CreateConnectionPage() {
 
     toast.success('Connection created successfully 🎉')
 
-    const connection = connectionsCollection.get(id)!
+    const resource = url.pathname === '/' ? null : url.pathname.slice(1)
 
-    prefetchConnectionCore(connection)
-
-    queryClient.prefetchQuery(connectionVersionQueryOptions({ connection }))
-
-    router.navigate({ to: '/database/$id/table', params: { id } })
+    if (resource) {
+      const resourceId = v7()
+      connectionsResourcesCollection.insert({
+        id: resourceId,
+        connectionId: id,
+        name: resource,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
+      router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
+    }
+    else {
+      router.navigate({ to: '/', search: { createdId: id } })
+    }
   }
 
   const defaultValues: typeof createConnectionType.infer = {
@@ -112,10 +119,9 @@ function CreateConnectionPage() {
   })
 
   const { mutate: test, reset, status } = useMutation({
-    mutationFn: ({ type, connectionString }: { type: ConnectionType, connectionString: string }) => executeSql({
+    mutationFn: ({ type, connectionString }: { type: ConnectionType, connectionString: string }) => testConnectionQuery.run({
       type,
       connectionString,
-      sql: 'SELECT 1',
     }),
     onSuccess: () => {
       setStep('save')

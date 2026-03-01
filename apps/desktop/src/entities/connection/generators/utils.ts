@@ -69,18 +69,21 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
     mysql: tsMapper,
     mssql: tsMapper,
     clickhouse: tsMapper,
+    sqlite: tsMapper,
   },
   zod: {
     postgres: zodMapper,
     mysql: zodMapper,
     mssql: zodMapper,
     clickhouse: zodMapper,
+    sqlite: zodMapper,
   },
   prisma: {
     postgres: prismaScalarMapper,
     mysql: prismaScalarMapper,
     mssql: t => (/^date$/i.test(t) ? 'DateTime @db.Date' : prismaScalarMapper(t)),
     clickhouse: () => '',
+    sqlite: () => '',
   },
   drizzle: {
     postgres: (t) => {
@@ -175,6 +178,21 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
         return 'json'
       return 'text'
     },
+    sqlite: (t) => {
+      if (/int/i.test(t))
+        return 'integer'
+      if (/text/i.test(t))
+        return 'text'
+      if (/bool/i.test(t))
+        return 'integer'
+      if (/date/i.test(t))
+        return 'text'
+      if (/real|float/i.test(t))
+        return 'real'
+      if (/blob/i.test(t))
+        return 'blob'
+      return 'text'
+    },
   },
   sql: {
     postgres: (t) => {
@@ -189,12 +207,14 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
     mysql: t => t,
     mssql: t => t,
     clickhouse: t => t,
+    sqlite: t => t,
   },
   kysely: {
     postgres: t => t,
     mysql: t => t,
     mssql: t => t,
     clickhouse: t => t,
+    sqlite: t => t,
   },
 }
 
@@ -221,6 +241,7 @@ const QUOTE_IDENTIFIER_MAP: Record<ConnectionType, (name: string) => string> = {
   clickhouse: (name: string) => `\`${name}\``,
   mssql: (name: string) => `[${name}]`,
   postgres: (name: string) => `"${name}"`,
+  sqlite: (name: string) => `"${name}"`,
 }
 
 export function quoteIdentifier(name: string, dialect: ConnectionType) {

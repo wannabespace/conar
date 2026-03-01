@@ -1,7 +1,7 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
-import { findEnum } from '../../sql/enums'
+import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
 
@@ -42,6 +42,7 @@ const dialectConfig: Record<ConnectionType, { tableFunc: string, dialectImportPa
   mysql: { tableFunc: 'mysqlTable', dialectImportPath: 'drizzle-orm/mysql-core', enumFunc: 'mysqlEnum' },
   mssql: { tableFunc: 'mssqlTable', dialectImportPath: 'drizzle-orm/mssql-core' },
   clickhouse: { tableFunc: 'clickhouseTable', dialectImportPath: 'drizzle-orm/clickhouse-core', enumFunc: 'enum' },
+  sqlite: { tableFunc: 'sqliteTable', dialectImportPath: 'drizzle-orm/sqlite-core' },
 }
 
 export function generateSchemaDrizzle({
