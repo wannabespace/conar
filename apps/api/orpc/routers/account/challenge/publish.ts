@@ -1,5 +1,6 @@
 import { type } from 'arktype'
-import { getAnonymousUserIdFromToken, mergeAnonymousUserData } from '~/lib/auth'
+import { mergeAnonymousUserData } from '~/lib/auth'
+import { redis } from '~/lib/redis'
 import { authMiddleware, orpc } from '~/orpc'
 import { codeChallengePublisher, codeChallengeRedis } from '.'
 
@@ -8,13 +9,12 @@ export const publish = orpc
   .input(type({
     'codeChallenge': 'string',
     'newUser?': 'boolean',
-    'anonymousToken?': 'string',
   }))
   .handler(async ({ input, context }) => {
-    if (input.anonymousToken) {
-      const anonId = await getAnonymousUserIdFromToken(input.anonymousToken)
-      if (anonId)
-        await mergeAnonymousUserData(anonId, context.user.id)
+    const anonId = await redis.get(`merge:${input.codeChallenge}`)
+    if (anonId) {
+      await mergeAnonymousUserData(anonId, context.user.id)
+      await redis.del(`merge:${input.codeChallenge}`)
     }
 
     await codeChallengeRedis.set(input.codeChallenge, {

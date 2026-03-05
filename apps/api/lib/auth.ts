@@ -1,12 +1,11 @@
 import type { Auth, BetterAuthOptions } from 'better-auth'
 import { AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
-import { isAnonymousUser } from '@conar/shared/utils/auth'
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
-import { count, eq } from 'drizzle-orm'
+import { and, count, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { chats, connections, db, queries, users } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
@@ -64,12 +63,12 @@ export async function mergeAnonymousUserData(
       ...anonConnections.map(({ id, connectionString }) =>
         tx.update(connections)
           .set({ userId: targetUserId, connectionString: rekey(connectionString) })
-          .where(eq(connections.id, id)),
+          .where(and(eq(connections.id, id), eq(connections.userId, anonymousUserId))),
       ),
       ...anonQueries.map(({ id, query }) =>
         tx.update(queries)
           .set({ userId: targetUserId, query: rekey(query) })
-          .where(eq(queries.id, id)),
+          .where(and(eq(queries.id, id), eq(queries.userId, anonymousUserId))),
       ),
       tx.update(chats).set({ userId: targetUserId }).where(eq(chats.userId, anonymousUserId)),
     ])
@@ -289,10 +288,3 @@ export const auth: Auth = betterAuth({
     },
   },
 } satisfies BetterAuthOptions)
-
-export async function getAnonymousUserIdFromToken(token: string) {
-  const headers = new Headers({ authorization: `Bearer ${token}` })
-  const session = await auth.api.getSession({ headers }).catch(() => null)
-  const user = session?.user
-  return isAnonymousUser(user) ? (user as { id: string }).id : null
-}

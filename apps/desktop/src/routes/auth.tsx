@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc, orpcQuery } from '~/lib/orpc'
 
 const AppLogoSquareMotion = motion.create(AppLogoSquare)
 
@@ -47,10 +47,12 @@ function AuthPage() {
     const verifier = generateVerifier()
     const codeChallenge = await generateCodeChallenge(verifier)
     const { data: session } = await authClient.getSession()
-    const anonymousToken = isAnonymousUser(session?.user) ? bearerToken.get() : null
+
+    if (isAnonymousUser(session?.user)) {
+      await orpc.account.challenge.linkAnonymous({ codeChallenge })
+    }
+
     const params = new URLSearchParams({ codeChallenge })
-    if (anonymousToken)
-      params.set('anonymousToken', anonymousToken)
     setVerifier(verifier)
     setCodeChallenge(codeChallenge)
     window.open(`${import.meta.env.VITE_PUBLIC_WEB_URL}/deep/sign-in?${params.toString()}`, '_blank')

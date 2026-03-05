@@ -7,21 +7,18 @@ export const Route = createFileRoute('/deep/sign-in')({
   validateSearch: type({
     'codeChallenge': 'string',
     'newUser?': 'boolean',
-    'anonymousToken?': 'string',
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ deps }) => {
-    const { codeChallenge, newUser, anonymousToken } = deps
+    const { codeChallenge, newUser } = deps
     const redirectSearch = new URLSearchParams({ codeChallenge })
-    if (anonymousToken)
-      redirectSearch.set('anonymousToken', anonymousToken)
     if (newUser)
       redirectSearch.set('newUser', 'true')
 
     const { data } = await authClient.getSession()
 
     if (data) {
-      await orpc.account.challenge.publish({ codeChallenge, newUser, anonymousToken })
+      await orpc.account.challenge.publish({ codeChallenge, newUser })
 
       throw redirect({ to: '/open' })
     }
