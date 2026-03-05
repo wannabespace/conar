@@ -1,5 +1,6 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { COLOR_OPTIONS, LABEL_OPTIONS } from '@conar/shared/constants'
+import { isAnonymousUser } from '@conar/shared/utils/auth'
 import { Button } from '@conar/ui/components/button'
 import { ButtonGroup } from '@conar/ui/components/button-group'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
@@ -13,8 +14,9 @@ import { useLiveQuery } from '@tanstack/react-db'
 import { useId } from 'react'
 import { ConnectionDetails } from '~/components/connection-details'
 import { connectionsCollection } from '~/entities/connection/sync'
+import { authClient } from '~/lib/auth'
 
-export function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel, color, setColor, disableCloudSync }: {
+export function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel, color, setColor }: {
   type: ConnectionType
   name: string
   connectionString: string
@@ -26,8 +28,9 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
   setLabel: (label: string | null) => void
   color: string | null
   setColor: (color: string | null) => void
-  disableCloudSync?: boolean
 }) {
+  const { data: session } = authClient.useSession()
+  const disableCloudSync = isAnonymousUser(session?.user)
   const { data: connections } = useLiveQuery(q => q.from({ connections: connectionsCollection }).orderBy(({ connections }) => connections.createdAt, 'desc'))
   const existingLabels = connections.map(connection => connection.label).filter((label): label is string => label !== null)
   const labels = Array.from(new Set(LABEL_OPTIONS.concat(existingLabels))).toSorted()
@@ -145,7 +148,9 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
                     onCheckedChange={() => !disableCloudSync && setSaveInCloud(!saveInCloud)}
                     disabled={disableCloudSync}
                   />
-                  Do you want to sync the password in our cloud?
+                  {disableCloudSync
+                    ? 'Sign in to sync connections to the cloud.'
+                    : 'Do you want to sync the password in our cloud?'}
                 </label>
               </TooltipTrigger>
               {disableCloudSync && (

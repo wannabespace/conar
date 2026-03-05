@@ -119,7 +119,7 @@ function CreateConnectionPage() {
         type,
         connectionString,
         name,
-        saveInCloud: isAnonymous ? false : saveInCloud,
+        saveInCloud,
         label,
         color,
       })
@@ -269,7 +269,6 @@ function CreateConnectionPage() {
               setLabel={label => form.setFieldValue('label', label)}
               color={color}
               setColor={color => form.setFieldValue('color', color)}
-              disableCloudSync={isAnonymous}
             />
             <div className="mt-auto flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep('credentials')}>

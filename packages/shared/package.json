@@ -17,6 +17,7 @@
   "dependencies": {
     "@conar/configs": "workspace:*",
     "arktype": "catalog:",
+    "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "nanoid": "catalog:"
   }
