@@ -115,11 +115,13 @@ function CreateConnectionPage() {
         return
       }
 
+      const resolvedSaveInCloud = isAnonymous ? false : saveInCloud
+
       createConnection({
         type,
         connectionString,
         name,
-        saveInCloud,
+        saveInCloud: resolvedSaveInCloud,
         label,
         color,
       })

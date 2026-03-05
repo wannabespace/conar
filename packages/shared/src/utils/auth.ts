@@ -1,11 +1,7 @@
 import type { User } from 'better-auth'
-import { type } from 'arktype'
 
-const anonymousUserType = type({ isAnonymous: 'true' })
+type AuthUser = User & { isAnonymous?: boolean | null }
 
-export type AuthUser = (User & { isAnonymous?: boolean | null }) | undefined
-export type AnonymousUser = User & typeof anonymousUserType.infer
-
-export function isAnonymousUser(user: AuthUser): user is AnonymousUser {
-  return Boolean(user) && !(anonymousUserType(user) instanceof type.errors)
+export function isAnonymousUser(user: AuthUser | null | undefined): user is User & { isAnonymous: true } {
+  return !!user && user.isAnonymous === true
 }
