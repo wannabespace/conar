@@ -1,5 +1,7 @@
+import type { ConnectionMutationMetadata } from '~/entities/connection/sync'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
+import { isAnonymousUser } from '@conar/shared/utils/auth'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
@@ -19,6 +21,7 @@ import { connectionVersionQueryOptions } from '~/entities/connection/queries/con
 import { executeSql } from '~/entities/connection/sql'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { prefetchConnectionCore } from '~/entities/connection/utils'
+import { authClient } from '~/lib/auth'
 import { generateRandomName } from '~/lib/utils'
 import { queryClient } from '~/main'
 import { StepCredentials } from './-components/step-credentials'
@@ -47,6 +50,8 @@ function CreateConnectionPage() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
+  const { data: session } = authClient.useSession()
+  const isAnonymous = isAnonymousUser(session?.user)
 
   function createConnection(data: {
     connectionString: string
@@ -60,19 +65,22 @@ function CreateConnectionPage() {
 
     const password = new SafeURL(data.connectionString.trim()).password
 
-    connectionsCollection.insert({
-      id,
-      name: data.name,
-      type: data.type,
-      connectionString: data.connectionString,
-      label: data.label || null,
-      color: data.color || null,
-      isPasswordExists: !!password,
-      isPasswordPopulated: !!password,
-      syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
+    connectionsCollection.insert(
+      {
+        id,
+        name: data.name,
+        type: data.type,
+        connectionString: data.connectionString,
+        label: data.label || null,
+        color: data.color || null,
+        isPasswordExists: !!password,
+        isPasswordPopulated: !!password,
+        syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      data.saveInCloud ? undefined : { metadata: { cloudSync: false } satisfies ConnectionMutationMetadata },
+    )
 
     toast.success('Connection created successfully 🎉')
 
@@ -89,7 +97,7 @@ function CreateConnectionPage() {
     connectionString: '',
     name: generateRandomName(),
     type: null,
-    saveInCloud: true,
+    saveInCloud: !isAnonymous,
     label: null,
     color: null,
   }
@@ -254,6 +262,7 @@ function CreateConnectionPage() {
               setLabel={label => form.setFieldValue('label', label)}
               color={color}
               setColor={color => form.setFieldValue('color', color)}
+              disableCloudSync={isAnonymous}
             />
             <div className="mt-auto flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep('credentials')}>

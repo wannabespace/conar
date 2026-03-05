@@ -1,3 +1,4 @@
+import { isAnonymousUser } from '@conar/shared/utils/auth'
 import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { RiLogoutCircleRLine } from '@remixicon/react'
@@ -7,6 +8,7 @@ import { useSignOut } from '../hooks/use-sign-out'
 export function UserButton() {
   const { signOut, isSigningOut } = useSignOut()
   const { data } = authClient.useSession()
+  const isAnonymous = isAnonymousUser(data?.user)
 
   return (
     <DropdownMenu>
@@ -18,11 +20,13 @@ export function UserButton() {
           <UserAvatar className="size-8" user={data?.user} />
           <div className="flex flex-col leading-0">
             <span className="text-sm font-medium">
-              {data?.user.name}
+              {isAnonymous ? 'Guest' : data?.user.name}
             </span>
-            <span className="text-xs text-muted-foreground">
-              {data?.user.email}
-            </span>
+            {!isAnonymous && (
+              <span className="text-xs text-muted-foreground">
+                {data?.user.email}
+              </span>
+            )}
           </div>
         </div>
         <DropdownMenuSeparator />
@@ -31,7 +35,7 @@ export function UserButton() {
           onClick={() => signOut()}
         >
           <RiLogoutCircleRLine />
-          Sign out
+          {isAnonymous ? 'Sign out guest session' : 'Sign out'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

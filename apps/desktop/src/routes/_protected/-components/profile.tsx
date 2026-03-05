@@ -1,3 +1,4 @@
+import { isAnonymousUser } from '@conar/shared/utils/auth'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
@@ -14,6 +15,7 @@ export function Profile({ className }: { className?: string }) {
   const { signOut, isSigningOut } = useSignOut()
   const { subscription } = useSubscription()
   const { data } = authClient.useSession()
+  const isAnonymous = isAnonymousUser(data?.user)
 
   return (
     <div className={cn('flex flex-col gap-4', className)}>
@@ -28,12 +30,14 @@ export function Profile({ className }: { className?: string }) {
                       flex items-center gap-2 text-2xl font-semibold
                     `}
                     >
-                      {data.user.name}
+                      {isAnonymous ? 'Guest' : data.user.name}
                       <Badge variant="secondary">
-                        {subscription ? uppercaseFirst(subscription.plan) : 'Hobby'}
+                        {isAnonymous ? 'Anonymous' : (subscription ? uppercaseFirst(subscription.plan) : 'Hobby')}
                       </Badge>
                     </h3>
-                    <p className="text-sm text-muted-foreground">{data.user.email}</p>
+                    {!isAnonymous && (
+                      <p className="text-sm text-muted-foreground">{data.user.email}</p>
+                    )}
                   </div>
                 )
               : (
@@ -47,16 +51,18 @@ export function Profile({ className }: { className?: string }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-          >
-            <a href={`${import.meta.env.VITE_PUBLIC_WEB_URL}/account`} target="_blank">
-              Account
-              <RiExternalLinkLine className="size-3.5 text-muted-foreground" />
-            </a>
-          </Button>
+          {!isAnonymous && (
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+            >
+              <a href={`${import.meta.env.VITE_PUBLIC_WEB_URL}/account`} target="_blank">
+                Account
+                <RiExternalLinkLine className="size-3.5 text-muted-foreground" />
+              </a>
+            </Button>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -71,7 +77,7 @@ export function Profile({ className }: { className?: string }) {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              Sign out
+              {isAnonymous ? 'Sign out guest session' : 'Sign out'}
             </TooltipContent>
           </Tooltip>
         </div>

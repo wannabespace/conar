@@ -1,9 +1,11 @@
 import type { connections } from '~/drizzle'
+import { isAnonymousUser } from '@conar/shared/utils/auth'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Enter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverAnchor, PopoverContent } from '@conar/ui/components/popover'
 import { Textarea } from '@conar/ui/components/textarea'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
@@ -12,6 +14,7 @@ import { MonacoDiff } from '~/components/monaco'
 import { connectionTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { connectionStore } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks'
+import { authClient } from '~/lib/auth'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
@@ -30,6 +33,8 @@ export function RunnerEditorAIZone({
   const isOnline = useStore(appStore, state => state.isOnline)
   const store = connectionStore(connection.id)
   const { subscription } = useSubscription()
+  const { data: session } = authClient.useSession()
+  const isAnonymous = isAnonymousUser(session?.user)
   const [prompt, setPrompt] = useState('')
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null)
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -87,72 +92,86 @@ export function RunnerEditorAIZone({
     <div className="flex h-full flex-col py-1 pr-6">
       <Popover open={!!aiSuggestion}>
         <PopoverAnchor asChild>
-          <div className="relative flex h-full w-lg flex-col rounded-md border">
-            {!subscription && (
+          <Tooltip>
+            <TooltipTrigger asChild>
               <div
-                className="
-                  w-full bg-muted px-2 py-1 text-sm text-muted-foreground
-                "
+                className={cn(
+                  'relative flex h-full w-lg flex-col rounded-md border',
+                  isAnonymous && 'cursor-not-allowed',
+                )}
               >
-                Please
-                {' '}
-                <Button
-                  variant="outline"
-                  className="px-1 py-0.5"
-                  size="xs"
-                  onClick={() => setIsSubscriptionDialogOpen(true)}
-                >
-                  upgrade
-                </Button>
-                {' '}
-                your subscription to generate SQL queries.
-              </div>
-            )}
-            <Textarea
-              ref={ref}
-              value={prompt}
-              disabled={isPending || !subscription || !isOnline}
-              onChange={(e) => {
-                setPrompt(e.target.value)
-                setAiSuggestion(null)
-              }}
-              className={cn(
-                `
-                  field-sizing-content flex-1 resize-none border-none px-2
-                  py-1.5 pb-8
-                `,
-                // Disable monaco default styles
-                `
-                  focus:border-border!
-                  focus-visible:border-border! focus-visible:ring-0!
-                  focus-visible:outline-none!
-                `,
-              )}
-              placeholder={isOnline ? 'Update selected SQL with AI' : 'Check your internet connection to update selected SQL'}
-              onKeyDown={(e) => {
-                e.stopPropagation()
+                {!isAnonymous && !subscription && (
+                  <div
+                    className="
+                      w-full bg-muted px-2 py-1 text-sm text-muted-foreground
+                    "
+                  >
+                    Please
+                    {' '}
+                    <Button
+                      variant="outline"
+                      className="px-1 py-0.5"
+                      size="xs"
+                      onClick={() => setIsSubscriptionDialogOpen(true)}
+                    >
+                      upgrade
+                    </Button>
+                    {' '}
+                    your subscription to generate SQL queries.
+                  </div>
+                )}
+                <Textarea
+                  ref={ref}
+                  value={prompt}
+                  disabled={isAnonymous || isPending || !subscription || !isOnline}
+                  onChange={(e) => {
+                    setPrompt(e.target.value)
+                    setAiSuggestion(null)
+                  }}
+                  className={cn(
+                    `
+                      field-sizing-content flex-1 resize-none border-none px-2
+                      py-1.5 pb-8
+                    `,
+                    // Disable monaco default styles
+                    `
+                      focus:border-border!
+                      focus-visible:border-border! focus-visible:ring-0!
+                      focus-visible:outline-none!
+                    `,
+                  )}
+                  placeholder={isOnline ? 'Update selected SQL with AI' : 'Check your internet connection to update selected SQL'}
+                  onKeyDown={(e) => {
+                    e.stopPropagation()
 
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSubmit()
-                }
-                else if (e.key === 'Escape') {
-                  fullClose()
-                }
-              }}
-            />
-            <Button
-              size="xs"
-              className="absolute right-2 bottom-2"
-              disabled={isPending || !prompt.trim() || !isOnline}
-              onClick={handleSubmit}
-            >
-              <LoadingContent loading={isPending} loaderClassName="size-4">
-                {aiSuggestion ? 'Apply' : 'Send'}
-                <Enter />
-              </LoadingContent>
-            </Button>
-          </div>
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSubmit()
+                    }
+                    else if (e.key === 'Escape') {
+                      fullClose()
+                    }
+                  }}
+                />
+                <Button
+                  size="xs"
+                  className="absolute right-2 bottom-2"
+                  disabled={isAnonymous || isPending || !prompt.trim() || !isOnline}
+                  onClick={handleSubmit}
+                >
+                  <LoadingContent loading={isPending} loaderClassName="size-4">
+                    {aiSuggestion ? 'Apply' : 'Send'}
+                    <Enter />
+                  </LoadingContent>
+                </Button>
+              </div>
+            </TooltipTrigger>
+            {isAnonymous && (
+              <TooltipContent>
+                Sign in to use AI features.
+              </TooltipContent>
+            )}
+          </Tooltip>
         </PopoverAnchor>
         {!!aiSuggestion && (
           <PopoverContent

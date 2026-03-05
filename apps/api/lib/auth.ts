@@ -1,15 +1,80 @@
 import type { Auth, BetterAuthOptions } from 'better-auth'
 import { AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
+import { isAnonymousUser } from '@conar/shared/utils/auth'
+import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
-import { eq } from 'drizzle-orm'
+import { count, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
-import { db, users } from '~/drizzle'
+import { chats, connections, db, queries, users } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
+
+async function getUserSecret(id: string) {
+  const user = await db.query.users.findFirst({ columns: { secret: true }, where: (t, { eq }) => eq(t.id, id) })
+  return user?.secret ?? null
+}
+
+async function targetHasUserData(userId: string) {
+  const [conns, qs, chatCount] = await Promise.all([
+    db.select({ count: count() }).from(connections).where(eq(connections.userId, userId)),
+    db.select({ count: count() }).from(queries).where(eq(queries.userId, userId)),
+    db.select({ count: count() }).from(chats).where(eq(chats.userId, userId)),
+  ])
+  const total = Number(conns[0]?.count ?? 0) + Number(qs[0]?.count ?? 0) + Number(chatCount[0]?.count ?? 0)
+  return total > 0
+}
+
+export async function mergeAnonymousUserData(
+  anonymousUserId: string,
+  targetUserId: string,
+  options?: { trusted?: boolean },
+) {
+  if (anonymousUserId === targetUserId)
+    return
+
+  const trusted = options?.trusted ?? false
+  const [anonSecret, targetSecret, hasData] = await Promise.all([
+    getUserSecret(anonymousUserId),
+    getUserSecret(targetUserId),
+    trusted ? false : targetHasUserData(targetUserId),
+  ])
+  if (!anonSecret || !targetSecret)
+    return
+  if (hasData)
+    return
+
+  const rekey = (encrypted: string) =>
+    encrypt({ text: decrypt({ encryptedText: encrypted, secret: anonSecret }), secret: targetSecret })
+
+  await db.transaction(async (tx) => {
+    const [anonConnections, anonQueries] = await Promise.all([
+      tx.select({ id: connections.id, connectionString: connections.connectionString })
+        .from(connections)
+        .where(eq(connections.userId, anonymousUserId)),
+      tx.select({ id: queries.id, query: queries.query })
+        .from(queries)
+        .where(eq(queries.userId, anonymousUserId)),
+    ])
+
+    await Promise.all([
+      ...anonConnections.map(({ id, connectionString }) =>
+        tx.update(connections)
+          .set({ userId: targetUserId, connectionString: rekey(connectionString) })
+          .where(eq(connections.id, id)),
+      ),
+      ...anonQueries.map(({ id, query }) =>
+        tx.update(queries)
+          .set({ userId: targetUserId, query: rekey(query) })
+          .where(eq(queries.id, id)),
+      ),
+      tx.update(chats).set({ userId: targetUserId }).where(eq(chats.userId, anonymousUserId)),
+    ])
+  })
+}
 
 export const auth: Auth = betterAuth({
   appName: 'Conar',
@@ -43,7 +108,14 @@ export const auth: Auth = betterAuth({
     }),
     lastLoginMethod(),
     emailHarmony(),
-    anonymous(),
+    anonymous({
+      onLinkAccount: async ({ anonymousUser, newUser }) => {
+        await mergeAnonymousUserData(anonymousUser.user.id, newUser.user.id, { trusted: true })
+      },
+      generateRandomEmail: () => {
+        return `guest-${nanoid()}@guest.conar.app`
+      },
+    }),
   ],
   user: {
     additionalFields: {
@@ -217,3 +289,10 @@ export const auth: Auth = betterAuth({
     },
   },
 } satisfies BetterAuthOptions)
+
+export async function getAnonymousUserIdFromToken(token: string) {
+  const headers = new Headers({ authorization: `Bearer ${token}` })
+  const session = await auth.api.getSession({ headers }).catch(() => null)
+  const user = session?.user
+  return isAnonymousUser(user) ? (user as { id: string }).id : null
+}

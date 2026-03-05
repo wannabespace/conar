@@ -1,8 +1,11 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
+import { isAnonymousUser } from '@conar/shared/utils/auth'
 import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Input } from '@conar/ui/components/input'
 import { Kbd } from '@conar/ui/components/kbd'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { cn } from '@conar/ui/lib/utils'
 import { RiBardLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation } from '@tanstack/react-query'
@@ -10,6 +13,7 @@ import { useStore } from '@tanstack/react-store'
 import { useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { useConnectionEnums } from '~/entities/connection/queries'
+import { authClient } from '~/lib/auth'
 import { orpcQuery } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../../'
@@ -18,6 +22,8 @@ import { usePageStoreContext } from '../../-store'
 
 export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
   const isOnline = useStore(appStore, state => state.isOnline)
+  const { data: session } = authClient.useSession()
+  const isAnonymous = isAnonymousUser(session?.user)
   const { connection } = Route.useLoaderData()
   const inputRef = useRef<HTMLInputElement>(null)
   const store = usePageStoreContext()
@@ -55,7 +61,8 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
   `.trim(), [columns, enums, schema, table])
 
   useHotkey('Mod+F', () => {
-    inputRef.current?.focus()
+    if (!isAnonymous)
+      inputRef.current?.focus()
   })
 
   return (
@@ -63,7 +70,8 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       className="relative w-full max-w-full"
       onSubmit={(e) => {
         e.preventDefault()
-        generateFilter({ prompt, context })
+        if (!isAnonymous)
+          generateFilter({ prompt, context })
       }}
     >
       <RiBardLine className="
@@ -71,15 +79,29 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         text-muted-foreground
       "
       />
-      <Input
-        ref={inputRef}
-        className="pr-10 pl-8"
-        placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
-        disabled={isPending || !isOnline}
-        value={prompt}
-        autoFocus
-        onChange={e => store.setState(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
-      />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={cn('block w-full', isAnonymous && `
+            cursor-not-allowed
+          `)}
+          >
+            <Input
+              ref={inputRef}
+              className="pr-10 pl-8"
+              placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
+              disabled={isAnonymous || isPending || !isOnline}
+              value={prompt}
+              autoFocus
+              onChange={e => store.setState(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
+            />
+          </span>
+        </TooltipTrigger>
+        {isAnonymous && (
+          <TooltipContent>
+            Sign in to use AI features.
+          </TooltipContent>
+        )}
+      </Tooltip>
       <Kbd
         asChild
         className="absolute top-1/2 right-2 -translate-y-1/2"

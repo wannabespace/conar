@@ -1,4 +1,5 @@
-import { SOCIAL_LINKS } from '@conar/shared/constants'
+import { ANONYMOUS_MAX_CONNECTIONS, SOCIAL_LINKS } from '@conar/shared/constants'
+import { isAnonymousUser } from '@conar/shared/utils/auth'
 import { title } from '@conar/shared/utils/title'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
@@ -7,9 +8,11 @@ import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
+import { useLiveQuery } from '@tanstack/react-db'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { useConnectionsSync } from '~/entities/connection/sync'
+import { connectionsCollection, useConnectionsSync } from '~/entities/connection/sync'
+import { authClient } from '~/lib/auth'
 import { queryClient } from '~/main'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 import { ConnectionsList } from './-components/connections-list'
@@ -25,6 +28,10 @@ export const Route = createFileRoute('/_protected/')({
 function DashboardPage() {
   const { sync, isSyncing } = useConnectionsSync()
   const [version, versionStatus] = useStore(updatesStore, state => [state.version, state.status])
+  const { data: session } = authClient.useSession()
+  const isAnonymous = isAnonymousUser(session?.user)
+  const { data: connections } = useLiveQuery(q => q.from({ connections: connectionsCollection }))
+  const atAddLimit = isAnonymous && (connections?.length ?? 0) >= ANONYMOUS_MAX_CONNECTIONS
 
   return (
     <ScrollArea className="overflow-auto">
@@ -66,12 +73,32 @@ function DashboardPage() {
                 </ContentSwitch>
               </LoadingContent>
             </Button>
-            <Button asChild>
-              <Link to="/create">
-                <RiAddLine className="size-4" />
-                Add new
-              </Link>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  {atAddLimit
+                    ? (
+                        <Button disabled>
+                          <RiAddLine className="size-4" />
+                          Add new
+                        </Button>
+                      )
+                    : (
+                        <Button asChild>
+                          <Link to="/create">
+                            <RiAddLine className="size-4" />
+                            Add new
+                          </Link>
+                        </Button>
+                      )}
+                </span>
+              </TooltipTrigger>
+              {atAddLimit && (
+                <TooltipContent>
+                  Sign in to add more connections.
+                </TooltipContent>
+              )}
+            </Tooltip>
           </div>
         </div>
         <ConnectionsList />

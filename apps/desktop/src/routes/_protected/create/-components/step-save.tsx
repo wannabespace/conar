@@ -14,7 +14,7 @@ import { useId } from 'react'
 import { ConnectionDetails } from '~/components/connection-details'
 import { connectionsCollection } from '~/entities/connection/sync'
 
-export function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel, color, setColor }: {
+export function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel, color, setColor, disableCloudSync }: {
   type: ConnectionType
   name: string
   connectionString: string
@@ -26,6 +26,7 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
   setLabel: (label: string | null) => void
   color: string | null
   setColor: (color: string | null) => void
+  disableCloudSync?: boolean
 }) {
   const { data: connections } = useLiveQuery(q => q.from({ connections: connectionsCollection }).orderBy(({ connections }) => connections.createdAt, 'desc'))
   const existingLabels = connections.map(connection => connection.label).filter((label): label is string => label !== null)
@@ -136,13 +137,23 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="flex items-center gap-2 text-sm">
-              <Checkbox
-                checked={saveInCloud}
-                onCheckedChange={() => setSaveInCloud(!saveInCloud)}
-              />
-              Do you want to sync the password in our cloud?
-            </label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <label className={cn('flex items-center gap-2 text-sm', disableCloudSync && 'cursor-not-allowed')}>
+                  <Checkbox
+                    checked={saveInCloud}
+                    onCheckedChange={() => !disableCloudSync && setSaveInCloud(!saveInCloud)}
+                    disabled={disableCloudSync}
+                  />
+                  Do you want to sync the password in our cloud?
+                </label>
+              </TooltipTrigger>
+              {disableCloudSync && (
+                <TooltipContent>
+                  Sign in to sync connections to the cloud.
+                </TooltipContent>
+              )}
+            </Tooltip>
             <div className="text-xs text-balance text-muted-foreground/50">
               Syncing passwords in our cloud allows access from any device without re-entering the password.
               <br />

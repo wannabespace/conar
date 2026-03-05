@@ -1,5 +1,6 @@
 import type { ChangeEvent, ComponentRef } from 'react'
 import { useChat } from '@ai-sdk/react'
+import { isAnonymousUser } from '@conar/shared/utils/auth'
 import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
@@ -15,6 +16,7 @@ import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { connectionStore } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks'
+import { authClient } from '~/lib/auth'
 import { orpcQuery } from '~/lib/orpc'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
@@ -58,6 +60,8 @@ export function ChatForm() {
   const store = connectionStore(connection.id)
   const input = useStore(store, state => state.chatInput)
   const { subscription } = useSubscription()
+  const { data: session } = authClient.useSession()
+  const isAnonymous = isAnonymousUser(session?.user)
 
   useEffect(() => {
     if (ref.current) {
@@ -190,134 +194,148 @@ export function ChatForm() {
   return (
     <div className="flex flex-col gap-1">
       <Images connectionId={connection.id} />
-      <div className={`
-        relative flex flex-col gap-2 overflow-hidden rounded-md border
-        dark:bg-input/30
-      `}
-      >
-        {!subscription && (
-          <span
-            className="z-10 bg-muted px-2 py-1 text-sm text-muted-foreground"
-          >
-            Please
-            {' '}
-            <Button
-              variant="outline"
-              className="px-1 py-0.5"
-              size="xs"
-              onClick={() => setIsSubscriptionDialogOpen(true)}
-            >
-              upgrade
-            </Button>
-            {' '}
-            your subscription to generate SQL queries.
-          </span>
-        )}
-        <TipTap
-          ref={ref}
-          data-mask
-          value={input}
-          setValue={(value) => {
-            store.setState(state => ({
-              ...state,
-              chatInput: value,
-            } satisfies typeof state))
-          }}
-          placeholder={isOnline ? 'Generate SQL queries using natural language' : 'Check your internet connection to generate SQL queries'}
-          className={`
-            max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm outline-none
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className={`
+            relative flex flex-col gap-2 overflow-hidden rounded-md border
+            dark:bg-input/30
+            ${isAnonymous ? 'cursor-not-allowed' : ''}
           `}
-          disabled={!subscription || !isOnline}
-          onEnter={handleSend}
-          onImageAdd={(file) => {
-            store.setState(state => ({
-              ...state,
-              files: [...store.state.files, file],
-            } satisfies typeof state))
-          }}
-        />
-        <div className={`
-          pointer-events-none flex items-end justify-between px-2 pb-2
-        `}
-        >
-          <div className="pointer-events-auto">
-            <Button
-              type="button"
-              size="icon-xs"
-              variant="outline"
-              asChild
-            >
-              <label htmlFor="chat-file-upload">
-                <RiAttachment2 className="size-3" />
-                <input
-                  id="chat-file-upload"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileAttach}
-                  tabIndex={-1}
-                  aria-label="Attach files"
-                />
-              </label>
-            </Button>
-          </div>
-          <div className="pointer-events-auto flex gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
+          >
+            {!isAnonymous && !subscription && (
+              <span className="
+                z-10 bg-muted px-2 py-1 text-sm text-muted-foreground
+              "
+              >
+                Please
+                {' '}
                 <Button
+                  variant="outline"
+                  className="px-1 py-0.5"
+                  size="xs"
+                  onClick={() => setIsSubscriptionDialogOpen(true)}
+                >
+                  upgrade
+                </Button>
+                {' '}
+                your subscription to generate SQL queries.
+              </span>
+            )}
+            <TipTap
+              ref={ref}
+              data-mask
+              value={input}
+              setValue={(value) => {
+                store.setState(state => ({
+                  ...state,
+                  chatInput: value,
+                } satisfies typeof state))
+              }}
+              placeholder={isOnline ? 'Generate SQL queries using natural language' : 'Check your internet connection to generate SQL queries'}
+              className={`
+                max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm
+                outline-none
+              `}
+              disabled={isAnonymous || !subscription || !isOnline}
+              onEnter={handleSend}
+              onImageAdd={(file) => {
+                store.setState(state => ({
+                  ...state,
+                  files: [...store.state.files, file],
+                } satisfies typeof state))
+              }}
+            />
+            <div className="
+              pointer-events-none flex items-end justify-between px-2 pb-2
+            "
+            >
+              <div className="pointer-events-auto">
+                <Button
+                  type="button"
                   size="icon-xs"
                   variant="outline"
-                  className={input.length < 10 ? 'cursor-default opacity-50' : ''}
-                  disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt || !subscription}
-                  onClick={() => enhancePrompt({
-                    prompt: input,
-                    chatId: chat.id,
-                  })}
+                  asChild
+                  disabled={isAnonymous}
                 >
-                  <LoadingContent
-                    loading={isEnhancingPrompt}
-                    loaderClassName="size-3"
-                  >
-                    <ContentSwitch
-                      active={isEnhancingPrompt}
-                      activeContent={(
-                        <RiCheckLine className="size-3 text-success" />
-                      )}
-                    >
-                      <RiMagicLine className="size-3" />
-                    </ContentSwitch>
-                  </LoadingContent>
+                  <label htmlFor="chat-file-upload">
+                    <RiAttachment2 className="size-3" />
+                    <input
+                      id="chat-file-upload"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleFileAttach}
+                      tabIndex={-1}
+                      aria-label="Attach files"
+                      disabled={isAnonymous}
+                    />
+                  </label>
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                {input.length < 10 ? 'Prompt is too short to enhance' : 'Enhance prompt'}
-              </TooltipContent>
-            </Tooltip>
-            {(status === 'streaming' || status === 'submitted')
-              ? (
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    onClick={stop}
-                  >
-                    <RiStopCircleLine className="size-3" />
-                    Stop
-                  </Button>
-                )
-              : (
-                  <Button
-                    size="xs"
-                    disabled={!input.trim()}
-                    onClick={() => handleSend(input)}
-                  >
-                    Send
-                    <RiCornerDownLeftLine className="size-3" />
-                  </Button>
-                )}
+              </div>
+              <div className="pointer-events-auto flex gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon-xs"
+                      variant="outline"
+                      className={input.length < 10 ? 'cursor-default opacity-50' : ''}
+                      disabled={isAnonymous || status === 'submitted' || status === 'streaming' || isEnhancingPrompt || !subscription}
+                      onClick={() => enhancePrompt({
+                        prompt: input,
+                        chatId: chat.id,
+                      })}
+                    >
+                      <LoadingContent
+                        loading={isEnhancingPrompt}
+                        loaderClassName="size-3"
+                      >
+                        <ContentSwitch
+                          active={isEnhancingPrompt}
+                          activeContent={(
+                            <RiCheckLine className="size-3 text-success" />
+                          )}
+                        >
+                          <RiMagicLine className="size-3" />
+                        </ContentSwitch>
+                      </LoadingContent>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    {isAnonymous ? 'Sign in to use AI features.' : (input.length < 10 ? 'Prompt is too short to enhance' : 'Enhance prompt')}
+                  </TooltipContent>
+                </Tooltip>
+                {(status === 'streaming' || status === 'submitted')
+                  ? (
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        onClick={stop}
+                      >
+                        <RiStopCircleLine className="size-3" />
+                        Stop
+                      </Button>
+                    )
+                  : (
+                      <Button
+                        size="xs"
+                        disabled={isAnonymous || !input.trim()}
+                        onClick={() => handleSend(input)}
+                      >
+                        Send
+                        <RiCornerDownLeftLine className="size-3" />
+                      </Button>
+                    )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </TooltipTrigger>
+        {isAnonymous && (
+          <TooltipContent>
+            Sign in to use AI features.
+          </TooltipContent>
+        )}
+      </Tooltip>
     </div>
   )
 }
