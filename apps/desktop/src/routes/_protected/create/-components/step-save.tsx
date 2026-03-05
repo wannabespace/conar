@@ -144,8 +144,8 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
               <TooltipTrigger asChild>
                 <label className={cn('flex items-center gap-2 text-sm', disableCloudSync && 'cursor-not-allowed')}>
                   <Checkbox
-                    checked={saveInCloud}
-                    onCheckedChange={() => !disableCloudSync && setSaveInCloud(!saveInCloud)}
+                    checked={disableCloudSync ? false : saveInCloud}
+                    onCheckedChange={() => setSaveInCloud(!saveInCloud)}
                     disabled={disableCloudSync}
                   />
                   {disableCloudSync
