@@ -13,7 +13,7 @@ import { useForm, useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
@@ -118,6 +118,11 @@ function CreateConnectionPage() {
       createConnection({ type, connectionString, name, saveInCloud, label, color })
     },
   })
+
+  useEffect(() => {
+    if (isAnonymous)
+      form.setFieldValue('saveInCloud', false)
+  }, [isAnonymous, form])
 
   const { mutate: test, reset, status } = useMutation({
     mutationFn: ({ type, connectionString }: { type: ConnectionType, connectionString: string }) => executeSql({

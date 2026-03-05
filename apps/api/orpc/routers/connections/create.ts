@@ -13,7 +13,10 @@ export const create = orpc
   .input(connectionsInsertSchema.omit('userId'))
   .handler(async ({ context, input }) => {
     if (isAnonymousUser(context.user)) {
-      if (input.syncType === SyncType.Cloud) {
+      if (
+        input.syncType === SyncType.Cloud
+        || input.syncType === SyncType.CloudWithoutPassword
+      ) {
         throw new ORPCError('FORBIDDEN', { message: 'Cloud sync requires sign in.' })
       }
 

@@ -7,6 +7,7 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
+import { cn } from '@conar/ui/lib/utils'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
@@ -250,28 +251,34 @@ export function ChatForm() {
             "
             >
               <div className="pointer-events-auto">
-                <Button
-                  type="button"
-                  size="icon-xs"
-                  variant="outline"
-                  asChild
-                  disabled={isAnonymous}
+                <label
+                  htmlFor="chat-file-upload"
+                  className={cn(
+                    `
+                      inline-flex size-8 cursor-pointer items-center
+                      justify-center rounded-md border border-input
+                      bg-background
+                      hover:bg-accent hover:text-accent-foreground
+                    `,
+                    isAnonymous && `
+                      pointer-events-none cursor-not-allowed opacity-50
+                    `,
+                  )}
+                  aria-disabled={isAnonymous}
                 >
-                  <label htmlFor="chat-file-upload">
-                    <RiAttachment2 className="size-3" />
-                    <input
-                      id="chat-file-upload"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={handleFileAttach}
-                      tabIndex={-1}
-                      aria-label="Attach files"
-                      disabled={isAnonymous}
-                    />
-                  </label>
-                </Button>
+                  <RiAttachment2 className="size-3" />
+                  <input
+                    id="chat-file-upload"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileAttach}
+                    tabIndex={isAnonymous ? -1 : 0}
+                    aria-label="Attach files"
+                    disabled={isAnonymous}
+                  />
+                </label>
               </div>
               <div className="pointer-events-auto flex gap-2">
                 <Tooltip>

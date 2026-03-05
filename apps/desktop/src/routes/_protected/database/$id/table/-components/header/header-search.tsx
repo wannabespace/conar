@@ -61,9 +61,8 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
   `.trim(), [columns, enums, schema, table])
 
   useHotkey('Mod+F', () => {
-    if (!isAnonymous)
-      inputRef.current?.focus()
-  })
+    inputRef.current?.focus()
+  }, { enabled: !isAnonymous })
 
   return (
     <form
