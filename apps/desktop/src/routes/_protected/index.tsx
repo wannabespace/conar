@@ -75,7 +75,10 @@ function DashboardPage() {
             </Button>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span>
+                <span
+                  tabIndex={atAddLimit ? 0 : undefined}
+                  role={atAddLimit ? 'button' : undefined}
+                >
                   {atAddLimit
                     ? (
                         <Button disabled>
