@@ -29,7 +29,7 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
 }) {
   const { data: connections } = useLiveQuery(q => q.from({ connections: connectionsCollection }).orderBy(({ connections }) => connections.createdAt, 'desc'))
   const existingLabels = connections.map(connection => connection.label).filter((label): label is string => label !== null)
-  const labels = Array.from(new Set(LABEL_OPTIONS.concat(existingLabels))).toSorted()
+  const labels = [...new Set([...LABEL_OPTIONS, ...existingLabels])].toSorted()
   const nameId = useId()
   const labelId = useId()
 

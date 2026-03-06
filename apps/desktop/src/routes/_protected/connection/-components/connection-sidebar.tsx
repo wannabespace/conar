@@ -31,6 +31,9 @@ import { Route } from '../$resourceId'
 
 const os = getOS(navigator.userAgent)
 
+const nameRegex = /[^a-z0-9\s]/gi
+const whitespaceRegex = /\s+/g
+
 function baseClasses(isActive = false) {
   return cn(
     `
@@ -60,7 +63,7 @@ function SupportButton() {
     },
   }))
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault()
     sendSupport({ message })
   }
@@ -162,8 +165,8 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
             >
               <span className="text-sm font-bold">
                 {connection.name
-                  .replace(/[^a-z0-9\s]/gi, '')
-                  .split(/\s+/)
+                  .replace(nameRegex, '')
+                  .split(whitespaceRegex)
                   .map(word => word[0])
                   .join('')
                   .slice(0, 2)

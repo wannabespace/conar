@@ -9,14 +9,17 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(fu
 
   const debounced = (...args: Parameters<F>) => {
     clearTimeout(timeout)
+    // eslint-disable-next-line e18e/prefer-timer-args
     timeout = setTimeout(() => func(...args), waitFor)
   }
 
   return debounced
 }
 
+const whitespaceRegex = /[.*+?^${}()|[\]\\]/g
+
 export function escapeSpecialCharacters(string: string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return string.replace(whitespaceRegex, '\\$&')
 }
 
 export function pick<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {

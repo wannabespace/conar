@@ -7,11 +7,10 @@ import { Button } from '@conar/ui/components/button'
 import { Card, CardFrameDescription, CardFrameFooter, CardFrameHeader, CardFrameMotion, CardFrameTitle, CardPanel } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
-import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
+import { ScrollAreaShadow, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useIsScrolled } from '@conar/ui/hookas/use-is-scrolled'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAddLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
@@ -106,7 +105,6 @@ function ConnectionCard({
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scrollViewportRef = useRef<HTMLDivElement>(null)
-  const isScrolled = useIsScrolled(scrollViewportRef)
 
   const handleCopy = () => {
     if (timeoutRef.current) {
@@ -207,20 +205,7 @@ function ConnectionCard({
       </CardFrameHeader>
       <Card>
         <CardPanel className="-mx-2">
-          <ScrollArea className={cn(
-            `
-              relative
-              after:pointer-events-none after:absolute after:inset-x-0
-              after:bottom-0 after:z-10 after:h-4
-              after:bg-linear-to-t after:from-card after:to-transparent
-            `,
-            isScrolled && `
-              before:pointer-events-none before:absolute before:top-0
-              before:inset-x-0 before:z-10 before:h-4
-              before:bg-linear-to-b before:from-card before:to-transparent
-            `,
-          )}
-          >
+          <ScrollAreaShadow viewportRef={scrollViewportRef} type="card">
             <ScrollViewport ref={scrollViewportRef} className="max-h-40">
               <AnimatePresence initial={false} mode="popLayout">
                 {isResourcesPending
@@ -265,7 +250,7 @@ function ConnectionCard({
               </AnimatePresence>
             </ScrollViewport>
             <ScrollBar />
-          </ScrollArea>
+          </ScrollAreaShadow>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -457,7 +442,7 @@ export function ConnectionsList() {
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const [lastOpenedResources] = useLastOpenedResources()
 
-  const availableLabels = Array.from(new Set(data.map(connection => connection.label).filter(Boolean) as string[])).sort()
+  const availableLabels = [...new Set(data.map(connection => connection.label).filter(Boolean) as string[])].toSorted()
 
   const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
 

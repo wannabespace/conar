@@ -36,6 +36,8 @@ const keywordPriority = [
   'DROP',
 ]
 
+const dotMatchesRegex = /(\w+(?:\.\w+)*)\.\s*$/g
+
 export function connectionCompletionService(connectionResource: typeof connectionsResources.$inferSelect): CompletionService {
   const store = getConnectionResourceStore(connectionResource.id)
   queryClient.prefetchQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem }))
@@ -79,12 +81,12 @@ export function connectionCompletionService(connectionResource: typeof connectio
       endColumn: position.column,
     })
 
-    const dotMatches = [...textBeforeCursor.matchAll(/(\w+(?:\.\w+)*)\.\s*$/g)]
+    const dotMatches = [...textBeforeCursor.matchAll(dotMatchesRegex)]
     const isTableContext = syntax.some(item => item.syntaxContextType === EntityContextType.TABLE)
     const isColumnContext = syntax.some(item => item.syntaxContextType === EntityContextType.COLUMN)
 
     if (dotMatches.length > 0) {
-      const tableRef = dotMatches[dotMatches.length - 1]?.[1]
+      const tableRef = dotMatches.at(-1)?.[1]
 
       if (tableRef) {
         const parts = tableRef.split('.')

@@ -1,3 +1,4 @@
+/* eslint-disable e18e/prefer-static-regex */
 import type { QueryParams, SchemaParams } from '..'
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '~/entities/connection/queries/enums'
@@ -157,7 +158,7 @@ function buildColumnParts(
 }
 
 function buildPostgresEnumStatements(usedEnums: Map<string, typeof enumType.infer>): string[] {
-  return Array.from(usedEnums.values()).map((e) => {
+  return Array.from(usedEnums.values(), (e) => {
     const vals = e.values.map(v => `'${escapeSqlString(v)}'`).join(', ')
     return `CREATE TYPE "${e.name}" AS ENUM (${vals});`
   })

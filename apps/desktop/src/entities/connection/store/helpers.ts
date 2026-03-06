@@ -23,7 +23,7 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
     return
   }
 
-  if (!store.state.tabs.find(tab => tab.table === table && tab.schema === schema && !tab.preview)) {
+  if (!store.state.tabs.some(tab => tab.table === table && tab.schema === schema && !tab.preview)) {
     store.setState(prev => ({
       ...prev,
       tabs: prev.tabs.map(tab => tab.table === table && tab.schema === schema ? { table, schema, preview: false } : tab) ?? [],

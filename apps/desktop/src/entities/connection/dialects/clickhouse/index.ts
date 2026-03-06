@@ -3,15 +3,20 @@ import type { DialectExecutionOptions, DialectOptions } from '..'
 import { type } from 'arktype'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
 
+const escapeSqlStringRegex = /[\\']/g
+
 function escapeSqlString(v: string) {
-  return v.replace(/[\\']/g, '\\$&')
+  return v.replace(escapeSqlStringRegex, '\\$&')
 }
 
 const dateStringType = type('string.date')
 
+const compiledSqlRegex = /\?/g
+const compiledSqlParameterRegex = /^update ((`\w+`\.)*`\w+`) set/i
+
 function prepareQuery(compiledQuery: CompiledQuery) {
   let i = 0
-  const compiledSql = compiledQuery.sql.replace(/\?/g, () => {
+  const compiledSql = compiledQuery.sql.replace(compiledSqlRegex, () => {
     const param = compiledQuery.parameters[i++]
 
     if (param === null || param === undefined) {
@@ -38,7 +43,7 @@ function prepareQuery(compiledQuery: CompiledQuery) {
   })
 
   return compiledSql.replace(
-    /^update ((`\w+`\.)*`\w+`) set/i,
+    compiledSqlParameterRegex,
     'alter table $1 update',
   )
 }

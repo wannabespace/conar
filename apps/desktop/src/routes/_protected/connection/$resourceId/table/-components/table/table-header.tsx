@@ -19,7 +19,7 @@ interface HeaderColumn {
 }
 
 function getVisibleColumns(element: HTMLElement) {
-  const columns = Array.from(element.querySelectorAll<HTMLElement>('[data-column-id]'))
+  const columns = [...element.querySelectorAll<HTMLElement>('[data-column-id]')]
   const scrollLeft = element.scrollLeft
   const scrollRight = scrollLeft + element.clientWidth
 
@@ -77,7 +77,7 @@ function Header() {
   const direction = useTableContext(state => state.scrollDirection)
   const columns = useTableContext(state => state.columns)
   const isScrolled = useIsScrolled(scrollRef, { direction: 'vertical' })
-  const [{ left, right }, setNotVisibleColumns] = useState<{ left: HeaderColumn[], right: HeaderColumn[] }>({ left: [], right: [] })
+  const [notVisibleColumns, setNotVisibleColumns] = useState<{ left: HeaderColumn[], right: HeaderColumn[] }>({ left: [], right: [] })
 
   function scrollToColumn(column: HeaderColumn, direction: 'left' | 'right') {
     const scrollEl = scrollRef.current
@@ -148,7 +148,7 @@ function Header() {
                     group absolute top-1/2 -translate-y-1/2 shadow-none
                     transition-[left,opacity] duration-150
                   `,
-                  left.length > 0
+                  notVisibleColumns.left.length > 0
                     ? 'left-2 opacity-100'
                     : 'pointer-events-none left-0 opacity-0',
                 )}
@@ -163,7 +163,7 @@ function Header() {
             >
               <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {left.map(column => (
+              {notVisibleColumns.left.map(column => (
                 <DropdownMenuItem
                   key={column.id}
                   onClick={() => scrollToColumn(column, 'left')}
@@ -188,7 +188,7 @@ function Header() {
                     group absolute top-1/2 -translate-y-1/2 shadow-none
                     transition-[right,opacity] duration-150
                   `,
-                  right.length > 0
+                  notVisibleColumns.right.length > 0
                     ? 'right-2 opacity-100'
                     : `pointer-events-none right-0 opacity-0`,
                 )}
@@ -199,7 +199,7 @@ function Header() {
             <DropdownMenuContent side="bottom" align="end" className="min-w-48">
               <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {right.map(column => (
+              {notVisibleColumns.right.map(column => (
                 <DropdownMenuItem
                   key={column.id}
                   onClick={() => scrollToColumn(column, 'right')}

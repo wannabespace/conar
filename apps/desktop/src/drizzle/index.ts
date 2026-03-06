@@ -2,9 +2,9 @@
 import { PGlite } from '@electric-sql/pglite'
 import { drizzle } from 'drizzle-orm/pglite'
 import migrations from './migrations.json'
-import * as chats from './schema/chats'
-import * as connections from './schema/connections'
-import * as queries from './schema/queries'
+import { chatsRelations } from './schema/chats'
+import { connections } from './schema/connections'
+import { queriesRelations } from './schema/queries'
 
 export * from './schema/chats'
 export * from './schema/connections'
@@ -26,16 +26,15 @@ export const db = drizzle({
   client: pg,
   casing: 'snake_case',
   logger: import.meta.env.DEV,
-  schema: {
-    ...connections,
-    ...chats,
-    ...queries,
+  relations: {
+    ...chatsRelations,
+    ...queriesRelations,
   },
 })
 
 export async function clearDb() {
   // We can remove just databases because other tables are related to databases
-  await db.delete(connections.connections)
+  await db.delete(connections)
 }
 
 async function ensureMigrationsTable() {
