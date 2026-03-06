@@ -433,7 +433,7 @@ export function ConnectionsList() {
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const [lastOpenedResources] = useLastOpenedResources()
 
-  const availableLabels = Array.from(new Set(data.map(connection => connection.label).filter(Boolean) as string[])).sort()
+  const availableLabels = [...new Set(data.map(connection => connection.label).filter(Boolean) as string[])].toSorted()
 
   const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
 

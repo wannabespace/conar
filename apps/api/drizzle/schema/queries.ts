@@ -1,5 +1,5 @@
-import { createInsertSchema, createSelectSchema } from 'drizzle-arktype'
-import { relations } from 'drizzle-orm'
+import { defineRelations } from 'drizzle-orm'
+import { createInsertSchema, createSelectSchema } from 'drizzle-orm/arktype'
 import { pgTable } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedText } from '../utils'
@@ -17,13 +17,18 @@ export const queries = pgTable('queries', ({ uuid, text }) => ({
 export const queriesSelectSchema = createSelectSchema(queries)
 export const queriesInsertSchema = createInsertSchema(queries)
 
-export const queriesRelations = relations(queries, ({ one }) => ({
-  user: one(users, {
-    fields: [queries.userId],
-    references: [users.id],
+export const queriesRelations = defineRelations(
+  { queries, users, connections },
+  r => ({
+    queries: {
+      user: r.one.users({
+        from: r.queries.userId,
+        to: r.users.id,
+      }),
+      connection: r.one.connections({
+        from: r.queries.connectionId,
+        to: r.connections.id,
+      }),
+    },
   }),
-  connection: one(connections, {
-    fields: [queries.connectionId],
-    references: [connections.id],
-  }),
-}))
+)

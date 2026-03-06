@@ -1,3 +1,4 @@
+/* eslint-disable e18e/prefer-static-regex */
 import type { QueryParams, SchemaParams } from '..'
 import type { Column } from '../../components/table/utils'
 import type { enumType } from '~/entities/connection/queries/enums'

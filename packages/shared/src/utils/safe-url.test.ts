@@ -32,7 +32,7 @@ describe('new SafeURL', () => {
       hash: '',
       href: conn,
     })
-    expect(Array.from(parsed.searchParams.entries())).toEqual([])
+    expect([...parsed.searchParams.entries()]).toEqual([])
   })
 
   it('parses a connection string with query parameters', () => {
@@ -52,7 +52,7 @@ describe('new SafeURL', () => {
       hash: '',
       href: conn,
     })
-    expect(Array.from(parsed.searchParams.entries())).toEqual([
+    expect([...parsed.searchParams.entries()]).toEqual([
       ['sslmode', 'require'],
       ['application_name', 'myapp'],
     ])
@@ -75,7 +75,7 @@ describe('new SafeURL', () => {
       hash: '',
       href: conn,
     })
-    expect(Array.from(parsed.searchParams.entries())).toEqual([])
+    expect([...parsed.searchParams.entries()]).toEqual([])
     expect(parsed.toString()).toBe(conn)
   })
 
@@ -97,7 +97,7 @@ describe('new SafeURL', () => {
       hash: '',
       href: `${conn}/mydb`,
     })
-    expect(Array.from(parsed.searchParams.entries())).toEqual([])
+    expect([...parsed.searchParams.entries()]).toEqual([])
   })
 
   it('parses a connection string with special characters in username and password', () => {
@@ -117,7 +117,7 @@ describe('new SafeURL', () => {
       hash: '',
       href: conn,
     })
-    expect(Array.from(parsed.searchParams.entries())).toEqual([])
+    expect([...parsed.searchParams.entries()]).toEqual([])
   })
 
   it('parses a connection string with multiple query parameters', () => {
@@ -137,7 +137,7 @@ describe('new SafeURL', () => {
       hash: '',
       href: conn,
     })
-    expect(Array.from(parsed.searchParams.entries())).toEqual([
+    expect([...parsed.searchParams.entries()]).toEqual([
       ['ssl', 'true'],
       ['connect_timeout', '10'],
       ['search_path', 'myschema'],
@@ -173,7 +173,7 @@ describe('new SafeURL', () => {
     expect(parsed.search).toBe('')
     expect(parsed.hash).toBe('')
     expect(parsed.href).toBe(conn.replace(':@', ''))
-    expect(Array.from(parsed.searchParams.entries())).toEqual([])
+    expect([...parsed.searchParams.entries()]).toEqual([])
   })
 
   it('parses a connection string with empty path - with trailing slash', () => {
@@ -191,7 +191,7 @@ describe('new SafeURL', () => {
     expect(parsed.search).toBe('')
     expect(parsed.hash).toBe('')
     expect(parsed.href).toBe(conn)
-    expect(Array.from(parsed.searchParams.entries())).toEqual([])
+    expect([...parsed.searchParams.entries()]).toEqual([])
   })
 
   it('parses a connection string with empty path - without trailing slash', () => {
@@ -209,7 +209,7 @@ describe('new SafeURL', () => {
     expect(parsed.search).toBe('')
     expect(parsed.hash).toBe('')
     expect(parsed.href).toBe(conn)
-    expect(Array.from(parsed.searchParams.entries())).toEqual([])
+    expect([...parsed.searchParams.entries()]).toEqual([])
   })
 
   describe('property setting', () => {
@@ -359,7 +359,7 @@ describe('new SafeURL', () => {
       expect(typeof parsed.pathname).toBe('string')
       expect(typeof parsed.search).toBe('string')
       expect(typeof parsed.hash).toBe('string')
-      expect(Array.isArray(Array.from(parsed.searchParams.entries()))).toBe(true)
+      expect(Array.isArray([...parsed.searchParams.entries()])).toBe(true)
     }
   })
 })

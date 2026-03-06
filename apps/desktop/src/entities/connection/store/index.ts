@@ -92,11 +92,7 @@ export const getConnectionResourceStore = memoize((id: string) => {
 
   persistedState.query ||= defaultState.query
 
-  const state = getConnectionResourceStoreType(Object.assign(
-    {},
-    defaultState,
-    persistedState,
-  ))
+  const state = getConnectionResourceStoreType({ ...defaultState, ...persistedState })
 
   if (import.meta.env.DEV && state instanceof type.errors) {
     console.error('Invalid connection store state', state.summary)

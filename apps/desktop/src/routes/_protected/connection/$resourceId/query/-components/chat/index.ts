@@ -6,7 +6,6 @@ import { Chat } from '@ai-sdk/react'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { memoize } from '@conar/shared/utils/helpers'
 import { eventIteratorToStream } from '@orpc/client'
-import { encode } from '@toon-format/toon'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
@@ -100,7 +99,7 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
             \`\`\`
             `,
             'Database schemas and tables:',
-            encode(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem }))),
+            JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem })), null, 2),
           ].join('\n'),
         }, { signal: options.abortSignal }))
       },

@@ -23,29 +23,38 @@ export function findEnum(enums: typeof enumType.infer[], column: Column, table: 
   )
 }
 
+const clickhouseEnumRegex = /^Enum\d+\((.*)\)$/
+const clickhouseEnumValueRegex = /,(?=(?:[^']*'[^']*')*[^']*$)/
+const clickhouseEnumValuePairRegex = /'([^']+)' *= *\d+/
+
 function parseClickhouseEnum(type: string): string[] {
-  const match = type.match(/^Enum\d+\((.*)\)$/)
+  const match = type.match(clickhouseEnumRegex)
 
   if (!match || !match[1])
     return []
 
-  const pairs = match[1].split(/,(?=(?:[^']*'[^']*')*[^']*$)/)
+  const pairs = match[1].split(clickhouseEnumValueRegex)
 
   return pairs.map((pair) => {
-    const valMatch = pair.match(/'([^']+)' *= *\d+/)
+    const valMatch = pair.match(clickhouseEnumValuePairRegex)
     return valMatch && valMatch[1] ? valMatch[1] : ''
   }).filter(Boolean)
 }
 
+const mysqlEnumOrSetRegex = /^(enum|set)\(/i
+const mysqlEnumOrSetValuePairRegex = /,(?=(?:[^']*'[^']*')*[^']*$)/
+
 // Helper to parse values from enum/set column type string
 function parseMysqlEnumOrSet(typeString: string): string[] {
   // Remove "enum(" or "set(" prefix and ending ")"
-  const valuesString = typeString.replace(/^(enum|set)\(/i, '').replace(/\)$/, '')
+  // eslint-disable-next-line e18e/prefer-static-regex
+  const valuesString = typeString.replace(mysqlEnumOrSetRegex, '').replace(/\)$/, '')
   // Split values; values are quoted (single quotes), can have commas inside values if escaped, etc.
   // This splits on commas only outside of single quotes
   return valuesString.length === 0
     ? []
-    : valuesString.split(/,(?=(?:[^']*'[^']*')*[^']*$)/).map(v => v.trim().replace(/^'/, '').replace(/'$/, '').replace(/''/g, '\''))
+    // eslint-disable-next-line e18e/prefer-static-regex
+    : valuesString.split(mysqlEnumOrSetValuePairRegex).map(v => v.trim().replace(/^'/, '').replace(/'$/, '').replace(/''/g, '\''))
 }
 
 const query = createQuery({
@@ -76,7 +85,7 @@ const query = createQuery({
         }
       }
 
-      return Array.from(grouped.values())
+      return [...grouped.values()]
     },
     mysql: async (db) => {
       const query = await db
