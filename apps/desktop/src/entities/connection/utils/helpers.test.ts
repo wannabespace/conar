@@ -127,12 +127,10 @@ WHERE id = 1; SELECT * FROM posts;`)).toEqual([
 
   it('should handle BEGIN and END blocks as a single query', () => {
     expect(
-      getEditorQueries(
-        `BEGIN
-UPDATE users SET active = false WHERE id = 1;
-INSERT INTO audit_log (user_id, action) VALUES (1, 'deactivate');
-END;`,
-      ),
+      getEditorQueries(`BEGIN
+        UPDATE users SET active = false WHERE id = 1;
+        INSERT INTO audit_log (user_id, action) VALUES (1, 'deactivate');
+      END;`),
     ).toEqual([
       {
         startLineNumber: 1,
@@ -142,5 +140,33 @@ END;`,
         ],
       },
     ])
+  })
+
+  it('should handle BEGIN; ... COMMIT; transaction block as a single query', () => {
+    const sql = `BEGIN;
+      ALTER TABLE feature_flag_users ADD COLUMN phone VARCHAR(255);
+      UPDATE feature_flag_users ffu
+      SET phone = u.phone
+      FROM users u
+      WHERE u.id = ffu.user_id;
+
+      DO $$
+      BEGIN
+        IF EXISTS (SELECT 1 FROM feature_flag_users WHERE phone IS NULL) THEN
+          RAISE EXCEPTION 'rows with phone = NULL exists, check user_id';
+        END IF;
+      END $$;
+
+      ALTER TABLE feature_flag_users ALTER COLUMN phone SET NOT NULL;
+    COMMIT;`
+    const result = getEditorQueries(sql)
+    expect(result).toHaveLength(1)
+    expect(result[0]!.startLineNumber).toBe(1)
+    expect(result[0]!.endLineNumber).toBeGreaterThan(1)
+    expect(result[0]!.queries).toHaveLength(1)
+    expect(result[0]!.queries[0]).toContain('BEGIN')
+    expect(result[0]!.queries[0]).toContain('COMMIT')
+    expect(result[0]!.queries[0]).toContain('DO $$')
+    expect(result[0]!.queries[0]).toContain('END $$')
   })
 })

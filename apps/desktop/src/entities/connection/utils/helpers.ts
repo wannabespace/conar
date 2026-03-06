@@ -8,10 +8,18 @@ export function hasDangerousSqlKeywords(sql: string) {
   return new RegExp(dangerousKeywordsPattern, 'gi').test(uncommentedLines)
 }
 
+const wordRegex = /\W/
+const beginMatchRegex = /^(BEGIN)\b/i
+const endMatchRegex = /^(END)\b/i
+const dollarMatchRegex = /^\$\$|\$[a-z_]\w*\$/i
+const beginEndBlockDepthRegex = /^\s*BEGIN\b/i
+const commitRollbackRegex = /\b(?:COMMIT|ROLLBACK)\b/i
+const transactionControlLineRegex = /;\s*$/
+
 function isWord(word: string, line: string, idx: number) {
-  return (idx === 0 || /\W/.test(line[idx - 1]!))
+  return (idx === 0 || wordRegex.test(line[idx - 1]!))
     && line.substring(idx, idx + word.length).toUpperCase() === word
-    && (idx + word.length === line.length || /\W/.test(line[idx + word.length]!))
+    && (idx + word.length === line.length || wordRegex.test(line[idx + word.length]!))
 }
 
 export function getEditorQueries(sql: string) {
@@ -27,8 +35,27 @@ export function getEditorQueries(sql: string) {
   let dollarQuoteTag: string | null = null
   let beginEndBlockDepth = 0
   let beginEndStartLine: number | null = null
+  let inTransactionBlock = false
+  let transactionStartLine: number | null = null
+
+  const isTransactionControlLine = (line: string): 'begin' | 'commit' | 'rollback' | null => {
+    const s = line.trim().replace(transactionControlLineRegex, '')
+    const upper = s.toUpperCase()
+    if (upper === 'BEGIN')
+      return 'begin'
+    if (upper === 'COMMIT')
+      return 'commit'
+    if (upper === 'ROLLBACK')
+      return 'rollback'
+    return null
+  }
 
   const splitQueryBySemicolons = (query: string): string[] => {
+    const fullTrimmed = query.trim()
+    if (beginEndBlockDepthRegex.test(fullTrimmed) && commitRollbackRegex.test(fullTrimmed)) {
+      return [fullTrimmed]
+    }
+
     const parts: string[] = []
     let currentPart = ''
     let currentTag: string | null = null
@@ -37,7 +64,7 @@ export function getEditorQueries(sql: string) {
 
     while (i < query.length) {
       if (currentTag === null) {
-        const dollarMatch = query.substring(i).match(/^\$\$|\$[a-z_]\w*\$/i)
+        const dollarMatch = query.substring(i).match(dollarMatchRegex)
         if (dollarMatch) {
           currentTag = dollarMatch[0]
           currentPart += currentTag
@@ -45,8 +72,8 @@ export function getEditorQueries(sql: string) {
           continue
         }
 
-        const beginMatch = query.substring(i).match(/^(BEGIN)\b/i)
-        const endMatch = query.substring(i).match(/^(END)\b/i)
+        const beginMatch = query.substring(i).match(beginMatchRegex)
+        const endMatch = query.substring(i).match(endMatchRegex)
         if (beginMatch && localBeginEndBlockDepth === 0) {
           localBeginEndBlockDepth++
           currentPart += beginMatch[0]
@@ -98,7 +125,7 @@ export function getEditorQueries(sql: string) {
 
     while (i < line.length) {
       if (currentTag === null) {
-        const dollarMatch = line.substring(i).match(/^\$\$|\$[a-z_]\w*\$/i)
+        const dollarMatch = line.substring(i).match(dollarMatchRegex)
         if (dollarMatch) {
           currentTag = dollarMatch[0]
           i += currentTag.length
@@ -148,6 +175,31 @@ export function getEditorQueries(sql: string) {
     if (!line)
       continue
 
+    const txnControl = !isInDollarQuote ? isTransactionControlLine(line) : null
+    if (txnControl === 'begin') {
+      inTransactionBlock = true
+      if (transactionStartLine === null)
+        transactionStartLine = lineNum
+    }
+    else if (txnControl === 'commit' || txnControl === 'rollback') {
+      currentQuery += (currentQuery ? ' ' : '') + line
+      const query = currentQuery.trim()
+      if (query) {
+        queries.push({
+          startLineNumber: transactionStartLine ?? queryStartLine,
+          endLineNumber: lineNum,
+          queries: [query],
+        })
+      }
+      currentQuery = ''
+      dollarQuoteTag = null
+      beginEndStartLine = null
+      beginEndBlockDepth = 0
+      inTransactionBlock = false
+      transactionStartLine = null
+      continue
+    }
+
     if (!isInDollarQuote) {
       for (let idx = 0; idx < line.length;) {
         if (isWord('BEGIN', line.toUpperCase(), idx)) {
@@ -170,14 +222,22 @@ export function getEditorQueries(sql: string) {
 
     if (!currentQuery) {
       queryStartLine = lineNum
-      if (beginEndBlockDepth > 0 && beginEndStartLine !== null) {
+      if (inTransactionBlock && transactionStartLine !== null) {
+        queryStartLine = transactionStartLine
+      }
+      else if (beginEndBlockDepth > 0 && beginEndStartLine !== null) {
         queryStartLine = beginEndStartLine
       }
     }
 
     currentQuery += (currentQuery ? ' ' : '') + line
 
-    if (beginEndBlockDepth === 0 && !isInDollarQuote && line.endsWith(';')) {
+    if (
+      !inTransactionBlock
+      && beginEndBlockDepth === 0
+      && !isInDollarQuote
+      && line.endsWith(';')
+    ) {
       const query = currentQuery.slice(0, -1).trim()
       if (query) {
         const queryParts = splitQueryBySemicolons(query)
@@ -197,7 +257,7 @@ export function getEditorQueries(sql: string) {
     const trimmedQuery = currentQuery.trim()
     const queryParts = splitQueryBySemicolons(trimmedQuery)
     queries.push({
-      startLineNumber: beginEndStartLine ?? queryStartLine,
+      startLineNumber: transactionStartLine ?? beginEndStartLine ?? queryStartLine,
       endLineNumber: lines.length,
       queries: queryParts,
     })
