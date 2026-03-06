@@ -1,7 +1,7 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from '../components/table/utils'
-import type { enumType } from '../sql/enums'
+import type { enumType } from '../queries/enums'
 import type { Index } from './utils'
 
 export * from './formats/drizzle'

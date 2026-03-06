@@ -289,10 +289,7 @@ export function TableCell({
 
   useEffect(() => {
     if (status === 'success' || status === 'error') {
-      const timeout = setTimeout(
-        () => setStatus('idle'),
-        status === 'error' ? 3000 : 1000,
-      )
+      const timeout = setTimeout(setStatus, status === 'error' ? 3000 : 1000, 'idle')
 
       return () => clearTimeout(timeout)
     }
@@ -340,6 +337,7 @@ export function TableCell({
     console.error(error)
 
     toast.error(`Failed to update cell "${column.id}"`, {
+      id: `save-cell-error-${column.id}-${error.message}`,
       description: error.message,
       duration: 3000,
     })

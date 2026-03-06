@@ -1,19 +1,22 @@
 import type { CompiledQuery, Dialect, Driver, QueryResult } from 'kysely'
-import type { DialectOptions } from '..'
-import type { connections } from '~/drizzle'
+import type { DialectExecutionOptions, DialectOptions } from '..'
 import { type } from 'arktype'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
-import { logSql } from '../../sql'
+
+const escapeSqlStringRegex = /[\\']/g
 
 function escapeSqlString(v: string) {
-  return v.replace(/[\\']/g, '\\$&')
+  return v.replace(escapeSqlStringRegex, '\\$&')
 }
 
 const dateStringType = type('string.date')
 
+const compiledSqlRegex = /\?/g
+const compiledSqlParameterRegex = /^update ((`\w+`\.)*`\w+`) set/i
+
 function prepareQuery(compiledQuery: CompiledQuery) {
   let i = 0
-  const compiledSql = compiledQuery.sql.replace(/\?/g, () => {
+  const compiledSql = compiledQuery.sql.replace(compiledSqlRegex, () => {
     const param = compiledQuery.parameters[i++]
 
     if (param === null || param === undefined) {
@@ -40,36 +43,36 @@ function prepareQuery(compiledQuery: CompiledQuery) {
   })
 
   return compiledSql.replace(
-    /^update ((`\w+`\.)*`\w+`) set/i,
+    compiledSqlParameterRegex,
     'alter table $1 update',
   )
 }
 
-function execute(connection: typeof connections.$inferSelect, compiledQuery: CompiledQuery, options?: DialectOptions) {
+function execute(options: DialectExecutionOptions) {
   if (!window.electron) {
     throw new Error('Electron is not available')
   }
 
-  const preparedQuery = prepareQuery(compiledQuery)
+  const preparedQuery = prepareQuery(options.compiledQuery)
 
   const promise = window.electron.query.clickhouse({
-    connectionString: connection.connectionString,
-    sql: preparedQuery,
-    silent: options?.silent,
+    connectionString: options.connectionString,
+    query: preparedQuery,
+    silent: options.silent,
   })
 
-  logSql(connection, promise, { sql: preparedQuery })
+  options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
   return promise
 }
 
-function createDriver(connection: typeof connections.$inferSelect, options?: DialectOptions) {
+function createDriver(options: DialectOptions) {
   return {
     async init() {},
     async acquireConnection() {
       return {
         executeQuery: async <R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> => {
-          const { result } = await execute(connection, compiledQuery, options)
+          const { result } = await execute({ ...options, compiledQuery })
 
           return {
             rows: result as R[],
@@ -98,10 +101,10 @@ function clickhouseAdapter() {
   }
 }
 
-export function clickhouseDialect(connection: typeof connections.$inferSelect, options?: DialectOptions) {
+export function clickhouseDialect(options: DialectOptions) {
   return {
     createAdapter: clickhouseAdapter,
-    createDriver: () => createDriver(connection, options),
+    createDriver: () => createDriver(options),
     createQueryCompiler: () => new MysqlQueryCompiler(),
     createIntrospector: () => {
       throw new Error('Not implemented')
