@@ -289,10 +289,7 @@ export function TableCell({
 
   useEffect(() => {
     if (status === 'success' || status === 'error') {
-      const timeout = setTimeout(
-        () => setStatus('idle'),
-        status === 'error' ? 3000 : 1000,
-      )
+      const timeout = setTimeout(setStatus, status === 'error' ? 3000 : 1000, 'idle')
 
       return () => clearTimeout(timeout)
     }

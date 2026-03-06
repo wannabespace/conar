@@ -25,7 +25,7 @@ export const chatsUpdateSchema = createUpdateSchema(chats)
 export const chatsMessages = pgTable('chats_messages', {
   ...baseTable,
   chatId: uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
-  parts: encryptedJson().array().notNull().$type<AppUIMessage['parts']>(),
+  parts: encryptedJson().$type<AppUIMessage['parts'][number]>().array().notNull(),
   role: text().$type<AppUIMessage['role']>().notNull(),
   metadata: encryptedJson().$type<NonNullable<AppUIMessage['metadata']>>(),
 }, t => [
