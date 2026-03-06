@@ -1,7 +1,9 @@
-import type { RefObject } from 'react'
+import type { ComponentProps, RefObject } from 'react'
 import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area'
 import { cn } from '@conar/ui/lib/utils'
 import { motion } from 'motion/react'
+import { useSubscription } from 'seitu/react'
+import { createScrollState } from 'seitu/web'
 
 function ScrollArea({
   className,
@@ -17,6 +19,47 @@ function ScrollArea({
       {children}
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>
+  )
+}
+const typeClasses = {
+  card: {
+    after: 'after:from-card',
+    before: 'before:from-card',
+  },
+}
+
+export function ScrollAreaShadow({
+  type,
+  className,
+  viewportRef,
+  ...props
+}: ComponentProps<typeof ScrollArea> & { type: keyof typeof typeClasses, viewportRef: RefObject<HTMLDivElement | null> }) {
+  const scroll = useSubscription(() => createScrollState({
+    element: () => viewportRef.current,
+    threshold: 5,
+    direction: 'vertical',
+  }))
+
+  return (
+    <ScrollArea
+      className={cn(
+        'relative',
+        `
+          before:pointer-events-none before:absolute before:inset-x-0
+          before:top-0 before:z-10 before:h-4 before:bg-linear-to-b
+          before:to-transparent
+        `,
+        !scroll.top.reached && typeClasses[type].before,
+        `
+          after:pointer-events-none after:absolute after:inset-x-0
+          after:bottom-0 after:z-10 after:h-4 after:bg-linear-to-t
+          after:to-transparent
+        `,
+        !scroll.bottom.reached && typeClasses[type].after,
+        className,
+      )}
+      {...props}
+    />
   )
 }
 

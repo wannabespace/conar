@@ -1,7 +1,7 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
-import { findEnum } from '../../sql/enums'
+import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
 

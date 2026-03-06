@@ -340,6 +340,7 @@ export function TableCell({
     console.error(error)
 
     toast.error(`Failed to update cell "${column.id}"`, {
+      id: `save-cell-error-${column.id}-${error.message}`,
       description: error.message,
       duration: 3000,
     })

@@ -1,9 +1,9 @@
-import type { connectionStoreType } from '.'
+import type { getConnectionResourceStoreType } from '.'
 import { toast } from 'sonner'
-import { connectionStore } from '.'
+import { getConnectionResourceStore } from '.'
 
 export function addTab(id: string, schema: string, table: string, preview?: boolean) {
-  const store = connectionStore(id)
+  const store = getConnectionResourceStore(id)
 
   if (preview) {
     const existingPreviewTabIndex = store.state.tabs.findIndex(tab => tab.preview)
@@ -32,7 +32,7 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
 }
 
 export function renameTab(id: string, schema: string, table: string, newTableName: string) {
-  const store = connectionStore(id)
+  const store = getConnectionResourceStore(id)
 
   const rename = <T extends { table: string, schema: string }>(tab: T) =>
     tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab
@@ -45,7 +45,7 @@ export function renameTab(id: string, schema: string, table: string, newTableNam
 }
 
 export function removeTab(id: string, schema: string, table: string) {
-  const store = connectionStore(id)
+  const store = getConnectionResourceStore(id)
 
   const remove = <T extends { table: string, schema: string }>(tab: T) =>
     tab.table !== table || tab.schema !== schema
@@ -57,8 +57,8 @@ export function removeTab(id: string, schema: string, table: string) {
   } satisfies typeof prev))
 }
 
-export function updateTabs(id: string, newTabs: typeof connectionStoreType.infer['tabs']) {
-  const store = connectionStore(id)
+export function updateTabs(id: string, newTabs: typeof getConnectionResourceStoreType.infer['tabs']) {
+  const store = getConnectionResourceStore(id)
 
   store.setState(state => ({
     ...state,
@@ -69,7 +69,7 @@ export function updateTabs(id: string, newTabs: typeof connectionStoreType.infer
 const MAX_PINNED_TABLES = 10
 
 export function togglePinTable(id: string, schema: string, table: string) {
-  const store = connectionStore(id)
+  const store = getConnectionResourceStore(id)
 
   store.setState((state) => {
     const isPinned = state.pinnedTables.some(
@@ -98,7 +98,7 @@ export function cleanupPinnedTables(
   id: string,
   tables: { schema: string, table: string }[],
 ) {
-  const store = connectionStore(id)
+  const store = getConnectionResourceStore(id)
 
   store.setState((state) => {
     const tablesSet = new Set(tables.map(t => `${t.schema}:${t.table}`))
@@ -117,7 +117,7 @@ export function cleanupPinnedTables(
 }
 
 export function toggleChat(id: string, isVisible?: boolean) {
-  const store = connectionStore(id)
+  const store = getConnectionResourceStore(id)
   store.setState(state => ({
     ...state,
     layout: {
@@ -128,7 +128,7 @@ export function toggleChat(id: string, isVisible?: boolean) {
 }
 
 export function toggleResults(id: string) {
-  const store = connectionStore(id)
+  const store = getConnectionResourceStore(id)
   store.setState(state => ({
     ...state,
     layout: {
@@ -138,8 +138,8 @@ export function toggleResults(id: string) {
   } satisfies typeof state))
 }
 
-export function setChatPosition(id: string, position: typeof connectionStoreType.infer['layout']['chatPosition']) {
-  const store = connectionStore(id)
+export function setChatPosition(id: string, position: typeof getConnectionResourceStoreType.infer['layout']['chatPosition']) {
+  const store = getConnectionResourceStore(id)
   store.setState(state => ({
     ...state,
     layout: {
