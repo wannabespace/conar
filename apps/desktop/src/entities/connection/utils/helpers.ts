@@ -8,10 +8,18 @@ export function hasDangerousSqlKeywords(sql: string) {
   return new RegExp(dangerousKeywordsPattern, 'gi').test(uncommentedLines)
 }
 
+const wordRegex = /\W/
+const beginMatchRegex = /^(BEGIN)\b/i
+const endMatchRegex = /^(END)\b/i
+const dollarMatchRegex = /^\$\$|\$[a-z_]\w*\$/i
+const beginEndBlockDepthRegex = /^\s*BEGIN\b/i
+const commitRollbackRegex = /\b(?:COMMIT|ROLLBACK)\b/i
+const transactionControlLineRegex = /;\s*$/
+
 function isWord(word: string, line: string, idx: number) {
-  return (idx === 0 || /\W/.test(line[idx - 1]!))
+  return (idx === 0 || wordRegex.test(line[idx - 1]!))
     && line.substring(idx, idx + word.length).toUpperCase() === word
-    && (idx + word.length === line.length || /\W/.test(line[idx + word.length]!))
+    && (idx + word.length === line.length || wordRegex.test(line[idx + word.length]!))
 }
 
 export function getEditorQueries(sql: string) {
@@ -31,7 +39,7 @@ export function getEditorQueries(sql: string) {
   let transactionStartLine: number | null = null
 
   const isTransactionControlLine = (line: string): 'begin' | 'commit' | 'rollback' | null => {
-    const s = line.trim().replace(/;\s*$/, '')
+    const s = line.trim().replace(transactionControlLineRegex, '')
     const upper = s.toUpperCase()
     if (upper === 'BEGIN')
       return 'begin'
@@ -44,7 +52,7 @@ export function getEditorQueries(sql: string) {
 
   const splitQueryBySemicolons = (query: string): string[] => {
     const fullTrimmed = query.trim()
-    if (/^\s*BEGIN\b/i.test(fullTrimmed) && /\b(?:COMMIT|ROLLBACK)\b/i.test(fullTrimmed)) {
+    if (beginEndBlockDepthRegex.test(fullTrimmed) && commitRollbackRegex.test(fullTrimmed)) {
       return [fullTrimmed]
     }
 
@@ -56,7 +64,7 @@ export function getEditorQueries(sql: string) {
 
     while (i < query.length) {
       if (currentTag === null) {
-        const dollarMatch = query.substring(i).match(/^\$\$|\$[a-z_]\w*\$/i)
+        const dollarMatch = query.substring(i).match(dollarMatchRegex)
         if (dollarMatch) {
           currentTag = dollarMatch[0]
           currentPart += currentTag
@@ -64,8 +72,8 @@ export function getEditorQueries(sql: string) {
           continue
         }
 
-        const beginMatch = query.substring(i).match(/^(BEGIN)\b/i)
-        const endMatch = query.substring(i).match(/^(END)\b/i)
+        const beginMatch = query.substring(i).match(beginMatchRegex)
+        const endMatch = query.substring(i).match(endMatchRegex)
         if (beginMatch && localBeginEndBlockDepth === 0) {
           localBeginEndBlockDepth++
           currentPart += beginMatch[0]
@@ -117,7 +125,7 @@ export function getEditorQueries(sql: string) {
 
     while (i < line.length) {
       if (currentTag === null) {
-        const dollarMatch = line.substring(i).match(/^\$\$|\$[a-z_]\w*\$/i)
+        const dollarMatch = line.substring(i).match(dollarMatchRegex)
         if (dollarMatch) {
           currentTag = dollarMatch[0]
           i += currentTag.length

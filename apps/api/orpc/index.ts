@@ -1,3 +1,4 @@
+/* eslint-disable e18e/prefer-spread-syntax */
 import type { Context } from './context'
 import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
@@ -13,7 +14,9 @@ async function getUserSecret(userId: string) {
     columns: {
       secret: true,
     },
-    where: (table, { eq }) => eq(table.id, userId),
+    where: {
+      id: userId,
+    },
   })
 
   if (!user) {

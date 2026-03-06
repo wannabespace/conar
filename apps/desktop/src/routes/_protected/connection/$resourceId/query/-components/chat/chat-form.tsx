@@ -180,7 +180,7 @@ export function ChatForm() {
     if (!fileList || fileList.length === 0)
       return
 
-    const fileArr = Array.from(fileList)
+    const fileArr = [...fileList]
 
     store.setState(state => ({
       ...state,

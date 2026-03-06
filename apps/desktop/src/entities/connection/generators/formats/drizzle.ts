@@ -1,3 +1,4 @@
+/* eslint-disable e18e/prefer-static-regex */
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
@@ -183,8 +184,8 @@ export function generateSchemaDrizzle({
 
   const base = templates.drizzleSchemaTemplate({
     table,
-    coreImports: Array.from(coreImports),
-    dialectImports: Array.from(dialectImports),
+    coreImports: [...coreImports],
+    dialectImports: [...dialectImports],
     columns: cols,
     tableFunc,
     dialectImportPath,

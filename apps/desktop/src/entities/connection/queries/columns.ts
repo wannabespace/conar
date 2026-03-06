@@ -26,9 +26,11 @@ export const columnType = type({
     isNullable: Boolean(nullable),
   }))
 
+const clickhouseEnumRegex = /^Enum\d+/
+
 function getClickhouseColumnType(type: string) {
   if (type.startsWith('Enum')) {
-    return type.match(/^Enum\d+/)?.[0] || 'Enum'
+    return type.match(clickhouseEnumRegex)?.[0] || 'Enum'
   }
 
   if (type.startsWith('Nullable(') && type.endsWith(')')) {

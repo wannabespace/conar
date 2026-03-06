@@ -48,11 +48,7 @@ export const tablePageStore = memoize(({ id, schema, table }: { id: string, sche
     || '{}',
   ) as typeof defaultState
 
-  const state = storeState(Object.assign(
-    {},
-    defaultState,
-    persistedState,
-  ))
+  const state = storeState({ ...defaultState, ...persistedState })
 
   if (import.meta.env.DEV && state instanceof type.errors) {
     console.error('Invalid page store state', state.summary)

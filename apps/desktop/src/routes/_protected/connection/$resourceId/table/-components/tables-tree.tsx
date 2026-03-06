@@ -33,7 +33,7 @@ const treeTransition = {
   height: { duration: 0.1 },
 }
 
-const skeletonWidths = Array.from({ length: 10 }, () => `${Math.random() * 40 + 30}%`)
+const skeletonWidths = Array.from({ length: 10 }).map(() => `${Math.random() * 40 + 30}%`)
 
 function Skeleton() {
   return (

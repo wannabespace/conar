@@ -242,7 +242,7 @@ export function QueryLogger({ connectionResource, className }: {
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.style.setProperty('--scroll-top-offset', `${virtualItems[0]?.start ?? 0}px`)
-      scrollRef.current.style.setProperty('--scroll-bottom-offset', `${totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0)}px`)
+      scrollRef.current.style.setProperty('--scroll-bottom-offset', `${totalSize - (virtualItems.at(-1)?.end ?? 0)}px`)
     }
   }, [scrollRef, virtualItems, totalSize])
 

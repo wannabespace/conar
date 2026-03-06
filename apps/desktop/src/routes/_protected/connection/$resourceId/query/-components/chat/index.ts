@@ -1,12 +1,10 @@
-import type { tools } from '@conar/api/ai/tools'
+import type { AITools } from '@conar/api/ai/tools'
 import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
-import type { InferToolInput, InferToolOutput } from 'ai'
 import type { chatsMessages, connectionsResources } from '~/drizzle'
 import { Chat } from '@ai-sdk/react'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { memoize } from '@conar/shared/utils/helpers'
 import { eventIteratorToStream } from '@orpc/client'
-import { encode } from '@toon-format/toon'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
@@ -100,7 +98,7 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
             \`\`\`
             `,
             'Database schemas and tables:',
-            encode(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem }))),
+            JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem })), null, 2),
           ].join('\n'),
         }, { signal: options.abortSignal }))
       },
@@ -142,12 +140,12 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
     },
     onToolCall: async ({ toolCall }) => {
       if (toolCall.toolName === 'columns') {
-        const input = toolCall.input as InferToolInput<typeof tools.columns>
+        const input = toolCall.input as AITools['columns']['input']
         const output = await queryClient.ensureQueryData(resourceTableColumnsQuery({
           connectionResource,
           table: input.tableAndSchema.tableName,
           schema: input.tableAndSchema.schemaName,
-        })) satisfies InferToolOutput<typeof tools.columns>
+        })) satisfies AITools['columns']['output']
 
         chat.addToolOutput({
           tool: 'columns',
@@ -160,7 +158,7 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
           schema: r.schema,
           name: r.name,
           value: v,
-        })))) satisfies InferToolOutput<typeof tools.enums>
+        })))) satisfies AITools['enums']['output']
 
         chat.addToolOutput({
           tool: 'enums',
@@ -169,7 +167,7 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
         })
       }
       else if (toolCall.toolName === 'select') {
-        const input = toolCall.input as InferToolInput<typeof tools.select>
+        const input = toolCall.input as AITools['select']['input']
         const output = await rowsQuery({
           schema: input.tableAndSchema.schemaName,
           table: input.tableAndSchema.tableName,
@@ -197,7 +195,7 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
           .run(connectionResourceToQueryParams(connectionResource))
           .catch(error => ({
             error: error instanceof Error ? error.message : 'Error during the query execution',
-          })) satisfies InferToolOutput<typeof tools.select>
+          })) satisfies AITools['select']['output']
 
         chat.addToolOutput({
           tool: 'select',
