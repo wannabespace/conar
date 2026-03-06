@@ -1,5 +1,6 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
 import type { Store } from '@tanstack/react-store'
+import { memoize } from '@conar/shared/utils/helpers'
 import { createStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
@@ -40,21 +41,10 @@ const defaultState: typeof storeState.infer = {
   selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
 }
 
-function getPageStoreKey(id: string, schema: string, table: string) {
-  return `${id}.${schema}-${table}.store`
-}
-
-const storesMap = new Map<string, Store<typeof storeState.infer>>()
-
-export function tablePageStore({ id, schema, table }: { id: string, schema: string, table: string }) {
-  const key = `${id}.${schema}.${table}`
-
-  if (storesMap.has(key)) {
-    return storesMap.get(key)!
-  }
-
+export const tablePageStore = memoize(({ id, schema, table }: { id: string, schema: string, table: string }) => {
+  const key = `${id}.${schema}-${table}.store`
   const persistedState = JSON.parse(
-    sessionStorage.getItem(getPageStoreKey(id, schema, table))
+    sessionStorage.getItem(key)
     || '{}',
   ) as typeof defaultState
 
@@ -73,7 +63,7 @@ export function tablePageStore({ id, schema, table }: { id: string, schema: stri
   )
 
   store.subscribe((state) => {
-    sessionStorage.setItem(getPageStoreKey(id, schema, table), JSON.stringify({
+    sessionStorage.setItem(key, JSON.stringify({
       selected: state.selected,
       filters: state.filters,
       exact: state.exact,
@@ -84,10 +74,8 @@ export function tablePageStore({ id, schema, table }: { id: string, schema: stri
     } satisfies Omit<typeof state, 'lastClickedIndex' | 'selectionState'>))
   })
 
-  storesMap.set(key, store)
-
   return store
-}
+})
 
 export const PageStoreContext = createContext<Store<typeof storeState.infer>>(null!)
 
