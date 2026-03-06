@@ -121,6 +121,7 @@ const query = createQuery({
         is_primary: true,
       }))
     },
+    sqlite: async () => [],
   },
 })
 

@@ -81,6 +81,16 @@ function ResourceCard({ resource, connection }: { resource: typeof connectionsRe
   )
 }
 
+function getConnectionStringDisplay(connection: typeof connectionsTable.$inferSelect): { display: string, copyValue: string } {
+  if (connection.type === ConnectionType.SQLite) {
+    const path = connection.connectionString.trim().replace(/^file:\/\//, '')
+    return { display: path, copyValue: connection.connectionString }
+  }
+  const url = new SafeURL(connection.connectionString.trim())
+  url.pathname = ''
+  return { display: url.toMasked(), copyValue: url.toString() }
+}
+
 function ConnectionCard({
   connection,
   onRemove,
@@ -90,8 +100,7 @@ function ConnectionCard({
   onRemove: VoidFunction
   onRename: VoidFunction
 }) {
-  const connectionString = new SafeURL(connection.connectionString)
-  connectionString.pathname = ''
+  const { display, copyValue } = getConnectionStringDisplay(connection)
   const [isCopied, setIsCopied] = useState(false)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -102,7 +111,7 @@ function ConnectionCard({
       clearTimeout(timeoutRef.current)
     }
 
-    copy(connectionString.toString())
+    copy(copyValue)
     setIsCopied(true)
 
     timeoutRef.current = setTimeout(() => {
@@ -143,7 +152,7 @@ function ConnectionCard({
             >
               <span className="group flex min-w-0 flex-1 gap-2">
                 <span className="min-w-0 flex-1 truncate">
-                  {connectionString.toMasked()}
+                  {display}
                 </span>
               </span>
               <ContentSwitch

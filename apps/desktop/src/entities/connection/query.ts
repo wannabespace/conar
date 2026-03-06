@@ -1,6 +1,6 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { Type } from 'arktype'
 import type { connectionsResources } from '~/drizzle'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { dialects } from './dialects'
 import { logQuery } from './log'
@@ -8,11 +8,18 @@ import { connectionsCollection } from './sync'
 
 export function connectionResourceToQueryParams(connectionResource: typeof connectionsResources.$inferSelect): QueryParams {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
-  const newConnectionString = new SafeURL(connection.connectionString)
-  newConnectionString.pathname = connectionResource.name
+  let connectionString: string
+  if (connection.type === ConnectionType.SQLite) {
+    connectionString = connection.connectionString
+  }
+  else {
+    const newConnectionString = new SafeURL(connection.connectionString)
+    newConnectionString.pathname = connectionResource.name
+    connectionString = newConnectionString.toString()
+  }
 
   return {
-    connectionString: newConnectionString.toString(),
+    connectionString,
     type: connection.type,
     log: ({ promise, query, values }) => logQuery({ resourceId: connectionResource.id, promise, query, values }),
   }

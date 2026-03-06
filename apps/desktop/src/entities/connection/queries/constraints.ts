@@ -138,6 +138,7 @@ const query = createQuery({
         onUpdate: null,
       }))
     },
+    sqlite: async () => [],
   },
 })
 

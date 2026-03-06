@@ -48,5 +48,11 @@ export const dropTableQuery = memoize(({ table, schema, cascade }: { table: stri
       .schema
       .dropTable(table)
       .execute(),
+    sqlite: db => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .schema
+      .dropTable(table)
+      .execute(),
   },
 }))

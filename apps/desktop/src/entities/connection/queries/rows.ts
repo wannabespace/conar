@@ -147,6 +147,27 @@ export function rowsQuery({
 
         return query.execute()
       },
+      sqlite: (db) => {
+        const order = Object.entries(orderBy ?? {})
+
+        let query = db
+          .withSchema(schema)
+          .withTables<{ [table]: Record<string, unknown> }>()
+          .selectFrom(table)
+          .$if(select !== undefined, qb => qb.select(select!))
+          .$if(select === undefined, qb => qb.selectAll())
+          .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)))
+          .limit(limit)
+          .offset(offset)
+
+        if (order.length > 0) {
+          order.forEach(([column, orderDir]) => {
+            query = query.orderBy(column, orderDir.toLowerCase() as Lowercase<typeof orderDir>)
+          })
+        }
+
+        return query.execute()
+      },
     },
   })
 }

@@ -42,6 +42,8 @@ const query = createQuery({
       .orderBy('name')
       .execute()
       .then(rows => rows.map(r => r.name)),
+
+    sqlite: async () => ['main'],
   },
 })
 

@@ -73,6 +73,8 @@ catalog:
   '@tiptap/starter-kit': ^3.20.1
   '@todesktop/cli': ^1.22.0
   '@todesktop/runtime': ^2.1.3
+  '@toon-format/toon': ^2.1.0
+  '@types/better-sqlite3': ^7.6.13
   '@types/bun': ^1.3.10
   '@types/ioredis-mock': ^8.2.7
   '@types/mssql': ^9.1.9
@@ -89,6 +91,7 @@ catalog:
   babel-plugin-react-compiler: ^1.0.0
   better-auth: ^1.5.4
   better-auth-harmony: ^1.3.1
+  better-sqlite3: ^12.0.0
   change-case: ^5.4.4
   class-variance-authority: ^0.7.1
   clsx: ^2.1.1
@@ -166,5 +169,6 @@ ignoredBuiltDependencies:
   - esbuild
   - protobufjs
 onlyBuiltDependencies:
+  - better-sqlite3
   - electron
   - electron-winstaller

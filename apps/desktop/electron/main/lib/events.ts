@@ -7,6 +7,7 @@ import { getClient as getClickhouseClient } from '../connections/clickhouse'
 import { getPool as getMssqlPool } from '../connections/mssql'
 import { getPool as getMysqlPool } from '../connections/mysql'
 import { getPool as getPgPool } from '../connections/pg'
+import { getDatabase as getSQLiteDatabase } from '../connections/sqlite'
 
 function isConnectionError(error: unknown) {
   if (error instanceof Error) {
@@ -159,6 +160,17 @@ const queryMap = {
     }, retryOptions({ silent, connectionString, query }))
 
     return { result: result.recordset as unknown, duration: performance.now() - start! }
+  },
+  sqlite: async ({ connectionString, sql, values }: { sql: string, values: unknown[], connectionString: string, silent?: boolean }) => {
+    const start = performance.now()
+    const db = getSQLiteDatabase(connectionString)
+
+    const stmt = db.prepare(sql)
+    const result = stmt.reader
+      ? stmt.all(...values)
+      : [stmt.run(...values)]
+
+    return { result: result as unknown, duration: performance.now() - start }
   },
 // eslint-disable-next-line ts/no-explicit-any
 } satisfies Record<ConnectionType, (...args: any[]) => Promise<{

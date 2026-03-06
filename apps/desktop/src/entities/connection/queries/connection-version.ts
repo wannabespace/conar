@@ -64,6 +64,10 @@ export const connectionVersionQuery = memoize((connection: typeof connections.$i
           return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
         }
       },
+      sqlite: async (db) => {
+        const row = await sql<{ version: string }>`SELECT sqlite_version() as version`.execute(db)
+        return row.rows[0]!
+      },
     },
   })
 

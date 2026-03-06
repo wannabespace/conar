@@ -81,10 +81,12 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       rows.some(row => primaryColumns.every(key => row[key] === selectedRow[key])),
     )
 
-    store.setState(state => ({
-      ...state,
-      selected: validSelected,
-    } satisfies typeof state))
+    if (validSelected.length !== store.state.selected.length) {
+      store.setState(state => ({
+        ...state,
+        selected: validSelected,
+      } satisfies typeof state))
+    }
   }, [store, rows, primaryColumns])
 
   const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {

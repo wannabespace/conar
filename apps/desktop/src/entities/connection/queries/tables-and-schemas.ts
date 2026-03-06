@@ -3,6 +3,7 @@ import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { connectionResourceToQueryParams, createQuery } from '../query'
 
 export const connectionSystemNames = {
@@ -10,6 +11,7 @@ export const connectionSystemNames = {
   [ConnectionType.MySQL]: 'mysql',
   [ConnectionType.MSSQL]: 'master',
   [ConnectionType.ClickHouse]: 'default',
+  [ConnectionType.SQLite]: 'main',
 } satisfies Record<ConnectionType, string>
 
 export const tablesAndSchemasType = type({
@@ -62,6 +64,15 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent = false, connecti
         ])
         .where('table_type', '=', 'BASE TABLE')
         .where('table_schema', '=', connectionResource.name || connectionSystemNames.clickhouse)
+        .execute(),
+      sqlite: db => db
+        .selectFrom('sqlite_master')
+        .select([
+          'name as table',
+          sql<string>`'main'`.as('schema'),
+        ])
+        .where('type', '=', 'table')
+        .$if(!showSystem, qb => qb.where('name', 'not like', 'sqlite_%'))
         .execute(),
     },
   })
