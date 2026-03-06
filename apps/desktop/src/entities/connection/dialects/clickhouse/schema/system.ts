@@ -3,7 +3,6 @@
  * @type schema
  */
 export interface System {
-  databases: Databases
   columns: Columns
   parts: Parts
   one: One
@@ -15,19 +14,6 @@ export interface System {
  */
 interface One {
   dummy: number
-}
-
-/**
- * @name databases
- * @type table
- */
-interface Databases {
-  name: string
-  engine: string
-  data_path: string
-  metadata_path: string
-  uuid: string
-  comment: string
 }
 
 /**

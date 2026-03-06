@@ -1,10 +1,11 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { drizzle as drizzlePglite } from 'drizzle-orm/pglite'
 import { env, nodeEnv } from '~/env'
-import { authRelations } from './schema/auth'
-import { chatsRelations } from './schema/chats'
-import { connectionsRelations } from './schema/connections'
-import { queriesRelations } from './schema/queries'
+import * as auth from './schema/auth'
+import * as chats from './schema/chats'
+import * as connections from './schema/connections'
+import * as queries from './schema/queries'
+import * as subscriptions from './schema/subscriptions'
 import '@electric-sql/pglite'
 
 export * from './schema/auth'
@@ -14,11 +15,12 @@ export * from './schema/queries'
 export * from './schema/subscriptions'
 
 const config = {
-  relations: {
-    ...authRelations,
-    ...chatsRelations,
-    ...connectionsRelations,
-    ...queriesRelations,
+  schema: {
+    ...auth,
+    ...connections,
+    ...chats,
+    ...queries,
+    ...subscriptions,
   },
   casing: 'snake_case',
 } satisfies Parameters<typeof drizzle>[1]

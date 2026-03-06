@@ -1,5 +1,4 @@
-import type { Store } from '@tanstack/react-store'
-import { createStore } from '@tanstack/react-store'
+import { Store } from '@tanstack/react-store'
 
 export type ResolvedTheme = 'dark' | 'light'
 export type Theme = ResolvedTheme | 'system'
@@ -52,15 +51,17 @@ export function setTheme(newTheme: Theme) {
 
 export function initThemeStore(defaultTheme: Theme, storageKey: string) {
   if (!themeStore) {
-    themeStore = createStore<ThemeStoreState>({
+    themeStore = new Store<ThemeStoreState>({
       theme: (isBrowser && (localStorage.getItem(storageKey) as Theme)) || defaultTheme,
       resolvedTheme: 'light',
       storageKey,
     })
 
     if (isBrowser) {
-      themeStore.subscribe(() => {
-        updateTheme()
+      themeStore.subscribe(({ prevVal, currentVal }) => {
+        if (prevVal.theme !== currentVal.theme) {
+          updateTheme()
+        }
       })
     }
     updateTheme()

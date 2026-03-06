@@ -1,4 +1,4 @@
-import { defineRelations } from 'drizzle-orm'
+import { relations } from 'drizzle-orm'
 import { pgTable } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { connections } from './connections'
@@ -10,11 +10,9 @@ export const queries = pgTable('queries', ({ uuid, text }) => ({
   query: text().notNull(),
 }))
 
-export const queriesRelations = defineRelations({ queries, connections }, r => ({
-  queries: {
-    connection: r.one.connections({
-      from: r.queries.connectionId,
-      to: r.connections.id,
-    }),
-  },
+export const queriesRelations = relations(queries, ({ one }) => ({
+  connection: one(connections, {
+    fields: [queries.connectionId],
+    references: [connections.id],
+  }),
 }))

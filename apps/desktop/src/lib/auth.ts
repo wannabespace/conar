@@ -1,3 +1,4 @@
+import { anonymousClient } from 'better-auth/client/plugins'
 import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { toast } from 'sonner'
@@ -29,6 +30,7 @@ export const authClient = createAuthClient({
   basePath: '/auth',
   plugins: [
     bearer(),
+    anonymousClient(),
   ],
   fetchOptions: {
     auth: {

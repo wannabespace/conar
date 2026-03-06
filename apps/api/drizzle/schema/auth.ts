@@ -1,4 +1,4 @@
-import { defineRelations } from 'drizzle-orm'
+import { relations } from 'drizzle-orm'
 import {
   boolean,
   index,
@@ -138,57 +138,58 @@ export const invitations = pgTable(
   ],
 )
 
-export const authRelations = defineRelations(
-  { users, sessions, accounts, twoFactors, workspaces, members, invitations },
-  r => ({
-    users: {
-      sessions: r.many.sessions(),
-      accounts: r.many.accounts(),
-      twoFactors: r.many.twoFactors(),
-      members: r.many.members(),
-      invitations: r.many.invitations(),
-    },
-    sessions: {
-      user: r.one.users({
-        from: r.sessions.userId,
-        to: r.users.id,
-      }),
-    },
-    accounts: {
-      user: r.one.users({
-        from: r.accounts.userId,
-        to: r.users.id,
-      }),
-    },
-    twoFactors: {
-      user: r.one.users({
-        from: r.twoFactors.userId,
-        to: r.users.id,
-      }),
-    },
-    workspaces: {
-      members: r.many.members(),
-      invitations: r.many.invitations(),
-    },
-    members: {
-      workspace: r.one.workspaces({
-        from: r.members.workspaceId,
-        to: r.workspaces.id,
-      }),
-      user: r.one.users({
-        from: r.members.userId,
-        to: r.users.id,
-      }),
-    },
-    invitations: {
-      workspace: r.one.workspaces({
-        from: r.invitations.workspaceId,
-        to: r.workspaces.id,
-      }),
-      inviter: r.one.users({
-        from: r.invitations.inviterId,
-        to: r.users.id,
-      }),
-    },
+export const usersRelations = relations(users, ({ many }) => ({
+  sessions: many(sessions),
+  accounts: many(accounts),
+  twoFactors: many(twoFactors),
+  members: many(members),
+  invitations: many(invitations),
+}))
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  users: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
   }),
-)
+}))
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  users: one(users, {
+    fields: [accounts.userId],
+    references: [users.id],
+  }),
+}))
+
+export const twoFactorsRelations = relations(twoFactors, ({ one }) => ({
+  users: one(users, {
+    fields: [twoFactors.userId],
+    references: [users.id],
+  }),
+}))
+
+export const workspacesRelations = relations(workspaces, ({ many }) => ({
+  members: many(members),
+  invitations: many(invitations),
+}))
+
+export const membersRelations = relations(members, ({ one }) => ({
+  workspaces: one(workspaces, {
+    fields: [members.workspaceId],
+    references: [workspaces.id],
+  }),
+  users: one(users, {
+    fields: [members.userId],
+    references: [users.id],
+  }),
+}))
+
+export const invitationsRelations = relations(invitations, ({ one }) => ({
+  workspaces: one(workspaces, {
+    fields: [invitations.workspaceId],
+    references: [workspaces.id],
+  }),
+  users: one(users, {
+    fields: [invitations.inviterId],
+    references: [users.id],
+  }),
+}))

@@ -1,4 +1,3 @@
-/* eslint-disable e18e/prefer-static-regex */
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { Column } from '../components/table/utils'
 
@@ -256,7 +255,7 @@ export function groupIndexes(indexes: Index[] = [], table: string): GroupedIndex
     }
   }
 
-  return [...grouped.values()]
+  return Array.from(grouped.values())
 }
 
 export function filterExplicitIndexes(

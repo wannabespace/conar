@@ -1,17 +1,81 @@
-import type { BetterAuthOptions } from 'better-auth'
+import type { Auth, BetterAuthOptions } from 'better-auth'
 import { AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
+import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
-import { eq } from 'drizzle-orm'
+import { and, count, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
-import { db, users } from '~/drizzle'
+import { chats, connections, db, queries, users } from '~/drizzle'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
 
-export const auth = betterAuth({
+async function getUserSecret(id: string) {
+  const user = await db.query.users.findFirst({ columns: { secret: true }, where: (t, { eq }) => eq(t.id, id) })
+  return user?.secret ?? null
+}
+
+async function targetHasUserData(userId: string) {
+  const [conns, qs, chatCount] = await Promise.all([
+    db.select({ count: count() }).from(connections).where(eq(connections.userId, userId)),
+    db.select({ count: count() }).from(queries).where(eq(queries.userId, userId)),
+    db.select({ count: count() }).from(chats).where(eq(chats.userId, userId)),
+  ])
+  const total = Number(conns[0]?.count ?? 0) + Number(qs[0]?.count ?? 0) + Number(chatCount[0]?.count ?? 0)
+  return total > 0
+}
+
+export async function mergeAnonymousUserData(
+  anonymousUserId: string,
+  targetUserId: string,
+  options?: { trusted?: boolean },
+) {
+  if (anonymousUserId === targetUserId)
+    return
+
+  const trusted = options?.trusted ?? false
+  const [anonSecret, targetSecret, hasData] = await Promise.all([
+    getUserSecret(anonymousUserId),
+    getUserSecret(targetUserId),
+    trusted ? false : targetHasUserData(targetUserId),
+  ])
+  if (!anonSecret || !targetSecret)
+    return
+  if (hasData)
+    return
+
+  const rekey = (encrypted: string) =>
+    encrypt({ text: decrypt({ encryptedText: encrypted, secret: anonSecret }), secret: targetSecret })
+
+  await db.transaction(async (tx) => {
+    const [anonConnections, anonQueries] = await Promise.all([
+      tx.select({ id: connections.id, connectionString: connections.connectionString })
+        .from(connections)
+        .where(eq(connections.userId, anonymousUserId)),
+      tx.select({ id: queries.id, query: queries.query })
+        .from(queries)
+        .where(eq(queries.userId, anonymousUserId)),
+    ])
+
+    await Promise.all([
+      ...anonConnections.map(({ id, connectionString }) =>
+        tx.update(connections)
+          .set({ userId: targetUserId, connectionString: rekey(connectionString) })
+          .where(and(eq(connections.id, id), eq(connections.userId, anonymousUserId))),
+      ),
+      ...anonQueries.map(({ id, query }) =>
+        tx.update(queries)
+          .set({ userId: targetUserId, query: rekey(query) })
+          .where(and(eq(queries.id, id), eq(queries.userId, anonymousUserId))),
+      ),
+      tx.update(chats).set({ userId: targetUserId }).where(eq(chats.userId, anonymousUserId)),
+    ])
+  })
+}
+
+export const auth: Auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
@@ -43,7 +107,14 @@ export const auth = betterAuth({
     }),
     lastLoginMethod(),
     emailHarmony(),
-    anonymous(),
+    anonymous({
+      onLinkAccount: async ({ anonymousUser, newUser }) => {
+        await mergeAnonymousUserData(anonymousUser.user.id, newUser.user.id, { trusted: true })
+      },
+      generateRandomEmail: () => {
+        return `guest-${nanoid()}@guest.conar.app`
+      },
+    }),
   ],
   user: {
     additionalFields: {

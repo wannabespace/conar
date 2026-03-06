@@ -12,12 +12,12 @@
     "./arktype-config": "./src/arktype-config.ts"
   },
   "scripts": {
-    "check-types": "tsc",
-    "test:unit": "bun test"
+    "check-types": "tsc"
   },
   "dependencies": {
     "@conar/configs": "workspace:*",
     "arktype": "catalog:",
+    "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "nanoid": "catalog:"
   }

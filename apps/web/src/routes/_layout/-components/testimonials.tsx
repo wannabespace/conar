@@ -232,13 +232,6 @@ const testimonials: {
     link: 'https://x.com/izadoesdev/status/1955604787585802722',
     children: () => 'okay why did nobody tell me how sexy @conar_app is',
   },
-  {
-    name: 'Thanaen',
-    login: 'thanaen_dev',
-    avatar: '/avatars/thanaen_dev.jpg',
-    link: 'https://x.com/thanaen_dev/status/2029543137375314054',
-    children: () => 'I came for the funny name (I\'m French), I stayed for the app! Very practical and pleasant to use @conar_app',
-  },
 ]
 
 export function Testimonials() {
@@ -266,7 +259,8 @@ export function Testimonials() {
           Testimonials
         </h2>
         <p className={`
-          mx-auto max-w-3xl text-center text-2xl/tight font-bold text-balance
+          mx-auto max-w-3xl text-center text-2xl/tight font-bold
+          text-balance
           sm:text-3xl
         `}
         >

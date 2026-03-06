@@ -3,7 +3,7 @@ import { useStore } from '@tanstack/react-store'
 import { getThemeStore, setTheme } from './theme-store'
 
 export function useTheme() {
-  const store = useStore(getThemeStore(), state => state)
+  const store = useStore(getThemeStore())
 
   return {
     theme: store.theme,

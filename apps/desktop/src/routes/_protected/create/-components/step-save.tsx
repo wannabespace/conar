@@ -1,5 +1,6 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { COLOR_OPTIONS, LABEL_OPTIONS } from '@conar/shared/constants'
+import { isAnonymousUser } from '@conar/shared/utils/auth'
 import { Button } from '@conar/ui/components/button'
 import { ButtonGroup } from '@conar/ui/components/button-group'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
@@ -13,6 +14,7 @@ import { useLiveQuery } from '@tanstack/react-db'
 import { useId } from 'react'
 import { ConnectionDetails } from '~/components/connection-details'
 import { connectionsCollection } from '~/entities/connection/sync'
+import { authClient } from '~/lib/auth'
 
 export function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel, color, setColor }: {
   type: ConnectionType
@@ -27,9 +29,11 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
   color: string | null
   setColor: (color: string | null) => void
 }) {
+  const { data: session } = authClient.useSession()
+  const disableCloudSync = isAnonymousUser(session?.user)
   const { data: connections } = useLiveQuery(q => q.from({ connections: connectionsCollection }).orderBy(({ connections }) => connections.createdAt, 'desc'))
   const existingLabels = connections.map(connection => connection.label).filter((label): label is string => label !== null)
-  const labels = [...new Set([...LABEL_OPTIONS, ...existingLabels])].toSorted()
+  const labels = Array.from(new Set(LABEL_OPTIONS.concat(existingLabels))).toSorted()
   const nameId = useId()
   const labelId = useId()
 
@@ -136,13 +140,25 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="flex items-center gap-2 text-sm">
-              <Checkbox
-                checked={saveInCloud}
-                onCheckedChange={() => setSaveInCloud(!saveInCloud)}
-              />
-              Do you want to sync the password in our cloud?
-            </label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <label className={cn('flex items-center gap-2 text-sm', disableCloudSync && 'cursor-not-allowed')}>
+                  <Checkbox
+                    checked={disableCloudSync ? false : saveInCloud}
+                    onCheckedChange={() => setSaveInCloud(!saveInCloud)}
+                    disabled={disableCloudSync}
+                  />
+                  {disableCloudSync
+                    ? 'Sign in to sync connections to the cloud.'
+                    : 'Do you want to sync the password in our cloud?'}
+                </label>
+              </TooltipTrigger>
+              {disableCloudSync && (
+                <TooltipContent>
+                  Sign in to sync connections to the cloud.
+                </TooltipContent>
+              )}
+            </Tooltip>
             <div className="text-xs text-balance text-muted-foreground/50">
               Syncing passwords in our cloud allows access from any device without re-entering the password.
               <br />

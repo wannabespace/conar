@@ -1,3 +1,4 @@
+import { isAnonymousUser } from '@conar/shared/utils/auth'
 import { generateCodeChallenge, generateVerifier } from '@conar/shared/utils/challenge'
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
 import { MotionButton } from '@conar/ui/components/button'
@@ -6,8 +7,9 @@ import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc, orpcQuery } from '~/lib/orpc'
 
 const AppLogoSquareMotion = motion.create(AppLogoSquare)
 
@@ -20,12 +22,40 @@ function AuthPage() {
   const [verifier, setVerifier] = useState<string | null>(null)
   const [codeChallenge, setCodeChallenge] = useState<string | null>(null)
 
+  const { mutate: signInAnonymous, isPending: isAnonymousPending } = useMutation({
+    mutationFn: async () => {
+      const result = await authClient.signIn.anonymous()
+      if (result.data?.token) {
+        bearerToken.set(result.data.token)
+      }
+
+      if (result.error) {
+        throw new Error(result.error.message)
+      }
+      return result
+    },
+    onSuccess: async () => {
+      await refetch()
+      toast.success('Signed in as guest. Log in anytime to unlock AI and cloud sync.')
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+  })
+
   const signInWithChallenge = async () => {
     const verifier = generateVerifier()
     const codeChallenge = await generateCodeChallenge(verifier)
+    const { data: session } = await authClient.getSession()
+
+    if (isAnonymousUser(session?.user)) {
+      await orpc.account.challenge.linkAnonymous({ codeChallenge })
+    }
+
+    const params = new URLSearchParams({ codeChallenge })
     setVerifier(verifier)
     setCodeChallenge(codeChallenge)
-    window.open(`${import.meta.env.VITE_PUBLIC_WEB_URL}/deep/sign-in?codeChallenge=${codeChallenge}`, '_blank')
+    window.open(`${import.meta.env.VITE_PUBLIC_WEB_URL}/deep/sign-in?${params.toString()}`, '_blank')
   }
 
   const { data, error, isPending } = useQuery(orpcQuery.account.challenge.listen.experimental_liveOptions({
@@ -120,12 +150,13 @@ function AuthPage() {
         <MotionButton
           className="w-full"
           variant="outline"
-          disabled
+          disabled={isAnonymousPending}
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5 }}
           transition={{ duration: 0.5, delay: 0.32 }}
+          onClick={() => signInAnonymous()}
         >
-          Anonymous Sign In (soon)
+          {isAnonymousPending ? 'Signing in...' : 'Continue as Anonymous'}
         </MotionButton>
       </motion.div>
     </div>

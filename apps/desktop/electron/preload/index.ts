@@ -29,7 +29,6 @@ async function handleError(func: () => Promise<any>) {
       console.error(error)
     }
     if (error instanceof Error) {
-      // eslint-disable-next-line e18e/prefer-static-regex
       const message = error.message.replace(/^Error invoking remote method '[^']+': /, '')
       const errorMessage = message.toLowerCase().startsWith('error: ') ? message.slice(7) : message
 

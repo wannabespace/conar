@@ -1,8 +1,7 @@
-/* eslint-disable e18e/prefer-static-regex */
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
-import { findEnum } from '~/entities/connection/queries/enums'
+import { findEnum } from '../../sql/enums'
 import * as templates from '../templates'
 import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
 
@@ -184,8 +183,8 @@ export function generateSchemaDrizzle({
 
   const base = templates.drizzleSchemaTemplate({
     table,
-    coreImports: [...coreImports],
-    dialectImports: [...dialectImports],
+    coreImports: Array.from(coreImports),
+    dialectImports: Array.from(dialectImports),
     columns: cols,
     tableFunc,
     dialectImportPath,

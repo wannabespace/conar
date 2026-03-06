@@ -1,4 +1,3 @@
-import type { InferUITools } from 'ai'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { webSearch } from '@exalabs/ai-sdk'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
@@ -71,5 +70,3 @@ export const tools = {
     queryDocs: queryDocs({ apiKey: env.CONTEXT7_API_KEY }),
   }),
 }
-
-export type AITools = InferUITools<typeof tools>

@@ -1,12 +1,11 @@
-/* eslint-disable e18e/prefer-static-regex */
 import type { QueryParams, SchemaParams } from '..'
 import type { Column } from '../../components/table/utils'
-import type { enumType } from '~/entities/connection/queries/enums'
+import type { enumType } from '../../sql/enums'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { findEnum } from '~/entities/connection/queries/enums'
 import { formatSql } from '~/lib/formatter'
 import { getColdDialect } from '../../dialects'
-import { buildWhere } from '../../queries/rows'
+import { findEnum } from '../../sql/enums'
+import { buildWhere } from '../../sql/rows'
 import * as templates from '../templates'
 import { filterExplicitIndexes, formatValue, getColumnType, groupIndexes, quoteIdentifier } from '../utils'
 
@@ -158,7 +157,7 @@ function buildColumnParts(
 }
 
 function buildPostgresEnumStatements(usedEnums: Map<string, typeof enumType.infer>): string[] {
-  return Array.from(usedEnums.values(), (e) => {
+  return Array.from(usedEnums.values()).map((e) => {
     const vals = e.values.map(v => `'${escapeSqlString(v)}'`).join(', ')
     return `CREATE TYPE "${e.name}" AS ENUM (${vals});`
   })

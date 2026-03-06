@@ -1,6 +1,6 @@
 import type { AppUIMessage } from '~/ai/tools/helpers'
-import { defineRelations } from 'drizzle-orm'
-import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-orm/arktype'
+import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-arktype'
+import { relations } from 'drizzle-orm'
 import { index, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedJson } from '../utils'
@@ -25,7 +25,7 @@ export const chatsUpdateSchema = createUpdateSchema(chats)
 export const chatsMessages = pgTable('chats_messages', {
   ...baseTable,
   chatId: uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
-  parts: encryptedJson().$type<AppUIMessage['parts'][number]>().array().notNull(),
+  parts: encryptedJson().array().$type<AppUIMessage['parts']>().notNull(),
   role: text().$type<AppUIMessage['role']>().notNull(),
   metadata: encryptedJson().$type<NonNullable<AppUIMessage['metadata']>>(),
 }, t => [
@@ -37,22 +37,21 @@ export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
 export const chatsMessagesInsertSchema = createInsertSchema(chatsMessages)
 export const chatsMessagesUpdateSchema = createUpdateSchema(chatsMessages)
 
-export const chatsRelations = defineRelations({ chats, chatsMessages, users, connections }, r => ({
-  chats: {
-    user: r.one.users({
-      from: r.chats.userId,
-      to: r.users.id,
-    }),
-    connection: r.one.connections({
-      from: r.chats.connectionId,
-      to: r.connections.id,
-    }),
-    messages: r.many.chatsMessages(),
-  },
-  chatsMessages: {
-    chat: r.one.chats({
-      from: r.chatsMessages.chatId,
-      to: r.chats.id,
-    }),
-  },
+export const chatsRelations = relations(chats, ({ one, many }) => ({
+  user: one(users, {
+    fields: [chats.userId],
+    references: [users.id],
+  }),
+  connection: one(connections, {
+    fields: [chats.connectionId],
+    references: [connections.id],
+  }),
+  messages: many(chatsMessages),
+}))
+
+export const chatsMessagesRelations = relations(chatsMessages, ({ one }) => ({
+  chat: one(chats, {
+    fields: [chatsMessages.chatId],
+    references: [chats.id],
+  }),
 }))

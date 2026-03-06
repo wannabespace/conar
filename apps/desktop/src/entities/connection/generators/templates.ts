@@ -1,4 +1,3 @@
-/* eslint-disable e18e/prefer-static-regex */
 import { camelCase, pascalCase } from 'change-case'
 import { toLiteralKey } from './utils'
 

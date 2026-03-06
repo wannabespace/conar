@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
-import type { QueryLog } from '../log'
-import type { connectionsResources } from '~/drizzle'
+import type { SqlLog } from '../sql'
+import type { connections } from '~/drizzle'
 import { sleep } from '@conar/shared/utils/helpers'
 import { Button } from '@conar/ui/components/button'
 import { ButtonGroup } from '@conar/ui/components/button-group'
@@ -16,10 +16,9 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useState } from 'react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
-import { getConnectionResourceStore } from '~/entities/connection/store'
+import { connectionStore } from '~/entities/connection/store'
 import { formatSql } from '~/lib/formatter'
-import { queryLogsStore } from '../log'
-import { connectionsCollection } from '../sync'
+import { sqlLogsStore } from '../sql'
 
 type QueryStatus = 'error' | 'success' | 'pending'
 
@@ -34,7 +33,7 @@ function getStatusIcon(status: QueryStatus) {
   return <RiTimeLine className="size-4 text-warning" />
 }
 
-function getQueryStatus(query: QueryLog) {
+function getQueryStatus(query: SqlLog) {
   if (query.error)
     return 'error'
   if (query.result !== null)
@@ -42,9 +41,9 @@ function getQueryStatus(query: QueryLog) {
   return 'pending'
 }
 
-function LogTrigger({ query, className, ...props }: { query: QueryLog } & ComponentProps<'button'>) {
+function LogTrigger({ query, className, ...props }: { query: SqlLog } & ComponentProps<'button'>) {
   const status = getQueryStatus(query)
-  const truncatedQuery = query.query.replaceAll('\n', ' ')
+  const truncatedQuery = query.sql.replaceAll('\n', ' ')
   const shortQuery = truncatedQuery.length > 500 ? `${truncatedQuery.substring(0, 500)}...` : truncatedQuery
 
   return (
@@ -92,11 +91,9 @@ const monacoOptions = {
   folding: false,
 }
 
-function Log({ query, className, connectionResource }: { query: QueryLog, className?: string, connectionResource: typeof connectionsResources.$inferSelect }) {
+function Log({ query, className, connection }: { query: SqlLog, className?: string, connection: typeof connections.$inferSelect }) {
   const [isOpen, setIsOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
-
-  const connection = connectionsCollection.get(connectionResource.connectionId)!
 
   const formatValues = (values?: unknown[]) => {
     if (!values || values.length === 0)
@@ -137,7 +134,7 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
           <div className="space-y-2">
             <Label>Query</Label>
             <Monaco
-              value={formatSql(query.query, connection.type)}
+              value={formatSql(query.sql, connection.type)}
               language="sql"
               options={monacoOptions}
               className="h-[50vh] overflow-hidden rounded-md border"
@@ -186,15 +183,15 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
   )
 }
 
-export function QueryLogger({ connectionResource, className }: {
-  connectionResource: typeof connectionsResources.$inferSelect
+export function QueryLogger({ connection, className }: {
+  connection: typeof connections.$inferSelect
   className?: string
 }) {
   const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
-  const queries = useStore(queryLogsStore, state => Object.values(state[connectionResource.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()))
+  const queries = useStore(sqlLogsStore, state => Object.values(state[connection.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()))
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
   const [isClearing, setIsClearing] = useState(false)
-  const store = getConnectionResourceStore(connectionResource.id)
+  const store = connectionStore(connection.id)
 
   const filteredQueries = useMemo(() => {
     if (statusGroup) {
@@ -218,9 +215,9 @@ export function QueryLogger({ connectionResource, className }: {
 
   const clearQueries = () => {
     setIsClearing(true)
-    queryLogsStore.setState(state => ({
+    sqlLogsStore.setState(state => ({
       ...state,
-      [connectionResource.id]: {},
+      [connection.id]: {},
     } satisfies typeof state))
   }
 
@@ -242,7 +239,7 @@ export function QueryLogger({ connectionResource, className }: {
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.style.setProperty('--scroll-top-offset', `${virtualItems[0]?.start ?? 0}px`)
-      scrollRef.current.style.setProperty('--scroll-bottom-offset', `${totalSize - (virtualItems.at(-1)?.end ?? 0)}px`)
+      scrollRef.current.style.setProperty('--scroll-bottom-offset', `${totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0)}px`)
     }
   }, [scrollRef, virtualItems, totalSize])
 
@@ -335,7 +332,7 @@ export function QueryLogger({ connectionResource, className }: {
             <Log
               key={virtualItem.key}
               query={filteredQueries[virtualItem.index]!}
-              connectionResource={connectionResource}
+              connection={connection}
             />
           ))}
           <div className="h-(--scroll-bottom-offset)" />
