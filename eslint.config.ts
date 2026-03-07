@@ -22,6 +22,7 @@ export default antfu(
       'react-refresh/only-export-components': 'off',
     },
     ignores: [
+      '**/*.md',
       '**/routeTree.gen.ts',
       '**/out/**/*',
       '**/release/**/*',

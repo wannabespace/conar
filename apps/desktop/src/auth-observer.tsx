@@ -14,8 +14,6 @@ export function AuthObserver() {
     select: matches => matches.map(match => match.routeId).at(-1),
   })
 
-  const isSignedInButServerError = !!bearerToken.get() && !!error
-
   useEffect(() => {
     if (data?.user) {
       identifyUser(data.user.id, {
@@ -36,7 +34,7 @@ export function AuthObserver() {
      * An error can be only on the server side
      * To not block the app, we navigate to the home page to continue working
      */
-    if (isSignedInButServerError) {
+    if (!!bearerToken.get() && !!error) {
       if (match === '/auth')
         router.navigate({ to: '/' })
 
@@ -50,12 +48,15 @@ export function AuthObserver() {
     if (!data?.user && match !== '/auth') {
       router.navigate({ to: '/auth' })
     }
-  }, [router, isPending, data?.user, match, isSignedInButServerError])
+  }, [router, isPending, data?.user, match, error])
 
   useEffect(() => {
-    if (isSignedInButServerError && isOnline)
-      toast.error('Something went wrong with our server. You can continue working, but some features may not work as expected.')
-  }, [isSignedInButServerError, isOnline])
+    if (!!bearerToken.get() && !!error && isOnline) {
+      toast.error('Something went wrong with our server. You can continue working, but some features may not work as expected.', {
+        id: 'server-error',
+      })
+    }
+  }, [isOnline, error])
 
   return <></>
 }

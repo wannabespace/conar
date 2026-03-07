@@ -7,7 +7,7 @@
   "schemaVersion": 1,
   "nodeVersion": "24.6.0",
   "packageManager": "pnpm",
-  "pnpmVersion": "10.29.3",
+  "pnpmVersion": "10.30.3",
   "asar": true,
   "copyright": "Copyright © 2024 Wannabe Space, LLC",
   "appFiles": [
