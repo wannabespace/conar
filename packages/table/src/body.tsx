@@ -1,5 +1,5 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
-import type { ComponentProps, CSSProperties } from 'react'
+import type { ComponentProps, CSSProperties, MouseEvent } from 'react'
 import type { ColumnRenderer } from './'
 import { cn } from '@conar/ui/lib/utils'
 import { memo } from 'react'
@@ -57,16 +57,26 @@ const Row = memo(function Row({
   const columns = useTableContext(context => context.columns)
   const virtualColumns = useTableContext(context => context.virtualColumns)
   const rows = useTableContext(context => context.rows)
+  const onRowClick = useTableContext(context => context.onRowClick)
   const row = rows[rowIndex]
   const lastIndex = rows.length - 1
 
+  const handleRowClick = (event: MouseEvent<HTMLDivElement>) => {
+    const target = event.target
+    if (target instanceof Element && target.closest('button, input, [role="checkbox"]'))
+      return
+    onRowClick?.(rowIndex, event)
+  }
+
   return (
     <div
+      role="row"
       className={cn(`
         flex w-fit min-w-full border-b
         hover:bg-accent/30
-      `, rowIndex === lastIndex && `border-b-0`)}
+      `, rowIndex === lastIndex && `border-b-0`, onRowClick && 'cursor-pointer')}
       style={{ height: `${size}px`, contain: 'layout style' }}
+      onClick={onRowClick ? handleRowClick : undefined}
     >
       <div
         aria-hidden="true"

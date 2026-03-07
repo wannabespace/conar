@@ -168,3 +168,7 @@ ignoredBuiltDependencies:
 onlyBuiltDependencies:
   - electron
   - electron-winstaller
+packageExtensions:
+  tailwind-csstree:
+    dependencies:
+      '@eslint/css-tree': ^3.6.0

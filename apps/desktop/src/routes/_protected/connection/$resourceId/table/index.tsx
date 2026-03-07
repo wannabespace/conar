@@ -77,6 +77,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
       ...state,
       lastClickedIndex: null,
       selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
+      detailRowIndex: null,
     } satisfies typeof state))
   })
 
