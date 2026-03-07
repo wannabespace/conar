@@ -61,7 +61,7 @@ const TableItem = memo(({ schema, table, pinned = false, search, onRename, onDro
   search?: string
   onRename: () => void
   onDrop: () => void
-}) {
+}) => {
   const { connectionResource } = Route.useRouteContext()
 
   return (

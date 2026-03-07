@@ -18,7 +18,7 @@ export function useActiveSchema(
       const containerTop = scrollContainer.getBoundingClientRect().top
       const schemaTriggers = scrollContainer.querySelectorAll<HTMLElement>('[data-schema-trigger]')
 
-      const activeId = Array.from(schemaTriggers).reduce<string | null>(
+      const activeId = [...schemaTriggers].reduce<string | null>(
         (passed, trigger) =>
           trigger.getBoundingClientRect().top < containerTop + SCROLL_TOP_OFFSET
             ? trigger.getAttribute('data-schema-trigger')
