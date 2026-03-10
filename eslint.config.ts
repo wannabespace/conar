@@ -32,7 +32,7 @@ export default antfu(
       '**/playwright-report/**/*',
       '**/test-results/**/*',
       '**/.types/**/*',
-      '**/migrations/meta/*.json',
+      '**/migrations/**/*',
       '**/migrations.json',
     ],
   },

@@ -1,6 +1,7 @@
 import { ORPCError } from '@orpc/server'
 import { and, eq } from 'drizzle-orm'
-import { chats, chatsMessages, chatsMessagesInsertSchema, db } from '~/drizzle'
+import { db } from '~/drizzle'
+import { chats, chatsMessages, chatsMessagesInsertSchema } from '~/drizzle/schema'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 
 export const create = orpc

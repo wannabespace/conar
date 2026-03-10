@@ -1,7 +1,8 @@
 import { decrypt } from '@conar/shared/utils/encryption'
 import { ORPCError } from '@orpc/server'
 import { desc, eq } from 'drizzle-orm'
-import { connections, db } from '~/drizzle'
+import { db } from '~/drizzle'
+import { connections } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const list = orpc

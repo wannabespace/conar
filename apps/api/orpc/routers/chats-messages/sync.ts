@@ -1,7 +1,8 @@
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
-import { and, eq, getTableColumns, gt, inArray, notInArray, or } from 'drizzle-orm'
-import { chats, chatsMessages, chatsMessagesSelectSchema, db } from '~/drizzle'
+import { and, eq, getColumns, gt, inArray, notInArray, or } from 'drizzle-orm'
+import { db } from '~/drizzle'
+import { chats, chatsMessages, chatsMessagesSelectSchema } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 const output = type.or(
@@ -31,7 +32,7 @@ export const sync = orpc
     const [updatedItems, newItems, existingIds] = await Promise.all([
       inputIds.length > 0
         ? db
-            .select(getTableColumns(chatsMessages))
+            .select(getColumns(chatsMessages))
             .from(chatsMessages)
             .innerJoin(chats, eq(chatsMessages.chatId, chats.id))
             .where(
@@ -44,7 +45,7 @@ export const sync = orpc
             )
         : [],
       db
-        .select(getTableColumns(chatsMessages))
+        .select(getColumns(chatsMessages))
         .from(chatsMessages)
         .innerJoin(chats, eq(chatsMessages.chatId, chats.id))
         .where(and(

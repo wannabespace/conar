@@ -1,12 +1,13 @@
-import type { BetterAuthOptions } from 'better-auth'
+import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
-import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
-import { db, users } from '~/drizzle'
+import { db } from '~/drizzle'
+import { users } from '~/drizzle/schema'
+import * as schema from '~/drizzle/schema'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
@@ -167,16 +168,15 @@ export const auth = betterAuth({
       generateId: 'uuid',
     },
   },
-  experimental: {
-    joins: true,
-  },
   // TODO: Remove this in future, it needed only for desktop auth in old versions
   account: {
     skipStateCookieCheck: true,
   },
+  // @ts-expect-error types are not updated in the new drizzle adapter
   database: drizzleAdapter(db, {
     provider: 'pg',
     usePlural: true,
+    schema,
   }),
   emailAndPassword: {
     enabled: true,
@@ -216,4 +216,4 @@ export const auth = betterAuth({
       clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
-} satisfies BetterAuthOptions)
+})
