@@ -2,7 +2,8 @@ import { decrypt } from '@conar/shared/utils/encryption'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gt, inArray, notInArray, or } from 'drizzle-orm'
-import { connections, connectionsSelectSchema, db } from '~/drizzle'
+import { db } from '~/drizzle'
+import { connections, connectionsSelectSchema } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 const output = type.or(
