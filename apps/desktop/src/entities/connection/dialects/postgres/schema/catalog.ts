@@ -9,10 +9,12 @@ export interface PgCatalog {
   pg_attribute: PgAttribute
   pg_settings: PgSettings
   pg_policy: PgPolicy
+  pg_database: PgDatabase
   pg_am: PgAm
 }
 
 /**
+<<<<<<< HEAD
  * @name pg_policy
  * @type table
  */
@@ -25,6 +27,15 @@ interface PgPolicy {
   polroles: unknown
   polqual: unknown
   polwithcheck: unknown
+}
+/**
+ * @name pg_database
+ * @type table
+ */
+
+interface PgDatabase {
+  datname: string
+  datistemplate: boolean
 }
 
 /**

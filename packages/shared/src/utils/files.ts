@@ -31,6 +31,8 @@ export function downloadFile(content: string, fileName: string, mimeType: string
   }
 }
 
+const csvValueRegex = /"/g
+
 export function escapeCSVValue(value: unknown) {
   if (value === null || value === undefined)
     return ''
@@ -38,7 +40,7 @@ export function escapeCSVValue(value: unknown) {
   const stringValue = String(value)
 
   if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
-    return `"${stringValue.replace(/"/g, '""')}"`
+    return `"${stringValue.replace(csvValueRegex, '""')}"`
   }
 
   return stringValue

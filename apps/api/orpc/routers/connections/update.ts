@@ -4,7 +4,8 @@ import { SafeURL } from '@conar/shared/utils/safe-url'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
-import { connections, connectionsUpdateSchema, db } from '~/drizzle'
+import { db } from '~/drizzle'
+import { connections, connectionsUpdateSchema } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const update = orpc

@@ -10,6 +10,7 @@ export interface InformationSchema {
   KEY_COLUMN_USAGE: KeyColumnUsage
   STATISTICS: Statistics
   REFERENTIAL_CONSTRAINTS: ReferentialConstraints
+  SCHEMATA: Schemata
   TABLE_PRIVILEGES: TablePrivileges
 }
 
@@ -23,6 +24,18 @@ interface TablePrivileges {
   TABLE_NAME: string
   PRIVILEGE_TYPE: string
   IS_GRANTABLE: string
+}
+
+/**
+ * @name SCHEMATA
+ * @type table
+ */
+interface Schemata {
+  CATALOG_NAME: string
+  SCHEMA_NAME: string
+  DEFAULT_CHARACTER_SET_NAME: string
+  DEFAULT_COLLATION_NAME: string
+  SQL_PATH: string | null
 }
 
 /**

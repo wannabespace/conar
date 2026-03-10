@@ -22,6 +22,7 @@ export default antfu(
       'react-refresh/only-export-components': 'off',
     },
     ignores: [
+      '**/*.md',
       '**/routeTree.gen.ts',
       '**/out/**/*',
       '**/release/**/*',
@@ -31,7 +32,7 @@ export default antfu(
       '**/playwright-report/**/*',
       '**/test-results/**/*',
       '**/.types/**/*',
-      '**/migrations/meta/*.json',
+      '**/migrations/**/*',
       '**/migrations.json',
     ],
   },
