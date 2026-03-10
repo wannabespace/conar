@@ -1,6 +1,7 @@
 import type Stripe from 'stripe'
 import { eq } from 'drizzle-orm'
-import { db, subscriptions } from '~/drizzle'
+import { db } from '~/drizzle'
+import { subscriptions } from '~/drizzle/schema'
 import { env } from '~/env'
 
 export async function subscriptionUpdated(event: Stripe.Event) {

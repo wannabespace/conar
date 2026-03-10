@@ -9,28 +9,28 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { getDisplayValue } from '~/entities/connection/components/table/utils'
-import { connectionRowsQuery } from '~/entities/connection/queries'
-import { TableError } from '~/routes/_protected/database/$id/table/-components/table/table'
-import { TableEmpty } from '~/routes/_protected/database/$id/table/-components/table/table-empty'
-import { TableHeaderCell } from '~/routes/_protected/database/$id/table/-components/table/table-header-cell'
-import { TableInfiniteLoader } from '~/routes/_protected/database/$id/table/-components/table/table-infinite-loader'
-import { TableBodySkeleton } from '~/routes/_protected/database/$id/table/-components/table/table-skeleton'
-import { getColumnSize } from '~/routes/_protected/database/$id/table/-lib'
-import { useTableColumns } from '~/routes/_protected/database/$id/table/-queries/use-columns-query'
+import { resourceRowsQuery } from '~/entities/connection/queries'
+import { TableError } from '~/routes/_protected/connection/$resourceId/table/-components/table/table'
+import { TableEmpty } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-empty'
+import { TableHeaderCell } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-header-cell'
+import { TableInfiniteLoader } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-infinite-loader'
+import { TableBodySkeleton } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-skeleton'
+import { getColumnSize } from '~/routes/_protected/connection/$resourceId/table/-lib'
+import { useTableColumns } from '~/routes/_protected/connection/$resourceId/table/-queries/use-columns-query'
 import { TableCellContent } from './table-cell-content'
 
-const { useLoaderData } = getRouteApi('/_protected/database/$id')
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export function TableCellTable({ schema, table, column, value }: { schema: string, table: string, column: string, value: unknown }) {
-  const { connection } = useLoaderData()
+  const { connectionResource } = useRouteContext()
   const filters = [{
     column,
     ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
     values: [value],
   } satisfies ActiveFilter]
   const orderBy = {}
-  const { data: rows, isPending: isRowsPending, error } = useInfiniteQuery(connectionRowsQuery({
-    connection,
+  const { data: rows, isPending: isRowsPending, error } = useInfiniteQuery(resourceRowsQuery({
+    connectionResource,
     table,
     schema,
     query: {
@@ -38,7 +38,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
       orderBy,
     },
   }))
-  const columns = useTableColumns({ connection, table, schema })
+  const columns = useTableColumns({ connectionResource, table, schema })
   const tableColumns = useMemo(() => {
     if (!columns)
       return []
@@ -107,8 +107,8 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
             asChild
           >
             <Link
-              to="/database/$id/table"
-              params={{ id: connection.id }}
+              to="/connection/$resourceId/table"
+              params={{ resourceId: connectionResource.id }}
               search={{ schema, table, filters, orderBy }}
             >
               <RiCornerRightUpLine className="size-3" />
@@ -133,9 +133,9 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
                       <>
                         <TableBody data-mask className="bg-background" />
                         <TableInfiniteLoader
+                          connectionResource={connectionResource}
                           table={table}
                           schema={schema}
-                          connection={connection}
                           filters={filters}
                           orderBy={orderBy}
                         />

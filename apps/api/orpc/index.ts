@@ -1,8 +1,10 @@
+/* eslint-disable e18e/prefer-spread-syntax */
 import type { Context } from './context'
 import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
-import { db, subscriptions } from '~/drizzle'
+import { db } from '~/drizzle'
+import { subscriptions } from '~/drizzle/schema'
 import { auth } from '~/lib/auth'
 import { redis } from '~/lib/redis'
 
@@ -13,7 +15,9 @@ async function getUserSecret(userId: string) {
     columns: {
       secret: true,
     },
-    where: (table, { eq }) => eq(table.id, userId),
+    where: {
+      id: userId,
+    },
   })
 
   if (!user) {

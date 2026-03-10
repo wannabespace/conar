@@ -1,5 +1,6 @@
 import { type } from 'arktype'
-import { chats, chatsInsertSchema, db } from '~/drizzle'
+import { db } from '~/drizzle'
+import { chats, chatsInsertSchema } from '~/drizzle/schema'
 import { orpc, requireSubscriptionMiddleware } from '~/orpc'
 
 export const create = orpc

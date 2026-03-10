@@ -1,39 +1,39 @@
 import type { LinkProps } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { useMemo } from 'react'
-import { connectionStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 
-export function useConnectionLinkParams(id: string) {
-  const store = connectionStore(id)
+export function useConnectionResourceLinkParams(resourceId: string) {
+  const store = getConnectionResourceStore(resourceId)
   const [lastOpenedTable, lastOpenedPage, lastChatId] = useStore(store, state => [state.lastOpenedTable, state.lastOpenedPage, state.lastOpenedChatId])
 
   return useMemo((): LinkProps => {
     if (lastOpenedPage) {
-      if (lastOpenedPage === '/_protected/database/$id/definitions/enums/') {
+      if (lastOpenedPage === '/_protected/connection/$resourceId/definitions/enums/') {
         return {
-          to: '/database/$id/definitions/enums',
-          params: { id },
+          to: '/connection/$resourceId/definitions/enums',
+          params: { resourceId },
         }
       }
-      else if (lastOpenedPage === '/_protected/database/$id/sql/') {
+      else if (lastOpenedPage === '/_protected/connection/$resourceId/query/') {
         return {
-          to: '/database/$id/sql',
-          params: { id },
+          to: '/connection/$resourceId/query',
+          params: { resourceId },
           search: lastChatId ? { chatId: lastChatId } : undefined,
         }
       }
-      else if (lastOpenedPage === '/_protected/database/$id/visualizer/') {
+      else if (lastOpenedPage === '/_protected/connection/$resourceId/visualizer/') {
         return {
-          to: '/database/$id/visualizer',
-          params: { id },
+          to: '/connection/$resourceId/visualizer',
+          params: { resourceId },
         }
       }
     }
 
     return {
-      to: '/database/$id/table',
-      params: { id },
+      to: '/connection/$resourceId/table',
+      params: { resourceId },
       search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
     }
-  }, [id, lastOpenedPage, lastOpenedTable, lastChatId])
+  }, [resourceId, lastOpenedPage, lastOpenedTable, lastChatId])
 }

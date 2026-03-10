@@ -6,10 +6,10 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiListUnordered, RiTableLine } from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
 import { Handle, Position } from '@xyflow/react'
-import { ENUM_ANCHOR_ID } from '~/routes/_protected/database/$id/visualizer/-constants'
+import { ENUM_ANCHOR_ID } from '~/routes/_protected/connection/$resourceId/visualizer/-constants'
 
 export type NodeType = Node<{
-  databaseId: string
+  resourceId: string
   schema: string
   table: string
   columns: (Column & { searchMatched?: boolean })[]
@@ -118,7 +118,6 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
             )}
           </div>
         </div>
-
         {!data.isEnum && (
           <Button
             size="icon-xs"
@@ -126,8 +125,8 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
             asChild
           >
             <Link
-              to="/database/$id/table"
-              params={{ id: data.databaseId }}
+              to="/connection/$resourceId/table"
+              params={{ resourceId: data.resourceId }}
               search={{ schema: data.schema, table: data.table }}
             >
               <RiExternalLinkLine className="size-3" />
