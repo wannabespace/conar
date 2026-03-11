@@ -1,12 +1,15 @@
 import type { ContextSelector } from '@fluentui/react-context-selector'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 
+export interface QueryToRun {
+  startLineNumber: number
+  endLineNumber: number
+  query: string
+}
+
 interface RunnerContextType {
-  run: (queries: {
-    startLineNumber: number
-    endLineNumber: number
-    query: string
-  }[]) => void
+  run: (queries: QueryToRun[]) => void
+  runExplain: (queries: QueryToRun[]) => void
   save: (query: string) => void
 }
 

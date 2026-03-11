@@ -10,7 +10,7 @@ import { useRunnerContext } from './runner-context'
 import { RunnerEditorQueryZone } from './runner-editor-query-zone'
 
 export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
-  const { connectionResource } = Route.useRouteContext()
+  const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
   const linesWithQueries = useStore(editorQueriesStore, state => state.map(({ startLineNumber }) => startLineNumber))
@@ -21,6 +21,8 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
 
   const run = useRunnerContext(({ run }) => run)
   const runEvent = useEffectEvent(run)
+  const runExplain = useRunnerContext(({ runExplain }) => runExplain)
+  const runExplainEvent = useEffectEvent(runExplain)
   const save = useRunnerContext(({ save }) => save)
   const saveEvent = useEffectEvent(save)
 
@@ -37,9 +39,10 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
     queueMicrotask(() => {
       editor.changeViewZones((changeAccessor) => {
         linesWithQueries.forEach((lineNumber) => {
-          elements[lineNumber] ||= render(
+          elements[lineNumber] = render(
             <RunnerEditorQueryZone
               connectionResource={connectionResource}
+              connectionType={connection.type}
               lineNumber={lineNumber}
               onRun={(index) => {
                 const editorQuery = getQueriesEvent(lineNumber)
@@ -53,6 +56,23 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
                   return
 
                 runEvent([{
+                  startLineNumber: editorQuery.startLineNumber,
+                  endLineNumber: editorQuery.endLineNumber,
+                  query,
+                }])
+              }}
+              onExplain={(index) => {
+                const editorQuery = getQueriesEvent(lineNumber)
+
+                if (!editorQuery)
+                  return
+
+                const query = editorQuery.queries.at(index)
+
+                if (!query)
+                  return
+
+                runExplainEvent([{
                   startLineNumber: editorQuery.startLineNumber,
                   endLineNumber: editorQuery.endLineNumber,
                   query,

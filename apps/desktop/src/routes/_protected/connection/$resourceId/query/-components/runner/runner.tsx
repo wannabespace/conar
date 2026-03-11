@@ -1,4 +1,6 @@
 import type { ComponentRef } from 'react'
+import type { QueryToRun } from './runner-context'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { Button } from '@conar/ui/components/button'
 import { CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
@@ -7,14 +9,14 @@ import { Kbd } from '@conar/ui/components/kbd'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import NumberFlow from '@number-flow/react'
-import { RiBrush2Line, RiCheckLine, RiPlayFill, RiSettings3Line, RiStarLine } from '@remixicon/react'
+import { RiBrush2Line, RiCheckLine, RiPieChart2Line, RiPlayFill, RiSettings3Line, RiStarLine } from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
-import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
+import { hasDangerousSqlKeywords, wrapExplainQuery } from '~/entities/connection/utils'
 import { queriesCollection } from '~/entities/query/sync'
 import { formatSql } from '~/lib/formatter'
 import { runnerQueryOptions } from '.'
@@ -93,6 +95,7 @@ export function Runner() {
   }, [selectedLines, editorQueries])
 
   const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions(connectionResource))
+  const isRunnerExecutionDisabled = fetchStatus === 'fetching' || queriesToRun.length === 0
 
   const runQueries = (queries: typeof queriesToRun) => {
     store.setState(state => ({
@@ -121,10 +124,15 @@ export function Runner() {
     storage: localStorage,
   })
 
+  const runExplainQueries = (queries: QueryToRun[]) => {
+    runQueriesWithAlert(queries.map(q => ({ ...q, query: wrapExplainQuery(q.query) })))
+  }
+
   return (
     <RunnerContext.Provider
       value={{
         run: runQueriesWithAlert,
+        runExplain: runExplainQueries,
         save: q => saveQueryDialogRef.current?.open(q),
       }}
     >
@@ -192,7 +200,7 @@ export function Runner() {
                   Format
                 </Button>
                 <Button
-                  disabled={fetchStatus === 'fetching'}
+                  disabled={isRunnerExecutionDisabled}
                   size="sm"
                   onClick={() => runQueriesWithAlert(queriesToRun)}
                 >
@@ -210,6 +218,29 @@ export function Runner() {
                     />
                   )}
                 </Button>
+                {
+                  connection.type === ConnectionType.Postgres && (
+                    <Button
+                      disabled={isRunnerExecutionDisabled}
+                      size="sm"
+                      onClick={() => runExplainQueries(queriesToRun)}
+                    >
+                      <RiPieChart2Line />
+                      Explain
+                      {' '}
+                      {selectedLines.length > 0 ? 'selected' : 'all'}
+                      {selectedLines.length > 0 && (
+                        <NumberFlow
+                          value={queriesToRun.length}
+                          prefix="("
+                          suffix=")"
+                          className="tabular-nums"
+                          spinTiming={{ duration: 200 }}
+                        />
+                      )}
+                    </Button>
+                  )
+                }
               </div>
             </CardTitle>
           </CardHeader>
