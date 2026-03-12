@@ -158,9 +158,9 @@ const app = new Hono<{
       }, 400)
     }
 
-    function createAnswer(type: 'error' | 'ok', service: string, message: string) {
+    function createAnswer(status: 'error' | 'ok', service: string, message: string) {
       return {
-        status: type,
+        status,
         service,
         message,
       }
