@@ -44,7 +44,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
 })
 
 function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
-  return routesIds.find(route => route.includes('/_protected/connection/$resourceId')) as typeof getConnectionResourceStoreType.infer['lastOpenedPage']
+  return routesIds.findLast(route => route.includes('/_protected/connection/$resourceId')) as typeof getConnectionResourceStoreType.infer['lastOpenedPage']
 }
 
 function DatabasePage() {

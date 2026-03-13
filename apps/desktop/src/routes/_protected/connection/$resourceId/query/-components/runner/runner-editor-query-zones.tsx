@@ -24,7 +24,7 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
   const save = useRunnerContext(({ save }) => save)
   const saveEvent = useEffectEvent(save)
 
-  const elementsRef = useRef<Record<number, HTMLDivElement>>([])
+  const elementsRef = useRef<Record<number, HTMLDivElement>>({})
 
   useEffect(() => {
     if (!monacoRef.current)

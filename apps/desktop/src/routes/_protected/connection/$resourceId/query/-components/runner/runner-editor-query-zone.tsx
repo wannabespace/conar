@@ -33,8 +33,8 @@ export function RunnerEditorQueryZone({
   const isChecked = useStore(store, state => state.selectedLines.includes(lineNumber))
 
   const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
-  const index = useStore(editorQueriesStore, state => state.findIndex(query => query.startLineNumber === lineNumber))
   const { queriesLength, queryNumber } = useStore(editorQueriesStore, (state) => {
+    const index = state.findIndex(query => query.startLineNumber === lineNumber)
     const queriesBefore = state.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
     const queriesLength = state[index]?.queries.length ?? 0
 

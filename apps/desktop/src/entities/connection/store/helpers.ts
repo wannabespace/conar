@@ -123,7 +123,7 @@ export function toggleChat(id: string, isVisible?: boolean) {
     layout: {
       ...state.layout,
       chatVisible: isVisible ?? !state.layout.chatVisible,
-    },
+    } satisfies typeof state.layout,
   } satisfies typeof state))
 }
 
@@ -134,7 +134,7 @@ export function toggleResults(id: string) {
     layout: {
       ...state.layout,
       resultsVisible: !state.layout.resultsVisible,
-    },
+    } satisfies typeof state.layout,
   } satisfies typeof state))
 }
 
@@ -145,6 +145,6 @@ export function setChatPosition(id: string, position: typeof getConnectionResour
     layout: {
       ...state.layout,
       chatPosition: position,
-    },
+    } satisfies typeof state.layout,
   } satisfies typeof state))
 }

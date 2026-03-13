@@ -21,7 +21,7 @@ export const Route = createFileRoute(
   loader: async ({ context, deps }) => {
     return {
       connection: context.connection,
-      chat: await createChat({
+      chat: createChat({
         id: deps.chatId,
         connectionResource: context.connectionResource,
       }),
@@ -60,9 +60,9 @@ function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
 }
 
 function DatabaseSqlPage() {
-  const { connection } = Route.useLoaderData()
+  const { connectionResource } = Route.useRouteContext()
   const { chatId } = Route.useSearch()
-  const store = getConnectionResourceStore(connection.id)
+  const store = getConnectionResourceStore(connectionResource.id)
 
   const { chatVisible, chatPosition } = useStore(store, s => ({
     chatVisible: s.layout.chatVisible,
@@ -77,7 +77,7 @@ function DatabaseSqlPage() {
   }, [chatId, store])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: `sql-layout-${connection.id}`,
+    id: `sql-layout-${connectionResource.id}`,
     storage: localStorage,
   })
 

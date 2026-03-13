@@ -164,7 +164,7 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
               {...params}
             >
               <span className="text-sm font-bold">
-                {connection.name
+                {connectionResource.name
                   .replace(nameRegex, '')
                   .split(whitespaceRegex)
                   .map(word => word[0])
@@ -179,6 +179,9 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
           <span className="flex items-center gap-2 font-medium">
             <ConnectionIcon type={connection.type} className="-ml-1 size-4" />
             {connection.name}
+            {' '}
+            /
+            {connectionResource.name}
           </span>
         </TooltipContent>
       </Tooltip>

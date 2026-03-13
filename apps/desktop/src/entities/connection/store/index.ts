@@ -37,7 +37,6 @@ export const getConnectionResourceStoreType = type({
   queriesToRun: queryToRunType.array(),
   files: 'File[]',
   loggerOpened: 'boolean',
-  chatInput: 'string',
   tabs: tabType.array(),
   tablesSearch: 'string',
   definitionsSearch: 'string',
@@ -74,7 +73,6 @@ const defaultState: typeof getConnectionResourceStoreType.infer = {
   selectedLines: [],
   files: [],
   loggerOpened: false,
-  chatInput: '',
   tabs: [],
   tablesSearch: '',
   definitionsSearch: '',
@@ -111,7 +109,6 @@ export const getConnectionResourceStore = memoize((id: string) => {
       showSystem: state.showSystem,
       selectedLines: state.selectedLines,
       loggerOpened: state.loggerOpened,
-      chatInput: state.chatInput,
       tabs: state.tabs,
       tablesSearch: state.tablesSearch,
       definitionsSearch: state.definitionsSearch,
@@ -119,6 +116,20 @@ export const getConnectionResourceStore = memoize((id: string) => {
       pinnedTables: state.pinnedTables,
       layout: state.layout,
     } satisfies Omit<typeof state, 'queriesToRun' | 'files'>))
+
+    const editorQueries = getEditorQueries(state.query)
+    const currentLineNumbers = editorQueries.map(query => query.startLineNumber)
+    const newSelectedLines = state.selectedLines.filter(line => currentLineNumbers.includes(line))
+
+    if (
+      newSelectedLines.length !== state.selectedLines.length
+      || newSelectedLines.some((line, i) => line !== state.selectedLines[i])
+    ) {
+      store.setState(state => ({
+        ...state,
+        selectedLines: newSelectedLines.toSorted((a, b) => a - b),
+      } satisfies typeof state))
+    }
   })
 
   return store

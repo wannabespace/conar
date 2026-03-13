@@ -6,16 +6,18 @@ import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
+import { type } from 'arktype'
 import { useEffect, useEffectEvent, useRef } from 'react'
+import { useSubscription } from 'seitu/react'
+import { createSessionStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { useSubscription } from '~/entities/user/hooks'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
@@ -58,8 +60,13 @@ export function ChatForm() {
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const input = useStore(store, state => state.chatInput)
-  const { subscription } = useSubscription()
+  const inputValue = createSessionStorageValue({
+    key: `${connectionResource.id}.chat-input`,
+    schema: type('string'),
+    defaultValue: '',
+  })
+  const input = useSubscription(inputValue)
+  const { subscription } = useUserSubscription()
 
   useEffect(() => {
     if (ref.current) {
@@ -86,9 +93,9 @@ export function ChatForm() {
     try {
       const filesBase64 = await getBase64FromFiles(cachedFiles)
 
+      inputValue.set('')
       store.setState(state => ({
         ...state,
-        chatInput: '',
         files: [],
       } satisfies typeof state))
 
@@ -119,9 +126,9 @@ export function ChatForm() {
       })
     }
     catch (error) {
+      inputValue.set(cachedValue)
       store.setState(state => ({
         ...state,
-        chatInput: cachedValue,
         files: cachedFiles,
       } satisfies typeof state))
       toast.error('Failed to send message', {
@@ -147,13 +154,6 @@ export function ChatForm() {
     handleSendEffect(error)
   }, [error, router, chat.id])
 
-  useMountedEffect(() => {
-    store.setState(state => ({
-      ...state,
-      chatInput: input,
-    } satisfies typeof state))
-  }, [input, store])
-
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(orpcQuery.ai.enhancePrompt.mutationOptions({
     onSuccess: (data) => {
       if (input.length < 10) {
@@ -166,10 +166,7 @@ export function ChatForm() {
         })
       }
       else {
-        store.setState(state => ({
-          ...state,
-          chatInput: data,
-        } satisfies typeof state))
+        inputValue.set(data)
       }
     },
   }))
@@ -220,10 +217,7 @@ export function ChatForm() {
           data-mask
           value={input}
           setValue={(value) => {
-            store.setState(state => ({
-              ...state,
-              chatInput: value,
-            } satisfies typeof state))
+            inputValue.set(value)
           }}
           placeholder={isOnline ? 'Generate SQL queries using natural language' : 'Check your internet connection to generate SQL queries'}
           className={`

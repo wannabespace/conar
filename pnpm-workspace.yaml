@@ -72,7 +72,7 @@ catalog:
   '@tiptap/extension-placeholder': ^3.20.1
   '@tiptap/react': ^3.20.1
   '@tiptap/starter-kit': ^3.20.1
-  '@todesktop/cli': ^1.22.0
+  '@todesktop/cli': ^1.23.0
   '@todesktop/runtime': ^2.1.3
   '@types/bun': ^1.3.10
   '@types/ioredis-mock': ^8.2.7
@@ -141,7 +141,7 @@ catalog:
   remark-gfm: ^4.0.1
   resend: ^6.9.3
   resumable-stream: ^2.2.10
-  seitu: ^0.2.4
+  seitu: ^0.3.0
   sonner: ^2.0.7
   sql-formatter: ^15.7.2
   streamdown: ^2.4.0
@@ -162,9 +162,11 @@ catalog:
   zod: ^4.3.6
 ignoredBuiltDependencies:
   - '@firebase/util'
+  - '@prisma/engines'
   - core-js
   - dtrace-provider
   - esbuild
+  - prisma
   - protobufjs
 onlyBuiltDependencies:
   - electron

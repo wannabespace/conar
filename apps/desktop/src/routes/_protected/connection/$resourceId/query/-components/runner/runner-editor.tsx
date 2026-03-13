@@ -126,7 +126,6 @@ export function RunnerEditor() {
   const runEvent = useEffectEvent(run)
 
   useRunnerEditorHooks(monacoRef)
-
   useRunnerEditorQueryZones(monacoRef)
   useRunnerEditorAIZones(monacoRef)
 
