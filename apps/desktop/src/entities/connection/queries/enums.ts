@@ -6,6 +6,7 @@ import { type } from 'arktype'
 import { connectionResourceToQueryParams, createQuery } from '../query'
 
 export const enumType = type({
+  id: 'string',
   schema: 'string',
   name: 'string',
   values: 'string[]',
@@ -18,6 +19,7 @@ export const enumType = type({
 
 export function findEnum(enums: typeof enumType.infer[], column: Column, table: string) {
   return enums.find(e => (e.metadata?.table === table && e.metadata?.column === column.id)
+    || (column.enum && e.id === column.enum)
     || (column.enum && e.name === column.enum)
     || (column.type && e.name === column.type),
   )
@@ -81,7 +83,7 @@ const query = createQuery({
           grouped.get(key)!.values.push(row.value)
         }
         else {
-          grouped.set(key, { schema: row.schema, name: row.name, values: [row.value] })
+          grouped.set(key, { id: row.name, schema: row.schema, name: row.name, values: [row.value] })
         }
       }
 
@@ -111,6 +113,7 @@ const query = createQuery({
 
       return query
         .map(row => ({
+          id: `${row.table}.${row.name}`,
           name: row.name,
           schema: row.schema,
           metadata: {
@@ -145,6 +148,7 @@ const query = createQuery({
 
       return query
         .map(row => ({
+          id: `${row.table}.${row.name}`,
           name: row.name,
           schema: row.schema,
           metadata: {
@@ -172,6 +176,7 @@ const query = createQuery({
 
       return query
         .map(row => ({
+          id: `${row.table}.${row.name}`,
           name: row.name,
           schema: row.schema,
           metadata: {
