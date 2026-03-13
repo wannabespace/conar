@@ -181,6 +181,7 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
             {connection.name}
             {' '}
             /
+            {' '}
             {connectionResource.name}
           </span>
         </TooltipContent>

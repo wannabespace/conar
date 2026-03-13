@@ -81,12 +81,14 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
             />,
           )
 
-          elements[lineNumber]!.style.zIndex = '100'
+          const domNode = elements[lineNumber]!
+
+          domNode.style.zIndex = '100'
 
           const zoneId = changeAccessor.addZone({
             afterLineNumber: lineNumber - 1,
             heightInPx: 32,
-            domNode: elements[lineNumber]!,
+            domNode,
           })
 
           viewZoneIds.push({ id: zoneId, lineNumber })

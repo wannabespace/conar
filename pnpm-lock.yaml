@@ -160,8 +160,8 @@ catalogs:
       specifier: ^4.2.1
       version: 4.2.1
     '@tanstack/react-db':
-      specifier: ^0.1.76
-      version: 0.1.76
+      specifier: ^0.1.77
+      version: 0.1.77
     '@tanstack/react-devtools':
       specifier: ^0.9.13
       version: 0.9.13
@@ -442,8 +442,8 @@ catalogs:
       specifier: ^19.10.0
       version: 19.10.0
     turbo:
-      specifier: ^2.8.16
-      version: 2.8.16
+      specifier: ^2.8.17
+      version: 2.8.17
     tw-animate-css:
       specifier: ^1.4.0
       version: 1.4.0
@@ -520,7 +520,7 @@ importers:
         version: 19.10.0
       turbo:
         specifier: 'catalog:'
-        version: 2.8.16
+        version: 2.8.17
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -747,7 +747,7 @@ importers:
         version: 4.2.1(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2))
       '@tanstack/react-db':
         specifier: 'catalog:'
-        version: 0.1.76(react@19.2.4)(typescript@5.9.3)
+        version: 0.1.77(react@19.2.4)(typescript@5.9.3)
       '@tanstack/react-devtools':
         specifier: 'catalog:'
         version: 0.9.13(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(csstype@3.2.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(solid-js@1.9.11)
@@ -903,7 +903,7 @@ importers:
         version: 4.2.1
       tanstack-db-pglite:
         specifier: 'catalog:'
-        version: 1.0.6(@electric-sql/pglite@0.3.16)(@tanstack/db@0.5.32(typescript@5.9.3))(drizzle-orm@1.0.0-beta.17-67b1795(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.18.0)(arktype@2.2.0)(bun-types@1.3.10)(mssql@12.2.0(@azure/core-client@1.10.1))(mysql2@3.19.1(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6))(zod@4.3.6)
+        version: 1.0.6(@electric-sql/pglite@0.3.16)(@tanstack/db@0.5.33(typescript@5.9.3))(drizzle-orm@1.0.0-beta.17-67b1795(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.18.0)(arktype@2.2.0)(bun-types@1.3.10)(mssql@12.2.0(@azure/core-client@1.10.1))(mysql2@3.19.1(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6))(zod@4.3.6)
       tw-animate-css:
         specifier: 'catalog:'
         version: 1.4.0
@@ -4550,8 +4550,8 @@ packages:
     peerDependencies:
       typescript: '>=4.7'
 
-  '@tanstack/db@0.5.32':
-    resolution: {integrity: sha512-fbeq6DgbqJqZKte5tJkMkwXqWkc5XmwaMq0pyIAUy2bkFaKEEUv6uMaxIinEmDpE+cAQkARnF18RnmQgO4pJHQ==}
+  '@tanstack/db@0.5.33':
+    resolution: {integrity: sha512-8pV3jZdqx6VgDubuddoT0UbQi8RrlCJ/kjhmgPIZUjvfhD3sz1TRMK4RTwOOf/JPTQ4qwWy5ggYLUTJxZZRB2w==}
     peerDependencies:
       typescript: '>=4.7'
 
@@ -4606,8 +4606,8 @@ packages:
   '@tanstack/query-devtools@5.93.0':
     resolution: {integrity: sha512-+kpsx1NQnOFTZsw6HAFCW3HkKg0+2cepGtAWXjiiSOJJ1CtQpt72EE2nyZb+AjAbLRPoeRmPJ8MtQd8r8gsPdg==}
 
-  '@tanstack/react-db@0.1.76':
-    resolution: {integrity: sha512-XqsyBQy6p2dY5Zy99vevUfUMXqYn56jp5pIgGxvh5cBtVrgDoyGgAhqDmla0oeufdNEdr4F9A7ExT47XwLpJgg==}
+  '@tanstack/react-db@0.1.77':
+    resolution: {integrity: sha512-rN9UTE6LrmXrkeo5S1O6zE7altQhFIhWjF0Afbt42/GPsCUGH9sI0Ll24SpkpRsYSorGc06Z5r8LwhzcJvTmiQ==}
     peerDependencies:
       react: '>=16.8.0'
 
@@ -10222,38 +10222,38 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  turbo-darwin-64@2.8.16:
-    resolution: {integrity: sha512-KWa4hUMWrpADC6Q/wIHRkBLw6X6MV9nx6X7hSXbTrrMz0KdaKhmfudUZ3sS76bJFmgArBU25cSc0AUyyrswYxg==}
+  turbo-darwin-64@2.8.17:
+    resolution: {integrity: sha512-ZFkv2hv7zHpAPEXBF6ouRRXshllOavYc+jjcrYyVHvxVTTwJWsBZwJ/gpPzmOKGvkSjsEyDO5V6aqqtZzwVF+Q==}
     cpu: [x64]
     os: [darwin]
 
-  turbo-darwin-arm64@2.8.16:
-    resolution: {integrity: sha512-NBgaqBDLQSZlJR4D5XCkQq6noaO0RvIgwm5eYFJYL3bH5dNu8o0UBpq7C5DYnQI8+ybyoHFjT5/icN4LeUYLow==}
+  turbo-darwin-arm64@2.8.17:
+    resolution: {integrity: sha512-5DXqhQUt24ycEryXDfMNKEkW5TBHs+QmU23a2qxXwwFDaJsWcPo2obEhBxxdEPOv7qmotjad+09RGeWCcJ9JDw==}
     cpu: [arm64]
     os: [darwin]
 
-  turbo-linux-64@2.8.16:
-    resolution: {integrity: sha512-VYPdcCRevI9kR/hr1H1xwXy7QQt/jNKiim1e1mjANBXD2E9VZWMkIL74J1Huad5MbU3/jw7voHOqDPLJPC2p6w==}
+  turbo-linux-64@2.8.17:
+    resolution: {integrity: sha512-KLUbz6w7F73D/Ihh51hVagrKR0/CTsPEbRkvXLXvoND014XJ4BCrQUqSxlQ4/hu+nqp1v5WlM85/h3ldeyujuA==}
     cpu: [x64]
     os: [linux]
 
-  turbo-linux-arm64@2.8.16:
-    resolution: {integrity: sha512-beq8tgUVI3uwkQkXJMiOr/hfxQRw54M3elpBwqgYFfemiK5LhCjjcwO0DkE8GZZfElBIlk+saMAQOZy3885wNQ==}
+  turbo-linux-arm64@2.8.17:
+    resolution: {integrity: sha512-pJK67XcNJH40lTAjFu7s/rUlobgVXyB3A3lDoq+/JccB3hf+SysmkpR4Itlc93s8LEaFAI4mamhFuTV17Z6wOg==}
     cpu: [arm64]
     os: [linux]
 
-  turbo-windows-64@2.8.16:
-    resolution: {integrity: sha512-Ig7b46iUgiOIkea/D3Z7H+zNzvzSnIJcLYFpZLA0RxbUTrbLhv9qIPwv3pT9p/abmu0LXVKHxaOo+p26SuDhzw==}
+  turbo-windows-64@2.8.17:
+    resolution: {integrity: sha512-EijeQ6zszDMmGZLP2vT2RXTs/GVi9rM0zv2/G4rNu2SSRSGFapgZdxgW4b5zUYLVaSkzmkpWlGfPfj76SW9yUg==}
     cpu: [x64]
     os: [win32]
 
-  turbo-windows-arm64@2.8.16:
-    resolution: {integrity: sha512-fOWjbEA2PiE2HEnFQrwNZKYEdjewyPc2no9GmrXklZnTCuMsxeCN39aVlKpKpim03Zq/ykIuvApGwq8ZbfS2Yw==}
+  turbo-windows-arm64@2.8.17:
+    resolution: {integrity: sha512-crpfeMPkfECd4V1PQ/hMoiyVcOy04+bWedu/if89S15WhOalHZ2BYUi6DOJhZrszY+mTT99OwpOsj4wNfb/GHQ==}
     cpu: [arm64]
     os: [win32]
 
-  turbo@2.8.16:
-    resolution: {integrity: sha512-u6e9e3cTTpE2adQ1DYm3A3r8y3LAONEx1jYvJx6eIgSY4bMLxIxs0riWzI0Z/IK903ikiUzRPZ2c1Ph5lVLkhA==}
+  turbo@2.8.17:
+    resolution: {integrity: sha512-YwPsNSqU2f/RXU/+Kcb7cPkPZARxom4+me7LKEdN5jsvy2tpfze3zDZ4EiGrJnvOm9Avu9rK0aaYsP7qZ3iz7A==}
     hasBin: true
 
   tw-animate-css@1.4.0:
@@ -14345,7 +14345,7 @@ snapshots:
       sorted-btree: 1.8.1
       typescript: 5.9.3
 
-  '@tanstack/db@0.5.32(typescript@5.9.3)':
+  '@tanstack/db@0.5.33(typescript@5.9.3)':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@tanstack/db-ivm': 0.1.17(typescript@5.9.3)
@@ -14410,9 +14410,9 @@ snapshots:
 
   '@tanstack/query-devtools@5.93.0': {}
 
-  '@tanstack/react-db@0.1.76(react@19.2.4)(typescript@5.9.3)':
+  '@tanstack/react-db@0.1.77(react@19.2.4)(typescript@5.9.3)':
     dependencies:
-      '@tanstack/db': 0.5.32(typescript@5.9.3)
+      '@tanstack/db': 0.5.33(typescript@5.9.3)
       react: 19.2.4
       use-sync-external-store: 1.6.0(react@19.2.4)
     transitivePeerDependencies:
@@ -14951,10 +14951,10 @@ snapshots:
       firebase: 12.10.0
       git-rev-sync: 3.0.2
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
-      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
+      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
       is-ci: 4.1.0
       is-installed-globally: 0.4.0
       js-yaml: 4.1.1
@@ -18035,7 +18035,7 @@ snapshots:
 
   ini@4.1.1: {}
 
-  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       gradient-string: 1.2.0
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
@@ -18043,14 +18043,14 @@ snapshots:
       react: 17.0.2
       strip-ansi: 6.0.1
 
-  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
       prop-types: 15.8.1
       react: 17.0.2
       terminal-link: 2.1.1
 
-  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       arr-rotate: 1.0.0
       figures: 3.2.0
@@ -18058,7 +18058,7 @@ snapshots:
       lodash.isequal: 4.5.0
       react: 17.0.2
 
-  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       chalk: 4.1.2
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
@@ -20788,10 +20788,10 @@ snapshots:
 
   tailwindcss@4.2.1: {}
 
-  tanstack-db-pglite@1.0.6(@electric-sql/pglite@0.3.16)(@tanstack/db@0.5.32(typescript@5.9.3))(drizzle-orm@1.0.0-beta.17-67b1795(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.18.0)(arktype@2.2.0)(bun-types@1.3.10)(mssql@12.2.0(@azure/core-client@1.10.1))(mysql2@3.19.1(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6))(zod@4.3.6):
+  tanstack-db-pglite@1.0.6(@electric-sql/pglite@0.3.16)(@tanstack/db@0.5.33(typescript@5.9.3))(drizzle-orm@1.0.0-beta.17-67b1795(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.18.0)(arktype@2.2.0)(bun-types@1.3.10)(mssql@12.2.0(@azure/core-client@1.10.1))(mysql2@3.19.1(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6))(zod@4.3.6):
     dependencies:
       '@electric-sql/pglite': 0.3.16
-      '@tanstack/db': 0.5.32(typescript@5.9.3)
+      '@tanstack/db': 0.5.33(typescript@5.9.3)
       drizzle-zod: 0.8.3(drizzle-orm@1.0.0-beta.17-67b1795(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.18.0)(arktype@2.2.0)(bun-types@1.3.10)(mssql@12.2.0(@azure/core-client@1.10.1))(mysql2@3.19.1(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6))(zod@4.3.6)
     optionalDependencies:
       drizzle-orm: 1.0.0-beta.17-67b1795(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.18.0)(arktype@2.2.0)(bun-types@1.3.10)(mssql@12.2.0(@azure/core-client@1.10.1))(mysql2@3.19.1(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6)
@@ -20981,32 +20981,32 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  turbo-darwin-64@2.8.16:
+  turbo-darwin-64@2.8.17:
     optional: true
 
-  turbo-darwin-arm64@2.8.16:
+  turbo-darwin-arm64@2.8.17:
     optional: true
 
-  turbo-linux-64@2.8.16:
+  turbo-linux-64@2.8.17:
     optional: true
 
-  turbo-linux-arm64@2.8.16:
+  turbo-linux-arm64@2.8.17:
     optional: true
 
-  turbo-windows-64@2.8.16:
+  turbo-windows-64@2.8.17:
     optional: true
 
-  turbo-windows-arm64@2.8.16:
+  turbo-windows-arm64@2.8.17:
     optional: true
 
-  turbo@2.8.16:
+  turbo@2.8.17:
     optionalDependencies:
-      turbo-darwin-64: 2.8.16
-      turbo-darwin-arm64: 2.8.16
-      turbo-linux-64: 2.8.16
-      turbo-linux-arm64: 2.8.16
-      turbo-windows-64: 2.8.16
-      turbo-windows-arm64: 2.8.16
+      turbo-darwin-64: 2.8.17
+      turbo-darwin-arm64: 2.8.17
+      turbo-linux-64: 2.8.17
+      turbo-linux-arm64: 2.8.17
+      turbo-windows-64: 2.8.17
+      turbo-windows-arm64: 2.8.17
 
   tw-animate-css@1.4.0: {}
 
