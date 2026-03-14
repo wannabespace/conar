@@ -10,10 +10,10 @@ import NumberFlow from '@number-flow/react'
 import { RiBrush2Line, RiCheckLine, RiPlayFill, RiSettings3Line, RiStarLine } from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { useMemo, useRef, useState } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
-import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
+import { useSubscription } from 'seitu/react'
+import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 import { queriesCollection } from '~/entities/query/sync'
 import { formatSql } from '~/lib/formatter'
@@ -39,17 +39,19 @@ export function Runner() {
   )
   const [isFormatting, setIsFormatting] = useState(false)
   const store = getConnectionResourceStore(connectionResource.id)
-  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
-  const editorQueries = useStore(editorQueriesStore, state => state)
-  const { selectedLines, resultsVisible } = useStore(store, state => ({
-    selectedLines: state.selectedLines,
-    resultsVisible: state.layout.resultsVisible,
-  }))
+  const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
+  const editorQueries = useSubscription(editorQueriesStore, { selector: state => state })
+  const { selectedLines, resultsVisible } = useSubscription(store, {
+    selector: state => ({
+      selectedLines: state.selectedLines,
+      resultsVisible: state.layout.resultsVisible,
+    }),
+  })
 
   function format() {
-    const formatted = formatSql(store.state.query, connection.type)
+    const formatted = formatSql(store.get().query, connection.type)
 
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       query: formatted,
     } satisfies typeof state))
@@ -70,7 +72,7 @@ export function Runner() {
   const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions(connectionResource))
 
   const runQueries = (queries: typeof queriesToRun) => {
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       queriesToRun: queries,
     } satisfies typeof state))

@@ -5,10 +5,10 @@ import { SQL_FILTERS_GROUPED } from '@conar/shared/filters'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
+import { useSubscription } from 'seitu/react'
 import { addTab, getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore, prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
 import { Filters } from './-components/filters/filters'
@@ -153,19 +153,19 @@ function DatabaseTablesPage() {
   const { connectionResource } = Route.useRouteContext()
   const { schema, table } = Route.useSearch()
   const store = getConnectionResourceStore(connectionResource.id)
-  const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
+  const lastOpenedTable = useSubscription(store, { selector: state => state.lastOpenedTable })
 
   const handleLastOpenedTableEvent = useEffectEvent(() => {
     if (schema && table) {
       if (schema !== lastOpenedTable?.schema || table !== lastOpenedTable?.table) {
-        store.setState(state => ({
+        store.set(state => ({
           ...state,
           lastOpenedTable: { schema, table },
         } satisfies typeof state))
       }
     }
     else if (lastOpenedTable !== null) {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         lastOpenedTable: null,
       } satisfies typeof state))

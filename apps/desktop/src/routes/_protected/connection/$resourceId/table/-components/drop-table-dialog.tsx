@@ -50,10 +50,10 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       setConfirmationText('')
       setCascade(false)
       setOpen(true)
-      const lastOpenedTable = store.state.lastOpenedTable
+      const lastOpenedTable = store.get().lastOpenedTable
 
       if (lastOpenedTable?.schema === schema && lastOpenedTable?.table === table) {
-        store.setState(state => ({
+        store.set(state => ({
           ...state,
           lastOpenedTable: null,
         } satisfies typeof state))
@@ -71,7 +71,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       setConfirmationText('')
       setCascade(false)
 
-      queryClient.invalidateQueries(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem }))
+      queryClient.invalidateQueries(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.get().showSystem }))
 
       if (isCurrentTable) {
         await router.navigate({

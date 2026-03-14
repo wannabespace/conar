@@ -16,7 +16,7 @@ import { useSubscription } from 'seitu/react'
 import { createSessionStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
-import { getConnectionResourceStore } from '~/entities/connection/store'
+import { getFilesStore } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
@@ -25,8 +25,8 @@ import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
 
 function Images({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
-  const store = getConnectionResourceStore(connectionResource.id)
-  const files = useStore(store, state => state.files)
+  const store = getFilesStore(connectionResource.id)
+  const files = useSubscription(store)
 
   if (files.length === 0) {
     return null
@@ -41,10 +41,7 @@ function Images({ connectionResource }: { connectionResource: typeof connections
     <ChatImages
       images={images}
       onRemove={(index) => {
-        store.setState(state => ({
-          ...state,
-          files: store.state.files.filter((_, i) => i !== index),
-        } satisfies typeof state))
+        store.set(state => state.filter((_, i) => i !== index))
       }}
     />
   )
@@ -59,7 +56,8 @@ export function ChatForm() {
   const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const { connectionResource } = Route.useRouteContext()
-  const store = getConnectionResourceStore(connectionResource.id)
+  const filesStore = getFilesStore(connectionResource.id)
+  const files = useSubscription(filesStore)
   const inputValue = createSessionStorageValue({
     key: `${connectionResource.id}.chat-input`,
     schema: type('string'),
@@ -88,16 +86,13 @@ export function ChatForm() {
     }
 
     const cachedValue = value.trim()
-    const cachedFiles = [...store.state.files]
+    const cachedFiles = [...files]
 
     try {
       const filesBase64 = await getBase64FromFiles(cachedFiles)
 
       inputValue.set('')
-      store.setState(state => ({
-        ...state,
-        files: [],
-      } satisfies typeof state))
+      filesStore.set([])
 
       chatHooks.callHook('scrollToBottom')
 
@@ -127,10 +122,7 @@ export function ChatForm() {
     }
     catch (error) {
       inputValue.set(cachedValue)
-      store.setState(state => ({
-        ...state,
-        files: cachedFiles,
-      } satisfies typeof state))
+      filesStore.set(cachedFiles)
       toast.error('Failed to send message', {
         description: error instanceof Error
           ? error.message
@@ -179,10 +171,7 @@ export function ChatForm() {
 
     const fileArr = [...fileList]
 
-    store.setState(state => ({
-      ...state,
-      files: [...store.state.files, ...fileArr],
-    } satisfies typeof state))
+    filesStore.set([...files, ...fileArr])
     e.target.value = ''
   }
 
@@ -226,10 +215,7 @@ export function ChatForm() {
           disabled={!subscription || !isOnline}
           onEnter={handleSend}
           onImageAdd={(file) => {
-            store.setState(state => ({
-              ...state,
-              files: [...store.state.files, file],
-            } satisfies typeof state))
+            filesStore.set([...files, file])
           }}
         />
         <div className={`

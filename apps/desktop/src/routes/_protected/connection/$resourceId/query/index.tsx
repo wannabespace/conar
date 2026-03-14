@@ -1,10 +1,10 @@
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
+import { useSubscription } from 'seitu/react'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
@@ -64,13 +64,15 @@ function DatabaseSqlPage() {
   const { chatId } = Route.useSearch()
   const store = getConnectionResourceStore(connectionResource.id)
 
-  const { chatVisible, chatPosition } = useStore(store, s => ({
-    chatVisible: s.layout.chatVisible,
-    chatPosition: s.layout.chatPosition,
-  }))
+  const { chatVisible, chatPosition } = useSubscription(store, {
+    selector: s => ({
+      chatVisible: s.layout.chatVisible,
+      chatPosition: s.layout.chatPosition,
+    }),
+  })
 
   useEffect(() => {
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       lastOpenedChatId: chatId ?? null,
     } satisfies typeof state))

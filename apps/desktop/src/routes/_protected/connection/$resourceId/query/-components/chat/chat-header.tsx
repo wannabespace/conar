@@ -122,7 +122,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
   const removeChat = (chat: typeof chats.$inferSelect) => {
     removeDialogRef.current?.remove(chat, () => {
       if (chat.id === chatId) {
-        store.setState(state => ({
+        store.set(state => ({
           ...state,
           lastOpenedChatId: null,
         } satisfies typeof state))
@@ -160,7 +160,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
               variant="outline"
               size="icon-sm"
               asChild
-              onClick={() => store.setState(state => ({
+              onClick={() => store.set(state => ({
                 ...state,
                 lastOpenedChatId: null,
               } satisfies typeof state))}

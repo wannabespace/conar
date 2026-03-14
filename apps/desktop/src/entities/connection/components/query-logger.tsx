@@ -306,7 +306,7 @@ export function QueryLogger({ connectionResource, className }: {
           <Button
             variant="outline"
             size="icon-sm"
-            onClick={() => store.setState(state => ({ ...state, loggerOpened: false } satisfies typeof state))}
+            onClick={() => store.set(state => ({ ...state, loggerOpened: false } satisfies typeof state))}
           >
             <RiCloseLine className="size-4" />
           </Button>
