@@ -117,12 +117,11 @@ export const filters = orpc
       }),
     })
 
-    // Convert orderBy array back to a record for the rest of the app
     const orderBy = Object.fromEntries(
       (result?.orderBy ?? []).map(({ column, direction }) => [column, direction]),
     )
 
-    if (!context.subscription) {
+    if (!context.subscription && result.filters.length > 0) {
       usage = await redisUsage.increment(context.user.id)
     }
 
