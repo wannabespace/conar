@@ -1,5 +1,5 @@
 import type { CompletionService, ICompletionItem } from 'monaco-sql-languages'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { languages } from 'monaco-editor'
 import { EntityContextType } from 'monaco-sql-languages'
 import { queryClient } from '~/main'

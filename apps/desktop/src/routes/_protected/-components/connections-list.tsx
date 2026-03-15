@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { connections, connectionsResources, connections as connectionsTable } from '~/drizzle'
+import type { connections, connectionsResources, connections as connectionsTable } from '~/drizzle/schema'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'

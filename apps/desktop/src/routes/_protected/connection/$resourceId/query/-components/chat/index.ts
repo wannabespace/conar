@@ -1,6 +1,6 @@
 import type { AITools } from '@conar/api/ai/tools'
 import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
-import type { chatsMessages, connectionsResources } from '~/drizzle'
+import type { chatsMessages, connectionsResources } from '~/drizzle/schema'
 import { Chat } from '@ai-sdk/react'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { memoize } from '@conar/shared/utils/helpers'

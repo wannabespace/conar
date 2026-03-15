@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { chats } from '~/drizzle'
+import type { chats } from '~/drizzle/schema'
 import type { ChatMutationMetadata } from '~/entities/chat/sync'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
