@@ -166,10 +166,10 @@ function EnumBadge({ values, children }: { values: string[], children: ReactNode
           {children}
         </TooltipTrigger>
         <TooltipContent>
-          <div className="text-xs text-muted-foreground">
+          <div className="mb-1 text-xs text-muted-foreground">
             Available values:
           </div>
-          <div className="mt-1 flex flex-wrap gap-1">
+          <div className="flex max-w-sm flex-wrap gap-1">
             {values.map((val: string) => (
               <Badge
                 key={val}
