@@ -36,7 +36,7 @@ async function ensureChat(chatId: string, connectionResourceId: string) {
   return chatsCollection.get(chatId)!
 }
 
-export const createChat = memoize(async ({ id = uuid(), connectionResource }: { id?: string, connectionResource: typeof connectionsResources.$inferSelect }) => {
+export const createChat = memoize(({ id = uuid(), connectionResource }: { id?: string, connectionResource: typeof connectionsResources.$inferSelect }) => {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
 
   const chat = new Chat<AppUIMessage>({
@@ -94,11 +94,11 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
           context: [
             `Current query in the SQL runner:
             \`\`\`sql
-            ${store.state.query.trim() || '-- empty'}
+            ${store.get().query.trim() || '-- empty'}
             \`\`\`
             `,
             'Database schemas and tables:',
-            JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem })), null, 2),
+            JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.get().showSystem })), null, 2),
           ].join('\n'),
         }, { signal: options.abortSignal }))
       },
@@ -106,7 +106,7 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
         throw new Error('Unsupported')
       },
     },
-    messages: (await chatsMessagesCollection.toArrayWhenReady())
+    messages: chatsMessagesCollection.toArray
       .filter(m => m.chatId === id)
       .toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .map(convertToAppUIMessage),

@@ -9,7 +9,7 @@ import { type } from 'arktype'
 import { v7 } from 'uuid'
 import { tools } from '~/ai/tools'
 import { withPosthog } from '~/lib/posthog'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 const model = createRetryable({
   model: anthropic('claude-sonnet-4-5'),
@@ -30,7 +30,7 @@ function handleError(error: unknown) {
 }
 
 export const chat = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(subscriptionMiddleware)
   .use(async ({ context, next }) => {
     context.setHeader('Transfer-Encoding', 'chunked')
     context.setHeader('Connection', 'keep-alive')

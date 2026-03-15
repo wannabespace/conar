@@ -1,14 +1,14 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { Store } from '@tanstack/react-store'
+import type { Store } from 'seitu'
 import type { storeState } from './-store'
 import { SQL_FILTERS_GROUPED } from '@conar/shared/filters'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
+import { useSubscription } from 'seitu/react'
 import { addTab, getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore, prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
 import { Filters } from './-components/filters/filters'
@@ -42,9 +42,9 @@ export const Route = createFileRoute(
         schema: deps.schema!,
         table: deps.table!,
         query: {
-          filters: store.state.filters,
-          orderBy: store.state.orderBy,
-          exact: store.state.exact,
+          filters: store.get().filters,
+          orderBy: store.get().orderBy,
+          exact: store.get().exact,
         },
       })
     }
@@ -73,7 +73,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
   const deps = Route.useLoaderDeps()
 
   const resetSelectionStateEvent = useEffectEvent(() => {
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       lastClickedIndex: null,
       selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
@@ -86,7 +86,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
 
   useEffect(() => {
     if (deps.filters || deps.orderBy) {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         ...(deps.filters ? { filters: deps.filters } : {}),
         ...(deps.orderBy ? { orderBy: deps.orderBy } : {}),
@@ -101,16 +101,16 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
       return
 
     const columnIds = columns.map(col => col.id)
-    const invalidOrderByKeys = Object.keys(store.state.orderBy).filter(key => !columnIds.includes(key))
+    const invalidOrderByKeys = Object.keys(store.get().orderBy).filter(key => !columnIds.includes(key))
 
     if (invalidOrderByKeys.length === 0)
       return
 
     const newOrderBy = Object.fromEntries(
-      Object.entries(store.state.orderBy).filter(([key]) => !invalidOrderByKeys.includes(key)),
+      Object.entries(store.get().orderBy).filter(([key]) => !invalidOrderByKeys.includes(key)),
     )
 
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       orderBy: newOrderBy,
     } satisfies typeof state))
@@ -153,19 +153,19 @@ function DatabaseTablesPage() {
   const { connectionResource } = Route.useRouteContext()
   const { schema, table } = Route.useSearch()
   const store = getConnectionResourceStore(connectionResource.id)
-  const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
+  const lastOpenedTable = useSubscription(store, { selector: state => state.lastOpenedTable })
 
   const handleLastOpenedTableEvent = useEffectEvent(() => {
     if (schema && table) {
       if (schema !== lastOpenedTable?.schema || table !== lastOpenedTable?.table) {
-        store.setState(state => ({
+        store.set(state => ({
           ...state,
           lastOpenedTable: { schema, table },
         } satisfies typeof state))
       }
     }
     else if (lastOpenedTable !== null) {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         lastOpenedTable: null,
       } satisfies typeof state))

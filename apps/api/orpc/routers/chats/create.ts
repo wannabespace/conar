@@ -1,9 +1,10 @@
 import { type } from 'arktype'
-import { chats, chatsInsertSchema, db } from '~/drizzle'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { db } from '~/drizzle'
+import { chats, chatsInsertSchema } from '~/drizzle/schema'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const create = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(subscriptionMiddleware)
   .input(chatsInsertSchema.omit('userId', 'activeStreamId', 'title', 'connectionId')
     // TODO: remove it in the future versions, saving databaseId for backward compatibility
     .and(type({

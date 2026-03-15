@@ -20,6 +20,7 @@ export default antfu(
         additionalHooks: '(useMountedEffect|useAsyncEffect)',
       }],
       'react-refresh/only-export-components': 'off',
+      'pnpm/yaml-enforce-settings': 'off',
     },
     ignores: [
       '**/*.md',
@@ -32,7 +33,7 @@ export default antfu(
       '**/playwright-report/**/*',
       '**/test-results/**/*',
       '**/.types/**/*',
-      '**/migrations/meta/*.json',
+      '**/migrations/**/*',
       '**/migrations.json',
     ],
   },

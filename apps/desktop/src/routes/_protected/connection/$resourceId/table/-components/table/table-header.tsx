@@ -106,7 +106,7 @@ function Header() {
     if (!el || direction === 'up' || direction === 'down')
       return
 
-    setNotVisibleColumns(getNotVisibleColumns(el, columns, store.state))
+    setNotVisibleColumns(getNotVisibleColumns(el, columns, store.get()))
   }, [direction, columns, store], 200)
 
   useEffect(() => {

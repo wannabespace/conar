@@ -23,6 +23,16 @@ function isConnectionError(error: unknown) {
 const MAX_RECONNECTION_ATTEMPTS = 5
 const RECONNECTION_DELAY = 3000
 
+function handleAggregatedError<T>(promise: Promise<T>): Promise<T> {
+  return promise.catch((error) => {
+    if (error instanceof AggregateError) {
+      return Promise.reject(error.errors[0])
+    }
+
+    return Promise.reject(error)
+  })
+}
+
 async function retryIfConnectionError<T>(func: () => Promise<T>, {
   onRetry,
   onError,
@@ -86,21 +96,21 @@ function retryOptions({ silent, connectionString, query }: { silent?: boolean, c
 const queryMap = {
   postgres: async ({ connectionString, query, values, silent }: { query: string, values: unknown[], connectionString: string, silent?: boolean }) => {
     let start = 0
-    const result = await retryIfConnectionError(async () => {
+    const result = await handleAggregatedError(retryIfConnectionError(async () => {
       const pool = await getPgPool(connectionString)
       start = performance.now()
       return pool.query(query, values)
-    }, retryOptions({ silent, connectionString, query }))
+    }, retryOptions({ silent, connectionString, query })))
 
     return { result: result.rows as unknown, duration: performance.now() - start }
   },
   mysql: async ({ connectionString, query, values, silent }: { query: string, values: unknown[], connectionString: string, silent?: boolean }) => {
     let start = 0
-    const [result] = await retryIfConnectionError(async () => {
+    const [result] = await handleAggregatedError(retryIfConnectionError(async () => {
       const pool = await getMysqlPool(connectionString)
       start = performance.now()
       return pool.query(query, values)
-    }, retryOptions({ silent, connectionString, query }))
+    }, retryOptions({ silent, connectionString, query })))
 
     return { result: result as unknown, duration: performance.now() - start! }
   },
@@ -118,17 +128,17 @@ const queryMap = {
       let start = 0
 
       if (isSelect) {
-        const result = await retryIfConnectionError(() => {
+        const result = await handleAggregatedError(retryIfConnectionError(() => {
           start = performance.now()
           return client.query({ query, format: 'JSONEachRow' }).then(result => result.json())
-        }, retryOptions({ silent, connectionString, query }))
+        }, retryOptions({ silent, connectionString, query })))
         return { result, duration: performance.now() - start }
       }
 
-      await retryIfConnectionError(() => {
+      await handleAggregatedError(retryIfConnectionError(() => {
         start = performance.now()
         return client.exec({ query })
-      }, retryOptions({ silent, connectionString, query }))
+      }, retryOptions({ silent, connectionString, query })))
 
       return { result: [], duration: performance.now() - start }
     }
@@ -146,7 +156,7 @@ const queryMap = {
   mssql: async ({ connectionString, query, values, silent }: { query: string, values: unknown[], connectionString: string, silent?: boolean }) => {
     let start = 0
 
-    const result = await retryIfConnectionError(async () => {
+    const result = await handleAggregatedError(retryIfConnectionError(async () => {
       const pool = await getMssqlPool(connectionString)
       let request = pool.request()
 
@@ -156,7 +166,7 @@ const queryMap = {
 
       start = performance.now()
       return request.query(query)
-    }, retryOptions({ silent, connectionString, query }))
+    }, retryOptions({ silent, connectionString, query })))
 
     return { result: result.recordset as unknown, duration: performance.now() - start! }
   },

@@ -12,9 +12,9 @@ import { RiCloseLine, RiSearchLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { animationHooks } from '~/enter'
 import { ReactFlowNode } from '~/entities/connection/components'
 import { resourceConstraintsQuery, resourceTableColumnsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
@@ -39,7 +39,7 @@ function VisualizerPage() {
   const { connection } = Route.useLoaderData()
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useStore(store, state => state.showSystem)
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery({
     ...resourceTablesAndSchemasQuery({ connectionResource, showSystem }),
     select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))),
@@ -229,9 +229,12 @@ function Visualizer({
             setSearchQuery('')
           }}
         >
-          <SelectTrigger className="min-w-[180px] max-w-56">
-            <div className="flex flex-1 items-center gap-2 overflow-hidden text-left">
-              <span className="text-muted-foreground shrink-0">
+          <SelectTrigger className="max-w-56 min-w-[180px]">
+            <div className="
+              flex flex-1 items-center gap-2 overflow-hidden text-left
+            "
+            >
+              <span className="shrink-0 text-muted-foreground">
                 schema
               </span>
               <span className="truncate"><SelectValue placeholder="Select schema" /></span>

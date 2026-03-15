@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
 import type { connectionsResources } from '~/drizzle'
-import type { getConnectionResourceStoreType } from '~/entities/connection/store'
+import type { connectionResourceType } from '~/entities/connection/store'
 import { getOS } from '@conar/shared/utils/os'
 import {
   ContextMenu,
@@ -18,9 +18,9 @@ import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter, useSearch } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { addTab, getConnectionResourceStore, removeTab, updateTabs } from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
@@ -58,9 +58,9 @@ function getQueryOpts(connectionResource: typeof connectionsResources.$inferSele
   const store = tablePageStore({ id: connectionResource.id, schema, table: tableName })
 
   return {
-    filters: store.state.filters,
-    orderBy: store.state.orderBy,
-    exact: store.state.exact,
+    filters: store.get().filters,
+    orderBy: store.get().orderBy,
+    exact: store.get().exact,
   }
 }
 
@@ -75,7 +75,7 @@ function SortableTab({
   currentTabIndex,
   totalTabs,
 }: {
-  item: { id: string, tab: typeof getConnectionResourceStoreType.infer['tabs'][number] }
+  item: { id: string, tab: typeof connectionResourceType.infer['tabs'][number] }
   showSchema: boolean
   connectionResource: typeof connectionsResources.$inferSelect
   onClose: VoidFunction
@@ -197,11 +197,11 @@ export function TablesTabs({
 }) {
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useStore(store, state => state.showSystem)
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })
   const router = useRouter()
-  const tabs = useStore(store, state => state.tabs)
+  const tabs = useSubscription(store, { selector: state => state.tabs })
 
   const addNewTab = useEffectEvent((schema: string, table: string) => {
     const tab = tabs.find(tab => tab.table === table && tab.schema === schema)

@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
-import { db, subscriptions } from '~/drizzle'
+import { db } from '~/drizzle'
+import { subscriptions } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const list = orpc

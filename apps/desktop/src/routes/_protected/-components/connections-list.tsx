@@ -36,48 +36,40 @@ function ResourceCard({ resource, connection }: { resource: typeof connectionsRe
   })
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.15 }}
+    <Link
+      className="
+        flex items-center justify-between gap-2 rounded-md p-2 text-sm
+        text-foreground
+        hover:bg-accent/30
+      "
+      {...params}
     >
-      <Link
-        className="
-          flex items-center justify-between gap-2 rounded-md p-2 text-sm
-          text-foreground
-          hover:bg-accent/30
-        "
-        {...params}
-      >
-        <div className="flex items-center gap-2">
-          <RiDatabase2Line className="size-4 text-muted-foreground" />
-          <span>{resource.name}</span>
+      <div className="flex items-center gap-2">
+        <RiDatabase2Line className="size-4 text-muted-foreground" />
+        <span>{resource.name}</span>
+      </div>
+      {tablesAndSchemas && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>
+            {tablesAndSchemas.totalTables}
+            {' '}
+            table
+            {tablesAndSchemas?.totalTables === 1 ? '' : 's'}
+          </span>
+          {connection.type !== ConnectionType.ClickHouse && (
+            <>
+              <Separator orientation="vertical" className="h-3" />
+              <span>
+                {tablesAndSchemas?.totalSchemas}
+                {' '}
+                schema
+                {tablesAndSchemas?.totalSchemas === 1 ? '' : 's'}
+              </span>
+            </>
+          )}
         </div>
-        {tablesAndSchemas && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>
-              {tablesAndSchemas.totalTables}
-              {' '}
-              table
-              {tablesAndSchemas?.totalTables === 1 ? '' : 's'}
-            </span>
-            {connection.type !== ConnectionType.ClickHouse && (
-              <>
-                <Separator orientation="vertical" className="h-3" />
-                <span>
-                  {tablesAndSchemas?.totalSchemas}
-                  {' '}
-                  schema
-                  {tablesAndSchemas?.totalSchemas === 1 ? '' : 's'}
-                </span>
-              </>
-            )}
-          </div>
-        )}
-      </Link>
-    </motion.div>
+      )}
+    </Link>
   )
 }
 
@@ -218,11 +210,19 @@ function ConnectionCard({
                     )
                   : resources.length > 0
                     ? resources.map(resource => (
-                        <ResourceCard
+                        <motion.div
                           key={resource.id}
-                          resource={resource}
-                          connection={connection}
-                        />
+                          layout
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.98 }}
+                          transition={{ duration: 0.15 }}
+                        >
+                          <ResourceCard
+                            resource={resource}
+                            connection={connection}
+                          />
+                        </motion.div>
                       ))
                     : (
                         <motion.div
