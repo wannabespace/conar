@@ -4,9 +4,9 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import NumberFlow from '@number-flow/react'
 import { RiDeleteBin7Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { deleteRowsQuery, resourceRowsQuery, resourceTableTotalQuery } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
@@ -18,7 +18,7 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
   const { connectionResource } = Route.useRouteContext()
   const [isOpened, setIsOpened] = useState(false)
   const store = usePageStoreContext()
-  const selected = useStore(store, state => state.selected)
+  const selected = useSubscription(store, { selector: state => state.selected })
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
@@ -26,9 +26,9 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
     },
     onSuccess: () => {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
-      queryClient.invalidateQueries(resourceRowsQuery({ connectionResource, table, schema, query: { filters: store.state.filters, orderBy: store.state.orderBy } }))
-      queryClient.invalidateQueries(resourceTableTotalQuery({ connectionResource, table, schema, query: { filters: store.state.filters, exact: store.state.exact } }))
-      store.setState(state => ({
+      queryClient.invalidateQueries(resourceRowsQuery({ connectionResource, table, schema, query: { filters: store.get().filters, orderBy: store.get().orderBy } }))
+      queryClient.invalidateQueries(resourceTableTotalQuery({ connectionResource, table, schema, query: { filters: store.get().filters, exact: store.get().exact } }))
+      store.set(state => ({
         ...state,
         selected: [],
       } satisfies typeof state))

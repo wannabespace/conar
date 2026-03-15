@@ -6,8 +6,8 @@ import { Kbd } from '@conar/ui/components/kbd'
 import { RiBardLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { useMemo, useRef } from 'react'
+import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { resourceEnumsQuery } from '~/entities/connection/queries'
 import { orpcQuery } from '~/lib/orpc'
@@ -17,14 +17,14 @@ import { useTableColumns } from '../../-queries/use-columns-query'
 import { usePageStoreContext } from '../../-store'
 
 export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
-  const isOnline = useStore(appStore, state => state.isOnline)
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const { connectionResource } = Route.useRouteContext()
   const inputRef = useRef<HTMLInputElement>(null)
   const store = usePageStoreContext()
-  const prompt = useStore(store, state => state.prompt)
+  const prompt = useSubscription(store, { selector: state => state.prompt })
   const { mutate: generateFilter, isPending } = useMutation(orpcQuery.ai.filters.mutationOptions({
     onSuccess: (data) => {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         // ...(data.orderBy && Object.keys(data.orderBy).length > 0 ? { orderBy: data.orderBy } : {}),
         filters: data.filters.map(filter => ({
@@ -78,7 +78,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         disabled={isPending || !isOnline}
         value={prompt}
         autoFocus
-        onChange={e => store.setState(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
+        onChange={e => store.set(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
       />
       <Kbd
         asChild

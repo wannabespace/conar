@@ -1,68 +1,32 @@
-import type { Store } from '@tanstack/react-store'
-import { createStore } from '@tanstack/react-store'
+import { type } from 'arktype'
+import { createComputed } from 'seitu'
+import { createLocalStorageValue, createMediaQuery } from 'seitu/web'
 
 export type ResolvedTheme = 'dark' | 'light'
 export type Theme = ResolvedTheme | 'system'
 
-interface ThemeStoreState {
-  theme: Theme
-  resolvedTheme: ResolvedTheme
-  storageKey: string
-}
+export const THEME_STORAGE_KEY = 'conar.theme'
 
-const isBrowser = typeof window !== 'undefined'
+export const themeStore = createLocalStorageValue({
+  key: THEME_STORAGE_KEY,
+  schema: type('string' as type.cast<Theme>),
+  defaultValue: 'system',
+})
 
-let themeStore: Store<ThemeStoreState>
+const mediaQuery = createMediaQuery({ query: '(prefers-color-scheme: dark)' })
 
-const mediaQuery = isBrowser ? window.matchMedia('(prefers-color-scheme: dark)') : null
+export const resolvedThemeComputed = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
+  if (theme === 'system') {
+    return isDark ? 'dark' : 'light'
+  }
+  return theme
+})
 
-function updateTheme() {
-  if (!mediaQuery)
-    return
-
-  const { theme } = themeStore.state
-
+function toggleTheme() {
   const root = window.document.documentElement
 
-  root.classList.remove('light', 'dark')
-
-  if (theme === 'system') {
-    const systemTheme = mediaQuery.matches ? 'dark' : 'light'
-    themeStore.setState(state => ({ ...state, resolvedTheme: systemTheme } satisfies typeof state))
-    root.classList.add(systemTheme)
-    return
-  }
-
-  themeStore.setState(state => ({ ...state, resolvedTheme: theme as ResolvedTheme } satisfies typeof state))
-  root.classList.add(theme)
+  root.classList.value = resolvedThemeComputed.get()
 }
 
-if (mediaQuery) {
-  mediaQuery.addEventListener('change', updateTheme)
-}
-
-export function getThemeStore() {
-  return themeStore
-}
-
-export function setTheme(newTheme: Theme) {
-  localStorage.setItem(themeStore.state.storageKey, newTheme)
-  themeStore.setState(state => ({ ...state, theme: newTheme } satisfies typeof state))
-}
-
-export function initThemeStore(defaultTheme: Theme, storageKey: string) {
-  if (!themeStore) {
-    themeStore = createStore<ThemeStoreState>({
-      theme: (isBrowser && (localStorage.getItem(storageKey) as Theme)) || defaultTheme,
-      resolvedTheme: 'light',
-      storageKey,
-    })
-
-    if (isBrowser) {
-      themeStore.subscribe(() => {
-        updateTheme()
-      })
-    }
-    updateTheme()
-  }
-}
+mediaQuery.subscribe(toggleTheme)
+themeStore.subscribe(toggleTheme)

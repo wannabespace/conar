@@ -5,7 +5,7 @@ import { Switch } from '@conar/ui/components/switch'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCloseLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
+import { useSubscription } from 'seitu/react'
 import { resourceConstraintsQuery, resourceEnumsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { queryClient } from '~/main'
@@ -15,8 +15,8 @@ import { TablesTree } from './tables-tree'
 export function Sidebar() {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useStore(store, state => state.showSystem)
-  const search = useStore(store, state => state.tablesSearch)
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
+  const search = useSubscription(store, { selector: state => state.tablesSearch })
   const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
 
   async function handleRefresh() {
@@ -39,7 +39,7 @@ export function Sidebar() {
                   <TooltipTrigger asChild>
                     <Switch
                       checked={showSystem}
-                      onCheckedChange={value => store.setState(state => ({ ...state, showSystem: value } satisfies typeof state))}
+                      onCheckedChange={value => store.set(state => ({ ...state, showSystem: value } satisfies typeof state))}
                     />
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
@@ -76,7 +76,7 @@ export function Sidebar() {
               placeholder="Search tables"
               className="pr-8"
               value={search}
-              onChange={e => store.setState(state => ({ ...state, tablesSearch: e.target.value } satisfies typeof state))}
+              onChange={e => store.set(state => ({ ...state, tablesSearch: e.target.value } satisfies typeof state))}
             />
             {search && (
               <button
@@ -84,7 +84,7 @@ export function Sidebar() {
                 className={`
                   absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
                 `}
-                onClick={() => store.setState(state => ({ ...state, tablesSearch: '' } satisfies typeof state))}
+                onClick={() => store.set(state => ({ ...state, tablesSearch: '' } satisfies typeof state))}
               >
                 <RiCloseLine className="size-4 text-muted-foreground" />
               </button>

@@ -9,9 +9,9 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiLayoutColumnLine, RiListIndefinite, RiListUnordered, RiTable2 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { resourceEnumsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
@@ -31,7 +31,7 @@ function DatabaseEnumsPage() {
   const { connection, connectionResource } = Route.useRouteContext()
   const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceEnumsQuery({ connectionResource }))
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useStore(store, state => state.showSystem)
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
@@ -75,9 +75,9 @@ function DatabaseEnumsPage() {
         />
         {schemas.length > 1 && (
           <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
-            <SelectTrigger className="min-w-[180px] max-w-56">
+            <SelectTrigger className="max-w-56 min-w-[180px]">
               <div className="flex flex-1 items-center gap-2 overflow-hidden">
-                <span className="text-muted-foreground shrink-0">schema</span>
+                <span className="shrink-0 text-muted-foreground">schema</span>
                 <span className="truncate"><SelectValue /></span>
               </div>
             </SelectTrigger>

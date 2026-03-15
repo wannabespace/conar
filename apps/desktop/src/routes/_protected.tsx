@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent } from 'react'
+import { useSubscription } from 'seitu/react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { useChatsMessagesSync, useChatsSync } from '~/entities/chat/sync'
 import { useConnectionsSync } from '~/entities/connection/sync'
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/_protected')({
 
 function ProtectedLayout() {
   const { data } = authClient.useSession()
-  const isOnline = useStore(appStore, state => state.isOnline)
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
 
   const { sync: syncConnections } = useConnectionsSync()
   const { sync: syncQueries } = useQueriesSync()

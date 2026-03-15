@@ -186,9 +186,6 @@ catalogs:
     '@tanstack/react-start':
       specifier: ^1.166.8
       version: 1.166.8
-    '@tanstack/react-store':
-      specifier: ^0.9.2
-      version: 0.9.2
     '@tanstack/react-virtual':
       specifier: ^3.13.22
       version: 3.13.22
@@ -412,8 +409,8 @@ catalogs:
       specifier: ^2.2.10
       version: 2.2.10
     seitu:
-      specifier: ^0.3.0
-      version: 0.3.0
+      specifier: ^0.4.5
+      version: 0.4.5
     sonner:
       specifier: ^2.0.7
       version: 2.0.7
@@ -766,9 +763,6 @@ importers:
       '@tanstack/react-router-devtools':
         specifier: 'catalog:'
         version: 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@tanstack/router-core@1.166.7)(csstype@3.2.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@tanstack/react-store':
-        specifier: 'catalog:'
-        version: 0.9.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-virtual':
         specifier: 'catalog:'
         version: 3.13.22(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -891,7 +885,7 @@ importers:
         version: 4.0.1
       seitu:
         specifier: 'catalog:'
-        version: 0.3.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.4.5(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -952,9 +946,6 @@ importers:
       '@tanstack/react-start':
         specifier: 'catalog:'
         version: 1.166.8(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2))
-      '@tanstack/react-store':
-        specifier: 'catalog:'
-        version: 0.9.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       arktype:
         specifier: 'catalog:'
         version: 2.2.0
@@ -1197,9 +1188,6 @@ importers:
       '@tanstack/react-router':
         specifier: 'catalog:'
         version: 1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@tanstack/react-store':
-        specifier: 'catalog:'
-        version: 0.9.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-virtual':
         specifier: 'catalog:'
         version: 3.13.22(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1212,6 +1200,9 @@ importers:
       '@xyflow/react':
         specifier: 'catalog:'
         version: 12.10.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      arktype:
+        specifier: 'catalog:'
+        version: 2.2.0
       class-variance-authority:
         specifier: 'catalog:'
         version: 0.7.1
@@ -1244,7 +1235,7 @@ importers:
         version: 4.7.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       seitu:
         specifier: 'catalog:'
-        version: 0.3.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.4.5(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -9713,8 +9704,8 @@ packages:
     resolution: {integrity: sha512-3A6sD0WYP7+QrjbfNA2FN3FsOaGGFoekCVgTyypy53gPxhbkCIjtO6YWgdrfM+n/8sI8JeXZOIxsHjMTNxQ4nQ==}
     engines: {node: ^14.0.0 || >=16.0.0}
 
-  seitu@0.3.0:
-    resolution: {integrity: sha512-oM1freMQ+JyBVFS3PtbGyAUiQrKcHeyjPBjVZSmNqAt45qfoyPR3JManjb5R7VS3FlPZ6QuhRIN8QAzvQFKqzw==}
+  seitu@0.4.5:
+    resolution: {integrity: sha512-nJDXwU89QijYt85Odew8T69wup3O3JkPWK7bzzAgTIxALW1VAjZTI2BnJS8RJO4lx852LAJydNPV7UXYY9r7/A==}
     engines: {node: '>=22'}
     peerDependencies:
       react: '>=19'
@@ -14951,10 +14942,10 @@ snapshots:
       firebase: 12.10.0
       git-rev-sync: 3.0.2
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
-      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
-      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
-      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
-      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
+      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
+      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
+      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
       is-ci: 4.1.0
       is-installed-globally: 0.4.0
       js-yaml: 4.1.1
@@ -18035,7 +18026,7 @@ snapshots:
 
   ini@4.1.1: {}
 
-  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
+  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
     dependencies:
       gradient-string: 1.2.0
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
@@ -18043,14 +18034,14 @@ snapshots:
       react: 17.0.2
       strip-ansi: 6.0.1
 
-  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
+  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
     dependencies:
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
       prop-types: 15.8.1
       react: 17.0.2
       terminal-link: 2.1.1
 
-  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
+  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
     dependencies:
       arr-rotate: 1.0.0
       figures: 3.2.0
@@ -18058,7 +18049,7 @@ snapshots:
       lodash.isequal: 4.5.0
       react: 17.0.2
 
-  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
+  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
     dependencies:
       chalk: 4.1.2
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
@@ -20438,7 +20429,7 @@ snapshots:
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
 
-  seitu@0.3.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  seitu@0.4.5(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       fast-equals: 6.0.0
     optionalDependencies:
