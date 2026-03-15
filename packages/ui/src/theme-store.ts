@@ -1,5 +1,6 @@
 import { type } from 'arktype'
 import { createComputed } from 'seitu'
+import { useSubscription } from 'seitu/react'
 import { createLocalStorageValue, createMediaQuery } from 'seitu/web'
 
 export type ResolvedTheme = 'dark' | 'light'
@@ -15,12 +16,16 @@ export const themeStore = createLocalStorageValue({
 
 const mediaQuery = createMediaQuery({ query: '(prefers-color-scheme: dark)' })
 
-export const resolvedThemeComputed = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
+const resolvedThemeComputed = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
   if (theme === 'system') {
     return isDark ? 'dark' : 'light'
   }
   return theme
 })
+
+export function useResolvedTheme() {
+  return useSubscription(resolvedThemeComputed)
+}
 
 function toggleTheme() {
   const root = window.document.documentElement
