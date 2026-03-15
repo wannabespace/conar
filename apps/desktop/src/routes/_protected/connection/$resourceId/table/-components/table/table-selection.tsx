@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react'
 import { useShiftSelectionClick, useTableContext } from '@conar/table'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
-import { useStore } from '@tanstack/react-store'
+import { useSubscription } from 'seitu/react'
 import { usePageStoreContext } from '../../-store'
 
 function IndeterminateCheckbox({
@@ -55,10 +55,12 @@ export function SelectionHeaderCell({ columnIndex, className, style, keys }: Tab
 }) {
   const rows = useTableContext(state => state.rows)
   const store = usePageStoreContext()
-  const [checked, indeterminate] = useStore(store, state => [
-    !!rows && rows.length > 0 && state.selected.length === rows.length,
-    state.selected.length > 0,
-  ])
+  const [checked, indeterminate] = useSubscription(store, {
+    selector: state => [
+      !!rows && rows.length > 0 && state.selected.length === rows.length,
+      state.selected.length > 0,
+    ],
+  })
 
   return (
     <div
@@ -73,13 +75,13 @@ export function SelectionHeaderCell({ columnIndex, className, style, keys }: Tab
         indeterminate={indeterminate}
         onChange={() => {
           if (checked) {
-            store.setState(state => ({
+            store.set(state => ({
               ...state,
               selected: [],
             } satisfies typeof state))
           }
           else {
-            store.setState(state => ({
+            store.set(state => ({
               ...state,
               selected: rows?.map(row => keys.reduce((acc, key) => ({ ...acc, [key]: row[key] }), {})) ?? [],
             } satisfies typeof state))
@@ -96,11 +98,11 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
 }) {
   const store = usePageStoreContext()
   const rows = useTableContext(state => state.rows)
-  const isSelected = useStore(store, state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])))
-  const [currentSelected, lastClickedIndex] = useStore(store, state => [
+  const isSelected = useSubscription(store, { selector: state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])) })
+  const [currentSelected, lastClickedIndex] = useSubscription(store, { selector: state => [
     state.selected,
     state.lastClickedIndex,
-  ])
+  ] })
 
   const rowKey = keys.reduce<Record<string, string>>(
     (acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] as string }),
@@ -122,7 +124,7 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
       )
     },
     onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         selected,
         selectionState,

@@ -6,12 +6,12 @@ import { Popover, PopoverAnchor, PopoverContent } from '@conar/ui/components/pop
 import { Textarea } from '@conar/ui/components/textarea'
 import { cn } from '@conar/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { MonacoDiff } from '~/components/monaco'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { useSubscription } from '~/entities/user/hooks'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { orpcQuery } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
@@ -29,9 +29,9 @@ export function RunnerEditorAIZone({
   onUpdate: (sql: string) => void
   onClose: () => void
 }) {
-  const isOnline = useStore(appStore, state => state.isOnline)
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const store = getConnectionResourceStore(connectionResource.id)
-  const { subscription } = useSubscription()
+  const { subscription } = useUserSubscription()
   const [prompt, setPrompt] = useState('')
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null)
   const ref = useRef<HTMLTextAreaElement>(null)

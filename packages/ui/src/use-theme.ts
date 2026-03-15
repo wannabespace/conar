@@ -1,14 +1,15 @@
 import type { ResolvedTheme, Theme } from './theme-store'
-import { useStore } from '@tanstack/react-store'
-import { getThemeStore, setTheme } from './theme-store'
+import { useSubscription } from 'seitu/react'
+import { resolvedThemeComputed, themeStore } from './theme-store'
 
 export function useTheme() {
-  const store = useStore(getThemeStore(), state => state)
+  const store = useSubscription(themeStore)
+  const resolvedTheme = useSubscription(resolvedThemeComputed)
 
   return {
-    theme: store.theme,
-    resolvedTheme: store.resolvedTheme,
-    setTheme,
+    theme: store,
+    resolvedTheme,
+    setTheme: themeStore.set,
   }
 }
 

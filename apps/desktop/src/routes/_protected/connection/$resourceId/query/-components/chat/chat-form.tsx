@@ -9,7 +9,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -48,7 +47,7 @@ function Images({ connectionResource }: { connectionResource: typeof connections
 }
 
 export function ChatForm() {
-  const isOnline = useStore(appStore, state => state.isOnline)
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const { chat } = Route.useLoaderData()
   const { error } = Route.useSearch()
   const router = useRouter()

@@ -58,9 +58,9 @@ function getQueryOpts(connectionResource: typeof connectionsResources.$inferSele
   const store = tablePageStore({ id: connectionResource.id, schema, table: tableName })
 
   return {
-    filters: store.state.filters,
-    orderBy: store.state.orderBy,
-    exact: store.state.exact,
+    filters: store.get().filters,
+    orderBy: store.get().orderBy,
+    exact: store.get().exact,
   }
 }
 

@@ -376,7 +376,7 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => appStore.setState(state => ({ ...state, isActionCenterOpen: true } satisfies typeof state))}
+                onClick={() => appStore.set(state => ({ ...state, isActionCenterOpen: true } satisfies typeof state))}
               >
                 <RiCommandLine className="size-4" />
               </Button>

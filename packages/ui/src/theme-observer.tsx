@@ -1,23 +1,13 @@
 import { FunctionOnce } from './lib/function-once'
-import { initThemeStore } from './theme-store'
+import { THEME_STORAGE_KEY } from './theme-store'
 
 export type { ResolvedTheme, Theme } from './theme-store'
 
-interface ThemeObserverProps {
-  defaultTheme?: 'dark' | 'light' | 'system'
-  storageKey?: string
-}
-
-export function ThemeObserver({
-  defaultTheme = 'system',
-  storageKey = 'conar.theme',
-}: ThemeObserverProps) {
-  initThemeStore(defaultTheme, storageKey)
-
+export function ThemeObserver() {
   return (
-    <FunctionOnce param={storageKey}>
-      {(storageKey) => {
-        const theme: string | null = localStorage.getItem(storageKey)
+    <FunctionOnce param={THEME_STORAGE_KEY}>
+      {(key) => {
+        const theme: string | null = localStorage.getItem(key)
 
         if (
           theme === 'dark'
