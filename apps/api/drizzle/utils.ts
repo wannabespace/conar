@@ -1,6 +1,6 @@
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { customType } from 'drizzle-orm/pg-core'
-import { env } from '~/env'
+import { env } from '../env'
 
 export function encryptedJson<TData>(name?: string) {
   return customType<{ data: TData, driverData: string }>({
