@@ -48,7 +48,3 @@ export function getOS(userAgent: string): { type: OS, label: string } {
 
   return osMap.unknown
 }
-
-export function isCtrlAndKey(event: KeyboardEvent, key: string) {
-  return event.key === key && (event.metaKey || event.ctrlKey)
-}

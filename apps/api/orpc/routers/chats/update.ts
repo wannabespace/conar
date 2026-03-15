@@ -1,6 +1,7 @@
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm/sql'
-import { chats, chatsUpdateSchema, db } from '~/drizzle'
+import { db } from '~/drizzle'
+import { chats, chatsUpdateSchema } from '~/drizzle/schema'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const update = orpc

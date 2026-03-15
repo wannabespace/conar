@@ -1,39 +1,39 @@
 catalogMode: prefer
 cleanupUnusedCatalogs: true
 shellEmulator: true
-trustPolicy: no-downgrade
 packages:
   - packages/*
   - apps/*
 catalog:
-  '@ai-sdk/anthropic': ^3.0.42
-  '@ai-sdk/google': ^3.0.26
-  '@ai-sdk/openai': ^3.0.27
+  '@ai-sdk/anthropic': ^3.0.58
+  '@ai-sdk/google': ^3.0.43
+  '@ai-sdk/openai': ^3.0.41
   '@ai-sdk/provider': ^3.0.8
-  '@ai-sdk/react': ^3.0.84
-  '@ai-sdk/xai': ^3.0.54
-  '@antfu/eslint-config': ^7.4.3
-  '@base-ui/react': ^1.2.0
-  '@clickhouse/client': ^1.17.0
-  '@commitlint/cli': ^20.4.1
-  '@commitlint/config-conventional': ^20.4.1
+  '@ai-sdk/react': ^3.0.118
+  '@ai-sdk/xai': ^3.0.67
+  '@antfu/eslint-config': ^7.7.2
+  '@base-ui/react': ^1.3.0
+  '@better-auth/drizzle-adapter': https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913
+  '@clickhouse/client': ^1.18.2
+  '@commitlint/cli': ^20.4.4
+  '@commitlint/config-conventional': ^20.4.4
   '@dagrejs/dagre': 1.1.8
-  '@electric-sql/pglite': ^0.3.15
+  '@electric-sql/pglite': ^0.3.16
   '@eslint-react/eslint-plugin': ^2.13.0
   '@exalabs/ai-sdk': ^1.0.5
   '@faker-js/faker': ^10.3.0
-  '@fluentui/react-context-selector': ^9.2.14
-  '@hackylabs/deep-redact': ^3.0.4
+  '@fluentui/react-context-selector': ^9.2.15
+  '@hackylabs/deep-redact': ^3.0.5
   '@hono/arktype-validator': ^2.0.1
   '@monaco-editor/loader': ^1.7.0
-  '@number-flow/react': ^0.5.11
+  '@number-flow/react': ^0.6.0
   '@octokit/rest': ^22.0.1
-  '@orpc/client': ^1.13.5
-  '@orpc/contract': ^1.13.5
-  '@orpc/server': ^1.13.5
-  '@orpc/tanstack-query': ^1.13.5
+  '@orpc/client': ^1.13.7
+  '@orpc/contract': ^1.13.7
+  '@orpc/server': ^1.13.7
+  '@orpc/tanstack-query': ^1.13.7
   '@playwright/test': ^1.58.2
-  '@posthog/ai': ^7.8.11
+  '@posthog/ai': ^7.11.1
   '@radix-ui/react-accordion': ^1.2.12
   '@radix-ui/react-alert-dialog': ^1.1.15
   '@radix-ui/react-avatar': ^1.1.11
@@ -52,105 +52,104 @@ catalog:
   '@radix-ui/react-toggle': ^1.1.10
   '@radix-ui/react-toggle-group': ^1.1.11
   '@radix-ui/react-tooltip': ^1.2.8
-  '@react-email/components': ^1.0.7
+  '@react-email/components': ^1.0.9
   '@remixicon/react': ^4.9.0
   '@tailwindcss/typography': ^0.5.19
-  '@tailwindcss/vite': ^4.1.18
-  '@tanstack/react-db': ^0.1.69
-  '@tanstack/react-devtools': ^0.9.5
-  '@tanstack/react-form': ^1.28.0
+  '@tailwindcss/vite': ^4.2.1
+  '@tanstack/react-db': ^0.1.77
+  '@tanstack/react-devtools': ^0.9.13
+  '@tanstack/react-form': ^1.28.5
+  '@tanstack/react-hotkeys': ^0.4.1
   '@tanstack/react-query': ^5.90.21
   '@tanstack/react-query-devtools': ^5.91.3
-  '@tanstack/react-router': ^1.159.5
-  '@tanstack/react-router-devtools': ^1.159.5
-  '@tanstack/react-start': ^1.159.5
-  '@tanstack/react-store': ^0.8.0
-  '@tanstack/react-virtual': ^3.13.18
-  '@tanstack/router-plugin': ^1.159.5
-  '@tiptap/extension-placeholder': ^3.19.0
-  '@tiptap/react': ^3.19.0
-  '@tiptap/starter-kit': ^3.19.0
-  '@todesktop/cli': ^1.20.2
+  '@tanstack/react-router': ^1.166.7
+  '@tanstack/react-router-devtools': ^1.166.7
+  '@tanstack/react-start': ^1.166.8
+  '@tanstack/react-virtual': ^3.13.22
+  '@tanstack/router-plugin': ^1.166.7
+  '@tiptap/extension-placeholder': ^3.20.1
+  '@tiptap/react': ^3.20.1
+  '@tiptap/starter-kit': ^3.20.1
+  '@todesktop/cli': ^1.23.0
   '@todesktop/runtime': ^2.1.3
-  '@toon-format/toon': ^2.1.0
-  '@types/bun': ^1.3.9
-  '@types/ioredis-mock': ^8.2.6
+  '@types/bun': ^1.3.10
+  '@types/ioredis-mock': ^8.2.7
   '@types/mssql': ^9.1.9
-  '@types/pg': ^8.16.0
+  '@types/pg': ^8.18.0
   '@types/react': ^19.2.14
   '@types/react-dom': ^19.2.3
   '@upstash/context7-tools-ai-sdk': ^0.2.2
   '@vitejs/plugin-react': ^5.1.4
-  '@xyflow/react': ^12.10.0
-  ai: ^6.0.82
-  ai-retry: ^1.2.0
+  '@xyflow/react': ^12.10.1
+  ai: ^6.0.116
+  ai-retry: ^1.3.0
   arkregex: ^0.0.5
-  arktype: ^2.1.29
+  arktype: ^2.2.0
   babel-plugin-react-compiler: ^1.0.0
-  better-auth: ^1.4.18
-  better-auth-harmony: ^1.2.5
+  better-auth: 1.5.4
+  better-auth-harmony: ^1.3.1
   change-case: ^5.4.4
   class-variance-authority: ^0.7.1
   clsx: ^2.1.1
-  cmdk: 1.1.1
+  cmdk: ^1.1.1
   cross-env: ^10.1.0
   date-fns: ^4.1.0
-  drizzle-arktype: ^0.1.3
-  drizzle-kit: ^0.31.9
-  drizzle-orm: ^0.45.1
+  drizzle-kit: ^1.0.0-beta.17-67b1795
+  drizzle-orm: ^1.0.0-beta.17-67b1795
   electron: 39.2.6
-  electron-builder: ^26.7.0
+  electron-builder: ^26.8.1
   electron-store: ^11.0.2
   electron-vite: ^5.0.0
-  eslint: ^10.0.0
-  eslint-plugin-better-tailwindcss: ^4.3.0
+  eslint: ^10.0.3
+  eslint-plugin-better-tailwindcss: ^4.3.2
   eslint-plugin-react-hooks: ^7.0.1
-  eslint-plugin-react-refresh: ^0.5.0
-  facehash: ^0.0.7
-  hono: ^4.11.9
+  eslint-plugin-react-refresh: ^0.5.2
+  facehash: ^0.1.0
+  hono: ^4.12.7
   hookable: ^6.0.1
   husky: ^9.1.7
   input-otp: ^1.4.2
-  ioredis: ^5.9.3
+  ioredis: ^5.10.0
   ioredis-mock: ^8.13.1
   js-base64: ^3.7.8
   js-confetti: ^0.13.1
   kysely: ^0.28.11
-  lucide-react: ^0.563.0
-  marked: ^17.0.2
+  lucide-react: ^0.577.0
+  marked: ^17.0.4
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
   monaco-themes: ^0.4.8
-  motion: ^12.34.0
+  motion: ^12.36.0
   mssql: ^12.2.0
-  mysql2: ^3.17.0
+  mysql2: ^3.19.1
   nanoid: ^5.1.6
-  nitro: ^3.0.1-alpha.2
+  nitro: ^3.0.260311-beta
   npm-run-all2: ^8.0.4
-  pg: ^8.18.0
+  pg: ^8.20.0
   playwright: ^1.58.2
-  posthog-js: ^1.345.5
-  posthog-node: ^5.24.15
+  posthog-js: ^1.360.1
+  posthog-node: ^5.28.1
   react: ^19.2.4
   react-dom: ^19.2.4
   react-markdown: ^10.1.0
   react-qr-code: ^2.0.18
-  react-resizable-panels: ^4.6.2
-  react-scan: ^0.4.3
-  redis: ^5.10.0
+  react-resizable-panels: ^4.7.2
+  react-scan: ^0.5.3
+  redis: ^5.11.0
   remark-gfm: ^4.0.1
-  resend: ^6.9.2
+  resend: ^6.9.3
   resumable-stream: ^2.2.10
+  seitu: ^0.4.7
   sonner: ^2.0.7
-  sql-formatter: ^15.7.0
-  streamdown: ^2.2.0
-  stripe: ^20.3.1
-  tailwind-merge: ^3.4.0
+  sql-formatter: ^15.7.2
+  streamdown: ^2.4.0
+  stripe: ^20.4.1
+  tailwind-merge: ^3.5.0
   tailwind-scrollbar: ^4.0.2
-  tailwindcss: ^4.1.18
-  tanstack-db-pglite: ^1.0.5
-  taze: ^19.9.2
-  turbo: ^2.8.9
+  tailwindcss: ^4.2.1
+  tanstack-db-pglite: ^1.0.6
+  taze: ^19.10.0
+  turbo: ^2.8.17
   tw-animate-css: ^1.4.0
   typescript: ^5.9.3
   ua-parser-js: ^2.0.9
@@ -161,9 +160,11 @@ catalog:
   zod: ^4.3.6
 ignoredBuiltDependencies:
   - '@firebase/util'
+  - '@prisma/engines'
   - core-js
   - dtrace-provider
   - esbuild
+  - prisma
   - protobufjs
 onlyBuiltDependencies:
   - electron

@@ -8,7 +8,8 @@ import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
+import { type } from 'arktype'
+import { useSubscription } from 'seitu/react'
 import { useConnectionsSync } from '~/entities/connection/sync'
 import { queryClient } from '~/main'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
@@ -16,6 +17,9 @@ import { ConnectionsList } from './-components/connections-list'
 import { Profile } from './-components/profile'
 
 export const Route = createFileRoute('/_protected/')({
+  validateSearch: type({
+    'createdId?': 'string.uuid.v7',
+  }),
   component: DashboardPage,
   head: () => ({
     meta: [{ title: title('Dashboard') }],
@@ -24,11 +28,11 @@ export const Route = createFileRoute('/_protected/')({
 
 function DashboardPage() {
   const { sync, isSyncing } = useConnectionsSync()
-  const [version, versionStatus] = useStore(updatesStore, state => [state.version, state.status])
+  const [version, versionStatus] = useSubscription(updatesStore, { selector: state => [state.version, state.status] })
 
   return (
     <ScrollArea className="overflow-auto">
-      <div className="mx-auto flex size-full max-w-3xl flex-col px-6 py-10">
+      <div className="mx-auto flex size-full max-w-2xl flex-col px-6 py-10">
         <h1 className={`
           mb-6 scroll-m-20 text-4xl font-extrabold tracking-tight
           lg:text-5xl

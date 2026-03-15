@@ -1,6 +1,7 @@
 import { type } from 'arktype'
 import { and, eq, inArray } from 'drizzle-orm'
-import { chats, db } from '~/drizzle'
+import { db } from '~/drizzle'
+import { chats } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 const input = type({

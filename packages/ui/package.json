@@ -9,7 +9,7 @@
     "./hooks/*": "./src/hooks/*.ts",
     "./hookas/*": "./src/hookas/*.ts",
     "./theme-observer": "./src/theme-observer.tsx",
-    "./use-theme": "./src/use-theme.ts"
+    "./theme-store": "./src/theme-store.ts"
   },
   "scripts": {
     "check-types": "tsc"
@@ -39,12 +39,13 @@
     "@remixicon/react": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@tanstack/react-form": "catalog:",
+    "@tanstack/react-hotkeys": "catalog:",
     "@tanstack/react-router": "catalog:",
-    "@tanstack/react-store": "catalog:",
     "@tanstack/react-virtual": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@xyflow/react": "catalog:",
+    "arktype": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "catalog:",
@@ -55,6 +56,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-resizable-panels": "catalog:",
+    "seitu": "catalog:",
     "sonner": "catalog:",
     "tailwind-merge": "catalog:",
     "tailwind-scrollbar": "catalog:",

@@ -1,6 +1,7 @@
 import { ORPCError } from '@orpc/server'
 import { eq } from 'drizzle-orm'
-import { db, users } from '~/drizzle'
+import { db } from '~/drizzle'
+import { users } from '~/drizzle/schema'
 import { stripe } from '~/lib/stripe'
 import { authMiddleware, orpc } from '~/orpc'
 

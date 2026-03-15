@@ -1,7 +1,8 @@
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gt, inArray, notInArray, or } from 'drizzle-orm'
-import { chats, chatsSelectSchema, db } from '~/drizzle'
+import { db } from '~/drizzle'
+import { chats, chatsSelectSchema } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 const output = type.or(

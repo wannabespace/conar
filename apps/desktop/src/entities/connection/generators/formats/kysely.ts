@@ -1,5 +1,5 @@
 import type { QueryParams, SchemaParams } from '..'
-import { findEnum } from '../../sql/enums'
+import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { formatValue, getColumnType } from '../utils'
 
@@ -41,6 +41,7 @@ export function generateSchemaKysely({
     let typeDef = isGenerated ? `Generated<${tsType}>` : tsType
     if (c.isNullable)
       typeDef += ' | null'
+    // eslint-disable-next-line e18e/prefer-static-regex
     const safeKey = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
     return `  ${safeKey}: ${typeDef};`
   }).join('\n')

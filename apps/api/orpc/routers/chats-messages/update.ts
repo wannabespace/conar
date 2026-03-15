@@ -1,7 +1,8 @@
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
-import { chats, chatsMessages, chatsMessagesUpdateSchema, db } from '~/drizzle'
+import { db } from '~/drizzle'
+import { chats, chatsMessages, chatsMessagesUpdateSchema } from '~/drizzle/schema'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const update = orpc

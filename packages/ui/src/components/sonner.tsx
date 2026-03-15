@@ -1,10 +1,10 @@
 import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
 import { useIsMounted } from '../hookas/use-is-mounted'
-import { useTheme } from '../use-theme'
+import { useResolvedTheme } from '../theme-store'
 
 function Toaster() {
-  const { resolvedTheme } = useTheme()
+  const resolvedTheme = useResolvedTheme()
   const isMounted = useIsMounted()
 
   if (!isMounted) {
