@@ -9,7 +9,7 @@ export const THEME_STORAGE_KEY = 'conar.theme'
 
 export const themeStore = createLocalStorageValue({
   key: THEME_STORAGE_KEY,
-  schema: type('string' as type.cast<Theme>),
+  schema: type('"dark" | "light" | "system"'),
   defaultValue: 'system',
 })
 
@@ -24,8 +24,10 @@ export const resolvedThemeComputed = createComputed([themeStore, mediaQuery], ([
 
 function toggleTheme() {
   const root = window.document.documentElement
+  const resolved = resolvedThemeComputed.get()
 
-  root.classList.value = resolvedThemeComputed.get()
+  root.classList.toggle('dark', resolved === 'dark')
+  root.classList.toggle('light', resolved === 'light')
 }
 
 mediaQuery.subscribe(toggleTheme)
