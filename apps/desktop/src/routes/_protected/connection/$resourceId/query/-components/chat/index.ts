@@ -27,7 +27,7 @@ async function ensureChat(chatId: string, connectionResourceId: string) {
 
   await chatsCollection.insert({
     id: chatId,
-    connectionId: connectionResourceId,
+    connectionResourceId,
     title: null,
     createdAt: new Date(),
     updatedAt: new Date(),

@@ -133,11 +133,59 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
   },
 }))
 
+export interface ConnectionResourcesMutationMetadata {
+  cloudSync?: false
+}
+
 export const connectionsResourcesCollection = createCollection(drizzleCollectionOptions({
   db,
   table: connectionsResources,
   primaryColumn: connectionsResources.id,
   prepare: waitForMigrations,
+  sync: async ({ collection, write }) => {
+    if (!bearerToken.get() || !navigator.onLine) {
+      return
+    }
+
+    await waitForConnectionsSync()
+    const sync = await orpc.connectionsResources.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+
+    sync.forEach((item) => {
+      if (item.type === 'delete') {
+        write({ type: 'delete', value: collection.get(item.value)! })
+      }
+      else {
+        write(item)
+      }
+    })
+  },
+  onInsert: async ({ transaction }) => {
+    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionResourcesMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await Promise.all(mutations.map(m => orpc.connectionsResources.create(m.modified)))
+  },
+  onUpdate: async ({ transaction }) => {
+    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionResourcesMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await Promise.all(mutations.map(m => orpc.connectionsResources.update({ id: m.key, ...m.changes })))
+  },
+  onDelete: async ({ transaction }) => {
+    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionResourcesMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await orpc.connectionsResources.remove(mutations.map(m => ({ id: m.key })))
+  },
 }))
 
 const syncConnectionsMutationOptions = {

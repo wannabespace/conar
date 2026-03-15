@@ -39,7 +39,17 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
         write({ type: 'delete', value: collection.get(item.value)! })
       }
       else {
-        write(item)
+        const { type, value: { connectionResourceId, ...value } } = item
+
+        if (connectionResourceId) {
+          write({
+            type,
+            value: {
+              ...value,
+              connectionResourceId,
+            },
+          })
+        }
       }
     })
     resolvers.resolve()

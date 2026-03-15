@@ -5,6 +5,7 @@ import { banner } from './banner'
 import * as chats from './chats'
 import * as chatsMessages from './chats-messages'
 import * as connections from './connections'
+import * as connectionsResources from './connections-resources'
 import { contact } from './contact'
 import * as queries from './queries'
 import { releases } from './releases'
@@ -18,6 +19,7 @@ export const router = {
   chatsMessages,
   queries,
   connections,
+  connectionsResources,
   // TODO: remove this in the future
   databases: connections,
   banner,
