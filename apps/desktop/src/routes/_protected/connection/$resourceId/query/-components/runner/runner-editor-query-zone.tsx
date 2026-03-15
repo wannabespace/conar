@@ -7,9 +7,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
 import { useIsFetching } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
-import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
+import { useSubscription } from 'seitu/react'
+import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { queryClient } from '~/main'
 import { runnerQueryOptions } from '.'
 
@@ -30,22 +30,24 @@ export function RunnerEditorQueryZone({
   const isFetching = useIsFetching(runnerQueryOptions(connectionResource), queryClient) > 0
 
   const store = getConnectionResourceStore(connectionResource.id)
-  const isChecked = useStore(store, state => state.selectedLines.includes(lineNumber))
+  const isChecked = useSubscription(store, { selector: state => state.selectedLines.includes(lineNumber) })
 
-  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
-  const { queriesLength, queryNumber } = useStore(editorQueriesStore, (state) => {
-    const index = state.findIndex(query => query.startLineNumber === lineNumber)
-    const queriesBefore = state.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
-    const queriesLength = state[index]?.queries.length ?? 0
+  const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
+  const { queriesLength, queryNumber } = useSubscription(editorQueriesStore, {
+    selector: (state) => {
+      const index = state.findIndex(query => query.startLineNumber === lineNumber)
+      const queriesBefore = state.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
+      const queriesLength = state[index]?.queries.length ?? 0
 
-    return {
-      queriesLength,
-      queryNumber: queriesLength === 1 ? queriesBefore : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`,
-    }
+      return {
+        queriesLength,
+        queryNumber: queriesLength === 1 ? queriesBefore : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`,
+      }
+    },
   })
 
   const onCheckedChange = () => {
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       selectedLines: isChecked
         ? state.selectedLines.filter(l => l !== lineNumber)

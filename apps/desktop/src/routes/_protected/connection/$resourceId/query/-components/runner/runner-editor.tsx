@@ -1,12 +1,12 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { editor, Position } from 'monaco-editor'
 import type { RefObject } from 'react'
-import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
 import { useEffect, useEffectEvent, useRef } from 'react'
+import { useSubscription } from 'seitu/react'
 import { Monaco } from '~/components/monaco'
-import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { connectionCompletionService } from '~/entities/connection/utils/monaco'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
@@ -34,7 +34,7 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
     startLineNumber: number
     endLineNumber: number
   }) => {
-    const lines = store.state.query.split('\n')
+    const lines = store.get().query.split('\n')
     const newSqlLines = query.split('\n')
     const updatedLines = [
       ...lines.slice(0, startLineNumber - 1),
@@ -42,7 +42,7 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
       ...lines.slice(endLineNumber),
     ]
 
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       query: updatedLines.join('\n'),
     } satisfies typeof state))
@@ -56,7 +56,7 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
       if (!editor)
         return
 
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         query: `${state.query}\n\n${query}`,
       } satisfies typeof state))
@@ -118,8 +118,8 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
 export function RunnerEditor() {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const query = useStore(store, state => state.query)
-  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
+  const query = useSubscription(store, { selector: state => state.query })
+  const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const run = useRunnerContext(({ run }) => run)
 
@@ -139,7 +139,7 @@ export function RunnerEditor() {
   }, [connection, connectionResource])
 
   const getEditorQueriesEvent = useEffectEvent((position: Position) => {
-    return editorQueriesStore.state.find(query =>
+    return editorQueriesStore.get().find(query =>
       position.lineNumber >= query.startLineNumber
       && position.lineNumber <= query.endLineNumber,
     ) ?? null
@@ -186,7 +186,7 @@ export function RunnerEditor() {
       ref={monacoRef}
       language={dialectsMap[connection.type]}
       value={query}
-      onChange={q => store.setState(state => ({
+      onChange={q => store.set(state => ({
         ...state,
         query: q,
       } satisfies typeof state))}

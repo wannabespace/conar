@@ -2,9 +2,9 @@ import type { editor } from 'monaco-editor'
 import type { RefObject } from 'react'
 import { copy } from '@conar/ui/lib/copy'
 import { render } from '@conar/ui/lib/render'
-import { useStore } from '@tanstack/react-store'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
+import { useSubscription } from 'seitu/react'
+import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { Route } from '../..'
 import { useRunnerContext } from './runner-context'
 import { RunnerEditorQueryZone } from './runner-editor-query-zone'
@@ -12,11 +12,11 @@ import { RunnerEditorQueryZone } from './runner-editor-query-zone'
 export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
-  const linesWithQueries = useStore(editorQueriesStore, state => state.map(({ startLineNumber }) => startLineNumber))
+  const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
+  const linesWithQueries = useSubscription(editorQueriesStore, { selector: state => state.map(({ startLineNumber }) => startLineNumber) })
 
   const getQueriesEvent = useEffectEvent((lineNumber: number) =>
-    editorQueriesStore.state.find(query => query.startLineNumber === lineNumber),
+    editorQueriesStore.get().find(query => query.startLineNumber === lineNumber),
   )
 
   const run = useRunnerContext(({ run }) => run)
@@ -66,7 +66,7 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
 
                 const { startLineNumber, endLineNumber } = query
 
-                copy(store.state.query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
+                copy(store.get().query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
               }}
               onSave={() => {
                 const query = getQueriesEvent(lineNumber)
@@ -76,7 +76,7 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
 
                 const { startLineNumber, endLineNumber } = query
 
-                saveEvent(store.state.query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
+                saveEvent(store.get().query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
               }}
             />,
           )

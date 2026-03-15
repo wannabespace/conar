@@ -15,13 +15,13 @@ import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
-import { useStore } from '@tanstack/react-store'
 import { regex } from 'arkregex'
 import { useEffect, useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
-import { getConnectionResourceEditorQueriesStore } from '~/entities/connection/store'
-import { useSubscription } from '~/entities/user/hooks'
+import { getEditorQueriesComputed } from '~/entities/connection/store'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { authClient } from '~/lib/auth'
 import { Route } from '../..'
 import { chatHooks, runnerHooks } from '../../-page'
@@ -60,8 +60,8 @@ function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick
 
 function ChatMessageCodeActions({ content, lang }: { content: string, lang: string }) {
   const { connectionResource } = Route.useRouteContext()
-  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
-  const editorQueries = useStore(editorQueriesStore, state => state)
+  const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
+  const editorQueries = useSubscription(editorQueriesStore)
 
   const [isCopying, setIsCopying] = useState(false)
   const [isAppending, setIsAppending] = useState(false)
@@ -350,7 +350,7 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
   const { chat } = Route.useLoaderData()
   const ref = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(ref)
-  const { subscription } = useSubscription()
+  const { subscription } = useUserSubscription()
 
   const isLoading = isLast ? status === 'streaming' || status === 'submitted' : false
 

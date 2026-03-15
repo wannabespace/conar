@@ -3,7 +3,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
+import { useSubscription } from 'seitu/react'
 import { resourceTableTotalQuery } from '~/entities/connection/queries'
 import { Route } from '../..'
 import { useTableColumns } from '../../-queries/use-columns-query'
@@ -15,8 +15,8 @@ export function Header({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const columns = useTableColumns({ connectionResource, table, schema })
   const store = usePageStoreContext()
-  const filters = useStore(store, state => state.filters)
-  const exact = useStore(store, state => state.exact)
+  const filters = useSubscription(store, { selector: state => state.filters })
+  const exact = useSubscription(store, { selector: state => state.exact })
   const { data: total, isLoading } = useQuery(resourceTableTotalQuery({ connectionResource, table, schema, query: { filters, exact } }))
 
   const columnsCount = columns?.length ?? 0
@@ -51,7 +51,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
                         className={cn('inline-flex items-center gap-1', !exact && total.isEstimated && `
                           cursor-pointer
                         `)}
-                        onClick={() => store.setState(state => ({ ...state, exact: true } satisfies typeof state))}
+                        onClick={() => store.set(state => ({ ...state, exact: true } satisfies typeof state))}
                       >
                         <NumberFlow
                           value={total.count}

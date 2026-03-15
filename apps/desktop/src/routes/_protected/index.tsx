@@ -8,8 +8,8 @@ import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
+import { useSubscription } from 'seitu/react'
 import { useConnectionsSync } from '~/entities/connection/sync'
 import { queryClient } from '~/main'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
@@ -28,7 +28,7 @@ export const Route = createFileRoute('/_protected/')({
 
 function DashboardPage() {
   const { sync, isSyncing } = useConnectionsSync()
-  const [version, versionStatus] = useStore(updatesStore, state => [state.version, state.status])
+  const [version, versionStatus] = useSubscription(updatesStore, { selector: state => [state.version, state.status] })
 
   return (
     <ScrollArea className="overflow-auto">

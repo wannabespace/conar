@@ -16,8 +16,8 @@ import { RiCloseLine, RiCommandLine, RiFileListLine, RiMessageLine, RiMoonLine, 
 import { inArray, useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
@@ -197,11 +197,11 @@ function MainLinks() {
     select: matches => matches.map(match => match.routeId).at(-1),
   })
   const store = getConnectionResourceStore(connectionResource.id)
-  const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
+  const lastOpenedTable = useSubscription(store, { selector: state => state.lastOpenedTable })
 
   useEffect(() => {
     if (tableParam && schemaParam && tableParam !== lastOpenedTable?.table && schemaParam !== lastOpenedTable?.schema) {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         lastOpenedTable: { schema: schemaParam, table: tableParam },
       } satisfies typeof state))
@@ -229,14 +229,14 @@ function MainLinks() {
 
   function onTablesClick() {
     if (isCurrentTableAsLastOpened && lastOpenedTable) {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         lastOpenedTable: null,
       } satisfies typeof state))
     }
   }
 
-  const lastOpenedChatId = useStore(store, state => state.lastOpenedChatId)
+  const lastOpenedChatId = useSubscription(store, { selector: state => state.lastOpenedChatId })
 
   return (
     <>
@@ -360,7 +360,7 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => store.setState(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
+                onClick={() => store.set(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
               >
                 <RiFileListLine className="size-4" />
               </Button>
@@ -376,7 +376,7 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => appStore.setState(state => ({ ...state, isActionCenterOpen: true } satisfies typeof state))}
+                onClick={() => appStore.set(state => ({ ...state, isActionCenterOpen: true } satisfies typeof state))}
               >
                 <RiCommandLine className="size-4" />
               </Button>
