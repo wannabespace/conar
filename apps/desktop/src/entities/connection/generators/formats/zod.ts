@@ -1,5 +1,4 @@
 import type { SchemaParams } from '..'
-import { camelCase } from 'change-case'
 import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { getColumnType, toLiteralKey } from '../utils'
@@ -43,7 +42,7 @@ export function generateSchemaZod({
 }: SchemaParams) {
   const lines = columns
     .map((column) => {
-      const key = toLiteralKey(camelCase(column.id))
+      const key = toLiteralKey(column.id)
       const zodType = buildZodType(column, table, dialect, enums ?? [])
 
       if (!zodType)
