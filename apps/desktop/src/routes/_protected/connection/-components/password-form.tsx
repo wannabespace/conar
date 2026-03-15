@@ -1,4 +1,4 @@
-import type { connections, connectionsResources } from '~/drizzle'
+import type { connections, connectionsResources } from '~/drizzle/schema'
 import type { ConnectionMutationMetadata } from '~/entities/connection/sync'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'

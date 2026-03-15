@@ -1,21 +1,18 @@
 /* eslint-disable no-console */
-import { PGlite } from '@electric-sql/pglite'
+import { PGliteWorker } from '@electric-sql/pglite/worker'
 import { drizzle } from 'drizzle-orm/pglite'
 import migrations from './migrations.json'
 import { chatsRelations } from './schema/chats'
 import { connections } from './schema/connections'
 import { queriesRelations } from './schema/queries'
+import PGWorker from './worker?worker'
 
-export * from './schema/chats'
-export * from './schema/connections'
-export * from './schema/queries'
-
-export const pg = new PGlite('idb://conar')
+const pg = new PGliteWorker(new PGWorker({ name: 'pglite-worker' }))
 
 if (import.meta.env.DEV) {
   // @ts-expect-error - window.db is not typed
   window.db = pg
-  // @ts-expect-error - window.db is not typed
+  // @ts-expect-error - window.dbQuery is not typed
   window.dbQuery = q => pg.query(q).then((r) => {
     console.table(r.rows)
     return r.rows
@@ -23,7 +20,8 @@ if (import.meta.env.DEV) {
 }
 
 export const db = drizzle({
-  client: pg,
+  // eslint-disable-next-line ts/no-explicit-any
+  client: pg as any,
   casing: 'snake_case',
   logger: import.meta.env.DEV,
   relations: {
@@ -33,7 +31,7 @@ export const db = drizzle({
 })
 
 export async function clearDb() {
-  // We can remove just databases because other tables are related to databases
+  // We can remove just connections because other tables are related to connections
   await db.delete(connections)
 }
 

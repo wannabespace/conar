@@ -1,4 +1,4 @@
-import type { connections, connectionsResources } from '~/drizzle'
+import type { connections, connectionsResources } from '~/drizzle/schema'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Enter } from '@conar/ui/components/custom/shortcuts'

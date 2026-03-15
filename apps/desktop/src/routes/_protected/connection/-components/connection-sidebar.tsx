@@ -1,5 +1,5 @@
 import type { LinkProps } from '@tanstack/react-router'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'

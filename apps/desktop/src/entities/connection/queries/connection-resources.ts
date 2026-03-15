@@ -1,4 +1,4 @@
-import type { connections } from '~/drizzle'
+import type { connections } from '~/drizzle/schema'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { type } from 'arktype'

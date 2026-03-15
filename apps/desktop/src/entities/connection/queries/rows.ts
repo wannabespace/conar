@@ -1,6 +1,6 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { ExpressionBuilder } from 'kysely'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { memoize } from '@conar/shared/utils/helpers'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'

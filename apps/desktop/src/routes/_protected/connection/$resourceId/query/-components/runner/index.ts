@@ -1,4 +1,4 @@
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import type { connectionResourceType } from '~/entities/connection/store'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'

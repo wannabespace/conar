@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import type { connectionResourceType } from '~/entities/connection/store'
 import { getOS } from '@conar/shared/utils/os'
 import {

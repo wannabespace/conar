@@ -1,4 +1,4 @@
-import type { connections, connectionsResources } from '~/drizzle'
+import type { connections, connectionsResources } from '~/drizzle/schema'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { RiAddLine, RiDashboardLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'

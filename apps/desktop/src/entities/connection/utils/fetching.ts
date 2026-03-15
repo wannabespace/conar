@@ -1,5 +1,5 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { queryClient } from '~/main'
 import { resourceTableColumnsQuery } from '../queries/columns'
 import { resourceConstraintsQuery } from '../queries/constraints'
