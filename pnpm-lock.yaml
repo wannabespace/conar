@@ -409,8 +409,8 @@ catalogs:
       specifier: ^2.2.10
       version: 2.2.10
     seitu:
-      specifier: ^0.4.5
-      version: 0.4.5
+      specifier: ^0.4.6
+      version: 0.4.6
     sonner:
       specifier: ^2.0.7
       version: 2.0.7
@@ -885,7 +885,7 @@ importers:
         version: 4.0.1
       seitu:
         specifier: 'catalog:'
-        version: 0.4.5(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1235,7 +1235,7 @@ importers:
         version: 4.7.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       seitu:
         specifier: 'catalog:'
-        version: 0.4.5(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -9704,8 +9704,8 @@ packages:
     resolution: {integrity: sha512-3A6sD0WYP7+QrjbfNA2FN3FsOaGGFoekCVgTyypy53gPxhbkCIjtO6YWgdrfM+n/8sI8JeXZOIxsHjMTNxQ4nQ==}
     engines: {node: ^14.0.0 || >=16.0.0}
 
-  seitu@0.4.5:
-    resolution: {integrity: sha512-nJDXwU89QijYt85Odew8T69wup3O3JkPWK7bzzAgTIxALW1VAjZTI2BnJS8RJO4lx852LAJydNPV7UXYY9r7/A==}
+  seitu@0.4.6:
+    resolution: {integrity: sha512-ZqJzTP2BUMDcZ/1wcexh84WhcC0fS24zvQ7SwgdGp3LKsiwqcknz1s/VCbIVR99HAsygwZSnOPZLnDLYWXzLJg==}
     engines: {node: '>=22'}
     peerDependencies:
       react: '>=19'
@@ -20429,7 +20429,7 @@ snapshots:
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
 
-  seitu@0.4.5(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  seitu@0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       fast-equals: 6.0.0
     optionalDependencies:
