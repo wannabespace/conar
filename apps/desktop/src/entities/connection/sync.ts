@@ -1,20 +1,14 @@
-import type { MutationOptions } from '@tanstack/react-query'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { createCollection } from '@tanstack/react-db'
-import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
+import { v7 } from 'uuid'
 import { db, waitForMigrations } from '~/drizzle'
 import { connections, connectionsResources } from '~/drizzle/schema'
 import { bearerToken } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 import { router } from '~/main'
-
-let resolvers = Promise.withResolvers()
-
-export function waitForConnectionsSync() {
-  return resolvers.promise
-}
+import { connectionResourcesQuery } from './queries'
 
 function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
   const url = new SafeURL(connectionString.trim())
@@ -39,9 +33,7 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
       return
     }
 
-    resolvers = Promise.withResolvers()
-
-    const sync = await orpc.connections.sync(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+    const sync = await orpc.connections.sync.call(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
     for (const item of sync) {
       if (item.type === 'insert') {
@@ -75,7 +67,6 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
             connectionString: newConnectionString.toString(),
             isPasswordPopulated: !!newConnectionString.password,
             syncType: item.value.syncType ?? SyncType.CloudWithoutPassword,
-
           },
         })
       }
@@ -92,7 +83,6 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
         })
       }
     }
-    resolvers.resolve()
   },
   onInsert: async ({ transaction }) => {
     const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionMutationMetadata)?.cloudSync !== false)
@@ -101,7 +91,7 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
       return
     }
 
-    await Promise.all(mutations.map(m => orpc.connections.create({
+    await Promise.all(mutations.map(m => orpc.connections.create.call({
       ...m.modified,
       connectionString: prepareConnectionStringToCloud(m.modified.connectionString, m.modified.syncType),
     })))
@@ -113,7 +103,7 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
       return
     }
 
-    await Promise.all(mutations.map(m => orpc.connections.update({
+    await Promise.all(mutations.map(m => orpc.connections.update.call({
       id: m.key,
       ...m.changes,
       ...(m.changes.connectionString
@@ -129,27 +119,94 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
       return
     }
 
-    await orpc.connections.remove(mutations.map(m => ({ id: m.key })))
+    await orpc.connections.remove.call(mutations.map(m => ({ id: m.key })))
   },
 }))
+
+export interface ConnectionResourcesMutationMetadata {
+  cloudSync?: false
+}
 
 export const connectionsResourcesCollection = createCollection(drizzleCollectionOptions({
   db,
   table: connectionsResources,
   primaryColumn: connectionsResources.id,
   prepare: waitForMigrations,
+  sync: async ({ collection, write }) => {
+    if (!bearerToken.get() || !navigator.onLine) {
+      return
+    }
+
+    await connectionsCollection.utils.waitForSync()
+    const sync = await orpc.connectionsResources.sync.call(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+
+    sync.forEach((item) => {
+      if (item.type === 'delete') {
+        write({ type: 'delete', value: collection.get(item.value)! })
+      }
+      else {
+        write(item)
+      }
+    })
+  },
+  onInsert: async ({ transaction }) => {
+    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionResourcesMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await Promise.all(mutations.map(m => orpc.connectionsResources.create.call(m.modified)))
+  },
+  onUpdate: async ({ transaction }) => {
+    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionResourcesMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await Promise.all(mutations.map(m => orpc.connectionsResources.update.call({ id: m.key, ...m.changes })))
+  },
+  onDelete: async ({ transaction }) => {
+    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionResourcesMutationMetadata)?.cloudSync !== false)
+
+    if (mutations.length === 0) {
+      return
+    }
+
+    await orpc.connectionsResources.remove.call(mutations.map(m => ({ id: m.key })))
+  },
 }))
 
-const syncConnectionsMutationOptions = {
-  mutationKey: ['sync-connections'],
-  mutationFn: connectionsCollection.utils.runSync,
-} satisfies MutationOptions
+export async function syncConnectionResources(connection: typeof connections.$inferSelect) {
+  const resources = await connectionResourcesQuery.run({
+    connectionString: connection.connectionString,
+    type: connection.type,
+  })
+  const existingResources = connectionsResourcesCollection.toArray
+    .filter(r => r.connectionId === connection.id)
+    .map(r => r.name)
+  const toInsert: string[] = []
+  const toDelete: string[] = []
 
-export function useConnectionsSync() {
-  const { mutate } = useMutation(syncConnectionsMutationOptions)
-
-  return {
-    sync: mutate,
-    isSyncing: useIsMutating(syncConnectionsMutationOptions) > 0,
+  for (const resource of resources) {
+    if (!existingResources.includes(resource)) {
+      toInsert.push(resource)
+    }
   }
+
+  for (const existingResource of existingResources) {
+    if (!resources.includes(existingResource) && connectionsResourcesCollection.has(existingResource)) {
+      toDelete.push(existingResource)
+    }
+  }
+
+  toInsert.forEach(resource => connectionsResourcesCollection.insert({
+    id: v7(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    connectionId: connection.id,
+    name: resource,
+  }))
+  toDelete.forEach(resource => connectionsResourcesCollection.delete(resource))
 }

@@ -11,7 +11,7 @@ import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { NAVBAR_HEIGHT_BASE } from '~/constants'
 import { authClient } from '~/lib/auth'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { NavbarTextLogo } from './navbar-text-logo'
 
 const AppLogoMotion = motion.create(AppLogo)
@@ -19,7 +19,7 @@ const AppLogoMotion = motion.create(AppLogo)
 export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   const { scrollY } = useScroll()
   const scale = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [1.8, 1])
-  const { data } = useQuery(orpcQuery.repo.queryOptions())
+  const { data } = useQuery(orpc.repo.queryOptions())
   const { data: session } = authClient.useSession()
   const isSignedIn = !!session?.user
 

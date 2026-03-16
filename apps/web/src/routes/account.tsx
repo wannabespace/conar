@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 import { Footer } from '~/components/footer'
 import { NavbarTextLogo } from '~/components/navbar-text-logo'
 import { authClient } from '~/lib/auth'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 
 export const Route = createFileRoute('/account')({
   component: AccountLayout,
@@ -57,7 +57,7 @@ function SupportButton() {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
 
-  const { mutate: sendSupport, isPending: loading } = useMutation(orpcQuery.contact.mutationOptions({
+  const { mutate: sendSupport, isPending: loading } = useMutation(orpc.contact.mutationOptions({
     onSuccess: () => {
       toast.success('Support message sent successfully! We will get back to you as soon as possible.')
       setOpen(false)
@@ -121,7 +121,7 @@ function AccountLayout() {
   const match = useMatches({
     select: matches => matches.map(match => match.routeId).at(-1),
   })
-  const { data } = useQuery(orpcQuery.repo.queryOptions())
+  const { data } = useQuery(orpc.repo.queryOptions())
   const { user } = Route.useLoaderData()
 
   return (

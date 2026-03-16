@@ -17,7 +17,7 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { resourceEnumsQuery } from '~/entities/connection/queries'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../..'
 import { useTableColumns } from '../../-queries/use-columns-query'
@@ -30,7 +30,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
   const store = usePageStoreContext()
   const prompt = useSubscription(store, { selector: state => state.prompt })
   const [freeAiUsage, setFreeAiUsage] = useState<{ remaining: number, max: number, resetAt: Date } | null>(null)
-  const { mutate: generateFilter, isPending } = useMutation(orpcQuery.ai.filters.mutationOptions({
+  const { mutate: generateFilter, isPending } = useMutation(orpc.ai.filters.mutationOptions({
     onSuccess: (data) => {
       const hasOrderBy = Object.keys(data.orderBy).length > 0
       store.set(state => ({

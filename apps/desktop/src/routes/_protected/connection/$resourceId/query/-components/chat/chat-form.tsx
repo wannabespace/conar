@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { getFilesStore } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
 import { chatHooks } from '../../-page'
@@ -145,7 +145,7 @@ export function ChatForm() {
     handleSendEffect(error)
   }, [error, router, chat.id])
 
-  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(orpcQuery.ai.enhancePrompt.mutationOptions({
+  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(orpc.ai.enhancePrompt.mutationOptions({
     onSuccess: (data) => {
       if (input.length < 10) {
         return

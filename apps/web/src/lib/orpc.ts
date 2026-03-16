@@ -26,5 +26,5 @@ const getClientLink = createIsomorphicFn()
     },
   }))
 
-export const orpc: ORPCRouter = createORPCClient(getClientLink())
-export const orpcQuery = createTanstackQueryUtils(orpc)
+export const client: ORPCRouter = createORPCClient(getClientLink())
+export const orpc = createTanstackQueryUtils(client)

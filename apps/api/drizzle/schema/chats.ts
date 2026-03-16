@@ -5,12 +5,14 @@ import { index, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedJson } from '../utils'
 import { users } from './auth'
-import { connections } from './connections'
+import { connections, connectionsResources } from './connections'
 
 export const chats = pgTable('chats', {
   ...baseTable,
   userId: uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
+  // TODO: remove it in the future versions, saving connectionId for backward compatibility
+  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }),
+  connectionResourceId: uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }),
   title: text(),
   activeStreamId: uuid(),
 }, t => [
