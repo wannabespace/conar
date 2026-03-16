@@ -12,7 +12,7 @@ import { MonacoDiff } from '~/components/monaco'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
@@ -53,7 +53,7 @@ export function RunnerEditorAIZone({
     }
   }, [ref])
 
-  const { mutate: updateSQL, isPending } = useMutation(orpcQuery.ai.updateSQL.mutationOptions({
+  const { mutate: updateSQL, isPending } = useMutation(orpc.ai.updateSQL.mutationOptions({
     onSuccess: (data) => {
       setAiSuggestion(data)
     },

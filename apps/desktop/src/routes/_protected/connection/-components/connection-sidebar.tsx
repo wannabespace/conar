@@ -23,9 +23,9 @@ import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsResourcesCollection } from '~/entities/connection/sync'
-import { lastOpenedResources, useLastOpenedResources } from '~/entities/connection/utils'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { UserButton } from '~/entities/user/components'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../$resourceId'
 
@@ -51,7 +51,7 @@ function SupportButton() {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
 
-  const { mutate: sendSupport, isPending: loading } = useMutation(orpcQuery.contact.mutationOptions({
+  const { mutate: sendSupport, isPending: loading } = useMutation(orpc.contact.mutationOptions({
     onSuccess: () => {
       toast.success('Support message sent successfully! We will get back to you as soon as possible.')
       setOpen(false)
@@ -123,9 +123,9 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   async function onCloseClick() {
-    const newResources = lastOpenedResources.get().filter(resourceId => resourceId !== connectionResource.id)
+    const newResources = lastOpenedResourcesStorageValue.get().filter(resourceId => resourceId !== connectionResource.id)
 
-    lastOpenedResources.set(newResources)
+    lastOpenedResourcesStorageValue.set(newResources)
   }
 
   return (
@@ -308,7 +308,7 @@ function MainLinks() {
 
 export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { connectionResource } = Route.useRouteContext()
-  const [lastOpenedResources] = useLastOpenedResources()
+  const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
   const store = getConnectionResourceStore(connectionResource.id)
   const { data: openedResources } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })

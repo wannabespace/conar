@@ -27,7 +27,7 @@ async function ensureChat(chatId: string, connectionResourceId: string) {
 
   await chatsCollection.insert({
     id: chatId,
-    connectionId: connectionResourceId,
+    connectionResourceId,
     title: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -85,7 +85,7 @@ export const createChat = memoize(({ id = uuid(), connectionResource }: { id?: s
 
         const store = getConnectionResourceStore(connectionResource.id)
 
-        return eventIteratorToStream(await orpc.ai.chat({
+        return eventIteratorToStream(await orpc.ai.chat.call({
           id: options.chatId,
           createdAt: chat.createdAt,
           updatedAt: chat.updatedAt,

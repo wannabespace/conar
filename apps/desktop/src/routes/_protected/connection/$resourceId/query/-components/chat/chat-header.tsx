@@ -95,7 +95,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
       return
     }
 
-    const title = await orpc.ai.generateTitle({
+    const title = await orpc.ai.generateTitle.call({
       chatId: chat.id,
       messages: messages.map(convertToAppUIMessage),
     })
