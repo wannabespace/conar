@@ -1,13 +1,15 @@
 /* eslint-disable no-console */
-import { PGliteWorker } from '@electric-sql/pglite/worker'
+// import PGWorker from './worker?worker'
+import { PGlite } from '@electric-sql/pglite'
+// import { PGliteWorker } from '@electric-sql/pglite/worker'
 import { drizzle } from 'drizzle-orm/pglite'
 import migrations from './migrations.json'
 import { chatsRelations } from './schema/chats'
 import { connections } from './schema/connections'
 import { queriesRelations } from './schema/queries'
-import PGWorker from './worker?worker'
 
-const pg = new PGliteWorker(new PGWorker({ name: 'pglite-worker' }))
+// const pg = new PGliteWorker(new PGWorker({ name: 'pglite-worker' }))
+const pg = new PGlite('idb://conar')
 
 if (import.meta.env.DEV) {
   // @ts-expect-error - window.db is not typed
@@ -20,8 +22,7 @@ if (import.meta.env.DEV) {
 }
 
 export const db = drizzle({
-  // eslint-disable-next-line ts/no-explicit-any
-  client: pg as any,
+  client: pg,
   casing: 'snake_case',
   logger: import.meta.env.DEV,
   relations: {
