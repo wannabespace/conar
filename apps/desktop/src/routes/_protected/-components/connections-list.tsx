@@ -15,16 +15,17 @@ import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAddLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
 import { eq, inArray, useLiveQuery } from '@tanstack/react-db'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { connectionVersionQuery } from '~/entities/connection/queries/connection-version'
 import { connectionsCollection, connectionsResourcesCollection, syncConnectionResources } from '~/entities/connection/sync'
-import { useLastOpenedResources } from '~/entities/connection/utils'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
@@ -86,9 +87,15 @@ function ConnectionCard({
   connectionString.pathname = ''
   const [isCopied, setIsCopied] = useState(false)
 
+  const { mutate: sync, isPending: isSyncing } = useMutation({
+    mutationFn: async () => {
+      await syncConnectionResources(connection)
+    },
+  })
+
   useEffect(() => {
-    syncConnectionResources(connection)
-  }, [connection])
+    sync()
+  }, [sync])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scrollViewportRef = useRef<HTMLDivElement>(null)
@@ -131,7 +138,11 @@ function ConnectionCard({
             className="size-6 shrink-0"
           />
           <div className="flex min-w-0 flex-col">
-            <CardFrameTitle className="flex gap-2">{connection.name}</CardFrameTitle>
+            <CardFrameTitle className="flex gap-2">
+              {connection.name}
+              {' '}
+              {isSyncing && <RiLoader4Line className="size-3 animate-spin" />}
+            </CardFrameTitle>
             <CardFrameDescription
               className="
                 group flex cursor-pointer items-center justify-between gap-2
@@ -202,9 +213,9 @@ function ConnectionCard({
                       <motion.div
                         key={resource.id}
                         layout
-                        initial={{ opacity: 0, scale: 0.98 }}
+                        initial={{ opacity: 0, scale: 0.98, height: 0 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.98 }}
+                        exit={{ opacity: 0, scale: 0.98, height: 0 }}
                         transition={{ duration: 0.15 }}
                       >
                         <ResourceCard
@@ -216,9 +227,9 @@ function ConnectionCard({
                   : (
                       <motion.div
                         layout
-                        initial={{ opacity: 0, scale: 0.98 }}
+                        initial={{ opacity: 0, scale: 0.98, height: 0 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.98 }}
+                        exit={{ opacity: 0, scale: 0.98, height: 0 }}
                         transition={{ duration: 0.15 }}
                         className="
                           flex items-center p-2 text-sm text-muted-foreground
@@ -327,9 +338,9 @@ function LastOpenedResource({ connectionResource, connection, onClose }: { conne
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.98 }}
+      initial={{ opacity: 0, scale: 0.98, height: 0 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
+      exit={{ opacity: 0, scale: 0.98, height: 0 }}
       transition={{ duration: 0.15 }}
       className="flex items-center justify-between gap-2"
     >
@@ -363,7 +374,7 @@ function LastOpenedResource({ connectionResource, connection, onClose }: { conne
 }
 
 function LastOpenedResources() {
-  const [lastOpenedResources, setLastOpenedResources] = useLastOpenedResources()
+  const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
   const { data } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })
     .innerJoin(
@@ -382,7 +393,7 @@ function LastOpenedResources() {
   }
 
   const close = (resource: typeof connectionsResources.$inferSelect) => {
-    setLastOpenedResources(prev => prev.filter(id => id !== resource.id))
+    lastOpenedResourcesStorageValue.set(prev => prev.filter(id => id !== resource.id))
   }
 
   return (
@@ -420,7 +431,7 @@ export function ConnectionsList() {
 
   const renameDialogRef = useRef<ComponentRef<typeof RenameConnectionDialog>>(null)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
-  const [lastOpenedResources] = useLastOpenedResources()
+  const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
   const availableLabels = [...new Set(data.map(connection => connection.label).filter(Boolean) as string[])].toSorted()
 
