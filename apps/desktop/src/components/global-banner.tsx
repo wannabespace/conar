@@ -8,7 +8,7 @@ import { RiAlertLine, RiCheckboxCircleLine, RiCloseLine, RiErrorWarningLine, RiI
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 
 type BannerItem = NonNullable<ORPCOutputs['banner']>[number]
@@ -36,7 +36,7 @@ export function GlobalBanner() {
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const [dismissed, setDismissed] = useSessionStorage<string[]>('banner-dismissed', [])
 
-  const { data } = useQuery(orpcQuery.banner.queryOptions({
+  const { data } = useQuery(orpc.banner.queryOptions({
     staleTime: 1000 * 60 * 5,
     refetchInterval: 1000 * 60 * 5,
     throwOnError: false,

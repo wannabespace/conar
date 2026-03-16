@@ -25,7 +25,7 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResources, useLastOpenedResources } from '~/entities/connection/utils'
 import { UserButton } from '~/entities/user/components'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../$resourceId'
 
@@ -51,7 +51,7 @@ function SupportButton() {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
 
-  const { mutate: sendSupport, isPending: loading } = useMutation(orpcQuery.contact.mutationOptions({
+  const { mutate: sendSupport, isPending: loading } = useMutation(orpc.contact.mutationOptions({
     onSuccess: () => {
       toast.success('Support message sent successfully! We will get back to you as soon as possible.')
       setOpen(false)

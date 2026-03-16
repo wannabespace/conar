@@ -18,12 +18,12 @@ import { eq, inArray, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
-import { resourceTablesAndSchemasQuery, useConnectionResources } from '~/entities/connection/queries'
+import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { connectionVersionQuery } from '~/entities/connection/queries/connection-version'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { connectionsCollection, connectionsResourcesCollection, syncConnectionResources } from '~/entities/connection/sync'
 import { useLastOpenedResources } from '~/entities/connection/utils'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
@@ -86,6 +86,10 @@ function ConnectionCard({
   connectionString.pathname = ''
   const [isCopied, setIsCopied] = useState(false)
 
+  useEffect(() => {
+    syncConnectionResources(connection)
+  }, [connection])
+
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scrollViewportRef = useRef<HTMLDivElement>(null)
 
@@ -104,7 +108,9 @@ function ConnectionCard({
   }
 
   const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery(connectionVersionQuery(connection))
-  const { data: resources, isPending: isResourcesPending } = useConnectionResources(connection)
+  const { data: resources } = useLiveQuery(q => q
+    .from({ connectionsResources: connectionsResourcesCollection })
+    .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id)), [connection.id])
 
   return (
     <CardFrameMotion
@@ -191,53 +197,36 @@ function ConnectionCard({
           <ScrollAreaShadow viewportRef={scrollViewportRef} type="card">
             <ScrollViewport ref={scrollViewportRef} className="max-h-40">
               <AnimatePresence initial={false} mode="popLayout">
-                {isResourcesPending
-                  ? (
+                {resources.length > 0
+                  ? resources.map(resource => (
+                      <motion.div
+                        key={resource.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.98 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <ResourceCard
+                          resource={resource}
+                          connection={connection}
+                        />
+                      </motion.div>
+                    ))
+                  : (
                       <motion.div
                         layout
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.98 }}
                         transition={{ duration: 0.15 }}
-                        className={`
-                          flex animate-pulse items-center gap-2 p-2 text-sm
-                          text-muted-foreground
-                        `}
+                        className="
+                          flex items-center p-2 text-sm text-muted-foreground
+                        "
                       >
-                        <RiLoader4Line className="size-4 animate-spin" />
-                        Loading resources...
+                        No resources found
                       </motion.div>
-                    )
-                  : resources.length > 0
-                    ? resources.map(resource => (
-                        <motion.div
-                          key={resource.id}
-                          layout
-                          initial={{ opacity: 0, scale: 0.98 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.98 }}
-                          transition={{ duration: 0.15 }}
-                        >
-                          <ResourceCard
-                            resource={resource}
-                            connection={connection}
-                          />
-                        </motion.div>
-                      ))
-                    : (
-                        <motion.div
-                          layout
-                          initial={{ opacity: 0, scale: 0.98 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.98 }}
-                          transition={{ duration: 0.15 }}
-                          className="
-                            flex items-center p-2 text-sm text-muted-foreground
-                          "
-                        >
-                          No resources found
-                        </motion.div>
-                      )}
+                    )}
               </AnimatePresence>
             </ScrollViewport>
             <ScrollBar />

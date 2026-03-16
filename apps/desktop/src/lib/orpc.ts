@@ -27,8 +27,8 @@ const link = new RPCLink({
   ],
 })
 
-export const orpc: ORPCRouter = createORPCClient(link)
-export const orpcQuery = createTanstackQueryUtils(orpc)
+export const client: ORPCRouter = createORPCClient(link)
+export const orpc = createTanstackQueryUtils(client)
 
 export type ORPCInputs = InferContractRouterInputs<typeof router>
 export type ORPCOutputs = InferContractRouterOutputs<typeof router>

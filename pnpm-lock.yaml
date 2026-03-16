@@ -433,8 +433,8 @@ catalogs:
       specifier: ^4.2.1
       version: 4.2.1
     tanstack-db-pglite:
-      specifier: ^1.0.6
-      version: 1.0.6
+      specifier: 1.1.8
+      version: 1.1.8
     taze:
       specifier: ^19.10.0
       version: 19.10.0
@@ -897,7 +897,7 @@ importers:
         version: 4.2.1
       tanstack-db-pglite:
         specifier: 'catalog:'
-        version: 1.0.6(@electric-sql/pglite@0.3.16)(@tanstack/db@0.5.33(typescript@5.9.3))(drizzle-orm@1.0.0-beta.17-67b1795(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.18.0)(arktype@2.2.0)(bun-types@1.3.10)(mssql@12.2.0(@azure/core-client@1.10.1))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6))(zod@4.3.6)
+        version: 1.1.8(@electric-sql/pglite@0.3.16)(@tanstack/db@0.5.33(typescript@5.9.3))(drizzle-orm@1.0.0-beta.17-67b1795(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.18.0)(arktype@2.2.0)(bun-types@1.3.10)(mssql@12.2.0(@azure/core-client@1.10.1))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6))(zod@4.3.6)
       tw-animate-css:
         specifier: 'catalog:'
         version: 1.4.0
@@ -10091,8 +10091,8 @@ packages:
   tailwindcss@4.2.1:
     resolution: {integrity: sha512-/tBrSQ36vCleJkAOsy9kbNTgaxvGbyOamC30PRePTQe/o1MFwEKHQk4Cn7BNGaPtjp+PuUrByJehM1hgxfq4sw==}
 
-  tanstack-db-pglite@1.0.6:
-    resolution: {integrity: sha512-vm0Zrg6TepMkMBJgs6POxV0TvtdRBdhZlHurw5whmWnI4yqS3hF9kdlmIid8ubaaN7fq8xQQ6lWMW9otSGUJ/g==}
+  tanstack-db-pglite@1.1.8:
+    resolution: {integrity: sha512-0PRQZV2eAriyBzXOKIHCOWqEmWPdEFtGRnrp4cf+VHuA7DDUmDq76ZD4KkGMEmef7KmbDYD0JHTnWxyLYU6T2w==}
     peerDependencies:
       '@electric-sql/pglite': '>=0.3.0'
       '@tanstack/db': '>=0.5.0'
@@ -20671,7 +20671,7 @@ snapshots:
 
   tailwindcss@4.2.1: {}
 
-  tanstack-db-pglite@1.0.6(@electric-sql/pglite@0.3.16)(@tanstack/db@0.5.33(typescript@5.9.3))(drizzle-orm@1.0.0-beta.17-67b1795(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.18.0)(arktype@2.2.0)(bun-types@1.3.10)(mssql@12.2.0(@azure/core-client@1.10.1))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6))(zod@4.3.6):
+  tanstack-db-pglite@1.1.8(@electric-sql/pglite@0.3.16)(@tanstack/db@0.5.33(typescript@5.9.3))(drizzle-orm@1.0.0-beta.17-67b1795(@electric-sql/pglite@0.3.16)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.18.0)(arktype@2.2.0)(bun-types@1.3.10)(mssql@12.2.0(@azure/core-client@1.10.1))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6))(zod@4.3.6):
     dependencies:
       '@electric-sql/pglite': 0.3.16
       '@tanstack/db': 0.5.33(typescript@5.9.3)

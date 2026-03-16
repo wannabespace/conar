@@ -7,7 +7,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 
 const AppLogoSquareMotion = motion.create(AppLogoSquare)
 
@@ -28,11 +28,11 @@ function AuthPage() {
     window.open(`${import.meta.env.VITE_PUBLIC_WEB_URL}/deep/sign-in?codeChallenge=${codeChallenge}`, '_blank')
   }
 
-  const { data, error, isPending } = useQuery(orpcQuery.account.challenge.listen.experimental_liveOptions({
+  const { data, error, isPending } = useQuery(orpc.account.challenge.listen.experimental_liveOptions({
     input: codeChallenge ? { codeChallenge } : skipToken,
     throwOnError: false,
   }))
-  const { mutate: exchange } = useMutation(orpcQuery.account.challenge.exchange.mutationOptions({
+  const { mutate: exchange } = useMutation(orpc.account.challenge.exchange.mutationOptions({
     onSuccess: (data) => {
       bearerToken.set(data.token)
       refetch()

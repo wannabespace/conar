@@ -1,4 +1,5 @@
 import { SOCIAL_LINKS } from '@conar/shared/constants'
+import { pick } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
@@ -7,10 +8,11 @@ import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
+import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useSubscription } from 'seitu/react'
-import { useConnectionsResourcesSync, useConnectionsSync } from '~/entities/connection/sync'
+import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { queryClient } from '~/main'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 import { ConnectionsList } from './-components/connections-list'
@@ -27,9 +29,13 @@ export const Route = createFileRoute('/_protected/')({
 })
 
 function DashboardPage() {
-  const { sync, isSyncing } = useConnectionsSync()
-  const { sync: syncConnectionsResources, isSyncing: isSyncingConnectionsResources } = useConnectionsResourcesSync()
-  const [version, versionStatus] = useSubscription(updatesStore, { selector: state => [state.version, state.status] })
+  const { mutate: sync, isPending: isSyncing } = useMutation({
+    mutationFn: connectionsCollection.utils.runSync,
+  })
+  const { mutate: syncConnectionsResources, isPending: isSyncingConnectionsResources } = useMutation({
+    mutationFn: connectionsResourcesCollection.utils.runSync,
+  })
+  const { version, status } = useSubscription(updatesStore, { selector: state => pick(state, ['version', 'status']) })
 
   return (
     <ScrollArea className="overflow-auto">
@@ -59,6 +65,7 @@ function DashboardPage() {
                 sync()
                 syncConnectionsResources()
                 queryClient.invalidateQueries({ queryKey: ['connection'] })
+                queryClient.invalidateQueries({ queryKey: ['connection-resources'] })
               }}
             >
               <LoadingContent loading={isSyncing || isSyncingConnectionsResources}>
@@ -144,13 +151,13 @@ function DashboardPage() {
               {version}
             </button>
             {' '}
-            {versionStatus === 'checking' && (
+            {status === 'checking' && (
               <RiLoader4Line className={`
                 size-3 animate-spin text-muted-foreground/50
               `}
               />
             )}
-            {versionStatus === 'downloading' && (
+            {status === 'downloading' && (
               <Tooltip>
                 <TooltipTrigger>
                   <RiDownloadLine className={`
