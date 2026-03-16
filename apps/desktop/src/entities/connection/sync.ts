@@ -201,3 +201,17 @@ export function useConnectionsSync() {
     isSyncing: useIsMutating(syncConnectionsMutationOptions) > 0,
   }
 }
+
+const syncConnectionsResourcesMutationOptions = {
+  mutationKey: ['sync-connections-resources'],
+  mutationFn: connectionsResourcesCollection.utils.runSync,
+} satisfies MutationOptions
+
+export function useConnectionsResourcesSync() {
+  const { mutate } = useMutation(syncConnectionsResourcesMutationOptions)
+
+  return {
+    sync: mutate,
+    isSyncing: useIsMutating(syncConnectionsResourcesMutationOptions) > 0,
+  }
+}

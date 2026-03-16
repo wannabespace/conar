@@ -10,7 +10,7 @@ import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, Ri
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useSubscription } from 'seitu/react'
-import { useConnectionsSync } from '~/entities/connection/sync'
+import { useConnectionsResourcesSync, useConnectionsSync } from '~/entities/connection/sync'
 import { queryClient } from '~/main'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 import { ConnectionsList } from './-components/connections-list'
@@ -28,6 +28,7 @@ export const Route = createFileRoute('/_protected/')({
 
 function DashboardPage() {
   const { sync, isSyncing } = useConnectionsSync()
+  const { sync: syncConnectionsResources, isSyncing: isSyncingConnectionsResources } = useConnectionsResourcesSync()
   const [version, versionStatus] = useSubscription(updatesStore, { selector: state => [state.version, state.status] })
 
   return (
@@ -53,15 +54,16 @@ function DashboardPage() {
             <Button
               variant="outline"
               size="icon"
-              disabled={isSyncing}
+              disabled={isSyncing || isSyncingConnectionsResources}
               onClick={() => {
                 sync()
+                syncConnectionsResources()
                 queryClient.invalidateQueries({ queryKey: ['connection'] })
               }}
             >
-              <LoadingContent loading={isSyncing}>
+              <LoadingContent loading={isSyncing || isSyncingConnectionsResources}>
                 <ContentSwitch
-                  active={isSyncing}
+                  active={isSyncing || isSyncingConnectionsResources}
                   activeContent={(
                     <RiCheckLine className="text-success" />
                   )}

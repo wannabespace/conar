@@ -3,7 +3,7 @@ import { useEffect, useEffectEvent } from 'react'
 import { useSubscription } from 'seitu/react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { useChatsMessagesSync, useChatsSync } from '~/entities/chat/sync'
-import { useConnectionsSync } from '~/entities/connection/sync'
+import { useConnectionsResourcesSync, useConnectionsSync } from '~/entities/connection/sync'
 import { useQueriesSync } from '~/entities/query/sync'
 import { authClient } from '~/lib/auth'
 import { appStore } from '~/store'
@@ -18,12 +18,14 @@ function ProtectedLayout() {
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
 
   const { sync: syncConnections } = useConnectionsSync()
+  const { sync: syncConnectionsResources } = useConnectionsResourcesSync()
   const { sync: syncQueries } = useQueriesSync()
   const { sync: syncChats } = useChatsSync()
   const { sync: syncChatsMessages } = useChatsMessagesSync()
 
   const sync = useEffectEvent(() => {
     syncConnections()
+    syncConnectionsResources()
     syncChats()
     syncChatsMessages()
     syncQueries()
