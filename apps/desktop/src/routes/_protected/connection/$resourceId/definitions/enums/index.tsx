@@ -1,7 +1,7 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -98,7 +98,7 @@ function DatabaseEnumsPage() {
         )}
 
         {filteredEnums.map(enumItem => (
-          <MotionCard
+          <CardMotion
             key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
             layout
             {...MOTION_BLOCK_PROPS}
@@ -170,7 +170,7 @@ function DatabaseEnumsPage() {
                 </div>
               </div>
             </CardContent>
-          </MotionCard>
+          </CardMotion>
         ))}
       </DefinitionsGrid>
     </>

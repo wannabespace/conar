@@ -10,7 +10,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@conar/ui/components/context-menu'
-import { MotionScrollViewport, ScrollArea, ScrollBar } from '@conar/ui/components/scroll-area'
+import { ScrollArea, ScrollBar, ScrollViewportMotion } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { cn } from '@conar/ui/lib/utils'
@@ -350,7 +350,7 @@ export function TablesTabs({
 
   return (
     <ScrollArea>
-      <MotionScrollViewport
+      <ScrollViewportMotion
         layoutScroll
         className={cn('flex gap-1 p-1', className)}
       >
@@ -377,7 +377,7 @@ export function TablesTabs({
             />
           ))}
         </Reorder.Group>
-      </MotionScrollViewport>
+      </ScrollViewportMotion>
       <ScrollBar orientation="horizontal" className="h-2" />
     </ScrollArea>
   )

@@ -5,7 +5,7 @@ import { Button } from '@conar/ui/components/button'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
-import { MotionSeparator } from '@conar/ui/components/separator'
+import { SeparatorMotion } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -100,9 +100,7 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
           >
             {pinned
               ? <RiPushpinFill className="size-3 text-primary" />
-              : (
-                  <RiPushpinLine className="size-3" />
-                )}
+              : <RiPushpinLine className="size-3" />}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -331,7 +329,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                 </motion.div>
                               ))}
                               {schema.pinnedTables.length > 0 && schema.unpinnedTables.length > 0 && (
-                                <MotionSeparator
+                                <SeparatorMotion
                                   className="my-2 h-px!"
                                   layout
                                   variants={treeVariants}

@@ -63,7 +63,7 @@ export function ScrollAreaShadow({
   )
 }
 
-export const MotionScrollViewport = motion.create(ScrollViewport)
+export const ScrollViewportMotion = motion.create(ScrollViewport)
 
 function ScrollViewport({
   ref,

@@ -2,7 +2,7 @@ import type { constraintsType } from '~/entities/connection/queries'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -135,7 +135,7 @@ function DatabaseConstraintsPage() {
         )}
 
         {filteredConstraints.map(item => (
-          <MotionCard
+          <CardMotion
             key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
             layout
             {...MOTION_BLOCK_PROPS}
@@ -185,7 +185,7 @@ function DatabaseConstraintsPage() {
                 </div>
               </CardContent>
             )}
-          </MotionCard>
+          </CardMotion>
         ))}
       </DefinitionsGrid>
     </>

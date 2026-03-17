@@ -7,17 +7,18 @@ import { getEditorQueries } from '~/entities/connection/utils'
 
 export * from './helpers'
 
-const tabType = type({
-  table: 'string',
-  schema: 'string',
-  preview: 'boolean',
-})
-
-const layoutSettingsType = type({
-  chatVisible: 'boolean',
-  resultsVisible: 'boolean',
-  chatPosition: '"left" | "right"',
-})
+export const getConnectionStore = memoize((id: string) => createLocalStorageValue({
+  key: `connection-store-${id}`,
+  defaultValue: {
+    pinnedResources: [],
+  },
+  schema: type({
+    pinnedResources: type({
+      id: 'string',
+      name: 'string',
+    }).array(),
+  }),
+}))
 
 export const connectionResourceType = type({
   lastOpenedPage: 'string | null' as type.cast<Extract<keyof FileRoutesById, `/_protected/connection/$resourceId/${string}`> | null>,
@@ -35,7 +36,11 @@ export const connectionResourceType = type({
     query: 'string',
   }).array(),
   loggerOpened: 'boolean',
-  tabs: tabType.array(),
+  tabs: type({
+    table: 'string',
+    schema: 'string',
+    preview: 'boolean',
+  }).array(),
   tablesSearch: 'string',
   definitionsSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
@@ -43,10 +48,14 @@ export const connectionResourceType = type({
     schema: 'string',
     table: 'string',
   }).array(),
-  layout: layoutSettingsType,
+  layout: {
+    chatVisible: 'boolean',
+    resultsVisible: 'boolean',
+    chatPosition: '"left" | "right"',
+  },
 })
 
-const defaultValue: typeof connectionResourceType.infer = {
+const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   lastOpenedPage: null,
   lastOpenedChatId: null,
   lastOpenedTable: null,
@@ -84,7 +93,7 @@ const defaultValue: typeof connectionResourceType.infer = {
 
 export const getConnectionResourceStore = memoize((id: string) => createLocalStorageValue({
   key: `connection-resource-store-${id}`,
-  defaultValue,
+  defaultValue: connectionResourceDefaultState,
   schema: connectionResourceType,
 }))
 
