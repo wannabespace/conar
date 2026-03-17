@@ -20,9 +20,9 @@ import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/constraints/')({
   component: DatabaseConstraintsPage,
-  loader: ({ context }) => ({ connection: context.connection }),
+  loader: ({ context }) => ({ connection: context.connection, connectionResource: context.connectionResource }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Constraints', loaderData.connection.name) }] : [],
+    meta: loaderData ? [{ title: title('Constraints', loaderData.connection.name, loaderData.connectionResource.name) }] : [],
   }),
 })
 
@@ -60,7 +60,7 @@ function DatabaseConstraintsPage() {
   const { data: constraints, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceConstraintsQuery({ connectionResource }))
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
+  const { data } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')

@@ -7,7 +7,6 @@ import { db, waitForMigrations } from '~/drizzle'
 import { connections, connectionsResources } from '~/drizzle/schema'
 import { bearerToken } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
-import { router } from '~/main'
 import { connectionResourcesQuery } from './queries'
 
 function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
@@ -110,7 +109,6 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
         ? { connectionString: prepareConnectionStringToCloud(m.changes.connectionString, m.modified.syncType) }
         : {}),
     })))
-    router.invalidate({ filter: r => r.routeId === '/_protected/connection/$resourceId' })
   },
   onDelete: async ({ transaction }) => {
     const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionMutationMetadata)?.cloudSync !== false)
@@ -131,6 +129,7 @@ export const connectionsResourcesCollection = createCollection(drizzleCollection
   db,
   table: connectionsResources,
   primaryColumn: connectionsResources.id,
+  startSync: false,
   prepare: waitForMigrations,
   sync: async ({ collection, write }) => {
     if (!bearerToken.get() || !navigator.onLine) {
@@ -179,34 +178,29 @@ export const connectionsResourcesCollection = createCollection(drizzleCollection
 }))
 
 export async function syncConnectionResources(connection: typeof connections.$inferSelect) {
-  const resources = await connectionResourcesQuery.run({
+  const fetchedResources = await connectionResourcesQuery.run({
     connectionString: connection.connectionString,
     type: connection.type,
   })
-  const existingResources = connectionsResourcesCollection.toArray
-    .filter(r => r.connectionId === connection.id)
-    .map(r => r.name)
-  const toInsert: string[] = []
-  const toDelete: string[] = []
+  await connectionsResourcesCollection.utils.waitForSync()
+  const existingResources = connectionsResourcesCollection.toArray.filter(r => r.connectionId === connection.id)
+  const existingResourceNames = existingResources.map(r => r.name)
 
-  for (const resource of resources) {
-    if (!existingResources.includes(resource)) {
-      toInsert.push(resource)
+  for (const fetchedResource of fetchedResources) {
+    if (!existingResourceNames.includes(fetchedResource)) {
+      connectionsResourcesCollection.insert({
+        id: v7(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        connectionId: connection.id,
+        name: fetchedResource,
+      })
     }
   }
 
   for (const existingResource of existingResources) {
-    if (!resources.includes(existingResource) && connectionsResourcesCollection.has(existingResource)) {
-      toDelete.push(existingResource)
+    if (!fetchedResources.includes(existingResource.name)) {
+      connectionsResourcesCollection.delete(existingResource.id)
     }
   }
-
-  toInsert.forEach(resource => connectionsResourcesCollection.insert({
-    id: v7(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    connectionId: connection.id,
-    name: resource,
-  }))
-  toDelete.forEach(resource => connectionsResourcesCollection.delete(resource))
 }

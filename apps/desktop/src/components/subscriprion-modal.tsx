@@ -1,6 +1,6 @@
 import { Button } from '@conar/ui/components/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
-import { RiExternalLinkLine, RiSparklingFill, RiVipCrownLine } from '@remixicon/react'
+import { RiExternalLinkLine, RiVipCrownLine } from '@remixicon/react'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
@@ -42,8 +42,10 @@ export function SubscriptionModal() {
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
-          <div className="flex items-start gap-3 rounded-lg bg-muted/50 p-3">
-            <RiSparklingFill className="mt-0.5 size-5 shrink-0 text-primary" />
+          <div className="
+            flex items-start gap-3 rounded-lg bg-muted/50 px-6 py-2
+          "
+          >
             <div className="space-y-1">
               <p className="text-sm font-medium">Conar is indie & user-supported</p>
               <p className="text-sm text-muted-foreground">

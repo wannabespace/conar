@@ -74,7 +74,7 @@ function CreateConnectionPage() {
 
     toast.success('Connection created successfully 🎉')
 
-    const resource = url.pathname === '/' ? connectionSystemNames[data.type] : url.pathname.slice(1)
+    const resource = url.pathname === '/' || url.pathname === '' ? connectionSystemNames[data.type] : url.pathname.slice(1)
 
     const resourceId = v7()
     connectionsResourcesCollection.insert({

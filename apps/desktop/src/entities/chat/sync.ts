@@ -1,4 +1,4 @@
-import { createCollection } from '@tanstack/react-db'
+import { createCollection, inArray, queryOnce } from '@tanstack/react-db'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
 import { db, waitForMigrations } from '~/drizzle'
 import { chats, chatsMessages } from '~/drizzle/schema'
@@ -88,15 +88,19 @@ export const chatsMessagesCollection = createCollection(drizzleCollectionOptions
     }
 
     await chatsCollection.utils.waitForSync()
-    const chats = chatsCollection.toArray.map(c => c.id)
     const sync = await orpc.chatsMessages.sync.call(collection.toArray.map(m => ({ id: m.id, updatedAt: m.updatedAt })))
+    const chats = await queryOnce(q => q
+      .from({ chats: chatsCollection })
+      .where(({ chats }) => inArray(chats.id, sync.filter(m => m.type === 'insert' || m.type === 'update').map(m => m.value.chatId)))
+      .select(({ chats }) => ({ id: chats.id })))
+    const chatsIds = chats.map(c => c.id)
 
     sync.forEach((item) => {
       if (item.type === 'delete') {
         write({ type: 'delete', value: collection.get(item.value)! })
       }
       else {
-        if (chats.includes(item.value.chatId)) {
+        if (chatsIds.includes(item.value.chatId)) {
           write(item)
         }
       }

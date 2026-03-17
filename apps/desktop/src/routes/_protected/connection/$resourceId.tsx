@@ -34,11 +34,11 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
   loader: async ({ context }) => {
     prefetchConnectionResourceCore(context.connectionResource)
 
-    return { connection: context.connection }
+    return { connection: context.connection, connectionResource: context.connectionResource }
   },
   head: ({ loaderData }) => ({
     meta: loaderData
-      ? [{ title: title(loaderData.connection.name) }]
+      ? [{ title: title(loaderData.connection.name, loaderData.connectionResource.name) }]
       : [],
   }),
 })

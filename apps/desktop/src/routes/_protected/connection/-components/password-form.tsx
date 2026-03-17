@@ -43,6 +43,7 @@ export function PasswordForm({ connection, connectionResource }: { connection: t
       })
     },
     onSuccess: () => {
+      router.invalidate({ filter: r => r.routeId === '/_protected/connection/$resourceId' })
       toast.success('Password successfully saved!')
       setPassword('')
     },

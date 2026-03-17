@@ -40,7 +40,7 @@ const dotMatchesRegex = /(\w+(?:\.\w+)*)\.\s*$/g
 
 export function connectionCompletionService(connectionResource: typeof connectionsResources.$inferSelect): CompletionService {
   const store = getConnectionResourceStore(connectionResource.id)
-  queryClient.prefetchQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.get().showSystem }))
+  queryClient.prefetchQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem: store.get().showSystem }))
   queryClient.prefetchQuery(resourceEnumsQuery({ connectionResource }))
 
   return async (
@@ -68,7 +68,7 @@ export function connectionCompletionService(connectionResource: typeof connectio
     })
 
     const [tablesAndSchemas, enums] = await Promise.all([
-      queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.get().showSystem })),
+      queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem: store.get().showSystem })),
       queryClient.ensureQueryData(resourceEnumsQuery({ connectionResource })),
     ])
 

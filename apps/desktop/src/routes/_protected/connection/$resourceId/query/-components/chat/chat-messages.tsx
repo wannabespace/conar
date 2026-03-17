@@ -15,7 +15,7 @@ import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
-import { regex } from 'arkregex'
+import { regex } from 'arktype'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
@@ -460,7 +460,7 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
     })
 
     return () => cancelAnimationFrame(frame)
-  }, [scrollRef, userMessageRef, messages.length])
+  }, [scrollRef, messages.length])
 
   const isLastMessageFromUser = messages.at(-1)?.role === 'user'
 

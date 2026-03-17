@@ -79,7 +79,7 @@ export function RunnerEditorAIZone({
         type: connection.type,
         context: [
           'Database schemas and tables:',
-          JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.get().showSystem })), null, 2),
+          JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem: store.get().showSystem })), null, 2),
         ].join('\n'),
       })
     }

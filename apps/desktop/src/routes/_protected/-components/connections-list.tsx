@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAddLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
+import { RiAddLine, RiAlertLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiMoreLine } from '@remixicon/react'
 import { eq, inArray, useLiveQuery } from '@tanstack/react-db'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
@@ -87,7 +87,7 @@ function ConnectionCard({
   connectionString.pathname = ''
   const [isCopied, setIsCopied] = useState(false)
 
-  const { mutate: sync, isPending: isSyncing } = useMutation({
+  const { mutate: sync, isPending: isSyncing, error: syncError } = useMutation({
     mutationFn: async () => {
       await syncConnectionResources(connection)
     },
@@ -138,10 +138,24 @@ function ConnectionCard({
             className="size-6 shrink-0"
           />
           <div className="flex min-w-0 flex-col">
-            <CardFrameTitle className="flex gap-2">
+            <CardFrameTitle className="flex items-center gap-2">
               {connection.name}
               {' '}
               {isSyncing && <RiLoader4Line className="size-3 animate-spin" />}
+              {syncError && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <RiAlertLine className="size-3 text-warning" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Sync failed:
+                      {' '}
+                      <p className="text-xs text-warning">{syncError.message}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </CardFrameTitle>
             <CardFrameDescription
               className="
@@ -213,9 +227,9 @@ function ConnectionCard({
                       <motion.div
                         key={resource.id}
                         layout
-                        initial={{ opacity: 0, scale: 0.98, height: 0 }}
+                        initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.98, height: 0 }}
+                        exit={{ opacity: 0, scale: 0.98 }}
                         transition={{ duration: 0.15 }}
                       >
                         <ResourceCard
