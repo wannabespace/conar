@@ -4,7 +4,6 @@ import { webSearch } from '@exalabs/ai-sdk'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
 import { tool } from 'ai'
 import { type } from 'arktype'
-import * as z from 'zod/mini'
 import { env } from '~/env'
 
 export const tools = {
@@ -48,7 +47,7 @@ export const tools = {
       whereConcatOperator: type('"AND" | "OR"').describe('The operator to use to concatenate the where clauses'),
       whereFilters: type({
         column: 'string',
-        operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator)),
+        operator: type.enumerated(...SQL_FILTERS_LIST.map(filter => filter.operator)),
         values: 'string[]',
       })
         .array()
