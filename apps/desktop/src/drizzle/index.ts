@@ -3,6 +3,7 @@
 import { PGlite } from '@electric-sql/pglite'
 // import { PGliteWorker } from '@electric-sql/pglite/worker'
 import { drizzle } from 'drizzle-orm/pglite'
+import { createStore } from 'seitu'
 import migrations from './migrations.json'
 import { chatsRelations } from './schema/chats'
 import { connections } from './schema/connections'
@@ -64,7 +65,11 @@ export async function waitForMigrations() {
   await promise
 }
 
+export const migrationsState = createStore<'idle' | 'running' | 'completed' | 'failed'>('idle')
+
 export async function runMigrations() {
+  migrationsState.set('running')
+
   try {
     console.log('🚀 Starting pglite migrations...')
 
@@ -75,6 +80,7 @@ export async function runMigrations() {
 
     if (pendingMigrations.length === 0) {
       console.info('✨ No pending migrations found.')
+      migrationsState.set('completed')
       return
     }
 
@@ -98,6 +104,11 @@ export async function runMigrations() {
     }
 
     console.info('🎉 All migrations completed successfully')
+    migrationsState.set('completed')
+  }
+  catch (error) {
+    migrationsState.set('failed')
+    throw error
   }
   finally {
     resolve()
