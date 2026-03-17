@@ -58,6 +58,10 @@ export function Header({ table, schema }: { table: string, schema: string }) {
                           className={cn('text-muted-foreground tabular-nums', isLoading && `
                             animate-pulse text-muted-foreground/50
                           `)}
+                          style={{
+                            '--number-flow-mask-height': 0,
+                            '--number-flow-mask-width': 0,
+                          }}
                           prefix={total.isEstimated ? '~' : ''}
                           suffix={total.count === 1 ? ' row' : ' rows'}
                         />
