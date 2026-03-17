@@ -33,7 +33,7 @@ export function Runner() {
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
   const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
-    .where(({ queries }) => eq(queries.connectionId, connection.id))
+    .where(({ queries }) => eq(queries.connectionResourceId, connectionResource.id))
     .select(({ queries }) => ({ queriesCount: count(queries.id) }))
     .findOne(),
   )

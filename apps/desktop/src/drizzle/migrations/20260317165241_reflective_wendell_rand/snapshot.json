@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "66bf29d8-de3a-44d3-a05b-06266b845fce",
+  "id": "23c5a2f6-d03c-4be2-9bee-44a8f7f1cff9",
   "prevIds": [
     "b24b0226-11c6-4291-8a26-65ebce63adaf"
   ],
@@ -467,7 +467,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "connection_id",
+      "name": "connection_resource_id",
       "entityType": "columns",
       "schema": "public",
       "table": "queries"
@@ -552,16 +552,16 @@
     {
       "nameExplicit": false,
       "columns": [
-        "connection_id"
+        "connection_resource_id"
       ],
       "schemaTo": "public",
-      "tableTo": "connections",
+      "tableTo": "connections_resources",
       "columnsTo": [
         "id"
       ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
-      "name": "queries_connection_id_connections_id_fk",
+      "name": "queries_connection_resource_id_connections_resources_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "queries"
