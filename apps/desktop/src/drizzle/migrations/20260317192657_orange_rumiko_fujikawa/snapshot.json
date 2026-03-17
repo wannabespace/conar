@@ -1,10 +1,10 @@
 {
-  "version": "8",
-  "dialect": "postgres",
-  "id": "23c5a2f6-d03c-4be2-9bee-44a8f7f1cff9",
+  "id": "faa79b38-5bde-41b2-9b18-3a88aa7b6e37",
   "prevIds": [
     "b24b0226-11c6-4291-8a26-65ebce63adaf"
   ],
+  "version": "8",
+  "dialect": "postgres",
   "ddl": [
     {
       "values": [
@@ -103,7 +103,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "connection_resource_id",
+      "name": "connection_id",
       "entityType": "columns",
       "schema": "public",
       "table": "chats"
@@ -467,7 +467,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "connection_resource_id",
+      "name": "connection_id",
       "entityType": "columns",
       "schema": "public",
       "table": "queries"
@@ -501,16 +501,16 @@
     {
       "nameExplicit": false,
       "columns": [
-        "connection_resource_id"
+        "connection_id"
       ],
       "schemaTo": "public",
-      "tableTo": "connections_resources",
+      "tableTo": "connections",
       "columnsTo": [
         "id"
       ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
-      "name": "chats_connection_resource_id_connections_resources_id_fkey",
+      "name": "chats_connection_id_connections_id_fk",
       "entityType": "fks",
       "schema": "public",
       "table": "chats"
@@ -552,16 +552,16 @@
     {
       "nameExplicit": false,
       "columns": [
-        "connection_resource_id"
+        "connection_id"
       ],
       "schemaTo": "public",
-      "tableTo": "connections_resources",
+      "tableTo": "connections",
       "columnsTo": [
         "id"
       ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
-      "name": "queries_connection_resource_id_connections_resources_id_fkey",
+      "name": "queries_connection_id_connections_id_fk",
       "entityType": "fks",
       "schema": "public",
       "table": "queries"

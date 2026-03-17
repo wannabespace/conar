@@ -1,7 +1,5 @@
-DELETE FROM "chats";--> statement-breakpoint
-DELETE FROM "queries";--> statement-breakpoint
-ALTER TABLE "chats" DROP CONSTRAINT "chats_connection_id_connections_id_fk";--> statement-breakpoint
-ALTER TABLE "queries" DROP CONSTRAINT "queries_connection_id_connections_id_fk";--> statement-breakpoint
+ALTER TABLE "chats" DROP CONSTRAINT IF EXISTS "chats_connection_id_connections_id_fk";--> statement-breakpoint
+ALTER TABLE "queries" DROP CONSTRAINT IF EXISTS "queries_connection_id_connections_id_fk";--> statement-breakpoint
 ALTER TABLE "chats" ADD COLUMN "connection_resource_id" uuid NOT NULL;--> statement-breakpoint
 ALTER TABLE "queries" ADD COLUMN "connection_resource_id" uuid NOT NULL;--> statement-breakpoint
 ALTER TABLE "chats" DROP COLUMN "connection_id";--> statement-breakpoint
