@@ -10,12 +10,12 @@ import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Input } from '@conar/ui/components/input'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
-import { Separator, SeparatorMotion } from '@conar/ui/components/separator'
+import { Separator } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAddLine, RiAlertLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiLoopLeftLine, RiMoreLine, RiPushpinFill, RiPushpinLine } from '@remixicon/react'
+import { RiAddLine, RiAlertLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiLoopLeftLine, RiMoreLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
@@ -26,19 +26,16 @@ import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { connectionVersionQuery } from '~/entities/connection/queries/connection-version'
-import { getConnectionStore, togglePinResource } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection, syncConnectionResources } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
-function ResourceCard({ resource, connection, search, pinned, onTogglePin }: {
+function ResourceCard({ resource, connection, search }: {
   resource: typeof connectionsResources.$inferSelect
   connection: typeof connections.$inferSelect
   search: string
-  pinned: boolean
-  onTogglePin: () => void
 }) {
   const params = useConnectionResourceLinkParams(resource.id)
   const { data: tablesAndSchemas } = useQuery({
@@ -85,23 +82,6 @@ function ResourceCard({ resource, connection, search, pinned, onTogglePin }: {
           </div>
         )}
       </div>
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        className="
-          shrink-0 opacity-0 transition-opacity
-          group-hover:opacity-100
-        "
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          onTogglePin()
-        }}
-      >
-        {pinned
-          ? <RiPushpinFill className="size-3 text-primary" />
-          : <RiPushpinLine className="size-3" />}
-      </Button>
     </Link>
   )
 }
@@ -151,27 +131,9 @@ function ConnectionCard({
     .from({ connectionsResources: connectionsResourcesCollection })
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id)), [connection.id])
 
-  const connectionStore = getConnectionStore(connection.id)
-  const pinnedResources = useSubscription(connectionStore, { selector: state => state.pinnedResources })
-
-  const pinnedSet = new Set(pinnedResources.map(resource => resource.id))
-
   const filteredResources = resources.filter(resource =>
     !resourcesSearch
     || resource.name.toLowerCase().includes(resourcesSearch.toLowerCase()),
-  )
-
-  const { pinned, unpinned } = filteredResources.reduce(
-    (acc, resource) => {
-      if (pinnedSet.has(resource.id)) {
-        acc.pinned.push(resource)
-      }
-      else {
-        acc.unpinned.push(resource)
-      }
-      return acc
-    },
-    { pinned: [] as typeof filteredResources, unpinned: [] as typeof filteredResources },
   )
 
   return (
@@ -296,10 +258,10 @@ function ConnectionCard({
             </div>
           )}
           <ScrollArea className="max-h-60" scrollFade>
-            {pinned.length + unpinned.length > 0
+            {filteredResources.length > 0
               ? (
                   <AnimatePresence mode="popLayout">
-                    {pinned.map(resource => (
+                    {filteredResources.map(resource => (
                       <motion.div
                         key={resource.id}
                         layout
@@ -309,30 +271,6 @@ function ConnectionCard({
                           resource={resource}
                           connection={connection}
                           search={resourcesSearch}
-                          pinned
-                          onTogglePin={() => togglePinResource(connection.id, resource.id, resource.name)}
-                        />
-                      </motion.div>
-                    ))}
-                    {pinned.length > 0 && unpinned.length > 0 && (
-                      <SeparatorMotion
-                        className="my-2 h-px!"
-                        layout
-                        transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
-                      />
-                    )}
-                    {unpinned.map(resource => (
-                      <motion.div
-                        key={resource.id}
-                        layout
-                        transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
-                      >
-                        <ResourceCard
-                          resource={resource}
-                          connection={connection}
-                          search={resourcesSearch}
-                          pinned={false}
-                          onTogglePin={() => togglePinResource(connection.id, resource.id, resource.name)}
                         />
                       </motion.div>
                     ))}
