@@ -26,10 +26,16 @@ export const Route = createFileRoute('/_protected/')({
 
 function DashboardPage() {
   const { mutate: sync, isPending: isSyncing } = useMutation({
-    mutationFn: connectionsCollection.utils.runSync,
-  })
-  const { mutate: syncConnectionsResources, isPending: isSyncingConnectionsResources } = useMutation({
-    mutationFn: connectionsResourcesCollection.utils.runSync,
+    mutationFn: async () => {
+      await Promise.all([
+        connectionsCollection.utils.runSync(),
+        connectionsResourcesCollection.utils.runSync(),
+      ])
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['connection'] })
+      queryClient.invalidateQueries({ queryKey: ['connection-resources'] })
+    },
   })
   const { version, status } = useSubscription(updatesStore, { selector: state => pick(state, ['version', 'status']) })
 
@@ -56,17 +62,12 @@ function DashboardPage() {
             <Button
               variant="outline"
               size="icon"
-              disabled={isSyncing || isSyncingConnectionsResources}
-              onClick={() => {
-                sync()
-                syncConnectionsResources()
-                queryClient.invalidateQueries({ queryKey: ['connection'] })
-                queryClient.invalidateQueries({ queryKey: ['connection-resources'] })
-              }}
+              disabled={isSyncing}
+              onClick={() => sync()}
             >
-              <LoadingContent loading={isSyncing || isSyncingConnectionsResources}>
+              <LoadingContent loading={isSyncing}>
                 <ContentSwitch
-                  active={isSyncing || isSyncingConnectionsResources}
+                  active={isSyncing}
                   activeContent={(
                     <RiCheckLine className="text-success" />
                   )}

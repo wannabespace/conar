@@ -249,19 +249,13 @@ function ConnectionCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onCloseAutoFocus={e => e.preventDefault()}>
             <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                sync?.()
-              }}
+              onClick={() => sync()}
             >
               <RiLoopLeftLine className="size-4 opacity-50" />
               Refresh
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                onRename()
-              }}
+              onClick={() => onRename()}
             >
               <RiEditLine className="size-4 opacity-50" />
               Rename
@@ -271,10 +265,7 @@ function ConnectionCard({
                 text-destructive
                 focus:text-destructive
               `}
-              onClick={(e) => {
-                e.stopPropagation()
-                onRemove()
-              }}
+              onClick={() => onRemove()}
             >
               <RiDeleteBinLine className="size-4" />
               Remove
