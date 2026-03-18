@@ -2,15 +2,15 @@ import type { constraintsType } from '~/entities/connection/queries'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { RiDatabase2Line, RiKey2Line, RiLayoutColumnLine, RiLinksLine, RiTable2 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { resourceConstraintsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
@@ -20,9 +20,9 @@ import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/constraints/')({
   component: DatabaseConstraintsPage,
-  loader: ({ context }) => ({ connection: context.connection }),
+  loader: ({ context }) => ({ connection: context.connection, connectionResource: context.connectionResource }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Constraints', loaderData.connection.name) }] : [],
+    meta: loaderData ? [{ title: title('Constraints', loaderData.connection.name, loaderData.connectionResource.name) }] : [],
   }),
 })
 
@@ -59,8 +59,8 @@ function DatabaseConstraintsPage() {
   const { connectionResource } = Route.useRouteContext()
   const { data: constraints, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceConstraintsQuery({ connectionResource }))
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useStore(store, state => state.showSystem)
-  const { data } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
+  const { data } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
@@ -112,9 +112,9 @@ function DatabaseConstraintsPage() {
         </Select>
         {schemas.length > 1 && (
           <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
-            <SelectTrigger className="min-w-[180px] max-w-56">
+            <SelectTrigger className="max-w-56 min-w-[180px]">
               <div className="flex flex-1 items-center gap-2 overflow-hidden">
-                <span className="text-muted-foreground shrink-0">schema</span>
+                <span className="shrink-0 text-muted-foreground">schema</span>
                 <span className="truncate"><SelectValue /></span>
               </div>
             </SelectTrigger>
@@ -135,7 +135,7 @@ function DatabaseConstraintsPage() {
         )}
 
         {filteredConstraints.map(item => (
-          <MotionCard
+          <CardMotion
             key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
             layout
             {...MOTION_BLOCK_PROPS}
@@ -185,7 +185,7 @@ function DatabaseConstraintsPage() {
                 </div>
               </CardContent>
             )}
-          </MotionCard>
+          </CardMotion>
         ))}
       </DefinitionsGrid>
     </>

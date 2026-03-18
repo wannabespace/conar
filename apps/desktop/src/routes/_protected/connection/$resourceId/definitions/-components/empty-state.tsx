@@ -1,4 +1,4 @@
-import { CardContent, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardMotion } from '@conar/ui/components/card'
 import { RiInformationLine } from '@remixicon/react'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 
@@ -7,7 +7,7 @@ export function DefinitionsEmptyState({ title, description }: {
   description: string
 }) {
   return (
-    <MotionCard layout {...MOTION_BLOCK_PROPS}>
+    <CardMotion layout {...MOTION_BLOCK_PROPS}>
       <CardContent className="
         flex flex-col items-center justify-center p-10 text-center
       "
@@ -19,6 +19,6 @@ export function DefinitionsEmptyState({ title, description }: {
         <h3 className="text-lg font-medium text-foreground">{title}</h3>
         <p className="max-w-md text-sm text-muted-foreground">{description}</p>
       </CardContent>
-    </MotionCard>
+    </CardMotion>
   )
 }

@@ -2,7 +2,7 @@ import { type } from 'arktype'
 import { and, eq, inArray, or } from 'drizzle-orm'
 import { db } from '~/drizzle'
 import { chats, chatsMessages } from '~/drizzle/schema'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 const input = type({
   id: 'string.uuid.v7',
@@ -10,7 +10,7 @@ const input = type({
 })
 
 export const remove = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(subscriptionMiddleware)
   .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
     if (input.length === 0) {

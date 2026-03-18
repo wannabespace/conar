@@ -1,5 +1,5 @@
 import type { LinkProps } from '@tanstack/react-router'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -16,16 +16,16 @@ import { RiCloseLine, RiCommandLine, RiFileListLine, RiMessageLine, RiMoonLine, 
 import { inArray, useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { useEffect, useMemo, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsResourcesCollection } from '~/entities/connection/sync'
-import { lastOpenedResources, useLastOpenedResources } from '~/entities/connection/utils'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { UserButton } from '~/entities/user/components'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../$resourceId'
 
@@ -51,7 +51,7 @@ function SupportButton() {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
 
-  const { mutate: sendSupport, isPending: loading } = useMutation(orpcQuery.contact.mutationOptions({
+  const { mutate: sendSupport, isPending: loading } = useMutation(orpc.contact.mutationOptions({
     onSuccess: () => {
       toast.success('Support message sent successfully! We will get back to you as soon as possible.')
       setOpen(false)
@@ -123,9 +123,9 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   async function onCloseClick() {
-    const newResources = lastOpenedResources.get().filter(resourceId => resourceId !== connectionResource.id)
+    const newResources = lastOpenedResourcesStorageValue.get().filter(resourceId => resourceId !== connectionResource.id)
 
-    lastOpenedResources.set(newResources)
+    lastOpenedResourcesStorageValue.set(newResources)
   }
 
   return (
@@ -164,7 +164,7 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
               {...params}
             >
               <span className="text-sm font-bold">
-                {connection.name
+                {connectionResource.name
                   .replace(nameRegex, '')
                   .split(whitespaceRegex)
                   .map(word => word[0])
@@ -179,6 +179,10 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
           <span className="flex items-center gap-2 font-medium">
             <ConnectionIcon type={connection.type} className="-ml-1 size-4" />
             {connection.name}
+            {' '}
+            /
+            {' '}
+            {connectionResource.name}
           </span>
         </TooltipContent>
       </Tooltip>
@@ -193,11 +197,11 @@ function MainLinks() {
     select: matches => matches.map(match => match.routeId).at(-1),
   })
   const store = getConnectionResourceStore(connectionResource.id)
-  const lastOpenedTable = useStore(store, state => state.lastOpenedTable)
+  const lastOpenedTable = useSubscription(store, { selector: state => state.lastOpenedTable })
 
   useEffect(() => {
     if (tableParam && schemaParam && tableParam !== lastOpenedTable?.table && schemaParam !== lastOpenedTable?.schema) {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         lastOpenedTable: { schema: schemaParam, table: tableParam },
       } satisfies typeof state))
@@ -225,14 +229,14 @@ function MainLinks() {
 
   function onTablesClick() {
     if (isCurrentTableAsLastOpened && lastOpenedTable) {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         lastOpenedTable: null,
       } satisfies typeof state))
     }
   }
 
-  const lastOpenedChatId = useStore(store, state => state.lastOpenedChatId)
+  const lastOpenedChatId = useSubscription(store, { selector: state => state.lastOpenedChatId })
 
   return (
     <>
@@ -304,7 +308,7 @@ function MainLinks() {
 
 export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { connectionResource } = Route.useRouteContext()
-  const [lastOpenedResources] = useLastOpenedResources()
+  const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
   const store = getConnectionResourceStore(connectionResource.id)
   const { data: openedResources } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })
@@ -356,7 +360,7 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => store.setState(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
+                onClick={() => store.set(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
               >
                 <RiFileListLine className="size-4" />
               </Button>
@@ -372,7 +376,7 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => appStore.setState(state => ({ ...state, isActionCenterOpen: true } satisfies typeof state))}
+                onClick={() => appStore.set(state => ({ ...state, isActionCenterOpen: true } satisfies typeof state))}
               >
                 <RiCommandLine className="size-4" />
               </Button>

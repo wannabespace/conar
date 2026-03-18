@@ -31,8 +31,8 @@ import {
   RiTriangleLine,
 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { useMemo, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { Monaco } from '~/components/monaco'
 import { SidebarButton } from '~/components/sidebar-link'
 import * as generators from '~/entities/connection/generators'
@@ -149,7 +149,7 @@ function CopyDialogEditor({ activeFormat, activeCategory, codeContent }: {
 export function HeaderActionsCopy({ table, schema }: { table: string, schema: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = usePageStoreContext()
-  const filters = useStore(store, state => state.filters)
+  const filters = useSubscription(store, { selector: state => state.filters })
   const columns = useTableColumns({ connectionResource, table, schema })
   const { data: enums } = useQuery(resourceEnumsQuery({ connectionResource }))
   const { data: indexes } = useQuery(resourceIndexesQuery({ connectionResource }))

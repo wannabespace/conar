@@ -55,7 +55,7 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
       toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)
       setOpen(false)
 
-      await queryClient.invalidateQueries(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem }))
+      await queryClient.invalidateQueries(resourceTablesAndSchemasQuery({ silent: true, connectionResource, showSystem: store.get().showSystem }))
       renameTab(connectionResource.id, schema, table, newTableName)
 
       router.navigate({

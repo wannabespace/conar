@@ -9,8 +9,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiPencilLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { resourceEnumsQuery } from '~/entities/connection/queries'
 import { Route } from '../..'
 import { usePageStoreContext } from '../../-store'
@@ -166,10 +166,10 @@ function EnumBadge({ values, children }: { values: string[], children: ReactNode
           {children}
         </TooltipTrigger>
         <TooltipContent>
-          <div className="text-xs text-muted-foreground">
+          <div className="mb-1 text-xs text-muted-foreground">
             Available values:
           </div>
-          <div className="mt-1 flex flex-wrap gap-1">
+          <div className="flex max-w-sm flex-wrap gap-1">
             {values.map((val: string) => (
               <Badge
                 key={val}
@@ -209,7 +209,7 @@ export function TableHeaderCell({
   const store = usePageStoreContext()
   const [isResizing, setIsResizing] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const order = useStore(store, state => state.orderBy?.[column.id] ?? null)
+  const order = useSubscription(store, { selector: state => state.orderBy?.[column.id] ?? null })
   const { data: enumsData } = useQuery({
     ...resourceEnumsQuery({ connectionResource }),
     select: data => data?.find(e => e.name === column.enum),
@@ -246,9 +246,9 @@ export function TableHeaderCell({
   }
 
   const removeSize = () => {
-    const newColumnSizes = { ...store.state.columnSizes }
+    const newColumnSizes = { ...store.get().columnSizes }
     delete newColumnSizes[column.id]
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       columnSizes: newColumnSizes,
     } satisfies typeof storeState.infer))

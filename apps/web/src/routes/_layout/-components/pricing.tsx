@@ -53,8 +53,7 @@ export function Pricing({ className }: PricingSectionProps) {
           Pricing
         </h2>
         <p className={`
-          mx-auto max-w-3xl text-center text-2xl/tight font-bold
-          text-balance
+          mx-auto max-w-3xl text-center text-2xl/tight font-bold text-balance
           sm:text-3xl
         `}
         >
@@ -194,10 +193,7 @@ export function Pricing({ className }: PricingSectionProps) {
                       >
                         {feature.name}
                       </div>
-                      <div className={`
-                        text-sm/relaxed text-muted-foreground
-                      `}
-                      >
+                      <div className="text-sm/relaxed text-muted-foreground">
                         {feature.description}
                       </div>
                     </div>

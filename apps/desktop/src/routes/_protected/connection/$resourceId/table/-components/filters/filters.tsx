@@ -4,8 +4,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/po
 import { Separator } from '@conar/ui/components/separator'
 import { useToggle } from '@conar/ui/hookas/use-toggle'
 import { RiAddLine, RiCloseLine, RiDatabase2Line, RiFilterOffLine } from '@remixicon/react'
-import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { usePageStoreContext } from '../../-store'
 import { FiltersColumnSelector } from './filters-column-selector'
 import { FilterForm } from './filters-form'
@@ -122,7 +122,7 @@ function FilterItem({
 
 export function Filters() {
   const store = usePageStoreContext()
-  const filters = useStore(store, state => state.filters)
+  const filters = useSubscription(store, { selector: state => state.filters })
   const [isOpened, toggleForm] = useToggle()
 
   if (filters.length === 0) {
@@ -136,11 +136,11 @@ export function Filters() {
           <FilterItem
             key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}`}
             filter={filter}
-            onRemove={() => store.setState(state => ({
+            onRemove={() => store.set(state => ({
               ...state,
               filters: state.filters.filter(f => f !== filter),
             } satisfies typeof state))}
-            onEdit={({ column, ref, values }) => store.setState(state => ({
+            onEdit={({ column, ref, values }) => store.set(state => ({
               ...state,
               filters: state.filters.map(f => f === filter
                 ? { column, ref, values }
@@ -162,7 +162,7 @@ export function Filters() {
             <FilterForm
               onAdd={(filter) => {
                 toggleForm(false)
-                store.setState(state => ({
+                store.set(state => ({
                   ...state,
                   filters: [...state.filters, filter],
                 } satisfies typeof state))
@@ -174,7 +174,7 @@ export function Filters() {
       <Button
         variant="outline"
         size="xs"
-        onClick={() => store.setState(state => ({
+        onClick={() => store.set(state => ({
           ...state,
           filters: [],
         } satisfies typeof state))}

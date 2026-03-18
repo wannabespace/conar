@@ -1,5 +1,5 @@
-import type { connectionsResources } from '~/drizzle'
-import type { getConnectionResourceStoreType } from '~/entities/connection/store'
+import type { connectionsResources } from '~/drizzle/schema'
+import type { connectionResourceType } from '~/entities/connection/store'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { customQuery } from '~/entities/connection/queries/custom'
@@ -12,7 +12,7 @@ export * from './runner'
 function transformResult({ rows, query, startLineNumber, endLineNumber, duration }: {
   rows: unknown[]
   duration: number
-} & Pick<typeof getConnectionResourceStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
+} & Pick<typeof connectionResourceType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: rows as Record<string, unknown>[],
     error: null,
@@ -26,7 +26,7 @@ function transformResult({ rows, query, startLineNumber, endLineNumber, duration
 function transformError({ error, query, startLineNumber, endLineNumber, duration }: {
   error: unknown
   duration: number
-} & Pick<typeof getConnectionResourceStoreType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
+} & Pick<typeof connectionResourceType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: null,
     error: error instanceof Error ? error.message : String(error),
@@ -43,7 +43,7 @@ export function runnerQueryOptions(connectionResource: typeof connectionsResourc
   return queryOptions({
     queryKey: ['query-runner', connectionResource.id],
     queryFn: async ({ signal }) => {
-      const queries = store.state.queriesToRun
+      const queries = store.get().queriesToRun
 
       const results: (ReturnType<typeof transformResult> | ReturnType<typeof transformError>)[] = []
 

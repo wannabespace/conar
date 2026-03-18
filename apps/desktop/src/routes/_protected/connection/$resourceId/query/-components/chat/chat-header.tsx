@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { chats } from '~/drizzle'
+import type { chats } from '~/drizzle/schema'
 import type { ChatMutationMetadata } from '~/entities/chat/sync'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
@@ -95,7 +95,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
       return
     }
 
-    const title = await orpc.ai.generateTitle({
+    const title = await orpc.ai.generateTitle.call({
       chatId: chat.id,
       messages: messages.map(convertToAppUIMessage),
     })
@@ -122,7 +122,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
   const removeChat = (chat: typeof chats.$inferSelect) => {
     removeDialogRef.current?.remove(chat, () => {
       if (chat.id === chatId) {
-        store.setState(state => ({
+        store.set(state => ({
           ...state,
           lastOpenedChatId: null,
         } satisfies typeof state))
@@ -160,7 +160,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
               variant="outline"
               size="icon-sm"
               asChild
-              onClick={() => store.setState(state => ({
+              onClick={() => store.set(state => ({
                 ...state,
                 lastOpenedChatId: null,
               } satisfies typeof state))}

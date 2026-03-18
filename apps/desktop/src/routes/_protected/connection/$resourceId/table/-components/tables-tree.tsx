@@ -5,16 +5,16 @@ import { Button } from '@conar/ui/components/button'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
-import { MotionSeparator } from '@conar/ui/components/separator'
+import { SeparatorMotion } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiStackLine, RiTableLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearch } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useRef } from 'react'
+import { useSubscription } from 'seitu/react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { addTab, cleanupPinnedTables, getConnectionResourceStore, togglePinTable } from '~/entities/connection/store'
@@ -100,9 +100,7 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
           >
             {pinned
               ? <RiPushpinFill className="size-3 text-primary" />
-              : (
-                  <RiPushpinLine className="size-3" />
-                )}
+              : <RiPushpinLine className="size-3" />}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -166,11 +164,11 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
 export function TablesTree({ className, search }: { className?: string, search?: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useStore(store, state => state.showSystem)
-  const { data: tablesAndSchemas, isPending } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
+  const { data: tablesAndSchemas, isPending } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
   const { schema: schemaParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })
-  const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
-  const pinnedTables = useStore(store, state => state.pinnedTables)
+  const tablesTreeOpenedSchemas = useSubscription(store, { selector: state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'] })
+  const pinnedTables = useSubscription(store, { selector: state => state.pinnedTables })
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
 
@@ -232,7 +230,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
           value={searchAccordionValue}
           onValueChange={(v) => {
             if (!search) {
-              store.setState(state => ({
+              store.set(state => ({
                 ...state,
                 tablesTreeOpenedSchemas: v,
               } satisfies typeof state))
@@ -331,7 +329,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                 </motion.div>
                               ))}
                               {schema.pinnedTables.length > 0 && schema.unpinnedTables.length > 0 && (
-                                <MotionSeparator
+                                <SeparatorMotion
                                   className="my-2 h-px!"
                                   layout
                                   variants={treeVariants}

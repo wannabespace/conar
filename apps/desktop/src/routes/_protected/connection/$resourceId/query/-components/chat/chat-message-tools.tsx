@@ -1,5 +1,6 @@
 import type { ToolUIPart } from '@conar/api/ai/tools/helpers'
 import type { editor } from 'monaco-editor'
+import { FaviconWithFallback } from '@conar/ui/components/custom/favicon-with-fallback'
 import {
   SingleAccordion,
   SingleAccordionContent,
@@ -18,7 +19,6 @@ import {
 } from '@remixicon/react'
 import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
-import { FaviconWithFallback } from './favicon-with-fallback'
 
 const monacoOptions = {
   readOnly: true,
